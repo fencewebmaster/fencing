@@ -179,12 +179,12 @@ function calculate_fences( data ) {
 
     C19 =  E19 < 1 ? 0 : 1;
 
-
     // C20 = C19;
     C20 = (panel_options_data[0]?.slug == 'even' || panel_options_data[0]?.slug == undefined) ? C17 : C19;
 
     D20 = D19<post_panel ? 0 : E18-E19;
-// =if(D19<50,0,E18-E19)
+
+    D20 = panel_options_data[0]?.slug == 'even' ? E18-E17 : (D19<50 ? 0 : E18-E19);
 
     // Outputs
     full_panel_count  = isNaN(C18) ? 0 : C18;
@@ -214,7 +214,8 @@ function calculate_fences( data ) {
     gate_count = isNaN(C21) ? 0 : C21;
     gate_width = isNaN(D21) ? 0 : (D21 ? D21-50-20-20 : 0);
 
-    /*    console.log('C', C3, C14, C5, C15, C16, C17, C19, C18, C21);
+    /*    
+        console.log('C', C3, C14, C5, C15, C16, C17, C19, C18, C21);
         console.log('D', D16, D17, D18, Math.round(D19), D21, D22, D23, D24);
         console.log('E', E17, E18, Math.round(E19), E21, E22, E23, E24);
 
@@ -226,6 +227,7 @@ function calculate_fences( data ) {
         console.log('offcut_panel', offcut_panel_count, offcut_panel_length);
         console.log('gate', gate_count, gate_width);
     */
+    
     data = {
         'full_panel' : {
             'count' : full_panel_count, 

@@ -650,7 +650,7 @@ $('.measurement-box-number').val(fc_mbn);
 
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="js/algo.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/jquery-scrollspy.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>

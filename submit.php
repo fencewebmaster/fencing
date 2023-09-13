@@ -1,6 +1,6 @@
 <?php
+session_start();
 
-$data = $_POST;
+$_SESSION["fc_data"] = $data = $_POST;
 
 echo json_encode($data);
-

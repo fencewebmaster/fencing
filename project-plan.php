@@ -1,3 +1,8 @@
+<?php
+session_start();
+$info = $_SESSION['fc_data'];
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -93,34 +98,34 @@
 												<tr>
 													<td>Name</td>
 													<td>
-														<span>James Evans</span>
+														<span><?php echo @$info['name']; ?></span>
 														<div class="fc-form-group">
-															<input type="text" name="name" value="James Evans" class="fc-form-control fc-form-control-sm">
+															<input type="text" name="name" value="<?php echo @$info['name']; ?>" class="fc-form-control fc-form-control-sm">
 														</div>	
 													</td>
 												</tr>
 												<tr>
 													<td>Contact</td>
 													<td>
-														<span>+61 2345 6789</span>
+														<span><?php echo @$info['mobile']; ?></span>
 														<div class="fc-form-group">
-															<input type="text" name="phone" value="+61 2345 6789" class="fc-form-control fc-form-control-sm">
+															<input type="text" name="phone" value="<?php echo @$info['mobile']; ?>" class="fc-form-control fc-form-control-sm">
 														</div>	
 													</td>
 												</tr>
 												<tr>
 													<td>Email</td>
 													<td>
-														<span>james@gmail.com</span>
+														<span><?php echo @$info['email']; ?></span>
 														<div class="fc-form-group">
-															<input type="text" name="email" value="james@gmail.com" class="fc-form-control fc-form-control-sm">
+															<input type="email" name="email" value="<?php echo @$info['email']; ?>" class="fc-form-control fc-form-control-sm no-space">
 														</div>														
 													</td>
 												</tr>
 												<tr>
 													<td>State</td>
 													<td>
-														<span>WA</span>
+														<span><?php echo @$info['state']; ?></span>
 		
 														<div class="fc-form-group">
 															<select name="state" class="fc-form-control fc-form-control-sm" required>
@@ -140,9 +145,9 @@
 												<tr>
 													<td>Post Code</td>
 													<td>
-														<span>6026</span>
+														<span><?php echo @$info['postcode']; ?></span>
 														<div class="fc-form-group">
-															<input type="text" name="postcode" value="6026" class="fc-form-control fc-form-control-sm">
+															<input type="text" name="postcode" value="<?php echo @$info['postcode']; ?>" class="fc-form-control fc-form-control-sm">
 														</div>	
 													</td>
 												</tr>
@@ -168,15 +173,15 @@
 											</tr>
 											<tr>
 												<td>When Needed</td>
-												<td>Within the next 8 weeks, Waiting on pool to be installed</td>
+												<td><?php echo @$info['timeframe']; ?></td>
 											</tr>
 											<tr>
 												<td>Install Required</td>
-												<td>No</td>
+												<td><?php echo @$info['installer']; ?></td>
 											</tr>
 											<tr>
 												<td>Other Items Needed</td>
-												<td>Pool cover, Pump Enclosure</td>
+												<td><?php echo implode(', ', @$info['extra']); ?></td>
 											</tr>
 										</table>
 									</div>
@@ -216,7 +221,7 @@
 										<div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
 											
 											<div class="fc-p-1">
-												<textarea name="notes" placeholder="Write your notes here" class="fc-form-control" rows="7"></textarea>
+												<textarea name="notes" placeholder="Write your notes here" class="fc-form-control" rows="7"><?php echo @$info['notes']; ?></textarea>
 									
 											</div>
 
@@ -651,7 +656,7 @@
 									<div class="fc-card fc-table-items">
 										<div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
 
-											<i class="fa-regular fa-pen-to-square fc-text-success fc-editing-icon" style="display: none;"></i>
+											<i class="fa-regular fa-pen-to-square fc-editing-icon" style="display: none;"></i>
 
 											<div class="fc-table-rounded-border fc-mb-2">
 												<table class="fc-table fc-table-bordered fc-table-striped">
@@ -862,240 +867,13 @@
 	</div>
 
 
-
-
 	<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
 
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 	<script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 	<script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
-
-
-	  <script type="text/javascript"> 
-
-// Initialize Stripe with your publishable API key
-var stripe = Stripe('pk_test_fY3GMPqaZTKE94kLMB5BnOdf');
-
-
-// Create an instance of elements
-var elements = stripe.elements();
-
-var style = {
-    base: {
-        fontWeight: 400,
-        fontFamily: 'Roboto, Open Sans, Segoe UI, sans-serif',
-        fontSize: '16px',
-        lineHeight: '1.4',
-        color: '#555',
-        backgroundColor: '#fff',
-        '::placeholder': {
-            color: '#888',
-        },
-    },
-    invalid: {
-        color: '#eb1c26',
-    }
-};
-
-var cardElement = elements.create('cardNumber', {
-    style: style
-});
-cardElement.mount('#card_number');
-
-var exp = elements.create('cardExpiry', {
-    'style': style
-});
-exp.mount('#card_expiry');
-
-var cvc = elements.create('cardCvc', {
-    'style': style
-});
-cvc.mount('#card_cvc');
-
-// Validate input of the card elements
-var resultContainer = document.getElementById('paymentResponse');
-cardElement.addEventListener('change', function(event) {
-    if (event.error) {
-        resultContainer.innerHTML = '<p>'+event.error.message+'</p>';
-    } else {
-        resultContainer.innerHTML = '';
-    }
-});
-
-// Get payment form element
-var form = document.getElementById('paymentFrm');
-
-// Create a token when the form is submitted.
-form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    createToken();
-});
-
-// Create single-use token to charge the user
-function createToken() {
-    stripe.createToken(cardElement).then(function(result) {
-        if (result.error) {
-            // Inform the user if there was an error
-            resultContainer.innerHTML = '<p>'+result.error.message+'</p>';
-        } else {
-            // Send the token to your server
-            stripeTokenHandler(result.token);
-        }
-    });
-}
-
-// Callback to handle the response from stripe
-function stripeTokenHandler(token) {
-
-    // Insert the token ID into the form so it gets submitted to the server
-    var hiddenInput = document.createElement('input');
-    hiddenInput.setAttribute('type', 'hidden');
-    hiddenInput.setAttribute('name', 'stripeToken');
-    hiddenInput.setAttribute('value', token.id);
-    form.appendChild(hiddenInput);
-    
-    // Submit the form
-    form.submit();
-
-    
-}
-</script>
-
-
-
-
-	<script type="text/javascript">
-
-	$(document).on('click', '.fc-btn-download-fence', function () {    
-
-/*		var element = document.getElementById('fc-fence-list');
-		var opt = {
-		  margin:       1,
-		  filename:     'myfile.pdf',
-		  image:        { type: 'jpeg', quality: 0.98 },
-		  html2canvas:  { scale: 2 },
-		  jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-		};
-
-		// New Promise-based usage:
-		html2pdf().set(opt).from(element).save();
-*/
-
-
-var element = document.getElementById('fc-fence-list');
-html2pdf(element);
-
-	});
-
-
-	$(document).on('click', ".fc-btn-edit", function (e) {
-		e.preventDefault();
-
-		if( $(this).find('span').text() == 'Edit' ) {
-			$('.fc-project-details .fc-form-group, .fc-btn-reset').show();
-			$('.fc-project-details table span').hide();
-			$(this).find('span').html('Update');
-
-			$('.fc-project-details .fc-editing-icon').fadeIn();
-
-		} else {
-
-			$('.fc-table-customer td').each(function(){
-				if( $(this).find('.fc-form-control').length ) {
-					var val = $(this).find('.fc-form-control').val();
-					$(this).find('span').html( val );
-				}
-			});
-
-		    $(".fc-table-customer .fc-form-control").css({'color': '#4caf50'}); 
-
-		    setTimeout(function() { 
-		    	$(".fc-table-customer .fc-form-control").css({'color': ''}); 
-
-				$('.fc-table-customer span').show();
-				$('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
-
-				$('.fc-project-details .fc-editing-icon').fadeOut();
-
-		    } , 500);
-
-			$(this).find('span').html('Edit');
-
-		}
-
-	});
-
-	$(document).on('click', ".fc-btn-reset", function (e) {
-		e.preventDefault();
-
-		$('.fc-table-customer td').each(function(){
-			if( $(this).find('.fc-form-control').length ) {
-				var val = $(this).find('span').text();
-				$(this).find('.fc-form-control').val(val)
-			}
-		});
-
-	    $(".fc-table-customer .fc-form-control").css({'color': '#f67925'}); 
-
-	    setTimeout(function() { 
-	    	$(".fc-table-customer .fc-form-control").css({'color': ''}); 
-	    } , 500);
-
-	});
-
-	$(document).on('click', ".fc-edit-item", function (e) {
-		e.preventDefault();
-
-		if( $(this).text() == 'Edit' ) {
-			$('.fc-table-items input, .fc-reset-item, .fc-link-div').show();
-			$('.fc-item-value').hide();
-			$(this).html('Update');
-			$('.fc-table-items .fc-editing-icon').fadeIn();
-		} else {
-
-			$('.fc-table-items td').each(function(){
-				if( $(this).find('.fc-form-control').length ) {
-					var val = $(this).find('.fc-form-control').val();
-					$(this).find('.fc-item-value').html( val );
-				}
-			});
-
-		    $(".fc-table-items .fc-form-control").css({'color': '#4caf50'}); 
-
-		    setTimeout(function() { 
-		    	$(".fc-table-items .fc-form-control").css({'color': ''}); 
-
-				$('.fc-item-value').show();
-				$('.fc-table-items input, .fc-reset-item, .fc-link-div').hide();
-				$('.fc-table-items .fc-editing-icon').fadeOut();
-		    } , 500);
-
-			$(this).html('Edit');
-
-		}
-
-	});
-
-	$(document).on('click', ".fc-reset-item", function (e) {
-		e.preventDefault();
-
-		$('.fc-table-items td').each(function(){
-			if( $(this).find('.fc-form-control').length ) {
-				var val = $(this).find('.fc-item-value').text();
-				$(this).find('.fc-form-control').val(val)
-			}
-		});
-
-	    $(".fc-table-items .fc-form-control").css({'color': '#f67925'}); 
-
-	    setTimeout(function() { 
-	    	$(".fc-table-items .fc-form-control").css({'color': ''}); 
-	    } , 500);
-
-	});
-
-	</script>
+	<script type="text/javascript" src="js/checkout.js?v=<?php echo date('YmdHis'); ?>"></script>
 
 
 </body>
