@@ -504,7 +504,7 @@ font-family: 'League Gothic', sans-serif;*/
 /* width */
 .fencing-display-result::-webkit-scrollbar {
   width: 10px;
-  height: 10px;
+  height: 5px;
 }
 
 /* Track */
@@ -514,7 +514,7 @@ font-family: 'League Gothic', sans-serif;*/
 
 /* Handle */
 .fencing-display-result::-webkit-scrollbar-thumb {
-  background: #F67925;
+  background: #333333;
 }
 
 /* Handle on hover */
