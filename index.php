@@ -396,7 +396,7 @@
 
 
         <!-- START SUBMIT POPUP MODAL -->
-        <div id="submit-modal" class="fencing-modal" style="display: block;">
+        <div id="submit-modal" class="fencing-modal">
             <div class="fc-modal-frame">
 
                 <div class="fencing-modal-content fencing-modal-md">
