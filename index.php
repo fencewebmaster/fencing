@@ -67,9 +67,9 @@
 
         <!-- START TABS -->
         <div class="fencing-tabs-container fc-section-step fc-d-none fc-font-2" data-tab="1">
-            <div class="fencing-tabs">
+            <div class="fencing-tabs fc-row-flex">
                
-                <div class="fencing-tab-container">
+                <div class="fencing-tab-container fc-row-flex">
                    
                     <div class="fencing-tab fencing-tab-selected fc-d-none">
                         <div class="fencing-tab-name">
@@ -90,6 +90,7 @@
 
         <div class="fc-section-details">
             
+            <!-- @TODO: Are we hiding this header tab? It no longer exists in figma -->
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
                 <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
             </div>
@@ -133,6 +134,8 @@
                                 <div class="fencing-style-title">
                                     <?php echo $fence['title']; ?>
                                 </div>
+
+                                <button class="fencing-style-btn js-fencing-style-btn"></button>
 
                             </div>
                         </div>
