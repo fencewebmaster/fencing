@@ -1,0 +1,105 @@
+// -----------------------------------------------------------------------------
+// This file contains css for the Fencing Style Section.
+// -----------------------------------------------------------------------------
+
+.fencing-styles {
+    display: flex;
+
+    @include xl {
+        display: inline-block;
+    }
+
+}
+
+.fencing-style-item {
+    margin-right: 5px;
+    margin-left: 5px;
+    cursor: pointer;
+    float: left;
+    background: #fff;
+	margin-bottom: 10px;
+    position: relative;
+
+    @include xl {
+        width: calc(20% - 32px);
+    }
+
+    @include lg {
+        width: calc(25% - 32px);
+    }
+
+    @include md {
+        width: calc(33.33% - 32px);
+    }
+
+    @include sm {
+        width: calc(50% - 32px);
+    }
+
+    .fencing-style-title {
+        text-align: center;
+        font-size: 14px;
+        border: 2px solid #f0f0f0;
+        border-top: 0;
+        background: #FAFAFA;
+        font-weight: 400;
+        border-radius: 0 0 10px 10px;
+        padding: 10px;
+        
+        @include md {
+            font-size: 14px;
+        }
+
+    }
+
+    .fencing-style-item img {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .fencing-style-img {	
+        opacity: 0.5;
+        transition: transform .3s;
+        border: 2px solid #e1e1e1;
+        border-radius: 10px 10px 0 0;
+        padding: 10px;
+    }
+
+    .fencing-style-btn{
+        width: 26px;
+        height: 26px;
+        background: #fff url(img/icons/close@2x.png) no-repeat center;
+        background-size: 100%;
+        position: absolute;
+        top: 11px;
+        right: 11px;
+        outline: none;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        display: none;
+    }
+
+    &.fsi-selected {
+
+        .fencing-style-btn{
+            display: block;
+        }
+
+        .fencing-style-img {
+            border: 2px solid #F67925;
+            opacity: 1;
+        }
+
+        .fencing-style-title {
+            color: #fff;
+            background: var(--fc-blue);
+            font-weight: 400;
+            border-radius: 0 0 10px 10px;
+            padding: 10px;
+            border: 2px solid var(--fc-blue);
+        }
+
+    }
+
+}

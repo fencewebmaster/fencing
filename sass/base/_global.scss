@@ -183,7 +183,7 @@ label.error {
     position: absolute;
 }
 
-.fc-header-title {
+h2.fc-header-title {
 	font-family: $font-league;
 	font-size: 48px;
 	font-style: normal;
@@ -191,6 +191,7 @@ label.error {
 	line-height: 45px; 
 	text-transform: uppercase;	
 }
+
 .fc-video-bg {
     background: linear-gradient(rgba(0, 0, 0, 0%),rgba(0, 0, 0, 0.75)),url(img/video-bg.png);
     width: 100%;
@@ -1060,12 +1061,6 @@ thead.fc-border th:last-child {
 
 
 @media only screen and (max-width: 1200px) {
-	.fencing-styles {
-		display: inline-block;
-	}
-	.fencing-style-item {
-		width: calc(20% - 32px);
-	}
 
 	/* Panel Items */
 	.fencing-panel-items {
@@ -1099,12 +1094,7 @@ thead.fc-border th:last-child {
 	    display: flex;
 	}
 
-	.fencing-style-item {
-		width: calc(25% - 32px);
-	}
-/*	.btn-fc-outline-default {
-	    width: calc(33.33% - 11px);
-	}*/
+
 }
 @media only screen and (max-width: 768px) {
 	.fc-show-md {
@@ -1113,7 +1103,7 @@ thead.fc-border th:last-child {
 	.fencing-tab-name {
 		font-size: 18px;
 	}
-	.fencing-content-title, .fc-step-2-alert p, .fencing-style-title {
+	.fencing-content-title, .fc-step-2-alert p {
 		font-size: 14px;
 	}
 	.ftm-measurement, .fencing-tab-add {
@@ -1147,9 +1137,6 @@ thead.fc-border th:last-child {
 	    font-size: 12px;		
 	    padding: 10px 15px;
 	}
-	.fencing-style-item {
-		width: calc(33.33% - 32px);
-	}
 
 	/* The Close Button */
 	.fencing-modal-close {
@@ -1177,7 +1164,4 @@ thead.fc-border th:last-child {
 		font-size: 14px;
 	}
 
-	.fencing-style-item {
-		width: calc(50% - 32px);
-	}
 }
