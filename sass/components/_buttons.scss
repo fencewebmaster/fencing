@@ -1,0 +1,144 @@
+/* Buttons */
+.btn-fc {
+    display: inline-block;
+	font-family: 'Inter', sans-serif;
+    transition: all .3s ease-in-out 0s;
+    -webkit-transition: all .3s ease-in-out 0s;
+    -moz-transition: all .3s ease-in-out 0s;
+    -ms-transition: all .3s ease-in-out 0s;
+    -o-transition: all .3s ease-in-out 0s;
+}
+.btn-fc:hover {
+	background: #525252;
+	cursor: pointer;
+}
+.btn-delete-fence {
+    font-size: 12px !important;	
+}
+
+.btn-fc-default {
+	background: #333;
+	color: #fff;
+	border: 0;
+	border-radius: 8px;
+	text-transform: uppercase;
+	font-size: 14px;
+	padding: 15px 30px;
+}
+.btn-fc-default:hover {
+	background: #000;
+	color: #fff;
+}
+
+.btn-fc-black {
+	background: #111;
+	color: #fff;
+	border: 0;
+	border-radius: 8px;
+	text-transform: uppercase;
+	font-size: 14px;
+	padding: 15px 30px;
+}
+.btn-fc-black:hover {
+	background: #000;
+	color: #fff;
+}
+
+.btn-fc-outline-default {
+    border: 1px solid #666;
+	color: #666;
+	border-radius: 8px;
+	font-size: 14px;
+    padding: 10px 20px;
+	background: transparent;
+}
+.btn-fc-outline-default:hover {
+	color: #fff;	
+}
+
+.btn-fc-outline-light {
+    border: 1px solid #DDD;
+	color: #666666;
+	border-radius: 8px;
+	font-size: 14px;
+    padding: 10px 20px;
+	background: transparent;
+}
+.btn-fc-outline-light:hover {
+	color: #fff;	
+}
+
+.btn-fc-danger {
+    border: 1px solid #9E9E9E;
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: 14px;
+    padding: 15px 20px;
+    background: #eb2424;
+}
+.btn-fc-danger:hover {
+	background: #ad0101;	
+}
+.btn-fc-orange {
+	background: #F67925;
+	color: #fff;
+	border: 0;
+	border-radius: 8px;
+	text-transform: uppercase;
+	font-size: 14px;
+	padding: 15px 30px;
+}
+.btn-fc-calculate {
+    background: #111111;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 14px;
+    padding: 20px 30px
+}
+.btn-fc-sm {
+	font-size: 12px;
+    padding: 8px 12px;
+}
+
+.btn-fc-outline-danger {
+	color: #D4112F;
+	border: 1px solid #D4112F;
+	border-radius: 8px;
+	font-weight: 400;
+	text-transform: uppercase;
+	font-size: 14px;
+	padding: 5px 10px;
+}
+.btn-fc-outline-danger:hover {
+	background: #D4112F;	
+	color: #fff;
+}
+.fc-btn-active {
+	background: #F67925;
+	color: #fff;
+}
+.fc-btn-md {
+    padding: 12px 30px;	
+}
+.fc-btn-disabled {
+    background: #e1e1e1;	
+}
+.fc-btn-disabled:hover {	
+    cursor: not-allowed
+}
+.fencing-qty-btn {
+	position: absolute;
+	right: 5px;
+	cursor: pointer;
+}
+.fencing-qty-plus {
+	top: 12px;
+}
+.fencing-qty-minus {
+	bottom: 12px;
+}

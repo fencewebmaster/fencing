@@ -1,0 +1,27 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&display=swap');
+
+
+// 1. Configuration and helpers
+@import
+  'abstracts/variables',
+  'abstracts/placeholders',
+  'abstracts/functions',
+  'abstracts/mixins';
+
+// 2. Base stuff
+@import
+  'base/fonts',
+  'base/icons',
+  'base/base',
+  'base/typography',
+  'base/global',
+  'base/helpers';
+
+  // 3. Components
+@import
+  'components/form',
+  'components/modal',
+  'components/buttons';

@@ -1,0 +1,19 @@
+/**
+ * Basic typography style for copy text
+ */
+
+.fencing-container{
+    color: $text-color;
+    font: normal 14px / 1.4 $font-inter;
+}
+
+.fencing-container h1,
+.fencing-container h2,
+.fencing-container h3,
+.fencing-container h4,
+.fencing-container h5,
+.fencing-container p,
+.fencing-container label {
+	margin: 0;
+	font-family: $font-inter;
+}

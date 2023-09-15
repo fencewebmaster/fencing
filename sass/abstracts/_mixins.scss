@@ -1,0 +1,28 @@
+// -----------------------------------------------------------------------------
+// This file contains all application-wide Sass mixins.
+// -----------------------------------------------------------------------------
+
+  // Create mixins for each media query
+  @mixin xs {
+    @media (max-width: #{$breakpoint-xs}) {
+      @content;
+    }
+  }
+  
+  @mixin sm {
+    @media (max-width: #{$breakpoint-sm}) {
+      @content;
+    }
+  }
+  
+  @mixin md {
+    @media (max-width: #{$breakpoint-md}) {
+      @content;
+    }
+  }
+  
+  @mixin lg {
+    @media (max-width: #{$breakpoint-lg}) {
+      @content;
+    }
+  }

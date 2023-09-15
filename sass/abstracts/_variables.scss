@@ -1,0 +1,25 @@
+
+/// Regular font family
+/// @type List
+$font-inter: 'Inter', sans-serif !important;
+$font-league: 'League Gothic', sans-serif !important;
+
+/// Code (monospace) font family
+/// @type List
+$code-font-stack: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Monaco', monospace !default;
+
+
+
+/// Container's maximum width
+/// @type Length
+$max-width: 1200px !default;
+$text-color: #646165;
+
+
+// Define your breakpoints as Sass variables
+$breakpoint-xs: 480px;
+$breakpoint-sm: 600px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
