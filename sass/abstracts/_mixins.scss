@@ -32,3 +32,9 @@
       @content;
     }
   }
+
+  @mixin xl {
+    @media (max-width: #{$breakpoint-xl}) {
+      @content;
+    }
+  }
