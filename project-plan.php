@@ -17,8 +17,10 @@
 <!-- START FENCING CONTAINER -->
 <div class="fencing-container fc-project-plan" data-tab="1">
 	
+
 	<!-- START CHECKOUT FORM -->
 	<form method="POST" id="paymentFrm" action="<?php echo base_url('pay.php'); ?>">
+
 
 		<!-- START PAGE HEADER TITLE -->
 		<div class="fc-mb-2">
@@ -65,18 +67,24 @@
 		               
 		                <div class="fc-card-header">
 		                    <div class="fc-row-flex fc-row-f-s-b">
-		                        <div class="fc-col">
-		                            Your Project Details
-		                        </div>
+		                        
+		                        <div class="fc-col">Your Project Details</div>
+
 		                        <div class="fc-col">
 		                            <div class="fc-text-right">
-		                                <buton type="button" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase">
+
+		                                <buton type="button" 
+		                                	class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase">
 		                                    <i class="fa-solid fa-pencil"></i>
 		                                    <span>Edit</span>
 		                                </buton>
-		                                <buton type="button" class="btn-fc fc-btn-reset btn-fc-outline-light fc-text-uppercase" style="display:none;">
-		                                    <i class="fa-solid fa-rotate-left"></i> <span>Reset</span>
+
+		                                <buton type="button" 
+			                                class="btn-fc fc-btn-reset btn-fc-outline-light fc-text-uppercase" 
+			                                style="display:none;">
+			                                    <i class="fa-solid fa-rotate-left"></i> <span>Reset</span>
 		                                </buton>
+
 		                            </div>
 		                        </div>
 		                    </div>
@@ -86,7 +94,9 @@
 		                    <div class="fc-row-container">
 		                        <div class="fc-col-half">
 		                            <div class="fc-table-rounded-border fc-mb-2 fc-position-relative">
+		                                
 		                                <i class="fa-regular fa-pen-to-square fc-editing-icon" style="display: none;"></i>
+
 		                                <table class="fc-table fc-table-customer">
 		                                    <tbody>
 		                                        <tr>
@@ -123,14 +133,9 @@
 		                                                <div class="fc-form-group">
 		                                                    <select name="state" class="fc-form-control fc-form-control-sm" required>
 		                                                        <option value="">Select an option…</option>
-		                                                        <option value="ACT">Australian Capital Territory</option>
-		                                                        <option value="NSW">New South Wales</option>
-		                                                        <option value="NT">Northern Territory</option>
-		                                                        <option value="QLD">Queensland</option>
-		                                                        <option value="SA">South Australia</option>
-		                                                        <option value="TAS">Tasmania</option>
-		                                                        <option value="VIC">Victoria</option>
-		                                                        <option value="WA">Western Australia</option>
+		                                                        <?php foreach( fc_state() as $state_k => $state_v ): ?>
+		                                                        <option value="<?php echo $state_k; ?>" <?php echo @$info['state']==$state_k ? 'selected': ''; ?>><?php echo $state_v; ?></option>
+			                                                    <?php endforeach; ?>
 		                                                    </select>
 		                                                </div>
 		                                            </td>
@@ -155,8 +160,11 @@
 		                                        </tr>
 		                                    </tbody>
 		                                </table>
+
 		                            </div>
+
 		                            <div class="fc-table-rounded-border fc-mb-2">
+		                               
 		                                <table class="fc-table">
 		                                    <tr>
 		                                        <td>Fence Type</td>
@@ -164,25 +172,31 @@
 		                                    </tr>
 		                                    <tr>
 		                                        <td>When Needed</td>
-		                                        <td><?php echo @$info['timeframe']; ?></td>
+		                                        <td><?php echo @$info['timeframe'] ? fc_timeframe(@$info['timeframe']) : ''; ?></td>
 		                                    </tr>
 		                                    <tr>
 		                                        <td>Install Required</td>
-		                                        <td><?php echo @$info['installer']; ?></td>
+		                                        <td><?php echo @$info['installer'] ? fc_installer(@$info['installer']) : ''; ?></td>
 		                                    </tr>
 		                                    <tr>
 		                                        <td>Other Items Needed</td>
-		                                        <td><?php echo @$info['extra'] ? implode(', ', @$info['extra']) : ''; ?></td>
+		                                        <td><?php echo @$info['extra'] ? get_items('fc_extra_needed', $info['extra']) : ''; ?></td>
 		                                    </tr>
 		                                </table>
+
 		                            </div>
+
 		                        </div>
+
 		                        <div class="fc-col-half">
 		                            <div class="fc-card fc-mb-2">
+		                                
 		                                <div class="fc-card-header fc-bg-dark fc-border-top">
 		                                    Flat Top Pool Fencing - Options
 		                                </div>
+
 		                                <div class="fc-table-rounded-border fc-rounded-top-none fc-mb-2">
+		                                   
 		                                    <table class="fc-table">
 		                                        <thead>
 		                                            <tr>
@@ -197,18 +211,27 @@
 		                                            </tr>
 		                                        </thead>
 		                                    </table>
+
 		                                </div>
 		                            </div>
+
 		                            <div class="fc-card">
+		                               
 		                                <div class="fc-card-header fc-bg-dark fc-border-top">
 		                                    Project Notes & Additional Details
 		                                </div>
+		                                
 		                                <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
 		                                    <div class="fc-p-1">
-		                                        <textarea name="notes" placeholder="Write your notes here" class="fc-form-control" rows="7"><?php echo @$info['notes']; ?></textarea>
+		                                        <textarea name="notes" 
+			                                        placeholder="Write your notes here" 
+			                                        class="fc-form-control" 
+			                                        rows="7"><?php echo @$info['notes']; ?></textarea>
 		                                    </div>
 		                                </div>
+
 		                            </div>
+
 		                        </div>
 		                    </div>
 		                </div>
@@ -218,40 +241,51 @@
 
 		            <!-- START PROJECT PLAN -->
 		            <div class="fc-card">
+		                
 		                <div class="fc-card-header">
 		                    <div class="fc-row-flex fc-row-f-s-b">
+		                       
+		                        <div class="fc-col">Project Plan</div>
+
 		                        <div class="fc-col">
-		                            Project Plan
-		                        </div>
-		                        <div class="fc-col">
+		                            
 		                            <div class="fc-text-right" style="display:none;">
-		                                <buton type="button" class="btn-fc fc-btn-download-fence btn-fc-outline-default fc-text-uppercase"><i class="fa fa-download"></i> Download Plans</buton>
+		                                <buton type="button" 
+		                                	class="btn-fc fc-btn-download-fence btn-fc-outline-default fc-text-uppercase">
+		                                	<i class="fa fa-download"></i> Download Plans
+		                                </buton>
 		                            </div>
+
 		                        </div>
 		                    </div>
 		                </div>
+
 		                <div class="fc-card-body">
 		                    <div id="fc-fence-list">
 		                        <?php include 'data/plan-item.php'; ?>
 		                    </div>
 		                </div>
+
 		            </div>
 		            <!-- END PROJECT PLAN -->
 
 
 		            <!-- START PRODUCT LIST -->
 		            <div class="fc-card fc-mb-3">
-		                <div class="fc-card-header">
-		                    Product List & Cart
-		                </div>
+		                
+		                <div class="fc-card-header">Product List & Cart</div>
+
 		                <div class="fc-card-body">
+		                    
 		                    <div class="step-label">Item List & <span>Cart</span></div>
+
 		                    <div class="fc-row-container" style="justify-content: flex-start;">
 		                        <div class="fc-col-half">
 		                            <div class="fc-card fc-table-items">
 		                                <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
 		                                    <i class="fa-regular fa-pen-to-square fc-editing-icon" style="display: none;"></i>
 		                                    <div class="fc-table-rounded-border fc-mb-2">
+		                                        
 		                                        <table class="fc-table fc-table-bordered fc-table-striped">
 		                                            <thead class="fc-bg-dark fc-border">
 		                                                <tr>
@@ -321,12 +355,16 @@
 		                                                </tr>
 		                                            </tbody>
 		                                        </table>
+
 		                                    </div>
+
 		                                    <div class="fc-items-action fc-mb-2">
 		                                        <a href="" class="fc-edit-item">Edit</a>
 		                                        <a href="" class="fc-reset-item" style="display: none;">Reset</a>									
 		                                    </div>
+
 		                                    <div class="fc-float-r fc-mb-2">
+		                                        
 		                                        <table>
 		                                            <tr>
 		                                                <td class="fc-text-right"><b class="fc-mr-1">Sub Total:</b></td>
@@ -349,8 +387,11 @@
 		                                                <td>$2,075.6</td>
 		                                            </tr>
 		                                        </table>
+
 		                                    </div>
+
 		                                    <div style="clear: both;"></div>
+
 		                                </div>
 		                            </div>
 		                        </div>
@@ -408,9 +449,10 @@
 		                            <!-- END STRIPE PAYMENT -->
 
 
-		                            <button type="submit" class="btn-fc fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
-		                            <i class="fa-solid fa-cart-shopping"></i>
-		                            Order Items Now!
+		                            <button type="submit" 
+			                            class="btn-fc fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
+			                            <i class="fa-solid fa-cart-shopping"></i>
+			                            Order Items Now!
 		                            </button>
 
 		                        </div>
@@ -422,14 +464,17 @@
 		                    <h4>Need Help With Your Project?</h4>
 
 		                    <div class="fc-mb-3">
+		                       
 		                        <buton type="button" class="btn-fc btn-fc-black fc-mb-1 w-100-sm">
 		                            <i class="fc-icon fc-icon-phone"></i>
 		                            Call Us Now!
 		                        </buton>
+
 		                        <buton type="button" class="btn-fc btn-fc-black fc-mb-1 w-100-sm">
 		                            <i class="fc-icon fc-icon-chat-dots"></i>
 		                            Chat With Live Support
 		                        </buton>
+		                        
 		                    </div>
 		                    <!-- END CONTACT SECTION -->
 
@@ -453,7 +498,7 @@
 <!-- END FENCING CONTAINER -->
 
 
-<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 

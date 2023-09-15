@@ -682,6 +682,62 @@ $color_options = [
 ];
 
 
+
+function fc_state($val ='') {
+ 
+	$data = [
+		"ACT" => "Australian Capital Territory",
+		"NSW" => "New South Wales",
+		"NT"  => "Northern Territory",
+		"QLD" => "Queensland",
+		"SA"  => "South Australia",
+		"TAS" => "Tasmania",
+		"VIC" => "Victoria",
+		"WA"  => "Western Australia",
+	];
+
+	return ($val) ? $data[$val] : $data;
+} 
+
+function fc_timeframe($val ='') {
+ 
+	$data = [
+		'asap'    => 'ASAP - Within 24hrs',
+		'soon'    => 'SOON - This Week',
+		'later'   => 'LATER - This Month',
+		'looking' => 'NIL - Just Looking',
+	];
+
+	return ($val) ? $data[$val] : $data;
+} 
+
+function fc_installer($val ='') {
+ 
+	$data = [
+		'yes' => 'YES - I need an installer',
+		'no' => 'NO - I can install it myself',
+	];
+
+	return ($val) ? $data[$val] : $data;
+} 
+
+function fc_extra_needed($val ='') {
+ 
+	$data = [
+		'pool-covers' 		=> 'Pool Covers',
+		'pump-enclosure' 	=> 'Pump Enclosure',
+		'decking' 			=> 'Decking',
+		'pergola' 			=> 'Pergola',
+		'shed' 				=> 'Shed',
+		'outdoor-furniture' => 'Outdoor Furniture',
+		'outdoor-kitchen' 	=> 'Outdoor Kitchen',
+	];
+
+	return ($val) ? $data[$val] : $data;
+} 
+
+
+
 $products = [
 	[
 		'sku' => '',
