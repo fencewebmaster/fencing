@@ -12,21 +12,14 @@ $code-font-stack: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono',
 
 /// Container's maximum width
 /// @type Length
-$max-width: 1180px !default;
+$max-width: 1200px !default;
 $text-color: #646165;
 
 
 // Define your breakpoints as Sass variables
 $breakpoint-xs: 480px;
-$breakpoint-sm: 640px;
+$breakpoint-sm: 600px;
 $breakpoint-md: 768px;
-$breakpoint-lg: 1024px;
-$breakpoint-xl: 1280px;
-$breakpoint-2xl: 1536px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
 
-
-/// Relative or absolute URL where all assets are served from
-/// @type String
-/// @example scss - When using a CDN
-///   $base-url: 'https://cdn.example.com/assets/';
-$base-url: '/assets/' !default;

@@ -14,7 +14,14 @@
 // 2. Base stuff
 @import
   'base/fonts',
+  'base/icons',
   'base/base',
   'base/typography',
   'base/global',
   'base/helpers';
+
+  // 3. Components
+@import
+  'components/form',
+  'components/modal',
+  'components/buttons';

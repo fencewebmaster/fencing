@@ -1,0 +1,78 @@
+.fc-form-group {
+	display: inline-block;
+	width: 100%;
+}
+.fc-label-group {
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	position: relative;
+}
+.fc-label-badge {
+    color: #666666;
+    background: #EEEEEE;
+    border-radius: 24px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;	
+}
+.fc-label-group .fc-form-control {
+	border: 0;
+    padding: 20px 15px 15px;
+    font-size: 14px;
+}
+.fc-label-group .fc-form-label {
+	top: -11px;
+    padding: 0 5px;
+    background: #fff;
+    display: inline-block !important;
+    margin-left: 10px;
+    position: absolute;
+}
+.fc-form-control:focus-visible {
+	outline: none
+}
+
+.fc-rounded {
+	border-radius: 8px;
+}
+
+.fc-input-msg {
+    margin: 5px 0;
+    background: #e91e1e;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    position: absolute;
+    bottom: -25px;
+    display: none;
+}
+.fc-input-msg.fcim-show {
+	display: block;
+}
+.fc-input-msg:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-style: solid;
+    border-color: #e91e1e transparent;
+    border-width: 0 7px 7px;
+    top: -7px;
+    left: 30%;
+    margin-left: -20px;
+}
+.fc-tab-control .fc-section-step {
+    display: flex;
+}
+
+.fc-input-container {
+	position: relative;
+}
+[type="button"]:disabled {
+	background: #ebebeb !important;
+    color: #9E9E9E;
+    border-color: #cbcbcb;
+    cursor: not-allowed !important;
+}
