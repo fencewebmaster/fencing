@@ -6,7 +6,7 @@
         width: 100%;
         margin-top: 62px;
         display: inline-block;
-        height: 83px;
+        height: 66px;
     }
 
 }
@@ -25,27 +25,44 @@
 
 .fencing-tab {
     background: #fff;
-    border: 3px solid var(--fc-gray) !important;
+    border: 3px solid var(--fc-gray);
     border-right: 0!important;
     border-bottom: 0!important;
-    padding: 10px 5px 10px 0;
+    padding: 0;
     cursor: pointer;
     display: flex;
     justify-content: center;
     padding-left: 15px;
     padding-right: 15px;
     min-width: 134px;
-    height: 83px;
+    align-items: center;
+    height: 100%;
     box-sizing: border-box;
     transition: all .2s ease;
-    &:hover{
+
+    &:not(.fencing-tab-selected):hover{
         @include min-md {
             background: var(--fc-blue);
             color: var(--fc-white);
+            border-color: var(--fc-blue);
         }
     }
+
+    &-container{
+        height: inherit;
+    }
+
+    &-name {
+        color: #a9a9a9;
+        font-weight: 400;
+        font-size: 24px;
+        line-height: 22px;
+        position: relative;
+        top: 2px;
+    }
+
 }
-.fencing-tab:hover, .fencing-tab-selected {
+.fencing-tab-selected {
 	background: #F67925;	
     border: 3px solid #F67925 !important;
     border-bottom: 0!important;
@@ -58,18 +75,13 @@
 	color: #fff;
 }
 
-.fencing-tab:hover * {
+.fencing-tab:not(.fencing-tab-selected):hover * {
     @include min-md {
 	    color: var(--fc-gray) !important;
     }
 }
 
-.fencing-tab-name {
-	color: #a9a9a9;
-	font-weight: 400;
-	margin-bottom: 5px;
-	font-size: 24px;
-}
+
 .fencing-tab-desc {
 	font-size: 12px;
 }
@@ -93,6 +105,7 @@
         @include min-md {
             background: var(--fc-blue);
             color: var(--fc-white);
+            border-color: var(--fc-blue);
         }
     }
 }
@@ -155,11 +168,41 @@
 .w-side-section {
 
 }
+
 .fc-content-tab-title {
 	background: #F67925;
 	color: #fff;
-	padding: 15px 20px;
-	font-weight: 500;
+	padding: 15px 24px;
+	font-weight: 400;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    height: 55px;
+    box-sizing: border-box;
+
+    & + .fencing-section{
+        margin-bottom: 0;
+    }
+}
+
+.fc-tab-title{
+    font-weight: 700;
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    &:not(:empty):after{
+        content: "";
+        background-color: #fff;
+        display: inline-block;
+        margin: 0 8px;
+        height: 20px;
+        width: 1px;
+    }
+}
+
+.fc-tab-subtitle{
+    font-weight: 400;
 }
 
 .fencing-raked-panel {
@@ -248,44 +291,6 @@
 }
 
 
-/* Measurement */
-.fencing-measurement-box {
-	display: flex;
-	position: relative;
-}
-.fencing-mb-input {
-	border: 1px solid;
-	display: inline-block;
-	border-radius: 15px;
-    margin-right: 15px;
-}
-.fencing-mb-input input {
-    font-size: 18px;
-    font-weight: 400;
-	width: 100%;
-	max-width: 200px;
-	border: 0;
-	margin: 10px 0 10px 15px;
-	outline: none;
-	color: #000;
-}
-.fencing-mb-input {
-	border: 1px solid;
-    display: inline-flex;
-    border-radius: 10px;
-    align-items: center;
-    position: relative;
-}
-.fencing-mb-input span {
-	color: #666;
-	font-weight: 400;
-	font-size: 16px;
-	width: 50px;
-    margin-right: 20px;
-}
-
-
-
 /* Display Result */
 .fencing-calculating {
     display: none;
@@ -314,6 +319,15 @@
 }
 
 /* Panel Controls */
-.fencing-panel-controls .btn-fc {
-	margin: 0 5px;
+.fencing-panel-controls {
+    .btn-fc {
+        margin: 0 10px 0 0;
+        /** @TODO revisit, see if buttons can be scrollable to remove !important **/
+        &.fc-mb-1{
+            margin-bottom: 0 !important;
+        }
+    }
+    div{
+        display: none;
+    }
 }

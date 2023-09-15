@@ -104,7 +104,7 @@
                 <div class="fc-section-step" data-tab="1">
                     
                     <div class="fc-content-tab-title">
-                        <span class="fc-tab-title"></span> | <span class="fc-tab-subtitle"></span>
+                        <span class="fc-tab-title"></span><span class="fc-tab-subtitle"></span>
                     </div>
 
                     <div class="fencing-section">
@@ -335,7 +335,7 @@
                     <div class="fencing-section fc-section-step" data-tab="1">
                         
                         <button type="button" 
-                            class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step fc-mr-1" 
+                            class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step" 
                             data-tab="1" 
                             data-move="2"
                             disabled>

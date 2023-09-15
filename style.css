@@ -82,6 +82,7 @@
 	--fc-blue: #F67925;
 	--fc-white: #fff;
 	--fc-brand-primary: #D4112F;
+	--fc-bright-gray: #EEEEEE;
 }
 
 body {
@@ -169,6 +170,8 @@ img {
 	font-size: 40px;
 	text-transform: uppercase;
 	font-weight: 400;
+	line-height: 38px;
+	margin-bottom: 3px;
 }
 
 .step-label span {
@@ -176,11 +179,15 @@ img {
 }
 
 .fencing-divider {
-	border-bottom: 3px solid var(--fc-gray);
+	border-bottom: 1px solid var(--fc-bright-gray);
 }
 
 .fencing-section {
-	margin: 20px 30px;
+	margin: 32px;
+}
+
+.fencing-section.fencing-styles {
+	margin-top: 24px;
 }
 
 .fencing-form-group {
@@ -1333,9 +1340,6 @@ thead.fc-border th:last-child {
 }
 
 @media only screen and (max-width: 1200px) {
-	.fencing-style-item {
-		width: calc(20% - 32px);
-	}
 	/* Panel Items */
 	.fencing-panel-items {
 		display: inherit;
@@ -1367,12 +1371,6 @@ thead.fc-border th:last-child {
 		flex-direction: column;
 		display: flex;
 	}
-	.fencing-style-item {
-		width: calc(25% - 32px);
-	}
-	/*	.btn-fc-outline-default {
-	    width: calc(33.33% - 11px);
-	}*/
 }
 
 @media only screen and (max-width: 768px) {
@@ -1382,7 +1380,7 @@ thead.fc-border th:last-child {
 	.fencing-tab-name {
 		font-size: 18px;
 	}
-	.fencing-content-title, .fc-step-2-alert p, .fencing-style-title {
+	.fencing-content-title, .fc-step-2-alert p {
 		font-size: 14px;
 	}
 	.ftm-measurement, .fencing-tab-add {
@@ -1414,9 +1412,6 @@ thead.fc-border th:last-child {
 		font-size: 12px;
 		padding: 10px 15px;
 	}
-	.fencing-style-item {
-		width: calc(33.33% - 32px);
-	}
 	/* The Close Button */
 	.fencing-modal-close {
 		right: -15px;
@@ -1442,9 +1437,6 @@ thead.fc-border th:last-child {
 	.fc-project-plan .fc-card-header,
 	.fc-project-plan table, .fc-project-plan p, #fc-fence-list {
 		font-size: 14px;
-	}
-	.fencing-style-item {
-		width: calc(50% - 32px);
 	}
 }
 
@@ -1766,6 +1758,9 @@ thead.fc-border th:last-child {
 
 .fc-tab-control .fc-section-step {
 	display: flex;
+	height: 52px;
+	margin-top: 32px;
+	margin-bottom: 32px;
 }
 
 .fc-input-container {
@@ -1878,6 +1873,7 @@ thead.fc-border th:last-child {
 	text-transform: uppercase;
 	font-size: 14px;
 	padding: 15px 30px;
+	margin-right: 16px;
 }
 
 .btn-fc-calculate {
@@ -1951,7 +1947,7 @@ thead.fc-border th:last-child {
 	width: 100%;
 	margin-top: 62px;
 	display: inline-block;
-	height: 83px;
+	height: 66px;
 }
 
 .w-side-section .fc-section-details {
@@ -1971,29 +1967,44 @@ thead.fc-border th:last-child {
 
 .fencing-tab {
 	background: #fff;
-	border: 3px solid var(--fc-gray) !important;
+	border: 3px solid var(--fc-gray);
 	border-right: 0 !important;
 	border-bottom: 0 !important;
-	padding: 10px 5px 10px 0;
+	padding: 0;
 	cursor: pointer;
 	display: flex;
 	justify-content: center;
 	padding-left: 15px;
 	padding-right: 15px;
 	min-width: 134px;
-	height: 83px;
+	align-items: center;
+	height: 100%;
 	box-sizing: border-box;
 	transition: all .2s ease;
 }
 
 @media (min-width: 768px) {
-	.fencing-tab:hover {
+	.fencing-tab:not(.fencing-tab-selected):hover {
 		background: var(--fc-blue);
 		color: var(--fc-white);
+		border-color: var(--fc-blue);
 	}
 }
 
-.fencing-tab:hover, .fencing-tab-selected {
+.fencing-tab-container {
+	height: inherit;
+}
+
+.fencing-tab-name {
+	color: #a9a9a9;
+	font-weight: 400;
+	font-size: 24px;
+	line-height: 22px;
+	position: relative;
+	top: 2px;
+}
+
+.fencing-tab-selected {
 	background: #F67925;
 	border: 3px solid #F67925 !important;
 	border-bottom: 0 !important;
@@ -2008,16 +2019,9 @@ thead.fc-border th:last-child {
 }
 
 @media (min-width: 768px) {
-	.fencing-tab:hover * {
+	.fencing-tab:not(.fencing-tab-selected):hover * {
 		color: var(--fc-gray) !important;
 	}
-}
-
-.fencing-tab-name {
-	color: #a9a9a9;
-	font-weight: 400;
-	margin-bottom: 5px;
-	font-size: 24px;
 }
 
 .fencing-tab-desc {
@@ -2046,6 +2050,7 @@ thead.fc-border th:last-child {
 	.fencing-tab-add:hover {
 		background: var(--fc-blue);
 		color: var(--fc-white);
+		border-color: var(--fc-blue);
 	}
 }
 
@@ -2109,8 +2114,37 @@ thead.fc-border th:last-child {
 .fc-content-tab-title {
 	background: #F67925;
 	color: #fff;
-	padding: 15px 20px;
-	font-weight: 500;
+	padding: 15px 24px;
+	font-weight: 400;
+	font-size: 18px;
+	display: flex;
+	align-items: center;
+	height: 55px;
+	box-sizing: border-box;
+}
+
+.fc-content-tab-title + .fencing-section {
+	margin-bottom: 0;
+}
+
+.fc-tab-title {
+	font-weight: 700;
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.fc-tab-title:not(:empty):after {
+	content: "";
+	background-color: #fff;
+	display: inline-block;
+	margin: 0 8px;
+	height: 20px;
+	width: 1px;
+}
+
+.fc-tab-subtitle {
+	font-weight: 400;
 }
 
 .fencing-raked-panel {
@@ -2210,46 +2244,6 @@ thead.fc-border th:last-child {
 	font-weight: 400;
 }
 
-/* Measurement */
-.fencing-measurement-box {
-	display: flex;
-	position: relative;
-}
-
-.fencing-mb-input {
-	border: 1px solid;
-	display: inline-block;
-	border-radius: 15px;
-	margin-right: 15px;
-}
-
-.fencing-mb-input input {
-	font-size: 18px;
-	font-weight: 400;
-	width: 100%;
-	max-width: 200px;
-	border: 0;
-	margin: 10px 0 10px 15px;
-	outline: none;
-	color: #000;
-}
-
-.fencing-mb-input {
-	border: 1px solid;
-	display: inline-flex;
-	border-radius: 10px;
-	align-items: center;
-	position: relative;
-}
-
-.fencing-mb-input span {
-	color: #666;
-	font-weight: 400;
-	font-size: 16px;
-	width: 50px;
-	margin-right: 20px;
-}
-
 /* Display Result */
 .fencing-calculating {
 	display: none;
@@ -2279,27 +2273,60 @@ thead.fc-border th:last-child {
 
 /* Panel Controls */
 .fencing-panel-controls .btn-fc {
-	margin: 0 5px;
+	margin: 0 10px 0 0;
+	/** @TODO revisit, see if buttons can be scrollable to remove !important **/
+}
+
+.fencing-panel-controls .btn-fc.fc-mb-1 {
+	margin-bottom: 0 !important;
+}
+
+.fencing-panel-controls div {
+	display: none;
 }
 
 .fencing-styles {
 	display: flex;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
 	.fencing-styles {
 		display: inline-block;
 	}
 }
 
 .fencing-style-item {
-	margin-right: 5px;
-	margin-left: 5px;
+	margin-right: 29px;
+	width: 184px;
 	cursor: pointer;
 	float: left;
 	background: #fff;
-	margin-bottom: 10px;
 	position: relative;
+	transition: all .2s ease;
+}
+
+@media (max-width: 1200px) {
+	.fencing-style-item {
+		width: calc(20% - 32px);
+	}
+}
+
+@media (max-width: 992px) {
+	.fencing-style-item {
+		width: calc(25% - 32px);
+	}
+}
+
+@media (max-width: 768px) {
+	.fencing-style-item {
+		width: calc(33.33% - 32px);
+	}
+}
+
+@media (max-width: 600px) {
+	.fencing-style-item {
+		width: calc(50% - 32px);
+	}
 }
 
 .fencing-style-item .fencing-style-title {
@@ -2311,6 +2338,12 @@ thead.fc-border th:last-child {
 	font-weight: 400;
 	border-radius: 0 0 10px 10px;
 	padding: 10px;
+}
+
+@media (max-width: 768px) {
+	.fencing-style-item .fencing-style-title {
+		font-size: 14px;
+	}
 }
 
 .fencing-style-item .fencing-style-item img {
@@ -2346,7 +2379,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-style-item.fsi-selected .fencing-style-img {
-	border: 2px solid #F67925;
+	border-color: #F67925;
 	opacity: 1;
 }
 
@@ -2356,7 +2389,52 @@ thead.fc-border th:last-child {
 	font-weight: 400;
 	border-radius: 0 0 10px 10px;
 	padding: 10px;
-	border: 2px solid var(--fc-blue);
+	border-color: var(--fc-blue);
+}
+
+/* Measurement */
+.fencing-measurement-box {
+	display: flex;
+	position: relative;
+}
+
+.fencing-measurement .fc-input-container {
+	padding-left: 0;
+	padding-bottom: 0;
+}
+
+.fencing-mb-input {
+	border: 1px solid;
+	display: inline-block;
+	border-radius: 15px;
+	margin-right: 15px;
+}
+
+.fencing-mb-input input {
+	font-size: 18px;
+	font-weight: 400;
+	width: 100%;
+	max-width: 200px;
+	border: 0;
+	margin: 10px 0 10px 15px;
+	outline: none;
+	color: #000;
+}
+
+.fencing-mb-input {
+	border: 1px solid;
+	display: inline-flex;
+	border-radius: 10px;
+	align-items: center;
+	position: relative;
+}
+
+.fencing-mb-input span {
+	color: #666;
+	font-weight: 400;
+	font-size: 16px;
+	width: 50px;
+	margin-right: 20px;
 }
 
 /*# sourceMappingURL=style.css.map */

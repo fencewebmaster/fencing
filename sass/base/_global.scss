@@ -30,15 +30,20 @@
 	font-size: 40px;
 	text-transform: uppercase;
 	font-weight: 400;
+	line-height: 38px;
+	margin-bottom: 3px;
 }
 .step-label span {
 	color: var(--fc-brand-primary);
 }
 .fencing-divider {
-	border-bottom: 3px solid var(--fc-gray);
+	border-bottom: 1px solid var(--fc-bright-gray);
 }
 .fencing-section {
-    margin: 20px 30px;
+    margin: 32px;
+	&.fencing-styles{
+		margin-top: 24px;
+	}
 }
 .fencing-form-group {
 	margin-bottom: 15px;

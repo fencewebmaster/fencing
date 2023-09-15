@@ -1,0 +1,42 @@
+/* Measurement */
+.fencing-measurement{
+    &-box {
+        display: flex;
+        position: relative;
+    }
+
+    .fc-input-container{
+        padding-left: 0;
+        padding-bottom: 0;
+    }
+}
+.fencing-mb-input {
+	border: 1px solid;
+	display: inline-block;
+	border-radius: 15px;
+    margin-right: 15px;
+}
+.fencing-mb-input input {
+    font-size: 18px;
+    font-weight: 400;
+	width: 100%;
+	max-width: 200px;
+	border: 0;
+	margin: 10px 0 10px 15px;
+	outline: none;
+	color: #000;
+}
+.fencing-mb-input {
+	border: 1px solid;
+    display: inline-flex;
+    border-radius: 10px;
+    align-items: center;
+    position: relative;
+}
+.fencing-mb-input span {
+	color: #666;
+	font-weight: 400;
+	font-size: 16px;
+	width: 50px;
+    margin-right: 20px;
+}

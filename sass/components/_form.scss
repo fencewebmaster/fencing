@@ -65,11 +65,15 @@
 }
 .fc-tab-control .fc-section-step {
     display: flex;
+    height: 52px;
+    margin-top: 32px;
+    margin-bottom: 32px;
 }
 
 .fc-input-container {
 	position: relative;
 }
+
 [type="button"]:disabled {
 	background: #ebebeb !important;
     color: #9E9E9E;
