@@ -20,6 +20,12 @@
       @content;
     }
   }
+
+  @mixin min-md {
+    @media (min-width: #{$breakpoint-md}) {
+      @content;
+    }
+  }
   
   @mixin lg {
     @media (max-width: #{$breakpoint-lg}) {
