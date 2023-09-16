@@ -3,7 +3,18 @@
 // -----------------------------------------------------------------------------
 
 .fencing-styles {
-    display: flex;
+
+    display: block;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    padding-bottom: 20px;
+    margin-bottom: 12px;
+    width: 100%;
+    box-sizing: border-box;
+
+    &__area{
+        display: inline-flex;
+    }
 
     @include xl {
         display: inline-block;
@@ -20,21 +31,27 @@
     position: relative;
     transition: all .2s ease;
 
-    @include xl {
-        width: calc(20% - 32px);
-    }
-
-    @include lg {
-        width: calc(25% - 32px);
-    }
 
     @include md {
-        width: calc(33.33% - 32px);
+        width: 152px;
+        margin-right: 16px;
     }
 
-    @include sm {
-        width: calc(50% - 32px);
-    }
+    // @include xl {
+    //     width: calc(20% - 32px);
+    // }
+
+    // @include lg {
+    //     width: calc(25% - 32px);
+    // }
+
+    // @include md {
+    //     width: calc(33.33% - 32px);
+    // }
+
+    // @include sm {
+    //     width: calc(50% - 32px);
+    // }
 
     .fencing-style-title {
         text-align: center;
@@ -43,11 +60,11 @@
         border-top: 0;
         background: #FAFAFA;
         font-weight: 400;
-        border-radius: 0 0 10px 10px;
+        border-radius: 0 0 8px 8px;
         padding: 10px;
         
         @include md {
-            font-size: 14px;
+            font-size: 12px;
         }
 
     }
@@ -61,7 +78,7 @@
         opacity: 0.5;
         transition: transform .3s;
         border: 2px solid #e1e1e1;
-        border-radius: 10px 10px 0 0;
+        border-radius: 8px 8px 0 0;
         padding: 10px;
     }
 
