@@ -414,7 +414,7 @@
                         </div>
                     </div>
 
-                    <div class="fencing-modal-body fc-mb-3">
+                    <div class="fencing-modal-body fc-mb-4">
                         
                         <div class="fc-alert-gray fc-mb-3">
                             <h4>&#127881; Awesome! We’ll email you the plans..</h4>

@@ -551,7 +551,7 @@ a.fc-tab-active {
 }
 
 .fencing-modal-body {
-	padding: 0 20px 0;
+	padding: 0 40px 0;
 	max-height: calc(100vh - 210px);
 	overflow-y: auto;
 }
@@ -1696,6 +1696,10 @@ thead.fc-border th:last-child {
 	color: #9E9E9E;
 	border-color: #cbcbcb;
 	cursor: not-allowed !important;
+}
+
+.fc-form-plan .fc-col-half {
+	width: calc( 50% - 0px);
 }
 
 /* Buttons */

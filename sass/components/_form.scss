@@ -94,3 +94,9 @@
     border-color: #cbcbcb;
     cursor: not-allowed !important;
 }
+
+.fc-form-plan{
+    .fc-col-half{
+        width: calc( 50% - 0px);
+    }
+}
