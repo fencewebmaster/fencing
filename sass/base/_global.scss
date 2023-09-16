@@ -24,6 +24,17 @@
 	font-size: 16px;
 	font-weight: normal;
 	margin: 0;
+
+	@include lg {
+		font-size: 14px;
+	}
+
+	&.fc-mb-2{
+		@include lg {
+			margin-bottom: 10px !important;
+		}
+	}
+
 }
 .step-label {
 	font-family: 'League Gothic', sans-serif;	
@@ -40,9 +51,62 @@
 	border-bottom: 1px solid var(--fc-bright-gray);
 }
 .fencing-section {
-    margin: 32px;
+    margin: 32px 0;
+	padding: 0 32px;
+	position: relative;
+
+	@include lg {
+		margin-left: 0;
+		margin-right: 0;
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+
+
 	&.fencing-styles{
 		margin-top: 24px;
+	}
+
+	&--step1{
+		.btn-delete-fence{
+			position: absolute;
+			top: 50%;
+			right: 32px;
+			transform: translateY(-50%);
+
+			@include lg {
+				right: 16px;
+			}
+		}
+	}
+
+	&--step3{
+		@include lg {
+			margin-bottom: 0;
+		}
+	}
+
+	&--step2 h4.fencing-content-title{
+		@include lg {
+			margin-bottom: 24px !important;
+		}
+	}
+
+	&--step3 h4.fencing-content-title{
+		@include lg {
+			margin-bottom: 10px !important;
+		}
+	}
+
+	&__controls {
+		display: flex;
+		a {
+			border: 1px solid #DDDDDD;
+			border-radius: 8px;
+			padding: 12px 16px;
+			margin-right: 8px;
+			display: block;
+		}
 	}
 }
 .fencing-form-group {
@@ -195,6 +259,24 @@ h2.fc-header-title {
 	font-weight: 400;
 	line-height: 45px; 
 	text-transform: uppercase;	
+	color: #000000;
+	margin-bottom: 7px;
+
+	@include lg {
+		font-size: 40px;
+		line-height: 38px;
+	}
+
+	& + p{
+		font-size: 18px;
+		color: var(--fc-granite-gray);
+
+		@include lg {
+			font-size: 14px;
+		}
+
+	}
+
 }
 
 .fc-video-bg {
@@ -818,11 +900,7 @@ thead.fc-border th:last-child {
 	margin-bottom: 10px;
 	display: block;
 }
-.fc-alert-gray {
-    background: #F5F5F5;
-    padding: 20px;
-    border-radius: 10px;	
-}
+
 
 /* Progress tabs */
 .fc-progress-tabs {
@@ -879,10 +957,6 @@ thead.fc-border th:last-child {
     width: 100%;
 }
 
-.fc-step-2-alert {
-    float: right;
-}
-
 .fc-hide {
 	display: none;
 }
@@ -906,9 +980,7 @@ thead.fc-border th:last-child {
 	.fc-project-plan .fc-header-tab a {
 		font-size: 20px;
 	}
-	.step-label {
-		font-size: 24px;		
-	}
+
 	.fc-project-plan .fencing-section {
 		margin-bottom: 20px;
 	}
@@ -931,9 +1003,7 @@ thead.fc-border th:last-child {
 	.fencing-tab-name {
 		font-size: 18px;
 	}
-	.fencing-content-title, .fc-step-2-alert p {
-		font-size: 14px;
-	}
+
 	.ftm-measurement, .fencing-tab-add {
 		font-size: 12px;
 	}
@@ -954,13 +1024,7 @@ thead.fc-border th:last-child {
 		text-align: center;	
 	}
 
-	/*
-	.btn-fc-outline-default {
-	    font-size: 12px;
-	    padding: 10px;
-	    width: calc(50% - 11px);
-	}
-	*/
+
 	.btn-fc-calculate {
 	    font-size: 12px;		
 	    padding: 10px 15px;
@@ -984,9 +1048,7 @@ thead.fc-border th:last-child {
 	.fc-show-sm {
 		display: block;
 	} 
-	.fencing-section {
-		margin: 10px 20px
-	}
+
 	.fc-project-plan .fc-card-header,
 	.fc-project-plan table, .fc-project-plan p, #fc-fence-list {
 		font-size: 14px;

@@ -4,7 +4,6 @@
 
     &-container {
         width: 100%;
-        margin-top: 62px;
         display: inline-block;
         height: 66px;
     }
@@ -17,6 +16,7 @@
 	top: 0;
 	margin-top: 0;
 	position: fixed;	
+    z-index: 10;
 }
 .fc-sticky .fencing-tabs {
 	overflow: auto;
@@ -25,7 +25,7 @@
 
 .fencing-tab {
     background: #fff;
-    border: 3px solid var(--fc-gray);
+    border: 2px solid var(--fc-gray);
     border-right: 0!important;
     border-bottom: 0!important;
     padding: 0;
@@ -86,13 +86,13 @@
 	font-size: 12px;
 }
 .fencing-tab-add {
-	color: #585858;
+	color: var(--fc-dark-charcoal);
     display: flex;
     align-items: center;
     padding: 15px;
     text-decoration: none;
     text-transform: uppercase;
-    background: var(--fc-gray);
+    background: var(--fc-bright-gray);
     justify-content: center;
 	font-family: 'Inter', sans-serif;
 	font-size: 14px;
@@ -101,11 +101,21 @@
     height: inherit;
     box-sizing: border-box;
     transition: all .2s ease;
+
+    @include lg {
+        width: 100%;
+        padding: 17px 15px;
+    }
+
+    &.btn-fc{
+        background-color: #fff;
+    }
+
     &:hover {
         @include min-md {
-            background: var(--fc-blue);
+            background: #f5853a;
             color: var(--fc-white);
-            border-color: var(--fc-blue);
+            border-color: #f5853a;
         }
     }
 }
@@ -163,6 +173,11 @@
     min-height: 220px;
     overflow: auto; 
     cursor: grab;
+    
+    @include lg {
+        margin-top: 0;
+    }
+
 }
 
 .w-side-section {
@@ -183,6 +198,13 @@
     & + .fencing-section{
         margin-bottom: 0;
     }
+
+    @include lg {
+        display: block;
+        height: 72px;
+        padding: 13px 24px;
+        box-sizing: border-box;
+    }
 }
 
 .fc-tab-title{
@@ -191,18 +213,32 @@
     display: flex;
     align-items: center;
 
+    @include lg {
+        display: block;
+        font-size: 14px;
+        line-height: 20px;
+        margin-bottom: 4px;
+    }
+
     &:not(:empty):after{
-        content: "";
-        background-color: #fff;
-        display: inline-block;
-        margin: 0 8px;
-        height: 20px;
-        width: 1px;
+        @include min-md {
+            content: "";
+            background-color: #fff;
+            display: inline-block;
+            margin: 0 8px;
+            height: 20px;
+            width: 1px;
+        }
     }
 }
 
 .fc-tab-subtitle{
     font-weight: 400;
+    @include lg {
+        display: block;
+        font-size: 14px;
+        line-height: 20px;
+    }
 }
 
 .fencing-raked-panel {
@@ -320,12 +356,31 @@
 
 /* Panel Controls */
 .fencing-panel-controls {
+    @include lg {
+        margin-bottom: 16px;
+    }
     .btn-fc {
         margin: 0 10px 0 0;
         /** @TODO revisit, see if buttons can be scrollable to remove !important **/
         &.fc-mb-1{
             margin-bottom: 0 !important;
+
+            @include lg {
+                margin-bottom: 16px !important;
+
+                &:last-child{
+                    margin-bottom: 0 !important;
+                }
+            }
         }
+
+        @include lg {
+            display: inline-block;
+            width: auto;
+            margin-right: 12px;
+            padding: 12px 24px;
+        }
+
     }
     div{
         display: none;
