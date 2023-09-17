@@ -7,20 +7,28 @@
     -moz-transition: all .3s ease-in-out 0s;
     -ms-transition: all .3s ease-in-out 0s;
     -o-transition: all .3s ease-in-out 0s;
+
+	@include lg {
+        width: 100%;
+		margin-bottom: 16px;
+		margin-right: 0;
+
+		&:last-child{
+			margin-bottom: 0;
+		}
+    }
 }
 .btn-fc:hover {
 	background: #525252;
 	cursor: pointer;
 }
-.btn-delete-fence {
-    font-size: 12px !important;	
-}
+
 
 .btn-fc-default {
 	background: #333;
 	color: #fff;
 	border: 0;
-	border-radius: 8px;
+	border-radius: $button-radius;
 	text-transform: uppercase;
 	font-size: 14px;
 	padding: 15px 30px;
@@ -34,7 +42,7 @@
 	background: #111;
 	color: #fff;
 	border: 0;
-	border-radius: 8px;
+	border-radius: $button-radius;
 	text-transform: uppercase;
 	font-size: 14px;
 	padding: 15px 30px;
@@ -45,21 +53,25 @@
 }
 
 .btn-fc-outline-default {
-    border: 1px solid #666;
-	color: #666;
-	border-radius: 8px;
+    border: 1px solid var(--fc-dark-charcoal);
+	color: var(--fc-dark-charcoal);
+	border-radius: $button-radius;
 	font-size: 14px;
     padding: 10px 20px;
 	background: transparent;
-}
-.btn-fc-outline-default:hover {
-	color: #fff;	
+
+	&:hover{
+		@include min-md {
+			background-color: var(--fc-dark-charcoal);
+			color: #fff;
+		}
+	}
 }
 
 .btn-fc-outline-light {
     border: 1px solid #DDD;
 	color: #666666;
-	border-radius: 8px;
+	border-radius: $button-radius;
 	font-size: 14px;
     padding: 10px 20px;
 	background: transparent;
@@ -85,20 +97,29 @@
 	background: #F67925;
 	color: #fff;
 	border: 0;
-	border-radius: 8px;
+	border-radius: $button-radius;
 	text-transform: uppercase;
 	font-size: 14px;
 	padding: 15px 30px;
+	margin-right: 16px;
 }
 .btn-fc-calculate {
     background: #111111;
     color: #fff;
     border: 0;
-    border-radius: 10px;
+    border-radius: 8px;
     font-weight: 700;
     text-transform: uppercase;
     font-size: 14px;
-    padding: 20px 30px
+    padding: 20px 30px;
+	letter-spacing: 0.5;
+
+	@include lg {
+		width: 100%;
+		margin-top: 8px;
+		padding: 17px 30px;
+	}
+
 }
 .btn-fc-sm {
 	font-size: 12px;
@@ -108,7 +129,7 @@
 .btn-fc-outline-danger {
 	color: #D4112F;
 	border: 1px solid #D4112F;
-	border-radius: 8px;
+	border-radius: $button-radius;
 	font-weight: 400;
 	text-transform: uppercase;
 	font-size: 14px;
@@ -141,4 +162,41 @@
 }
 .fencing-qty-minus {
 	bottom: 12px;
+}
+
+.btn-delete-fence {
+    font-size: 14px !important;	
+	padding: 16px 18px;
+	display: inline-block;
+	font-weight: 700;
+	width: auto;
+
+	@include lg {
+		padding: 12px 16px;
+	}
+
+	span{
+		@include lg {
+			display: none;
+		}
+	}
+
+}
+
+.fc-btn-create-plan{
+	height: 69px;
+	line-height: 20px;
+	padding-left: 32px;
+	padding-right: 32px;
+
+	& + .btn-fc{
+		height: 69px;
+		width: 136px;
+	}
+
+	&.btn-fc{
+		@include lg {
+			height: auto;
+		}
+	}
 }

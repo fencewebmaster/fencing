@@ -1,0 +1,44 @@
+.fc-step-2-alert {
+    float: right;
+
+	@include lg {
+		margin-top: 40px;
+	}
+
+    &.fc-alert-gray {
+        background: #F5F5F5;
+        padding: 20px;
+        border-radius: 8px;	
+    }
+
+    .fc-icon{
+        position: relative;
+        top: 1px;
+    }
+
+	h3 {
+        font-size: 20px;
+        font-weight: 500;
+
+		@include lg {
+			font-size: 16px;
+			font-family: $font-inter;
+		}
+	}
+
+	p {
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 400;
+		@include lg {
+			font-size: 12px;
+		}
+	}
+
+    &.fc-step-2-alert{
+        @include lg{
+            float: none;
+        }
+    }
+
+}

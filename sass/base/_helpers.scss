@@ -1,8 +1,10 @@
-.fc-font-1 {
-	font-family: $font-inter;
-}
-.fc-font-2 {
-	font-family: $font-league;	
+.fencing-container{
+    .fc-font-1 {
+        font-family: $font-inter;
+    }
+    .fc-font-2 {
+        font-family: $font-league;	
+    }
 }
 
 .fc-row-container {
@@ -40,6 +42,12 @@
   }
   .fc-col-half {
       width: calc( 50% - 20px);
+      box-sizing: border-box;
+  }
+  .fc-lg-col-full{
+      @include lg {
+          width: 100%;
+      }
   }
   .w-100 {
       width: 100%;
@@ -76,6 +84,7 @@
       display: flex;
       justify-content: flex-end;	
   }
+  
   .fc-p-1 {
       padding: 10px !important;	
   }
@@ -90,6 +99,12 @@
   }
   .fc-p-5 {
       padding: 50px !important;		
+  }
+  .fc-pl-0 {
+    padding-left: 0 !important;
+  }
+  .fc-pb-0 {
+    padding-bottom: 0 !important;
   }
   .fc-px-1 {
       padding-left: 10px !important;	
@@ -187,4 +202,8 @@
   }
   .fc-text-danger {
       color: #D4112F;
+  }
+
+  .fc-d-none{
+      display: none;
   }

@@ -63,16 +63,40 @@
     left: 30%;
     margin-left: -20px;
 }
+
+.fc-tab-control{
+    .btn-fc{
+        @include lg {
+            height: 52px;
+        }
+    }
+}
 .fc-tab-control .fc-section-step {
     display: flex;
+    height: 52px;
+    margin-top: 32px;
+    margin-bottom: 32px;
+
+    @include lg {
+        display: block;
+        height: auto;
+    }
+
 }
 
 .fc-input-container {
 	position: relative;
 }
+
 [type="button"]:disabled {
 	background: #ebebeb !important;
     color: #9E9E9E;
     border-color: #cbcbcb;
     cursor: not-allowed !important;
+}
+
+.fc-form-plan{
+    .fc-col-half{
+        width: calc( 50% - 0px);
+    }
 }

@@ -43,7 +43,7 @@
 <div class="fencing-container w-side-section" data-tab="1">
     <form method="POST" id="fc-download-form" action="project-plan.php">
        
-        <div class="fc-mb-1">
+        <div class="fencing-container__header">
             <div class="fc-row">
                 
                 <div class="fc-col-half">
@@ -67,9 +67,9 @@
 
         <!-- START TABS -->
         <div class="fencing-tabs-container fc-section-step fc-d-none fc-font-2" data-tab="1">
-            <div class="fencing-tabs">
+            <div class="fencing-tabs fc-row-flex">
                
-                <div class="fencing-tab-container">
+                <div class="fencing-tab-container fc-row-flex">
                    
                     <div class="fencing-tab fencing-tab-selected fc-d-none">
                         <div class="fencing-tab-name">
@@ -90,6 +90,7 @@
 
         <div class="fc-section-details">
             
+            <!-- @TODO: Are we hiding this header tab? It no longer exists in figma -->
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
                 <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
             </div>
@@ -103,15 +104,15 @@
                 <div class="fc-section-step" data-tab="1">
                     
                     <div class="fc-content-tab-title">
-                        <span class="fc-tab-title"></span> | <span class="fc-tab-subtitle"></span>
+                        <span class="fc-tab-title"></span><span class="fc-tab-subtitle"></span>
                     </div>
 
-                    <div class="fencing-section">
+                    <div class="fencing-section fencing-section--step1">
                         
                         <buton type="button" 
                             class="btn-fc btn-fc-outline-danger btn-fc-sm fc-float-r btn-delete-fence" 
                             style="display:none;">
-                            <i class="fa fa-trash-can"></i>Delete Section
+                            <i class="fa fa-trash-can"></i>Delete <span>Section</span>
                         </buton>
                         
                         <div class="step-label">Step <span>01</span></div>
@@ -122,6 +123,7 @@
 
                     <!-- START STYLES -->
                     <div class="fencing-section fencing-styles">
+                        <div class="fencing-styles__area">
                         <?php foreach( $fences as $fence ): ?>
                         <div class="fencing-style-item" data-title="<?php echo $fence['title']; ?>">
                             <div>
@@ -134,9 +136,12 @@
                                     <?php echo $fence['title']; ?>
                                 </div>
 
+                                <button class="fencing-style-btn js-fencing-style-btn"></button>
+
                             </div>
                         </div>
-                        <?php endforeach; ?>				
+                        <?php endforeach; ?>	
+                        </div>			
                     </div>
                     <!-- END STYLES -->
 
@@ -146,7 +151,7 @@
                         
                         <div class="fencing-divider"></div>
 
-                        <div class="fencing-section fencing-measurement">
+                        <div class="fencing-section fencing-measurement fencing-section--step2">
 
                             <div class="fc-row">
                                 
@@ -211,23 +216,23 @@
 
 
                         <!-- START DISPLAY RESULT -->	
-                        <div class="fencing-section">
+                        <div class="fencing-section fencing-section--step3">
                             
                             <div class="step-label">Step <span>03</span></div>
 
                             <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
 
-                            <div>
+                            <div class="fencing-section__controls">
                               
-                                <a href="#" class="fc-mr-1 fc-zoom-reset" data-zoom="reset">
+                                <a href="#" class="fc-zoom-reset" data-zoom="reset">
                                     <i class="fc-icon fc-icon-arrow-cc"></i>
                                 </a>
 
-                                <a href="#" class="fc-mr-1" style="display: none;">
+                                <a href="#" style="display: none;">
                                     <i class="fc-icon fc-rectangle"></i>
                                 </a>
 
-                                <a href="#" class="fc-mr-1 fc-zoom-fence" data-zoom="in">
+                                <a href="#" class="fc-zoom-fence" data-zoom="in">
                                     <i class="fc-icon fc-magnify-plus"></i>
                                 </a>
 
@@ -312,7 +317,7 @@
                             <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
                                 <div class="fc-p-1">
                                     <div class="fc-row">
-                                        <div class="fc-col-half">
+                                        <div class="fc-col-half fc-lg-col-full">
                                             <textarea name="notes" 
                                             placeholder="Write your notes here" 
                                             class="fc-form-control" rows="7"></textarea>
@@ -332,7 +337,7 @@
                     <div class="fencing-section fc-section-step" data-tab="1">
                         
                         <button type="button" 
-                            class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step fc-mr-1" 
+                            class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step" 
                             data-tab="1" 
                             data-move="2"
                             disabled>
@@ -350,7 +355,7 @@
                     <div class="fencing-section fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
                         
                         <button type="button" 
-                            class="btn-fc btn-fc-orange fc-btn-create-plan fencing-btn-modal fc-mr-1" 
+                            class="btn-fc btn-fc-orange fc-btn-create-plan fencing-btn-modal" 
                             data-target="#submit-modal" 
                             disabled>
                             <strong>Create Project Plan</strong><br>
@@ -409,7 +414,7 @@
                         </div>
                     </div>
 
-                    <div class="fencing-modal-body fc-mb-3">
+                    <div class="fencing-modal-body fc-mb-4">
                         
                         <div class="fc-alert-gray fc-mb-3">
                             <h4>&#127881; Awesome! We’ll email you the plans..</h4>

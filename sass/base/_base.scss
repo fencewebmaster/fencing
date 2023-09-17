@@ -2,12 +2,6 @@
 // This file contains very basic styles.
 // -----------------------------------------------------------------------------
 
-:root {
-    --fc-gray: #e9e9e9;
-    --fc-blue: #F67925;
-    --fc-white: #fff;
-}
-
 body {
     background: #fbfbfb;
 }
@@ -27,16 +21,7 @@ img{
     height: auto;
 }
 
-.fencing-container {
-	max-width: $max-width;
-	margin: 0 auto;	
-
-    a {
-        text-decoration: none;
-    }
-
-    h4 {
-        margin-bottom: 10px;
-    }
+p{
+    font-family: $font-inter;
 }
 

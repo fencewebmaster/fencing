@@ -15,13 +15,20 @@
 @import
   'base/fonts',
   'base/icons',
-  'base/base',
   'base/typography',
+  'base/base',
   'base/global',
   'base/helpers';
 
   // 3. Components
 @import
+  'components/fencing-container',
   'components/form',
   'components/modal',
-  'components/buttons';
+  'components/buttons',
+  'components/tabs',
+  'components/fencing-style',
+  'components/measurements',
+  'components/project-details',
+  'components/alert',
+  'components/step-3';
