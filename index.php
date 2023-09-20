@@ -266,6 +266,15 @@
                         <div class="fencing-section fencing-panel-controls"></div>
                         <!-- END PANEL CONTROLS -->
 
+                        <!-- START PANEL CONTROLS | FOR TESTING ONLY -->	
+                        <div class="fencing-section">
+                            <button type="button" id="btn-left_side" data-key="left_side" data-target="#fc-control-modal-1" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Edit Left Side 1</button>
+                            <button type="button" id="btn-panel_options" data-key="panel_options" data-target="#fc-control-modal-4" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Panel Options</button>
+                            <button type="button" id="btn-post_options" data-key="post_options" data-target="#fc-control-modal-2" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Post Options</button>
+                            <button type="button" id="btn-gate" data-key="gate" data-target="#fc-control-modal-3" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Add Gate</button>
+                        </div>
+                        <!-- END PANEL CONTROLS | FOR TESTING ONLY -->
+
 
                     </div>
                     <!-- END DISPLAY RESULT -->
@@ -398,6 +407,248 @@
             </div>
         </div>
         <!-- END POPUP MODAL CONTROL PANEL -->
+
+        <!-- START POPUP MODAL CONTROL PANEL | TESTING-->
+        <div id="fc-control-modal-1" class="fencing-modal fencing-modal--v2">
+            <div class="fc-modal-frame">
+                <div class="fencing-modal-content">
+                    
+                    <div class="fencing-modal-area">
+                        <div class="fencing-modal-header">
+                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Edit Left Side</div>
+                            <span class="fencing-modal-close">×</span>
+                        </div>
+                        <div class="fencing-modal-body js-fc-ignore fc-font-1 fc-p-0">
+                            <div class="fencing-form-group">
+                                <h2 class="body-title"></h2>
+                                <div class="fc-row-container">
+                                    <div class="fc-row fc-form-field" name="left_option" type="range_option" value="yes-post">
+                                        <div class="fc-col-4 fc-text-center">
+                                            <div class="fc-select-post fc-select fc-selected" data-slug="yes-post">
+                                                <img src="img/yes-post.png">
+                                            </div>
+                                            <p></p>
+                                        </div>
+                                        <div class="fc-col-4 fc-text-center">
+                                            <div class="fc-select-post fc-select" data-slug="no-post">
+                                                <img src="img/no-post-1.png">
+                                            </div>
+                                            <p></p>
+                                        </div>
+                                        <div class="fc-col-4 fc-text-center">
+                                            <div class="fc-select-post fc-select" data-slug="no-post-swivel-bracket">
+                                                <img src="img/no-post-2.png">
+                                            </div>
+                                            <p></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fencing-modal-notes js-fc-ignore">
+                            <div class="fc-selection-details fc-alert-gray">
+                                <label><i class="fc-icon fc-icon-capa"></i> When To Use Swivel Brackets</label>
+                                <p class="fc-text-gray">Swivel brackets are used instead of the standards straight brackets. This allow you
+                                    to connect this fence section at an angle. e.g. 45degs to the connecting fence section</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fencing-modal-area">
+                        <div class="fencing-modal-header">
+                            <div class="fencing-modal-title fc-font-2 js-fc-ignore">Post Options</div>
+                        </div>
+                        <div class="fencing-modal-body fc-font-1 fc-p-0 js-fc-ignore">
+                            <div class="fc-row-container fencing-form-group">
+                                <div class="fc-row fc-form-field js-fc-ignore" name="post_option" type="image_option" value="opt-2">
+                                    <div class="fc-col-4 fc-text-center">
+                                        <div class="fc-select-post fc-select" data-slug="opt-1">
+                                            <img src="img/base-plate-posts.png" class="fc-fullwidth">
+                                        </div>
+                                        <p></p>
+                                        <p></p>
+                                    </div>
+                                    <div class="fc-col-4 fc-text-center">
+                                        <div class="fc-select-post fc-select fc-selected" data-slug="opt-2">
+                                            <img src="img/cement-in-posts.png" class="fc-fullwidth">
+                                        </div>
+                                        <p></p>
+                                        <p></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fencing-modal-area">
+                        <div class="fencing-modal-header">
+                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Add Step-Up Panel</div>
+                        </div>
+                        <div class="fencing-modal-body js-fc-ignore fc-font-1 fc-p-0">
+                            <div class="fc-dropdown_option">
+                                <h2 class="body-title">Right Hand Step-Up Panel</h2>
+                                <div class="fc-row js-fc-ignore">
+                                    <select class="fc-form-field fc-select-option js-fc-ignore" name="right_raked" type="dropdown_option" value="">
+                                        <option value="none">Nil</option>
+                                        <option value="1300x300">1300H - 300 Step-Up</option>
+                                        <option value="1400x400">1400H - 400 Step-Up</option>
+                                        <option value="1500x500">1500H - 500 Step-Up</option>
+                                        <option value="1600x600">1600H - 600 Step-Up</option>
+                                        <option value="1700x700">1700H - 700 Step-Up</option>
+                                        <option value="1800x600">1800H - 600 Step-Up</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div id="fc-control-modal-2" class="fencing-modal fencing-modal--v2">
+            <div class="fc-modal-frame">
+                <div class="fencing-modal-content">
+                <div class="fencing-modal-area">
+                        <div class="fencing-modal-header">
+                            <div class="fencing-modal-title fc-font-2 js-fc-ignore">Post Options</div>
+                            <span class="fencing-modal-close">×</span>
+                        </div>
+                        <div class="fencing-modal-body fc-font-1 fc-p-0 js-fc-ignore">
+                            <div class="fc-row-container fencing-form-group">
+                                <div class="fc-row fc-form-field js-fc-ignore" name="post_option" type="image_option" value="opt-2">
+                                    <div class="fc-col-4 fc-text-center">
+                                        <div class="fc-select-post fc-select" data-slug="opt-1">
+                                            <img src="img/base-plate-posts.png" class="fc-fullwidth">
+                                        </div>
+                                        <p></p>
+                                        <p></p>
+                                    </div>
+                                    <div class="fc-col-4 fc-text-center">
+                                        <div class="fc-select-post fc-select fc-selected" data-slug="opt-2">
+                                            <img src="img/cement-in-posts.png" class="fc-fullwidth">
+                                        </div>
+                                        <p></p>
+                                        <p></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="fc-control-modal-3" class="fencing-modal fencing-modal--v2">
+            <div class="fc-modal-frame">
+                <div class="fencing-modal-content">
+                    <div class="fencing-modal-area fencing-modal-area--gate fc-p-0">
+
+                        <div class="fencing-modal-header">
+                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Add / Remove Gate</div>
+                            <span class="fencing-modal-close">×</span>
+                        </div>
+
+                        <div class="fencing-modal-body fc-font-1">
+                            <div class="fc-control-move fencing-form-group">
+                                <h2 class="body-title"></h2>
+                                <div class="fc-row">
+
+                                    <div class="fc-row-flex">
+                                        <div class="fc-col-flex fc-text-center">
+                                            <div class="fc-move-post" data-move="first">
+                                                <p><span>⇤</span><br>First</p>
+                                            </div>
+                                        </div>
+                                        <div class="fc-col-flex fc-text-center">
+                                            <div class="fc-move-post" data-move="left">
+                                                <p><span>←</span><br>Left</p>
+                                            </div>
+                                        </div>
+                                        <div class="fc-col-flex fc-text-center">
+                                            <div class="fc-move-post" data-move="delete">
+                                                <p><span>✕</span><br>Delete</p>
+                                            </div>
+                                        </div>
+                                        <div class="fc-col-flex fc-text-center">
+                                            <div class="fc-move-post" data-move="right">
+                                                <p><span>→</span><br>Right</p>
+                                            </div>
+                                        </div>
+                                        <div class="fc-col-flex fc-text-center">
+                                            <div class="fc-move-post" data-move="last">
+                                                <p><span>⇥</span><br>Last</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fencing-modal-notes"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fc-control-modal-4" class="fencing-modal fencing-modal--v2">
+            <div class="fc-modal-frame">
+                <div class="fencing-modal-content">
+                    <div class="fencing-modal-area fencing-modal-area--panel-options">
+                        <div class="fencing-modal-header">
+                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Panel Options</div>
+                            <span class="fencing-modal-close">×</span>
+                        </div>
+                        <div class="fencing-modal-body js-fc-ignore fc-font-1 fc-p-0">
+                            <div class="fencing-form-group">
+                                <h2 class="body-title"></h2>
+                                <div class="fc-row-container">
+                                    <div class="fc-row fc-form-field" name="panel_option" type="text_option" value="even">
+                                        <div class="fc-col-4 fc-text-center">
+                                            <div class="fc-select-post fc-select fc-selected" data-slug="even">
+                                                <p>Even Size Panels</p>
+                                            </div>
+                                        </div>
+                                        <div class="fc-col-4 fc-text-center">
+                                            <div class="fc-select-post fc-select" data-slug="full_2400">
+                                                <p>Use 2400W Panels</p>
+                                            </div>
+                                        </div>
+                                        <div class="fc-col-4 fc-text-center">
+                                            <div class="fc-select-post fc-select" data-slug="full_3000">
+                                                <p>Use 3000W Panels</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fencing-modal-notes js-fc-ignore">
+                            <div class="fc-selection-details">
+                                <label>Even Size Panels</label>
+                                <p>This option evenly spaces out the posts, which also means you will need to cut down every individual
+                                    panel.</p>
+                            </div>
+                            <div class="fc-selection-details">
+                                <label>Use 2400W / 3000W Panels</label>
+                                <p>This option uses full length panels, which means you will ONLY need to cut down 1x panel. </p>
+                            </div>
+                            <div class="fc-selection-details fc-alert-gray">
+                                <label><i class="fc-icon fc-icon-capa"></i> Panel Off-Cuts</label>
+                                <p class="fc-text-gray">The off-cut can be used for another fence section (where applicable). If the off-cut
+                                    is used ensure you manually update the panel quantities to account for this as this planner does NOT use
+                                    Off-Cuts.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- END POPUP MODAL CONTROL PANEL | TESTING -->
 
 
         <!-- START SUBMIT POPUP MODAL -->

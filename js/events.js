@@ -383,9 +383,9 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     $(this).addClass('fc-btn-active');
 
-    $("#fc-control-modal .fencing-modal-body, #fc-control-modal .fencing-modal-notes").html('');
+    $("#fc-control-modal .fencing-modal-body:not(.js-fc-ignore), #fc-control-modal .fencing-modal-notes:not(.js-fc-ignore)").html('');
 
-    $("#fc-control-modal .fencing-modal-title").html(info?.settings[key]?.title);
+    $("#fc-control-modal .fencing-modal-title:not(.js-fc-ignore)").html(info?.settings[key]?.title);
 
     $('.fencing-container').attr('data-key', key);
 
@@ -404,12 +404,12 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                                                      .replace(/{{sub_unit}}/gi, v?.weight?.unit)
                                                      .split(/\$\{(.+?)\}/g);
 
-        $("#fc-control-modal .fencing-modal-body").append(tpl);
+        $("#fc-control-modal .fencing-modal-body:not(.js-fc-ignore)").append(tpl);
 
         if( v.type == 'dropdown_option') {
 
             $(v.options).each(function(i, o) {
-                $('[name="'+v.slug+'"]').append($('<option>',{ value: o.slug, text: o.title }));
+                $('[name="'+v.slug+'"]:not(.js-fc-ignore)').append($('<option>',{ value: o.slug, text: o.title }));
             });
 
         }
@@ -424,7 +424,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 <p>${title}</p>
             </div>`;
 
-            $('#fc-control-modal .fc-row').html(v.options.map(Item).join(''));
+            $('#fc-control-modal .fc-row:not(.js-fc-ignore)').html(v.options.map(Item).join(''));
         }
 
         if( v.type == 'text_option') {
@@ -436,7 +436,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 </div>
             </div>`;
 
-            $('.fencing-modal .fc-row').html(v.options.map(Item).join(''));
+            $('.fencing-modal .fc-row:not(.js-fc-ignore)').html(v.options.map(Item).join(''));
         }
 
         if( v.type == 'image_option') {
@@ -450,7 +450,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 <p>${extra}</p>
             </div>`;
 
-            $('.fencing-modal .fc-row').html(v.options.map(Item).join(''));
+            $('.fencing-modal .fc-row:not(.js-fc-ignore)').html(v.options.map(Item).join(''));
         }
 
         // GET/SET DEFAULT VALUE
@@ -473,10 +473,10 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     if( details ) {
         const Item = ({ title, description }) => `<div class="fc-selection-details">
                 <label>${title}</label>
-                <div>${description}</div>
+                <p>${description}</p>
             </div>`;
 
-        $('.fencing-modal-notes').append( details.map(Item).join('') );
+        $('.fencing-modal-notes:not(.js-fc-ignore)').append( details.map(Item).join('') );
     }
 
     var notes = info?.settings[key]?.notes;
@@ -484,10 +484,10 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     if( notes ) {
         var notes_html =  `<div class="fc-selection-details fc-alert-gray">
                 <label><i class="fc-icon fc-icon-capa"></i> ${notes.title}</label>
-                <div class="fc-text-gray">${notes.description}</div>
+                <p class="fc-text-gray">${notes.description}</p>
             </div>`;
 
-        $('.fencing-modal-notes').append( notes_html );
+        $('.fencing-modal-notes:not(.js-fc-ignore)').append( notes_html );
     }
 
     var filtered_data = custom_fence.filter(function(item) {

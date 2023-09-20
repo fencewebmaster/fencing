@@ -126,7 +126,7 @@
 .fencing-modal {
 	display: none; /* Hidden by default */
 	position: fixed; /* Stay in place */
-	z-index: 3; /* Sit on top */
+	z-index: 13; /* Sit on top */
 	left: 0;
 	top: 0;
 	width: 100%; /* Full width */
@@ -1034,7 +1034,7 @@ thead.fc-border th:last-child {
 	.fencing-modal-close {
 	    right: -15px;
 	    top: -15px;
-	    padding: 0 8px 5px;
+	    padding: 0;
 	    font-size: 20px;
 	}
 }
