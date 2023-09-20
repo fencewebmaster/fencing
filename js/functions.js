@@ -673,7 +673,7 @@ function submit_fence_planner() {
             console.log(data);
     });*/
 
-    var form = $('form')[0]; // You need to use standard javascript object here
+    var form = $('form')[0]; 
     var formData = new FormData(form);
 
     formData.set("fences", JSON.stringify(set_fc_data));

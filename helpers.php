@@ -30,3 +30,34 @@ function get_items($key, $items, $list = false) {
     return implode(', ', $data);    
 
 }
+
+function dd($data ='') {
+    echo '<pre>';
+    print_r( $data );
+    exit;
+}
+
+function fc_deliver_options() {
+    $data = [
+      [
+        'value'   => 'shipping_1',
+        'label'   => 'Warehouse Pickup',
+        'price'   => 0,
+        'default' => TRUE,
+      ],
+      [
+        'value'   => 'shipping_2',
+        'label'   => 'Deliver to Site (Metro $89)',
+        'price'   => 89,
+        'default' => FALSE,
+        ],
+      [
+        'value'   => 'shipping_3',
+        'label'   => 'Deliver to Site (Rural - $TBA)',
+        'price'   => 0,
+        'default' => FALSE,
+      ]
+    ];
+
+    return $data;
+}

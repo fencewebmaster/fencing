@@ -1,4 +1,4 @@
-// Initialize Stripe with your publishable API key
+/*// Initialize Stripe with your publishable API key
 var stripe = Stripe('pk_test_fY3GMPqaZTKE94kLMB5BnOdf');
 
 
@@ -82,9 +82,8 @@ function stripeTokenHandler(token) {
     // Submit the form
     form.submit();
 
-    
 }
-
+*/
 
 $(document).on('click', '.fc-btn-download-fence', function () {    
 
@@ -107,39 +106,135 @@ $(document).on('click', '.fc-btn-download-fence', function () {
 
 });
 
+$("#paymentFrm").validate({   
+    rules: {
+        name: { required: true },
+        mobile: { required: true },
+        postcode: { required: true },
+        address: { required: true },
+        email: {
+            required: true,
+            //email: true
+        },
+    },
+    messages: {},
+    submitHandler: function(form) {
 
+        var action   = $('[name="action"]').val(),
+            form     = $('form')[0],
+            formData = new FormData(form);
+
+            formData.set("action", action);
+
+        $('#'+action+'-section').find('.fc-section-loader-overlay').show();
+
+        if( $('[name="action"]').val() == 'update_cart' ) {
+
+            $('.fc-table-items td').each(function(){
+                if( $(this).find('.fc-form-control').length ) {
+                    var val = $(this).find('.fc-form-control').val();
+                    $(this).find('.fc-item-value').html( val );
+                }
+            });
+
+            $(".fc-table-items .fc-form-control").css({'color': '#4caf50'}); 
+
+            $.ajax({
+                url: 'checkout.php', 
+                type: "POST",  
+                data: formData,
+                headers: {},
+                contentType: false,  
+                cache: false,         
+                processData:false,    
+                success: function(response) {
+                    try {
+                        $('.fc-table-items').html(response);
+
+                        setTimeout(function() { 
+                            $(".fc-table-items .fc-form-control").css({'color': ''}); 
+                            $('.fc-section-loader-overlay').hide();
+                            $('.fc-item-value').show();
+                            $('.fc-table-items input, .fc-reset-item').hide();
+                        } , 500);
+
+                        $('.fc-edit-item').html('Edit');
+
+                    } catch(err){
+                        console.log('err: ', response);
+                    } 
+                }
+            });
+
+        } else if( $('[name="action"]').val() == 'update_details' ) {
+
+            $('.fc-table-customer td').each(function(){
+                if( $(this).find('.fc-form-control').length ) {
+
+                    if( $(this).find('.fc-form-control').prop('tagName').toLowerCase() == 'select' ) {
+                        var val = $(this).find('.fc-form-control option:selected').text();
+                    } else {
+                        var val = $(this).find('.fc-form-control').val();
+                    }
+
+                    $(this).find('span').html( val );
+
+                }
+            });
+
+            $(".fc-table-customer .fc-form-control").css({'color': '#4caf50'}); 
+
+            $.ajax({
+                url: 'checkout.php', 
+                type: "POST",  
+                data: formData,
+                headers: {},
+                contentType: false,  
+                cache: false,         
+                processData:false,    
+                success: function(response) {
+                    try {
+    
+                        setTimeout(function() { 
+                            $(".fc-table-customer .fc-form-control").css({'color': ''}); 
+                            $('.fc-section-loader-overlay').hide();
+                            $('.fc-table-customer span').show();
+                            $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
+
+                        } , 500);
+
+                        $('.fc-btn-edit').find('span').html('Edit');
+
+                    } catch(err){
+       
+                    } 
+                }
+            });
+                
+        }
+
+    }
+}); 
+
+$(document).on('change', '[name="cart[shipping_type]"]', function() {
+    $('form').find('[type="submit"]').click();
+}); 
+
+// PROJECT DETAILS SECTION
 $(document).on('click', ".fc-btn-edit", function (e) {
     e.preventDefault();
 
+    $('[name="action"]').val('update_details');
+
     if( $(this).find('span').text() == 'Edit' ) {
+
         $('.fc-project-details .fc-form-group, .fc-btn-reset').show();
         $('.fc-project-details table span').hide();
         $(this).find('span').html('Update');
 
-        $('.fc-project-details .fc-editing-icon').fadeIn();
-
     } else {
-
-        $('.fc-table-customer td').each(function(){
-            if( $(this).find('.fc-form-control').length ) {
-                var val = $(this).find('.fc-form-control').val();
-                $(this).find('span').html( val );
-            }
-        });
-
-        $(".fc-table-customer .fc-form-control").css({'color': '#4caf50'}); 
-
-        setTimeout(function() { 
-            $(".fc-table-customer .fc-form-control").css({'color': ''}); 
-
-            $('.fc-table-customer span').show();
-            $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
-
-            $('.fc-project-details .fc-editing-icon').fadeOut();
-
-        } , 500);
-
-        $(this).find('span').html('Edit');
+       
+        $('form').find('[type="submit"]').click();
 
     }
 
@@ -164,35 +259,19 @@ $(document).on('click', ".fc-btn-reset", function (e) {
 
 });
 
-
+// ITEM LIST & CART SECTION
 $(document).on('click', ".fc-edit-item", function (e) {
     e.preventDefault();
 
+    $('[name="action"]').val('update_cart');
+
     if( $(this).text() == 'Edit' ) {
-        $('.fc-table-items input, .fc-reset-item, .fc-link-div').show();
+        $('.fc-table-items input, .fc-reset-item').show();
         $('.fc-item-value').hide();
         $(this).html('Update');
-        $('.fc-table-items .fc-editing-icon').fadeIn();
     } else {
 
-        $('.fc-table-items td').each(function(){
-            if( $(this).find('.fc-form-control').length ) {
-                var val = $(this).find('.fc-form-control').val();
-                $(this).find('.fc-item-value').html( val );
-            }
-        });
-
-        $(".fc-table-items .fc-form-control").css({'color': '#4caf50'}); 
-
-        setTimeout(function() { 
-            $(".fc-table-items .fc-form-control").css({'color': ''}); 
-
-            $('.fc-item-value').show();
-            $('.fc-table-items input, .fc-reset-item, .fc-link-div').hide();
-            $('.fc-table-items .fc-editing-icon').fadeOut();
-        } , 500);
-
-        $(this).html('Edit');
+        $('form').find('[type="submit"]').click();
 
     }
 
