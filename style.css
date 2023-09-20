@@ -1752,6 +1752,7 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post p {
 	position: relative;
 	top: 5px;
+	font-weight: 500;
 }
 
 .fencing-modal--v2 .fencing-modal-header {
