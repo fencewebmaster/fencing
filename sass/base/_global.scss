@@ -29,12 +29,6 @@
 		font-size: 14px;
 	}
 
-	&.fc-mb-2{
-		@include lg {
-			margin-bottom: 10px !important;
-		}
-	}
-
 }
 .step-label {
 	font-family: 'League Gothic', sans-serif;	
