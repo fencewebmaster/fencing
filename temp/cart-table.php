@@ -1,6 +1,8 @@
 <?php 
-	$cart = $_SESSION['fc_cart'];
+	$cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 ?>
+
+<?php if( $cart ): ?>
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
     <div class="fc-table-rounded-border fc-mb-2">
         
@@ -74,3 +76,4 @@
     <div style="clear: both;"></div>
 
 </div>
+<?php endif; ?>

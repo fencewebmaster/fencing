@@ -59,7 +59,7 @@
 
 	// $_SESSION['fc_cart'] = $cart;
 
-	$cart = $_SESSION['fc_cart'];
+
 
 	// dd($cart );
 ?>
@@ -76,14 +76,44 @@
 }	
 </style>
 
+<!-- START FORM SUBMISSION LOADER -->
+<div class="fc-loader-overlay" style="display: none;">
+    <div class="fc-loader-container">
+        <div class="fc-loader">
+            <div class="fc-row">
+                
+                <div class="fc-col-auto">
+                    <img src="<?php echo base_url('img/loaders/1.gif'); ?>" width="120">
+                </div>
+
+                <div class="fc-col-auto">
+                    
+                    <ul>
+                        <li>
+                            <div class="fc-mb-1"><small style="font-size:30px;">Preparing:</small></div>
+                        </li>
+                        <li><i class="fa fa-check fc-mr-1"></i> Checking customer details... </li>
+                        <li><i class="fa fa-check fc-mr-1"></i> Processing payment...</li>
+                        <li><i class="fa fa-check fc-mr-1"></i> Placing your order...</li>
+                        <li></li>
+                    </ul>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END FORM SUBMISSION LOADER -->
+
+
 <!-- START FENCING CONTAINER -->
-<div class="fencing-container fc-project-plan" data-tab="1">
-	
+<div id="place_order-section" class="fencing-container fc-project-plan fc-position-relative" data-tab="1">
 
 	<!-- START CHECKOUT FORM -->
 	<form method="POST" id="paymentFrm" action="<?php echo base_url('checkout.php'); ?>">
 
-		<input type="text" name="action" value="update_cart">
+		<input type="hiddenx" name="action" value="">
 
 		<!-- START PAGE HEADER TITLE -->
 		<div class="fc-mb-2">
@@ -114,8 +144,9 @@
 
 		<!-- START FENCING CONTENT -->
 		<div class="fencing-content fc-font-1">
+
 		    <div class="fc-section-step">
-		        
+
 		        <div class="fencing-section">
 		            <buton type="button" class="btn-fc btn-fc-orange fc-w-700 fc-float-r">
 		                <i class="fa-solid fa-cart-shopping"></i>
@@ -446,7 +477,7 @@
 
 
 		                            <button type="submit" 
-			                            class="btn-fc fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
+			                            class="btn-fc btn-submit fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
 			                            <i class="fa-solid fa-cart-shopping"></i>
 			                            Order Items Now!
 		                            </button>

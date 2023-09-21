@@ -120,15 +120,19 @@ $("#paymentFrm").validate({
     messages: {},
     submitHandler: function(form) {
 
+         window.onbeforeunload = function() { return false; }
+
         var action   = $('[name="action"]').val(),
             form     = $('form')[0],
             formData = new FormData(form);
 
-            formData.set("action", action);
+        formData.set("action", action);
+
+        $('#paymentResponse').html('');           
 
         $('#'+action+'-section').find('.fc-section-loader-overlay').show();
 
-        if( $('[name="action"]').val() == 'update_cart' ) {
+        if( action == 'update_cart' ) {
 
             $('.fc-table-items td').each(function(){
                 if( $(this).find('.fc-form-control').length ) {
@@ -156,6 +160,9 @@ $("#paymentFrm").validate({
                             $('.fc-section-loader-overlay').hide();
                             $('.fc-item-value').show();
                             $('.fc-table-items input, .fc-reset-item').hide();
+
+                            window.onbeforeunload = function() {}
+
                         } , 500);
 
                         $('.fc-edit-item').html('Edit');
@@ -166,7 +173,7 @@ $("#paymentFrm").validate({
                 }
             });
 
-        } else if( $('[name="action"]').val() == 'update_details' ) {
+        } else if( action == 'update_details' ) {
 
             $('.fc-table-customer td').each(function(){
                 if( $(this).find('.fc-form-control').length ) {
@@ -184,6 +191,7 @@ $("#paymentFrm").validate({
 
             $(".fc-table-customer .fc-form-control").css({'color': '#4caf50'}); 
 
+
             $.ajax({
                 url: 'checkout.php', 
                 type: "POST",  
@@ -194,23 +202,74 @@ $("#paymentFrm").validate({
                 processData:false,    
                 success: function(response) {
                     try {
-    
+
                         setTimeout(function() { 
                             $(".fc-table-customer .fc-form-control").css({'color': ''}); 
                             $('.fc-section-loader-overlay').hide();
                             $('.fc-table-customer span').show();
                             $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
 
+                            window.onbeforeunload = function() {}
+
                         } , 500);
 
                         $('.fc-btn-edit').find('span').html('Edit');
 
                     } catch(err){
-       
+
                     } 
                 }
             });
                 
+        } else if( action == 'place_order' ) {
+
+            $('.fc-loader-overlay').show();
+
+            $.ajax({
+                url: 'checkout.php', 
+                type: "POST",  
+                data: formData,
+                headers: {},
+                contentType: false,  
+                cache: false,         
+                processData:false,    
+                success: function(response) {
+                    
+                    var info = JSON.parse(response);
+
+                    if( ! info.error ) {
+
+                    var count = 0;
+
+                    setTimeout(function(){
+                        $('.fc-loader ul li').each(function(i) {
+                            var $this = $(this);
+                            setTimeout(function(){
+                               $this.addClass('fc-text-success');
+                               count++;
+
+                               if( count == 5 ) {
+                                    window.onbeforeunload = function() {}
+                                    location.href = info.url;
+                               }
+
+                            }, 1000 * i);
+
+
+                        });
+
+                    }, 1000);
+
+
+                    }
+                    
+                    $('#paymentResponse').html(info.message);
+
+                    $('.fc-section-loader-overlay').hide();
+
+                }
+            });
+
         }
 
     }
@@ -234,7 +293,7 @@ $(document).on('click', ".fc-btn-edit", function (e) {
 
     } else {
        
-        $('form').find('[type="submit"]').click();
+        $('form').submit();
 
     }
 
@@ -246,8 +305,15 @@ $(document).on('click', ".fc-btn-reset", function (e) {
 
     $('.fc-table-customer td').each(function(){
         if( $(this).find('.fc-form-control').length ) {
+
             var val = $(this).find('span').text();
-            $(this).find('.fc-form-control').val(val)
+
+            if( $(this).find('.fc-form-control').prop('tagName').toLowerCase() == 'select' ) {
+                $(this).find('option:contains('+val+')').prop('selected', true);
+            } else {
+                $(this).find('.fc-form-control').val(val)
+            }
+
         }
     });
 
@@ -271,7 +337,7 @@ $(document).on('click', ".fc-edit-item", function (e) {
         $(this).html('Update');
     } else {
 
-        $('form').find('[type="submit"]').click();
+        $('form').submit();
 
     }
 
@@ -294,4 +360,10 @@ $(document).on('click', ".fc-reset-item", function (e) {
         $(".fc-table-items .fc-form-control").css({'color': ''}); 
     } , 500);
 
+});
+
+$(document).on('click', ".btn-submit", function (e) {
+    e.preventDefault();
+    $('[name="action"]').val('place_order');
+    $('form').submit();
 });
