@@ -23,7 +23,7 @@
   // 3. Components
 @import
   'components/fencing-container',
-  'components/form',
+  'components/form/form',
   'components/modal',
   'components/buttons',
   'components/tabs',
@@ -31,4 +31,7 @@
   'components/measurements',
   'components/project-details',
   'components/alert',
-  'components/step-3';
+  'components/step-3',
+  'components/scrollable',
+  'components/form/options',
+  'components/project-plans';

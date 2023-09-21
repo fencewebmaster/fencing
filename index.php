@@ -92,12 +92,16 @@
             
             <!-- @TODO: Are we hiding this header tab? It no longer exists in figma -->
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
-                <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
+                <div class="fc-header-tab__area">
+                    <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
+                </div>
             </div>
             
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
-                <a href="#" data-tab="1" data-move="2" class="">Section Details</a>
-                <a href="#" data-tab="2" data-move="1" class="fc-tab-active tab-selected">Project Options</a>	
+                <div class="fc-header-tab__area">
+                    <a href="#" data-tab="1" data-move="2" class="">Section Details</a>
+                    <a href="#" data-tab="2" data-move="1" class="fc-tab-active tab-selected">Project Options</a>
+                </div>	
             </div>
 
             <div class="fencing-content fc-font-1">
@@ -301,7 +305,8 @@
                             <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
                                 <div class="fencing-form-group fc-mb-0">
                                     <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
-                                        
+                                        <div class="fc-scrollable">
+                                            <div class="fc-scrollable-area">
                                         <?php foreach($color_options as $co): ?>
                                         <div class="fc-col-3">
                                             <div class="fc-select-item fc-select fc-mb-0" data-slug="" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
@@ -310,6 +315,8 @@
                                             </div>
                                         </div>
                                         <?php endforeach; ?>
+                                            </div>
+                                        </div>
 
                                     </div>
                                 </div>
@@ -549,7 +556,7 @@
                             <span class="fencing-modal-close">×</span>
                         </div>
 
-                        <div class="fencing-modal-body fc-font-1">
+                        <div class="fencing-modal-body js-fc-ignore fc-font-1">
                             <div class="fc-control-move fencing-form-group">
                                 <h2 class="body-title"></h2>
                                 <div class="fc-row">
@@ -586,7 +593,7 @@
                             </div>
                         </div>
 
-                        <div class="fencing-modal-notes"></div>
+                        <div class="fencing-modal-notes js-fc-ignore"></div>
 
                     </div>
                 </div>
@@ -657,12 +664,11 @@
 
                 <div class="fencing-modal-content fencing-modal-md">
                    
-                    <span class="fencing-modal-close">&times;</span>
-                    
                     <div class="fencing-modal-head">
                         <div class="fencing-modal-title">
                             <h4>Download Your Project Plans</h4>
                         </div>
+                        <span class="fencing-modal-close">&times;</span>
                     </div>
 
                     <div class="fencing-modal-body fc-mb-4">
@@ -867,13 +873,13 @@
 
                             <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Anything Else We Can Help You With?</h2>
 
-                            <div class="fc-form-group fc-mb-2">
+                            <div class="fc-other-products fc-form-group fc-mb-2">
                                 <div class="fc-row-container">
 
                                     <?php foreach( fc_extra_needed() as $extra_k => $extra_v ): ?>
                                     <div class="fc-col-3">
-                                        <div class="fc-form-check-img fc-rounded fc-mb-1">
-                                            <label class="fc-form-check fc-mb-1">
+                                        <div class="fc-form-check-img fc-rounded">
+                                            <label class="fc-form-check">
                                             <img class="fc-rounded" src="img/plans/<?php echo $extra_k; ?>.png">								
                                             <input type="checkbox" name="extra[]" value="<?php echo $extra_k; ?>">
                                             </label>
@@ -883,8 +889,8 @@
                                     <?php endforeach; ?>
 
                                     <div class="fc-col-3">
-                                        <div class="fc-form-check-img fc-form-check-empty fc-rounded fc-mb-1">
-                                            <label class="fc-form-check fc-mb-1">
+                                        <div class="fc-form-check-img fc-form-check-empty fc-rounded">
+                                            <label class="fc-form-check">
                                                 <div class="fc-empty-img">
                                                     Nothing Extra<br>
                                                     Just Fencing

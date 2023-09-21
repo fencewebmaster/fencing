@@ -21,6 +21,7 @@
 .btn-fc:hover {
 	background: #525252;
 	cursor: pointer;
+	color: #fff;
 }
 
 
@@ -57,7 +58,7 @@
 	color: var(--fc-dark-charcoal);
 	border-radius: $button-radius;
 	font-size: 14px;
-    padding: 10px 20px;
+    padding: 15px 20px;
 	background: transparent;
 
 	&:hover{
@@ -66,6 +67,17 @@
 			color: #fff;
 		}
 	}
+
+	&--dark-gray{
+		border-color: var(--fc-dark-gray);
+		color: var(--fc-dark-gray);
+	}
+
+	&--dark-gray:hover{
+		background-color: var(--fc-dark-gray);
+		color: #fff;
+	}
+	
 }
 
 .btn-fc-outline-light {
@@ -192,6 +204,9 @@
 	& + .btn-fc{
 		height: 69px;
 		width: 136px;
+		@include lg {
+			width: 100%;
+		}
 	}
 
 	&.btn-fc{

@@ -3,7 +3,7 @@
 	width: 100%;
 }
 .fc-label-group {
-	border: 1px solid #ddd;
+	border: 1px solid var(--fc-gainsboro);
 	border-radius: 8px;
 	position: relative;
 }
@@ -19,6 +19,8 @@
 	border: 0;
     padding: 20px 15px 15px;
     font-size: 14px;
+    height: 59px;
+    box-sizing: border-box;
 }
 .fc-label-group .fc-form-label {
 	top: -11px;
