@@ -162,13 +162,16 @@
 	max-width: 1194px;	
 }
 .fencing-modal-md {
-	max-width: 700px;	
+	max-width: 840px;	
 }
 #fc-control-modal .fc-row-container {
 	margin: auto;
 }
 .fc-form-check {
 	position: relative;
+	.fc-mb-1{
+		margin-bottom: 16px !important;
+	}
 }
 .fc-form-check label {
 	display: block;
@@ -195,28 +198,41 @@
 	position: relative;	
 	border: 2px solid #e9e9e9;
 	color: #000;
+	transition: all .2s ease;
+
+	label {
+		cursor: pointer;
+	}
+
+	input[type="radio"],
+	input[type="checkbox"] {
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+	}
+
+	.fc-rounded {
+		border-radius: 8px 8px 0 0 !important; 
+		height: 170px;
+		object-fit: cover;
+    	width: 100%;
+	}
+	.fc-empty-img{
+		height: 170px;
+	}
 }
-.fc-form-check-img label {
-	cursor: pointer;
-}
-.fc-form-check-img input[type="radio"],
-.fc-form-check-img input[type="checkbox"] {
-	position: absolute;
-	bottom: 10px;
-    right: 10px;
-}
+
+
 .fc-form-check-img.fc-selected,
 .fc-form-check-img:hover {
 	border: 2px solid #F67925 !important;
 	background: #F67925;
 	color: #fff;
 }
-.fc-form-check-img .fc-rounded {
-	border-radius: 8px 8px 0 0 !important; 
-}
+
 .fc-form-check-img p {
 	padding: 8px;
-	font-size: 14px;
+	font-size: 16px;
 	font-weight: 600;
 }
 .fc-form-control {
@@ -334,28 +350,36 @@ a.fc-tab-active {
     color: #666666;
     border: 2px solid;
     position: absolute;
-    right: 25px;
-    top: 25px;
-    font-size: 25px;
-    width: 25px;
-    height: 25px;
+    right: 55px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 100%;
     text-align: center;
-    line-height: 23px;
+	line-height: 99%;
     font-weight: 400;
+    display: flex;
+	transition: all .2s ease;
+    justify-content: center;
+	box-sizing: border-box;
+
+	&:hover,
+	&:focus {
+		background: #666666;
+		border: 2px solid #666666;
+		color: #fff;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
 }
 
-.fencing-modal-close:hover,
-.fencing-modal-close:focus {
-	background: #666666;
-    border: 2px solid #666666;
-	color: #fff;
-	text-decoration: none;
-	cursor: pointer;
-}
+
 .fencing-modal-title {
 	font-weight: 400;
-	padding: 25px 20px 10px 20px;
+	padding: 25px 20px;
 	font-size: 40px;
 	text-transform: uppercase;
 }
@@ -369,6 +393,7 @@ a.fc-tab-active {
 	font-size: 40px;
 	text-transform: uppercase;
 	font-weight: 400;
+	margin: 0;
 }
 
 .fencing-modal-body {	
@@ -401,7 +426,9 @@ a.fc-tab-active {
 	font-family: 'Inter', sans-serif;
 	padding: 20px 20px 0;
 }
-
+.fencing-modal-head{
+	position: relative;
+}
 .fencing-modal-head h2 {
 	margin-top: 0;
 	margin-bottom: 10px;
@@ -810,53 +837,7 @@ thead.fc-border th:last-child {
 
 
 
-/* Select post */
-.fc-select {
-    border: 2px solid var(--fc-gray);
-    cursor: pointer;
-    position: relative;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 7px;
-}
-.fc-select:after {
-	content: "";
-    display: inline-block;
-    height: 15px;
-    width: 15px;
-    border: 2px solid #e9e9e9;
-    border-radius: 100%;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-}
-.fc-step-4 .fc-select:after {
-	top: auto;
-    bottom: 10px;
-}
-.fc-step-4 .fc-select {
-	height: 80px;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-end;
-}
-.fc-form-field p {
-	font-size: 14px;
-}
-.fc-select:hover {
-	border: 2px solid var(--fc-blue);
-}
-.fc-selected {
-	border: 2px solid var(--fc-blue);
-}
-.fc-select.fc-selected:after {
-    border-color: #F67925;
-    background: #F67925;
-    box-shadow: inset 0 0 0 3px #fff;
-}
-.fc-select img {
-	width: 100%;
-}
+
 
 .fc-move-post {
 	border: 2px solid var(--fc-gray);
@@ -924,7 +905,7 @@ thead.fc-border th:last-child {
 	display: flex;
 	align-items: center;
 	font-size: 14px;
-	margin-top: 8px;
+	margin-top: 15px;
 }
 .fc-progress-container span {
 	width: 25px;
@@ -936,26 +917,38 @@ thead.fc-border th:last-child {
     justify-content: space-around;	
     margin-left: -8px;
     margin-right: -8px;
+	flex-direction: row-reverse;
+
+	@include lg {
+		display: block;
+	}
+
 }
 .fc-form-plan-action button {
 	width: 100%;
     margin-left: 8px;
     margin-right: 8px;
+	letter-spacing: 1px;
 }
-.fc-form-plan h2 {
-	font-weight: 400;
-	font-size: 40px;
+.fc-form-plan {
+	h2 {
+		font-weight: 400;
+		font-size: 40px;
+		@include lg {
+			font-size: 36px;
+		}
+	}
+
+	&.form-tab-4 h2{
+		margin-bottom: 10px !important;
+	}
 }
 .fc-form-plan .fc-form-label {
     margin-bottom: 10px;
     display: block;
 	font-weight: 500;
 }
-#submit-modal img {
-	object-fit: cover;
-    height: 140px;
-    width: 100%;
-}
+
 
 .fc-hide {
 	display: none;
@@ -1030,13 +1023,7 @@ thead.fc-border th:last-child {
 	    padding: 10px 15px;
 	}
 
-	/* The Close Button */
-	.fencing-modal-close {
-	    right: -15px;
-	    top: -15px;
-	    padding: 0;
-	    font-size: 20px;
-	}
+
 }
 @media only screen and (max-width: 600px) {
 	.fc-col-sm-6 {

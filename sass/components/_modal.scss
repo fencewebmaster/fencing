@@ -74,10 +74,16 @@
             width: 24px;
             height: 24px;
             box-sizing: border-box;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 8px;
             right: 12px;
         }
+    }
+
+    [name="panel_option"] .fc-select:after{
+        top: 50%;
+        transform: translateY(-50%);
+        right: auto;
+        left: 8px;
     }
 
     [type="range_option"],
@@ -109,8 +115,6 @@
 
     .fc-alert-gray{
         padding: 16px;
-        background-color: var(--fc-cultured);
-        border-radius: 8px;
     }
 
     .fc-selection-details{

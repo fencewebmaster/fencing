@@ -13,7 +13,7 @@
 
 //Remove padding around columns
 .fc-p-0 {
-  [class*="fc-col"] {
+  [class*="fc-col-"] {
     padding: 0;
   }
 }

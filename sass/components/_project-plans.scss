@@ -1,0 +1,10 @@
+.fc-other-products{
+    .fc-col-3{
+        @include lg {
+            width: calc(33.3% - 20px);
+        }
+        @include md {
+            width: calc(50% - 20px);
+        }
+    }
+}
