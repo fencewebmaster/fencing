@@ -103,9 +103,11 @@
 
 		<!-- START SECTION TABS -->
 		<div class="fc-header-tab fc-section-step fc-font-2">
-			<a href=".?step=3">SECTION DETAILS</a>
-			<a href=".?step=4">Project Options</a>	
-			<a href="#" class="fc-tab-active tab-selected">Project Plan & Cart</a>
+			<div class="fc-header-tab__area">
+				<a href=".?step=3">SECTION DETAILS</a>
+				<a href=".?step=4">Project Options</a>	
+				<a href="#" class="fc-tab-active tab-selected">Project Plan & Cart</a>
+			</div>
 		</div>
 		<!-- END SECTION TABS -->
 

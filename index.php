@@ -92,12 +92,16 @@
             
             <!-- @TODO: Are we hiding this header tab? It no longer exists in figma -->
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
-                <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
+                <div class="fc-header-tab__area">
+                    <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
+                </div>
             </div>
             
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
-                <a href="#" data-tab="1" data-move="2" class="">Section Details</a>
-                <a href="#" data-tab="2" data-move="1" class="fc-tab-active tab-selected">Project Options</a>	
+                <div class="fc-header-tab__area">
+                    <a href="#" data-tab="1" data-move="2" class="">Section Details</a>
+                    <a href="#" data-tab="2" data-move="1" class="fc-tab-active tab-selected">Project Options</a>
+                </div>	
             </div>
 
             <div class="fencing-content fc-font-1">

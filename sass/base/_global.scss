@@ -314,7 +314,9 @@ h2.fc-header-title {
 
 /* Header tabs */
 .fc-header-tab {
-	display: flex;
+	&__area{
+		display: flex;
+	}
 }	
 .fc-header-tab a {
 	background: #fff;
