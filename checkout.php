@@ -2,37 +2,56 @@
 session_start();
 
 include('data/settings.php');
-include('temp/fields.php');
 include('helpers.php');
 
-if( @$_POST['action'] == 'pay' ) {
+if( @$_POST['action'] == 'place_order' ) {
+
+    $data = [
+        'error' => FALSE,
+        'url' => 'thank-you.php',
+    ];
+    
+    echo json_encode($data);
+    exit;
 
     require 'vendor/autoload.php'; // Include the Stripe PHP library
 
     \Stripe\Stripe::setApiKey('sk_test_RXv2cjYIBVyIWk8wEdLnIkf2'); // Replace with your actual secret key
 
-    header('Content-Type: application/json');
-
-    /*
-    echo '<pre>';
-    print_r($_POST );
-    exit;*/
+   // header('Content-Type: application/json');
 
     // Create a Customer:
     try {
+
         $customer = \Stripe\Customer::create([
-            'name'    => ucwords($_POST['firstname'].' '.$_POST['lastname']), 
-            'email'   => $_POST['email'],
-            'source'  => $_POST['stripeToken']
+            'name'    => ucwords($_POST['name']), 
+            'email'   => @$_POST['email'],
+            'source'  => @$_POST['stripeToken']
         ]);
 
         // $customer->id contains the customer ID, which you can save in your database
     } catch (\Stripe\Exception\CardException $e) {
         // Handle card errors
-        echo 'Error: ' . $e->getError()->message;
+
+        $data = [
+            'error' => TRUE,
+            'message' => 'Error: ' . $e->getError()->message
+        ];
+
+        echo json_encode($data);
+        exit;
+
     } catch (Exception $e) {
         // Handle other errors
-        echo 'Error: An error occurred while creating the customer.';
+
+        $data = [
+            'error' => TRUE,
+            'message' => 'Error: An error occurred while creating the customer.'
+        ];
+
+        echo json_encode($data);
+        exit;
+
     }
 
     // Charge the Customer:
@@ -44,23 +63,37 @@ if( @$_POST['action'] == 'pay' ) {
             'description' => 'Example Charge',
         ]);
 
+        $data = [
+            'error' => FALSE,
+            'message' => 'Error: ' . $e->getError()->message,
+            'response' => $charge,
+        ];
+
         // $charge->id contains the charge ID, which you can save or use for reference
     } catch (\Stripe\Exception\CardException $e) {
         // Handle card errors
-        echo 'Error: ' . $e->getError()->message;
+
+        $data = [
+            'error' => TRUE,
+            'message' => 'Error: ' . $e->getError()->message
+        ];
+
     } catch (Exception $e) {
+
         // Handle other errors
-        echo 'Error: An error occurred while processing the payment.';
+        $data = [
+            'error' => TRUE,
+            'message' => 'Error: An error occurred while processing the payment.'
+        ];
+
     }
 
-    echo '<pre>';
-    print_r($charge );
+    echo json_encode($data);
 
 } elseif( @$_POST['action'] == 'update_details' ) {
 
     $_SESSION["fc_data"] = $_POST;
 
-    exit;
 } elseif( @$_POST['action'] == 'update_cart' ) {
  
     $cart_items_data = array();
@@ -121,9 +154,8 @@ if( @$_POST['action'] == 'pay' ) {
 
     // echo json_encode($_POST);
 
-    exit;
 }
 
-
+exit;
 
 
