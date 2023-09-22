@@ -91,11 +91,11 @@
         <div class="fc-section-details">
             
             <!-- @TODO: Are we hiding this header tab? It no longer exists in figma -->
-            <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
+            <!-- <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
                 <div class="fc-header-tab__area">
                     <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
                 </div>
-            </div>
+            </div> -->
             
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
                 <div class="fc-header-tab__area">

@@ -884,6 +884,24 @@ thead.fc-border th:last-child {
 	display: flex;
 	width: 150px;
 	margin-right: 10px;
+
+	& > div{
+
+		&:after{
+			content: "";
+			background: #F67925;
+			width: 0;
+			display: block;
+			height: 100%;
+			transition: all 2s ease;
+			opacity: 0;
+		}
+		&.pt-complete:after{
+			width: 100%;
+			opacity: 1;
+		}
+
+	}
 }	
 .fc-progress-value {
 	background: #EAEAEA;
@@ -892,10 +910,13 @@ thead.fc-border th:last-child {
 	width: 100%;
 	display: inline-block;
 	margin: 0 2px;
+	overflow: hidden;
+
+
 }
-.pt-complete {
-	background: #F67925;
-}	
+// .pt-complete {
+// 	background: #F67925;
+// }	
 .fc-progress-container {	
 	font-family: 'Inter', sans-serif;
 	display: flex;

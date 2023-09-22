@@ -1114,6 +1114,21 @@ thead.fc-border th:last-child {
 	margin-right: 10px;
 }
 
+.fc-progress-tabs > div:after {
+	content: "";
+	background: #F67925;
+	width: 0;
+	display: block;
+	height: 100%;
+	transition: all 2s ease;
+	opacity: 0;
+}
+
+.fc-progress-tabs > div.pt-complete:after {
+	width: 100%;
+	opacity: 1;
+}
+
 .fc-progress-value {
 	background: #EAEAEA;
 	border-radius: 4px;
@@ -1121,10 +1136,7 @@ thead.fc-border th:last-child {
 	width: 100%;
 	display: inline-block;
 	margin: 0 2px;
-}
-
-.pt-complete {
-	background: #F67925;
+	overflow: hidden;
 }
 
 .fc-progress-container {
