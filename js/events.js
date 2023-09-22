@@ -145,7 +145,7 @@ $(document).on('click', '.fc-move-post', function(){
         var index =  $('#panel-item-0').index()/3;
 
         $('#btn-gate').html('Add Gate');
-        $(".fencing-modal").fadeOut('fast');
+        FCModal.close();
         $('.fc-btn-active').removeClass('fc-btn-active');
 
  
@@ -222,11 +222,6 @@ $(document).on('click', '.fc-select-post, .fc-select-item', function(){
 
 });
 
-$(document).on('click', '.fencing-modal-close', function(){
-    $(this).closest('.fencing-modal').fadeOut('fast');
-    $('.fc-btn-active').removeClass('fc-btn-active');
-});
-
 $(document).on('click', '.fencing-modal-content', function(e) {
   e.stopPropagation();
 });
@@ -257,12 +252,12 @@ $(document).on('click', '.fencing-tab', function() {
 });
 
 $(document).on('click', '.fencing-modal .fc-select', function() {
-    $(".fencing-modal").fadeOut('fast');
+    //FCModal.close();
     $('.fc-btn-active').removeClass('fc-btn-active');
 });
 
 $(document).on('click', '#fc-control-modal', function() {
-    $(".fencing-modal").fadeOut('fast');
+    FCModal.close();
     $('.fc-btn-active').removeClass('fc-btn-active');
 });
 
@@ -270,7 +265,7 @@ $(document).keydown(function(e){
    var code = e.keyCode || e.which;
    
    if( code == 27 ) {
-        $(".fencing-modal").fadeOut('fast');
+        FCModal.close();
         $('.fc-btn-active').removeClass('fc-btn-active');        
    }
 
@@ -386,7 +381,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
     
-    $(target).fadeIn('fast');
+    FCModal.open(target);
 
     $(this).addClass('fc-btn-active');
 

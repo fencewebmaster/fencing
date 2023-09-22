@@ -3,7 +3,7 @@
 
 	<div class="fencing-modal-header">
 		<div class="fencing-modal-title fc-font-2">Add / Remove Gate</div>
-		<span class="fencing-modal-close">×</span>
+		<button class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
 	</div>
 
 	<div class="fencing-modal-body fc-font-1">
@@ -68,7 +68,7 @@
 <div class="fencing-modal-area" data-field="range_option">
 	<div class="fencing-modal-header">
 		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
-		<span class="fencing-modal-close">×</span>
+		<button class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
 	</div>
 	<div class="fencing-modal-body fc-font-1 fc-p-0">
 		<div class="fencing-form-group">
@@ -85,7 +85,7 @@
 <div class="fencing-modal-area"  data-field="dropdown_option">
 	<div class="fencing-modal-header">
 		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
-		<span class="fencing-modal-close">×</span>
+		<button class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
 	</div>
 	<div class="fencing-modal-body fc-font-1 fc-p-0">
 		<div class="fc-col-half fc-dropdown_option">
@@ -103,7 +103,7 @@
 <div class="fencing-modal-area" data-field="text_option">
 	<div class="fencing-modal-header">
 		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
-		<span class="fencing-modal-close">×</span>
+		<button class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
 	</div>
 	<div class="fencing-modal-body fc-font-1 fc-p-0">
 		<div class="fencing-form-group">
@@ -140,7 +140,7 @@
 <div class="fencing-modal-area" data-field="image_option">
 	<div class="fencing-modal-header">
 		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
-		<span class="fencing-modal-close">×</span>
+		<button class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
 	</div>
 	<div class="fencing-modal-body fc-font-1 fc-p-0">
 		<div class="fc-row-container fencing-form-group">

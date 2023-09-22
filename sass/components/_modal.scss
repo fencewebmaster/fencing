@@ -61,6 +61,17 @@
         top: 0;
         right: 0;
         position: relative;
+        background-color: #fff;
+        border-color: var(--fc-granite-gray);
+
+        &:after{
+            content: "×";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--fc-granite-gray);
+        }
     }
 
     .fc-select{
