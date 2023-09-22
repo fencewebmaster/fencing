@@ -1,37 +1,48 @@
 <script type="text/text" data-type="move">
-<div class="fc-control-move fencing-form-group">
-	<h2 class="body-title">{{title}}</h2>
-	<div class="fc-row">
+<div class="fencing-modal-area fencing-modal-area--gate fc-p-0">
 
-		<div class="fc-row-flex">
-			<div class="fc-col-flex fc-text-center">
-				<div class="fc-move-post" data-move="first">	
-					<p><span>&#8676;</span><br>First</p>
-				</div>
-			</div>
-			<div class="fc-col-flex fc-text-center">
-				<div class="fc-move-post" data-move="left">	
-					<p><span>&#8592;</span><br>Left</p>
-				</div>
-			</div>
-			<div class="fc-col-flex fc-text-center">
-				<div class="fc-move-post" data-move="delete">	
-					<p><span>&#10005;</span><br>Delete</p>
-				</div>
-			</div>
-			<div class="fc-col-flex fc-text-center">
-				<div class="fc-move-post" data-move="right">	
-					<p><span>&#8594;</span><br>Right</p>
-				</div>
-			</div>
-			<div class="fc-col-flex fc-text-center">
-				<div class="fc-move-post" data-move="last">	
-					<p><span>&#8677;</span><br>Last</p>
-				</div>
-			</div>
-		</div>	
-										
-	</div>    		
+	<div class="fencing-modal-header">
+		<div class="fencing-modal-title fc-font-2">Add / Remove Gate</div>
+		<span class="fencing-modal-close">×</span>
+	</div>
+
+	<div class="fencing-modal-body fc-font-1">
+		<div class="fc-control-move fencing-form-group">
+			<h2 class="body-title">{{title}}</h2>
+			<div class="fc-row">
+
+				<div class="fc-row-flex">
+					<div class="fc-col-flex fc-text-center">
+						<div class="fc-move-post" data-move="first">	
+							<p><span>&#8676;</span><br>First</p>
+						</div>
+					</div>
+					<div class="fc-col-flex fc-text-center">
+						<div class="fc-move-post" data-move="left">	
+							<p><span>&#8592;</span><br>Left</p>
+						</div>
+					</div>
+					<div class="fc-col-flex fc-text-center">
+						<div class="fc-move-post" data-move="delete">	
+							<p><span>&#10005;</span><br>Delete</p>
+						</div>
+					</div>
+					<div class="fc-col-flex fc-text-center">
+						<div class="fc-move-post" data-move="right">	
+							<p><span>&#8594;</span><br>Right</p>
+						</div>
+					</div>
+					<div class="fc-col-flex fc-text-center">
+						<div class="fc-move-post" data-move="last">	
+							<p><span>&#8677;</span><br>Last</p>
+						</div>
+					</div>
+				</div>	
+												
+			</div>    		
+		</div>
+	</div>
+	<div class="fencing-modal-notes"></div>
 </div>
 </script>
 
@@ -54,29 +65,55 @@
 </script>
 
 <script type="text/text" data-type="range_option">
-<div class="fencing-form-group">
-	<h2 class="body-title">{{title}}</h2>
-	<div class="fc-row-container">
-		<div class="fc-row fc-form-field" name="{{field_name}}" type="{{type}}" value=""></div>	
-	</div>			
+<div class="fencing-modal-area" data-field="range_option">
+	<div class="fencing-modal-header">
+		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
+		<span class="fencing-modal-close">×</span>
+	</div>
+	<div class="fencing-modal-body fc-font-1 fc-p-0">
+		<div class="fencing-form-group">
+			<h2 class="body-title">{{title}}</h2>
+			<div class="fc-row-container">
+				<div class="fc-row fc-form-field" name="{{field_name}}" type="{{type}}" value=""></div>	
+			</div>			
+		</div>
+	</div>
 </div>
 </script>
 
 <script type="text/text" data-type="dropdown_option">
-<div class="fc-col-half fc-dropdown_option">
-	<h2 class="body-title">{{title}}</h2>
-	<div class="fc-row">
-		<select class="fc-form-field fc-select-option" name="{{field_name}}" type="{{type}}" value="">
-	</div>			
+<div class="fencing-modal-area"  data-field="dropdown_option">
+	<div class="fencing-modal-header">
+		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
+		<span class="fencing-modal-close">×</span>
+	</div>
+	<div class="fencing-modal-body fc-font-1 fc-p-0">
+		<div class="fc-col-half fc-dropdown_option">
+			<h2 class="body-title">{{title}}</h2>
+			<div class="fc-row">
+				<select class="fc-form-field fc-select-option" name="{{field_name}}" type="{{type}}" value="">
+			</div>			
+		</div>
+	</div>
+	<div class="fencing-modal-notes"></div>
 </div>
 </script>
 
 <script type="text/text" data-type="text_option">
-<div class="fencing-form-group">
-	<h2 class="body-title">{{title}}</h2>
-	<div class="fc-row-container">
-		<div class="fc-row fc-form-field" name="{{field_name}}" type="{{type}}" value=""></div>	
-	</div>    		
+<div class="fencing-modal-area" data-field="text_option">
+	<div class="fencing-modal-header">
+		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
+		<span class="fencing-modal-close">×</span>
+	</div>
+	<div class="fencing-modal-body fc-font-1 fc-p-0">
+		<div class="fencing-form-group">
+			<h2 class="body-title">{{title}}</h2>
+			<div class="fc-row-container">
+				<div class="fc-row fc-form-field" name="{{field_name}}" type="{{type}}" value=""></div>	
+			</div>    		
+		</div>
+	</div>
+	<div class="fencing-modal-notes"></div>
 </div>
 </script>
 
@@ -100,8 +137,17 @@
 </script>
 
 <script type="text/text" data-type="image_option">
-<div class="fc-row-container fencing-form-group">
-	<div class="fc-row fc-form-field" name="{{field_name}}" type="{{type}}" value=""></div>	
+<div class="fencing-modal-area" data-field="image_option">
+	<div class="fencing-modal-header">
+		<div class="fencing-modal-title fc-font-2">{{field_title}}</div>
+		<span class="fencing-modal-close">×</span>
+	</div>
+	<div class="fencing-modal-body fc-font-1 fc-p-0">
+		<div class="fc-row-container fencing-form-group">
+			<div class="fc-row fc-form-field" name="{{field_name}}" type="{{type}}" value=""></div>	
+		</div>
+	</div>
+	<div class="fencing-modal-notes"></div>
 </div>
 </script>
 

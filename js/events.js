@@ -371,6 +371,13 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     if( ! $(this).hasClass('fencing-btn-modal') ) 
         return false;
 
+    let modal = {
+        el : $('.fencing-modal'),
+        content : $('.fencing-modal-content'),
+        body: $('.fencing-modal-body')
+    };
+
+    //Button Data Information
     var target = $(this).data('target'),
         key = $(this).data('key'),
         i = $('.fencing-style-item.fsi-selected').index(),
@@ -378,14 +385,14 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
-
+    
     $(target).fadeIn('fast');
 
     $(this).addClass('fc-btn-active');
 
-    $("#fc-control-modal .fencing-modal-body:not(.js-fc-ignore), #fc-control-modal .fencing-modal-notes:not(.js-fc-ignore)").html('');
+    modal.el.find(".fencing-modal-notes, .fencing-modal-content").html('');
 
-    $("#fc-control-modal .fencing-modal-title:not(.js-fc-ignore)").html(info?.settings[key]?.title);
+    //$("#fc-control-modal .fencing-modal-title").html(info?.settings[key]?.title);
 
     $('.fencing-container').attr('data-key', key);
 
@@ -394,6 +401,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     $.each(fields, function(k, v){
 
         var tpl = $('script[data-type="'+v.type+'"]').text()
+                                                     .replace(/{{field_title}}/gi, v.title)
                                                      .replace(/{{title}}/gi, v.label)
                                                      .replace(/{{image}}/gi, v.image)
                                                      .replace(/{{default}}/gi, v.default)
@@ -404,12 +412,12 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                                                      .replace(/{{sub_unit}}/gi, v?.weight?.unit)
                                                      .split(/\$\{(.+?)\}/g);
 
-        $("#fc-control-modal .fencing-modal-body:not(.js-fc-ignore)").append(tpl);
+        modal.content.append(tpl);
 
         if( v.type == 'dropdown_option') {
 
             $(v.options).each(function(i, o) {
-                $('[name="'+v.slug+'"]:not(.js-fc-ignore)').append($('<option>',{ value: o.slug, text: o.title }));
+                $('[name="'+v.slug+'"]').append($('<option>',{ value: o.slug, text: o.title }));
             });
 
         }
@@ -424,7 +432,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 <p>${title}</p>
             </div>`;
 
-            $('#fc-control-modal .fc-row:not(.js-fc-ignore)').html(v.options.map(Item).join(''));
+            modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
         }
 
         if( v.type == 'text_option') {
@@ -436,7 +444,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 </div>
             </div>`;
 
-            $('.fencing-modal .fc-row:not(.js-fc-ignore)').html(v.options.map(Item).join(''));
+            modal.el.find('[data-field="text_option"] .fc-row').html(v.options.map(Item).join(''));
         }
 
         if( v.type == 'image_option') {
@@ -450,8 +458,10 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 <p>${extra}</p>
             </div>`;
 
-            $('.fencing-modal .fc-row:not(.js-fc-ignore)').html(v.options.map(Item).join(''));
+            modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
         }
+
+        addNotesOrInfo(modal, v);
 
         // GET/SET DEFAULT VALUE
         var default_value = v.options?.filter(function(item) {
@@ -464,39 +474,60 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
             get_field_value(tag, v?.slug, opt?.slug);                        
         }
+        
 
     });
-
-
-    var details = info?.settings[key]?.info;
-
-    if( details ) {
-        const Item = ({ title, description }) => `<div class="fc-selection-details">
-                <label>${title}</label>
-                <p>${description}</p>
-            </div>`;
-
-        $('.fencing-modal-notes:not(.js-fc-ignore)').append( details.map(Item).join('') );
-    }
-
-    var notes = info?.settings[key]?.notes;
-
-    if( notes ) {
-        var notes_html =  `<div class="fc-selection-details fc-alert-gray">
-                <label><i class="fc-icon fc-icon-capa"></i> ${notes.title}</label>
-                <p class="fc-text-gray">${notes.description}</p>
-            </div>`;
-
-        $('.fencing-modal-notes:not(.js-fc-ignore)').append( notes_html );
-    }
 
     var filtered_data = custom_fence.filter(function(item) {
         return item.control_key == key;
     });
 
+    removeDuplicateCloseBtn();
     set_field_value( filtered_data );
 
 });
+
+
+/**
+ * Add Notes or Info if value exists in array
+ */
+function addNotesOrInfo(modal, v) {
+
+    var details = v.info;
+    var notes = v.notes;
+
+    
+    
+    if( details || notes ){
+
+   
+        if( details ) {
+            const Item = ({ title, description }) => `<div class="fc-selection-details">
+                    <label>${title}</label>
+                    <p>${description}</p>
+                </div>`;
+    
+            modal.el.find('.fencing-modal-notes').append( details.map(Item).join('') );
+        }
+       
+        if( notes ) {
+            var notes_html =  `<div class="fc-selection-details fc-alert-gray">
+                    <label><i class="fc-icon fc-icon-capa"></i> ${notes.title}</label>
+                    <p class="fc-text-gray">${notes.description}</p>
+                </div>`;
+    
+            modal.el.find('.fencing-modal-notes').append( notes_html );
+        }
+    }
+
+}
+
+/**
+ * @TODO - This is a temporary solution
+ */
+function removeDuplicateCloseBtn() {
+    $('.fencing-modal-area ~ .fencing-modal-area .fencing-modal-close').remove();
+}
 
 $(document).on('keypress', '.measurement-box-number', function(e){
     if(event.which == 13) {
