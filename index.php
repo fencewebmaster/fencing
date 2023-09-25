@@ -309,7 +309,7 @@
                                             <div class="fc-scrollable-area">
                                         <?php foreach($color_options as $co): ?>
                                         <div class="fc-col-3">
-                                            <div class="fc-select-item fc-select fc-mb-0" data-slug="" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
+                                            <div class="fc-select-item fc-select fc-mb-0" data-slug="<?php echo $co['slug']; ?>" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
                                                 <p><?php echo $co['title']; ?></p>
                                                 <span><?php echo $co['sub_title']; ?></span>
                                             </div>
