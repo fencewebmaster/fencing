@@ -18,6 +18,11 @@
 			margin-bottom: 0;
 		}
     }
+
+	&--large-text{
+		font-size: 18px !important;
+		line-height: 20px !important;
+	}
 }
 .btn-fc:hover {
 	background: #525252;
@@ -191,11 +196,11 @@
 		padding: 12px 16px;
 	}
 
-	span{
-		@include lg {
-			display: none;
-		}
-	}
+	// span{
+	// 	@include lg {
+	// 		display: none;
+	// 	}
+	// }
 
 }
 

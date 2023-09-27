@@ -74,6 +74,9 @@
 .fc-text-gray {
   color: var(--fc-granite-gray);
 }
+.fc-text-red {
+  color: var(--fc-brand-primary);
+}
 .fc-text-success {
   color: #4caf50;
 }
@@ -213,4 +216,15 @@
 /** Borders **/
 .br-tl-0{
   border-top-left-radius: 0 !important;
+}
+
+.br-tr-md-0{
+  @include lg{
+    border-top-right-radius: 0 !important;
+  }
+}
+
+/** Tables **/
+.valign-top{
+  vertical-align: top;
 }

@@ -3,6 +3,11 @@
         border-radius: 40px;
         padding: 40px;
         box-sizing: border-box;
+
+        @include lg{
+            padding: 26px 16px;
+            border-radius: 16px;
+        }
     }
     .fencing-modal-title{
         padding: 0;
@@ -170,6 +175,10 @@
     background-color: #fff;
     border-color: var(--fc-granite-gray);
 
+    @include lg{
+        top: 0;
+    }
+
     &:hover{
         background-color: #fff;
     }
@@ -191,9 +200,16 @@
     }
     .fc-col-half:first-child{
         margin-right: 16px;
+        @include lg{
+            margin-right: 0;
+        }
     }
     .fc-form-plan .fc-col-half{
         width: calc(50% - 8px);
+
+        @include lg{
+            width: 100%;
+        }
     }
     .fc-form-check label{
         margin-left: 3px;
@@ -212,8 +228,21 @@
             margin-bottom: 24px;
             width: pxTopercent(170, 760);
 
+            @include lg{
+                width: 48.4%;
+            }
+
+            &:nth-child(2n){
+                @include lg{
+                    margin-right: 0 !important;
+                }
+            }
+
             &:nth-child(4n){
                 margin-right: 0;
+                @include lg{
+                    margin-right: pxTopercent(24, 760);
+                }
             }
 
         }

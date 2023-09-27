@@ -38,7 +38,16 @@
 	font-weight: 400;
 	line-height: 38px;
 	margin-bottom: 3px;
+
 }
+
+.fc-project-plan  .step-label{
+	@include lg{
+		font-size: 24px;
+		margin-bottom: 0;
+	}
+}
+
 .step-label span {
 	color: var(--fc-brand-primary);
 }
@@ -171,6 +180,10 @@
 	padding: 8px;
 	font-size: 16px;
 	font-weight: 600;
+
+	@include lg{
+		font-size: 14px;
+	}
 }
 .fc-form-control {
     border: 1px solid #DDDDDD;
@@ -343,6 +356,11 @@ a.fc-tab-active {
 	text-transform: uppercase;
 	font-weight: 400;
 	margin: 0;
+
+	@include lg{
+		text-align: left;
+		font-size: 24px;
+	}
 }
 
 .fencing-modal-body {	
@@ -378,6 +396,9 @@ a.fc-tab-active {
 .fencing-modal-head{
 	position: relative;
 	margin-bottom: 32px;
+	@include lg{
+		margin-bottom: 15px;
+	}
 }
 .fencing-modal-head h2 {
 	margin-top: 0;
@@ -411,7 +432,7 @@ a.fc-tab-active {
 	cursor: pointer;
 }	
 .fencing-input-range .fi-btn:hover {
-	background: var(--fc-blue);
+	background: var(--fc-princeton-orange);
 	color: #fff;
 }
 .fir-input-group {
@@ -688,6 +709,10 @@ thead.fc-border th:last-child {
 .fc-table-rounded-border {
 	border: 1px solid #DDDDDD;
     border-radius: 10px;	
+
+	th{
+		height: 40px;
+	}
 }
 .fc-table-rounded-border table {
 	margin: 0;
@@ -695,7 +720,12 @@ thead.fc-border th:last-child {
 .fc-table-rounded-border table td {
 	border: 1px solid #DDDDDD;
     padding: 10px 15px;
-	font-size: 14px
+	font-size: 14px;
+	box-sizing: border-box;
+
+	@include lg {
+		padding: 10px;
+	}
 }
 .fc-rounded-top-none {
 	border-top-right-radius: 0;	
@@ -800,7 +830,7 @@ thead.fc-border th:last-child {
 	border-radius: 5px;
 }
 .fc-move-post:hover {
-	border: 2px solid var(--fc-blue);
+	border: 2px solid var(--fc-princeton-orange);
 }
 [type="text_option"] .fc-select {
     text-align: left;
@@ -881,6 +911,12 @@ thead.fc-border th:last-child {
 	align-items: center;
 	font-size: 14px;
 	margin-top: 15px;
+
+	@include lg{
+		justify-content: center;
+		margin-bottom: 20px;
+		float: none !important;
+	}
 }
 .fc-progress-container span {
 	width: 25px;
@@ -902,13 +938,24 @@ thead.fc-border th:last-child {
 	margin: 0;
 	letter-spacing: 1px;
 	height: 52px;
+
+	@include lg {
+		margin-bottom: 16px;
+	}
+
+	&:last-child{
+		@include lg {
+			margin-bottom: 0;
+		}
+	}
 }
 .fc-form-plan {
 	h2 {
 		font-weight: 400;
 		font-size: 40px;
 		@include lg {
-			font-size: 36px;
+			font-size: 26px;
+			text-align: center;
 		}
 	}
 
@@ -988,6 +1035,7 @@ thead.fc-border th:last-child {
 	.fc-project-plan .btn-fc {
 		font-size: 12px;	
 		text-align: center;	
+		margin: 0;
 	}
 
 

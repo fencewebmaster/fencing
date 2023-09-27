@@ -387,9 +387,12 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     FCModal.open(target);
 
     $(this).addClass('fc-btn-active');
+
+    console.log(modal.el);
    
     if( typeof key !== "undefined" ){
-        modal.el.find(".fencing-modal-notes, .fencing-modal-content").html('');
+        modal.el.find(".fencing-modal-notes").html('');
+        modal.el.find(".fencing-modal-content").html('');
     }
 
     $('.fencing-container').attr('data-key', key);
