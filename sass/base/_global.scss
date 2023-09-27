@@ -16,10 +16,11 @@
 .fc-color-options span {
 	font-size: 14px;
 }
-.fencing-content {
-	background: #fff;
-	border: 3px solid #F67925;
+
+.fencing-content{
+	background-color: #fff;
 }
+
 .fencing-content-title {
 	font-size: 16px;
 	font-weight: normal;
@@ -44,65 +45,7 @@
 .fencing-divider {
 	border-bottom: 1px solid var(--fc-bright-gray);
 }
-.fencing-section {
-    margin: 32px 0;
-	padding: 0 32px;
-	position: relative;
 
-	@include lg {
-		margin-left: 0;
-		margin-right: 0;
-		padding-left: 16px;
-		padding-right: 16px;
-	}
-
-
-	&.fencing-styles{
-		margin-top: 24px;
-	}
-
-	&--step1{
-		.btn-delete-fence{
-			position: absolute;
-			top: 50%;
-			right: 32px;
-			transform: translateY(-50%);
-
-			@include lg {
-				right: 16px;
-			}
-		}
-	}
-
-	&--step3{
-		@include lg {
-			margin-bottom: 0;
-		}
-	}
-
-	&--step2 h4.fencing-content-title{
-		@include lg {
-			margin-bottom: 24px !important;
-		}
-	}
-
-	&--step3 h4.fencing-content-title{
-		@include lg {
-			margin-bottom: 10px !important;
-		}
-	}
-
-	&__controls {
-		display: flex;
-		a {
-			border: 1px solid #DDDDDD;
-			border-radius: 8px;
-			padding: 12px 16px;
-			margin-right: 8px;
-			display: block;
-		}
-	}
-}
 .fencing-form-group {
 	margin-bottom: 15px;
 }
@@ -156,7 +99,7 @@
 	max-width: 1194px;	
 }
 .fencing-modal-md {
-	max-width: 840px;	
+	max-width: 720px;	
 }
 #fc-control-modal .fc-row-container {
 	margin: auto;
@@ -235,6 +178,16 @@
     font-size: 16px;
     padding: 15px;
     border-radius: 8px;
+
+	&--textarea{
+		width: 500px;
+		height: 120px;
+		box-sizing: border-box;
+		@include lg {
+			width: 100%;
+			height: auto;
+		}
+	}
 }
 .fc-form-control-sm {
     font-size: 14px;
@@ -347,8 +300,8 @@ a.fc-tab-active {
     border: 2px solid;
     position: absolute;
     right: 55px;
-    top: 50%;
-    transform: translateY(-50%);
+    // top: 50%;
+    // transform: translateY(-50%);
     font-size: 28px;
     width: 32px;
     height: 32px;
@@ -375,7 +328,7 @@ a.fc-tab-active {
 
 .fencing-modal-title {
 	font-weight: 400;
-	padding: 25px 20px;
+	padding:0px;
 	font-size: 40px;
 	text-transform: uppercase;
 }
@@ -424,6 +377,7 @@ a.fc-tab-active {
 }
 .fencing-modal-head{
 	position: relative;
+	margin-bottom: 32px;
 }
 .fencing-modal-head h2 {
 	margin-top: 0;
@@ -637,6 +591,10 @@ a.fc-tab-active {
 .fc-card-body {	
 	padding: 10px 15px;
 	border: 1px solid #DDDDDD;
+
+	.fc-p-1{
+		padding: 32px 24px !important;
+	}
 }
 .fc-bg-dark {
 	background: #333333;
@@ -932,8 +890,6 @@ thead.fc-border th:last-child {
 .fc-form-plan-action {
     display: flex;
     justify-content: space-around;	
-    margin-left: -8px;
-    margin-right: -8px;
 	flex-direction: row-reverse;
 
 	@include lg {
@@ -943,9 +899,9 @@ thead.fc-border th:last-child {
 }
 .fc-form-plan-action button {
 	width: 100%;
-    margin-left: 8px;
-    margin-right: 8px;
+	margin: 0;
 	letter-spacing: 1px;
+	height: 52px;
 }
 .fc-form-plan {
 	h2 {

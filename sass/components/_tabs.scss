@@ -8,7 +8,27 @@
         height: 66px;
     }
 
+    &-area{
+        display: inline-block;
+        height: inherit;
+        background-color: var(--fc-bright-gray);
+        border-radius: 16px 16px 0 0;
+    }
+
 }
+
+
+
+.fencing-tab-container{
+
+    border-radius: 16px 16px 0 0;
+    border: 2px solid var(--fc-bright-gray);
+    border-bottom: 0;
+    border-left: 0;
+    box-sizing: border-box;
+    border-right: 0;
+}
+
 .w-side-section .fc-section-details {
 	width: 100%;
 }
@@ -25,8 +45,7 @@
 
 .fencing-tab {
     background: #fff;
-    border: 2px solid var(--fc-gray);
-    border-right: 0!important;
+   border: 2px solid #fff;
     border-bottom: 0!important;
     padding: 0;
     cursor: pointer;
@@ -39,6 +58,13 @@
     height: 100%;
     box-sizing: border-box;
     transition: all .2s ease;
+    border-radius: 0;
+    border-right: 2px solid var(--fc-bright-gray);
+
+    &:first-child{
+        border-top-left-radius: 16px;
+        border-left: 2px solid #eee
+    }
 
     &:not(.fencing-tab-selected):hover{
         @include min-md {
@@ -61,19 +87,21 @@
         top: 2px;
     }
 
-}
-.fencing-tab-selected {
-	background: #F67925;	
-    border: 3px solid #F67925 !important;
-    border-bottom: 0!important;
-}
-.fencing-tab-selected .fencing-tab-name {
-	color: #fff;	
+    &.fencing-tab-selected {
+        background: #fff;	
+        border-color: var(--fc-blue) !important;
+        border-bottom: 0!important;
+        border-radius: 16px 16px 0 0;
+        border-right-color: #fff;
+    
+        .fencing-tab-number,
+        .fencing-tab-name {
+            color: #000;	
+        }
+    }
+
 }
 
-.fencing-tab-selected .fencing-tab-number {
-	color: #fff;
-}
 
 .fencing-tab:not(.fencing-tab-selected):hover * {
     @include min-md {
@@ -101,6 +129,7 @@
     height: inherit;
     box-sizing: border-box;
     transition: all .2s ease;
+    border-radius: 0 16px 0 0;
 
     @include lg {
         width: 100%;
@@ -170,7 +199,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 220px;
+    min-height: 250px;
     overflow: auto; 
     cursor: grab;
     
@@ -194,10 +223,6 @@
     align-items: center;
     height: 55px;
     box-sizing: border-box;
-
-    & + .fencing-section{
-        margin-bottom: 0;
-    }
 
     @include lg {
         display: block;

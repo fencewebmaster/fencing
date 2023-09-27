@@ -1,11 +1,4 @@
-.fencing-container {
-  .fc-font-1 {
-    font-family: $font-inter;
-  }
-  .fc-font-2 {
-    font-family: $font-league;
-  }
-}
+
 
 .fc-row-container {
   @extend %row-container;
@@ -216,3 +209,8 @@
 }
 
 /** Font Sizes **/
+
+/** Borders **/
+.br-tl-0{
+  border-top-left-radius: 0 !important;
+}

@@ -22,7 +22,7 @@ $(document).on('click', '.fencing-style-item', function(){
 
     load_fencing_items();
 
-    $('.fc-form-step[data-section="2"]').show();
+    $('.js-fc-form-step[data-section="2"]').fadeIn(200);
 
 
     setTimeout(function(){
@@ -293,7 +293,7 @@ $(document).on('click', '.fencing-style-item', function() {
 
 });
 
-$(document).on('click', '.btn-delete-fence', function(){
+$(document).on('click', '.js-btn-delete-fence', function(){
 
     var count = $('.fencing-tab'),
         index = $('.fencing-tab-selected').index();
@@ -367,9 +367,9 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         return false;
 
     let modal = {
-        el : $('.fencing-modal'),
-        content : $('.fencing-modal-content'),
-        body: $('.fencing-modal-body')
+        el : '',
+        content : '.fencing-modal-content',
+        body: '.fencing-modal-body'
     };
 
     //Button Data Information
@@ -380,14 +380,17 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
-    
+
+    modal.el = $(target);
+    modal.content = modal.el.find(modal.content);
+    modal.body = modal.el.find(modal.body);
     FCModal.open(target);
 
     $(this).addClass('fc-btn-active');
-
-    modal.el.find(".fencing-modal-notes, .fencing-modal-content").html('');
-
-    //$("#fc-control-modal .fencing-modal-title").html(info?.settings[key]?.title);
+   
+    if( typeof key !== "undefined" ){
+        modal.el.find(".fencing-modal-notes, .fencing-modal-content").html('');
+    }
 
     $('.fencing-container').attr('data-key', key);
 
@@ -596,7 +599,7 @@ $(document).on('click', '.btn-fc-calculate', function(){
 
     load_fencing_items();
 
-    $('.fc-form-step[data-section="3"]').show();
+    $('.js-fc-form-step[data-section="3"]').fadeIn(200);
     $('.fencing-tabs-container').show();
 
     setTimeout(function(){

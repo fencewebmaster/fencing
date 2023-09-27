@@ -7,6 +7,7 @@
     -moz-transition: all .3s ease-in-out 0s;
     -ms-transition: all .3s ease-in-out 0s;
     -o-transition: all .3s ease-in-out 0s;
+	box-sizing: border-box;
 
 	@include lg {
         width: 100%;
@@ -113,7 +114,6 @@
 	text-transform: uppercase;
 	font-size: 14px;
 	padding: 15px 30px;
-	margin-right: 16px;
 }
 .btn-fc-calculate {
     background: #111111;
@@ -179,9 +179,13 @@
 .btn-delete-fence {
     font-size: 14px !important;	
 	padding: 16px 18px;
-	display: inline-block;
+	display: flex;
+	justify-content: center;
+	background-color: #fff;
+	align-items: center;
 	font-weight: 700;
 	width: auto;
+	height: 52px;
 
 	@include lg {
 		padding: 12px 16px;
