@@ -448,22 +448,23 @@ h2.fc-header-title + p {
 
 .fc-header-tab a {
   background: #fff;
-  border: 3px solid var(--fc-gray);
+  border: 2px solid var(--fc-gray);
   border-right: 0;
   border-bottom: 0;
   padding: 15px 20px 15px 0;
   cursor: pointer;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 25px;
+  padding-right: 25px;
   text-decoration: none;
   color: #a3a3a3;
   font-weight: 400;
   text-transform: uppercase;
   font-size: 24px;
+  margin-right: -10px;
 }
 
 .fc-header-tab a:last-child {
-  border-right: 3px solid var(--fc-gray);
+  border-right: 2px solid var(--fc-gray);
 }
 
 a.tab-selected {
@@ -474,6 +475,9 @@ a.fc-tab-active {
   background: #F67925;
   color: #fff;
   border-color: #F67925 !important;
+  border-radius: 16px 16px 0 0;
+  background-color: #fff;
+  color: #000;
 }
 
 /* The Close Button */
@@ -508,6 +512,11 @@ a.fc-tab-active {
   padding: 0px;
   font-size: 40px;
   text-transform: uppercase;
+}
+@media (max-width: 992px) {
+  .fencing-modal-title {
+    font-size: 30px;
+  }
 }
 
 .fencing-modal-title h4 {
@@ -1712,6 +1721,11 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 .fencing-modal-area {
   margin-bottom: 49px;
 }
+@media (max-width: 992px) {
+  .fencing-modal--v2 .fencing-modal-area {
+    margin-bottom: 19px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-area:last-child {
   margin-bottom: 0;
 }
@@ -1746,6 +1760,11 @@ thead.fc-border th:last-child {
   margin-bottom: 24px;
   position: relative;
 }
+@media (max-width: 992px) {
+  .fencing-modal--v2 .fencing-modal-header {
+    padding-bottom: 10px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-body {
   padding: 0;
   width: 100%;
@@ -1773,6 +1792,13 @@ thead.fc-border th:last-child {
   right: auto;
   left: 8px;
 }
+@media (max-width: 992px) {
+  .fencing-modal--v2 [type=range_option],
+  .fencing-modal--v2 [type=image_option] {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
 .fencing-modal--v2 [type=range_option] [class*=fc-col],
 .fencing-modal--v2 [type=image_option] [class*=fc-col] {
   width: 172px;
@@ -1781,6 +1807,16 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 [type=range_option] [class*=fc-col]:last-child,
 .fencing-modal--v2 [type=image_option] [class*=fc-col]:last-child {
   margin-right: 0;
+}
+.fencing-modal--v2 [type=range_option] [class*=fc-col]:nth-child(2n),
+.fencing-modal--v2 [type=image_option] [class*=fc-col]:nth-child(2n) {
+  margin-right: 0;
+}
+@media (max-width: 992px) {
+  .fencing-modal--v2 [type=range_option] [class*=fc-col],
+  .fencing-modal--v2 [type=image_option] [class*=fc-col] {
+    width: 46%;
+  }
 }
 .fencing-modal--v2 .fencing-modal-notes {
   padding: 0;
@@ -1810,6 +1846,12 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 .fc-dropdown_option {
   max-width: 387px;
 }
+@media (max-width: 992px) {
+  .fencing-modal--v2 .fc-dropdown_option {
+    max-width: 100%;
+    width: 100%;
+  }
+}
 .fencing-modal--v2 .fc-dropdown_option select {
   border-radius: 8px;
   border-width: 1x;
@@ -1835,6 +1877,11 @@ thead.fc-border th:last-child {
   max-width: 272px;
   margin-bottom: 8px;
   margin-right: 16px;
+}
+@media (max-width: 992px) {
+  .fencing-modal--v2 [type=text_option] .fc-col-4 {
+    width: calc(50% - 8px);
+  }
 }
 .fencing-modal--v2 [type=text_option] .fc-col-4:nth-child(2n) {
   margin-right: 0;

@@ -14,6 +14,11 @@
     }
     .fencing-modal-area{
         margin-bottom: 49px;
+
+        @include lg{
+            margin-bottom: 19px;
+        }
+
         &:last-child{
             margin-bottom: 0;
         }
@@ -53,6 +58,10 @@
         border-bottom: 1px solid var(--fc-bright-gray);
         margin-bottom: 24px;
         position: relative;
+
+        @include lg {
+            padding-bottom: 10px;
+        }
     }
     .fencing-modal-body{
         padding: 0;
@@ -88,12 +97,25 @@
 
     [type="range_option"],
     [type="image_option"]{
+
+        @include lg {
+            display: flex;
+            flex-wrap: wrap;
+        }
         [class*="fc-col"]{
             width: 172px;
             margin-right: pxTopercent(22, 560);
 
             &:last-child{
                 margin-right: 0;
+            }
+
+            &:nth-child(2n){
+                margin-right: 0;
+            }
+
+            @include lg {
+                width: 46%;
             }
         }
     }
@@ -132,6 +154,12 @@
 
     .fc-dropdown_option {
         max-width: 387px;
+
+        @include lg{
+            max-width: 100%;
+            width: 100%;
+        }
+
         select{
             border-radius: 8px;
             border-width: 1x;
@@ -159,6 +187,10 @@
             max-width: 272px;
             margin-bottom: 8px;
             margin-right: 16px;
+
+            @include lg{
+                width: calc(50% - 8px);
+            }
 
             &:nth-child(2n){
                 margin-right: 0;

@@ -280,21 +280,22 @@ h2.fc-header-title {
 }	
 .fc-header-tab a {
 	background: #fff;
-    border: 3px solid var(--fc-gray);
+    border: 2px solid var(--fc-gray);
     border-right: 0;
     border-bottom: 0;
     padding: 15px 20px 15px 0;
     cursor: pointer;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 25px;
+    padding-right: 25px;
     text-decoration: none;
     color: #a3a3a3;
     font-weight: 400;
     text-transform: uppercase;
     font-size: 24px;
+	margin-right: -10px;
 }
 .fc-header-tab a:last-child {
-	border-right: 3px solid var(--fc-gray);
+	border-right: 2px solid var(--fc-gray);
 }
 a.tab-selected {
 	color: #000;
@@ -303,7 +304,11 @@ a.fc-tab-active {
     background: #F67925;
     color: #fff;	
 	border-color: #F67925 !important;
+	border-radius: 16px 16px 0 0;
+	background-color: #fff;
+	color: #000;
 }
+
 
 
 /* The Close Button */
@@ -344,6 +349,11 @@ a.fc-tab-active {
 	padding:0px;
 	font-size: 40px;
 	text-transform: uppercase;
+
+	@include lg{
+		font-size: 30px;
+	}
+
 }
 .fencing-modal-title h4 {
 	text-transform: capitalize;

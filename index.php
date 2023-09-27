@@ -106,6 +106,9 @@
                 </div>	
             </div>
 
+        </div>
+        <!-- END TABS -->
+
             <div class="fencing-content fc-font-1">
                 <div class="fc-section-step" data-tab="1">
                     
