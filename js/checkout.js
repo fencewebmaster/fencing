@@ -85,24 +85,31 @@ function stripeTokenHandler(token) {
 }
 */
 
-$(document).on('click', '.fc-btn-download-fence', function () {    
+$(document).on('click', '.fc-btn-download-fence', function (e) {    
 
-    /*      
-        var element = document.getElementById('fc-fence-list');
-        var opt = {
-          margin:       1,
-          filename:     'myfile.pdf',
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2 },
-          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
+    window.jsPDF = window.jspdf.jsPDF;
 
-        // New Promise-based usage:
-        html2pdf().set(opt).from(element).save();
-    */
+    var element = document.getElementById('fencing-display-result');
 
-    var element = document.getElementById('fc-fence-list');
-    html2pdf(element);
+    html2canvas(element,
+        { 
+            scale: 3,
+            dpi: 300,
+            width: 1350,
+            height: 1350,
+        }
+    ).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+        });
+        const imgProps= pdf.getImageProperties(imgData);
+        const pdfWidth = 300;
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 13, 0, pdfWidth, pdfHeight);
+        pdf.save('project-plan.pdf');
+    });
+    
 
 });
 
@@ -237,13 +244,9 @@ $("#paymentFrm").validate({
                     
                     var info = JSON.parse(response);
 
-                          window.onbeforeunload = function() {}
-          location.href = info.url;
-
                     if( ! info.error ) {
 
                     var count = 0;
-
 
                     setTimeout(function(){
                         $('.fc-loader ul li').each(function(i) {
@@ -254,7 +257,7 @@ $("#paymentFrm").validate({
 
                                if( count == 5 ) {
                                     window.onbeforeunload = function() {}
-                          
+                                    location.href = info.url;
                                }
 
                             }, 1000 * i);
@@ -279,11 +282,9 @@ $("#paymentFrm").validate({
     }
 }); 
 
-/*
 $(document).on('change', '[name="cart[shipping_type]"]', function() {
-    $('form').submit();
-});
-*/ 
+    $('form').find('[type="submit"]').click();
+}); 
 
 // PROJECT DETAILS SECTION
 $(document).on('click', ".fc-btn-edit", function (e) {
