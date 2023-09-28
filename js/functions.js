@@ -309,6 +309,13 @@ function update_custom_fence_style_item() {
 
     $.each(info?.settings, function(k, v){
 
+        /**
+         * @TODO - re-check on how to disable from the settings
+         */
+        if( v.disabled ){
+            return;
+        }
+
         if( v.length !== 0 ) {
 
           var action = '';
@@ -371,18 +378,30 @@ function update_color_options() {
 }
 
 
+/**
+ * 
+ * Prepare to load values from local storage
+ * @param {json} filtered_data 
+ * 
+ */
 function set_field_value(filtered_data) {
-
-    if( filtered_data[0] ) {
-        $(filtered_data[0].settings).each(function(i, item){
-
-            get_field_value(item.tag, item.key, item.val);
-
-        });                
+  
+    if( filtered_data ) {
+        $(filtered_data).each(function(i, item){
+            $(item.settings).each(function(i, item){
+                get_field_value(item.tag, item.key, item.val);
+            });    
+        });
     }
 
 }
 
+/**
+ * Load values from local storage
+ * @param {string} tag 
+ * @param {string} key 
+ * @param {string} val 
+ */
 function get_field_value(tag, key, val) {
 
     if( tag == 'input' ) {
@@ -402,7 +421,7 @@ function get_field_value(tag, key, val) {
         if( $('[name='+key+']').find('.fc-selected').length ) {
             $('[name='+key+']').find('.fc-selected').removeClass('fc-selected'); 
         }
-
+        console.log('val', val);
         $('[name='+key+']').attr('value', val);
         $('[name='+key+']').find('[data-slug="'+val+'"]').addClass('fc-selected');
     }
@@ -462,22 +481,23 @@ function update_custom_fence_tab() {
 
 }
 
-function update_custom_fence(modal_key) {
+function update_custom_fence(modal_key, fc_form_field = false) {
 
     var i = $('.fencing-style-item.fsi-selected').index(),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         mbn = $('.measurement-box-number').val(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i);
 
-    const data = custom_fence ? JSON.parse(custom_fence) : [];
+    let form_field = fc_form_field || $('.fc-form-field:visible');
 
-    settings = $(".fc-form-field:visible").map(function(){
+    const data = custom_fence ? JSON.parse(custom_fence) : [];
+    
+    settings = form_field.map(function(){
 
         var key  = $(this).attr('name'),
             val  = $(this).val() ? $(this).val() : $(this).attr('value'),
             type = $(this).attr('type'),
             tag  = $(this).get(0).tagName.toLowerCase(); 
-
 
         return {key:key, val:val, tag: tag, type: type}
 

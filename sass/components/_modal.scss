@@ -111,11 +111,14 @@
             }
 
             &:nth-child(2n){
-                margin-right: 0;
+                @include lg {
+                    margin-right: 0;
+                }
             }
 
             @include lg {
                 width: 46%;
+                margin-bottom: 4px;
             }
         }
     }
