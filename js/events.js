@@ -212,10 +212,13 @@ $(document).on('change', '.fc-select-option', function(){
 
 $(document).on('click', '.fc-select-post, .fc-select-item', function(){
     var slug = $(this).attr('data-slug');
+    var getFormField = $(this).closest('.fc-form-field');
 
     $(this).closest('.fencing-form-group').find('.fc-select').removeClass('fc-selected');
     $(this).addClass('fc-selected');
-    $(this).closest('.fc-form-field').attr('value', slug);
+    getFormField.attr('value', slug);
+
+    getSelectedColorDetails($(this), getFormField);
 
     if( $(this).closest('.fc-form-field').attr('name') == 'right_option' ) {   
         $(".fencing-display-result").scrollCenter(".panel-post:last", 300);

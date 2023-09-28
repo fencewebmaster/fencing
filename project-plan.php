@@ -207,16 +207,6 @@
 
 							<div id="update_details-section">
 
-								<!-- START CART CALCULATION LOADER -->
-								<div class="fc-section-loader-overlay" style="display: none;">
-									<div class="fc-loader-container">
-										<div class="fc-loader">
-											<img src="<?php echo base_url('img/loaders/1.gif'); ?>" width="80">
-										</div>
-									</div>
-								</div>
-								<!-- END CART CALCULATION LOADER -->
-
 								<div class="fc-row-container">
 									<div class="fc-col-half">
 										<div class="fc-table-rounded-border fc-mb-2 fc-position-relative">
@@ -328,8 +318,8 @@
 															<td>
 																<div style="background:#000;color:#fff;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1">
 																	<br>   
-																	<p><strong>Black</strong><br />
-																	Satin</p>
+																	<p><strong class="js-color_options-title"></strong><br />
+																	<span class="js-color_options-subtitle"></span></p>
 																</div>
 															</td>
 														</tr>
@@ -412,18 +402,8 @@
 
 							<div id="update_cart-section">
 
-								<!-- START CART CALCULATION LOADER -->
-								<div class="fc-section-loader-overlay" style="display: none;">
-									<div class="fc-loader-container">
-										<div class="fc-loader">
-											<img src="<?php echo base_url('img/loaders/1.gif'); ?>" width="80">
-										</div>
-									</div>
-								</div>
-								<!-- END CART CALCULATION LOADER -->
-
 								<div class="fc-row-container fc-row-container--cart-stock">
-									<div class="fc-col-half">
+									<div class="fc-col-half fc-position-relative" id="update_cart-list">
 										<!-- [START] Label -->
 										<div class="fencing-section__cmp fencing-section__step-label">
 											<div class="step-label">Item List & <span>Cart</span></div>

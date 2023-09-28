@@ -491,15 +491,23 @@ function update_custom_fence(modal_key, fc_form_field = false) {
     let form_field = fc_form_field || $('.fc-form-field:visible');
 
     const data = custom_fence ? JSON.parse(custom_fence) : [];
+
+    let itemKey = 'custom_fence-'+tab+'-'+i;
     
     settings = form_field.map(function(){
 
         var key  = $(this).attr('name'),
             val  = $(this).val() ? $(this).val() : $(this).attr('value'),
             type = $(this).attr('type'),
-            tag  = $(this).get(0).tagName.toLowerCase(); 
+            tag  = $(this).get(0).tagName.toLowerCase(),
+            obj = {key:key, val:val, tag: tag, type: type};
 
-        return {key:key, val:val, tag: tag, type: type}
+        if( modal_key === "color_options"  ){
+            obj.title = $(this).attr('data-title') || '';
+            obj.subtitle = $(this).attr('data-subtitle') || '';
+        }
+
+        return obj;
 
     }).get();
 
@@ -507,15 +515,21 @@ function update_custom_fence(modal_key, fc_form_field = false) {
         return item.control_key != modal_key;
     });
 
+    if( modal_key === "color_options" ){
+        itemKey = 'custom_fence-global-setting';
+    }
+
+    console.log(settings, typeof settings);
+
     filtered_data.push({
         id: i, 
         control_key: modal_key, 
         settings: settings
     });
 
-    localStorage.setItem('custom_fence-'+tab+'-'+i, JSON.stringify(filtered_data));
+    localStorage.setItem(itemKey, JSON.stringify(filtered_data));
 
-   update_custom_fence_tab();
+    update_custom_fence_tab();
 
     // console.log('update_custom_fence: ', 'custom_fence-'+tab+'-'+i );
 
@@ -829,3 +843,97 @@ Brackets Set x4
 Flexi Bracket x1
 Hinge & Latch Kit
 Fixing Kit - Dynabolts*/
+
+
+/**
+ * Get the color title and subtitle
+ * and assign it to the closest fc-form-field
+ * @param {string} _color_el 
+ * @param {string} form_field 
+ */
+function getSelectedColorDetails(_color_el, form_field ){
+
+    var getFormFieldKey = form_field.attr('data-key');
+    var title = _color_el.attr('data-color-title');
+    var subtitle = _color_el.attr('data-color-subtitle');
+
+    if( getFormFieldKey === "color_options" ){
+        form_field.attr('data-title', title).attr('data-subtitle', subtitle);
+    }
+}
+
+/**
+ * Get global setting from localStorage
+ */
+function loadGlobalSetting() {
+
+    let getGlobalSetting = localStorage.getItem('custom_fence-global-setting');
+    let globalSettingObj = getGlobalSetting ? JSON.parse(getGlobalSetting)[0] : [];
+    let globalSetting = globalSettingObj['settings'];
+    let globalControlKey = globalSettingObj['control_key'];
+
+    updateElements(globalSetting, "color_options", ["title", "subtitle"]);
+
+}
+
+/**
+ * Get values from setting array
+ * @param {array} setting 
+ * @param {string} key 
+ * @param {array} props 
+ */
+function updateElements(setting, key, props){
+    let entry = findObjectByKey(setting, key);
+
+    for( let i = 0; i < props.length; i++ ){
+        updateElement(entry.key, props[i], entry[props[i]]);
+    }
+}
+
+/**
+ * Update element
+ * @param {string} control_key 
+ * @param {string} property 
+ * @param {string} value 
+ */
+function updateElement(control_key, property, value){
+
+    let getEl = document.querySelector('.js-' + control_key + '-' + property);
+    if( getEl ){
+        getEl.textContent = value;
+    }
+
+}
+
+/**
+ * Find Object by property value
+ * @param {array} array 
+ * @param {string} keyToFind 
+ * @returns 
+ */
+function findObjectByKey(array, keyToFind) {
+    for (let i = 0; i < array.length; i++) {
+      if (array[i].key === keyToFind) {
+        return array[i];
+      }
+    }
+    return null;
+  }
+  
+
+function loadSectionOverlay(target) {
+
+    let tpl = `<div class="fc-section-loader-overlay">
+                <div class="fc-loader-container">
+                    <div class="fc-loader"></div>
+                </div>
+            </div>`;
+    target = document.getElementById(target);
+    target.insertAdjacentHTML('afterbegin', tpl);
+
+}
+
+function removeSectionOverlay(){
+    console.log(document.querySelector('.fc-section-loader-overlay').length);
+    document.querySelector('.fc-section-loader-overlay').remove();
+}
