@@ -870,13 +870,21 @@ a.fc-tab-active {
   left: 0;
   bottom: 0;
   z-index: 9999;
+  border-radius: 16px;
 }
 
 .fc-loader-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
+}
+
+.fc-loader {
+  background: url(img/loaders/1.gif) no-repeat center;
+  width: 80px;
+  height: 80px;
+  background-size: 100%;
 }
 
 .fc-loader ul li {
@@ -2665,6 +2673,7 @@ thead.fc-border th:last-child {
   border-radius: 16px;
   margin-bottom: 16px;
   position: relative;
+  overflow: hidden;
 }
 @media (max-width: 992px) {
   .fencing-section {
@@ -3194,6 +3203,7 @@ thead.fc-border th:last-child {
   padding: 24px;
   width: calc(50% - 12px);
   border-radius: 16px;
+  overflow: hidden;
 }
 @media (max-width: 992px) {
   .fc-cart-items .fc-row-container--cart-stock > .fc-col-half {

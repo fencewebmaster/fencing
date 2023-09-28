@@ -920,3 +920,20 @@ function findObjectByKey(array, keyToFind) {
     return null;
   }
   
+
+function loadSectionOverlay(target) {
+
+    let tpl = `<div class="fc-section-loader-overlay">
+                <div class="fc-loader-container">
+                    <div class="fc-loader"></div>
+                </div>
+            </div>`;
+    target = document.getElementById(target);
+    target.insertAdjacentHTML('afterbegin', tpl);
+
+}
+
+function removeSectionOverlay(){
+    console.log(document.querySelector('.fc-section-loader-overlay').length);
+    document.querySelector('.fc-section-loader-overlay').remove();
+}
