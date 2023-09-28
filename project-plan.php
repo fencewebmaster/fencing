@@ -65,7 +65,7 @@
 	$_SESSION['fc_cart'] = $cart;
 
 
-
+	
 	// dd($cart );
 ?>
 
