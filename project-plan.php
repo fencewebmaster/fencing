@@ -62,11 +62,10 @@
 		'total' 		 => 2075.6,
 	];
 
-	$_SESSION['fc_cart'] = $cart;
+	if( !isset($_SESSION['fc_cart']) ){
+		$_SESSION['fc_cart'] = $cart;
+	}
 
-
-
-	// dd($cart );
 ?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,7 +87,7 @@
             <div class="fc-row">
                 
                 <div class="fc-col-auto">
-                    <img src="<?php echo base_url('img/loaders/1.gif'); ?>" width="120">
+				<div class="fc-loader-gif"></div>
                 </div>
 
                 <div class="fc-col-auto">
@@ -432,7 +431,7 @@
 
 									</div>
 									
-									<div class="fc-col-half">
+									<div class="fc-col-half fc-position-relative" id="update_stock-delivery">
 										<!-- [START] Label -->
 										<div class="fencing-section__cmp fencing-section__step-label">
 											<div class="step-label">Stock & <span>Delivery</span></div>
