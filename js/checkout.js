@@ -237,9 +237,13 @@ $("#paymentFrm").validate({
                     
                     var info = JSON.parse(response);
 
+                          window.onbeforeunload = function() {}
+          location.href = info.url;
+
                     if( ! info.error ) {
 
                     var count = 0;
+
 
                     setTimeout(function(){
                         $('.fc-loader ul li').each(function(i) {
@@ -250,7 +254,7 @@ $("#paymentFrm").validate({
 
                                if( count == 5 ) {
                                     window.onbeforeunload = function() {}
-                                    location.href = info.url;
+                          
                                }
 
                             }, 1000 * i);
@@ -275,9 +279,11 @@ $("#paymentFrm").validate({
     }
 }); 
 
+/*
 $(document).on('change', '[name="cart[shipping_type]"]', function() {
-    $('form').find('[type="submit"]').click();
-}); 
+    $('form').submit();
+});
+*/ 
 
 // PROJECT DETAILS SECTION
 $(document).on('click', ".fc-btn-edit", function (e) {

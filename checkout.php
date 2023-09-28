@@ -6,13 +6,8 @@ include('helpers.php');
 
 if( @$_POST['action'] == 'place_order' ) {
 
-    $data = [
-        'error' => FALSE,
-        'url' => 'thank-you.php',
-    ];
-    
-    echo json_encode($data);
-    exit;
+
+
 
     require 'vendor/autoload.php'; // Include the Stripe PHP library
 
