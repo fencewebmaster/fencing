@@ -147,6 +147,7 @@ function update_raked_panels(side) {
                 if( side_part == 'left') {
                     panel_w = calc.left_raked.width;
                     panel_h = calc.left_raked.height;
+                    console.log('panel_h', panel_h);
                 } else {
                     panel_w = calc.right_raked.width;
                     panel_h = calc.right_raked.height;
