@@ -101,6 +101,8 @@ function update_raked_panels(side) {
         return item.control_key == 'add_step_up_panels';
     });
 
+    console.log('filtered_settings', filtered_data);
+
     var settings = filtered_data[0]?.settings;
 
     var calc = calculate_fences();
@@ -511,21 +513,28 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
+    console.log('settings', settings);
+
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
     });
-
-    if( modal_key === "color_options" ){
-        itemKey = 'custom_fence-global-setting';
-    }
-
-    console.log(settings, typeof settings);
 
     filtered_data.push({
         id: i, 
         control_key: modal_key, 
         settings: settings
     });
+
+    if( modal_key === "color_options" ){
+        itemKey = 'custom_fence-global-setting';
+        filtered_data = [];
+        filtered_data.push({
+            id: i, 
+            control_key: modal_key, 
+            settings: settings
+        });
+    }
+    
 
     localStorage.setItem(itemKey, JSON.stringify(filtered_data));
 
@@ -898,6 +907,10 @@ function updateElements(setting, key, props){
  */
 function updateElement(control_key, property, value){
 
+    if( typeof document.querySelector('.js-' + control_key + '-' + property) === undefined ) {
+        return;
+    }
+
     let getEl = document.querySelector('.js-' + control_key + '-' + property);
     getEl.textContent = value;
 
@@ -935,3 +948,16 @@ function removeSectionOverlay(){
     console.log(document.querySelector('.fc-section-loader-overlay').length);
     document.querySelector('.fc-section-loader-overlay').remove();
 }
+
+// Function to add or update an object in the array by key property
+function addObjectByKey(objectArray, obj) {
+    const existingIndex = objectArray.findIndex(item => item.control_key === obj.control_key);
+  console.log(existingIndex);
+    if (existingIndex !== -1) {
+      objectArray[existingIndex] = obj;
+    } else {
+      objectArray.push(obj);
+    }
+
+    return objectArray;
+  }
