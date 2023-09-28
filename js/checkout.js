@@ -281,7 +281,6 @@ $("#paymentFrm").validate({
                     
                     $('#paymentResponse').html(info.message);
 
-                    removeSectionOverlay();
 
                 }
             });
