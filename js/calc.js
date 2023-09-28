@@ -61,7 +61,7 @@ function calculate_fences( data ) {
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
 
-
+    console.log('info', info);
     // Inputs
     /*
         C3  = 11000;  // overall width
@@ -114,23 +114,25 @@ function calculate_fences( data ) {
     }
 
     // raked panel left
-    step_up_panels = get_field_multi_options(custom_fence, info, 'add_step_up_panels');
+    step_up_panels = get_field_multi_options(custom_fence, info, 'left_side');
     step_up_panels = get_field_by_slug(step_up_panels, 'left_raked');
-    step_up_panels_data = get_field_multi_option_value(custom_fence, info, 'add_step_up_panels', 'left_raked');
+    step_up_panels_data = get_field_multi_option_value(custom_fence, info, 'left_side', 'left_raked');
     step_up_panels = get_field_by_slug(step_up_panels.options, step_up_panels_data?.val);
 
     if( step_up_panels.length != 0 ) {
         C9  = step_up_panels?.size?.width;
     }
 
+    console.log('step_up_panels', custom_fence, info);
+
     left_raked_panel_height  = step_up_panels?.size?.height;
     left_raked_panel_width   = isNaN(C9-post_panel) ? 0 : C9-post_panel;      
 
 
     // raked panel right 
-    step_up_panels = get_field_multi_options(custom_fence, info, 'add_step_up_panels');
+    step_up_panels = get_field_multi_options(custom_fence, info, 'right_side');
     step_up_panels = get_field_by_slug(step_up_panels, 'right_raked');
-    step_up_panels_data = get_field_multi_option_value(custom_fence, info, 'add_step_up_panels', 'right_raked');
+    step_up_panels_data = get_field_multi_option_value(custom_fence, info, 'right_side', 'right_raked');
     step_up_panels = get_field_by_slug(step_up_panels.options, step_up_panels_data?.val);
 
     if( step_up_panels.length != 0 ) {

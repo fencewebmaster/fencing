@@ -197,7 +197,7 @@ $(document).on('change', '.fc-select-option', function(){
     if( $(this).attr('data-key') && $(this).attr('data-key') !== "undefined" ){
         modal_key = $(this).attr('data-key');
     }
-
+    
     update_custom_fence(modal_key);
 
     if( $(this).closest('.fc-form-field').attr('name') == 'right_raked' ) {   
@@ -339,17 +339,11 @@ $(document).on('click', '.js-btn-delete-fence', function(){
 
 $(document).on('change', '.fc-select-option', function(event){
 
-    var side = $('.fc-select-option').map(function(){
-        var name = $(this).attr('name'),
-            val = $(this).val();
-        
-        if( val != 'none' ) 
-            return name;      
-    });
+    var side = ['left_raked', 'right_raked'];
 
     setTimeout(function(){
         $('.raked-panel').html('');
-        update_raked_panels( side.toArray() ); 
+        update_raked_panels( side ); 
 
         // raked panel
         if( $('.fencing-raked-panel').length && $(".fencing-panel-spacing-number:contains('undefined')").length ) {
