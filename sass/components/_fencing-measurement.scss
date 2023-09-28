@@ -1,0 +1,10 @@
+.fencing-measurement{
+    .fc-step-2-alert.fc-alert-gray{
+        max-width: 431px;
+        padding: 16px;
+
+        @include lg{
+            margin-top: 24px;
+        }
+    }
+}

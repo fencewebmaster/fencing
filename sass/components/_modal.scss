@@ -3,12 +3,22 @@
         border-radius: 40px;
         padding: 40px;
         box-sizing: border-box;
+
+        @include lg{
+            padding: 26px 16px;
+            border-radius: 16px;
+        }
     }
     .fencing-modal-title{
         padding: 0;
     }
     .fencing-modal-area{
         margin-bottom: 49px;
+
+        @include lg{
+            margin-bottom: 19px;
+        }
+
         &:last-child{
             margin-bottom: 0;
         }
@@ -47,6 +57,11 @@
         padding: 0 0 16px;
         border-bottom: 1px solid var(--fc-bright-gray);
         margin-bottom: 24px;
+        position: relative;
+
+        @include lg {
+            padding-bottom: 10px;
+        }
     }
     .fencing-modal-body{
         padding: 0;
@@ -55,12 +70,6 @@
 
     .body-title:empty{
         display: none;
-    }
-
-    .fencing-modal-close{
-        top: 0;
-        right: 0;
-        position: relative;
     }
 
     .fc-select{
@@ -88,12 +97,25 @@
 
     [type="range_option"],
     [type="image_option"]{
+
+        @include lg {
+            display: flex;
+            flex-wrap: wrap;
+        }
         [class*="fc-col"]{
             width: 172px;
             margin-right: pxTopercent(22, 560);
 
             &:last-child{
                 margin-right: 0;
+            }
+
+            &:nth-child(2n){
+                margin-right: 0;
+            }
+
+            @include lg {
+                width: 46%;
             }
         }
     }
@@ -132,6 +154,12 @@
 
     .fc-dropdown_option {
         max-width: 387px;
+
+        @include lg{
+            max-width: 100%;
+            width: 100%;
+        }
+
         select{
             border-radius: 8px;
             border-width: 1x;
@@ -160,6 +188,10 @@
             margin-bottom: 8px;
             margin-right: 16px;
 
+            @include lg{
+                width: calc(50% - 8px);
+            }
+
             &:nth-child(2n){
                 margin-right: 0;
             }
@@ -167,4 +199,88 @@
     }
 
     
+}
+
+.fencing-modal-close{
+   top: -10px;
+    right: 0;
+    background-color: #fff;
+    border-color: var(--fc-granite-gray);
+
+    @include lg{
+        top: 0;
+    }
+
+    &:hover{
+        background-color: #fff;
+    }
+
+    &:after{
+        content: "×";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--fc-granite-gray);
+    }
+}
+
+#submit-modal.fencing-modal--v2 {
+    .fc-col-half{
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .fc-col-half:first-child{
+        margin-right: 16px;
+        @include lg{
+            margin-right: 0;
+        }
+    }
+    .fc-form-plan .fc-col-half{
+        width: calc(50% - 8px);
+
+        @include lg{
+            width: 100%;
+        }
+    }
+    .fc-form-check label{
+        margin-left: 3px;
+    }
+    .fc-form-plan-action button:last-child{
+        margin-right: 16px;
+        @include lg {
+            margin-right: 0;
+        }
+    }
+
+    .form-tab-4{
+        .fc-col-3{
+            padding: 0;
+            margin-right: pxTopercent(24, 760);
+            margin-bottom: 24px;
+            width: pxTopercent(170, 760);
+
+            @include lg{
+                width: 48.4%;
+            }
+
+            &:nth-child(2n){
+                @include lg{
+                    margin-right: 0 !important;
+                }
+            }
+
+            &:nth-child(4n){
+                margin-right: 0;
+                @include lg{
+                    margin-right: pxTopercent(24, 760);
+                }
+            }
+
+        }
+    }
+
+    .fencing-modal-md{
+        max-width: 840px;
+    }
 }

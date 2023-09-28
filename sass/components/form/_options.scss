@@ -40,10 +40,10 @@
         box-sizing: border-box;
     }
     &:hover {
-        border: 2px solid var(--fc-blue);
+        border: 2px solid var(--fc-princeton-orange);
     }
     &.fc-selected {
-        border: 2px solid var(--fc-blue);
+        border: 2px solid var(--fc-princeton-orange);
         &:after {
             border-color: #F67925;
             background: #F67925;

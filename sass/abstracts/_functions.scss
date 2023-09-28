@@ -3,6 +3,6 @@
 // -----------------------------------------------------------------------------
 
 @function pxTopercent($px, $width) {
-    @return $px / $width * 100%;
+    @return calc($px / $width * 100%);
 }
   

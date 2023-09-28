@@ -1,4 +1,4 @@
-<div class="fencing-section fencing-display-result" style="padding: 4% 10px;">
+<div class="fencing-section fencing-display-result">
     <div class="fencing-panel-items" style="">
         <div class="fc-overall">
             11,0000 Overall

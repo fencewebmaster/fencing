@@ -427,7 +427,7 @@ function update_custom_fence_tab() {
     if( info == undefined ) {
 
         $('.fc-tab-title, .fc-tab-subtitle').html('');
-        $('.fc-form-step').hide();
+        $('.js-fc-form-step').hide();
         $('.fsi-selected').removeClass('fsi-selected');
 
         return;
@@ -570,10 +570,10 @@ function add_new_fence_section() {
 
     $('.fencing-tabs-container').animate({scrollLeft: $('.fencing-tabs-container').prop('scrollWidth')}, 0);
 
-    $('.btn-delete-fence').show();
+    $('.js-btn-delete-fence').show();
 
     $('.fc-tab-title, .fc-tab-subtitle').html('');
-    $('.fc-form-step').hide();
+    $('.js-fc-form-step').hide();
     $('.fsi-selected').removeClass('fsi-selected');
 }
 

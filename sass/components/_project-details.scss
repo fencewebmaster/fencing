@@ -1,7 +1,42 @@
 /* Project details */
-.fc-project-details .fc-form-group {
-	display: none;
+.fc-project-details {
+    .fc-form-group {
+        display: none;
+    }
+    .fc-col-half{
+        padding: 0;
+        width: calc(50% - 12px);
+        @include lg {
+            width: 100%;
+        }
+    }
+    .fc-row-container{
+        margin: 0;
+        justify-content: space-between;
+    }
+    .fencing-section__cmp{
+        overflow: hidden;
+    }
+
+    td:first-child{
+        color: var(--fc-granite-gray);
+    }
+
+    .fc-table--colour {
+        strong{
+            font-weight: 600;
+            color: #fff;
+        }
+        p{
+            color: var(--fc-dark-gray);
+        }
+        .fc-colour-item{
+            box-sizing: border-box;
+        }
+    }
 }
+
+
 
 .ally {
 	background-image: url(img/ally.png);
@@ -34,7 +69,7 @@
 }
 
 .panel-post:hover {
-    border: 1px solid var(--fc-blue);
+    border: 1px solid var(--fc-princeton-orange);
 }
 .panel-post:not(.panel-no-post).opt-1:after {
 	content: "";
@@ -67,7 +102,7 @@
     justify-content: center;
 }
 .fencing-panel-item:hover {
-	border: 1px solid var(--fc-blue);
+	border: 1px solid var(--fc-princeton-orange);
 	background-color: #ffeded;
 }
 .fencing-panel-spacing-number {
@@ -133,7 +168,7 @@
 	z-index: 1;
 }
 .fencing-panel-rail:hover {
-	border: 2px solid var(--fc-blue);
+	border: 2px solid var(--fc-princeton-orange);
 }
 
 /* Spigot */
@@ -155,7 +190,7 @@
 	border: 2px solid transparent;
 }
 .fencing-panel-spigot:hover {
-	border: 2px solid var(--fc-blue);
+	border: 2px solid var(--fc-princeton-orange);
 }
 
 /* Spinfix */
