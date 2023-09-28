@@ -164,8 +164,15 @@ p {
 }
 
 .fc-color-options p {
-  font-weight: 600;
+  font-weight: 400;
+  line-height: 22px;
+}
+.fc-color-options p strong {
   font-size: 18px;
+  font-weight: 600;
+}
+.fc-color-options p span {
+  font-size: 14px;
 }
 
 .fc-color-options span {
