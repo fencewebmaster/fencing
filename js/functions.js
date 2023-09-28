@@ -309,6 +309,13 @@ function update_custom_fence_style_item() {
 
     $.each(info?.settings, function(k, v){
 
+        /**
+         * @TODO - re-check on how to disable from the settings
+         */
+        if( v.disabled ){
+            return;
+        }
+
         if( v.length !== 0 ) {
 
           var action = '';

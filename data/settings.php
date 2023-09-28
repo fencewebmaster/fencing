@@ -736,9 +736,13 @@ $fences = [
 					],			
 				]
 			],
+			/**
+			 * @TODO - re-check on how to disable from the settings
+			 */
 			'add_step_up_panels' => [
 				'title' => 'Add Step-Up Panel',
 				'label' => 'Step-Up Panels',
+				'disabled' => true,
 				'action' => ['add'],
 				'fields' => [
 					[
