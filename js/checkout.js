@@ -85,13 +85,11 @@ function stripeTokenHandler(token) {
 }
 */
 
-$(document).on('click', '.fc-btn-download-fence', function () {    
+$(document).on('click', '.fc-btn-download-fence', function (e) {    
 
     window.jsPDF = window.jspdf.jsPDF;
 
     var element = document.getElementById('fencing-display-result');
-
-    window.scrollTo(0,0);  
 
     html2canvas(element,
         { 
