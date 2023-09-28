@@ -87,7 +87,7 @@ if( @$_POST['action'] == 'place_order' ) {
 
 } elseif( @$_POST['action'] == 'update_details' ) {
 
-    $_SESSION["fc_data"] = $_POST;
+    $_SESSION["fc_data"] = array_merge($_SESSION["fc_data"], $_POST);
 
 } elseif( @$_POST['action'] == 'update_cart' ) {
  

@@ -85,6 +85,8 @@ function stripeTokenHandler(token) {
 }
 */
 
+loadGlobalSetting();
+
 $(document).on('click', '.fc-btn-download-fence', function (e) {    
 
     window.jsPDF = window.jspdf.jsPDF;
@@ -155,6 +157,9 @@ $("#paymentFrm").validate({
                 type: "POST",  
                 data: formData,
                 headers: {},
+                beforeSend: function(){
+                    loadSectionOverlay('update_cart-list');
+                },
                 contentType: false,  
                 cache: false,         
                 processData:false,    
@@ -164,7 +169,7 @@ $("#paymentFrm").validate({
 
                         setTimeout(function() { 
                             $(".fc-table-items .fc-form-control").css({'color': ''}); 
-                            $('.fc-section-loader-overlay').hide();
+                            removeSectionOverlay();
                             $('.fc-item-value').show();
                             $('.fc-table-items input, .fc-reset-item').hide();
 
@@ -203,16 +208,20 @@ $("#paymentFrm").validate({
                 url: 'checkout.php', 
                 type: "POST",  
                 data: formData,
+                beforeSend: function(){
+                    loadSectionOverlay('update_details-section');
+                },
                 headers: {},
                 contentType: false,  
                 cache: false,         
                 processData:false,    
                 success: function(response) {
+                    
                     try {
 
                         setTimeout(function() { 
                             $(".fc-table-customer .fc-form-control").css({'color': ''}); 
-                            $('.fc-section-loader-overlay').hide();
+                            removeSectionOverlay();
                             $('.fc-table-customer span').show();
                             $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
 
@@ -272,7 +281,7 @@ $("#paymentFrm").validate({
                     
                     $('#paymentResponse').html(info.message);
 
-                    $('.fc-section-loader-overlay').hide();
+                    removeSectionOverlay();
 
                 }
             });
