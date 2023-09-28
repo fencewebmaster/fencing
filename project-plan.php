@@ -62,11 +62,10 @@
 		'total' 		 => 2075.6,
 	];
 
-	$_SESSION['fc_cart'] = $cart;
+	if( !isset($_SESSION['fc_cart']) ){
+		$_SESSION['fc_cart'] = $cart;
+	}
 
-
-
-	// dd($cart );
 ?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
