@@ -215,9 +215,9 @@
                     <div class="fencing-section fencing-section--no-padding fencing-section--has-border fc-position-relative js-fc-form-step fc-d-none" data-section="3" style="display: none;">
                            
                         <div class="fencing-section__top">
-                            <div class="fencing-section__cmp fencing-calculating">
+                            <div class="fencing-calculating">
                                 <div class="fc-calculating-loader">
-                                    <img src="//<?php echo $_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']; ?>img/loaders/1.gif" width="60">
+                                    <div class="fc-loader-gif"></div>
                                     <h4 class="fc-text-uppercase">Calculating ...	</h4>
                                 </div>
                             </div>

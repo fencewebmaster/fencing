@@ -600,10 +600,12 @@ $(document).on('click', '.btn-fc-calculate', function(){
     $('.fencing-calculating').show();
     $('.fencing-panel-items').hide();
 
-    $.get('/', function(){
-        $('.fencing-panel-items').show();
-        $('.fencing-calculating').hide();
-    });
+    setTimeout(function(){
+        $.get('/', function(){
+            $('.fencing-panel-items').show();
+            $('.fencing-calculating').hide();
+        });
+    }, 1000);
 
     update_custom_fence_tab();
 
