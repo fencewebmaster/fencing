@@ -378,7 +378,7 @@
 						<!-- [END] Label -->
 							
 							<div>
-								<div id="fc-fence-list">
+								<div id="fc-fence-list" >
 									<?php include 'data/plan-item.php'; ?>
 								</div>
 							</div>
@@ -539,7 +539,7 @@
 												Order Items Now!
 											</button>
 											<button type="button" 
-												class="btn-fc fc-btn-download-fence btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
+												class="btn-fc btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
 												<span>Speak To Trade Support</span>
 											</button>
 										</div>
@@ -571,7 +571,8 @@
 
 <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="js/jquery.validate.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
