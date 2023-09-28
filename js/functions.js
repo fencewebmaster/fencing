@@ -508,13 +508,12 @@ function update_custom_fence(modal_key, fc_form_field = false) {
         if( modal_key === "color_options"  ){
             obj.title = $(this).attr('data-title') || '';
             obj.subtitle = $(this).attr('data-subtitle') || '';
+            obj.color_code = $(this).attr('data-color-code') || '';
         }
 
         return obj;
 
     }).get();
-
-    console.log('settings', settings);
 
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
@@ -866,9 +865,10 @@ function getSelectedColorDetails(_color_el, form_field ){
     var getFormFieldKey = form_field.attr('data-key');
     var title = _color_el.attr('data-color-title');
     var subtitle = _color_el.attr('data-color-subtitle');
+    var colorCode = _color_el.attr('data-color-code');
 
     if( getFormFieldKey === "color_options" ){
-        form_field.attr('data-title', title).attr('data-subtitle', subtitle);
+        form_field.attr('data-title', title).attr('data-subtitle', subtitle).attr('data-color-code', colorCode);
     }
 }
 
@@ -882,7 +882,7 @@ function loadGlobalSetting() {
     let globalSetting = globalSettingObj['settings'];
     let globalControlKey = globalSettingObj['control_key'];
 
-    updateElements(globalSetting, "color_options", ["title", "subtitle"]);
+    updateElements(globalSetting, "color_options", ["title", "subtitle", "color_code"]);
 
 }
 
@@ -913,7 +913,17 @@ function updateElement(control_key, property, value){
     }
 
     let getEl = document.querySelector('.js-' + control_key + '-' + property);
-    getEl.textContent = value;
+
+    if( property === "color_code" ){
+        getEl.style.backgroundColor = value;
+
+        if(getEl.querySelector('strong').textContent.toLowerCase().includes('white')){
+            getEl.querySelector('strong').style.color = "#000";
+        }
+
+    } else {
+        getEl.textContent = value;
+    }
 
 }
 
@@ -933,6 +943,10 @@ function findObjectByKey(array, keyToFind) {
   }
   
 
+/**
+ * Load section overlay dynamically
+ * @param {string} target 
+ */
 function loadSectionOverlay(target) {
 
     let tpl = `<div class="fc-section-loader-overlay">
@@ -945,12 +959,20 @@ function loadSectionOverlay(target) {
 
 }
 
+/**
+ * Remove section overlay
+ */
 function removeSectionOverlay(){
     console.log(document.querySelector('.fc-section-loader-overlay').length);
     document.querySelector('.fc-section-loader-overlay').remove();
 }
 
-// Function to add or update an object in the array by key property
+/**
+ * Function to add or update an object in the array by key property
+ * @param {array} objectArray 
+ * @param {obj} obj 
+ * @returns 
+ */
 function addObjectByKey(objectArray, obj) {
     const existingIndex = objectArray.findIndex(item => item.control_key === obj.control_key);
   console.log(existingIndex);

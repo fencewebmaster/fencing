@@ -315,7 +315,7 @@
 														<tr>
 															<td width="100" class="valign-top">Colour</td>
 															<td>
-																<div style="background:#000;color:#fff;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1">
+																<div style="background:#000;color:#fff;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
 																	<br>   
 																	<p><strong class="js-color_options-title"></strong><br />
 																	<span class="js-color_options-subtitle"></span></p>

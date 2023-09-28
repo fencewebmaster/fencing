@@ -303,7 +303,7 @@ $(document).on('click', ".fc-btn-edit", function (e) {
     if( $(this).find('span').text() == 'Edit Details' ) {
 
         $('.fc-project-details .fc-form-group, .fc-btn-reset').show();
-        $('.fc-project-details table span').hide();
+        $('.fc-project-details table span:not([class^="js-"])').hide();
         $(this).find('span').html('Update');
 
     } else {
