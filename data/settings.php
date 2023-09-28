@@ -585,8 +585,8 @@ $fences = [
 				],
 				'fields' => [
 					[
-						'title' => 'Edit Left Side',
-						'slug' => 'left_option',
+						'title' => 'Edit Right Side',
+						'slug' => 'right_option',
 						'type' => 'range_option',
 						'label' => '',
 						'close_btn' => true,
@@ -594,7 +594,7 @@ $fences = [
 							[
 								'slug' => 'yes-post',
 								'type' => 'range_option',
-								'key' => 'left_side',
+								'key' => 'right_side',
 								'image' => 'img/yes-post.png',
 								'default' => TRUE,
 								'title' => '',
@@ -605,7 +605,7 @@ $fences = [
 							[
 								'slug' => 'no-post',
 								'type' => 'range_option',
-								'key' => 'left_side',
+								'key' => 'right_side',
 								'image' => 'img/no-post-1.png',
 								'title' => '',
 								'size' => [
@@ -615,7 +615,7 @@ $fences = [
 							[
 								'slug' => 'no-post-swivel-bracket',
 								'type' => 'range_option',
-								'key' => 'left_side',
+								'key' => 'right_side',
 								'image' => 'img/no-post-2.png',
 								'title' => '',
 								'size' => [
@@ -655,10 +655,10 @@ $fences = [
 					],
 					[
 						'title' => 'Add Step-Up Panel',
-						'slug' => 'left_raked',
+						'slug' => 'right_raked',
 						'type' => 'dropdown_option',
 						'key' => 'add_step_up_panels',
-						'label' => 'Left Hand Step-Up Panel',
+						'label' => 'Right Hand Step-Up Panel',
 						'close_btn' => false,
 						'options' => [
 							[
