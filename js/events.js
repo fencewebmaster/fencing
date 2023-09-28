@@ -483,10 +483,12 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     });
 
+    //Get data based on key
     var filtered_data = custom_fence.filter(function(item) {
         return item.control_key == key;
     });
 
+    //Excluded popup with multiple sections inside
     if( key === "left_side" || key === "right_side" ){
         filtered_data = custom_fence;
     }
