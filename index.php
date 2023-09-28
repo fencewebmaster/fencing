@@ -344,7 +344,7 @@
                                                     <div class="fc-scrollable-area">
                                                         <?php foreach($color_options as $co): ?>
                                                         <div class="fc-col-3">
-                                                            <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co['title']; ?>" data-color-subtitle="<?php echo $co['sub_title']; ?>" data-slug="<?php echo $co['slug']; ?>" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
+                                                            <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co['title']; ?>" data-color-code="<?php echo $co['background_color']; ?>" data-color-subtitle="<?php echo $co['sub_title']; ?>" data-slug="<?php echo $co['slug']; ?>" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
                                                                 <p><strong><?php echo $co['title']; ?></strong><br />
                                                                 <span><?php echo $co['sub_title']; ?></span></p>
                                                             </div>
