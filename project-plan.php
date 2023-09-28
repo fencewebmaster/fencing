@@ -431,7 +431,7 @@
 
 									</div>
 									
-									<div class="fc-col-half">
+									<div class="fc-col-half fc-position-relative" id="update_stock-delivery">
 										<!-- [START] Label -->
 										<div class="fencing-section__cmp fencing-section__step-label">
 											<div class="step-label">Stock & <span>Delivery</span></div>
