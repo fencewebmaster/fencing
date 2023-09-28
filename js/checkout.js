@@ -213,7 +213,7 @@ $("#paymentFrm").validate({
 
                         } , 500);
 
-                        $('.fc-btn-edit').find('span').html('Edit');
+                        $('.fc-btn-edit').find('span').html('Edit Details');
 
                     } catch(err){
 
