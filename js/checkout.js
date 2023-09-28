@@ -87,22 +87,31 @@ function stripeTokenHandler(token) {
 
 $(document).on('click', '.fc-btn-download-fence', function () {    
 
-    /*      
-        var element = document.getElementById('fc-fence-list');
-        var opt = {
-          margin:       1,
-          filename:     'myfile.pdf',
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2 },
-          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
+    window.jsPDF = window.jspdf.jsPDF;
 
-        // New Promise-based usage:
-        html2pdf().set(opt).from(element).save();
-    */
+    var element = document.getElementById('fencing-display-result');
 
-    var element = document.getElementById('fc-fence-list');
-    html2pdf(element);
+    window.scrollTo(0,0);  
+
+    html2canvas(element,
+        { 
+            scale: 3,
+            dpi: 300,
+            width: 1350,
+			height: 1350,
+        }
+    ).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+        });
+        const imgProps= pdf.getImageProperties(imgData);
+        const pdfWidth = 300;
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 13, 0, pdfWidth, pdfHeight);
+        pdf.save('project-plan.pdf');
+    });
+    
 
 });
 
