@@ -67,10 +67,11 @@
 
         <!-- START TABS -->
         <div class="fencing-tabs-container fc-section-step fc-d-none fc-font-2" data-tab="1">
-            <div class="fencing-tabs fc-row-flex">
-               
+            <div class="fencing-tabs-area">
+                <div class="fencing-tabs fc-row-flex">
+                
                 <div class="fencing-tab-container fc-row-flex">
-                   
+                    
                     <div class="fencing-tab fencing-tab-selected fc-d-none">
                         <div class="fencing-tab-name">
                             <span class="ftm-title">SECTION</span> <span class="fencing-tab-number">1</span>
@@ -85,17 +86,18 @@
                 </a>
 
             </div>
+            </div>
         </div>
         <!-- END TABS -->
 
         <div class="fc-section-details">
             
             <!-- @TODO: Are we hiding this header tab? It no longer exists in figma -->
-            <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
+            <!-- <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
                 <div class="fc-header-tab__area">
                     <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
                 </div>
-            </div>
+            </div> -->
             
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
                 <div class="fc-header-tab__area">
@@ -104,6 +106,7 @@
                 </div>	
             </div>
 
+
             <div class="fencing-content fc-font-1">
                 <div class="fc-section-step" data-tab="1">
                     
@@ -111,51 +114,53 @@
                         <span class="fc-tab-title"></span><span class="fc-tab-subtitle"></span>
                     </div>
 
-                    <div class="fencing-section fencing-section--step1">
-                        
-                        <buton type="button" 
-                            class="btn-fc btn-fc-outline-danger btn-fc-sm fc-float-r btn-delete-fence" 
-                            style="display:none;">
-                            <i class="fa fa-trash-can"></i>Delete <span>Section</span>
-                        </buton>
-                        
-                        <div class="step-label">Step <span>01</span></div>
+                    <div class="fencing-section fencing-section--has-border fencing-section--no-radius-top">
+                    
+                        <!-- START STYLES AREA -->
+                        <div class="fencing-section__cmp fencing-section-step fencing-section--step1">
+                            
+                            <button type="button" 
+                                class="btn-fc btn-fc-outline-danger btn-fc-sm btn-delete-fence js-btn-delete-fence" 
+                                style="display:none;">
+                                <span><i class="fa fa-trash-can"></i>Delete <span>Section</span></span>
+                            </button>
+                            
+                            <div class="step-label">Step <span>01</span></div>
 
-                        <h4 class="fencing-content-title">Choose Your Fencing Style</h4>
-                    </div>
-
-
-                    <!-- START STYLES -->
-                    <div class="fencing-section fencing-styles">
-                        <div class="fencing-styles__area">
-                        <?php foreach( $fences as $fence ): ?>
-                        <div class="fencing-style-item" data-title="<?php echo $fence['title']; ?>">
-                            <div>
-
-                                <div class="fencing-style-img">
-                                    <img src="<?php echo $fence['image']; ?>">				
-                                </div>
-
-                                <div class="fencing-style-title">
-                                    <?php echo $fence['title']; ?>
-                                </div>
-
-                                <button class="fencing-style-btn js-fencing-style-btn"></button>
-
-                            </div>
+                            <h4 class="fencing-content-title">Choose Your Fencing Style</h4>
                         </div>
-                        <?php endforeach; ?>	
-                        </div>			
+
+                        <!-- START STYLES -->
+                        <div class="fencing-section__cmp fencing-styles">
+                            <div class="fencing-styles__area">
+                            <?php foreach( $fences as $fence ): ?>
+                            <div class="fencing-style-item" data-title="<?php echo $fence['title']; ?>">
+                                <div>
+
+                                    <div class="fencing-style-img">
+                                        <img src="<?php echo $fence['image']; ?>">				
+                                    </div>
+
+                                    <div class="fencing-style-title">
+                                        <?php echo $fence['title']; ?>
+                                    </div>
+
+                                    <button class="fencing-style-btn js-fencing-style-btn"></button>
+
+                                </div>
+                            </div>
+                            <?php endforeach; ?>	
+                            </div>			
+                        </div>
+                        <!-- END STYLES -->
+
                     </div>
-                    <!-- END STYLES -->
 
-
+                                
                     <!-- START MEASUREMENT -->	
-                    <div class="fc-form-step fc-d-none" data-section="2" style="display: none;">
+                    <div class="fencing-section fencing-section--has-border js-fc-form-step fc-d-none" data-section="2" style="display: none;">
                         
-                        <div class="fencing-divider"></div>
-
-                        <div class="fencing-section fencing-measurement fencing-section--step2">
+                        <div class="fencing-measurement fencing-section--step2">
 
                             <div class="fc-row">
                                 
@@ -166,7 +171,7 @@
                                     <h4 class="fencing-content-title fc-mb-2">Enter the overall length (mm)</h4>
                                     
                                     <div class="fencing-measurement-box">
-                                       
+                                    
                                         <span class="fencing-mb-input">
                                             
                                             <input type="text" class="measurement-box-number numeric" value=""> 
@@ -202,464 +207,223 @@
                             </div>
 
                         </div>
-
+                       
                     </div>
                     <!-- END MEASUREMENT -->
+                    
+                    <!-- START DISPLAY RESULT -->	
+                    <div class="fencing-section fencing-section--no-padding fencing-section--has-border fc-position-relative js-fc-form-step fc-d-none" data-section="3" style="display: none;">
+                           
+                        <div class="fencing-section__top">
+                            <div class="fencing-section__cmp fencing-calculating">
+                                <div class="fc-calculating-loader">
+                                    <img src="//<?php echo $_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']; ?>img/loaders/1.gif" width="60">
+                                    <h4 class="fc-text-uppercase">Calculating ...	</h4>
+                                </div>
+                            </div>
 
+                            <div class="fencing-section__cmp fencing-section--step3">
+                                
+                                <div class="step-label">Step <span>03</span></div>
 
-                    <div class="fc-form-step fc-d-none fc-position-relative" data-section="3" style="display: none;">
+                                <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
+
+                                <div class="fencing-section__controls">
+                                
+                                    <a href="#" class="fc-zoom-reset" data-zoom="reset">
+                                        <i class="fc-icon fc-icon-arrow-cc"></i>
+                                    </a>
+
+                                    <a href="#" style="display: none;">
+                                        <i class="fc-icon fc-rectangle"></i>
+                                    </a>
+
+                                    <a href="#" class="fc-zoom-fence" data-zoom="in">
+                                        <i class="fc-icon fc-magnify-plus"></i>
+                                    </a>
+
+                                    <a href="#" class="fc-zoom-fence" data-zoom="out">
+                                        <i class="fc-icon fc-magnify-munis"></i>
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                            <div class="fencing-section__cmp fencing-display-result">
+                                
+                                <div class="fencing-result-msg" style="display: none;">
+                                    <p>No Valid Solution. Please adjust Measurements.</p>
+                                </div>
+
+                                <div class="fencing-panel-items">
+                                    <div class="fencing-panel-rail fencing-btn-modal" 
+                                        data-key="rail_options" 
+                                        data-target="#fc-control-modal" style="display:none;"></div>
+                                    <div class="fencing-panel-container"></div>
+                                </div>
+
+                            </div>
+
+                            <!-- START PANEL CONTROLS -->	
+                            <div class="fencing-section__cmp fencing-panel-controls"></div>
+                            <!-- END PANEL CONTROLS -->
+                        </div>
                         
-                        <div class="fencing-divider"></div>
+                        <div class="fencing-section__bottom">
+                            <div class="fc-tab-control">
 
-                        <div class="fencing-calculating">
-                            <div class="fc-calculating-loader">
-                                <img src="//<?php echo $_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']; ?>img/loaders/1.gif" width="60">
-                                <h4 class="fc-text-uppercase">Calculating ...	</h4>
-                            </div>
-                        </div>
+                                <div class="fc-section-step" data-tab="1">
+                                    
+                                    <button type="button" 
+                                        class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step" 
+                                        data-tab="1" 
+                                        data-move="2"
+                                        disabled>
+                                        <b>NEXT - Select PLAN OPTIONS &#8594;</b>
+                                    </button>
 
+                                    <button type="button" 
+                                        class="btn-fc btn-fc-outline-default fc-tab-add fencing-tab-add fc-px-2">
+                                        <b>
+                                            <i class="fa-solid fa-plus"></i> Add Another Section
+                                        </b>
+                                    </button>
 
-                        <!-- START DISPLAY RESULT -->	
-                        <div class="fencing-section fencing-section--step3">
-                            
-                            <div class="step-label">Step <span>03</span></div>
+                                    <button type="button" 
+                                        class="btn-fc btn-fc-outline-danger btn-fc-sm btn-delete-fence js-btn-delete-fence" 
+                                        >
+                                        <span><i class="fa fa-trash-can"></i>Delete <span>Section</span></span>
+                                    </button>
+                                </div>
 
-                            <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
+                                <div class=" fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
+                                    
+                                    <button type="button" 
+                                        class="btn-fc btn-fc-orange fc-btn-create-plan fencing-btn-modal" 
+                                        data-target="#submit-modal" 
+                                        disabled>
+                                        <strong>Create Project Plan</strong><br>
+                                        <small>View Costing, Plan & Materials List</small>
+                                    </button>
 
-                            <div class="fencing-section__controls">
-                              
-                                <a href="#" class="fc-zoom-reset" data-zoom="reset">
-                                    <i class="fc-icon fc-icon-arrow-cc"></i>
-                                </a>
+                                    <button type="button" 
+                                        class="btn-fc fc-btn-step btn-fc-outline-default fc-text-uppercase fc-px-3" 
+                                        data-tab="2" 
+                                        data-move="1"><b>Back</b>
+                                    </button>
 
-                                <a href="#" style="display: none;">
-                                    <i class="fc-icon fc-rectangle"></i>
-                                </a>
+                                </div>
 
-                                <a href="#" class="fc-zoom-fence" data-zoom="in">
-                                    <i class="fc-icon fc-magnify-plus"></i>
-                                </a>
-
-                                <a href="#" class="fc-zoom-fence" data-zoom="out">
-                                    <i class="fc-icon fc-magnify-munis"></i>
-                                </a>
-
-                            </div>
-
-                        </div>
-
-                        <div style="clear:both;"></div>
-
-                        <div class="fencing-section fencing-display-result">
-                            
-                            <div class="fencing-result-msg" style="display: none;">
-                                <p>No Valid Solution. Please adjust Measurements.</p>
-                            </div>
-
-                            <div class="fencing-panel-items">
-                                <div class="fencing-panel-rail fencing-btn-modal" 
-                                    data-key="rail_options" 
-                                    data-target="#fc-control-modal" style="display:none;"></div>
-                                <div class="fencing-panel-container"></div>
                             </div>
 
                         </div>
-
-
-                        <!-- START PANEL CONTROLS -->	
-                        <div class="fencing-section fencing-panel-controls"></div>
-                        <!-- END PANEL CONTROLS -->
-
-                        <!-- START PANEL CONTROLS | FOR TESTING ONLY -->	
-                        <div class="fencing-section">
-                            <button type="button" id="btn-left_side" data-key="left_side" data-target="#fc-control-modal-1" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Edit Left Side 1</button>
-                            <button type="button" id="btn-panel_options" data-key="panel_options" data-target="#fc-control-modal-4" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Panel Options</button>
-                            <button type="button" id="btn-post_options" data-key="post_options" data-target="#fc-control-modal-2" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Post Options</button>
-                            <button type="button" id="btn-gate" data-key="gate" data-target="#fc-control-modal-3" class="btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1">Add Gate</button>
-                        </div>
-                        <!-- END PANEL CONTROLS | FOR TESTING ONLY -->
-
-
                     </div>
                     <!-- END DISPLAY RESULT -->
-
-
-                    <div class="fencing-divider"></div>
-
                 </div>
 
-                <div class="fc-section-step fc-d-none fc-step-4" data-tab="2" style="display: none;">
+                <div class="fc-section-step  fc-d-none fc-step-4" data-tab="2" style="display: none;">
                     
-                    <div class="fencing-section">
+                    <div class="fencing-section fencing-section--no-padding fencing-section--has-border br-tl-0">
                         
-                        <div class="step-label">Step <span>04</span></div>
-                        
-                        <h4 class="fencing-content-title fc-mb-2">Configure Your Project</h4>
-                      
-                        <div class="fc-card fc-mb-2">
+                            <div class="fencing-section__top">
+                                <div class="step-label">Step <span>04</span></div>
+                                
+                                <h4 class="fencing-content-title fc-mb-2">Configure Your Project</h4>
                             
-                            <div class="fc-card-header fc-bg-dark fc-border-top">
-                                Colour Options
-                            </div>
+                                <div class="fc-card fc-mb-2">
+                                    
+                                    <div class="fc-card-header fc-bg-dark fc-border-top">
+                                        Colour Options
+                                    </div>
 
-                            <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
-                                <div class="fencing-form-group fc-mb-0">
-                                    <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
-                                        <div class="fc-scrollable">
-                                            <div class="fc-scrollable-area">
-                                        <?php foreach($color_options as $co): ?>
-                                        <div class="fc-col-3">
-                                            <div class="fc-select-item fc-select fc-mb-0" data-slug="" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
-                                                <p><?php echo $co['title']; ?></p>
-                                                <span><?php echo $co['sub_title']; ?></span>
+                                    <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
+                                        <div class="fencing-form-group fc-mb-0">
+                                            <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
+                                                <div class="fc-scrollable">
+                                                    <div class="fc-scrollable-area">
+                                                        <?php foreach($color_options as $co): ?>
+                                                        <div class="fc-col-3">
+                                                            <div class="fc-select-item fc-select fc-mb-0" data-slug="<?php echo $co['slug']; ?>" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
+                                                                <p><?php echo $co['title']; ?></p>
+                                                                <span><?php echo $co['sub_title']; ?></span>
+                                                            </div>
+                                                        </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
-                                        <?php endforeach; ?>
+                                    </div>
+
+                                </div>
+
+                                <div class="fc-card">
+                                    
+                                    <div class="fc-card-header fc-bg-dark fc-border-top">
+                                        Project Notes & Additional Details
+                                    </div>
+
+                                    <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
+                                        <div class="fc-p-1">
+                                            <div class="fc-row">
+                                                <div class="fc-col-half fc-lg-col-full">
+                                                    <textarea name="notes" 
+                                                    placeholder="Write your notes here" 
+                                                    class="fc-form-control fc-form-control--textarea" rows="7"></textarea>
+                                                </div>
                                             </div>
                                         </div>
-
                                     </div>
+
                                 </div>
-                            </div>
-
-                        </div>
-
-                        <div class="fc-card">
                             
-                            <div class="fc-card-header fc-bg-dark fc-border-top">
-                                Project Notes & Additional Details
                             </div>
+                            <div class="fencing-section__bottom">
+                                <div class="fc-tab-control">
 
-                            <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
-                                <div class="fc-p-1">
-                                    <div class="fc-row">
-                                        <div class="fc-col-half fc-lg-col-full">
-                                            <textarea name="notes" 
-                                            placeholder="Write your notes here" 
-                                            class="fc-form-control" rows="7"></textarea>
-                                        </div>
+                                    <div class=" fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
+                                        
+                                        <button type="button" 
+                                            class="btn-fc btn-fc-orange fc-btn-create-plan fencing-btn-modal" 
+                                            data-target="#submit-modal" 
+                                            disabled>
+                                            <strong>Create Project Plan</strong><br>
+                                            <small>View Costing, Plan & Materials List</small>
+                                        </button>
+
+                                        <button type="button" 
+                                            class="btn-fc fc-btn-step btn-fc-outline-default fc-text-uppercase fc-px-3" 
+                                            data-tab="2" 
+                                            data-move="1"><b>Back</b>
+                                        </button>
+
                                     </div>
-                                </div>
-                            </div>
 
-                        </div>
+                                </div>
+
+                            </div>
 
                     </div>
 
                 </div>
 
-                <div class="fc-tab-control">
-
-                    <div class="fencing-section fc-section-step" data-tab="1">
-                        
-                        <button type="button" 
-                            class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step" 
-                            data-tab="1" 
-                            data-move="2"
-                            disabled>
-                            <b>NEXT - Select PLAN OPTIONS &#8594;</b>
-                        </button>
-
-                        <button type="button" 
-                            class="btn-fc btn-fc-outline-default fc-tab-add fencing-tab-add fc-px-2">
-                            <b>
-                                <i class="fa-solid fa-plus"></i> Add Another Section
-                            </b>
-                        </button>
-                    </div>
-
-                    <div class="fencing-section fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
-                        
-                        <button type="button" 
-                            class="btn-fc btn-fc-orange fc-btn-create-plan fencing-btn-modal" 
-                            data-target="#submit-modal" 
-                            disabled>
-                            <strong>Create Project Plan</strong><br>
-                            <small>View Costing, Plan & Materials List</small>
-                        </button>
-
-                        <button type="button" 
-                            class="btn-fc fc-btn-step btn-fc-outline-default fc-text-uppercase fc-px-3" 
-                            data-tab="2" 
-                            data-move="1"><b>Back</b>
-                        </button>
-
-                    </div>
-
-                </div>
-
+                
             </div>
         </div>
 
 
         <!-- START POPUP MODAL CONTROL PANEL -->
-        <div id="fc-control-modal" class="fencing-modal">
+        <div id="fc-control-modal" class="fencing-modal fencing-modal--v2 js-fencing-modal">
             <div class="fc-modal-frame">
-                
-                <div class="fencing-modal-content">
-                   
-                    <span class="fencing-modal-close">&times;</span>
-                   
-                    <div class="fencing-modal-title fc-font-2">
-                        Options
-                    </div>
-                    
-                    <div class="fc-modal-divider"></div>
-                    
-                    <div class="fencing-modal-body fc-font-1"></div>
-                    
-                    <div class="fencing-modal-notes"></div>
-
-                </div>
+                <div class="fencing-modal-content"></div>
             </div>
         </div>
         <!-- END POPUP MODAL CONTROL PANEL -->
 
-        <!-- START POPUP MODAL CONTROL PANEL | TESTING-->
-        <div id="fc-control-modal-1" class="fencing-modal fencing-modal--v2">
-            <div class="fc-modal-frame">
-                <div class="fencing-modal-content">
-                    
-                    <div class="fencing-modal-area">
-                        <div class="fencing-modal-header">
-                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Edit Left Side</div>
-                            <span class="fencing-modal-close">×</span>
-                        </div>
-                        <div class="fencing-modal-body js-fc-ignore fc-font-1 fc-p-0">
-                            <div class="fencing-form-group">
-                                <h2 class="body-title"></h2>
-                                <div class="fc-row-container">
-                                    <div class="fc-row fc-form-field" name="left_option" type="range_option" value="yes-post">
-                                        <div class="fc-col-4 fc-text-center">
-                                            <div class="fc-select-post fc-select fc-selected" data-slug="yes-post">
-                                                <img src="img/yes-post.png">
-                                            </div>
-                                            <p></p>
-                                        </div>
-                                        <div class="fc-col-4 fc-text-center">
-                                            <div class="fc-select-post fc-select" data-slug="no-post">
-                                                <img src="img/no-post-1.png">
-                                            </div>
-                                            <p></p>
-                                        </div>
-                                        <div class="fc-col-4 fc-text-center">
-                                            <div class="fc-select-post fc-select" data-slug="no-post-swivel-bracket">
-                                                <img src="img/no-post-2.png">
-                                            </div>
-                                            <p></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="fencing-modal-notes js-fc-ignore">
-                            <div class="fc-selection-details fc-alert-gray">
-                                <label><i class="fc-icon fc-icon-capa"></i> When To Use Swivel Brackets</label>
-                                <p class="fc-text-gray">Swivel brackets are used instead of the standards straight brackets. This allow you
-                                    to connect this fence section at an angle. e.g. 45degs to the connecting fence section</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="fencing-modal-area">
-                        <div class="fencing-modal-header">
-                            <div class="fencing-modal-title fc-font-2 js-fc-ignore">Post Options</div>
-                        </div>
-                        <div class="fencing-modal-body fc-font-1 fc-p-0 js-fc-ignore">
-                            <div class="fc-row-container fencing-form-group">
-                                <div class="fc-row fc-form-field js-fc-ignore" name="post_option" type="image_option" value="opt-2">
-                                    <div class="fc-col-4 fc-text-center">
-                                        <div class="fc-select-post fc-select" data-slug="opt-1">
-                                            <img src="img/base-plate-posts.png" class="fc-fullwidth">
-                                        </div>
-                                        <p></p>
-                                        <p></p>
-                                    </div>
-                                    <div class="fc-col-4 fc-text-center">
-                                        <div class="fc-select-post fc-select fc-selected" data-slug="opt-2">
-                                            <img src="img/cement-in-posts.png" class="fc-fullwidth">
-                                        </div>
-                                        <p></p>
-                                        <p></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="fencing-modal-area">
-                        <div class="fencing-modal-header">
-                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Add Step-Up Panel</div>
-                        </div>
-                        <div class="fencing-modal-body js-fc-ignore fc-font-1 fc-p-0">
-                            <div class="fc-dropdown_option">
-                                <h2 class="body-title">Right Hand Step-Up Panel</h2>
-                                <div class="fc-row js-fc-ignore">
-                                    <select class="fc-form-field fc-select-option js-fc-ignore" name="right_raked" type="dropdown_option" value="">
-                                        <option value="none">Nil</option>
-                                        <option value="1300x300">1300H - 300 Step-Up</option>
-                                        <option value="1400x400">1400H - 400 Step-Up</option>
-                                        <option value="1500x500">1500H - 500 Step-Up</option>
-                                        <option value="1600x600">1600H - 600 Step-Up</option>
-                                        <option value="1700x700">1700H - 700 Step-Up</option>
-                                        <option value="1800x600">1800H - 600 Step-Up</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-
-        <div id="fc-control-modal-2" class="fencing-modal fencing-modal--v2">
-            <div class="fc-modal-frame">
-                <div class="fencing-modal-content">
-                <div class="fencing-modal-area">
-                        <div class="fencing-modal-header">
-                            <div class="fencing-modal-title fc-font-2 js-fc-ignore">Post Options</div>
-                            <span class="fencing-modal-close">×</span>
-                        </div>
-                        <div class="fencing-modal-body fc-font-1 fc-p-0 js-fc-ignore">
-                            <div class="fc-row-container fencing-form-group">
-                                <div class="fc-row fc-form-field js-fc-ignore" name="post_option" type="image_option" value="opt-2">
-                                    <div class="fc-col-4 fc-text-center">
-                                        <div class="fc-select-post fc-select" data-slug="opt-1">
-                                            <img src="img/base-plate-posts.png" class="fc-fullwidth">
-                                        </div>
-                                        <p></p>
-                                        <p></p>
-                                    </div>
-                                    <div class="fc-col-4 fc-text-center">
-                                        <div class="fc-select-post fc-select fc-selected" data-slug="opt-2">
-                                            <img src="img/cement-in-posts.png" class="fc-fullwidth">
-                                        </div>
-                                        <p></p>
-                                        <p></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </div>
-
-        <div id="fc-control-modal-3" class="fencing-modal fencing-modal--v2">
-            <div class="fc-modal-frame">
-                <div class="fencing-modal-content">
-                    <div class="fencing-modal-area fencing-modal-area--gate fc-p-0">
-
-                        <div class="fencing-modal-header">
-                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Add / Remove Gate</div>
-                            <span class="fencing-modal-close">×</span>
-                        </div>
-
-                        <div class="fencing-modal-body js-fc-ignore fc-font-1">
-                            <div class="fc-control-move fencing-form-group">
-                                <h2 class="body-title"></h2>
-                                <div class="fc-row">
-
-                                    <div class="fc-row-flex">
-                                        <div class="fc-col-flex fc-text-center">
-                                            <div class="fc-move-post" data-move="first">
-                                                <p><span>⇤</span><br>First</p>
-                                            </div>
-                                        </div>
-                                        <div class="fc-col-flex fc-text-center">
-                                            <div class="fc-move-post" data-move="left">
-                                                <p><span>←</span><br>Left</p>
-                                            </div>
-                                        </div>
-                                        <div class="fc-col-flex fc-text-center">
-                                            <div class="fc-move-post" data-move="delete">
-                                                <p><span>✕</span><br>Delete</p>
-                                            </div>
-                                        </div>
-                                        <div class="fc-col-flex fc-text-center">
-                                            <div class="fc-move-post" data-move="right">
-                                                <p><span>→</span><br>Right</p>
-                                            </div>
-                                        </div>
-                                        <div class="fc-col-flex fc-text-center">
-                                            <div class="fc-move-post" data-move="last">
-                                                <p><span>⇥</span><br>Last</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="fencing-modal-notes js-fc-ignore"></div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="fc-control-modal-4" class="fencing-modal fencing-modal--v2">
-            <div class="fc-modal-frame">
-                <div class="fencing-modal-content">
-                    <div class="fencing-modal-area fencing-modal-area--panel-options">
-                        <div class="fencing-modal-header">
-                            <div class="fencing-modal-title js-fc-ignore fc-font-2">Panel Options</div>
-                            <span class="fencing-modal-close">×</span>
-                        </div>
-                        <div class="fencing-modal-body js-fc-ignore fc-font-1 fc-p-0">
-                            <div class="fencing-form-group">
-                                <h2 class="body-title"></h2>
-                                <div class="fc-row-container">
-                                    <div class="fc-row fc-form-field" name="panel_option" type="text_option" value="even">
-                                        <div class="fc-col-4 fc-text-center">
-                                            <div class="fc-select-post fc-select fc-selected" data-slug="even">
-                                                <p>Even Size Panels</p>
-                                            </div>
-                                        </div>
-                                        <div class="fc-col-4 fc-text-center">
-                                            <div class="fc-select-post fc-select" data-slug="full_2400">
-                                                <p>Use 2400W Panels</p>
-                                            </div>
-                                        </div>
-                                        <div class="fc-col-4 fc-text-center">
-                                            <div class="fc-select-post fc-select" data-slug="full_3000">
-                                                <p>Use 3000W Panels</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="fencing-modal-notes js-fc-ignore">
-                            <div class="fc-selection-details">
-                                <label>Even Size Panels</label>
-                                <p>This option evenly spaces out the posts, which also means you will need to cut down every individual
-                                    panel.</p>
-                            </div>
-                            <div class="fc-selection-details">
-                                <label>Use 2400W / 3000W Panels</label>
-                                <p>This option uses full length panels, which means you will ONLY need to cut down 1x panel. </p>
-                            </div>
-                            <div class="fc-selection-details fc-alert-gray">
-                                <label><i class="fc-icon fc-icon-capa"></i> Panel Off-Cuts</label>
-                                <p class="fc-text-gray">The off-cut can be used for another fence section (where applicable). If the off-cut
-                                    is used ensure you manually update the panel quantities to account for this as this planner does NOT use
-                                    Off-Cuts.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- END POPUP MODAL CONTROL PANEL | TESTING -->
-
-
         <!-- START SUBMIT POPUP MODAL -->
-        <div id="submit-modal" class="fencing-modal">
+        <div id="submit-modal" class="fencing-modal fencing-modal--v2">
             <div class="fc-modal-frame">
 
                 <div class="fencing-modal-content fencing-modal-md">
@@ -668,12 +432,12 @@
                         <div class="fencing-modal-title">
                             <h4>Download Your Project Plans</h4>
                         </div>
-                        <span class="fencing-modal-close">&times;</span>
+                        <button class="fencing-modal-close js-fencing-modal-close">&times;</button>
                     </div>
 
-                    <div class="fencing-modal-body fc-mb-4">
+                    <div class="fencing-modal-body">
                         
-                        <div class="fc-alert-gray fc-mb-3">
+                        <div class="fc-alert-gray fc-mb-3 fc-alert-gray--large-h4">
                             <h4>&#127881; Awesome! We’ll email you the plans..</h4>
                             <p class="fc-text-gray">Simply enter your details below and we’ll send you your plans to download or print for your reference.</p>
                         </div>
@@ -873,7 +637,7 @@
 
                             <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Anything Else We Can Help You With?</h2>
 
-                            <div class="fc-other-products fc-form-group fc-mb-2">
+                            <div class="fc-other-products fc-form-group fc-mb-1">
                                 <div class="fc-row-container">
 
                                     <?php foreach( fc_extra_needed() as $extra_k => $extra_v ): ?>
@@ -942,6 +706,7 @@ var fc_mbn  = 11000;
 $('.measurement-box-number').val(fc_mbn);
 </script>
 
+<script type="text/javascript" src="js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>

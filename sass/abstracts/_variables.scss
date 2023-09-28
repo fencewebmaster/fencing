@@ -1,7 +1,7 @@
 
 :root {
     --fc-gray: #e9e9e9;
-    --fc-blue: #F67925;
+    --fc-princeton-orange: #F67925;
     --fc-white: #fff;
     --fc-brand-primary: #D4112F;
     --fc-bright-gray: #EEEEEE;
@@ -10,6 +10,10 @@
     --fc-dark-gray: #AAAAAA;
     --fc-cultured: #F5F5F5;
     --fc-gainsboro: #DDDDDD;
+    --fc-slimy-green: #19A11E;
+    --fc-pale-pink: #DAFCFC;
+    --fc-chinese-white: #DCEEDF;
+    --fc-texas-green: #0B9321;
 }
 
 /// Regular font family
@@ -39,4 +43,5 @@ $breakpoint-xl: 1200px;
 
 // button
 $button-radius: 8px;
+
 

@@ -5,15 +5,27 @@
 .fencing-container{
     color: $text-black;
     font-family: $font-inter;
+
+    .fc-font-1 {
+        font-family: $font-inter;
+    }
+    .fc-font-2 {
+        font-family: $font-league;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    p,
+    input,
+    select,
+    label {
+        margin: 0;
+        font-family: $font-inter;
+    }
+
 }
 
-.fencing-container h1,
-.fencing-container h2,
-.fencing-container h3,
-.fencing-container h4,
-.fencing-container h5,
-.fencing-container p,
-.fencing-container label {
-	margin: 0;
-	font-family: $font-inter;
-}
+

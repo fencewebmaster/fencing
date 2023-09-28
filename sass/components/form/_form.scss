@@ -76,8 +76,14 @@
 .fc-tab-control .fc-section-step {
     display: flex;
     height: 52px;
-    margin-top: 32px;
-    margin-bottom: 32px;
+
+    .btn-fc{
+	    margin-right: 16px;
+        text-align: center;
+        @include lg {
+            margin-right: 0;
+        }
+    }
 
     @include lg {
         display: block;
@@ -95,6 +101,10 @@
     color: #9E9E9E;
     border-color: #cbcbcb;
     cursor: not-allowed !important;
+
+    &:hover{
+        color: #9E9E9E;
+    }
 }
 
 .fc-form-plan{

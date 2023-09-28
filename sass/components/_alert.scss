@@ -50,9 +50,33 @@
         font-weight: 500;
     }
 
+    &--large-h4 h4{
+        font-size: 18px;
+    }
+
     p{
         font-size: 16px;
         line-height: 22px;
         color: var(--fc-granite-gray);
+    }
+}
+
+.fc-alert-gray--low-stock{
+    background-color: #FCDADA;
+    width: 100%;
+    box-sizing: border-box;
+    @include lg{
+        margin-top: 0;
+    }
+    h3{
+        color: var(--fc-brand-primary);
+        font-weight: 700;
+    }
+    i{
+        margin-right: 4px;
+    }
+    p{
+        color: var(--fc-brand-primary);
+        margin-bottom: 0;
     }
 }

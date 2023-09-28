@@ -165,7 +165,7 @@ $("#paymentFrm").validate({
 
                         } , 500);
 
-                        $('.fc-edit-item').html('Edit');
+                        $('.js-fc-edit-item span').html('Edit');
 
                     } catch(err){
                         console.log('err: ', response);
@@ -285,7 +285,7 @@ $(document).on('click', ".fc-btn-edit", function (e) {
 
     $('[name="action"]').val('update_details');
 
-    if( $(this).find('span').text() == 'Edit' ) {
+    if( $(this).find('span').text() == 'Edit Details' ) {
 
         $('.fc-project-details .fc-form-group, .fc-btn-reset').show();
         $('.fc-project-details table span').hide();
@@ -326,15 +326,15 @@ $(document).on('click', ".fc-btn-reset", function (e) {
 });
 
 // ITEM LIST & CART SECTION
-$(document).on('click', ".fc-edit-item", function (e) {
+$(document).on('click', ".js-fc-edit-item", function (e) {
     e.preventDefault();
 
     $('[name="action"]').val('update_cart');
 
-    if( $(this).text() == 'Edit' ) {
+    if( $(this).find('span').text() === 'Edit' ) {
         $('.fc-table-items input, .fc-reset-item').show();
         $('.fc-item-value').hide();
-        $(this).html('Update');
+        $(this).find('span').html('Update');
     } else {
 
         $('form').submit();
