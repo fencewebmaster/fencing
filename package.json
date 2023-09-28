@@ -1,0 +1,11 @@
+{
+    "name": "fencing-calculator",
+    "version": "1.0.0",
+    "author": "Mhike <Mhike@fencingsuppliers.au>",
+    "scripts": {
+        "watch": "sass --watch sass/style.scss style.css"
+    },
+    "dependencies": {
+        "node-sass": "npm:sass@^1.68.0"
+    }
+}

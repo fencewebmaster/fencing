@@ -1,0 +1,15 @@
+.fc-scrollable{
+    
+    @include lg{
+        overflow: hidden;
+        overflow-x: auto;
+    }
+
+    &-area{
+        @include lg{
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-flex;
+        }
+    }
+}
