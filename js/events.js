@@ -193,6 +193,11 @@ $(document).on('change', '.fc-select-option', function(){
     $(this).closest('.fc-form-field').attr('value', slug);
 
     var modal_key = $('.fencing-container').attr('data-key');
+
+    if( $(this).attr('data-key') && $(this).attr('data-key') !== "undefined" ){
+        modal_key = $(this).attr('data-key');
+    }
+
     update_custom_fence(modal_key);
 
     if( $(this).closest('.fc-form-field').attr('name') == 'right_raked' ) {   
@@ -252,7 +257,7 @@ $(document).on('click', '.fencing-tab', function() {
 });
 
 $(document).on('click', '.fencing-modal .fc-select', function() {
-    //FCModal.close();
+    FCModal.close();
     $('.fc-btn-active').removeClass('fc-btn-active');
 });
 
@@ -387,8 +392,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     FCModal.open(target);
 
     $(this).addClass('fc-btn-active');
-
-    console.log(modal.el);
    
     if( typeof key !== "undefined" ){
         modal.el.find(".fencing-modal-notes").html('');
@@ -419,15 +422,16 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
             $(v.options).each(function(i, o) {
                 $('[name="'+v.slug+'"]').append($('<option>',{ value: o.slug, text: o.title }));
+                $('[name="'+v.slug+'"]').attr('data-key', v.key);
             });
 
         }
 
         if( v.type == 'range_option') {
 
-            const Item = ({ image, title, slug }) => `
+            const Item = ({ image, title, slug, key }) => `
             <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-slug="${slug}">    
+                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
                     <img src="${image}">
                 </div>
                 <p>${title}</p>
@@ -440,7 +444,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
             const Item = ({ title, slug }) => `
             <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-slug="${slug}">    
+                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
                     <p>${title}</p>
                 </div>
             </div>`;
@@ -450,9 +454,9 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
         if( v.type == 'image_option') {
 
-            const Item = ({ image, title, extra, slug }) => `
+            const Item = ({ image, title, extra, slug, key }) => `
             <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-slug="${slug}">
+                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">
                     <img src="${image}" class="fc-fullwidth">        
                 </div>
                 <p>${title}</p>
@@ -479,9 +483,15 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     });
 
+    //Get data based on key
     var filtered_data = custom_fence.filter(function(item) {
         return item.control_key == key;
     });
+
+    //Excluded popup with multiple sections inside
+    if( key === "left_side" || key === "right_side" ){
+        filtered_data = custom_fence;
+    }
 
     removeDuplicateCloseBtn();
     set_field_value( filtered_data );
@@ -670,7 +680,13 @@ $(document).on('change', '.fencing-modal', function(){
 
 $(document).on('click', '.fc-select-post', function(){
     var modal_key = $('.fencing-container').attr('data-key');
-    update_custom_fence(modal_key);
+    var fc_form_field = $(this).closest(".fc-form-field");
+
+    if( $(this).attr('data-key') && $(this).attr('data-key') !== "undefined" ){
+        modal_key = $(this).attr('data-key');
+    }
+    
+    update_custom_fence(modal_key, fc_form_field);
 });
 
 $(document).on('click', '.fc-select-item', function(){
