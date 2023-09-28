@@ -880,7 +880,7 @@ a.fc-tab-active {
   height: 100%;
 }
 
-.fc-loader {
+.fc-loader-gif {
   background: url(img/loaders/1.gif) no-repeat center;
   width: 80px;
   height: 80px;

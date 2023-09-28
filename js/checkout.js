@@ -239,15 +239,13 @@ $("#paymentFrm").validate({
                 
         } else if( action == 'place_order' ) {
 
+            $('.fc-loader-overlay').show();
 
             $.ajax({
                 url: 'checkout.php', 
                 type: "POST",  
                 data: formData,
                 headers: {},
-                beforeSend: function(){
-                    loadSectionOverlay('update_stock-delivery');
-                },
                 contentType: false,  
                 cache: false,         
                 processData:false,    
@@ -272,9 +270,9 @@ $("#paymentFrm").validate({
                                }
 
                             }, 1000 * i);
-                        });
 
-                        
+
+                        });
 
                     }, 1000);
 
@@ -283,7 +281,6 @@ $("#paymentFrm").validate({
                     
                     $('#paymentResponse').html(info.message);
 
-                    
 
                 }
             });

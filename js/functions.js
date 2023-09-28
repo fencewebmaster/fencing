@@ -899,9 +899,7 @@ function updateElements(setting, key, props){
 function updateElement(control_key, property, value){
 
     let getEl = document.querySelector('.js-' + control_key + '-' + property);
-    if( getEl ){
-        getEl.textContent = value;
-    }
+    getEl.textContent = value;
 
 }
 
@@ -925,7 +923,7 @@ function loadSectionOverlay(target) {
 
     let tpl = `<div class="fc-section-loader-overlay">
                 <div class="fc-loader-container">
-                    <div class="fc-loader"></div>
+                    <div class="fc-loader"><div class="fc-loader-gif"></div></div>
                 </div>
             </div>`;
     target = document.getElementById(target);

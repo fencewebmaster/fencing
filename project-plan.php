@@ -87,7 +87,7 @@
             <div class="fc-row">
                 
                 <div class="fc-col-auto">
-                    <img src="<?php echo base_url('img/loaders/1.gif'); ?>" width="120">
+				<div class="fc-loader-gif"></div>
                 </div>
 
                 <div class="fc-col-auto">
