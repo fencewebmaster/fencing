@@ -619,9 +619,11 @@ $(document).on('click', '.btn-fc-calculate', function(){
 
         $('.fc-btn-next-step').attr('disabled', 'disabled');
 
-        if( $('.fencing-panel-item:visible').length > 0 ) {
-            $('.fc-btn-next-step').removeAttr('disabled');
-        }
+        //@TODO - checkback to refactor
+        // if( $('.fencing-panel-item:visible').length > 0 ) {
+        //     $('.fc-btn-next-step').removeAttr('disabled');
+        // }
+        $('.fc-btn-next-step').removeAttr('disabled');
 
         
         if( $(".fencing-panel-spacing-number:contains('undefined')").length ) {
