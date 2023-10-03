@@ -27,13 +27,13 @@
                         <span class="fc-item-value"><?php echo $cart_item['qty']; ?></span>
                         <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo $cart_item['qty']; ?>" class="fc-form-control" min="1" required>
                     </td>
-                    <td width="279"><p><strong><?php echo $cart_item['description']; ?></strong><br /><?php echo $cart_item['sku']; ?></p></td>
+                    <td width="279"><p><strong><?php echo $cart_item['name']; ?></strong><br /><?php echo $cart_item['sku']; ?></p></td>
                     <!-- <td><?php echo $cart_item['sku']; ?></td>
                     <td><s>$<?php echo $cart_item['rrp']; ?></s></td>
                     <td>$<?php echo $cart_item['trade_price']; ?></td>
                     <td>$<?php echo number_format($cart_item['subtotal'], 2); ?></td> -->
                     <td>
-                        <div class="fc-stock-status fc-stock-status--<?php echo $cart_item['stock']; ?>">Low</div>
+                        <div class="fc-stock-status fc-stock-status--<?php echo $cart_item['stock']; ?>"><?php echo ucwords($cart_item['stock']); ?></div>
                     </td>
                 </tr>
                 <?php $ci++; ?>

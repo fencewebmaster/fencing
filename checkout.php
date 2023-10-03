@@ -4,9 +4,33 @@ session_start();
 include('data/settings.php');
 include('helpers.php');
 
-if( @$_POST['action'] == 'place_order' ) {
+if( @$_POST['action'] == 'push_order' ) {
 
+    $data = json_encode($_SESSION);
 
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'https://fencesperth.com?fc_action=push&date'.date('mdYHis'),
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => $data,
+      CURLOPT_HTTPHEADER => array(
+        'Content-Type: application/json'
+      ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+
+    echo $response;
+    exit;
 
 
     require 'vendor/autoload.php'; // Include the Stripe PHP library
@@ -93,8 +117,6 @@ if( @$_POST['action'] == 'place_order' ) {
  
     $cart_items_data = array();
 
-    $cart_subtotal = 0;
-
     $post_data = $_POST['cart'];
 
     $cart = $_SESSION['fc_cart'];
@@ -102,39 +124,16 @@ if( @$_POST['action'] == 'place_order' ) {
     foreach ( $_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
 
         $quantity = $post_data['qty'][$cart_item_k];
-        $cart_item_subtotal = $quantity * $cart_item['trade_price'];
 
         $cart_items_data[$cart_item_k] = $cart_item;
 
         // UPDATE CART ITEM QTY
         $cart_items_data[$cart_item_k]['qty']      = $quantity;
-
-        // UPDATE CART ITEM SUBTOTAL
-        $cart_items_data[$cart_item_k]['subtotal'] = $cart_item_subtotal;
-
-        // SUM SUBTOTAL
-        $cart_subtotal += $cart_item_subtotal; 
     } 
-
-    $gst = $trade_discount = 0;
-
-    // GET DELIVERY FEE
-    $deliver_options = fc_deliver_options();
-    $do_key          = array_search($post_data['shipping_type'], array_column($deliver_options, 'value'));
-    $delivery_fee    = $deliver_options[$do_key]['price'];
-
-    $total = $cart_subtotal + $delivery_fee + $gst;
-
 
 
     $cart_data = [
-        'items'          => $cart_items_data, //
-        'shipping_type'  => $post_data['shipping_type'], //
-        'subtotal'       => $cart_subtotal, //
-        'trade_discount' => $trade_discount, 
-        'delivery_fee'   => $delivery_fee, //
-        'gst'            => $gst,
-        'total'          => $total,
+        'items' => $cart_items_data, 
     ];
 
     $_SESSION['fc_cart'] = $cart_data;
