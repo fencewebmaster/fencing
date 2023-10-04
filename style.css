@@ -2956,6 +2956,7 @@ thead.fc-border th:last-child {
 @media (max-width: 992px) {
   .fencing-measurement .fc-step-2-alert.fc-alert-gray {
     margin-top: 24px;
+    max-width: 100%;
   }
 }
 
