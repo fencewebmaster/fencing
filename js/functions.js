@@ -771,7 +771,7 @@ function zooming(zoom) {
         }
     }
     console.log(step);
-    document.querySelector('.js-fc-zoom-progress').textContent = (step*100) + "%";
+    document.querySelector('.js-fc-zoom-progress').textContent = Math.floor(step*100) + "%";
 
     if( step >= 1 ) {
         $('.fencing-panel-items').css({ 
