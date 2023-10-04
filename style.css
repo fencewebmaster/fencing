@@ -870,7 +870,6 @@ a.fc-tab-active {
   left: 0;
   bottom: 0;
   z-index: 9999;
-  border-radius: 16px;
 }
 
 .fc-loader-container {
