@@ -3020,7 +3020,7 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-mb-input input {
-    max-width: 77%;
+    max-width: 100%;
   }
 }
 
