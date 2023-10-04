@@ -239,6 +239,10 @@ $("#paymentFrm").validate({
 
             $('.fc-loader-overlay').show();
 
+            setTimeout(function(){
+                $('.fc-loader ul li:first-child').addClass('fc-text-success');
+            }, 500);
+
             $.ajax({
                 url: 'checkout.php', 
                 type: "POST",  
@@ -254,26 +258,20 @@ $("#paymentFrm").validate({
                     if( ! info.error ) {
 
                         var count = 0;
+            
+                        $('.fc-loader ul li:not(.fc-text-success)').each(function(i) {
+                            var $this = $(this);
 
-                        setTimeout(function(){
-                            $('.fc-loader ul li').each(function(i) {
-                                var $this = $(this);
-                                setTimeout(function(){
-                                   $this.addClass('fc-text-success');
-                                   count++;
+                            setTimeout(function(){
+                               $this.addClass('fc-text-success');
+                               count++;
+       
+                            }, 2000 * i);
 
-                                   if( count == 5 ) {
-                                        window.onbeforeunload = function() {}
-                                        location.href = info.url;
-                                   }
+                        });
 
-                                }, 1000 * i);
-
-
-                            });
-
-                        }, 1000);
-
+                        window.onbeforeunload = function() {}
+                        location.href = info.url;
 
                     }
                     
@@ -379,7 +377,7 @@ $(document).on('click', ".fc-reset-item", function (e) {
 
     setTimeout(function() { 
         $(".fc-table-items .fc-form-control").css({'color': ''}); 
-    } , 500);
+    }, 500);
 
 });
 
