@@ -2221,6 +2221,8 @@ thead.fc-border th:last-child {
 /* TABS */
 .fencing-tabs {
   height: inherit;
+  width: 100%;
+  position: relative;
 }
 @media (max-width: 992px) {
   .fencing-tabs {
@@ -2231,6 +2233,7 @@ thead.fc-border th:last-child {
   width: 100%;
   display: inline-block;
   height: 66px;
+  margin-top: 40px;
 }
 @media (max-width: 992px) {
   .fencing-tabs-container--project-plan {
@@ -2248,6 +2251,13 @@ thead.fc-border th:last-child {
     width: 100%;
   }
 }
+.fencing-tabs-container.enable-scroll .fencing-tab-container {
+  width: 100%;
+  overflow-x: auto;
+}
+.fencing-tabs-container.enable-scroll .fencing-tabs-area {
+  width: 100%;
+}
 
 .fencing-tab-container {
   border-radius: 16px 16px 0 0;
@@ -2261,6 +2271,9 @@ thead.fc-border th:last-child {
   .fencing-tab-container {
     width: 100%;
   }
+}
+.fencing-tab-container-area {
+  height: 100%;
 }
 
 .w-side-section .fc-section-details {

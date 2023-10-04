@@ -601,7 +601,7 @@ function zoom(parent, direction) {
 
 function add_new_fence_section() {
 
-    $('.fencing-tab').eq(0).clone().appendTo('.fencing-tab-container');
+    $('.fencing-tab').eq(0).clone().appendTo('.js-fencing-tab-container-area');
 
     $('.fencing-tab').removeClass('fencing-tab-selected');
     $('.fencing-tab:last-child').addClass('fencing-tab-selected');

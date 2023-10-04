@@ -1,6 +1,8 @@
 /* TABS */
 .fencing-tabs{
     height: inherit;
+    width: 100%;
+    position: relative;
 
     @include lg{
         width: 100%;
@@ -10,6 +12,7 @@
         width: 100%;
         display: inline-block;
         height: 66px;
+        margin-top: 40px;
         
     }
 
@@ -30,6 +33,19 @@
         }
     }
 
+    &-container.enable-scroll {
+        .fencing-tab-container{
+            width: 100%;
+            overflow-x: auto;
+        }
+
+
+    }
+
+    &-container.enable-scroll &-area{
+        width: 100%;
+    }
+
 }
 
 
@@ -44,6 +60,10 @@
     border-right: 0;
     @include lg{
         width: 100%;
+    }
+
+    &-area{
+        height: 100%;
     }
     
 }
