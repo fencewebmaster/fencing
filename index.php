@@ -232,7 +232,7 @@
 
                                 <div class="fencing-section__controls">
                                 
-                                    <a href="#" class="fc-zoom-reset" data-zoom="reset">
+                                    <a href="#" style="display: none;" class="fc-zoom-reset" data-zoom="reset">
                                         <i class="fc-icon fc-icon-arrow-cc"></i>
                                     </a>
 
@@ -242,10 +242,14 @@
 
                                     <a href="#" class="fc-zoom-fence" data-zoom="in">
                                         <i class="fc-icon fc-magnify-plus"></i>
+                                        Zoom in
                                     </a>
+
+                                    <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
 
                                     <a href="#" class="fc-zoom-fence" data-zoom="out">
                                         <i class="fc-icon fc-magnify-munis"></i>
+                                        Zoom out
                                     </a>
 
                                 </div>

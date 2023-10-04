@@ -754,12 +754,14 @@ function zooming(zoom) {
     }
 
     if( zoom == 'in' ) {
-        if( step <= 1 ) {
+        if( step < 1 ) {
              step = step + 0.02;
         } else {
             step = step + 0.2;       
         }
     }
+
+   
 
     if( zoom == 'out' ) {
         if( step <= 1 ) {
@@ -768,7 +770,8 @@ function zooming(zoom) {
             step = step - 0.2;            
         }
     }
-
+    console.log(step);
+    document.querySelector('.js-fc-zoom-progress').textContent = (step*100) + "%";
 
     if( step >= 1 ) {
         $('.fencing-panel-items').css({ 
