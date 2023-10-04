@@ -5,65 +5,51 @@
 	include('data/settings.php');
 	include('temp/fields.php');
 	include('helpers.php');
-
-	$cart = [
-		'items' => [
-			[
-				'qty' 			=> 10,
-				'description' 	=> 'Panels - 2400W',
-				'sku' 			=> 'sku1',
-				'rrp' 			=> 129,
-				'trade_price' 	=> 89.30,
-				'subtotal' 	    => 893,
-				'stock' 		=> 'low'
-			],
-			[
-				'qty' 			=> 10,
-				'description' 	=> 'Bracket',
-				'sku' 			=> 'sku2',
-				'rrp' 			=> 14.25,
-				'trade_price' 	=> 12.10,
-				'subtotal' 	    => 120,
-				'stock' 		=> 'low'
-			],
-			[
-				'qty' 			=> 12,
-				'description' 	=> 'Post - 1300L',
-				'sku' 			=> 'sku3',
-				'rrp' 			=> 50.90,
-				'trade_price' 	=> 39.00,
-				'subtotal' 	    => 468,
-				'stock' 		=> 'yes'
-			],
-			[
-				'qty' 			=> 14,
-				'description' 	=> 'Base Plate - Covers',
-				'sku' 			=> 'sku4',
-				'rrp' 			=> 16.95,
-				'trade_price' 	=> 9.50,
-				'subtotal' 	    => 133,
-				'stock' 		=> 'yes'
-			],
-			[
-				'qty' 			=> 15,
-				'description' 	=> 'Fixing Kits',
-				'sku' 			=> 'sku5',
-				'rrp' 			=> 14.95,
-				'trade_price' 	=> 12.80,
-				'subtotal' 	    => 192,
-				'stock' 		=> 'low'
-			],
-		],
-		'subtotal' 		 => 1806,
-		'trade_discount' => 584.50,
-		'shipping_type'  => 'shipping_2',
-		'delivery_fee'   => 89,
-		'gst' 			 => 180.6,
-		'total' 		 => 2075.6,
-	];
+	
+	unset($_SESSION['fc_cart']);
 
 	if( !isset($_SESSION['fc_cart']) ){
+
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+		  CURLOPT_URL => 'https://fencesperth.com?fc_action=get_products',
+		  CURLOPT_RETURNTRANSFER => true,
+		  CURLOPT_ENCODING => '',
+		  CURLOPT_MAXREDIRS => 10,
+		  CURLOPT_TIMEOUT => 0,
+		  CURLOPT_FOLLOWLOCATION => true,
+		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		  CURLOPT_CUSTOMREQUEST => 'POST',
+		  CURLOPT_POSTFIELDS =>'[
+		    {"sku": "XP-4200-GSF09-B-CTS"},
+		    {"sku": "XP-1800-FP-BS"},
+		    {"sku": "XP-SCREWSGF-10pk-CTS"},
+		    {"sku": "XP-6100-S65-SM-CTS"},
+		    {"sku": "PP-PANEL-TRANS-B | PP-TRANSKIT-B"}
+		]',
+		  CURLOPT_HTTPHEADER => array(
+		    'Content-Type: application/json'
+		  ),
+		));
+
+		$response = curl_exec($curl);
+
+		curl_close($curl);
+
+		$items = json_decode($response);
+
+		foreach ($items as $item) {
+			$cart['items'][] = [
+				'name' => $item->name,
+				'sku' => $item->sku,
+				'stock' => $item->stock,
+				'qty' => 1,
+			];
+	 	}
+
 		$_SESSION['fc_cart'] = $cart;
+	
 	}
 
 ?>

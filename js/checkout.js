@@ -98,7 +98,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
             scale: 3,
             dpi: 300,
             width: 1350,
-			height: 1350,
+            height: 1350,
         }
     ).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
@@ -237,7 +237,7 @@ $("#paymentFrm").validate({
                 }
             });
                 
-        } else if( action == 'place_order' ) {
+        } else if( action == 'push_order' ) {
 
             $('.fc-loader-overlay').show();
 
@@ -255,26 +255,26 @@ $("#paymentFrm").validate({
 
                     if( ! info.error ) {
 
-                    var count = 0;
+                        var count = 0;
 
-                    setTimeout(function(){
-                        $('.fc-loader ul li').each(function(i) {
-                            var $this = $(this);
-                            setTimeout(function(){
-                               $this.addClass('fc-text-success');
-                               count++;
+                        setTimeout(function(){
+                            $('.fc-loader ul li').each(function(i) {
+                                var $this = $(this);
+                                setTimeout(function(){
+                                   $this.addClass('fc-text-success');
+                                   count++;
 
-                               if( count == 5 ) {
-                                    window.onbeforeunload = function() {}
-                                    location.href = info.url;
-                               }
+                                   if( count == 5 ) {
+                                        window.onbeforeunload = function() {}
+                                        location.href = info.url;
+                                   }
 
-                            }, 1000 * i);
+                                }, 1000 * i);
 
 
-                        });
+                            });
 
-                    }, 1000);
+                        }, 1000);
 
 
                     }
@@ -379,6 +379,6 @@ $(document).on('click', ".fc-reset-item", function (e) {
 
 $(document).on('click', ".btn-submit", function (e) {
     e.preventDefault();
-    $('[name="action"]').val('place_order');
+    $('[name="action"]').val('push_order');
     $('form').submit();
 });
