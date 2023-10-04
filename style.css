@@ -2248,12 +2248,19 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-tabs-area {
+    background-color: transparent;
     width: 100%;
   }
 }
 .fencing-tabs-container.enable-scroll .fencing-tab-container {
   width: 100%;
   overflow-x: auto;
+  border-top-right-radius: 0;
+}
+@media (max-width: 992px) {
+  .fencing-tabs-container.enable-scroll .fencing-tab-container {
+    width: 70%;
+  }
 }
 .fencing-tabs-container.enable-scroll .fencing-tabs-area {
   width: 100%;
@@ -2266,11 +2273,6 @@ thead.fc-border th:last-child {
   border-left: 0;
   box-sizing: border-box;
   border-right: 0;
-}
-@media (max-width: 992px) {
-  .fencing-tab-container {
-    width: 100%;
-  }
 }
 .fencing-tab-container-area {
   height: 100%;
@@ -2312,10 +2314,9 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-tab {
-    padding-left: 4px;
-    padding-right: 4px;
-    min-width: 10px;
-    width: 100%;
+    padding-left: 24px;
+    padding-right: 24px;
+    min-width: 119px;
   }
 }
 .fencing-tab:first-child {
@@ -2343,7 +2344,6 @@ thead.fc-border th:last-child {
 @media (max-width: 992px) {
   .fencing-tab-name {
     width: 100%;
-    text-align: center;
     font-size: 20px;
     line-height: 24px;
     top: 0;
@@ -2391,8 +2391,10 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-tab-add {
-    width: 100%;
-    padding: 17px 15px;
+    width: 119px;
+    padding: 17px 8px;
+    min-width: 10px;
+    font-size: 12px;
   }
 }
 .fencing-tab-add.btn-fc {
@@ -2421,26 +2423,31 @@ thead.fc-border th:last-child {
 }
 
 /* width */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar,
 .fencing-display-result::-webkit-scrollbar {
   width: 10px;
   height: 5px;
 }
 
 /* Track */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-track,
 .fencing-display-result::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
 /* Handle */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb,
 .fencing-display-result::-webkit-scrollbar-thumb {
   background: #333333;
 }
 
 /* Handle on hover */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb:hover,
 .fencing-display-result::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
+.fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before,
 .fc-section-details .fencing-display-result.grabbing:before {
   content: "";
   background: rgba(246, 121, 37, 0.031372549);
@@ -2980,6 +2987,13 @@ thead.fc-border th:last-child {
   font-size: 16px;
   width: 50px;
   margin-right: 20px;
+}
+
+@media (max-width: 992px) {
+  .ftm-measurement {
+    line-height: 1;
+    margin-top: 3px;
+  }
 }
 
 /* Project details */

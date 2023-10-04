@@ -292,20 +292,7 @@ $(document).on('click', '.fencing-tab-add', function(e) {
         }, 1);        
     }*/
 
-    let _this = $(this);
-    let _main_parent = $('.js-fencing-tabs-container');
-    let _main_parent_width = _main_parent.width();
-    let _width = _this.outerWidth(true);
-    let _parent = _this.parent();
-    let _parent_width = _parent.outerWidth(true);
-    let _tab_container = _this.prev();
-    let _trigger_width = (_this.position().left + _width);
-
-    console.log(_trigger_width, _main_parent_width);
-
-    if( _trigger_width > _main_parent_width ) {
-        _main_parent.addClass('enable-scroll');
-    }
+    tabContainerScroll($(this));
     
 });
 
