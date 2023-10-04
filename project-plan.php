@@ -174,15 +174,9 @@
 						<div class="fencing-section__cmp fencing-section__step-label">
 							<div class="step-label">Your Project <span> Details</span></div>
 							<div>
-								<button type="button" 
-									class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
+								<button type="button" data-action="edit" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
 									<i class="fa-solid fa-pencil"></i>
 									<span>Edit Details</span>
-								</button>
-								<button type="button" 
-									class="btn-fc fc-btn-reset btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" 
-									style="display:none;">
-										<i class="fa-solid fa-rotate-left"></i> <span>Reset</span>
 								</button>
 							</div>
 						</div>
@@ -283,6 +277,18 @@
 												</tr>
 											</table>
 
+										</div>
+
+										<div class="js-project-details-controls fc-d-none">
+											<button type="button" data-action="update" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
+												<i class="fa-solid fa-pencil"></i>
+												<span>Update</span>
+											</button>
+											<button type="button" 
+												class="btn-fc fc-btn-reset btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" 
+												style="display:none;">
+													<i class="fa-solid fa-rotate-left"></i> <span>Reset</span>
+											</button>
 										</div>
 
 									</div>

@@ -229,8 +229,6 @@ $("#paymentFrm").validate({
 
                         } , 500);
 
-                        $('.fc-btn-edit').find('span').html('Edit Details');
-
                     } catch(err){
 
                     } 
@@ -300,17 +298,25 @@ $(document).on('click', ".fc-btn-edit", function (e) {
 
     $('[name="action"]').val('update_details');
 
-    if( $(this).find('span').text() == 'Edit Details' ) {
+    let _this = $(this);
+    let _edit_btn = $(".fc-btn-edit[data-action='edit']");
+    let _action = _this.attr('data-action');
+
+    if( _action == 'edit' ) {
 
         $('.fc-project-details .fc-form-group, .fc-btn-reset').show();
         $('.fc-project-details table span:not([class^="js-"])').hide();
-        $(this).find('span').html('Update');
 
+        _this.hide();
+        
     } else {
        
         $('form').submit();
+        _edit_btn.show();
 
     }
+
+    $('.js-project-details-controls').toggleClass('fc-d-none');
 
 });
 
