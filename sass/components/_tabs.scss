@@ -68,6 +68,15 @@
     &-area{
         height: 100%;
     }
+
+    .fencing-tab-add{
+        @include lg {
+            width: 119px;
+            padding: 17px 8px;
+            min-width: 10px;
+            font-size: 12px;
+        }
+    }
     
 }
 
@@ -186,12 +195,7 @@
     transition: all .2s ease;
     border-radius: 0 16px 0 0;
 
-    @include lg {
-        width: 119px;
-        padding: 17px 8px;
-        min-width: 10px;
-        font-size: 12px;
-    }
+
 
     &.btn-fc{
         background-color: #fff;
