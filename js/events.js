@@ -291,6 +291,8 @@ $(document).on('click', '.fencing-tab-add', function(e) {
             scrollTop: $(".fencing-container").offset().top
         }, 1);        
     }*/
+
+    tabContainerScroll($(this));
     
 });
 

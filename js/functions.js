@@ -601,7 +601,7 @@ function zoom(parent, direction) {
 
 function add_new_fence_section() {
 
-    $('.fencing-tab').eq(0).clone().appendTo('.fencing-tab-container');
+    $('.fencing-tab').eq(0).clone().appendTo('.js-fencing-tab-container-area');
 
     $('.fencing-tab').removeClass('fencing-tab-selected');
     $('.fencing-tab:last-child').addClass('fencing-tab-selected');
@@ -754,12 +754,14 @@ function zooming(zoom) {
     }
 
     if( zoom == 'in' ) {
-        if( step <= 1 ) {
+        if( step < 1 ) {
              step = step + 0.02;
         } else {
             step = step + 0.2;       
         }
     }
+
+   
 
     if( zoom == 'out' ) {
         if( step <= 1 ) {
@@ -768,7 +770,8 @@ function zooming(zoom) {
             step = step - 0.2;            
         }
     }
-
+    console.log(step);
+    document.querySelector('.js-fc-zoom-progress').textContent = (step*100) + "%";
 
     if( step >= 1 ) {
         $('.fencing-panel-items').css({ 
@@ -815,7 +818,7 @@ function zooming(zoom) {
       }).mouseleave(end);
 
 
-$('.fencing-display-result').on("mousedown touchstart", function(e) {
+$('.fencing-display-result, .js-fencing-tab-container').on("mousedown touchstart", function(e) {
     var $this = $(this);
     $(this).addClass('is-grabbing');  
 
@@ -829,7 +832,7 @@ $('.fencing-display-result').on("mousedown touchstart", function(e) {
 
 
 
-$('.fencing-display-result').on("mouseup touchend", function(e) {
+$('.fencing-display-result, .js-fencing-tab-container').on("mouseup touchend", function(e) {
     var $this = $(this);
     $(this).removeClass('grabbing'); 
 
@@ -983,4 +986,21 @@ function addObjectByKey(objectArray, obj) {
     }
 
     return objectArray;
-  }
+}
+
+
+function tabContainerScroll(_this) {
+    let _main_parent = $('.js-fencing-tabs-container');
+    let _main_parent_width = _main_parent.width();
+    let _width = _this.outerWidth(true);
+    let _parent = _this.parent();
+    let _parent_width = _parent.outerWidth(true);
+    let _tab_container = _this.prev();
+    let _trigger_width = (_this.position().left + _width);
+
+    console.log(_trigger_width, _main_parent_width);
+
+    if( _trigger_width >= _main_parent_width ) {
+        _main_parent.addClass('enable-scroll');
+    }
+}

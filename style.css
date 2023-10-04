@@ -870,7 +870,6 @@ a.fc-tab-active {
   left: 0;
   bottom: 0;
   z-index: 9999;
-  border-radius: 16px;
 }
 
 .fc-loader-container {
@@ -2221,6 +2220,8 @@ thead.fc-border th:last-child {
 /* TABS */
 .fencing-tabs {
   height: inherit;
+  width: 100%;
+  position: relative;
 }
 @media (max-width: 992px) {
   .fencing-tabs {
@@ -2231,6 +2232,7 @@ thead.fc-border th:last-child {
   width: 100%;
   display: inline-block;
   height: 66px;
+  margin-top: 40px;
 }
 @media (max-width: 992px) {
   .fencing-tabs-container--project-plan {
@@ -2245,8 +2247,22 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-tabs-area {
+    background-color: transparent;
     width: 100%;
   }
+}
+.fencing-tabs-container.enable-scroll .fencing-tab-container {
+  width: 100%;
+  overflow-x: auto;
+  border-top-right-radius: 0;
+}
+@media (max-width: 992px) {
+  .fencing-tabs-container.enable-scroll .fencing-tab-container {
+    width: 70%;
+  }
+}
+.fencing-tabs-container.enable-scroll .fencing-tabs-area {
+  width: 100%;
 }
 
 .fencing-tab-container {
@@ -2257,10 +2273,8 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
   border-right: 0;
 }
-@media (max-width: 992px) {
-  .fencing-tab-container {
-    width: 100%;
-  }
+.fencing-tab-container-area {
+  height: 100%;
 }
 
 .w-side-section .fc-section-details {
@@ -2299,10 +2313,9 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-tab {
-    padding-left: 4px;
-    padding-right: 4px;
-    min-width: 10px;
-    width: 100%;
+    padding-left: 24px;
+    padding-right: 24px;
+    min-width: 119px;
   }
 }
 .fencing-tab:first-child {
@@ -2330,7 +2343,6 @@ thead.fc-border th:last-child {
 @media (max-width: 992px) {
   .fencing-tab-name {
     width: 100%;
-    text-align: center;
     font-size: 20px;
     line-height: 24px;
     top: 0;
@@ -2378,8 +2390,10 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-tab-add {
-    width: 100%;
-    padding: 17px 15px;
+    width: 119px;
+    padding: 17px 8px;
+    min-width: 10px;
+    font-size: 12px;
   }
 }
 .fencing-tab-add.btn-fc {
@@ -2408,31 +2422,52 @@ thead.fc-border th:last-child {
 }
 
 /* width */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar,
 .fencing-display-result::-webkit-scrollbar {
   width: 10px;
   height: 5px;
 }
 
 /* Track */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-track,
 .fencing-display-result::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
 /* Handle */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb,
 .fencing-display-result::-webkit-scrollbar-thumb {
   background: #333333;
 }
 
 /* Handle on hover */
+.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb:hover,
 .fencing-display-result::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
-.fc-section-details .fencing-display-result.grabbing:before {
+.fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before {
   content: "";
   background: rgba(246, 121, 37, 0.031372549);
   position: absolute;
   top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100%;
+}
+
+.fc-section-details .fencing-display-result.grabbing .fencing-panel-container {
+  position: relative;
+}
+
+.fc-section-details .fencing-display-result.grabbing .fencing-panel-container:before {
+  content: "";
+  background: rgba(246, 121, 37, 0.031372549);
+  position: absolute;
+  top: -22px;
+  height: 224px;
   right: 0;
   bottom: 0;
   left: 0;
@@ -2797,6 +2832,34 @@ thead.fc-border th:last-child {
   }
 }
 
+.fencing-section__controls {
+  display: flex;
+}
+
+.fencing-section__controls a {
+  border: 1px solid #DDDDDD;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-right: 8px;
+  display: block;
+}
+@media (max-width: 992px) {
+  .fencing-section__controls a {
+    font-size: 0;
+  }
+}
+
+.fc-zoom-progress {
+  background-color: var(--fc-bright-gray);
+  width: 74px;
+  height: 46px;
+  border-radius: 4px;
+  margin-right: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .fencing-styles {
   display: block;
   overflow-y: hidden;
@@ -2967,6 +3030,13 @@ thead.fc-border th:last-child {
   font-size: 16px;
   width: 50px;
   margin-right: 20px;
+}
+
+@media (max-width: 992px) {
+  .ftm-measurement {
+    line-height: 1;
+    margin-top: 3px;
+  }
 }
 
 /* Project details */

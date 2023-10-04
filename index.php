@@ -66,16 +66,18 @@
         </div>
 
         <!-- START TABS -->
-        <div class="fencing-tabs-container fc-section-step fc-d-none fc-font-2" data-tab="1">
+        <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2" data-tab="1">
             <div class="fencing-tabs-area">
                 <div class="fencing-tabs fc-row-flex">
                 
-                <div class="fencing-tab-container fc-row-flex">
+                <div class="fencing-tab-container js-fencing-tab-container fc-row-flex">
                     
-                    <div class="fencing-tab fencing-tab-selected fc-d-none">
-                        <div class="fencing-tab-name">
-                            <span class="ftm-title">SECTION</span> <span class="fencing-tab-number">1</span>
-                            <div class="ftm-measurement">10000 mm</div>
+                    <div class="fencing-tab-container-area js-fencing-tab-container-area fc-row-flex">
+                        <div class="fencing-tab fencing-tab-selected fc-d-none">
+                            <div class="fencing-tab-name">
+                                <span class="ftm-title">SECTION</span> <span class="fencing-tab-number">1</span>
+                                <div class="ftm-measurement">10000 mm</div>
+                            </div>
                         </div>
                     </div>
 
@@ -230,7 +232,7 @@
 
                                 <div class="fencing-section__controls">
                                 
-                                    <a href="#" class="fc-zoom-reset" data-zoom="reset">
+                                    <a href="#" style="display: none;" class="fc-zoom-reset" data-zoom="reset">
                                         <i class="fc-icon fc-icon-arrow-cc"></i>
                                     </a>
 
@@ -240,10 +242,14 @@
 
                                     <a href="#" class="fc-zoom-fence" data-zoom="in">
                                         <i class="fc-icon fc-magnify-plus"></i>
+                                        Zoom in
                                     </a>
+
+                                    <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
 
                                     <a href="#" class="fc-zoom-fence" data-zoom="out">
                                         <i class="fc-icon fc-magnify-munis"></i>
+                                        Zoom out
                                     </a>
 
                                 </div>
