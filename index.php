@@ -232,8 +232,9 @@
 
                                 <div class="fencing-section__controls">
                                 
-                                    <a href="#" style="display: none;" class="fc-zoom-reset" data-zoom="reset">
+                                    <a href="#" class="fc-zoom-reset" data-zoom="reset">
                                         <i class="fc-icon fc-icon-arrow-cc"></i>
+                                        Reset
                                     </a>
 
                                     <a href="#" style="display: none;">
