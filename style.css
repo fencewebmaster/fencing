@@ -3299,10 +3299,16 @@ thead.fc-border th:last-child {
   color: #666666;
   font-size: 12px;
   text-transform: uppercase;
+  transition: all 0.2s ease;
 }
 .fc-cart-items .fc-reset-item i,
 .fc-cart-items .fc-edit-item i {
   margin-right: 4px;
+}
+.fc-cart-items .fc-reset-item:hover,
+.fc-cart-items .fc-edit-item:hover {
+  background-color: var(--fc-dark-charcoal);
+  color: #fff;
 }
 .fc-cart-items p {
   color: var(--fc-dark-gray);
