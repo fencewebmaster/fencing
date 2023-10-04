@@ -40,8 +40,12 @@
             overflow-x: auto;
             border-top-right-radius: 0;
 
-            @include lg {
+            @include md {
                 width: 70%;
+            }
+
+            @include lg {
+                width: 78%;
             }
         }
 
@@ -202,7 +206,7 @@
     }
 
     &:hover {
-        @include min-md {
+        @include min-lg {
             background: #f5853a;
             color: var(--fc-white);
             border-color: #f5853a;

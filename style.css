@@ -2256,9 +2256,14 @@ thead.fc-border th:last-child {
   overflow-x: auto;
   border-top-right-radius: 0;
 }
-@media (max-width: 992px) {
+@media (max-width: 768px) {
   .fencing-tabs-container.enable-scroll .fencing-tab-container {
     width: 70%;
+  }
+}
+@media (max-width: 992px) {
+  .fencing-tabs-container.enable-scroll .fencing-tab-container {
+    width: 78%;
   }
 }
 .fencing-tabs-container.enable-scroll .fencing-tabs-area {
@@ -2399,7 +2404,7 @@ thead.fc-border th:last-child {
 .fencing-tab-add.btn-fc {
   background-color: #fff;
 }
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .fencing-tab-add:hover {
     background: #f5853a;
     color: var(--fc-white);
