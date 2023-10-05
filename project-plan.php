@@ -6,51 +6,7 @@
 	include('temp/fields.php');
 	include('helpers.php');
 	
-	unset($_SESSION['fc_cart']);
-
-	if( !isset($_SESSION['fc_cart']) ){
-
-		$curl = curl_init();
-
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => 'https://fencesperth.com?fc_action=get_products',
-		  CURLOPT_RETURNTRANSFER => true,
-		  CURLOPT_ENCODING => '',
-		  CURLOPT_MAXREDIRS => 10,
-		  CURLOPT_TIMEOUT => 0,
-		  CURLOPT_FOLLOWLOCATION => true,
-		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		  CURLOPT_CUSTOMREQUEST => 'POST',
-		  CURLOPT_POSTFIELDS =>'[
-		    {"sku": "XP-4200-GSF09-B-CTS"},
-		    {"sku": "XP-1800-FP-BS"},
-		    {"sku": "XP-SCREWSGF-10pk-CTS"},
-		    {"sku": "XP-6100-S65-SM-CTS"},
-		    {"sku": "PP-PANEL-TRANS-B | PP-TRANSKIT-B"}
-		]',
-		  CURLOPT_HTTPHEADER => array(
-		    'Content-Type: application/json'
-		  ),
-		));
-
-		$response = curl_exec($curl);
-
-		curl_close($curl);
-
-		$items = json_decode($response);
-
-		foreach ($items as $item) {
-			$cart['items'][] = [
-				'name' => $item->name,
-				'sku' => $item->sku,
-				'stock' => $item->stock,
-				'qty' => 1,
-			];
-	 	}
-
-		$_SESSION['fc_cart'] = $cart;
-	
-	}
+	// unset($_SESSION['fc_cart']);
 
 ?>
 
@@ -83,8 +39,8 @@
                             <div class="fc-mb-1"><small style="font-size:30px;">Preparing:</small></div>
                         </li>
                         <li><i class="fa fa-check fc-mr-1"></i> Checking customer details... </li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Processing payment...</li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Placing your order...</li>
+                        <li><i class="fa fa-check fc-mr-1"></i> Pushing order into cart...</li>
+                        <li><i class="fa fa-check fc-mr-1"></i> Redirecting to fencing website...</li>
                         <li></li>
                     </ul>
 
@@ -487,22 +443,33 @@
 										<div class="fc-cart-stock-area">
 												
 											<p>Approx Delivery Run: <span>2-3 Days</span></p>
-											<p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
 
-											
+											<?php $alert = array_search('yes', array_column($cart['items'], 'stock')); ?>
+
+											<?php if (!empty($alert) || $alert === 0): ?>
+											<p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
+											<?php endif; ?>
+
+											<?php $alert = array_search('low', array_column($cart['items'], 'stock')); ?>
+
+											<?php if (!empty($alert) || $alert === 0): ?>
 											<div class="fc-alert-gray fc-step-2-alert fc-alert-gray--low-stock">
 												<h3 class="fc-mb-1"><i class="fc-icon fc-icon-info"></i> Low Stock Warning</h3>
 												<p class="fc-text-red">Some items have limited stock available. <br />Your cart can only be Reserved for a Limited Time <br />Then its released for other customers.
 												</p>
 											</div>
+											<?php endif; ?>
+											
 
 										</div>
 
 										<div style="clear: both;"></div>
 										
+										<?php if (!empty($alert) || $alert === 0): ?>
 										<div class="fc-cart-countdown">
 											<p><strong>ORDER WITHIN:</strong><br />2hrs 48mins 59sec</p>
 										</div>
+										<?php endif; ?>
 
 										<div class="fc-cart-items-btns">
 											<button type="submit" 
