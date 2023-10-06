@@ -21,6 +21,8 @@ let FCModal = {
         let el = target || FCModal.el;
         $(el).fadeOut('fast');
 
+        $(".fencing-btn-modal.fc-btn-active").removeClass('fc-btn-active');
+
     },
 
     closeBtn: function() {
