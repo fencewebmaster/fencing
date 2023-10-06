@@ -190,7 +190,7 @@ $(document).on('click', '.fencing-qty-minus', function(){
 
 $(document).on('change', '.fc-select-option', function(){
     var slug = $(this).val();
-    $(this).closest('.fc-form-field').attr('value', slug);
+    $(this).parent().attr('value', slug);
 
     var modal_key = $('.fencing-container').attr('data-key');
 
@@ -206,6 +206,10 @@ $(document).on('change', '.fc-select-option', function(){
 
     if( $(this).closest('.fc-form-field').attr('name') == 'left_raked' ) {   
         $(".fencing-display-result").scrollCenter(".panel-post:first", 300);
+    }
+
+    if( $(this).parents('.js-fencing-modal').length ){
+        FCModal.close();
     }
 
 });
@@ -360,7 +364,8 @@ $(document).on('change', '.fc-select-option', function(event){
             $('.btn-fc-calculate').click();
         }
 
-    });     
+    });    
+     
     
 
 });
@@ -420,8 +425,8 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         if( v.type == 'dropdown_option') {
 
             $(v.options).each(function(i, o) {
-                $('[name="'+v.slug+'"]').append($('<option>',{ value: o.slug, text: o.title }));
-                $('[name="'+v.slug+'"]').attr('data-key', v.key);
+                $('[name="'+v.slug+'"] select').append($('<option>',{ value: o.slug, text: o.title }));
+                $('[name="'+v.slug+'"] select').attr('data-key', v.key);
             });
 
         }
