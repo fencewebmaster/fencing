@@ -430,11 +430,18 @@ function get_field_value(tag, key, val) {
         $('[name='+key+']').attr('value', val);
         $('[name='+key+']').find('[data-slug="'+val+'"]').addClass('fc-selected');
 
+        console.log('val', val);
+
         //Set preselected value for right and left raked inside modal
         if( key === "left_raked" || key === "right_raked" ){
-            $('[name='+key+'] select').val(val);
+            if( typeof val !== "undefined"){
+                $('[name='+key+'] select').val(val);
+            } else {
+                $('[name='+key+'] select').val("none");
+            }
         }
         
+
     }
 }
 
@@ -524,37 +531,7 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
-    console.log('data', data);
-
-    //Check first if a control_key already exists and get it
-    const find_existing_data = data.find(obj => obj.control_key === modal_key);
-    
-
-    if( typeof find_existing_data !== "undefined" ){
-
-        let merge_settings = [];
-            
-        find_existing_data.settings.forEach(obj => {
-            merge_settings.push(obj);
-        });
-
-        settings.forEach(obj => {
-
-            const indexToRemove = merge_settings.findIndex(item => item.key === obj.key);
-
-            // Check if the object with the given ID was found
-            if (indexToRemove !== -1) {
-                // Remove the object from the array using splice
-                merge_settings.splice(indexToRemove, 1);
-            }
-
-            merge_settings.push(obj);
-
-        });
-
-        settings = merge_settings;
-
-    }
+    settings = mergeSettings(data, settings, modal_key);
 
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
@@ -585,6 +562,40 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     // console.log('update_custom_fence: ', 'custom_fence-'+tab+'-'+i );
 
+}
+
+function mergeSettings(data, settings, modal_key){
+
+    //Check first if a control_key already exists and get it
+    const find_existing_data = data.find(obj => obj.control_key === modal_key);
+    
+    if( typeof find_existing_data !== "undefined" ){
+
+        let merge_settings = [];
+
+        find_existing_data.settings.forEach(obj => {
+            merge_settings.push(obj);
+        });
+
+        settings.forEach(obj => {
+
+            const indexToRemove = merge_settings.findIndex(item => item.key === obj.key);
+
+            // Check if the object with the given ID was found
+            if (indexToRemove !== -1) {
+                // Remove the object from the array using splice
+                merge_settings.splice(indexToRemove, 1);
+            }
+
+            merge_settings.push(obj);
+
+        });
+
+        settings = merge_settings;
+
+    }
+
+    return settings;
 }
 
 function update_custom_fence_gate() {
