@@ -418,19 +418,23 @@ function get_field_value(tag, key, val) {
         $('[name='+key+']').closest('.fencing-form-group').find('.fir-info span').text(val);
         
     } if( tag == 'select' ) {
-        
         $('[name='+key+']').val(val);
         $('[name='+key+']').attr('value', val);
 
     } else if( tag == 'div' ) {
 
         // Reset value
-        console.log( $('[name='+key+']').find('.fc-selected').length );
         if( $('[name='+key+']').find('.fc-selected').length ) {
             $('[name='+key+']').find('.fc-selected').removeClass('fc-selected'); 
         }
         $('[name='+key+']').attr('value', val);
         $('[name='+key+']').find('[data-slug="'+val+'"]').addClass('fc-selected');
+
+        //Set preselected value for right and left raked inside modal
+        if( key === "left_raked" || key === "right_raked" ){
+            $('[name='+key+'] select').val(val);
+        }
+        
     }
 }
 
