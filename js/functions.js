@@ -20,6 +20,8 @@ function load_fencing_items() {
             panel_size = calc.long_panel.length,
             panel_unit = 'mm';
 
+        console.log('load_fencing_items 1', 'panel_size', panel_size);
+
         var tpl = $('script[data-type="panel_item-'+info.panel_group+'"]').text()
                                                      .replace(/{{center_point}}/gi, center_point)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
@@ -91,6 +93,8 @@ function load_fencing_items() {
 
 function update_raked_panels(side) {
 
+
+
     var i = $('.fencing-style-item.fsi-selected').index(),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
@@ -100,8 +104,6 @@ function update_raked_panels(side) {
     var filtered_data = custom_fence.filter(function(item) {
         return item.control_key == 'add_step_up_panels';
     });
-
-    console.log('filtered_settings', filtered_data);
 
     var settings = filtered_data[0]?.settings;
 
@@ -147,23 +149,26 @@ function update_raked_panels(side) {
                 if( side_part == 'left') {
                     panel_w = calc.left_raked.width;
                     panel_h = calc.left_raked.height;
-                    console.log('panel_h', panel_h);
                 } else {
                     panel_w = calc.right_raked.width;
                     panel_h = calc.right_raked.height;
                 } 
 
+                
                 var tpl = $('script[data-type="'+v+'-panel-'+info.panel_group+'"]').text()
-                                                                 .replace(/{{center_point}}/gi, center_point)
-                                                                 .replace(/{{panel_size}}/gi, panel_h+'H')
-                                                                 .replace(/{{panel_unit}}/gi,  panel_w+'W')
-                                                                 .replace(/{{panel_number}}/gi, 4)                                                     
-                                                                 .replace(/{{panel_size}}/gi, 5)
-                                                                 .replace(/{{panel_unit}}/gi, 6)
-                                                                 .replace(/{{panel_number}}/gi, 7)
-                                                                 .replace(/{{post}}/gi, has_post);   
+                                                                .replace(/{{center_point}}/gi, center_point)
+                                                                .replace(/{{panel_size}}/gi, panel_h+'H')
+                                                                .replace(/{{panel_unit}}/gi,  panel_w+'W')
+                                                                .replace(/{{panel_number}}/gi, 4)                                                     
+                                                                .replace(/{{panel_size}}/gi, 5)
+                                                                .replace(/{{panel_unit}}/gi, 6)
+                                                                .replace(/{{panel_number}}/gi, 7)
+                                                                .replace(/{{post}}/gi, has_post);   
 
-                $('.'+v+'-panel').html(tpl); 
+                if( typeof panel_h !== "undefined"){
+                    $('.'+v+'-panel').html(tpl);    
+                }
+                
             }
 
         }
@@ -413,20 +418,23 @@ function get_field_value(tag, key, val) {
         $('[name='+key+']').closest('.fencing-form-group').find('.fir-info span').text(val);
         
     } if( tag == 'select' ) {
-        
         $('[name='+key+']').val(val);
         $('[name='+key+']').attr('value', val);
 
     } else if( tag == 'div' ) {
 
         // Reset value
-        console.log( $('[name='+key+']').find('.fc-selected').length );
         if( $('[name='+key+']').find('.fc-selected').length ) {
             $('[name='+key+']').find('.fc-selected').removeClass('fc-selected'); 
         }
-        console.log('val', val);
         $('[name='+key+']').attr('value', val);
         $('[name='+key+']').find('[data-slug="'+val+'"]').addClass('fc-selected');
+
+        //Set preselected value for right and left raked inside modal
+        if( key === "left_raked" || key === "right_raked" ){
+            $('[name='+key+'] select').val(val);
+        }
+        
     }
 }
 
@@ -496,6 +504,7 @@ function update_custom_fence(modal_key, fc_form_field = false) {
     const data = custom_fence ? JSON.parse(custom_fence) : [];
 
     let itemKey = 'custom_fence-'+tab+'-'+i;
+
     
     settings = form_field.map(function(){
 
@@ -515,15 +524,50 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
+    console.log('data', data);
+
+    //Check first if a control_key already exists and get it
+    const find_existing_data = data.find(obj => obj.control_key === modal_key);
+    
+
+    if( typeof find_existing_data !== "undefined" ){
+
+        let merge_settings = [];
+            
+        find_existing_data.settings.forEach(obj => {
+            merge_settings.push(obj);
+        });
+
+        settings.forEach(obj => {
+
+            const indexToRemove = merge_settings.findIndex(item => item.key === obj.key);
+
+            // Check if the object with the given ID was found
+            if (indexToRemove !== -1) {
+                // Remove the object from the array using splice
+                merge_settings.splice(indexToRemove, 1);
+            }
+
+            merge_settings.push(obj);
+
+        });
+
+        settings = merge_settings;
+
+    }
+
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
     });
+
 
     filtered_data.push({
         id: i, 
         control_key: modal_key, 
         settings: settings
     });
+
+
 
     if( modal_key === "color_options" ){
         itemKey = 'custom_fence-global-setting';
@@ -534,7 +578,6 @@ function update_custom_fence(modal_key, fc_form_field = false) {
             settings: settings
         });
     }
-    
 
     localStorage.setItem(itemKey, JSON.stringify(filtered_data));
 
