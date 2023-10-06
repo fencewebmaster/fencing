@@ -8,6 +8,7 @@ $fences = [
 		'image' => 'img/frameless-pool-fence.jpg',
 		'panel_count' => 5,
 		'settings' => [
+			'rail_options' => [],
 			'left_side'	=> [
 				'title' => 'Edit Left Side',
 				'label' => 'Left Side',
@@ -18,16 +19,19 @@ $fences = [
 				],
 				'fields' => [
 					[
+						'title' => 'Edit Left Side',
 						'slug' => 'left_option',
 						'type' => 'range_option',
 						'label' => '',
+						'close_btn' => true,
 						'options' => [
 							[
 								'slug' => 'yes-post',
 								'type' => 'range_option',
+								'key' => 'left_side',
 								'image' => 'img/yes-post.png',
-								'title' => '',
 								'default' => TRUE,
+								'title' => '',
 								'size' => [
 									'width' => 0,
 								]
@@ -35,6 +39,7 @@ $fences = [
 							[
 								'slug' => 'no-post',
 								'type' => 'range_option',
+								'key' => 'left_side',
 								'image' => 'img/no-post-1.png',
 								'title' => '',
 								'size' => [
@@ -44,14 +49,110 @@ $fences = [
 							[
 								'slug' => 'no-post-swivel-bracket',
 								'type' => 'range_option',
+								'key' => 'left_side',
 								'image' => 'img/no-post-2.png',
 								'title' => '',
 								'size' => [
 									'width' => -50,
 								]
 							],
+						],
+						'notes' => [
+							'title' => 'When To Use Swivel Brackets',
+							'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
+						],
+					],
+					[
+						'title' => 'Post Options',
+						'slug' => 'post_option',
+						'type' => 'image_option',
+						'key' => 'left_side',
+						'label' => '',
+						'close_btn' => false,
+						'options' => [
+							[
+								'slug'  => 'opt-1',
+								'title' => '',
+								'image' => 'img/base-plate-posts.png',
+								'extra' => '',
+								'key' => 'post_options',
+								'default' => TRUE,
+							],
+							[
+								'slug'  => 'opt-2',
+								'title' => '',
+								'image' => 'img/cement-in-posts.png',
+								'extra' => '',
+								'key' => 'post_options',
+							],
 						]
-					],					
+					],
+					[
+						'title' => 'Add Step-Up Panel',
+						'slug' => 'left_raked',
+						'type' => 'dropdown_option',
+						'key' => 'add_step_up_panels',
+						'label' => 'Left Hand Step-Up Panel',
+						'close_btn' => false,
+						'options' => [
+							[
+								'slug' => 'none',
+								'title' => 'Nil',
+								'size' => [
+									'width' => 0,
+									'height' => 0,
+								]
+							],
+							[
+								'slug' => '1300x300',
+								'title' => '1300H - 300 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1300,
+								]
+							],
+							[
+								'slug' => '1400x400',
+								'title' => '1400H - 400 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1400,
+								]
+							],
+							[
+								'slug' => '1500x500',
+								'title' => '1500H - 500 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1500,
+								]
+							],
+							[
+								'slug' => '1600x600',
+								'title' => '1600H - 600 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1600,
+								]
+							],
+							[
+								'slug' => '1700x700',
+								'title' => '1700H - 700 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1700,
+								]
+							],
+							[
+								'slug' => '1800x600',
+								'title' => '1800H - 600 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1800,
+								]
+							],
+						]
+					],						
 				]
 			],
 			'panel_options'	=> [
@@ -74,6 +175,7 @@ $fences = [
 				],
 				'fields' => [
 					[
+						'title' => 'Panel Options',
 						'slug' => 'panel_option',
 						'type' => 'text_option',
 						'label' => '',
@@ -82,32 +184,52 @@ $fences = [
 								'slug' => 'even',
 								'type' => 'text_option',
 								'title' => 'Even Size Panels',
-								'width' => 2450,
 								'default' => TRUE,
+								'size' => [
+									'width' => 2450,
+								]
 							],
 							[
 								'slug' => 'full_2400',
 								'type' => 'text_option',
 								'title' => 'Use 2400W Panels',
-								'width' => 2450,
+								'size' => [
+									'width' => 2450,
+								]
 							],
 							[
 								'slug' => 'full_3000',
 								'type' => 'text_option',
 								'title' => 'Use 3000W Panels',
-								'width' => 3050
+								'size' => [
+									'width' => 3050,
+								]
 							]
-						]
+						],
+						'notes' => [
+							'title' => 'Panel Off-Cuts',
+							'description' => 'The off-cut can be used for another fence section (where applicable). If the off-cut is used ensure you manually update the panel quantities to account for this as this planner does NOT use Off-Cuts.',
+						],
+						'info' => [
+							[
+								'title' => 'Even Size Panels',
+								'description' => 'This option evenly spaces out the posts, which also means you will need to cut down every individual panel.',
+							],
+							[
+								'title' => 'Use 2400W / 3000W Panels',
+								'description' => 'This option uses full length panels, which means you will ONLY need to cut down 1x panel. ',
+							]
+						],
 					]
 				]
 			],
-			'rail_options' => [],
 			'post_options' => [
 				'title' => 'Post Options',
 				'label' => 'Post Options',
 				'action' => ['default'],
 				'fields' => [
 					[
+						'title' => 'Post Options',
 						'slug' => 'post_option',
 						'type' => 'image_option',
 						'label' => '',
@@ -130,7 +252,7 @@ $fences = [
 				]
 			],
 			'right_side'	=> [
-				'title' => 'Edge to Right Centre Point',
+				'title' => 'Edit Right Side',
 				'label' => 'Right Side',
 				'action' => ['edit'],
 				'notes' => [
@@ -139,14 +261,18 @@ $fences = [
 				],
 				'fields' => [
 					[
+						'title' => 'Edit Right Side',
 						'slug' => 'right_option',
 						'type' => 'range_option',
 						'label' => '',
+						'close_btn' => true,
 						'options' => [
 							[
 								'slug' => 'yes-post',
 								'type' => 'range_option',
+								'key' => 'right_side',
 								'image' => 'img/yes-post.png',
+								'default' => TRUE,
 								'title' => '',
 								'size' => [
 									'width' => 0,
@@ -155,6 +281,7 @@ $fences = [
 							[
 								'slug' => 'no-post',
 								'type' => 'range_option',
+								'key' => 'right_side',
 								'image' => 'img/no-post-1.png',
 								'title' => '',
 								'size' => [
@@ -164,14 +291,110 @@ $fences = [
 							[
 								'slug' => 'no-post-swivel-bracket',
 								'type' => 'range_option',
+								'key' => 'right_side',
 								'image' => 'img/no-post-2.png',
 								'title' => '',
 								'size' => [
 									'width' => -50,
 								]
 							],
+						],
+						'notes' => [
+							'title' => 'When To Use Swivel Brackets',
+							'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
+						],
+					],
+					[
+						'title' => 'Post Options',
+						'slug' => 'post_option',
+						'type' => 'image_option',
+						'key' => 'left_side',
+						'label' => '',
+						'close_btn' => false,
+						'options' => [
+							[
+								'slug'  => 'opt-1',
+								'title' => '',
+								'image' => 'img/base-plate-posts.png',
+								'extra' => '',
+								'key' => 'post_options',
+								'default' => TRUE,
+							],
+							[
+								'slug'  => 'opt-2',
+								'title' => '',
+								'image' => 'img/cement-in-posts.png',
+								'extra' => '',
+								'key' => 'post_options',
+							],
 						]
-					],					
+					],
+					[
+						'title' => 'Add Step-Up Panel',
+						'slug' => 'right_raked',
+						'type' => 'dropdown_option',
+						'key' => 'add_step_up_panels',
+						'label' => 'Right Hand Step-Up Panel',
+						'close_btn' => false,
+						'options' => [
+							[
+								'slug' => 'none',
+								'title' => 'Nil',
+								'size' => [
+									'width' => 0,
+									'height' => 0,
+								]
+							],
+							[
+								'slug' => '1300x300',
+								'title' => '1300H - 300 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1300,
+								]
+							],
+							[
+								'slug' => '1400x400',
+								'title' => '1400H - 400 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1400,
+								]
+							],
+							[
+								'slug' => '1500x500',
+								'title' => '1500H - 500 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1500,
+								]
+							],
+							[
+								'slug' => '1600x600',
+								'title' => '1600H - 600 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1600,
+								]
+							],
+							[
+								'slug' => '1700x700',
+								'title' => '1700H - 700 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1700,
+								]
+							],
+							[
+								'slug' => '1800x600',
+								'title' => '1800H - 600 Step-Up',
+								'size' => [
+									'width' => 1250,
+									'height' => 1800,
+								]
+							],
+						]
+					],						
 				]
 			],
 			'gate' => [
@@ -186,12 +409,16 @@ $fences = [
 						'slug' => 'move',
 						'type' => 'move',
 						'label' => '',
-					],		
+					],			
 				]
 			],
+			/**
+			 * @TODO - re-check on how to disable from the settings
+			 */
 			'add_step_up_panels' => [
 				'title' => 'Add Step-Up Panel',
 				'label' => 'Step-Up Panels',
+				'disabled' => true,
 				'action' => ['add'],
 				'fields' => [
 					[
