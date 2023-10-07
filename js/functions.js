@@ -1066,7 +1066,7 @@ function tabContainerScroll(_this) {
  * @param {string} _el 
  */
 function moveScrollPosition(_el, _position) {
-    $(_el).animate({scrollLeft:  _position}, 0);
+    $(_el).animate({scrollLeft:  _position}, 500);
 }
 
 /**
