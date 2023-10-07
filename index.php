@@ -84,7 +84,7 @@
                 </div>
 
                 <a href="#" class="fencing-tab-add fc-d-none">
-                &#43; Add Section			
+                &#43; <span>Add Section</span>		
                 </a>
 
             </div>

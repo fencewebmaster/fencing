@@ -2282,14 +2282,6 @@ thead.fc-border th:last-child {
   height: 100%;
   cursor: grab;
 }
-@media (max-width: 992px) {
-  .fencing-tab-container .fencing-tab-add {
-    width: 119px;
-    padding: 17px 8px;
-    min-width: 10px;
-    font-size: 12px;
-  }
-}
 
 .w-side-section .fc-section-details {
   width: 100%;
@@ -2401,6 +2393,19 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
   transition: all 0.2s ease;
   border-radius: 0 16px 0 0;
+}
+@media (max-width: 992px) {
+  .fencing-tab-add {
+    width: 80px;
+    padding: 17px 8px;
+    min-width: 10px;
+    font-size: 30px;
+  }
+}
+@media (max-width: 992px) {
+  .fencing-tab-add span {
+    display: none;
+  }
 }
 .fencing-tab-add.btn-fc {
   background-color: #fff;

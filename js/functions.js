@@ -1056,9 +1056,9 @@ function tabContainerScroll(_this) {
     if( _trigger_width >= _main_parent_width ) {
         _main_parent.addClass('enable-scroll');
         draggable(_tab_parent_class, _tab_content_class);
-        moveScrollPosition(_tab_parent_class, $(_tab_parent_class).prop('scrollWidth'));
     }
-
+    
+    moveScrollPosition(_tab_parent_class, $(_tab_parent_class).prop('scrollWidth'));
 }
 
 /**
@@ -1066,6 +1066,7 @@ function tabContainerScroll(_this) {
  * @param {string} _el 
  */
 function moveScrollPosition(_el, _position) {
+    console.log('s');
     $(_el).animate({scrollLeft:  _position}, 500);
 }
 
