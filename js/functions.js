@@ -10,6 +10,10 @@ function load_fencing_items() {
 
     var calc = calculate_fences();
 
+    if( !calc ){
+        return;
+    }
+
     for (let i = 0; i < calc.long_panel.count; i++) {
 
         var center_point = 50;
@@ -458,9 +462,12 @@ function update_custom_fence_tab() {
 
     const data_tabs = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
 
+   
     var filtered_data_tabs = data_tabs.filter(function(item) {
         return item.tab != tab;
     });
+
+    console.log('data_tabs', data_tabs);
 
     if( info == undefined ) {
 
@@ -476,6 +483,8 @@ function update_custom_fence_tab() {
         style: i,
         fence: info.slug,
         mbn: mbn,
+        isCalculate: data_tabs[0]?.isCalculate || 0,
+        calculateValue: data_tabs[0]?.calculateValue || 0
     });
 
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
@@ -489,14 +498,6 @@ function update_custom_fence_tab() {
     $('.fc-tab-subtitle').html( mesurement + ' - ' + info['title']);
 
     load_fencing_items();
-
-
-
-   //  get_stored_items();
-
-    // console.log('tab: '+tab, '| index: '+i);
-
-    // console.log('update_custom_fence_tab: '+tab, JSON.parse(localStorage.getItem('custom_fence-'+tab)) );
 
 }
 
@@ -665,8 +666,6 @@ function add_new_fence_section() {
     $('.measurement-box-number').val(fc_mbn);
 
     update_custom_fence_style_item();
-
-    $('.fencing-tabs-container').animate({scrollLeft: $('.fencing-tabs-container').prop('scrollWidth')}, 0);
 
     $('.js-btn-delete-fence').show();
 
@@ -873,7 +872,7 @@ function zooming(zoom) {
       }).mouseleave(end);
 
 
-$('.fencing-display-result, .js-fencing-tab-container').on("mousedown touchstart", function(e) {
+$('.fencing-display-result').on("mousedown touchstart", function(e) {
     var $this = $(this);
     $(this).addClass('is-grabbing');  
 
@@ -887,7 +886,7 @@ $('.fencing-display-result, .js-fencing-tab-container').on("mousedown touchstart
 
 
 
-$('.fencing-display-result, .js-fencing-tab-container').on("mouseup touchend", function(e) {
+$('.fencing-display-result').on("mouseup touchend", function(e) {
     var $this = $(this);
     $(this).removeClass('grabbing'); 
 
@@ -1043,19 +1042,264 @@ function addObjectByKey(objectArray, obj) {
     return objectArray;
 }
 
-
+/**
+ * Toggle Tab Container Scroll
+ * @param {obj} _this 
+ */
 function tabContainerScroll(_this) {
+    let _tab_parent_class = '.js-fencing-tab-container';
+    let _tab_content_class = '.js-fencing-tab-container-area';
     let _main_parent = $('.js-fencing-tabs-container');
     let _main_parent_width = _main_parent.width();
     let _width = _this.outerWidth(true);
-    let _parent = _this.parent();
-    let _parent_width = _parent.outerWidth(true);
-    let _tab_container = _this.prev();
     let _trigger_width = (_this.position().left + _width);
-
-    console.log(_trigger_width, _main_parent_width);
 
     if( _trigger_width >= _main_parent_width ) {
         _main_parent.addClass('enable-scroll');
+        draggable(_tab_parent_class, _tab_content_class);
     }
+
+    moveScrollPosition(_tab_parent_class, $(_tab_parent_class).prop('scrollWidth'));
+}
+
+/**
+ * Move Horizontal scroll position
+ * @param {string} _el 
+ */
+function moveScrollPosition(_el, _position) {
+    console.log('s');
+    $(_el).animate({scrollLeft:  _position}, 500);
+}
+
+/**
+ * Draggable elements
+ */
+function draggable(_parent, _content) {
+
+    if( isMobileDevice() ){
+        return;
+    }
+
+    // Select the draggable element and its content
+    const draggableElement = document.querySelector(_parent);
+    const contentElement = draggableElement.querySelector(_content);
+
+    let isDragging = false;
+    let initialX;
+    let xOffset = 0;
+
+    // Function to handle the mouse down event
+    function onMouseDown(event) {
+        isDragging = true;
+        initialX = event.clientX;
+        xOffset = draggableElement.scrollLeft;
+    }
+
+    // Function to handle the mouse move event
+    function onMouseMove(event) {
+        if (isDragging) {
+            const currentX = event.clientX;
+            const deltaX = currentX - initialX;
+            draggableElement.scrollLeft = xOffset - deltaX;
+        }
+    }
+
+    // Function to handle the mouse up event
+    function onMouseUp() {
+        isDragging = false;
+    }
+
+    //Attach events
+    draggableElement.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+}
+
+/**
+ * 
+ * @returns Check if device is tablet/mobile
+ */
+function isMobileDevice() {
+    // Check the user agent string for common mobile keywords
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+
+function deleteSectionTab() {
+    
+    let getActiveTab = $('.fencing-tab-selected');
+    let getActiveTabIndex = getActiveTab.index();
+    let getPrevBtn = getActiveTab.prev();
+    let getNextBtn = getActiveTab.next();
+
+    getActiveTab.addClass('is-deleting');
+
+    if( getActiveTab.is(':last-child') ){
+        getPrevBtn.click();
+    } else {
+        getNextBtn.click();
+    }
+
+    $('.is-deleting').remove();
+}
+
+function refreshSectionTabIndex() {
+    $('.fencing-tab-container .fencing-tab').each(function(index) {
+        $(this).find('.fencing-tab-number').html( index+1 );
+    });
+}
+
+function resetSectionsBlocks() {
+
+    $('.fencing-style-item').removeClass('fsi-selected');
+    $('.js-fc-form-step').removeAttr('style');
+
+}
+
+/**
+ * Remove deleted section entry in local storage
+ */
+function deleteLocalStorageEntry(){
+
+    //Get selected tab
+    let getActiveTab = $('.fencing-tab-selected');
+
+    //Get selected tab index
+    let getActiveTabIndex = getActiveTab.index();
+
+    //Find and delete all instance of it in local storage
+    deleteAllEntriesBySubstring("custom_fence-" + getActiveTabIndex);
+
+}
+
+/**
+ * If a user revisit a section tab
+ * Check if the calculate button was clicked before
+ * If yes, then set the mm input field value 
+ * and click it again to load the step 3 section
+ * @param {obj} custom_fence_tab 
+ */
+function loadStep3(custom_fence_tab) {
+    //Check if user clicks the calculate button for fence section
+    if( custom_fence_tab.isCalculate ){
+        //Set the mm field value
+        $('.btn-fc-calculate').prev().find('input').val(custom_fence_tab.calculateValue);
+        //Then trigger click into the calculate button to load section 3
+        $('.btn-fc-calculate').click();
+    }
+}
+
+/**
+ * Delete custom_fence-{idx} and custom_fence-{idx}-{styleIdx} instances in localStorage
+ * @param {string} substring 
+ */
+function deleteAllEntriesBySubstring(substring) {
+  
+    // Use a while loop to delete all matching entries
+    while (true) {
+      // Find the index of the first matching key
+      const index = Object.keys(localStorage).findIndex(key => key.indexOf(substring) !== -1);
+        
+      console.log('index', index);
+
+      // If no more matching keys are found, exit the loop
+      if (index === -1) {
+        break;
+      }
+  
+      // Get the matching key and delete the entry
+      const matchingKey = Object.keys(localStorage)[index];
+      localStorage.removeItem(matchingKey);
+  
+    }
+
+    console.log(localStorage);
+  
+}
+
+  
+/**
+ * Refresh local storage
+ * Run this after deleting a section tab
+ * This function will only update the index of storage entries  
+ * that appear after the deleted entry based on the index position
+ * `custom_fence-{idx}` and `custom_fence-{idx}-{styleIdx}`
+ */
+function refreshLocalStorage(activeSectionIndex) {
+
+    //Only get storage entries related to custom fence
+    const totalEntries = countLocalStorageFenceKeys();
+
+    //Iterate each entries
+    for (let i = activeSectionIndex; i <= totalEntries; i++) {
+
+        let newIndex = i - 1;
+
+        //If -1, set value to 0
+        if( newIndex == -1 ){
+            newIndex = 0;
+        }
+
+        //Retrieve to the old key
+        const oldKey = `custom_fence-${i}`;
+
+        //Prepare the new key string format
+        const newKey = `custom_fence-${newIndex}`;
+        
+        // Check if the oldKey exists in localStorage and update it
+        if (localStorage.getItem(oldKey)) {
+
+            //Grab the old key value
+            const value = JSON.parse(localStorage.getItem(oldKey));
+
+            //Remove old key entry from local storage
+            localStorage.removeItem(oldKey);
+
+            //Update the tab value with new Index
+            value[0].tab = newIndex;
+            
+            //Set the new key entry
+            localStorage.setItem(newKey, JSON.stringify(value));
+
+            //For Styles
+            //Grab the old style key value
+            const oldStyleKey = `custom_fence-${i}-${value[0].style}`;
+
+            //Prepare new key string format
+            const newStyleKey = `custom_fence-${newIndex}-${value[0].style}`;
+
+            // Check if the old style Key exists in localStorage
+            if (localStorage.getItem(oldStyleKey)) {
+
+                //Get the value
+                const value = JSON.parse(localStorage.getItem(oldStyleKey));
+
+                //Remove the old style key
+                localStorage.removeItem(oldStyleKey);
+
+                //Set the new style key entry
+                localStorage.setItem(newStyleKey, JSON.stringify(value));
+            }
+        }
+    
+    }
+
+}
+
+
+function countLocalStorageFenceKeys() {
+    
+    let count = 0;
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        // Check if the key contains the substring "custom_fence"
+        if (key.includes("custom_fence")) {
+            count++;
+        }
+    }
+
+    return count;
 }

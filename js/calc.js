@@ -61,7 +61,6 @@ function calculate_fences( data ) {
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
 
-    console.log('info', info);
     // Inputs
     /*
         C3  = 11000;  // overall width

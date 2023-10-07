@@ -71,18 +71,14 @@
 
     &-area{
         height: 100%;
+        cursor: grab;
     }
 
-    .fencing-tab-add{
-        @include lg {
-            width: 119px;
-            padding: 17px 8px;
-            min-width: 10px;
-            font-size: 12px;
-        }
-    }
+    
     
 }
+
+
 
 .w-side-section .fc-section-details {
 	width: 100%;
@@ -198,8 +194,19 @@
     box-sizing: border-box;
     transition: all .2s ease;
     border-radius: 0 16px 0 0;
+    
+    @include lg {
+        width: 80px;
+        padding: 17px 8px;
+        min-width: 10px;
+        font-size: 30px;
+    }
 
-
+    span{
+        @include lg{
+            display: none;
+        }
+    }
 
     &.btn-fc{
         background-color: #fff;
@@ -252,17 +259,17 @@
   background: #555;
 }	
 
-.fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before{
-	content: "";
-	background: #f6792508;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	z-index: 9999;
-	width: 100%;
-}
+// .fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before{
+// 	content: "";
+// 	background: #f6792508;
+// 	position: absolute;
+// 	top: 0;
+// 	right: 0;
+// 	bottom: 0;
+// 	left: 0;
+// 	z-index: 9999;
+// 	width: 100%;
+// }
 .fc-section-details .fencing-display-result.grabbing .fencing-panel-container{
     position: relative;
 }

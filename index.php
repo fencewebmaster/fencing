@@ -84,7 +84,7 @@
                 </div>
 
                 <a href="#" class="fencing-tab-add fc-d-none">
-                &#43; Add Section			
+                &#43; <span>Add Section</span>		
                 </a>
 
             </div>
@@ -703,7 +703,7 @@
 </div>
 
 <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+<script type="text/javascript" src="js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="js/jquery-scrollspy.min.js"></script>
 
 <script type="text/javascript">
