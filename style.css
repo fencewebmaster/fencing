@@ -2280,6 +2280,7 @@ thead.fc-border th:last-child {
 }
 .fencing-tab-container-area {
   height: 100%;
+  cursor: grab;
 }
 @media (max-width: 992px) {
   .fencing-tab-container .fencing-tab-add {
@@ -2449,18 +2450,6 @@ thead.fc-border th:last-child {
 .fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb:hover,
 .fencing-display-result::-webkit-scrollbar-thumb:hover {
   background: #555;
-}
-
-.fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before {
-  content: "";
-  background: rgba(246, 121, 37, 0.031372549);
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 9999;
-  width: 100%;
 }
 
 .fc-section-details .fencing-display-result.grabbing .fencing-panel-container {

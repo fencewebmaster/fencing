@@ -666,8 +666,6 @@ function add_new_fence_section() {
 
     update_custom_fence_style_item();
 
-    $('.fencing-tabs-container').animate({scrollLeft: $('.fencing-tabs-container').prop('scrollWidth')}, 0);
-
     $('.js-btn-delete-fence').show();
 
     $('.fc-tab-title, .fc-tab-subtitle').html('');
@@ -873,7 +871,7 @@ function zooming(zoom) {
       }).mouseleave(end);
 
 
-$('.fencing-display-result, .js-fencing-tab-container').on("mousedown touchstart", function(e) {
+$('.fencing-display-result').on("mousedown touchstart", function(e) {
     var $this = $(this);
     $(this).addClass('is-grabbing');  
 
@@ -887,7 +885,7 @@ $('.fencing-display-result, .js-fencing-tab-container').on("mousedown touchstart
 
 
 
-$('.fencing-display-result, .js-fencing-tab-container').on("mouseup touchend", function(e) {
+$('.fencing-display-result').on("mouseup touchend", function(e) {
     var $this = $(this);
     $(this).removeClass('grabbing'); 
 
@@ -1043,19 +1041,85 @@ function addObjectByKey(objectArray, obj) {
     return objectArray;
 }
 
-
+/**
+ * Toggle Tab Container Scroll
+ * @param {obj} _this 
+ */
 function tabContainerScroll(_this) {
+    let _tab_parent_class = '.js-fencing-tab-container';
+    let _tab_content_class = '.js-fencing-tab-container-area';
     let _main_parent = $('.js-fencing-tabs-container');
     let _main_parent_width = _main_parent.width();
     let _width = _this.outerWidth(true);
-    let _parent = _this.parent();
-    let _parent_width = _parent.outerWidth(true);
-    let _tab_container = _this.prev();
     let _trigger_width = (_this.position().left + _width);
-
-    console.log(_trigger_width, _main_parent_width);
 
     if( _trigger_width >= _main_parent_width ) {
         _main_parent.addClass('enable-scroll');
+        draggable(_tab_parent_class, _tab_content_class);
+        moveScrollPosition(_tab_parent_class, $(_tab_parent_class).prop('scrollWidth'));
     }
+
 }
+
+/**
+ * Move Horizontal scroll position
+ * @param {string} _el 
+ */
+function moveScrollPosition(_el, _position) {
+    $(_el).animate({scrollLeft:  _position}, 0);
+}
+
+/**
+ * Draggable elements
+ */
+function draggable(_parent, _content) {
+
+    if( isMobileDevice() ){
+        return;
+    }
+
+    // Select the draggable element and its content
+    const draggableElement = document.querySelector(_parent);
+    const contentElement = draggableElement.querySelector(_content);
+
+    let isDragging = false;
+    let initialX;
+    let xOffset = 0;
+
+    // Function to handle the mouse down event
+    function onMouseDown(event) {
+        isDragging = true;
+        initialX = event.clientX;
+        xOffset = draggableElement.scrollLeft;
+    }
+
+    // Function to handle the mouse move event
+    function onMouseMove(event) {
+        if (isDragging) {
+            const currentX = event.clientX;
+            const deltaX = currentX - initialX;
+            draggableElement.scrollLeft = xOffset - deltaX;
+        }
+    }
+
+    // Function to handle the mouse up event
+    function onMouseUp() {
+        isDragging = false;
+    }
+
+    //Attach events
+    draggableElement.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+}
+
+/**
+ * 
+ * @returns Check if device is tablet/mobile
+ */
+function isMobileDevice() {
+    // Check the user agent string for common mobile keywords
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+  

@@ -71,6 +71,7 @@
 
     &-area{
         height: 100%;
+        cursor: grab;
     }
 
     .fencing-tab-add{
@@ -252,17 +253,17 @@
   background: #555;
 }	
 
-.fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before{
-	content: "";
-	background: #f6792508;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	z-index: 9999;
-	width: 100%;
-}
+// .fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before{
+// 	content: "";
+// 	background: #f6792508;
+// 	position: absolute;
+// 	top: 0;
+// 	right: 0;
+// 	bottom: 0;
+// 	left: 0;
+// 	z-index: 9999;
+// 	width: 100%;
+// }
 .fc-section-details .fencing-display-result.grabbing .fencing-panel-container{
     position: relative;
 }
