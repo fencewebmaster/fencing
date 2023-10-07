@@ -250,16 +250,22 @@ $(document).on('click', '.fencing-tab', function() {
 
     const custom_fence_tab = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
 
-    $('.fsi-selected').removeClass('fsi-selected');
+    resetSectionsBlocks();
 
-    $('.fencing-style-item').eq(custom_fence_tab[0]?.style).addClass('fsi-selected');
+    if( custom_fence_tab.length > 0 ){
 
-    var measurement = custom_fence_tab[0]?.mbn ? custom_fence_tab[0].mbn : fc_mbn;
-    $('.measurement-box-number').val(measurement);
+        $('.fencing-style-item').eq(custom_fence_tab[0]?.style).addClass('fsi-selected');
 
-    update_custom_fence_tab();
+        var measurement = custom_fence_tab[0]?.mbn ? custom_fence_tab[0].mbn : fc_mbn;
+        $('.measurement-box-number').val(measurement);
 
-    $('.fsi-selected, .btn-fc-calculate').click();
+        update_custom_fence_tab();
+
+        $('.fsi-selected').click();
+
+        loadStep3(custom_fence_tab[0]);
+
+    }
 
 });
 
@@ -309,36 +315,44 @@ $(document).on('click', '.fencing-style-item', function() {
 
 $(document).on('click', '.js-btn-delete-fence', function(){
 
-    var count = $('.fencing-tab'),
-        index = $('.fencing-tab-selected').index();
+    let getActiveTab = $('.fencing-tab-selected');
+    let getActiveTabIndex = getActiveTab.index();
 
-    if( count.length <= 1 ) {
-        return false;
-    }
+    deleteSectionTab();
 
-    $('.fencing-tab-selected').addClass('fencing-tab-deleting');
+    refreshSectionTabIndex();
+    
+    deleteLocalStorageEntry();
+    
+    refreshLocalStorage(getActiveTabIndex);
 
-    if( $('.fencing-tab-selected').is(':first-child') ) {
-        $('.fencing-tab-selected').next().click();    
-    } else if( $('.fencing-tab-selected').is(':last-child') ) {
-        $('.fencing-tab-selected').prev().click();    
-    } else {
-        $('.fencing-tab-selected').next().click();         
-    }
+    // if( count.length <= 1 ) {
+    //     return false;
+    // }
 
-    $('.fencing-tab-deleting').remove();
+    // $('.fencing-tab-selected').addClass('fencing-tab-deleting');
 
-    update_custom_fence_style_item();
+    // if( $('.fencing-tab-selected').is(':first-child') ) {
+    //     $('.fencing-tab-selected').next().click();    
+    // } else if( $('.fencing-tab-selected').is(':last-child') ) {
+    //     $('.fencing-tab-selected').prev().click();    
+    // } else {
+    //     $('.fencing-tab-selected').next().click();         
+    // }
 
-    if( count.length <= 2 ) {
-        $(this).hide();
-    }
+    // $('.fencing-tab-deleting').remove();
 
-    $('.fencing-tab-container .fencing-tab').each(function(index) {
-        $(this).find('.fencing-tab-number').html( index+1 );
-    });
+    // update_custom_fence_style_item();
 
-    restore_items( index );
+    // if( count.length <= 2 ) {
+    //     $(this).hide();
+    // }
+
+    // $('.fencing-tab-container .fencing-tab').each(function(index) {
+    //     $(this).find('.fencing-tab-number').html( index+1 );
+    // });
+
+    // restore_items( index );
 
 });
 
@@ -600,8 +614,11 @@ $(document).on('click', '.btn-fc-calculate', function(){
 
     var box = $('.measurement-box-number'),
         last = box.attr('data-last'),
-        length = parseInt(box.val());
-    
+        length = parseInt(box.val()),
+        tab = $('.fencing-tab.fencing-tab-selected').index(),
+        custom_fence_tabs = localStorage.getItem('custom_fence-'+tab),
+        custom_fence_tab = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
+
     box.attr('data-last', box.val());
 
     $('.fencing-calculating').show();
@@ -658,6 +675,11 @@ $(document).on('click', '.btn-fc-calculate', function(){
         }
 
     }, 200);
+
+    
+    custom_fence_tab[0].isCalculate = 1;
+    custom_fence_tab[0].calculateValue = length;
+    localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
 
     window.onbeforeunload = function() {
         return false;
