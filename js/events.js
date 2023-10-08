@@ -256,7 +256,7 @@ $(document).on('click', '.fencing-tab', function() {
 
         $('.fencing-style-item').eq(custom_fence_tab[0]?.style).addClass('fsi-selected');
 
-        var measurement = custom_fence_tab[0]?.mbn ? custom_fence_tab[0].mbn : fc_mbn;
+        var measurement = custom_fence_tab[0]?.mbn ? custom_fence_tab[0].mbn : FENCES.defaultValues.measurement;
         $('.measurement-box-number').val(measurement);
 
         update_custom_fence_tab();

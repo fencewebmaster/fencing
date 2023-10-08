@@ -483,8 +483,8 @@ function update_custom_fence_tab() {
         style: i,
         fence: info.slug,
         mbn: mbn,
-        isCalculate: data_tabs[0]?.isCalculate || 0,
-        calculateValue: data_tabs[0]?.calculateValue || 0
+        isCalculate: data_tabs[0]?.isCalculate || FENCES.defaultValues.measurement,
+        calculateValue: data_tabs[0]?.calculateValue || FENCES.defaultValues.measurement
     });
 
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
@@ -663,7 +663,7 @@ function add_new_fence_section() {
     $('.fencing-tab:last-child').addClass('fencing-tab-selected');
     $('.fencing-tab:last-child').find('.fencing-tab-number').html( $('.fencing-tab').length );
 
-    $('.measurement-box-number').val(fc_mbn);
+    $('.measurement-box-number').val(FENCES.defaultValues.measurement);
 
     update_custom_fence_style_item();
 
@@ -1349,6 +1349,13 @@ function hideZoomResetButton() {
 /**
  * Show Zoom Reset Button
  */
- function showZoomResetButton() {
+function showZoomResetButton() {
     $(FENCES.el.zoomReset).removeAttr('style');
+}
+
+/**
+ * Set defaul value for measurement box
+ */
+function setMeasurementDefaultValue() {
+    $(FENCES.el.measurementBox).val(FENCES.defaultValues.measurement);
 }

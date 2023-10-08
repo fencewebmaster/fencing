@@ -708,9 +708,6 @@
 
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
-var fc_mbn  = 11000;
-
-$('.measurement-box-number').val(fc_mbn);
 </script>
 
 <script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
