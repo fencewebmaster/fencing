@@ -232,11 +232,6 @@
 
                                 <div class="fencing-section__controls">
                                 
-                                    <a href="#" class="fc-zoom-reset" data-zoom="reset">
-                                        <i class="fc-icon fc-icon-arrow-cc"></i>
-                                        Reset
-                                    </a>
-
                                     <a href="#" style="display: none;">
                                         <i class="fc-icon fc-rectangle"></i>
                                     </a>
@@ -251,6 +246,11 @@
                                     <a href="#" class="fc-zoom-fence" data-zoom="out">
                                         <i class="fc-icon fc-magnify-munis"></i>
                                         Zoom out
+                                    </a>
+
+                                    <a href="#" class="fc-zoom-reset js-fc-zoom-reset" data-zoom="reset">
+                                        <i class="fc-icon fc-icon-arrow-cc"></i>
+                                        Reset
                                     </a>
 
                                 </div>
