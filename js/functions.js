@@ -657,7 +657,7 @@ function zoom(parent, direction) {
 
 function add_new_fence_section() {
 
-    $('.fencing-tab').eq(0).clone().appendTo('.js-fencing-tab-container-area');
+    $('.fencing-tab').eq(0).clone().appendTo(FENCES.el.tabArea);
 
     $('.fencing-tab').removeClass('fencing-tab-selected');
     $('.fencing-tab:last-child').addClass('fencing-tab-selected');
@@ -1047,7 +1047,7 @@ function addObjectByKey(objectArray, obj) {
  * @param {obj} _this 
  */
 function tabContainerScroll(_this) {
-    let _tab_parent_class = '.js-fencing-tab-container';
+    let _tab_parent_class = FENCES.el.tabContainer;
     let _tab_content_class = '.js-fencing-tab-container-area';
     let _main_parent = $('.js-fencing-tabs-container');
     let _main_parent_width = _main_parent.width();
@@ -1302,4 +1302,33 @@ function countLocalStorageFenceKeys() {
     }
 
     return count;
+}
+
+/**
+ * 
+ * Hide Delete Button
+ * 
+ */
+function hideDeleteSectionBtn() {
+
+    let _remaining_tabs = $(FENCES.el.tabArea).children().length;
+    let _delete_btn = $('.js-btn-delete-fence');
+
+    if ( _remaining_tabs <= 2 ){
+        _delete_btn.hide();
+    }
+
+}
+
+/**
+ * Dont delete the first section
+ * @returns boolean
+ */
+function stopSectionDeletion() {
+
+    let _remaining_tabs = $(FENCES.el.tabArea).children().length;
+
+    if( _remaining_tabs == 1 ) {
+        return false;
+    }
 }

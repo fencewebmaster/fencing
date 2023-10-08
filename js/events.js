@@ -318,6 +318,10 @@ $(document).on('click', '.js-btn-delete-fence', function(){
     let getActiveTab = $('.fencing-tab-selected');
     let getActiveTabIndex = getActiveTab.index();
 
+    hideDeleteSectionBtn();
+
+    stopSectionDeletion();
+
     deleteSectionTab();
 
     refreshSectionTabIndex();
@@ -325,10 +329,6 @@ $(document).on('click', '.js-btn-delete-fence', function(){
     deleteLocalStorageEntry();
     
     refreshLocalStorage(getActiveTabIndex);
-
-    // if( count.length <= 1 ) {
-    //     return false;
-    // }
 
     // $('.fencing-tab-selected').addClass('fencing-tab-deleting');
 

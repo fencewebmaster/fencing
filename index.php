@@ -713,6 +713,7 @@ var fc_mbn  = 11000;
 $('.measurement-box-number').val(fc_mbn);
 </script>
 
+<script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
