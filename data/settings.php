@@ -422,6 +422,7 @@ $fences = [
 				'action' => ['add'],
 				'fields' => [
 					[
+						'title' => 'Left Raked',
 						'slug' => 'left_raked',
 						'type' => 'dropdown_option',
 						'label' => 'Left Hand Step-Up Panel',
@@ -485,6 +486,7 @@ $fences = [
 						]
 					],					
 					[
+						'title' => 'Right Raked',
 						'slug' => 'right_raked',
 						'type' => 'dropdown_option',
 						'label' => 'Right Hand Step-Up Panel',
@@ -973,6 +975,7 @@ $fences = [
 				'action' => ['add'],
 				'fields' => [
 					[
+						'title' => 'Left Raked',
 						'slug' => 'left_raked',
 						'type' => 'dropdown_option',
 						'label' => 'Left Hand Step-Up Panel',
@@ -1036,6 +1039,7 @@ $fences = [
 						]
 					],					
 					[
+						'title' => 'Right Raked',
 						'slug' => 'right_raked',
 						'type' => 'dropdown_option',
 						'label' => 'Right Hand Step-Up Panel',

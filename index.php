@@ -232,11 +232,6 @@
 
                                 <div class="fencing-section__controls">
                                 
-                                    <a href="#" class="fc-zoom-reset" data-zoom="reset">
-                                        <i class="fc-icon fc-icon-arrow-cc"></i>
-                                        Reset
-                                    </a>
-
                                     <a href="#" style="display: none;">
                                         <i class="fc-icon fc-rectangle"></i>
                                     </a>
@@ -251,6 +246,11 @@
                                     <a href="#" class="fc-zoom-fence" data-zoom="out">
                                         <i class="fc-icon fc-magnify-munis"></i>
                                         Zoom out
+                                    </a>
+
+                                    <a href="#" class="fc-zoom-reset js-fc-zoom-reset" data-zoom="reset">
+                                        <i class="fc-icon fc-icon-arrow-cc"></i>
+                                        Reset
                                     </a>
 
                                 </div>
@@ -708,11 +708,9 @@
 
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
-var fc_mbn  = 11000;
-
-$('.measurement-box-number').val(fc_mbn);
 </script>
 
+<script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>

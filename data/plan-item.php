@@ -12,7 +12,7 @@
                     <div class="raked-panel-post panel-post panel-yes-post fencing-btn-modal opt-1" data-key="left_side" data-target="#fc-control-modal"></div>
                     <div class="raked-panel-container">
                         <div class="fencing-left-panel-o-b">
-                            <div id="panel-item-4" data-id="4" class="fencing-panel-item fencing-raked-panel fencing-left-panel-b fencing-btn-modal panel-item ally" data-key="add_step_up_panels" data-target="#fc-control-modal" style="width: 120px;">
+                            <div id="panel-item-4" data-id="4" class="fencing-panel-item fencing-raked-panel fencing-left-panel-b fencing-btn-modal panel-item ally" data-key="left_side" data-target="#fc-control-modal" style="width: 120px;">
                                 <div class="fencing-panel-item-size">1500H <br> 1200W</div>
                             </div>
                         </div>
@@ -93,7 +93,7 @@
                 <div class="right_raked-panel raked-panel">
                     <div class="raked-panel-container">
                         <div class="fencing-right-panel-o-b">
-                            <div id="panel-item-4" data-id="4" class="fencing-panel-item fencing-raked-panel fencing-right-panel-b fencing-btn-modal panel-item ally" data-key="add_step_up_panels" data-target="#fc-control-modal" style="width: 120px;">
+                            <div id="panel-item-4" data-id="4" class="fencing-panel-item fencing-raked-panel fencing-right-panel-b fencing-btn-modal panel-item ally" data-key="right_side" data-target="#fc-control-modal" style="width: 120px;">
                                 <div class="fencing-panel-item-size">1700H <br> 1200W</div>
                             </div>
                         </div>

@@ -483,8 +483,8 @@ function update_custom_fence_tab() {
         style: i,
         fence: info.slug,
         mbn: mbn,
-        isCalculate: data_tabs[0]?.isCalculate || 0,
-        calculateValue: data_tabs[0]?.calculateValue || 0
+        isCalculate: data_tabs[0]?.isCalculate || FENCES.defaultValues.measurement,
+        calculateValue: data_tabs[0]?.calculateValue || FENCES.defaultValues.measurement
     });
 
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
@@ -657,13 +657,13 @@ function zoom(parent, direction) {
 
 function add_new_fence_section() {
 
-    $('.fencing-tab').eq(0).clone().appendTo('.js-fencing-tab-container-area');
+    $('.fencing-tab').eq(0).clone().appendTo(FENCES.el.tabArea);
 
     $('.fencing-tab').removeClass('fencing-tab-selected');
     $('.fencing-tab:last-child').addClass('fencing-tab-selected');
     $('.fencing-tab:last-child').find('.fencing-tab-number').html( $('.fencing-tab').length );
 
-    $('.measurement-box-number').val(fc_mbn);
+    $('.measurement-box-number').val(FENCES.defaultValues.measurement);
 
     update_custom_fence_style_item();
 
@@ -824,7 +824,7 @@ function zooming(zoom) {
             step = step - 0.2;            
         }
     }
-    console.log(step);
+    
     document.querySelector('.js-fc-zoom-progress').textContent = Math.floor(step*100) + "%";
 
     if( step >= 1 ) {
@@ -844,13 +844,8 @@ function zooming(zoom) {
         $('.fencing-display-result').css({'margin-top': raked_panel_mt});
         $('.fencing-panel-items').removeAttr('style');
     }
-/*
-    setTimeout(function(){
-        $('.fencing-panel-items').css({'justify-content':''});
-        if( $(".fencing-panel-items").prop('scrollWidth') <= $(".fencing-display-result").width() ) {
-            $('.fencing-panel-items').css({'justify-content':'center'});
-        }
-    });*/
+
+    toggleZoomResetButton(step);
 
 }
 
@@ -1047,7 +1042,7 @@ function addObjectByKey(objectArray, obj) {
  * @param {obj} _this 
  */
 function tabContainerScroll(_this) {
-    let _tab_parent_class = '.js-fencing-tab-container';
+    let _tab_parent_class = FENCES.el.tabContainer;
     let _tab_content_class = '.js-fencing-tab-container-area';
     let _main_parent = $('.js-fencing-tabs-container');
     let _main_parent_width = _main_parent.width();
@@ -1302,4 +1297,65 @@ function countLocalStorageFenceKeys() {
     }
 
     return count;
+}
+
+/**
+ * 
+ * Hide Delete Button
+ * 
+ */
+function hideDeleteSectionBtn() {
+
+    let _remaining_tabs = $(FENCES.el.tabArea).children().length;
+    let _delete_btn = $('.js-btn-delete-fence');
+
+    if ( _remaining_tabs <= 2 ){
+        _delete_btn.hide();
+    }
+
+}
+
+/**
+ * Dont delete the first section
+ * @returns boolean
+ */
+function stopSectionDeletion() {
+
+    let _remaining_tabs = $(FENCES.el.tabArea).children().length;
+
+    if( _remaining_tabs == 1 ) {
+        return false;
+    }
+}
+
+/**
+ * Hide / Show Zoom Reset Button
+ */
+function toggleZoomResetButton(zoomValue) {
+    if( zoomValue == 1 ){
+        hideZoomResetButton();
+    } else{
+        showZoomResetButton();
+    }
+}
+
+/**
+ * Hide Zoom Reset Button
+ */
+function hideZoomResetButton() {
+    $(FENCES.el.zoomReset).hide();
+}
+
+/**
+ * Show Zoom Reset Button
+ */
+function showZoomResetButton() {
+    $(FENCES.el.zoomReset).removeAttr('style');
+}
+
+/**
+ * Set defaul value for measurement box
+ */
+function setMeasurementDefaultValue() {
+    $(FENCES.el.measurementBox).val(FENCES.defaultValues.measurement);
 }
