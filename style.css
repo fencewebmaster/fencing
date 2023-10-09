@@ -449,6 +449,9 @@ h2.fc-header-title + p {
 }
 
 /* Header tabs */
+.fc-header-tab {
+  margin-top: 40px;
+}
 .fc-header-tab__area {
   display: flex;
 }
