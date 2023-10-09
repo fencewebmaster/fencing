@@ -103,7 +103,7 @@
             
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
                 <div class="fc-header-tab__area">
-                    <a href="#" data-tab="1" data-move="2" class="">Section Details</a>
+                    <a href="#" data-tab="2" data-move="1" class="fc-btn-step">Section Details</a>
                     <a href="#" data-tab="2" data-move="1" class="fc-tab-active tab-selected">Project Options</a>
                 </div>	
             </div>
