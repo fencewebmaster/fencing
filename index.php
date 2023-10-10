@@ -347,18 +347,14 @@
                                     <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
                                         <div class="fencing-form-group fc-mb-0">
                                             <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
-                                                <div class="fc-scrollable">
-                                                    <div class="fc-scrollable-area">
-                                                        <?php foreach($color_options as $co): ?>
-                                                        <div class="fc-col-3">
-                                                            <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co['title']; ?>" data-color-code="<?php echo $co['background_color']; ?>" data-color-subtitle="<?php echo $co['sub_title']; ?>" data-slug="<?php echo $co['slug']; ?>" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
-                                                                <p><strong><?php echo $co['title']; ?></strong><br />
-                                                                <span><?php echo $co['sub_title']; ?></span></p>
-                                                            </div>
-                                                        </div>
-                                                        <?php endforeach; ?>
+                                                <?php foreach($color_options as $co): ?>
+                                                <div class="fc-col-3">
+                                                    <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co['title']; ?>" data-color-code="<?php echo $co['background_color']; ?>" data-color-subtitle="<?php echo $co['sub_title']; ?>" data-slug="<?php echo $co['slug']; ?>" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
+                                                        <p><strong><?php echo $co['title']; ?></strong><br />
+                                                        <span><?php echo $co['sub_title']; ?></span></p>
                                                     </div>
                                                 </div>
+                                                <?php endforeach; ?>
 
                                             </div>
                                         </div>
