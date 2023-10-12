@@ -1359,3 +1359,128 @@ function showZoomResetButton() {
 function setMeasurementDefaultValue() {
     $(FENCES.el.measurementBox).val(FENCES.defaultValues.measurement);
 }
+
+function saveFormData() {
+
+    const formData = {
+        name: document.getElementById('name').value,
+        mobile: document.getElementById('mobile').value,
+        email: document.getElementById('email').value,
+        address: document.getElementById('address').value,
+        postcode: document.getElementById('postcode').value,
+        state: document.getElementById('state').value,
+        timeframe: getSelectedRadioValue('timeframe'),
+        installer: getSelectedRadioValue('installer'),
+        extra: getSelectedCheckboxes('extra'),
+    };
+    localStorage.setItem('project-plans', JSON.stringify(formData));
+
+}
+
+function getSelectedRadioValue(name) {
+    // Get a NodeList of all radio buttons with the name "gender"
+    var radios = document.getElementsByName(name);
+  
+    // Initialize a variable to store the selected value
+    var selectedValue = '';
+  
+    // Loop through the radio buttons to find the selected one
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) {
+        selectedValue = radios[i].value;
+        break; // Exit the loop since we found the selected radio button
+      }
+    }
+  
+    return selectedValue
+}
+
+function getSelectedCheckboxes(name) {
+    // Get a NodeList of all checkboxes with the name "fruits"
+    var checkboxes = document.getElementsByName(name);
+  
+    // Initialize an array to store the selected values
+    var selectedValues = [];
+  
+    // Loop through the checkboxes to find the selected ones
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) {
+        selectedValues.push(checkboxes[i].value);
+      }
+    }
+  
+    if (selectedValues.length == 0) {
+      return false;
+    }
+
+    return selectedValues.join(',');
+}
+  
+const submitModal = document.getElementById("submit-modal");
+const formDownload = document.getElementById("fc-download-form");
+const projectPlanKey = "project-plans";
+
+/**
+ * Restore data from local storage when the page loads
+ */
+function restoreFormData() {
+    const formData = JSON.parse(localStorage.getItem(projectPlanKey)) || {};
+    for (const key in formData) {
+      const input = submitModal.querySelector(`[name="${key}"]`);
+      if (input) {
+        if (input.type === "checkbox") {
+          const selectedValues = formData[key];
+          if (Array.isArray(selectedValues)) {
+            for( let i = 0; i < selectedValues.length; i++ ){
+                var checkBox = document.querySelector('input[type=checkbox][name="'+key+'"][value="' + selectedValues[i] + '"]');
+                checkBox.checked = true;
+            }
+          } else {
+            var checkBox = document.querySelector('input[type=checkbox][name="'+key+'"][value="' + formData[key] + '"]');
+            checkBox.checked = true;
+          }
+        } else if (input.type === "radio") {
+          var radioBtn = document.querySelector('input[type=radio][name="'+key+'"][value="' + formData[key] + '"]');
+          radioBtn.checked = true;
+        } else if (input.type === "select-one") {
+          input.value = formData[key];
+        } else {
+          input.value = formData[key];
+        }
+      }
+    }
+  }
+
+
+/**
+ * Save form data to local storage whenever a field changes
+ */
+function saveFormData() {
+    const formData = {};
+    //const otherFormFields = formDownload.querySelectorAll("[name=notes]");
+    const formFields = submitModal.querySelectorAll("[name]");
+    // let formFieldsArray = [...formFields, ...otherFormFields];
+    // console.log('formFieldsArray', formFieldsArray);
+    formFields.forEach(input => {
+        if (input.type === "checkbox") {
+            formData[input.name] = formData[input.name] || [];
+            if (input.checked) {
+                formData[input.name].push(input.value);
+            }
+        } else if (input.type === "radio") {
+            if (input.checked) {
+                formData[input.name] = input.value;
+            }
+        } else {
+            formData[input.name] = input.value;
+        }
+    });
+    localStorage.setItem(projectPlanKey, JSON.stringify(formData));
+}
+
+// Add event listeners TO form elements inside the submit-modal div
+submitModal.addEventListener("input", saveFormData); 
+submitModal.addEventListener("change", saveFormData);
+
+
+  

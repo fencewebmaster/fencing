@@ -1,4 +1,8 @@
 <?php 
+
+    session_start();
+	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
+
 	include('data/settings.php');
 	include('temp/fields.php');
 	include('helpers.php');
@@ -374,7 +378,7 @@
                                                 <div class="fc-col-half fc-lg-col-full">
                                                     <textarea name="notes" 
                                                     placeholder="Write your notes here" 
-                                                    class="fc-form-control fc-form-control--textarea" rows="7"></textarea>
+                                                    class="fc-form-control fc-form-control--textarea" rows="7"><?php echo @$info['notes']; ?></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -427,270 +431,271 @@
 
         <!-- START SUBMIT POPUP MODAL -->
         <div id="submit-modal" class="fencing-modal fencing-modal--v2">
-            <div class="fc-modal-frame">
+            
+                <div class="fc-modal-frame">
 
-                <div class="fencing-modal-content fencing-modal-md">
-                   
-                    <div class="fencing-modal-head">
-                        <div class="fencing-modal-title">
-                            <h4>Download Your Project Plans</h4>
-                        </div>
-                        <button class="fencing-modal-close js-fencing-modal-close">&times;</button>
-                    </div>
-
-                    <div class="fencing-modal-body">
-                        
-                        <div class="fc-alert-gray fc-mb-3 fc-alert-gray--large-h4">
-                            <h4>&#127881; Awesome! We’ll email you the plans..</h4>
-                            <p class="fc-text-gray">Simply enter your details below and we’ll send you your plans to download or print for your reference.</p>
+                    <div class="fencing-modal-content fencing-modal-md">
+                    
+                        <div class="fencing-modal-head">
+                            <div class="fencing-modal-title">
+                                <h4>Download Your Project Plans</h4>
+                            </div>
+                            <button class="fencing-modal-close js-fencing-modal-close">&times;</button>
                         </div>
 
-                        <div class="fc-form-plan" data-formtab="1">
-
-
-                            <!-- START FORM MODAL PROGRESS BAR - STEP 1 -->                            
-                            <div class="fc-progress-container fc-float-r">
-                                <div class="fc-progress-tabs">
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value"></div>
-                                    <div class="fc-progress-value"></div>
-                                    <div class="fc-progress-value"></div>
-                                </div>
-                                <span>1/4</span>				
-                            </div>
-                            <!-- END FORM MODAL PROGRESS BAR - STEP 1 -->
-
-
-                            <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Project Details</h2>
-
-                            <div class="fc-form-group fc-mb-1">
-                                <div class="fc-row-container">
-                                    <div class="fc-col-half">
-                                        <div class="fc-label-group">
-                                            <label class="fc-form-label">Name <span class="fc-text-danger">*</span></label>
-                                            <input type="text" name="name" id="name" class="fc-form-control" placeholder="Your Name" required>					
-                                        </div>
-                                    </div>
-                                    <div class="fc-col-half">
-                                        <div class="fc-label-group">
-                                            <label class="fc-form-label">Mobile <span class="fc-text-danger">*</span></label>
-                                            <input type="text" name="mobile" id="mobile" class="fc-form-control" placeholder="Your phone number" required>							
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="fc-form-group fc-mb-2">
-                                <div class="fc-label-group">
-                                    <label class="fc-form-label">Email <span class="fc-text-danger">*</span></label>
-                                    <input type="text" name="email" id="email" class="fc-form-control no-space" placeholder="Your Email" required>	
-                                </div>
-                            </div>
-
-                            <div class="fc-form-group fc-mb-1">
-                                <div class="fc-label-group">
-                                    <label class="fc-form-label">Address <span class="fc-text-danger">*</span></label>
-                                    <input type="text" name="address" id="address" class="fc-form-control" placeholder="Your Address" required>  
-                                </div>
-                            </div>
-
-                            <div class="fc-form-group fc-mb-1">
-                                <div class="fc-row-container">
-                                   
-                                    <div class="fc-col-half">
-                                        <div class="fc-label-group">
-                                            <label class="fc-form-label">Post Code <span class="fc-text-danger">*</span></label>
-                                            <input type="text" name="postcode" id="postcode" class="fc-form-control" placeholder="Post Code" required>					
-                                        </div>
-                                    </div>
-
-                                    <div class="fc-col-half">
-                                        <div class="fc-label-group">
-                                            <label class="fc-form-label">State <span class="fc-text-danger">*</span></label>
-                                            <select name="state" class="fc-form-control" required>
-                                                <option value="">Select an option…</option>
-                                                <?php foreach( fc_state() as $state_k => $state_v ): ?>
-                                                <option value="<?php echo $state_k; ?>"><?php echo $state_v; ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-
-
-                            <p class="fc-mb-2 fc-text-gray"><span class="fc-text-danger">*</span> = Required</p>
+                        <div class="fencing-modal-body">
                             
-
-                            <!-- START FORM MODAL ACTIONS - STEP 1 -->
-                            <div class="fc-form-plan-action">
-                                <button type="button" class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" data-move="2"><b>Next > Time Frame</b></button>				
+                            <div class="fc-alert-gray fc-mb-3 fc-alert-gray--large-h4">
+                                <h4>&#127881; Awesome! We’ll email you the plans..</h4>
+                                <p class="fc-text-gray">Simply enter your details below and we’ll send you your plans to download or print for your reference.</p>
                             </div>
-                            <!-- END FORM MODAL ACTIONS - STEP 1 -->
+
+                            <div class="fc-form-plan" data-formtab="1">
 
 
-                        </div>
-
-                        <div class="fc-form-plan" data-formtab="2" style="display: none;">
-
-
-                            <!-- START FORM MODAL PROGRESS BAR - STEP 2 -->                            
-                            <div class="fc-progress-container fc-float-r">
-                                <div class="fc-progress-tabs">
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value"></div>
-                                    <div class="fc-progress-value"></div>
+                                <!-- START FORM MODAL PROGRESS BAR - STEP 1 -->                            
+                                <div class="fc-progress-container fc-float-r">
+                                    <div class="fc-progress-tabs">
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value"></div>
+                                        <div class="fc-progress-value"></div>
+                                        <div class="fc-progress-value"></div>
+                                    </div>
+                                    <span>1/4</span>				
                                 </div>
-                                <span>2/4</span>				
-                            </div>
-                            <!-- END FORM MODAL PROGRESS BAR - STEP 2 -->
+                                <!-- END FORM MODAL PROGRESS BAR - STEP 1 -->
 
 
-                            <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">When Do You Need The Materials?</h2>
-                            
-                            <div class="fc-form-group fc-form-check fc-mb-3">
+                                <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Project Details</h2>
+
+                                <div class="fc-form-group fc-mb-1">
+                                    <div class="fc-row-container">
+                                        <div class="fc-col-half">
+                                            <div class="fc-label-group">
+                                                <label class="fc-form-label">Name <span class="fc-text-danger">*</span></label>
+                                                <input type="text" name="name" id="name" class="fc-form-control" placeholder="Your Name" required>					
+                                            </div>
+                                        </div>
+                                        <div class="fc-col-half">
+                                            <div class="fc-label-group">
+                                                <label class="fc-form-label">Mobile <span class="fc-text-danger">*</span></label>
+                                                <input type="text" name="mobile" id="mobile" class="fc-form-control" placeholder="Your phone number" required>							
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="fc-form-group fc-mb-2">
+                                    <div class="fc-label-group">
+                                        <label class="fc-form-label">Email <span class="fc-text-danger">*</span></label>
+                                        <input type="text" name="email" id="email" class="fc-form-control no-space" placeholder="Your Email" required>	
+                                    </div>
+                                </div>
+
+                                <div class="fc-form-group fc-mb-1">
+                                    <div class="fc-label-group">
+                                        <label class="fc-form-label">Address <span class="fc-text-danger">*</span></label>
+                                        <input type="text" name="address" id="address" class="fc-form-control" placeholder="Your Address" required>  
+                                    </div>
+                                </div>
+
+                                <div class="fc-form-group fc-mb-1">
+                                    <div class="fc-row-container">
+                                    
+                                        <div class="fc-col-half">
+                                            <div class="fc-label-group">
+                                                <label class="fc-form-label">Post Code <span class="fc-text-danger">*</span></label>
+                                                <input type="text" name="postcode" id="postcode" class="fc-form-control" placeholder="Post Code" required>					
+                                            </div>
+                                        </div>
+
+                                        <div class="fc-col-half">
+                                            <div class="fc-label-group">
+                                                <label class="fc-form-label">State <span class="fc-text-danger">*</span></label>
+                                                <select name="state" class="fc-form-control" required>
+                                                    <option value="">Select an option…</option>
+                                                    <?php foreach( fc_state() as $state_k => $state_v ): ?>
+                                                    <option value="<?php echo $state_k; ?>"><?php echo $state_v; ?></option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                                <p class="fc-mb-2 fc-text-gray"><span class="fc-text-danger">*</span> = Required</p>
                                 
-                                <?php foreach( fc_timeframe() as $timeframe_k => $timeframe_v ): ?>
-                                <label class="fc-mb-1">
-                                <input type="radio" name="timeframe" value="<?php echo $timeframe_k; ?>" class="fc-mr-1" required>
-                                <?php echo $timeframe_v; ?>
-                                </label>
-                                <?php endforeach; ?>
 
-                            </div>
-
-
-                            <!-- START FORM MODAL ACTIONS - STEP 2 -->
-                            <div class="fc-form-plan-action">
-                                <button type="button" 
-                                    class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
-                                    data-move="1"><b>Back</b>
-                                </button>	
-                                <button type="button" 
-                                    class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" 
-                                    data-move="3"><b>Next > Install Options</b>
-                                </button>					
-                            </div>
-                            <!-- END FORM MODAL ACTIONS - STEP 2 -->
-
-
-                        </div>
-
-                        <div class="fc-form-plan" data-formtab="3" style="display: none;">
-
-                            <!-- START FORM MODAL PROGRESS BAR - STEP 3 -->                            
-                            <div class="fc-progress-container fc-float-r">
-                                <div class="fc-progress-tabs">
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value"></div>
+                                <!-- START FORM MODAL ACTIONS - STEP 1 -->
+                                <div class="fc-form-plan-action">
+                                    <button type="button" class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" data-move="2"><b>Next > Time Frame</b></button>				
                                 </div>
-                                <span>3/4</span>				
-                            </div>
-                            <!-- END FORM MODAL PROGRESS BAR - STEP 3 -->
+                                <!-- END FORM MODAL ACTIONS - STEP 1 -->
 
-
-                            <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Do You Need An Installer?</h2>
-                            
-                            <div class="fc-form-group fc-form-check fc-mb-3">
-                                
-                                <?php foreach( fc_installer() as $installer_k => $installer_v ): ?>
-                                <label class="fc-mb-1">
-                                <input type="radio" name="installer" value="<?php echo $installer_k; ?>" class="fc-mr-1" required>
-                                <?php echo $installer_v; ?>
-
-                                <?php if( $installer_k == 'no'): ?>
-                                <span class="fc-label-badge fc-ml-1">Cheaper</span>
-                                <?php endif; ?>
-
-                                </label>    
-                                <?php endforeach; ?>
 
                             </div>
 
-
-                            <!-- START FORM MODAL ACTIONS - STEP 3 -->
-                            <div class="fc-form-plan-action">
-                                <button type="button" class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" data-move="2"><b>Back</b></button>
-                                <button type="button" class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" data-move="4"><b>Next > Needed Options</b></button>
-                            </div>
-                            <!-- END FORM MODAL ACTIONS - STEP 3 -->
+                            <div class="fc-form-plan" data-formtab="2" style="display: none;">
 
 
-                        </div>
-
-                        <div class="fc-form-plan form-tab-4" data-formtab="4" style="display: none;">
-                            
-
-                            <!-- START FORM MODAL PROGRESS BAR - STEP 4 -->
-                            <div class="fc-progress-container fc-float-r">
-                                <div class="fc-progress-tabs">
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value pt-complete"></div>
-                                    <div class="fc-progress-value pt-complete"></div>
-                                </div>
-                                <span>4/4</span>				
-                            </div>
-                            <!-- END FORM MODAL PROGRESS BAR - STEP 4 -->
-                            
-
-                            <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Anything Else We Can Help You With?</h2>
-
-                            <div class="fc-other-products fc-form-group fc-mb-1">
-                                <div class="fc-row-container">
-
-                                    <?php foreach( fc_extra_needed() as $extra_k => $extra_v ): ?>
-                                    <div class="fc-col-3">
-                                        <div class="fc-form-check-img fc-rounded">
-                                            <label class="fc-form-check">
-                                            <img class="fc-rounded" src="img/plans/<?php echo $extra_k; ?>.png">								
-                                            <input type="checkbox" name="extra[]" value="<?php echo $extra_k; ?>">
-                                            </label>
-                                            <p class="fc-text-center"><?php echo $extra_v; ?></p>
-                                        </div>
+                                <!-- START FORM MODAL PROGRESS BAR - STEP 2 -->                            
+                                <div class="fc-progress-container fc-float-r">
+                                    <div class="fc-progress-tabs">
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value"></div>
+                                        <div class="fc-progress-value"></div>
                                     </div>
+                                    <span>2/4</span>				
+                                </div>
+                                <!-- END FORM MODAL PROGRESS BAR - STEP 2 -->
+
+
+                                <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">When Do You Need The Materials?</h2>
+                                
+                                <div class="fc-form-group fc-form-check fc-mb-3">
+                                    
+                                    <?php foreach( fc_timeframe() as $timeframe_k => $timeframe_v ): ?>
+                                    <label class="fc-mb-1">
+                                    <input type="radio" name="timeframe" value="<?php echo $timeframe_k; ?>" class="fc-mr-1" required>
+                                    <?php echo $timeframe_v; ?>
+                                    </label>
                                     <?php endforeach; ?>
 
-                                    <div class="fc-col-3">
-                                        <div class="fc-form-check-img fc-form-check-empty fc-rounded">
-                                            <label class="fc-form-check">
-                                                <div class="fc-empty-img">
-                                                    Nothing Extra<br>
-                                                    Just Fencing
-                                                </div>
-                                                <input type="radio" name="nothing_extra" value="nothing">
-                                            </label>
-                                            <p class="fc-text-center">NIL - Just Looking</p>
-                                        </div>
+                                </div>
+
+
+                                <!-- START FORM MODAL ACTIONS - STEP 2 -->
+                                <div class="fc-form-plan-action">
+                                    <button type="button" 
+                                        class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
+                                        data-move="1"><b>Back</b>
+                                    </button>	
+                                    <button type="button" 
+                                        class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" 
+                                        data-move="3"><b>Next > Install Options</b>
+                                    </button>					
+                                </div>
+                                <!-- END FORM MODAL ACTIONS - STEP 2 -->
+
+
+                            </div>
+
+                            <div class="fc-form-plan" data-formtab="3" style="display: none;">
+
+                                <!-- START FORM MODAL PROGRESS BAR - STEP 3 -->                            
+                                <div class="fc-progress-container fc-float-r">
+                                    <div class="fc-progress-tabs">
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value"></div>
                                     </div>
+                                    <span>3/4</span>				
+                                </div>
+                                <!-- END FORM MODAL PROGRESS BAR - STEP 3 -->
+
+
+                                <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Do You Need An Installer?</h2>
+                                
+                                <div class="fc-form-group fc-form-check fc-mb-3">
+                                    
+                                    <?php foreach( fc_installer() as $installer_k => $installer_v ): ?>
+                                    <label class="fc-mb-1">
+                                    <input type="radio" name="installer" value="<?php echo $installer_k; ?>" class="fc-mr-1" required>
+                                    <?php echo $installer_v; ?>
+
+                                    <?php if( $installer_k == 'no'): ?>
+                                    <span class="fc-label-badge fc-ml-1">Cheaper</span>
+                                    <?php endif; ?>
+
+                                    </label>    
+                                    <?php endforeach; ?>
 
                                 </div>
+
+
+                                <!-- START FORM MODAL ACTIONS - STEP 3 -->
+                                <div class="fc-form-plan-action">
+                                    <button type="button" class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" data-move="2"><b>Back</b></button>
+                                    <button type="button" class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" data-move="4"><b>Next > Needed Options</b></button>
+                                </div>
+                                <!-- END FORM MODAL ACTIONS - STEP 3 -->
+
+
                             </div>
-                            
 
-                            <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
-                            <div class="fc-form-plan-action">
-                                <button type="button" 
-                                    class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
-                                    data-move="3"><b>Back</b>
-                                </button>
+                            <div class="fc-form-plan form-tab-4" data-formtab="4" style="display: none;">
+                                
 
-                                <button type="submit" 
-                                    class="btn-fc fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b">
-                                    <b>Done > View Plans & Costs</b>
-                                </button>
+                                <!-- START FORM MODAL PROGRESS BAR - STEP 4 -->
+                                <div class="fc-progress-container fc-float-r">
+                                    <div class="fc-progress-tabs">
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value pt-complete"></div>
+                                        <div class="fc-progress-value pt-complete"></div>
+                                    </div>
+                                    <span>4/4</span>				
+                                </div>
+                                <!-- END FORM MODAL PROGRESS BAR - STEP 4 -->
+                                
+
+                                <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Anything Else We Can Help You With?</h2>
+
+                                <div class="fc-other-products fc-form-group fc-mb-1">
+                                    <div class="fc-row-container">
+
+                                        <?php foreach( fc_extra_needed() as $extra_k => $extra_v ): ?>
+                                        <div class="fc-col-3">
+                                            <div class="fc-form-check-img fc-rounded">
+                                                <label class="fc-form-check">
+                                                <img class="fc-rounded" src="img/plans/<?php echo $extra_k; ?>.png">								
+                                                <input type="checkbox" name="extra" value="<?php echo $extra_k; ?>">
+                                                </label>
+                                                <p class="fc-text-center"><?php echo $extra_v; ?></p>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+
+                                        <div class="fc-col-3">
+                                            <div class="fc-form-check-img fc-form-check-empty fc-rounded">
+                                                <label class="fc-form-check">
+                                                    <div class="fc-empty-img">
+                                                        Nothing Extra<br>
+                                                        Just Fencing
+                                                    </div>
+                                                    <input type="radio" name="nothing_extra" value="nothing">
+                                                </label>
+                                                <p class="fc-text-center">NIL - Just Looking</p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                
+
+                                <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
+                                <div class="fc-form-plan-action">
+                                    <button type="button" 
+                                        class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
+                                        data-move="3"><b>Back</b>
+                                    </button>
+
+                                    <button type="submit" 
+                                        class="btn-fc fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b">
+                                        <b>Done > View Plans & Costs</b>
+                                    </button>
+                                </div>
+                                <!-- END FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
+
+
                             </div>
-                            <!-- END FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
-
-
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
         <!-- END SUBMIT POPUP MODAL -->
 

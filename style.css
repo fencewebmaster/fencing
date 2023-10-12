@@ -2747,6 +2747,16 @@ thead.fc-border th:last-child {
     padding-right: 16px;
   }
 }
+.fencing-section__bottom .fencing-tab-add {
+  width: 100%;
+  font-size: 14px;
+  line-height: 20px;
+}
+.fencing-section__bottom .fencing-tab-add:hover {
+  background: #525252;
+  cursor: pointer;
+  color: #fff;
+}
 .fencing-section h4 {
   margin-bottom: 0;
 }

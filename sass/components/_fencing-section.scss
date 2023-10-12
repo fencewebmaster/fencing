@@ -35,6 +35,18 @@
             padding-left: 16px;
             padding-right: 16px;
         }
+
+        .fencing-tab-add{
+            width: 100%;
+            font-size: 14px;
+            line-height: 20px;
+
+            &:hover{
+                background: #525252;
+                cursor: pointer;
+                color: #fff;
+            }
+        }
     }
 
     h4{
