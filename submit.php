@@ -33,13 +33,18 @@ curl_close($curl);
 
 $items = json_decode($response);
 
+$count = count($items);
+$rand = rand(1, $count);
+
+$i=1;
 foreach ($items as $item) {
 	$cart['items'][] = [
-		'name' => $item->name,
-		'sku' => $item->sku,
-		'stock' => $item->stock,
-		'qty' => 1,
+		'name'  => $item->name,
+		'sku'   => $item->sku,
+		'stock' => $i == $rand ? 'low' : $item->stock,
+		'qty'   => 1,
 	];
+  $i++;
 }
 
 $_SESSION['fc_cart'] = $cart;
