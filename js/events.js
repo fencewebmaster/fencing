@@ -490,6 +490,11 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     removeDuplicateCloseBtn();
     set_field_value( filtered_data );
 
+    if( target === "#submit-modal" ) {
+        // Restore form data when the page loads
+        restoreFormData();
+    }
+
 });
 
 
