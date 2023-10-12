@@ -41,6 +41,10 @@
             font-size: 14px;
             line-height: 20px;
 
+            @include min-lg {
+                width: auto;
+            }
+
             &:hover{
                 background: #525252;
                 cursor: pointer;

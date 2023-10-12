@@ -2752,6 +2752,11 @@ thead.fc-border th:last-child {
   font-size: 14px;
   line-height: 20px;
 }
+@media (min-width: 992px) {
+  .fencing-section__bottom .fencing-tab-add {
+    width: auto;
+  }
+}
 .fencing-section__bottom .fencing-tab-add:hover {
   background: #525252;
   cursor: pointer;
