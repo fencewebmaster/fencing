@@ -1184,7 +1184,26 @@ function fc_extra_needed($val ='') {
 		'outdoor-kitchen' 	=> 'Outdoor Kitchen',
 	];
 
-	return ($val) ? $data[$val] : $data;
+	if( empty($val) ){
+		return $data;
+	}
+
+	$paramParts = explode(',', $val);
+    $paramParts = array_map('trim', $paramParts);
+    $textValues = [];
+
+    foreach ($paramParts as $part) {
+        if (array_key_exists($part, $data)) {
+            $textValues[] = $data[$part];
+        }
+    }
+
+    if (!empty($textValues)) {
+        return implode(', ', $textValues);
+    } else {
+        return 'Not Found';
+    }
+
 } 
 
 
