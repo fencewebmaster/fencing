@@ -263,10 +263,10 @@
 														<tr>
 															<td width="100" class="valign-top">Colour</td>
 															<td>
-																<div style="background:#000;color:#fff;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
+																<div style="background:<?php echo @$info['color']->code; ?>;color:<?php echo @$info['color']->text_color; ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
 																	<br>   
-																	<p><strong class="js-color_options-title"></strong><br />
-																	<span class="js-color_options-subtitle"></span></p>
+																	<p style="color: <?php echo @$info['color']->text_color; ?>"><strong class="js-color_options-title"><?php echo @$info['color']->title; ?></strong><br />
+																	<span class="js-color_options-subtitle"><?php echo @$info['color']->subtitle; ?></span></p>
 																</div>
 															</td>
 														</tr>

@@ -32,6 +32,7 @@ $("#fc-download-form").validate({
 
             var count = 0;
 
+            FCModal.close('#submit-modal');
             $('.fc-loader-overlay').show();
 
             submit_fence_planner();
@@ -44,7 +45,9 @@ $("#fc-download-form").validate({
                        count++;
 
                        if( count == 5 ) {
-                            window.onbeforeunload = function() {}
+                            window.onbeforeunload = function () {
+                                return;
+                            }
                             location.href = 'project-plan.php';
                        }
                        
