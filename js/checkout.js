@@ -128,7 +128,7 @@ $("#paymentFrm").validate({
     messages: {},
     submitHandler: function(form) {
 
-         window.onbeforeunload = function() { return false; }
+        window.onbeforeunload = function() { return false; }
 
         var action   = $('[name="action"]').val(),
             form     = $('form')[0],
@@ -256,6 +256,8 @@ $("#paymentFrm").validate({
 
                     if( ! info.error ) {
 
+                        window.onbeforeunload = function() {}
+
                         var count = 0;
             
                         $('.fc-loader ul li:not(.fc-text-success)').each(function(i) {
@@ -269,7 +271,8 @@ $("#paymentFrm").validate({
 
                         });
 
-                        window.onbeforeunload = function() {}
+                        localStorage.clear();
+                        
                         location.href = info.url;
 
                     }

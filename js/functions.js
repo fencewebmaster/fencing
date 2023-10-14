@@ -752,6 +752,8 @@ $.fn.scrollCenter = function(elem, speed) {
 
 function submit_fence_planner() {
 
+    window.onbeforeunload = function() {}
+
     var set_fc_data = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
 

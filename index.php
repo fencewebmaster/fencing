@@ -46,7 +46,7 @@
 
 <div class="fencing-container w-side-section" data-tab="1">
     <form method="POST" id="fc-download-form" action="project-plan.php">
-       
+
         <div class="fencing-container__header">
             <div class="fc-row">
                 
@@ -440,7 +440,7 @@
                             <div class="fencing-modal-title">
                                 <h4>Download Your Project Plans</h4>
                             </div>
-                            <button class="fencing-modal-close js-fencing-modal-close">&times;</button>
+                            <button type="button" class="fencing-modal-close js-fencing-modal-close">&times;</button>
                         </div>
 
                         <div class="fencing-modal-body">

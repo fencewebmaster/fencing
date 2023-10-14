@@ -25,8 +25,8 @@ $("#fc-download-form").validate({
     },
     submitHandler: function(form) {
 
-        var tab = $('.fc-form-plan:visible').attr('data-formtab'),
-                move = $('.fc-form-plan:visible').find('.fc-btn-next').attr('data-move');
+        var tab  = $('.fc-form-plan:visible').attr('data-formtab'),
+            move = $('.fc-form-plan:visible').find('.fc-btn-next').attr('data-move');
 
         if( tab == 4 ) {
 
@@ -71,7 +71,7 @@ $("#fc-download-form").validate({
 
 // localStorage.clear();
 
-if( location.host == 'localhost' ) {
+if( location.host == 'localhostx' ) {
 
     // $('#submit-modal').show();
     // $('#fc-control-modal').show();

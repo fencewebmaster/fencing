@@ -531,7 +531,6 @@ if( ! getcountDownDate ) {
 	var getcountDownDate = localStorage.getItem('countdown-date');
 }
 
-// localStorage.removeItem('countdown-date');
 </script>
 
 <script type="text/javascript">
@@ -560,6 +559,7 @@ var countDownDateFormat = new Date(getcountDownDate).getTime(),
   if (distance < 0) {
 	clearInterval(x);
 	document.getElementById(cont).innerHTML = "Limited time offer...<br> HURRY UP!";
+	localStorage.removeItem('countdown-date');
   }
 
 }, 1000);	

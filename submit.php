@@ -57,17 +57,17 @@ $response = curl_exec($curl);
 curl_close($curl);
 
 $items = json_decode($response);
-$cart = [];
+$cart  = array();
 
 $count = count($items);
-$rand = rand(1, $count);
+$rand  = rand(2, $count);
 
 $i=1;
 foreach ($items as $item) {
 	$cart['items'][] = [
 		'name'  => $item->name,
 		'sku'   => $item->sku,
-		'stock' => $i == $rand ? 'low' : $item->stock,
+		'stock' => $i == 1 || $i == $rand ? 'low' : $item->stock,
 		'qty'   => 1,
 	];
   $i++;
