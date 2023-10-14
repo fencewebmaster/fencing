@@ -444,8 +444,6 @@ function get_field_value(tag, key, val) {
                 $('[name='+key+'] select').val("none");
             }
         }
-        
-        
 
     }
 }
@@ -466,8 +464,6 @@ function update_custom_fence_tab() {
     var filtered_data_tabs = data_tabs.filter(function(item) {
         return item.tab != tab;
     });
-
-    console.log('data_tabs', data_tabs);
 
     if( info == undefined ) {
 
@@ -533,43 +529,52 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
-    settings = mergeSettings(data, settings, modal_key);
+    settings = mergeSettings(data, settings, 'control_key', modal_key);
 
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
     });
 
-
+    
     filtered_data.push({
         id: i, 
         control_key: modal_key, 
         settings: settings
     });
 
-
-
     if( modal_key === "color_options" ){
-        itemKey = 'custom_fence-global-setting';
-        filtered_data = [];
-        filtered_data.push({
-            id: i, 
-            control_key: modal_key, 
-            settings: settings
-        });
+        console.log('tesss1');
+        itemKey = 'project-plans';
+        color_data = {};
+        let text_color = "#fff";
+
+        if( settings[0].val.indexOf('white') !== -1 ){
+            text_color = '#000';
+        }
+
+        color_data.color = {
+            code: settings[0].color_code, 
+            subtitle: settings[0].subtitle, 
+            title: settings[0].title,
+            value: settings[0].val,
+            text_color: text_color
+        };
+
+        updateOrCreateObjectInLocalStorage(itemKey, color_data);
+    } else {
+        console.log('tesss2');
+        localStorage.setItem(itemKey, JSON.stringify(filtered_data));
     }
-
-    localStorage.setItem(itemKey, JSON.stringify(filtered_data));
-
     update_custom_fence_tab();
 
     // console.log('update_custom_fence: ', 'custom_fence-'+tab+'-'+i );
 
 }
 
-function mergeSettings(data, settings, modal_key){
+function mergeSettings(data, settings, key,  modal_key){
 
     //Check first if a control_key already exists and get it
-    const find_existing_data = data.find(obj => obj.control_key === modal_key);
+    const find_existing_data = data.find(obj => obj[key] === modal_key);
     
     if( typeof find_existing_data !== "undefined" ){
 
@@ -599,6 +604,7 @@ function mergeSettings(data, settings, modal_key){
 
     return settings;
 }
+
 
 function update_custom_fence_gate() {
 
@@ -747,6 +753,7 @@ $.fn.scrollCenter = function(elem, speed) {
 function submit_fence_planner() {
 
     var set_fc_data = [];
+    var project_plans = JSON.parse(localStorage.getItem('project-plans'));
 
     $( ".fencing-tab" ).each(function() {
 
@@ -760,7 +767,7 @@ function submit_fence_planner() {
 
         set_fc_data.push({
             'form': form,
-            'settings': settings,
+            'settings': settings
         }); 
 
     });
@@ -774,6 +781,13 @@ function submit_fence_planner() {
     var formData = new FormData(form);
 
     formData.set("fences", JSON.stringify(set_fc_data));
+
+    Object.entries(project_plans).forEach(([key, value]) => {
+        if (typeof value === 'object') {
+            value = JSON.stringify(value);
+        }
+        formData.set(key, value);
+    });
 
     $.ajax({
         url: 'submit.php', 
@@ -793,6 +807,7 @@ function submit_fence_planner() {
     });
 
 }
+
 
 
 function zooming(zoom) {
@@ -1360,23 +1375,6 @@ function setMeasurementDefaultValue() {
     $(FENCES.el.measurementBox).val(FENCES.defaultValues.measurement);
 }
 
-function saveFormData() {
-
-    const formData = {
-        name: document.getElementById('name').value,
-        mobile: document.getElementById('mobile').value,
-        email: document.getElementById('email').value,
-        address: document.getElementById('address').value,
-        postcode: document.getElementById('postcode').value,
-        state: document.getElementById('state').value,
-        timeframe: getSelectedRadioValue('timeframe'),
-        installer: getSelectedRadioValue('installer'),
-        extra: getSelectedCheckboxes('extra'),
-    };
-    localStorage.setItem('project-plans', JSON.stringify(formData));
-
-}
-
 function getSelectedRadioValue(name) {
     // Get a NodeList of all radio buttons with the name "gender"
     var radios = document.getElementsByName(name);
@@ -1429,7 +1427,9 @@ function restoreFormData() {
       const input = submitModal.querySelector(`[name="${key}"]`);
       if (input) {
         if (input.type === "checkbox") {
-          const selectedValues = formData[key];
+          let selectedValues = formData[key];
+          selectedValues = selectedValues.split(',').map(item => item.trim());
+            console.log('Array.isArray(selectedValues)', Array.isArray(selectedValues), key, selectedValues);
           if (Array.isArray(selectedValues)) {
             for( let i = 0; i < selectedValues.length; i++ ){
                 var checkBox = document.querySelector('input[type=checkbox][name="'+key+'"][value="' + selectedValues[i] + '"]');
@@ -1457,10 +1457,10 @@ function restoreFormData() {
  */
 function saveFormData() {
     const formData = {};
-    //const otherFormFields = formDownload.querySelectorAll("[name=notes]");
+    const otherFormFields = formDownload.querySelectorAll("[name=notes]");
     const formFields = submitModal.querySelectorAll("[name]");
-    // let formFieldsArray = [...formFields, ...otherFormFields];
-    // console.log('formFieldsArray', formFieldsArray);
+    let formFieldsArray = [...formFields, ...otherFormFields];
+   
     formFields.forEach(input => {
         if (input.type === "checkbox") {
             formData[input.name] = formData[input.name] || [];
@@ -1475,12 +1475,51 @@ function saveFormData() {
             formData[input.name] = input.value;
         }
     });
-    localStorage.setItem(projectPlanKey, JSON.stringify(formData));
+    updateOrCreateObjectInLocalStorage(projectPlanKey, formData);
 }
 
 // Add event listeners TO form elements inside the submit-modal div
-submitModal.addEventListener("input", saveFormData); 
-submitModal.addEventListener("change", saveFormData);
+if( submitModal ){
+    submitModal.addEventListener("input", saveFormData); 
+    submitModal.addEventListener("change", saveFormData);
+}
 
 
+function updateOrCreateObjectInLocalStorage(key, newData) {
+    // Check if the key already exists in localStorage
+    if (localStorage.getItem(key)) {
+      // If it exists, parse the JSON data and update the object
+      const existingData = JSON.parse(localStorage.getItem(key));
+      const updatedData = { ...existingData, ...newData };
+      // Save the updated object back to localStorage
+
+    //convert array to string
+    if( updatedData['extra'] && Array.isArray(updatedData['extra']) ){
+        updatedData['extra'] = updatedData['extra'].join(', ');
+    }
+
+      localStorage.setItem(key, JSON.stringify(updatedData));
+    } else {
+      // If the key doesn't exist, create a new object and save it to localStorage
+      localStorage.setItem(key, JSON.stringify(newData));
+    }
+ }
   
+  
+function setActiveColor() {
+
+    setTimeout(function(){
+        if( document.querySelector('.fc-color-options') !== null ){
+            let getColor = JSON.parse(localStorage.getItem('project-plans'));
+            if( getColor){
+                let colorParentEl = document.querySelector('.fc-color-options');
+                let createPlanBtn = document.querySelector('.fc-step-4 .fc-btn-create-plan');
+                colorParentEl.querySelector('[data-slug="'+getColor.color.value+'"]').classList.add('fc-selected');
+                createPlanBtn.removeAttribute('disabled');
+            }
+        }
+    }, 100);
+
+}
+
+setActiveColor();
