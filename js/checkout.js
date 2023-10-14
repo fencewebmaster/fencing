@@ -270,9 +270,9 @@ $("#paymentFrm").validate({
                             }, 2000 * i);
 
                         });
-
-                        localStorage.clear();
                         
+                        // Add clear fence planner local storage here
+
                         location.href = info.url;
 
                     }
