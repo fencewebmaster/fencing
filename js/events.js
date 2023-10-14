@@ -684,9 +684,14 @@ $(document).on('input change', '.fencing-input-range input', function(event) {
      $(this).closest('.fencing-input-range').find('.fir-info-sub span').text( 72 + 1.8 );
 });
 
-$(document).on('change', '.fencing-modal', function(){
-    var modal_key = $('.fencing-container').attr('data-key');
-    update_custom_fence(modal_key);
+$(document).on('change', '.fencing-modal', function(e){
+
+    //Only need to run this if modal content is for fences
+    if( e.currentTarget.id !== "submit-modal"){
+        var modal_key = $('.fencing-container').attr('data-key');
+        update_custom_fence(modal_key);
+    }
+    
 });
 
 $(document).on('click', '.fc-select-post', function(){
