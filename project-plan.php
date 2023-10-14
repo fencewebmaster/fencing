@@ -7,7 +7,14 @@
 	include('helpers.php');
 	
 	// unset($_SESSION['fc_cart']);
+    
+    /*
+ 	$products = load_csv('data/products.csv');
+	$key = array_search('slug', array_column($products, 'gate'));
+	dd( $products[$key] );
+	*/
 
+	date_default_timezone_set('Asia/Manila');
 ?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -446,30 +453,27 @@
 
 											<?php $alert = array_search('yes', array_column($cart['items'], 'stock')); ?>
 
-											<?php if (!empty($alert) || $alert === 0): ?>
 											<p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
-											<?php endif; ?>
 
 											<?php $alert = array_search('low', array_column($cart['items'], 'stock')); ?>
 
-											<?php if (!empty($alert) || $alert === 0): ?>
 											<div class="fc-alert-gray fc-step-2-alert fc-alert-gray--low-stock">
 												<h3 class="fc-mb-1"><i class="fc-icon fc-icon-info"></i> Low Stock Warning</h3>
 												<p class="fc-text-red">Some items have limited stock available. <br />Your cart can only be Reserved for a Limited Time <br />Then its released for other customers.
 												</p>
 											</div>
-											<?php endif; ?>
 											
 
 										</div>
 
 										<div style="clear: both;"></div>
 										
-										<?php if (!empty($alert) || $alert === 0): ?>
 										<div class="fc-cart-countdown">
-											<p><strong>ORDER WITHIN:</strong><br />2hrs 48mins 59sec</p>
+											<p>
+												<strong>ORDER WITHIN:</strong><br />
+												<span id="fc-countdown-timer"></span>
+											</p>
 										</div>
-										<?php endif; ?>
 
 										<div class="fc-cart-items-btns">
 											<button type="submit" 
@@ -515,3 +519,48 @@
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/checkout.js?v=<?php echo date('YmdHis'); ?>"></script>
+
+<script type="text/javascript">
+var setcountDownDate = "<?php echo date('M d, Y H:i:s', strtotime('+3 hours')); ?>";	
+var getcountDownDate = localStorage.getItem('countdown-date');
+
+if( ! getcountDownDate ) {
+	// Set the date we're counting down to
+	localStorage.setItem('countdown-date', setcountDownDate);
+	
+	var getcountDownDate = localStorage.getItem('countdown-date');
+}
+
+// localStorage.removeItem('countdown-date');
+</script>
+
+<script type="text/javascript">
+var countDownDateFormat = new Date(getcountDownDate).getTime(),
+	cont = 'fc-countdown-timer';
+
+	// Update the count down every 1 second
+	var x = setInterval(function() {
+
+  // Get today's date and time
+  var now = new Date().getTime();
+
+  // Find the distance between now and the count down date
+  var distance = countDownDateFormat - now;
+
+  // Time calculations for days, hours, minutes and seconds
+  var days 	  = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  // Display the result in the element with id="demo"
+  document.getElementById(cont).innerHTML = hours + "hrs " + minutes + "mins " + seconds + "secs ";
+
+  // If the count down is finished, write some text
+  if (distance < 0) {
+	clearInterval(x);
+	document.getElementById(cont).innerHTML = "Limited time offer...<br> HURRY UP!";
+  }
+
+}, 1000);	
+</script>

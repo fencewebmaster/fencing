@@ -61,3 +61,34 @@ function fc_deliver_options() {
 
     return $data;
 }
+
+function load_csv($file = '') {
+
+    if( ! file_exists($file) ) {
+        return FALSE;
+    }
+
+    $handle = fopen($file, "r");
+
+    $i = $h = 0;
+    while (($data = fgetcsv($handle)) !== FALSE) {
+        if( $i == 0) {
+            $header = $data;                               
+        } else {
+            $e=0;
+            foreach ($data as $d) {                     
+                if( @$header[$e] ) {  
+                    $col = str_replace([' ', '-'], ['_', ''], strtolower( rtrim( $header[$e] ) ) );
+                    $order_info[$col] = $d;
+                    $e++;
+                }
+            }
+
+            $rows[$i-1] = $order_info;    
+        }
+
+        $i++;
+    } 
+
+    return $rows;
+}
