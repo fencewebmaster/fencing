@@ -2,6 +2,7 @@
 session_start();
 
 $_SESSION["fc_data"] = $data = $_POST;
+$_SESSION["fc_data"]['color'] = json_decode($_SESSION["fc_data"]['color']);
 
 // START - GET PRODUCTS FROM THE STORE
 $curl = curl_init();
