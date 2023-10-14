@@ -85,7 +85,6 @@ function stripeTokenHandler(token) {
 }
 */
 
-loadGlobalSetting();
 
 $(document).on('click', '.fc-btn-download-fence', function (e) {    
 
