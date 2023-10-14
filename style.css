@@ -3082,10 +3082,7 @@ thead.fc-border th:last-child {
 }
 .fc-project-details .fc-table--colour strong {
   font-weight: 600;
-  color: #fff;
-}
-.fc-project-details .fc-table--colour p {
-  color: var(--fc-dark-gray);
+  color: inherit;
 }
 .fc-project-details .fc-table--colour .fc-colour-item {
   box-sizing: border-box;
