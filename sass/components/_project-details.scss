@@ -25,10 +25,7 @@
     .fc-table--colour {
         strong{
             font-weight: 600;
-            color: #fff;
-        }
-        p{
-            color: var(--fc-dark-gray);
+            color: inherit;
         }
         .fc-colour-item{
             box-sizing: border-box;

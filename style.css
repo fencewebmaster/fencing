@@ -2752,6 +2752,11 @@ thead.fc-border th:last-child {
   font-size: 14px;
   line-height: 20px;
 }
+@media (min-width: 992px) {
+  .fencing-section__bottom .fencing-tab-add {
+    width: auto;
+  }
+}
 .fencing-section__bottom .fencing-tab-add:hover {
   background: #525252;
   cursor: pointer;
@@ -3077,10 +3082,7 @@ thead.fc-border th:last-child {
 }
 .fc-project-details .fc-table--colour strong {
   font-weight: 600;
-  color: #fff;
-}
-.fc-project-details .fc-table--colour p {
-  color: var(--fc-dark-gray);
+  color: inherit;
 }
 .fc-project-details .fc-table--colour .fc-colour-item {
   box-sizing: border-box;
