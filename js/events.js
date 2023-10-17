@@ -605,12 +605,10 @@ $(document).on('click', '.btn-fc-calculate', function(){
     $('.fencing-calculating').show();
     $('.fencing-panel-items').hide();
 
-    setTimeout(function(){
-        $.get('/', function(){
-            $('.fencing-panel-items').show();
-            $('.fencing-calculating').hide();
-        });
-    }, 1000);
+    $.get('/', function(){
+        $('.fencing-panel-items').show();
+        $('.fencing-calculating').hide();
+    });
 
     update_custom_fence_tab();
 
