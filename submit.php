@@ -154,4 +154,5 @@ foreach ($items as $item) {
 
 $_SESSION['fc_cart'] = $cart;
 
+echo json_encode($items);
 // END - GET PRODUCTS FROM THE STORE
