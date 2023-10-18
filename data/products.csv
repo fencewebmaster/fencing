@@ -1,6 +1,6 @@
 SLUG,CONDITION,NAME,TYPE,BLACK,WHITE,MONUMENT,CREAM
 panel_options+even,"IF panel options = ""Evenly Spaced Posts"" = (Number of Fence Panels) + (short panel offcut panel length)",Panel - 1200H x 2400W,2400W Panels,49312,49920,49921,49922
-panel_options+full,"IF panel options = ""Full Panels - 3000W"" = (Number of full length Panels) + (Number of short length panels)",Panel - 1200H x 3000W,3000W Panels,49313,,,
+panel_options+full,"IF panel options = ""Full Panels - 3000W"" = (Number of full length Panels) + (Number of short length panels)",Panel - 1200H x 3000W,3000W Panels,49313,49313,49313,49313
 raked_panel+1300x300,IF LEFT OR RIGHT RAKED PANEL,1300H - 300 Step-Up,Raked Panels,49315,CUSTOM-WHITE-49315,CUSTOM-MONUMENT-49315,CUSTOM-CREAM-49315
 raked_panel+1400x400,IF LEFT OR RIGHT RAKED PANEL,1400H - 400 Step-Up,Raked Panels,49316,CUSTOM-WHITE-49316,CUSTOM-MONUMENT-49316,CUSTOM-CREAM-49316
 raked_panel+1500x500,IF LEFT OR RIGHT RAKED PANEL,1500H - 500 Step-Up,Raked Panels,49317,CUSTOM-WHITE-49317,CUSTOM-MONUMENT-49317,CUSTOM-CREAM-49317

@@ -2,19 +2,14 @@
 	session_start();
 	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
+	date_default_timezone_set('Asia/Manila');
+
 	include('data/settings.php');
 	include('temp/fields.php');
 	include('helpers.php');
 	
 	// unset($_SESSION['fc_cart']);
-    
-    /*
- 	$products = load_csv('data/products.csv');
-	$key = array_search('slug', array_column($products, 'gate'));
-	dd( $products[$key] );
-	*/
-
-	date_default_timezone_set('Asia/Manila');
+	
 ?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
