@@ -602,13 +602,28 @@ $(document).on('click', '.btn-fc-calculate', function(){
 
     box.attr('data-last', box.val());
 
+
+    /*
+    // Use only on database query
     $('.fencing-calculating').show();
     $('.fencing-panel-items').hide();
 
+<<<<<<< HEAD
     $.get('/', function(){
         $('.fencing-panel-items').show();
         $('.fencing-calculating').hide();
     });
+=======
+    setTimeout(function(){
+        $.get('/', function(){
+            $('.fencing-panel-items').show();
+            $('.fencing-calculating').hide();
+        });
+    }, 1000);
+    */
+
+
+>>>>>>> dev
 
     update_custom_fence_tab();
 

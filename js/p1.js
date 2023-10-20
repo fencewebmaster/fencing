@@ -35,7 +35,7 @@ $("#fc-download-form").validate({
             FCModal.close('#submit-modal');
             $('.fc-loader-overlay').show();
 
-            submit_fence_planner();
+            submit_fence_planner();            
 
             setTimeout(function(){
                 $('.fc-loader ul li').each(function(i) {
@@ -44,11 +44,11 @@ $("#fc-download-form").validate({
                        $this.addClass('fc-text-success');
                        count++;
 
-                       if( count == 5 ) {
+                       if( count == 1 ) {
                             window.onbeforeunload = function () {
                                 return;
                             }
-                            location.href = 'project-plan.php';
+                            window.location = 'project-plan.php';
                        }
                        
                     }, 1000 * i);
@@ -57,7 +57,6 @@ $("#fc-download-form").validate({
                 });
 
             }, 1000);
-
 
         } else {
             $('.fc-form-plan').hide();

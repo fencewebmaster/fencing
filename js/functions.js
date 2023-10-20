@@ -1230,6 +1230,17 @@ function deleteAllEntriesBySubstring(substring) {
   
 }
 
+/**
+ * GET Segment URI value | key=value
+ * @param {string} k 
+ * @returns string
+ */
+function getSearchParams(k){
+    var p={};
+    location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){p[k]=v})
+    return k?p[k]:p;
+}
+
   
 /**
  * Refresh local storage

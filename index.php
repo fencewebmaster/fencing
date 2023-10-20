@@ -6,6 +6,9 @@
 	include('data/settings.php');
 	include('temp/fields.php');
 	include('helpers.php');
+
+
+  //  dd($_SESSION);
 ?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">

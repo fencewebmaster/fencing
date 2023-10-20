@@ -1111,21 +1111,21 @@ $fences = [
 $color_options = [
 	[
 		'title' => 'Black',
-		'slug' => 'frameless-black-satin',
+		'slug' => 'black',
 		'sub_title' => 'Satin',
 		'background_color' => '#000',
 		'text_color' => '#fff',
 	],
 	[
 		'title' => 'Pearl White',
-		'slug' => 'frameless-pearl-white-gloss',
+		'slug' => 'white',
 		'sub_title' => 'Gloss',
 		'background_color' => '#fff',
 		'text_color' => '#000',
 	],
 	[
 		'title' => 'Monument',
-		'slug' => 'frameless-monument-matt',
+		'slug' => 'monument',
 		'sub_title' => 'Matt',
 		'background_color' => '#635F5D',
 		'text_color' => '#fff',

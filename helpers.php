@@ -39,24 +39,24 @@ function dd($data ='') {
 
 function fc_deliver_options() {
     $data = [
-      [
-        'value'   => 'shipping_1',
-        'label'   => 'Warehouse Pickup',
-        'price'   => 0,
-        'default' => TRUE,
-      ],
-      [
-        'value'   => 'shipping_2',
-        'label'   => 'Deliver to Site (Metro $89)',
-        'price'   => 89,
-        'default' => FALSE,
-        ],
-      [
-        'value'   => 'shipping_3',
-        'label'   => 'Deliver to Site (Rural - $TBA)',
-        'price'   => 0,
-        'default' => FALSE,
-      ]
+		[
+			'value'   => 'shipping_1',
+			'label'   => 'Warehouse Pickup',
+			'price'   => 0,
+			'default' => TRUE,
+		],
+		[
+			'value'   => 'shipping_2',
+			'label'   => 'Deliver to Site (Metro $89)',
+			'price'   => 89,
+			'default' => FALSE,
+		],
+		[
+			'value'   => 'shipping_3',
+			'label'   => 'Deliver to Site (Rural - $TBA)',
+			'price'   => 0,
+			'default' => FALSE,
+		]
     ];
 
     return $data;
@@ -91,4 +91,32 @@ function load_csv($file = '') {
     } 
 
     return $rows;
+}
+
+
+function get_product_skus($data = array()) {
+
+	$products = $skus = array();
+
+ 	$the_products = load_csv('data/products.csv');
+
+ 	$items = $data['items'];
+
+ 	$column = 'slug';
+ 	$color  = $data['color'];
+
+	foreach ($items as $item) {
+
+		$key = array_search($item['slug'], array_column($the_products, $column));
+		$products[] = [
+			'sku' => $the_products[$key][$color],
+			'qty' => $item['qty']
+		]; 
+
+		$skus[] = $the_products[$key][$color];
+	}
+
+	$_SESSION['custom_fence_products'] = $products;
+
+	return $skus;
 }
