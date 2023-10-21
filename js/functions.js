@@ -22,11 +22,11 @@ function load_fencing_items() {
 
         var panel_number = i,
             panel_size = calc.long_panel.length,
-            panel_unit = 'mm';
-
-        console.log('load_fencing_items 1', 'panel_size', panel_size);
+            panel_unit = 'mm',
+            data_key = "post_options";
 
         var tpl = $('script[data-type="panel_item-'+info.panel_group+'"]').text()
+                                                     .replace(/{{data_key}}/gi, center_point)
                                                      .replace(/{{center_point}}/gi, center_point)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
@@ -57,8 +57,6 @@ function load_fencing_items() {
                                                      .replace(/{{panel_number}}/gi, panel_number);    
     
         $('.fencing-panel-container').append(tpl);
-
-        // $('.fencing-container').width()
 
         $('.short-panel-item').attr('data-id', calc.long_panel.count+1)
                               .attr('id', 'panel-item-'+(calc.long_panel.count+1))
@@ -93,11 +91,28 @@ function load_fencing_items() {
         $('.fencing-offcut').css({'width':calc.offcut_panel.length*0.10});
     }
 
+    //updateFirstFencingPost();
+    //updateLastFencingPost();
+}
+
+function updateLastFencingPost(){
+    var elements = document.querySelectorAll('.fencing-panel-container [data-key="post_options"]');
+    console.log('elements', elements);
+    if (elements.length > 0) {
+      var lastElement = elements[elements.length - 1];
+      lastElement.setAttribute('data_key', 'left_side');
+    }
+}
+
+function updateFirstFencingPost(){
+    var elements = document.querySelectorAll('.fencing-panel-container [data-key="post_options"]');
+    if (elements.length > 0) {
+      var lastElement = elements[0];
+      lastElement.setAttribute('data_key', 'right_side');
+    }
 }
 
 function update_raked_panels(side) {
-
-
 
     var i = $('.fencing-style-item.fsi-selected').index(),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
@@ -119,7 +134,7 @@ function update_raked_panels(side) {
         var side_part = v.replace('_raked', ''),
             has_post = 'yes-post',
             center_point = 50;
-
+        
         var filtered_side_data = custom_fence.filter(function(item) {
             return item.control_key == side_part+'_side';
         });
@@ -178,12 +193,12 @@ function update_raked_panels(side) {
         }
 
         if( side_part == 'left' ) {
-            $('.panel-post').first().addClass('panel-'+has_post);
+            $('.panel-post:not(.post-left):not(.post-right)').first().addClass('post-left panel-'+has_post).attr('data-key',"left_side").attr('post-side',"post_left");
             $('.fencing-panel-spacing-number').first().addClass(has_post);
         }
 
         if( side_part == 'right' ) {
-            $('.panel-post').last().addClass('panel-'+has_post);
+            $('.panel-post:not(.post-left):not(.post-right)').last().addClass('post-right panel-'+has_post).attr('data-key',"right_side").attr('post-side',"post_right");
             $('.fencing-panel-spacing-number').last().addClass(has_post);
         }
 
@@ -192,27 +207,16 @@ function update_raked_panels(side) {
     // Left Panel post
     var left_panel_post = $('.left-panel-post.no-post span').text().replace('(', '').replace(')', '');
     $('.left-panel-post.no-post span').text('('+left_panel_post+')');
-    
+
     // Right Panel Post
     var right_panel_post = $('.right-panel-post.no-post span').text().replace('(', '').replace(')', '');
     $('.right-panel-post.no-post span').text('('+right_panel_post+')');
 
+    
+    load_post_options_first_last_values(custom_fence);
 
-    // Post Options
-    var post_options_filtered_data = custom_fence.filter(function(item) {
-        return item.control_key == 'post_options';
-    });
+    load_post_options_all(custom_fence, info);
 
-    if( post_options_filtered_data.length ) {
-        var post_options_setting = post_options_filtered_data[0]?.settings;
-        $('.panel-post, .fencing-panel-spacing-number').addClass(post_options_setting[0]?.val);
-    } else {
-        // Get default post options
-        var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
-            return item.default == true;
-        });
-        $('.panel-post, .fencing-panel-spacing-number').addClass(post_options_default[0].slug);           
-    }
 
     $('.fencing-display-result').css({'padding': ''});
     if( $('.raked-panel .fencing-raked-panel').length && $('.fencing-display-result').css('margin-top') != '70px' ) {   
@@ -230,6 +234,57 @@ function update_raked_panels(side) {
         }
     }, 100);*/
 
+}
+
+/**
+ * This function will update either First or Last post after user selection
+ * @param {array} custom_fence 
+ */
+function load_post_options_first_last_values(custom_fence) {
+    // //-------
+    //Get the settings of post_option from left_side and right_side
+    var post_options_filtered_data = custom_fence.filter(function(item) {
+        return item.control_key === "left_side" || item.control_key === "right_side";
+    });
+
+    //iterate both left and right side and get the values of post_options
+    for( let i = 0; i < post_options_filtered_data.length; i++ ){
+        let activeSetting = post_options_filtered_data[i].control_key;
+        let settings = post_options_filtered_data[i].settings;
+        
+        for( let idx = 0; idx < settings.length; idx++ ){
+            let key = settings[idx].key;
+            let value = settings[idx].val;
+            if(key === "post_option" ){
+                //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
+                //Find the element that matches the condition below and add the class
+                $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value);
+            }
+        }
+
+    }
+}
+
+/**
+ * This function will update all posts except for the first and last post 
+ * @param {array} custom_fence 
+ * @param {obj} info 
+ */
+function load_post_options_all(custom_fence, info) {
+    var post_options_filtered_data = custom_fence.filter(function(item) {
+        return item.control_key === 'post_options';
+    });
+
+    if( post_options_filtered_data.length ) {
+        var post_options_setting = post_options_filtered_data[0]?.settings;
+        $('.panel-post:not(.post-left):not(.post-right), .fencing-panel-spacing-number').addClass(post_options_setting[0]?.val);
+    } else {
+        // Get default post options
+        var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
+            return item.default == true;
+        });
+        $('.panel-post:not(.post-left):not(.post-right), .fencing-panel-spacing-number').addClass(post_options_default[0].slug);           
+    }
 }
 
 function update_gate(action) {
@@ -426,15 +481,16 @@ function get_field_value(tag, key, val) {
         $('[name='+key+']').attr('value', val);
 
     } else if( tag == 'div' ) {
+        let getElement = $('[name='+key+']'),
+            getSelectedEl = getElement.find('.fc-selected');
 
         // Reset value
-        if( $('[name='+key+']').find('.fc-selected').length ) {
-            $('[name='+key+']').find('.fc-selected').removeClass('fc-selected'); 
+        if( getSelectedEl.length ) {
+            getSelectedEl.removeClass('fc-selected'); 
         }
-        $('[name='+key+']').attr('value', val);
-        $('[name='+key+']').find('[data-slug="'+val+'"]').addClass('fc-selected');
-
-        console.log('val', val);
+       
+        getElement.attr('value', val);
+        getElement.find('[data-slug="'+val+'"]').addClass('fc-selected');
 
         //Set preselected value for right and left raked inside modal
         if( key === "left_raked" || key === "right_raked" ){
@@ -509,7 +565,10 @@ function update_custom_fence(modal_key, fc_form_field = false) {
     const data = custom_fence ? JSON.parse(custom_fence) : [];
 
     let itemKey = 'custom_fence-'+tab+'-'+i;
-
+    
+    if( modal_key === "left_side" || modal_key === "right_side" || modal_key === "post_options" || modal_key === "panel_options" || modal_key === "gate" ){
+        modal_key = FENCES.activeSetting;
+    }
     
     settings = form_field.map(function(){
 
@@ -529,6 +588,8 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
+    console.log('settings', settings);
+
     settings = mergeSettings(data, settings, 'control_key', modal_key);
 
     var filtered_data = data.filter(function(item) {
@@ -543,11 +604,13 @@ function update_custom_fence(modal_key, fc_form_field = false) {
     });
 
     if( modal_key === "color_options" ){
-        console.log('tesss1');
+        
         itemKey = 'project-plans';
         color_data = {};
         let text_color = "#fff";
 
+        // To make the text readable in project plans page,
+        // we need to change the text to black if the selected color is white
         if( settings[0].val.indexOf('white') !== -1 ){
             text_color = '#000';
         }
@@ -561,13 +624,14 @@ function update_custom_fence(modal_key, fc_form_field = false) {
         };
 
         updateOrCreateObjectInLocalStorage(itemKey, color_data);
-    } else {
-        console.log('tesss2');
-        localStorage.setItem(itemKey, JSON.stringify(filtered_data));
-    }
-    update_custom_fence_tab();
 
-    // console.log('update_custom_fence: ', 'custom_fence-'+tab+'-'+i );
+    } else {
+        
+        localStorage.setItem(itemKey, JSON.stringify(filtered_data));
+    
+    }
+
+    update_custom_fence_tab();
 
 }
 
