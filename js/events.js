@@ -608,12 +608,6 @@ $(document).on('click', '.btn-fc-calculate', function(){
     $('.fencing-calculating').show();
     $('.fencing-panel-items').hide();
 
-<<<<<<< HEAD
-    $.get('/', function(){
-        $('.fencing-panel-items').show();
-        $('.fencing-calculating').hide();
-    });
-=======
     setTimeout(function(){
         $.get('/', function(){
             $('.fencing-panel-items').show();
@@ -623,7 +617,6 @@ $(document).on('click', '.btn-fc-calculate', function(){
     */
 
 
->>>>>>> dev
 
     update_custom_fence_tab();
 
