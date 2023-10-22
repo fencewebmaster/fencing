@@ -518,9 +518,9 @@ function get_field_value(tag, key, val) {
         getElement.attr('value', val);
         getElement.find('[data-slug="'+val+'"]').addClass('fc-selected');
 
-        //Set preselected value for right and left raked inside modal
+        // Set preselected value for right and left raked inside modal
         if( key === "left_raked" || key === "right_raked" ){
-            if( typeof val !== "undefined"){
+            if( typeof val !== "undefined" && val ){
                 $('[name='+key+'] select').val(val);
             } else {
                 $('[name='+key+'] select').val("none");
