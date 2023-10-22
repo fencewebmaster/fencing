@@ -213,7 +213,7 @@ function update_raked_panels(side) {
     $('.right-panel-post.no-post span').text('('+right_panel_post+')');
 
     
-    load_post_options_first_last_values(custom_fence);
+    load_post_options_first_last_values(custom_fence, info);
 
     load_post_options_all(custom_fence, info);
 
@@ -240,29 +240,54 @@ function update_raked_panels(side) {
  * This function will update either First or Last post after user selection
  * @param {array} custom_fence 
  */
-function load_post_options_first_last_values(custom_fence) {
-    // //-------
+function load_post_options_first_last_values(custom_fence, info) {
+
+    var side_post = '';
+
     //Get the settings of post_option from left_side and right_side
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === "left_side" || item.control_key === "right_side";
     });
 
-    //iterate both left and right side and get the values of post_options
-    for( let i = 0; i < post_options_filtered_data.length; i++ ){
-        let activeSetting = post_options_filtered_data[i].control_key;
-        let settings = post_options_filtered_data[i].settings;
-        
-        for( let idx = 0; idx < settings.length; idx++ ){
-            let key = settings[idx].key;
-            let value = settings[idx].val;
-            if(key === "post_option" ){
-                //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
-                //Find the element that matches the condition below and add the class
-                $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value);
+    if( post_options_filtered_data.length ) {
+
+        //iterate both left and right side and get the values of post_options
+        for( let i = 0; i < post_options_filtered_data.length; i++ ){
+            let activeSetting = post_options_filtered_data[i].control_key;
+            let settings = post_options_filtered_data[i].settings;
+
+            for( let idx = 0; idx < settings.length; idx++ ){
+                let key = settings[idx].key;
+                let value = settings[idx].val;
+
+                if(key === "post_option" ){
+                    //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
+                    //Find the element that matches the condition below and add the class
+                    $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value);
+                }
             }
+
         }
 
+        var side_post = post_options_filtered_data[0].control_key;
     }
+
+
+    // Get default post options
+    var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
+        return item.default == true;
+    });
+
+    // Set default option on left side
+    if( side_post != 'left_side' ) {
+        $('.panel-post.post-left').addClass(post_options_default[0].slug);   
+    } 
+
+    // Set default option on right side
+    if( side_post != 'right_side' ) {
+        $('.panel-post.post-right').addClass(post_options_default[0].slug);   
+    }
+
 }
 
 /**
@@ -283,6 +308,7 @@ function load_post_options_all(custom_fence, info) {
         var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
             return item.default == true;
         });
+
         $('.panel-post:not(.post-left):not(.post-right), .fencing-panel-spacing-number').addClass(post_options_default[0].slug);           
     }
 }
