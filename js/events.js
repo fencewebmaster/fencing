@@ -392,7 +392,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         modal.el.find(".fencing-modal-content").html('');
     }
 
-    $('.fencing-container').attr('data-key', key);
+    FENCES.setActiveSetting(key);
 
     var fields = info?.settings[key]?.fields;
 
@@ -481,11 +481,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     var filtered_data = custom_fence.filter(function(item) {
         return item.control_key == key;
     });
-
-    //Excluded popup with multiple sections inside
-    if( key === "left_side" || key === "right_side" ){
-        filtered_data = custom_fence;
-    }
 
     removeDuplicateCloseBtn();
     set_field_value( filtered_data );
@@ -708,7 +703,7 @@ $(document).on('click', '.fc-select-post', function(){
         modal_key = $(this).attr('data-key');
     }
     
-    update_custom_fence(modal_key, fc_form_field);
+    update_custom_fence(modal_key);
 });
 
 $(document).on('click', '.fc-select-item', function(){

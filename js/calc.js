@@ -122,7 +122,6 @@ function calculate_fences( data ) {
         C9  = step_up_panels?.size?.width;
     }
 
-    console.log('step_up_panels', custom_fence, info);
 
     left_raked_panel_height  = step_up_panels?.size?.height;
     left_raked_panel_width   = isNaN(C9-post_panel) ? 0 : C9-post_panel;      
