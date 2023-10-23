@@ -224,11 +224,11 @@ $(document).on('click', '.fc-select-post, .fc-select-item', function(){
 
     getSelectedColorDetails($(this), getFormField);
 
-    if( $(this).closest('.fc-form-field').attr('name') == 'right_option' ) {   
+    if( $('.fencing-container').attr('data-key') == 'right_side' ) {   
         $(".fencing-display-result").scrollCenter(".panel-post:last", 300);
     }
 
-    if( $(this).closest('.fc-form-field').attr('name') == 'left_option' ) {   
+    if( $('.fencing-container').attr('data-key') == 'left_side' ) {   
         $(".fencing-display-result").scrollCenter(".panel-post:first", 300);
     }
 
