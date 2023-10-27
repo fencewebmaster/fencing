@@ -120,3 +120,4 @@ function get_product_skus($data = array()) {
 
 	return $skus;
 }
+

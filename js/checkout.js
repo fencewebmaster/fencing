@@ -202,7 +202,6 @@ $("#paymentFrm").validate({
 
             $(".fc-table-customer .fc-form-control").css({'color': '#4caf50'}); 
 
-
             $.ajax({
                 url: 'checkout.php', 
                 type: "POST",  
@@ -215,7 +214,6 @@ $("#paymentFrm").validate({
                 cache: false,         
                 processData:false,    
                 success: function(response) {
-                    
                     try {
 
                         setTimeout(function() { 
@@ -223,6 +221,12 @@ $("#paymentFrm").validate({
                             removeSectionOverlay();
                             $('.fc-table-customer span').show();
                             $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
+                            $('.js-project-details-controls').addClass('fc-d-none');
+
+
+                            $.get( "temp/sections/your-project-details.php", function(res){
+                                $(".your-project-details").html(res);
+                            });
 
                             window.onbeforeunload = function() {}
 
@@ -308,7 +312,7 @@ $(document).on('click', ".fc-btn-edit", function (e) {
         $('.fc-project-details table span:not([class^="js-"])').hide();
 
         _this.hide();
-        
+
     } else {
        
         $('form').submit();
@@ -316,9 +320,24 @@ $(document).on('click', ".fc-btn-edit", function (e) {
 
     }
 
-    $('.js-project-details-controls').toggleClass('fc-d-none');
+    $('.js-project-details-controls').removeClass('fc-d-none');
 
 });
+
+$(document).on('click', '.project-details--edit', function(){
+    $('#submit-modal').show();
+    restoreFormData();
+});
+
+// PROJECT DETAILS SECTION
+$(document).on('click', ".project-details--update", function (e) {
+    e.preventDefault();
+
+    $('[name="action"]').val('update_details');
+    $('form').submit();
+    $('#submit-modal').hide();
+});
+
 
 
 $(document).on('click', ".fc-btn-reset", function (e) {
@@ -388,3 +407,44 @@ $(document).on('click', ".btn-submit", function (e) {
     $('[name="action"]').val('push_order');
     $('form').submit();
 });
+
+
+var getcountDownDate = localStorage.getItem('countdown-date');
+
+if( ! getcountDownDate ) {
+    // Set the date we're counting down to
+    localStorage.setItem('countdown-date', setcountDownDate);
+    
+    var getcountDownDate = localStorage.getItem('countdown-date');
+}
+
+
+var countDownDateFormat = new Date(getcountDownDate).getTime(),
+    cont = 'fc-countdown-timer';
+
+    // Update the count down every 1 second
+    var x = setInterval(function() {
+
+  // Get today's date and time
+  var now = new Date().getTime();
+
+  // Find the distance between now and the count down date
+  var distance = countDownDateFormat - now;
+
+  // Time calculations for days, hours, minutes and seconds
+  var days    = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  // Display the result in the element with id="demo"
+  document.getElementById(cont).innerHTML = hours + "hrs " + minutes + "mins " + seconds + "secs ";
+
+  // If the count down is finished, write some text
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById(cont).innerHTML = "Limited time offer...<br> HURRY UP!";
+    localStorage.removeItem('countdown-date');
+  }
+
+}, 1000);

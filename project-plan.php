@@ -9,7 +9,7 @@
 	include('helpers.php');
 	
 	// unset($_SESSION['fc_cart']);
-	
+
 ?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,13 +55,14 @@
 <!-- END FORM SUBMISSION LOADER -->
 
 
+
 <!-- START FENCING CONTAINER -->
 <div id="place_order-section" class="fencing-container fc-project-plan fc-position-relative" data-tab="1">
 
 	<!-- START CHECKOUT FORM -->
 	<form method="POST" id="paymentFrm" action="<?php echo base_url('checkout.php'); ?>">
 
-		<input type="hidden" name="action" value="">
+		<input type="hiddenx" name="action" value="">
 
 		<!-- START PAGE HEADER TITLE -->
 		<div class="fc-mb-2">
@@ -140,165 +141,10 @@
 						</div>
 						<!-- [END] Step 5 | Edit Controls -->
 
-						<div class="fc-card fc-project-details">
-
-							<div id="update_details-section">
-
-								<div class="fc-row-container">
-									<div class="fc-col-half">
-										<div class="fc-table-rounded-border fc-mb-2 fc-position-relative">
-										
-											<table class="fc-table fc-table-customer">
-												<tbody>
-													<tr>
-														<td width="100">Name</td>
-														<td>
-															<span><?php echo @$info['name']; ?></span>
-															<div class="fc-form-group">
-																<input type="text" name="name" value="<?php echo @$info['name']; ?>" class="fc-form-control fc-form-control-sm">
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>Contact</td>
-														<td>
-															<span><?php echo @$info['mobile']; ?></span>
-															<div class="fc-form-group">
-																<input type="text" name="mobile" value="<?php echo @$info['mobile']; ?>" class="fc-form-control fc-form-control-sm">
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>Email</td>
-														<td>
-															<span><?php echo @$info['email']; ?></span>
-															<div class="fc-form-group">
-																<input type="email" name="email" value="<?php echo @$info['email']; ?>" class="fc-form-control fc-form-control-sm no-space" required>
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>State</td>
-														<td>
-															<span><?php echo @$info['state'] ? fc_state($info['state']) : ''; ?></span>
-															<div class="fc-form-group">
-																<select name="state" class="fc-form-control fc-form-control-sm" required>
-																	<option value="">Select an option…</option>
-																	<?php foreach( fc_state() as $state_k => $state_v ): ?>
-																	<option value="<?php echo $state_k; ?>" <?php echo @$info['state']==$state_k ? 'selected': ''; ?>><?php echo $state_v; ?></option>
-																	<?php endforeach; ?>
-																</select>
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>Post Code</td>
-														<td>
-															<span><?php echo @$info['postcode']; ?></span>
-															<div class="fc-form-group">
-																<input type="text" name="postcode" value="<?php echo @$info['postcode']; ?>" class="fc-form-control fc-form-control-sm">
-															</div>
-														</td>
-													</tr>
-													<tr>
-														<td>Address</td>
-														<td>
-															<span><?php echo @$info['address']; ?></span>
-															<div class="fc-form-group">
-																<input type="text" name="address" value="<?php echo @$info['address']; ?>" class="fc-form-control fc-form-control-sm">
-															</div>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-
-										</div>
-
-										<div class="fc-table-rounded-border fc-mb-2">
-										
-											<table class="fc-table">
-												<tr>
-													<td>Fence Type</td>
-													<td>Flat Top Pool Fencing, Glass Pool Fencing</td>
-												</tr>
-												<tr>
-													<td>When Needed</td>
-													<td><?php echo @$info['timeframe'] ? fc_timeframe(@$info['timeframe']) : ''; ?></td>
-												</tr>
-												<tr>
-													<td>Install Required</td>
-													<td><?php echo @$info['installer'] ? fc_installer(@$info['installer']) : ''; ?></td>
-												</tr>
-												<tr>
-													<td>Other Items Needed</td>
-													<td><?php echo @$info['extra'] ? get_items('fc_extra_needed', $info['extra']) : ''; ?></td>
-												</tr>
-											</table>
-
-										</div>
-
-										<div class="js-project-details-controls fc-d-none">
-											<button type="button" data-action="update" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
-												<i class="fa-solid fa-pencil"></i>
-												<span>Update</span>
-											</button>
-											<button type="button" 
-												class="btn-fc fc-btn-reset btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" 
-												style="display:none;">
-													<i class="fa-solid fa-rotate-left"></i> <span>Reset</span>
-											</button>
-										</div>
-
-									</div>
-
-									<div class="fc-col-half">
-										<div class="fc-card fc-mb-2">
-											
-											<div class="fc-card-header fc-bg-dark fc-border-top">
-												Flat Top Pool Fencing - Options
-											</div>
-
-											<div class="fc-table-rounded-border fc-rounded-top-none fc-mb-2">
-											
-												<table class="fc-table fc-table--colour">
-													<thead>
-														<tr>
-															<td width="100" class="valign-top">Colour</td>
-															<td>
-																<div style="background:<?php echo @$info['color']->code; ?>;color:<?php echo @$info['color']->text_color; ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
-																	<br>   
-																	<p style="color: <?php echo @$info['color']->text_color; ?>"><strong class="js-color_options-title"><?php echo @$info['color']->title; ?></strong><br />
-																	<span class="js-color_options-subtitle"><?php echo @$info['color']->subtitle; ?></span></p>
-																</div>
-															</td>
-														</tr>
-													</thead>
-												</table>
-
-											</div>
-										</div>
-
-										<div class="fc-card">
-										
-											<div class="fc-card-header fc-bg-dark fc-border-top">
-												Project Notes & Additional Details
-											</div>
-											
-											<div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
-												<div class="fc-p-1">
-													<textarea name="notes" 
-														placeholder="Write your notes here" 
-														class="fc-form-control" 
-														rows="5"><?php echo @$info['notes']; ?></textarea>
-												</div>
-											</div>
-
-										</div>
-
-									</div>
-								</div>
-							</div>
+						<div class="your-project-details">
+							<?php include 'temp/sections/your-project-details.php'; ?>						
 						</div>
+
 						<!-- END PROJECT DETAILS -->
 					</div>
 
@@ -317,7 +163,7 @@
 						<!-- [END] Label -->
 							
 							<div>
-								<div id="fc-fence-list" >
+								<div id="fc-fence-list">
 									<?php include 'data/plan-item.php'; ?>
 								</div>
 							</div>
@@ -497,6 +343,8 @@
 		</div>
 		<!-- END FENCING CONTENT -->
 
+    	<?php include 'temp/modal/submit/view-2.php'; ?>
+
 
 	</form>
 	<!-- END CHECKOUT FORM -->
@@ -505,57 +353,21 @@
 </div>
 <!-- END FENCING CONTAINER -->
 
+<!-- Config -->
+<script type="text/javascript">
+var fc_data = <?php echo json_encode($fences); ?>;
+var setcountDownDate = "<?php echo date('M d, Y H:i:s', strtotime('+3 hours')); ?>";	
+</script>
 
+<!-- Required Libraries -->
 <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
+<!-- Scripts -->
+<script type="text/javascript" src="js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/checkout.js?v=<?php echo date('YmdHis'); ?>"></script>
 
-<script type="text/javascript">
-var setcountDownDate = "<?php echo date('M d, Y H:i:s', strtotime('+3 hours')); ?>";	
-var getcountDownDate = localStorage.getItem('countdown-date');
-
-if( ! getcountDownDate ) {
-	// Set the date we're counting down to
-	localStorage.setItem('countdown-date', setcountDownDate);
-	
-	var getcountDownDate = localStorage.getItem('countdown-date');
-}
-
-</script>
-
-<script type="text/javascript">
-var countDownDateFormat = new Date(getcountDownDate).getTime(),
-	cont = 'fc-countdown-timer';
-
-	// Update the count down every 1 second
-	var x = setInterval(function() {
-
-  // Get today's date and time
-  var now = new Date().getTime();
-
-  // Find the distance between now and the count down date
-  var distance = countDownDateFormat - now;
-
-  // Time calculations for days, hours, minutes and seconds
-  var days 	  = Math.floor(distance / (1000 * 60 * 60 * 24));
-  var hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-  // Display the result in the element with id="demo"
-  document.getElementById(cont).innerHTML = hours + "hrs " + minutes + "mins " + seconds + "secs ";
-
-  // If the count down is finished, write some text
-  if (distance < 0) {
-	clearInterval(x);
-	document.getElementById(cont).innerHTML = "Limited time offer...<br> HURRY UP!";
-	localStorage.removeItem('countdown-date');
-  }
-
-}, 1000);	
-</script>

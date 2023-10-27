@@ -1531,20 +1531,22 @@ function restoreFormData() {
       if (input) {
         if (input.type === "checkbox") {
           let selectedValues = formData[key];
-          selectedValues = selectedValues.split(',').map(item => item.trim());
-            console.log('Array.isArray(selectedValues)', Array.isArray(selectedValues), key, selectedValues);
+
+            selectedValues = selectedValues.map(item => item.trim());
+
           if (Array.isArray(selectedValues)) {
             for( let i = 0; i < selectedValues.length; i++ ){
                 var checkBox = document.querySelector('input[type=checkbox][name="'+key+'"][value="' + selectedValues[i] + '"]');
-                checkBox.checked = true;
+                if(checkBox) checkBox.checked = true;
             }
           } else {
             var checkBox = document.querySelector('input[type=checkbox][name="'+key+'"][value="' + formData[key] + '"]');
             checkBox.checked = true;
           }
+
         } else if (input.type === "radio") {
           var radioBtn = document.querySelector('input[type=radio][name="'+key+'"][value="' + formData[key] + '"]');
-          radioBtn.checked = true;
+          if(radioBtn) radioBtn.checked = true;
         } else if (input.type === "select-one") {
           input.value = formData[key];
         } else {
@@ -1559,25 +1561,37 @@ function restoreFormData() {
  * Save form data to local storage whenever a field changes
  */
 function saveFormData() {
+
     const formData = {};
-    const otherFormFields = formDownload.querySelectorAll("[name=notes]");
+    const otherFormFields = formDownload ? formDownload.querySelectorAll("[name=notes]") : '';
     const formFields = submitModal.querySelectorAll("[name]");
     let formFieldsArray = [...formFields, ...otherFormFields];
-   
+
     formFields.forEach(input => {
         if (input.type === "checkbox") {
             formData[input.name] = formData[input.name] || [];
+
             if (input.checked) {
                 formData[input.name].push(input.value);
             }
+             
         } else if (input.type === "radio") {
+
             if (input.checked) {
                 formData[input.name] = input.value;
-            }
+            }  
+
+            if( $('[name="'+input.name+'"]').length == 1 ) {
+                if (input.checked == false) {
+                    formData[input.name] = '';
+                }                
+            } 
+
         } else {
             formData[input.name] = input.value;
         }
     });
+
     updateOrCreateObjectInLocalStorage(projectPlanKey, formData);
 }
 
@@ -1618,7 +1632,10 @@ function setActiveColor() {
                 let colorParentEl = document.querySelector('.fc-color-options');
                 let createPlanBtn = document.querySelector('.fc-step-4 .fc-btn-create-plan');
                 colorParentEl.querySelector('[data-slug="'+getColor.color.value+'"]').classList.add('fc-selected');
-                createPlanBtn.removeAttribute('disabled');
+
+                if( createPlanBtn ) {
+                    createPlanBtn.removeAttribute('disabled');
+                }
             }
         }
     }, 100);

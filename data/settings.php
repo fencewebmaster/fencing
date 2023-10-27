@@ -1132,8 +1132,6 @@ $color_options = [
 	],
 ];
 
-
-
 function fc_state($val ='') {
  
 	$data = [
