@@ -296,20 +296,35 @@ function load_post_options_first_last_values(custom_fence, info) {
  * @param {obj} info 
  */
 function load_post_options_all(custom_fence, info) {
+
+    let panel_post = $('.panel-post');
+    let panel_spacing_number = $('.fencing-panel-spacing-number');
+    let exclude_panel_posts = ".post-left, .post-right";
+
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === 'post_options';
     });
 
     if( post_options_filtered_data.length ) {
-        var post_options_setting = post_options_filtered_data[0]?.settings;
-        $('.panel-post:not(.post-left):not(.post-right), .fencing-panel-spacing-number').addClass(post_options_setting[0]?.val);
+
+        //Get the value of Post Option
+        var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
+            return item.key === "post_option";
+        });
+        
+        panel_post.not(exclude_panel_posts).addClass(post_options_setting.val);
+        panel_spacing_number.addClass(post_options_setting.val);
+    
     } else {
+
         // Get default post options
-        var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
+        var post_options_default = info.settings.post_options.fields[0].options.find(function(item) {
             return item.default == true;
         });
 
-        $('.panel-post:not(.post-left):not(.post-right), .fencing-panel-spacing-number').addClass(post_options_default[0].slug);           
+        panel_post.not(exclude_panel_posts).addClass(post_options_default.val);
+        panel_spacing_number.addClass(post_options_default.val);
+
     }
 }
 
