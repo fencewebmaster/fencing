@@ -228,6 +228,10 @@ function calculate_fences( data ) {
         console.log('gate', gate_count, gate_width);
     */
     
+    if( Array.isArray(panel_options_data) ){
+        panel_options_data = panel_options_data[0];
+    }
+
     data = {
         'full_panel' : {
             'count' : full_panel_count, 
@@ -264,7 +268,7 @@ function calculate_fences( data ) {
             'width' : right_raked_panel_width,
         },
         'selected_values': {
-            'panel_option': panel_options_data[0].slug
+            'panel_option': panel_options_data.slug
         }
     }
 
