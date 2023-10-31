@@ -2319,6 +2319,11 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
   border-right: 0;
 }
+@media (max-width: 768px) {
+  .fencing-tab-container {
+    width: 100%;
+  }
+}
 .fencing-tab-container-area {
   height: 100%;
   cursor: grab;
@@ -2363,6 +2368,14 @@ thead.fc-border th:last-child {
     padding-left: 24px;
     padding-right: 24px;
     min-width: 119px;
+  }
+}
+@media (max-width: 768px) {
+  .fencing-tab {
+    width: 100%;
+    text-align: center;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 .fencing-tab:first-child {
