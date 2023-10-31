@@ -441,6 +441,7 @@ var fc_data = <?php echo json_encode($fences); ?>;
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="js/item-selection.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/p1.js?v=<?php echo date('YmdHis'); ?>"></script>
 
 

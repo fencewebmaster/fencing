@@ -23,11 +23,17 @@ function load_fencing_items() {
         var panel_number = i,
             panel_size = calc.long_panel.length,
             panel_unit = 'mm',
-            data_key = "post_options";
+            data_key = "post_options",
+            panel_option_value = calc.selected_values.panel_option;
+
+            if( panel_option_value.indexOf('full') !== -1 ){
+                panel_option_value = panel_option_value.split('_')[0];
+            } 
 
         var tpl = $('script[data-type="panel_item-'+info.panel_group+'"]').text()
                                                      .replace(/{{data_key}}/gi, center_point)
                                                      .replace(/{{center_point}}/gi, center_point)
+                                                     .replace(/{{panel_value}}/gi, panel_option_value)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
                                                      .replace(/{{panel_number}}/gi, panel_number);    
@@ -75,8 +81,8 @@ function load_fencing_items() {
 
     // $('.fpsn-b:not(:first-child):not(:last-child)').remove();
 
-    $('.fencing-panel-container').prepend('<div class="left_raked-panel raked-panel"></div>');
-    $('.fencing-panel-container').append('<div class="right_raked-panel raked-panel"></div>');
+    $('.fencing-panel-container').prepend('<div data-cart-key="raked-panel" class="left_raked-panel raked-panel"></div>');
+    $('.fencing-panel-container').append('<div data-cart-key="raked-panel" class="right_raked-panel raked-panel"></div>');
 
     update_raked_panels(['left_raked', 'right_raked']);
 
@@ -312,7 +318,7 @@ function load_post_options_all(custom_fence, info) {
             return item.key === "post_option";
         });
         
-        panel_post.not(exclude_panel_posts).addClass(post_options_setting.val);
+        panel_post.not(exclude_panel_posts).addClass(post_options_setting.val).attr('data-cart-value', post_options_setting.val);
         panel_spacing_number.addClass(post_options_setting.val);
     
     } else {
@@ -387,8 +393,10 @@ function update_gate(action) {
 
     }
 
-    $('.fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
-                            .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>');
+    $('.fencing-panel-gate')
+        .prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
+        .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
+        .attr('data-cart-value', 1);
 
                       
 }
@@ -629,14 +637,11 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
-    console.log('settings', settings);
-
     settings = mergeSettings(data, settings, 'control_key', modal_key);
 
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
     });
-
     
     filtered_data.push({
         id: i, 

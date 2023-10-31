@@ -145,6 +145,7 @@ $(document).on('click', '.fc-move-post', function(){
         var index =  $('#panel-item-0').index()/3;
 
         $('#btn-gate').html('Add Gate');
+        $('.fencing-panel-gate').removeAttr('data-cart-value');
         FCModal.close();
         $('.fc-btn-active').removeClass('fc-btn-active');
 

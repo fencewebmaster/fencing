@@ -262,6 +262,9 @@ function calculate_fences( data ) {
             'count' : gate_count,
             'height' : right_raked_panel_height,
             'width' : right_raked_panel_width,
+        },
+        'selected_values': {
+            'panel_option': panel_options_data[0].slug
         }
     }
 
