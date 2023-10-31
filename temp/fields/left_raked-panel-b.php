@@ -2,7 +2,7 @@
 	<span>{{center_point}}</span>					
 </div>
 
-<div class="raked-panel-post panel-post panel-{{post}} fencing-btn-modal" data-key="left_side" data-target="#fc-control-modal"></div>
+<div data-cart-key="raked_post" data-cart-value="" class="raked-panel-post panel-post panel-{{post}} fencing-btn-modal" data-key="left_side" data-target="#fc-control-modal"></div>
 
 <div class="raked-panel-container">
 

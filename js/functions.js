@@ -269,7 +269,7 @@ function load_post_options_first_last_values(custom_fence, info) {
                 if(key === "post_option" ){
                     //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                     //Find the element that matches the condition below and add the class
-                    $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value);
+                    $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value).attr('data-cart-value', value);
                 }
             }
 
@@ -291,7 +291,7 @@ function load_post_options_first_last_values(custom_fence, info) {
 
     // Set default option on right side
     if( side_post != 'right_side' ) {
-        $('.panel-post.post-right').addClass(post_options_default[0].slug);   
+        $('.panel-post.post-right').addClass(post_options_default[0].slug);
     }
 
 }

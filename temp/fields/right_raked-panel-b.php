@@ -12,4 +12,4 @@
 	<span>{{center_point}}</span>					
 </div>
 
-<div class="panel-post raked-panel-post panel-{{post}} fencing-btn-modal" data-key="right_side" data-target="#fc-control-modal"></div>
+<div data-cart-key="raked_post" data-cart-value=""  class="panel-post raked-panel-post panel-{{post}} fencing-btn-modal" data-key="right_side" data-target="#fc-control-modal"></div>
