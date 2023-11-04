@@ -16,7 +16,7 @@ $("#fc-download-form").validate({
     rules: {
         email: {
             required: true,
-            //email: true
+            email: true
         },
     },
     messages: {
@@ -88,7 +88,7 @@ if( location.host == 'localhostx' ) {
         $('.measurement-box-number').val( 10999 + index );
         $('.btn-fc-calculate').click();
 
-        if( index < 1 ) {
+        if( index < 3 ) {
 
             setTimeout(function() {
                 add_new_fence_section();
@@ -100,3 +100,31 @@ if( location.host == 'localhostx' ) {
 
     test_data();    
 } 
+
+
+
+
+/*var fc_selected_item = 1,
+    fc_selected_tab = 0;
+
+function reload_fence_items() {
+
+    var a = {};
+    Object.entries(localStorage).forEach(([key, value]) => {
+      if (key.startsWith("custom_fence-")) {
+        a[key] = value;
+      }
+    });
+
+    var items = Object.keys(a).length / 2;
+
+    for (let i = 1; i < items; i++) {
+        add_new_fence_section();
+    }
+
+
+}
+reload_fence_items();
+
+
+*/

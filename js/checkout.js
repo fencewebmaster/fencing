@@ -122,7 +122,7 @@ $("#paymentFrm").validate({
         address: { required: true },
         email: {
             required: true,
-            //email: true
+            email: true
         },
     },
     messages: {},
@@ -276,6 +276,8 @@ $("#paymentFrm").validate({
                         });
                         
                         // Add clear fence planner local storage here
+                        let keysToRemove = ["project-plans", "countdown-date"];
+                        keysToRemove.forEach(k =>localStorage.removeItem(k))
 
                         location.href = info.url;
 

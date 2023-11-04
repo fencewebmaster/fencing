@@ -30,6 +30,10 @@ if( @$_POST['action'] == 'push_order' ) {
     curl_close($curl);
 
     echo $response;
+
+    // Clear fence session data
+    unset($_SESSION['fc_data'], $_SESSION['custom_fence_products'], $_SESSION['fc_cart']);
+
     exit;
 
 

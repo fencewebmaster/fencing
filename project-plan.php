@@ -2,12 +2,17 @@
 	session_start();
 	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
+	if( empty($info) ) {
+		header("Location: ./");
+		die();
+	}
+
 	date_default_timezone_set('Asia/Manila');
 
 	include('data/settings.php');
 	include('temp/fields.php');
 	include('helpers.php');
-	
+
 	// unset($_SESSION['fc_cart']);
 
 ?>
@@ -62,7 +67,7 @@
 	<!-- START CHECKOUT FORM -->
 	<form method="POST" id="paymentFrm" action="<?php echo base_url('checkout.php'); ?>">
 
-		<input type="hiddenx" name="action" value="">
+		<input type="hidden" name="action" value="">
 
 		<!-- START PAGE HEADER TITLE -->
 		<div class="fc-mb-2">
@@ -164,7 +169,7 @@
 							
 							<div>
 								<div id="fc-fence-list">
-									<?php include 'data/plan-item.php'; ?>
+									<?php // include 'data/plan-item.php'; ?>
 								</div>
 							</div>
 
@@ -193,6 +198,10 @@
 								bottom: 0;
 								z-index: 2;
 							}	
+							.project-details--edit:hover {
+								cursor: pointer;
+								background: #f6f6f6;
+							}
 							</style>
 
 							<div id="update_cart-section">
@@ -292,11 +301,7 @@
 												
 											<p>Approx Delivery Run: <span>2-3 Days</span></p>
 
-											<?php $alert = array_search('yes', array_column($cart['items'], 'stock')); ?>
-
 											<p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
-
-											<?php $alert = array_search('low', array_column($cart['items'], 'stock')); ?>
 
 											<div class="fc-alert-gray fc-step-2-alert fc-alert-gray--low-stock">
 												<h3 class="fc-mb-1"><i class="fc-icon fc-icon-info"></i> Low Stock Warning</h3>
@@ -370,4 +375,7 @@ var setcountDownDate = "<?php echo date('M d, Y H:i:s', strtotime('+3 hours')); 
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/checkout.js?v=<?php echo date('YmdHis'); ?>"></script>
+
+<script type="text/javascript" src="js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="js/p2.js?v=<?php echo date('YmdHis'); ?>"></script>
 

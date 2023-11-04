@@ -804,6 +804,7 @@ $(document).on('keydown', '.fencing-modal', function (e) {
 
 
 $(document).on('click', '[name="color_options"]', function(e) {
+    $('[name="color[value]"]').val( $(this).attr('value') );
     $('.fc-btn-create-plan').removeAttr('disabled');
 });
 
