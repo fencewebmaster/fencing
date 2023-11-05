@@ -397,86 +397,94 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     var fields = info?.settings[key]?.fields;
 
-    $.each(fields, function(k, v){
+    console.log('fields', fields, typeof fields === "undefined" );
 
-        var tpl = $('script[data-type="'+v.type+'"]').text()
-                                                     .replace(/{{field_title}}/gi, v.title)
-                                                     .replace(/{{title}}/gi, v.label)
-                                                     .replace(/{{image}}/gi, v.image)
-                                                     .replace(/{{default}}/gi, v.default)
-                                                     .replace(/{{unit}}/gi, v.unit)
-                                                     .replace(/{{field_name}}/gi, v.slug)
-                                                     .replace(/{{type}}/gi, v.type)
-                                                     .replace(/{{sub_default}}/gi, v?.weight?.default)
-                                                     .replace(/{{sub_unit}}/gi, v?.weight?.unit)
-                                                     .split(/\$\{(.+?)\}/g);
+    
+    if( typeof fields !== "undefined" ){
 
-        modal.content.append(tpl);
+        $.each(fields, function(k, v){
 
-        if( v.type == 'dropdown_option') {
+            var tpl = $('script[data-type="'+v.type+'"]').text()
+                                                         .replace(/{{field_title}}/gi, v.title)
+                                                         .replace(/{{title}}/gi, v.label)
+                                                         .replace(/{{image}}/gi, v.image)
+                                                         .replace(/{{default}}/gi, v.default)
+                                                         .replace(/{{unit}}/gi, v.unit)
+                                                         .replace(/{{field_name}}/gi, v.slug)
+                                                         .replace(/{{type}}/gi, v.type)
+                                                         .replace(/{{sub_default}}/gi, v?.weight?.default)
+                                                         .replace(/{{sub_unit}}/gi, v?.weight?.unit)
+                                                         .split(/\$\{(.+?)\}/g);
 
-            $(v.options).each(function(i, o) {
-                $('[name="'+v.slug+'"] select').append($('<option>',{ value: o.slug, text: o.title }));
-                $('[name="'+v.slug+'"] select').attr('data-key', v.key);
-            });
-
-        }
-
-        if( v.type == 'range_option') {
-
-            const Item = ({ image, title, slug, key }) => `
-            <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
-                    <img src="${image}">
-                </div>
-                <p>${title}</p>
-            </div>`;
-
-            modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
-        }
-
-        if( v.type == 'text_option') {
-
-            const Item = ({ title, slug }) => `
-            <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
+            modal.content.append(tpl);
+    
+            if( v.type == 'dropdown_option') {
+    
+                $(v.options).each(function(i, o) {
+                    $('[name="'+v.slug+'"] select').append($('<option>',{ value: o.slug, text: o.title }));
+                    $('[name="'+v.slug+'"] select').attr('data-key', v.key);
+                });
+    
+            }
+    
+            if( v.type == 'range_option') {
+    
+                const Item = ({ image, title, slug, key }) => `
+                <div class="fc-col-4 fc-text-center">
+                    <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
+                        <img src="${image}">
+                    </div>
                     <p>${title}</p>
-                </div>
-            </div>`;
-
-            modal.el.find('[data-field="text_option"] .fc-row').html(v.options.map(Item).join(''));
-        }
-
-        if( v.type == 'image_option') {
-
-            const Item = ({ image, title, extra, slug, key }) => `
-            <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">
-                    <img src="${image}" class="fc-fullwidth">        
-                </div>
-                <p>${title}</p>
-                <p>${extra}</p>
-            </div>`;
-
-            modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
-        }
-
-        addNotesOrInfo(modal, v);
-
-        // GET/SET DEFAULT VALUE
-        var default_value = v.options?.filter(function(item) {
-            return item.default == true;
+                </div>`;
+    
+                modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
+            }
+    
+            if( v.type == 'text_option') {
+    
+                const Item = ({ title, slug }) => `
+                <div class="fc-col-4 fc-text-center">
+                    <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
+                        <p>${title}</p>
+                    </div>
+                </div>`;
+    
+                modal.el.find('[data-field="text_option"] .fc-row').html(v.options.map(Item).join(''));
+            }
+    
+            if( v.type == 'image_option') {
+    
+                const Item = ({ image, title, extra, slug, key }) => `
+                <div class="fc-col-4 fc-text-center">
+                    <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">
+                        <img src="${image}" class="fc-fullwidth">        
+                    </div>
+                    <p>${title}</p>
+                    <p>${extra}</p>
+                </div>`;
+    
+                modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
+            }
+    
+            addNotesOrInfo(modal, v);
+    
+            // GET/SET DEFAULT VALUE
+            var default_value = v.options?.filter(function(item) {
+                return item.default == true;
+            });
+    
+            if( default_value ) {
+                var opt = default_value[0],
+                    tag = $('.fc-form-field').get(0).tagName.toLowerCase();
+    
+                get_field_value(tag, v?.slug, opt?.slug);                        
+            }
+            
+    
         });
 
-        if( default_value ) {
-            var opt = default_value[0],
-                tag = $('.fc-form-field').get(0).tagName.toLowerCase();
-
-            get_field_value(tag, v?.slug, opt?.slug);                        
-        }
-        
-
-    });
+    }
+    
 
     //Get data based on key
     var filtered_data = custom_fence.filter(function(item) {
@@ -663,6 +671,8 @@ $(document).on('click', '.btn-fc-calculate', function(){
     custom_fence_tab[0].isCalculate = 1;
     custom_fence_tab[0].calculateValue = length;
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
+
+    FENCES.cartItems.init();
 
     window.onbeforeunload = function() {
         return false;

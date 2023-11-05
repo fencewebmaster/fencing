@@ -317,9 +317,11 @@ function load_post_options_all(custom_fence, info) {
         var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
             return item.key === "post_option";
         });
-        
-        panel_post.not(exclude_panel_posts).addClass(post_options_setting.val).attr('data-cart-value', post_options_setting.val);
-        panel_spacing_number.addClass(post_options_setting.val);
+
+        if( typeof post_options_setting !== "undefined" ){
+            panel_post.not(exclude_panel_posts).addClass(post_options_setting.val).attr('data-cart-value', post_options_setting.val);
+            panel_spacing_number.addClass(post_options_setting.val);
+        }
     
     } else {
 
@@ -866,6 +868,7 @@ function submit_fence_planner() {
 
     var set_fc_data = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
+    var cart_items = JSON.parse(localStorage.getItem('cart_items'));
 
     $( ".fencing-tab" ).each(function() {
 
@@ -893,6 +896,8 @@ function submit_fence_planner() {
     var formData = new FormData(form);
 
     formData.set("fences", JSON.stringify(set_fc_data));
+
+    formData.set("cart_items", JSON.stringify(cart_items));
 
     Object.entries(project_plans).forEach(([key, value]) => {
         if (typeof value === 'object') {
