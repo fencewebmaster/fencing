@@ -1108,29 +1108,32 @@ $fences = [
 	]
 ];
 
-$color_options = [
-	[
-		'title' => 'Black',
-		'slug' => 'black',
-		'sub_title' => 'Satin',
-		'background_color' => '#000',
-		'text_color' => '#fff',
-	],
-	[
-		'title' => 'Pearl White',
-		'slug' => 'white',
-		'sub_title' => 'Gloss',
-		'background_color' => '#fff',
-		'text_color' => '#000',
-	],
-	[
-		'title' => 'Monument',
-		'slug' => 'monument',
-		'sub_title' => 'Matt',
-		'background_color' => '#635F5D',
-		'text_color' => '#fff',
-	],
-];
+
+function fc_color($val ='') {
+ 
+	$data = [
+		'black' => [
+			'title' => 'Black',
+			'sub_title' => 'Satin',
+			'background_color' => '#000',
+			'text_color' => '#fff',
+		],
+		'white' => [
+			'title' => 'Pearl White',
+			'sub_title' => 'Gloss',
+			'background_color' => '#fff',
+			'text_color' => '#000',
+		],
+		'monument' => [
+			'title' => 'Monument',
+			'sub_title' => 'Matt',
+			'background_color' => '#635F5D',
+			'text_color' => '#fff',
+		],
+	];
+
+	return ($val) ? $data[$val] : $data;
+} 
 
 function fc_state($val ='') {
  

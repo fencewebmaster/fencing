@@ -55,10 +55,13 @@ function get_field_by_slug(custom_fence, slug){
 function calculate_fences( data ) {
     // https://docs.google.com/spreadsheets/d/1Xxh9XsDy96cSQrPgR98rWZ1nwVORVxFL06OKQ8DhMEc/edit?pli=1#gid=0
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
-        tab = $('.fencing-tab.fencing-tab-selected').index(),
+    var i = data?.item != null ? data?.item : $('.fencing-style-item.fsi-selected').index(),
+        tab = data?.tab != null ? data?.tab : $('.fencing-tab.fencing-tab-selected').index(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
+        custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
+        custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
+
         info = fc_data[i];
 
     // Inputs
@@ -85,7 +88,9 @@ function calculate_fences( data ) {
     post_panel = 50;
     no_post = -50;
 
-    C3  = parseInt($('.measurement-box-number').val());  // overall width
+
+    C3 = parseInt($('.measurement-box-number').val());  // overall width
+    C3 = C3 ? C3 :  custom_fence_tab[0].calculateValue;
 
     C4  = $('.left-panel-post.no-post').length ? no_post : 0;    // edit left side
 

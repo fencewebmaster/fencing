@@ -139,16 +139,21 @@ if(isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) && $_SERVER['HTTP_X_REQUESTED_WITH
 
 					<div class="fc-table-rounded-border fc-rounded-top-none fc-mb-2">
 					
-						<table class="fc-table fc-table--colour">
+						<table class="fc-table fc-table--colour project-details--edit">
 							<thead>
 								<tr>
-
 									<td width="100" class="valign-top">Colour</td>
 									<td>
-										<div style="background:<?php echo @$info['color']->code; ?>;color:<?php echo @$info['color']->text_color; ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
+										<?php 
+											$color_value = @$info['color']['value'];
+											$color = fc_color($color_value);
+										?>
+										<input type="hidden" name="color[value]" value="<?php echo $color_value; ?>">
+
+										<div style="background:<?php echo @$color['background_color']; ?>;color:<?php echo @$color['text_color']; ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
 											<br>   
-											<p style="color: <?php echo @$info['color']->text_color; ?>"><strong class="js-color_options-title"><?php echo @$info['color']->title; ?></strong><br />
-											<span class="js-color_options-subtitle"><?php echo @$info['color']->subtitle; ?></span></p>
+											<p style="color: <?php echo @$color['text_color']; ?>"><strong class="js-color_options-title"><?php echo @$color['title']; ?></strong><br />
+											<span class="js-color_options-subtitle"><?php echo @$color['sub_title']; ?></span></p>
 										</div>
 
 									</td>

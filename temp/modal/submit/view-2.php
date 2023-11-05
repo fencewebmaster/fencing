@@ -16,11 +16,11 @@
 
                     <div class="fencing-form-group fc-mb-0">
                         <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
-                            <?php foreach($color_options as $co): ?>
-                            <div class="fc-col fc-mb-1">
-                                <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co['title']; ?>" data-color-code="<?php echo $co['background_color']; ?>" data-color-subtitle="<?php echo $co['sub_title']; ?>" data-slug="<?php echo $co['slug']; ?>" style="background:<?php echo $co['background_color']; ?>;color:<?php echo $co['text_color']; ?>;">
-                                    <p><strong><?php echo $co['title']; ?></strong><br />
-                                    <?php echo $co['sub_title']; ?></p>
+                            <?php foreach(fc_color() as $co_k => $co_v): ?>
+                            <div class="fc-col-3">
+                                <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co_v['title']; ?>" data-color-code="<?php echo $co_v['background_color']; ?>" data-color-subtitle="<?php echo $co_v['sub_title']; ?>" data-slug="<?php echo $co_k; ?>" style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
+                                    <p><strong><?php echo $co_v['title']; ?></strong><br />
+                                    <span><?php echo $co_v['sub_title']; ?></span></p>
                                 </div>
                             </div>
                             <?php endforeach; ?>

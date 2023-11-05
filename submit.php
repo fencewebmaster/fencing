@@ -6,13 +6,13 @@ include('helpers.php');
 
 if( $_POST ) {
     $_SESSION["fc_data"] = $data = $_POST;
-    $_SESSION["fc_data"]['color'] = json_decode($_SESSION["fc_data"]['color']);
+    $_SESSION["fc_data"]['color'] = json_decode($_SESSION["fc_data"]['color'], true);
 }
 
 $color = $_SESSION["fc_data"]['color'];
 
 $custom_fence_data = [
-    'color' => $color->value,
+    'color' => $color['value'],
     'items' => [
       [
         'slug' => 'panel_options+even', 
