@@ -368,8 +368,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     let modal = {
         el : '',
-        content : '.fencing-modal-content',
-        body: '.fencing-modal-body'
+        content : '.fencing-modal-content'
     };
 
     //Button Data Information
@@ -383,7 +382,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     modal.el = $(target);
     modal.content = modal.el.find(modal.content);
-    modal.body = modal.el.find(modal.body);
     FCModal.open(target);
 
     $(this).addClass('fc-btn-active');
@@ -397,9 +395,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     var fields = info?.settings[key]?.fields;
 
-    console.log('fields', fields, typeof fields === "undefined" );
-
-    
     if( typeof fields !== "undefined" ){
 
         $.each(fields, function(k, v){
@@ -509,11 +504,8 @@ function addNotesOrInfo(modal, v) {
 
     var details = v.info;
     var notes = v.notes;
-
-    
     
     if( details || notes ){
-
    
         if( details ) {
             const Item = ({ title, description }) => `<div class="fc-selection-details">
@@ -672,7 +664,10 @@ $(document).on('click', '.btn-fc-calculate', function(){
     custom_fence_tab[0].calculateValue = length;
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
 
-    FENCES.cartItems.init();
+    //Set some delay to make sure the local storage and the html markup are loaded
+    setTimeout(function(){
+        FENCES.cartItems.init();
+    }, 500);
 
     window.onbeforeunload = function() {
         return false;

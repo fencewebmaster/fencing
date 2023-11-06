@@ -23,8 +23,6 @@ let FCModal = {
 
         $(".fencing-btn-modal.fc-btn-active").removeClass('fc-btn-active');
 
-        FENCES.cartItems.init();
-
     },
 
     closeBtn: function() {
