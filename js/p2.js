@@ -12,7 +12,7 @@ function reload_fence_items() {
 
     for (let i = 0; i < items; i++) {
 
-      $('#fc-fence-list').append(`<div id="pp-${i}"><div class="fencing-panel-container"></div></div>`);
+      $('#fc-fence-list').append(`<div id="pp-${i}" class="fencing-display-result"><div class="fencing-panel-container"></div></div>`);
 
        reload_load_fencing_items(i);
     }
