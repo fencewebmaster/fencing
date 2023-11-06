@@ -30,20 +30,23 @@
     .fc-color-options{
         padding: 32px 24px;
         box-sizing: border-box;
+        overflow: hidden;
+
+        @include lg {
+            margin-bottom: 0 !important;
+        }
     
         .fc-col-3{
             width: 31.3%;
             margin-right: 0;
             box-sizing: border-box;
-            padding-left: 0;
-            padding-right: 0;
+            padding: 0;
             margin-right: 2%;
-    
-            @include lg {
+
+            @include md {
                 width: 100%;
                 margin-bottom: 10px;
                 margin-right: 0;
-                padding: 0;
                 float: none;
             }
     
