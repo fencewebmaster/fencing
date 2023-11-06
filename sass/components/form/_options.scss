@@ -32,9 +32,6 @@
         box-sizing: border-box;
         overflow: hidden;
 
-        @include lg {
-            margin-bottom: 0 !important;
-        }
     
         .fc-col-3{
             width: 31.3%;

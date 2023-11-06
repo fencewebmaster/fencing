@@ -3662,11 +3662,6 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
   overflow: hidden;
 }
-@media (max-width: 992px) {
-  .fencing-modal .fc-color-options {
-    margin-bottom: 0 !important;
-  }
-}
 .fencing-modal .fc-color-options .fc-col-3 {
   width: 31.3%;
   margin-right: 0;
