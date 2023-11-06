@@ -69,6 +69,10 @@
     box-sizing: border-box;
     border-right: 0;
 
+    @include md{
+        width: 100%;
+    }
+
     &-area{
         height: 100%;
         cursor: grab;
@@ -112,10 +116,19 @@
     border-radius: 0;
     border-right: 2px solid var(--fc-bright-gray);
 
+    
+
     @include lg{
         padding-left: 24px;
         padding-right: 24px;
         min-width: 119px;
+    }
+
+    @include md{
+        width: 100%;
+        text-align: center;
+        padding-left: 0;
+        padding-right: 0;
     }
 
     &:first-child{

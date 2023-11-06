@@ -66,6 +66,12 @@
     .fencing-modal-body{
         padding: 0;
         width: 100%;
+        box-sizing: border-box;
+
+        @include md {
+            padding-right: 10px;
+            padding-bottom: 30px;
+        }
     }
 
     .body-title:empty{
@@ -256,24 +262,60 @@
         }
     }
 
+    .fc-color-options{
+        padding: 0;
+        margin-bottom: 30px;
+        display: block;
+
+        @include min-lg{
+            display: flex;
+        }
+
+        p strong {
+            @include md {
+                font-size: 14px;
+            }
+        }
+
+        .fc-col{
+            @include min-lg{ 
+                width: 26.6111111111%;
+                margin-right: 2.2222222222%;
+            }
+        }
+
+        .fc-select{
+            height: 65px;
+            @include min-lg{
+                height: 81px;
+            }
+
+            &:after{
+                width: 20px;
+                height: 20px;
+                top: 18px;
+            }
+        }
+    }
+
     .form-tab-4{
         .fc-col-3{
             padding: 0;
             margin-right: pxTopercent(24, 760);
-            margin-bottom: 24px;
+            margin-bottom: pxTopercent(24, 760);
             width: pxTopercent(170, 760);
 
             @include lg{
                 width: 48.4%;
             }
 
-            &:nth-child(2n){
+            &:nth-of-type(2n){
                 @include lg{
                     margin-right: 0 !important;
                 }
             }
 
-            &:nth-child(4n){
+            &:nth-of-type(4n){
                 margin-right: 0;
                 @include lg{
                     margin-right: pxTopercent(24, 760);

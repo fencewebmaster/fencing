@@ -23,11 +23,17 @@ function load_fencing_items() {
         var panel_number = i,
             panel_size = calc.long_panel.length,
             panel_unit = 'mm',
-            data_key = "post_options";
+            data_key = "post_options",
+            panel_option_value = calc.selected_values.panel_option;
+
+            if( panel_option_value.indexOf('full') !== -1 ){
+                panel_option_value = panel_option_value.split('_')[0];
+            } 
 
         var tpl = $('script[data-type="panel_item-'+info.panel_group+'"]').text()
                                                      .replace(/{{data_key}}/gi, center_point)
                                                      .replace(/{{center_point}}/gi, center_point)
+                                                     .replace(/{{panel_value}}/gi, panel_option_value)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
                                                      .replace(/{{panel_number}}/gi, panel_number);    
@@ -75,8 +81,8 @@ function load_fencing_items() {
 
     // $('.fpsn-b:not(:first-child):not(:last-child)').remove();
 
-    $('.fencing-panel-container').prepend('<div class="left_raked-panel raked-panel"></div>');
-    $('.fencing-panel-container').append('<div class="right_raked-panel raked-panel"></div>');
+    $('.fencing-panel-container').prepend('<div data-cart-key="raked-panel" class="left_raked-panel raked-panel"></div>');
+    $('.fencing-panel-container').append('<div data-cart-key="raked-panel" class="right_raked-panel raked-panel"></div>');
 
     update_raked_panels(['left_raked', 'right_raked']);
 
@@ -263,7 +269,7 @@ function load_post_options_first_last_values(custom_fence, info) {
                 if(key === "post_option" ){
                     //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                     //Find the element that matches the condition below and add the class
-                    $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value);
+                    $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value).attr('data-cart-value', value);
                 }
             }
 
@@ -285,7 +291,7 @@ function load_post_options_first_last_values(custom_fence, info) {
 
     // Set default option on right side
     if( side_post != 'right_side' ) {
-        $('.panel-post.post-right').addClass(post_options_default[0].slug);   
+        $('.panel-post.post-right').addClass(post_options_default[0].slug);
     }
 
 }
@@ -296,20 +302,37 @@ function load_post_options_first_last_values(custom_fence, info) {
  * @param {obj} info 
  */
 function load_post_options_all(custom_fence, info) {
+
+    let panel_post = $('.panel-post');
+    let panel_spacing_number = $('.fencing-panel-spacing-number');
+    let exclude_panel_posts = ".post-left, .post-right";
+
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === 'post_options';
     });
 
     if( post_options_filtered_data.length ) {
-        var post_options_setting = post_options_filtered_data[0]?.settings;
-        $('.panel-post:not(.post-left):not(.post-right), .fencing-panel-spacing-number').addClass(post_options_setting[0]?.val);
+
+        //Get the value of Post Option
+        var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
+            return item.key === "post_option";
+        });
+
+        if( typeof post_options_setting !== "undefined" ){
+            panel_post.not(exclude_panel_posts).addClass(post_options_setting.val).attr('data-cart-value', post_options_setting.val);
+            panel_spacing_number.addClass(post_options_setting.val);
+        }
+    
     } else {
+
         // Get default post options
-        var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
+        var post_options_default = info.settings.post_options.fields[0].options.find(function(item) {
             return item.default == true;
         });
 
-        $('.panel-post:not(.post-left):not(.post-right), .fencing-panel-spacing-number').addClass(post_options_default[0].slug);           
+        panel_post.not(exclude_panel_posts).addClass(post_options_default.val);
+        panel_spacing_number.addClass(post_options_default.val);
+
     }
 }
 
@@ -372,8 +395,10 @@ function update_gate(action) {
 
     }
 
-    $('.fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
-                            .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>');
+    $('.fencing-panel-gate')
+        .prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
+        .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
+        .attr('data-cart-value', 1);
 
                       
 }
@@ -614,14 +639,11 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
-    console.log('settings', settings);
-
     settings = mergeSettings(data, settings, 'control_key', modal_key);
 
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
     });
-
     
     filtered_data.push({
         id: i, 
@@ -844,8 +866,14 @@ function submit_fence_planner() {
 
     window.onbeforeunload = function() {}
 
+    //Set some delay to make sure the local storage and the html markup are loaded
+    setTimeout(function(){
+        FENCES.cartItems.init();
+    }, 500);
+
     var set_fc_data = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
+    var cart_items = JSON.parse(localStorage.getItem('cart_items'));
 
     $( ".fencing-tab" ).each(function() {
 
@@ -873,6 +901,8 @@ function submit_fence_planner() {
     var formData = new FormData(form);
 
     formData.set("fences", JSON.stringify(set_fc_data));
+
+    formData.set("cart_items", JSON.stringify(cart_items));
 
     Object.entries(project_plans).forEach(([key, value]) => {
         if (typeof value === 'object') {

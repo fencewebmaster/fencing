@@ -26,6 +26,42 @@
   
 }
 
+.fencing-modal{
+    .fc-color-options{
+        padding: 32px 24px;
+        box-sizing: border-box;
+        overflow: hidden;
+
+    
+        .fc-col-3{
+            width: 31.3%;
+            margin-right: 0;
+            box-sizing: border-box;
+            padding: 0;
+            margin-right: 2%;
+
+            @include md {
+                width: 100%;
+                margin-bottom: 10px;
+                margin-right: 0;
+                float: none;
+            }
+    
+            &::last-child{
+                @include lg{
+                    margin-bottom: 0;
+                }
+            }
+        }
+    
+        .fc-select {
+            padding-left: 36px;	
+        }
+        
+      
+    }
+}
+
 .fc-select {
     border: 2px solid var(--fc-gray);
     cursor: pointer;
