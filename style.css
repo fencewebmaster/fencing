@@ -1794,6 +1794,7 @@ thead.fc-border th:last-child {
 @media (max-width: 768px) {
   .fencing-modal--v2 .fencing-modal-body {
     padding-right: 10px;
+    padding-bottom: 30px;
   }
 }
 .fencing-modal--v2 .body-title:empty {
