@@ -70,22 +70,44 @@ FENCES.cartItems = {
         //Get all cart items
         // Added data-cart-key to identify the items that will appear in cart
         let getItemsByCartKey = document.querySelectorAll('[data-cart-key]');
-        let storedCartItems = JSON.parse(localStorage.getItem('cart_items'));
+
+        //Object that holds the color and cart items
+        //This is the data that will be stored in localstorage and also sent to the server when form is submitted 
         let newCartItems = {
             color: '',
             items: []
         };
         
+        //Iterate all items found with [data-cart-key] attribute
         for( let i = 0; i < getItemsByCartKey.length; i++ ){
 
+            //Get element object
             let el = getItemsByCartKey[i];
+            
+            //A cart item slug consist of two parts, the key and the value
+            //example: `panel_options+even` = `{key}+{value}`
+
+            //Get cart key
             let cartKey = el.getAttribute('data-cart-key');
+
+            //Get cart value
             let cartValue = el.getAttribute('data-cart-value');
+            
+            //Merge the two strings to create an cart item slug
+            //example: `panel_options+even` = `{cartKey}+{cartValue}`
             let modifiedCartKey = `${cartKey}+${cartValue}`;
+
+            //Init an empty object
+            //This will contain the cart item data
             let entry = {};
+
+            //This variable is used to add a check before adding new object to the `newCartItems.items` array
+            //If an object is found in the array, update it. if not, push the new object to array
             let found = false;
             let qty = 1;
 
+
+            //additional condition for some cart items
             if( cartKey === "gate" ){
                 modifiedCartKey = cartKey;
 
@@ -95,26 +117,32 @@ FENCES.cartItems = {
 
             }
 
+            //additional condition for some cart items
+            //for raked_panel, we removed extra characters from the slug
             if( cartKey === "raked_panel" ){
                 //Remove H and W chars
                 modifiedCartKey = modifiedCartKey.replace("H", '').replace("W", '');
             }
 
+            //Update the object `slug` and `qty` property before pushing to the array
             entry.slug = modifiedCartKey;
             entry.qty = qty;
 
-            
+            //Iterate though existing cart items array
+            //This condition will handle the check if the cart item slug already exists in the array
             if( newCartItems.items.length > 0 ){
                 for (let i = 0; i < newCartItems.items.length; i++) {
+                    //We are using the `slug` property to check if the cart item already exists in the array
                     if (newCartItems.items[i].slug === modifiedCartKey) {
+                        //If it exists, increase the quantity by 1
                         newCartItems.items[i].qty += 1;
                         found = true;
-                        console.log('found', found);
                         break;
                     }
                 }
             }
             
+            //If the cart item slug does not exists in array, push/add it into the array
             if( !found && cartValue !== null ){
                 newCartItems.items.push(entry);
             }
