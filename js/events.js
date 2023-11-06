@@ -145,6 +145,7 @@ $(document).on('click', '.fc-move-post', function(){
         var index =  $('#panel-item-0').index()/3;
 
         $('#btn-gate').html('Add Gate');
+        $('.fencing-panel-gate').removeAttr('data-cart-value');
         FCModal.close();
         $('.fc-btn-active').removeClass('fc-btn-active');
 
@@ -367,8 +368,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     let modal = {
         el : '',
-        content : '.fencing-modal-content',
-        body: '.fencing-modal-body'
+        content : '.fencing-modal-content'
     };
 
     //Button Data Information
@@ -382,7 +382,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     modal.el = $(target);
     modal.content = modal.el.find(modal.content);
-    modal.body = modal.el.find(modal.body);
     FCModal.open(target);
 
     $(this).addClass('fc-btn-active');
@@ -396,86 +395,91 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     var fields = info?.settings[key]?.fields;
 
-    $.each(fields, function(k, v){
+    if( typeof fields !== "undefined" ){
 
-        var tpl = $('script[data-type="'+v.type+'"]').text()
-                                                     .replace(/{{field_title}}/gi, v.title)
-                                                     .replace(/{{title}}/gi, v.label)
-                                                     .replace(/{{image}}/gi, v.image)
-                                                     .replace(/{{default}}/gi, v.default)
-                                                     .replace(/{{unit}}/gi, v.unit)
-                                                     .replace(/{{field_name}}/gi, v.slug)
-                                                     .replace(/{{type}}/gi, v.type)
-                                                     .replace(/{{sub_default}}/gi, v?.weight?.default)
-                                                     .replace(/{{sub_unit}}/gi, v?.weight?.unit)
-                                                     .split(/\$\{(.+?)\}/g);
+        $.each(fields, function(k, v){
 
-        modal.content.append(tpl);
+            var tpl = $('script[data-type="'+v.type+'"]').text()
+                                                         .replace(/{{field_title}}/gi, v.title)
+                                                         .replace(/{{title}}/gi, v.label)
+                                                         .replace(/{{image}}/gi, v.image)
+                                                         .replace(/{{default}}/gi, v.default)
+                                                         .replace(/{{unit}}/gi, v.unit)
+                                                         .replace(/{{field_name}}/gi, v.slug)
+                                                         .replace(/{{type}}/gi, v.type)
+                                                         .replace(/{{sub_default}}/gi, v?.weight?.default)
+                                                         .replace(/{{sub_unit}}/gi, v?.weight?.unit)
+                                                         .split(/\$\{(.+?)\}/g);
 
-        if( v.type == 'dropdown_option') {
-
-            $(v.options).each(function(i, o) {
-                $('[name="'+v.slug+'"] select').append($('<option>',{ value: o.slug, text: o.title }));
-                $('[name="'+v.slug+'"] select').attr('data-key', v.key);
-            });
-
-        }
-
-        if( v.type == 'range_option') {
-
-            const Item = ({ image, title, slug, key }) => `
-            <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
-                    <img src="${image}">
-                </div>
-                <p>${title}</p>
-            </div>`;
-
-            modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
-        }
-
-        if( v.type == 'text_option') {
-
-            const Item = ({ title, slug }) => `
-            <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
+            modal.content.append(tpl);
+    
+            if( v.type == 'dropdown_option') {
+    
+                $(v.options).each(function(i, o) {
+                    $('[name="'+v.slug+'"] select').append($('<option>',{ value: o.slug, text: o.title }));
+                    $('[name="'+v.slug+'"] select').attr('data-key', v.key);
+                });
+    
+            }
+    
+            if( v.type == 'range_option') {
+    
+                const Item = ({ image, title, slug, key }) => `
+                <div class="fc-col-4 fc-text-center">
+                    <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
+                        <img src="${image}">
+                    </div>
                     <p>${title}</p>
-                </div>
-            </div>`;
-
-            modal.el.find('[data-field="text_option"] .fc-row').html(v.options.map(Item).join(''));
-        }
-
-        if( v.type == 'image_option') {
-
-            const Item = ({ image, title, extra, slug, key }) => `
-            <div class="fc-col-4 fc-text-center">
-                <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">
-                    <img src="${image}" class="fc-fullwidth">        
-                </div>
-                <p>${title}</p>
-                <p>${extra}</p>
-            </div>`;
-
-            modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
-        }
-
-        addNotesOrInfo(modal, v);
-
-        // GET/SET DEFAULT VALUE
-        var default_value = v.options?.filter(function(item) {
-            return item.default == true;
+                </div>`;
+    
+                modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
+            }
+    
+            if( v.type == 'text_option') {
+    
+                const Item = ({ title, slug }) => `
+                <div class="fc-col-4 fc-text-center">
+                    <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
+                        <p>${title}</p>
+                    </div>
+                </div>`;
+    
+                modal.el.find('[data-field="text_option"] .fc-row').html(v.options.map(Item).join(''));
+            }
+    
+            if( v.type == 'image_option') {
+    
+                const Item = ({ image, title, extra, slug, key }) => `
+                <div class="fc-col-4 fc-text-center">
+                    <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">
+                        <img src="${image}" class="fc-fullwidth">        
+                    </div>
+                    <p>${title}</p>
+                    <p>${extra}</p>
+                </div>`;
+    
+                modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
+            }
+    
+            addNotesOrInfo(modal, v);
+    
+            // GET/SET DEFAULT VALUE
+            var default_value = v.options?.filter(function(item) {
+                return item.default == true;
+            });
+    
+            if( default_value ) {
+                var opt = default_value[0],
+                    tag = $('.fc-form-field').get(0).tagName.toLowerCase();
+    
+                get_field_value(tag, v?.slug, opt?.slug);                        
+            }
+            
+    
         });
 
-        if( default_value ) {
-            var opt = default_value[0],
-                tag = $('.fc-form-field').get(0).tagName.toLowerCase();
-
-            get_field_value(tag, v?.slug, opt?.slug);                        
-        }
-        
-
-    });
+    }
+    
 
     //Get data based on key
     var filtered_data = custom_fence.filter(function(item) {
@@ -500,11 +504,8 @@ function addNotesOrInfo(modal, v) {
 
     var details = v.info;
     var notes = v.notes;
-
-    
     
     if( details || notes ){
-
    
         if( details ) {
             const Item = ({ title, description }) => `<div class="fc-selection-details">
@@ -662,6 +663,11 @@ $(document).on('click', '.btn-fc-calculate', function(){
     custom_fence_tab[0].isCalculate = 1;
     custom_fence_tab[0].calculateValue = length;
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
+
+    //Set some delay to make sure the local storage and the html markup are loaded
+    setTimeout(function(){
+        FENCES.cartItems.init();
+    }, 500);
 
     window.onbeforeunload = function() {
         return false;

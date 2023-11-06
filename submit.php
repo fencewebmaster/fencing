@@ -87,7 +87,9 @@ $custom_fence_data = [
 
 $post_query = array();
 
-$skus = get_product_skus($custom_fence_data);
+$cart_items = json_decode($_SESSION["fc_data"]['cart_items'], true);
+
+$skus = get_product_skus($cart_items);
 
 foreach ($skus as $sku) {
     $post_query[]['sku'] = $sku;
