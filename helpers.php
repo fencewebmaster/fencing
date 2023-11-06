@@ -121,3 +121,70 @@ function get_product_skus($data = array()) {
 	return $skus;
 }
 
+function post_product_skus($cart_items = array()) {
+
+    $skus = get_product_skus($cart_items);
+
+    foreach ($skus as $sku) {
+        $post_query[]['sku'] = $sku;
+    }
+
+    // START - GET PRODUCTS FROM THE STORE
+    $curl = curl_init();
+
+    // An array of cURL options
+    $options = array(
+      CURLOPT_URL => 'https://fencesperth.com?fc_action=get_products',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_SSL_VERIFYPEER => false,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => json_encode($post_query),
+      CURLOPT_HTTPHEADER => array(
+        'Content-Type: application/json'
+      ),
+    );
+
+    // Check if running on localhost
+    if ($_SERVER['HTTP_HOST'] === 'localhost') {
+      // Disable SSL certificate verification for localhost
+      // Error happens when request is coming from a non https source
+      $options[CURLOPT_SSL_VERIFYPEER] = false;
+    }
+
+    curl_setopt_array($curl, $options);
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+
+    $items = json_decode($response);
+    $cart  = array();
+
+    $count = count($items);
+    $rand  = rand(2, $count);
+
+    $custom_fence_products = $_SESSION['custom_fence_products'];
+
+
+    $i=1;
+    foreach ($items as $item) {
+
+        $key = array_search($item->sku, array_column($custom_fence_products, 'sku'));
+
+        $cart['items'][] = [
+            'name'  => $item->name,
+            'sku'   => $item->sku,
+            'stock' => $i == 1 || $i == $rand ? 'low' : $item->stock,
+            'qty'   => $custom_fence_products[$key]['qty'],
+        ];
+      $i++;
+    }
+
+    $_SESSION['fc_cart'] = $cart;
+
+}

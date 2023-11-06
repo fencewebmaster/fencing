@@ -1,6 +1,7 @@
 <?php
 	session_start();
 	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
+    $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
 	if( empty($info) ) {
 		header("Location: ./");
@@ -218,7 +219,7 @@
 										</div>
 										<!-- [END] Label -->
 										<div class="fc-card fc-table-items">          		
-											<?php include('temp/cart-table.php'); ?>
+											<?php include('temp/sections/cart-table.php'); ?>
 										</div>
 
 										<div class="fc-cart-items-btns">

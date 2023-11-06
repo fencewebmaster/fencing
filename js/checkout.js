@@ -216,6 +216,9 @@ $("#paymentFrm").validate({
                 success: function(response) {
                     try {
 
+                        $('[name="action"]').val('update_cart');
+                        $('form').submit();
+                            
                         setTimeout(function() { 
                             $(".fc-table-customer .fc-form-control").css({'color': ''}); 
                             removeSectionOverlay();
@@ -223,10 +226,7 @@ $("#paymentFrm").validate({
                             $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
                             $('.js-project-details-controls').addClass('fc-d-none');
 
-
-                            $.get( "temp/sections/your-project-details.php", function(res){
-                                $(".your-project-details").html(res);
-                            });
+                            $(".your-project-details").html(response);
 
                             window.onbeforeunload = function() {}
 

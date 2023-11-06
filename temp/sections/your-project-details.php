@@ -1,14 +1,5 @@
 <?php 
-if(isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
-	session_start();
-
 	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
-
-	include('../../data/settings.php');
-	include('../fields.php');
-	include('../../helpers.php');
-
-}
 ?>
 <div class="fc-card fc-project-details">
 

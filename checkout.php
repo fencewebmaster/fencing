@@ -115,7 +115,33 @@ if( @$_POST['action'] == 'push_order' ) {
 
 } elseif( @$_POST['action'] == 'update_details' ) {
 
+    /* START UPDATE item list & cart */
+    $color = $_SESSION["fc_data"]['color'];
+
+    if( $_POST['color']['value'] != $color['value'] ) {
+        
+        $custom_fence_data['color'] = $_POST['color']['value'];
+
+        foreach ( $_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
+
+            $custom_fence_data['items'][] = [
+                'slug' => $cart_item['sku'], 
+                'qty'  => $cart_item['qty']
+            ];
+
+        } 
+
+        post_product_skus($custom_fence_data);
+    }
+    /* END UPDATE item list & cart */
+
     $_SESSION["fc_data"] = array_merge($_SESSION["fc_data"], $_POST);
+    
+    include('temp/sections/your-project-details.php');
+    $include = ob_get_contents();
+    ob_end_clean();
+
+    echo $include;
 
 } elseif( @$_POST['action'] == 'update_cart' ) {
  
@@ -124,6 +150,9 @@ if( @$_POST['action'] == 'push_order' ) {
     $post_data = $_POST['cart'];
 
     $cart = $_SESSION['fc_cart'];
+
+    $color = $_SESSION["fc_data"]['color'];
+    $custom_fence_data['color'] = $color['value'];
 
     foreach ( $_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
 
@@ -140,9 +169,10 @@ if( @$_POST['action'] == 'push_order' ) {
         'items' => $cart_items_data, 
     ];
 
+
     $_SESSION['fc_cart'] = $cart_data;
 
-    include('temp/cart-table.php');
+    include('temp/sections/cart-table.php');
     $include = ob_get_contents();
     ob_end_clean();
 
