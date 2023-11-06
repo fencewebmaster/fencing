@@ -66,6 +66,11 @@
     .fencing-modal-body{
         padding: 0;
         width: 100%;
+        box-sizing: border-box;
+
+        @include md {
+            padding-right: 10px;
+        }
     }
 
     .body-title:empty{
