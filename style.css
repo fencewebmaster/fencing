@@ -3657,6 +3657,36 @@ thead.fc-border th:last-child {
   padding-left: 16px;
 }
 
+.fencing-modal .fc-color-options {
+  padding: 32px 24px;
+  box-sizing: border-box;
+}
+.fencing-modal .fc-color-options .fc-col-3 {
+  width: 31.3%;
+  margin-right: 0;
+  box-sizing: border-box;
+  padding-left: 0;
+  padding-right: 0;
+  margin-right: 2%;
+}
+@media (max-width: 992px) {
+  .fencing-modal .fc-color-options .fc-col-3 {
+    width: 100%;
+    margin-bottom: 10px;
+    margin-right: 0;
+    padding: 0;
+    float: none;
+  }
+}
+@media (max-width: 992px) {
+  .fencing-modal .fc-color-options .fc-col-3::last-child {
+    margin-bottom: 0;
+  }
+}
+.fencing-modal .fc-color-options .fc-select {
+  padding-left: 36px;
+}
+
 .fc-select {
   border: 2px solid var(--fc-gray);
   cursor: pointer;
