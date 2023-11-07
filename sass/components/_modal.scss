@@ -4,13 +4,14 @@
         padding: 40px;
         box-sizing: border-box;
 
-        @include sm {
-            height: 100%;
-        }
-
         @include lg{
             padding: 26px 16px;
             border-radius: 16px;
+        }
+
+        @include sm {
+            height: 100%;
+            padding: 26px 6px 26px 16px;
         }
     }
     .fencing-modal-title{
