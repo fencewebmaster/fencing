@@ -70,7 +70,7 @@ $("#fc-download-form").validate({
 
 // localStorage.clear();
 
-if( location.host == 'localhostx' ) {
+if( location.host == 'localhost' ) {
 
     // $('#submit-modal').show();
     // $('#fc-control-modal').show();

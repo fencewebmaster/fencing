@@ -70,7 +70,7 @@ $custom_fence_data = [
         'qty' => 14
       ],
       [
-        'slug' => 'panel options+bracket', 
+        'slug' => 'panel_options+bracket', 
         'qty' => 15
       ],
       [
@@ -86,8 +86,12 @@ $custom_fence_data = [
 
 $post_query = array();
 
+
 $cart_items = json_decode($_SESSION["fc_data"]['cart_items'], true);
+$cart_items['color'] = $color['value'];
 
 post_product_skus($cart_items);
+
+// post_product_skus($custom_fence_data);
 
 // END - GET PRODUCTS FROM THE STORE

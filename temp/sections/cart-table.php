@@ -27,7 +27,11 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                         <span class="fc-item-value"><?php echo @$cart_item['qty']; ?></span>
                         <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control" min="1" required>
                     </td>
-                    <td width="279"><p><strong><?php echo @$cart_item['name']; ?></strong><br /><?php echo @$cart_item['sku']; ?></p></td>
+                    <td width="279">
+                        <p><strong><?php echo @$cart_item['name']; ?></strong><br /><?php echo @$cart_item['sku']; ?></p>
+
+                        <br><small class="fc-text-success"><?php echo @$cart_item['slug']; ?></small>
+                    </td>
                     <!-- <td><?php echo @$cart_item['sku']; ?></td>
                     <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>
                     <td>$<?php echo @$cart_item['trade_price']; ?></td>

@@ -8,13 +8,13 @@ raked_panel+1600x600,IF LEFT OR RIGHT RAKED PANEL,1600H - 600 Step-Up,Raked Pane
 raked_panel+1700x700,IF LEFT OR RIGHT RAKED PANEL,1700H - 700 Step-Up,Raked Panels,49319,CUSTOM-WHITE-49319,CUSTOM-MONUMENT-49319,CUSTOM-CREAM-49319
 raked_panel+1800x600,IF LEFT OR RIGHT RAKED PANEL,1800H - 600 Step-Up,Raked Panels,49320,CUSTOM-WHITE-49320,CUSTOM-MONUMENT-49320,CUSTOM-CREAM-49320
 gate,Number of gates,Gate - 1200H x 970W,Gates,49314,49923,49924,49925
-,,Gate Converter - 1200H,Gate Converters,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B
+gate_converter,,Gate Converter - 1200H,Gate Converter,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B
 panel_post+opt-1,"IF ""Base Plated Posts"" = Number of Posts - STD",Post - 1300L - Base Plated,Post - 1300L - Base Plated,49838,49941,49942,49943
 panel_post+opt-2,"IF ""Cemented In Posts"" = Number of Posts - STD",Post - 1800L - Cemented In,Post - 1800L - Cemented In,49321,49926,49927,49928
 raked_post+opt-1,"IF ""Base Plated Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post - 1900L - Base Plated,Post - 1900L - Base Plated,49896,49947,49948,49949
 raked_post+opt-2,"IF ""Cemented In Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post - 2400L - Cemented In,Post - 2400L - Cemented In,49862,49932,49933,49934
 raked_panel_post+opt-1,"IF ""Base Plated Posts"" = (Post - 1300L - Base Plated) + (Post - 1900L - Base Plated)",Post Covers,Post Covers,49840,49950,49951,49952
-panel options+bracket,panel options,Brackets Set x4,Brackets Set x4,49324 x4,49935 x4,49936 x4,49937 x4
-,Number of swivel brackets,Flexi Bracket x1,Flexi Bracket x1,49830,49830,49830,49830
+panel_options+bracket,panel options,Brackets Set x4,Brackets Set x4,49324 x4,49935 x4,49936 x4,49937 x4
+swivel_bracket,Number of swivel brackets,Flexi Bracket x1,Flexi Bracket x1,49830,49830,49830,49830
 gate_kit,Number of gates,Hinge & Latch Kit,Hinge & Latch Kit,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K
 post_options+opt-2,"IF post_options = ""Cemented In Posts"" = (Post - 1800L - Cemented In) + (Post - 2400L - Cemented In)",Fixing Kit - Dynabolts,Fixing Kit - Dynabolts,4 TIMES 43032,5 TIMES 43032,6 TIMES 43032,7 TIMES 43032

@@ -869,7 +869,7 @@ function submit_fence_planner() {
     //Set some delay to make sure the local storage and the html markup are loaded
     setTimeout(function(){
         FENCES.cartItems.init();
-    }, 500);
+    });
 
     var set_fc_data = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
