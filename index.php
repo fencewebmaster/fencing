@@ -7,7 +7,6 @@
 	include('temp/fields.php');
 	include('helpers.php');
 
-
   //  dd($_SESSION);
 ?>
 

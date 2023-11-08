@@ -93,7 +93,6 @@ function load_csv($file = '') {
     return $rows;
 }
 
-
 function get_product_skus($data = array()) {
 
 	$products = $skus = array();
@@ -123,14 +122,108 @@ function get_product_skus($data = array()) {
 
 function post_product_skus($cart_items = array()) {
 
+
+	/*
+	$cart_items = [
+	    'color' => 'white',
+	    'items' => [
+	      [
+	        'slug' => 'panel_options+even', 
+	        'qty' => 1
+	      ],
+	      [
+	        'slug' => 'panel_options+full', 
+	        'qty' => 2
+	      ],
+	      [
+	        'slug' => 'raked_panel+1300x300', 
+	        'qty' => 3
+	      ],
+	      [
+	        'slug' => 'raked_panel+1400x400', 
+	        'qty' => 4
+	      ],
+	      [
+	        'slug' => 'raked_panel+1500x500', 
+	        'qty' => 5
+	      ],
+	      [
+	        'slug' => 'raked_panel+1600x600', 
+	        'qty' => 6
+	      ],
+	      [
+	        'slug' => 'raked_panel+1700x700', 
+	        'qty' => 7
+	      ],
+	      [
+	        'slug' => 'raked_panel+1800x600', 
+	        'qty' => 8
+	      ],
+	      [
+	        'slug' => 'gate', 
+	        'qty' => 9
+	      ],
+	      [
+	        'slug' => 'panel_post+opt-1', 
+	        'qty' => 10
+	      ],
+	      [
+	        'slug' => 'panel_post+opt-2', 
+	        'qty' => 11
+	      ],
+	      [
+	        'slug' => 'raked_post+opt-1', 
+	        'qty' => 12
+	      ],
+	      [
+	        'slug' => 'raked_post+opt-2', 
+	        'qty' => 13
+	      ],
+	      [
+	        'slug' => 'raked_panel_post+opt-1', 
+	        'qty' => 14
+	      ],
+	      [
+	        'slug' => 'panel options+bracket', 
+	        'qty' => 15
+	      ],
+	      [
+	        'slug' => 'gate_kit', 
+	        'qty' => 16
+	      ],
+	      [
+	        'slug' => 'post_options+opt-2', 
+	        'qty' => 17
+	      ] 
+	    ]
+	];
+	*/
+
+	$items = $cart = array();
+
     $skus = get_product_skus($cart_items);
 
     foreach ($skus as $sku) {
         $post_query[]['sku'] = $sku;
     }
 
+ 	$the_products = load_csv('data/wc-products.csv');
+
+    foreach ($post_query as $query) {
+	
+		$key = array_search($query['sku'], array_column($the_products, 'sku'));
+
+        $items[]  = [
+            'sku'     => $query['sku'],
+            'name'    => $the_products[$key]['name'],
+        ];
+
+    }
+
+
     // START - GET PRODUCTS FROM THE STORE
-    $curl = curl_init();
+	/*    
+	$curl = curl_init();
 
     // An array of cURL options
     $options = array(
@@ -160,10 +253,7 @@ function post_product_skus($cart_items = array()) {
 
     $response = curl_exec($curl);
 
-    curl_close($curl);
-
-    $items = json_decode($response);
-    $cart  = array();
+    curl_close($curl);*/
 
     $count = count($items);
     $rand  = rand(2, $count);
@@ -174,12 +264,12 @@ function post_product_skus($cart_items = array()) {
     $i=1;
     foreach ($items as $item) {
 
-        $key = array_search($item->sku, array_column($custom_fence_products, 'sku'));
+        $key = array_search($item['sku'], array_column($custom_fence_products, 'sku'));
 
         $cart['items'][] = [
-            'name'  => $item->name,
-            'sku'   => $item->sku,
-            'stock' => $i == 1 || $i == $rand ? 'low' : $item->stock,
+            'name'  => $item['name'],
+            'sku'   => $item['sku'],
+            'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
             'qty'   => $custom_fence_products[$key]['qty'],
         ];
       $i++;
