@@ -1736,6 +1736,12 @@ thead.fc-border th:last-child {
     border-radius: 16px;
   }
 }
+@media (max-width: 600px) {
+  .fencing-modal--v2 .fencing-modal-content {
+    height: 100%;
+    padding: 26px 6px 26px 16px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-title {
   padding: 0;
 }
@@ -1772,6 +1778,10 @@ thead.fc-border th:last-child {
   top: 5px;
   font-weight: 500;
 }
+.fencing-modal--v2 .fencing-modal-head {
+  position: relative;
+  z-index: 3;
+}
 .fencing-modal--v2 .fencing-modal-header {
   display: flex;
   align-items: center;
@@ -1790,6 +1800,14 @@ thead.fc-border th:last-child {
   padding: 0;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+}
+@media (max-width: 600px) {
+  .fencing-modal--v2 .fencing-modal-body {
+    height: 100%;
+    max-height: 96%;
+  }
 }
 @media (max-width: 768px) {
   .fencing-modal--v2 .fencing-modal-body {
@@ -1929,6 +1947,12 @@ thead.fc-border th:last-child {
     top: 0;
   }
 }
+@media (max-width: 600px) {
+  .fencing-modal-close {
+    top: -17px;
+    right: 4px;
+  }
+}
 .fencing-modal-close:hover {
   background-color: #fff;
 }
@@ -1974,13 +1998,16 @@ thead.fc-border th:last-child {
 }
 #submit-modal.fencing-modal--v2 .fc-color-options {
   padding: 0;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   display: block;
 }
-@media (min-width: 992px) {
+@media (min-width: 540px) {
   #submit-modal.fencing-modal--v2 .fc-color-options {
     display: flex;
   }
+}
+#submit-modal.fencing-modal--v2 .fc-color-options p strong {
+  font-size: 16px;
 }
 @media (max-width: 768px) {
   #submit-modal.fencing-modal--v2 .fc-color-options p strong {
@@ -1989,6 +2016,12 @@ thead.fc-border th:last-child {
 }
 @media (min-width: 992px) {
   #submit-modal.fencing-modal--v2 .fc-color-options .fc-col {
+    width: 26.6111111111%;
+    margin-right: 2.2222222222%;
+  }
+}
+@media (min-width: 600px) and (max-width: 992px) {
+  #submit-modal.fencing-modal--v2 .fc-color-options .fc-col-3 {
     width: 26.6111111111%;
     margin-right: 2.2222222222%;
   }
@@ -2005,6 +2038,11 @@ thead.fc-border th:last-child {
   width: 20px;
   height: 20px;
   top: 18px;
+}
+@media (min-width: 600px) and (max-width: 992px) {
+  #submit-modal.fencing-modal--v2 .fc-color-options .fc-select:after {
+    top: 14px;
+  }
 }
 #submit-modal.fencing-modal--v2 .form-tab-4 .fc-col-3 {
   padding: 0;
@@ -2032,6 +2070,53 @@ thead.fc-border th:last-child {
 }
 #submit-modal.fencing-modal--v2 .fencing-modal-md {
   max-width: 840px;
+}
+#submit-modal.fencing-modal--v2 .fc-form-plan h2 {
+  font-size: 28px;
+}
+@media (max-width: 992px) {
+  #submit-modal.fencing-modal--v2 .fc-form-plan h2 {
+    text-align: left;
+  }
+}
+#submit-modal.fencing-modal--v2 .fc-form-check.fc-mb-3 {
+  margin-bottom: 5px !important;
+}
+@media (max-width: 600px) {
+  #submit-modal.fencing-modal--v2 .fc-modal-frame {
+    height: 100%;
+    padding-bottom: 30px;
+    box-sizing: border-box;
+  }
+}
+#submit-modal.fencing-modal--v2 .fc-form-check-img p {
+  font-size: 14px;
+}
+@media (max-width: 600px) {
+  #submit-modal.fencing-modal--v2 .fc-form-check-img p {
+    font-size: 13px;
+  }
+}
+@media (max-width: 600px) {
+  #submit-modal.fencing-modal--v2 .fc-form-check-img .fc-form-check {
+    display: block;
+    height: 100px;
+    position: relative;
+    overflow: hidden;
+  }
+}
+@media (max-width: 600px) {
+  #submit-modal.fencing-modal--v2 .fc-form-check-img .fc-rounded {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+@media (max-width: 600px) {
+  #submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img {
+    height: 100%;
+  }
 }
 
 /* Buttons */
