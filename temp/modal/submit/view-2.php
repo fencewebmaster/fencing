@@ -1,4 +1,4 @@
-<div id="submit-modal" class="fencing-modal fencing-modal--v2">
+<div id="submit-modal" class="fencing-modal fencing-modal--v2 fencing-modal--project-plans">
     
     <div class="fc-modal-frame">
 
