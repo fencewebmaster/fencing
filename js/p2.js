@@ -12,7 +12,7 @@ function reload_fence_items() {
 
     for (let i = 0; i < items; i++) {
 
-      $('#fc-fence-list').append(`<div id="pp-${i}" class="fencing-display-result"><div class="fencing-panel-container"></div></div>`);
+      $('#fc-fence-list').append(`<div style="margin:20px 0;font-weight:bold;">SECTION ${i+1}</div> <div id="pp-${i}" class="fc-result"><div class="fencing-panel-container"></div></div>`);
 
        reload_load_fencing_items(i);
     }
@@ -173,7 +173,7 @@ function re_update_gate(action, tab) {
 
             $('#pp-'+tab+' #panel-item-0').before(tpl);
 
-            $('#btn-gate').html('Edit Gate');
+            $('#pp-'+tab+' #btn-gate').html('Edit Gate');
 
         } 
 
@@ -187,12 +187,12 @@ function re_update_gate(action, tab) {
 
             $('#pp-'+tab+' #panel-item-'+placement).after(tpl);    
 
-            $('#btn-gate').html('Edit Gate');
+            $('#pp-'+tab+' #btn-gate').html('Edit Gate');
         }                                             
 
     }
 
-    $('.fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
+    $('#pp-'+tab+' .fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
                             .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>');
 
                       
@@ -308,18 +308,18 @@ function re_update_raked_panels(side, tab) {
     load_post_options_all(custom_fence, info);
 
 
-    $('#pp-'+tab+' .fencing-display-result').css({'padding': ''});
-    if( $('#pp-'+tab+' .raked-panel .fencing-raked-panel').length && $('.fencing-display-result').css('margin-top') != '70px' ) {   
-        $('#pp-'+tab+' .fencing-display-result').css({'padding-top': '30px'});
+    $('#pp-'+tab+' .fc-result').css({'padding': ''});
+    if( $('#pp-'+tab+' .raked-panel .fencing-raked-panel').length && $('.fc-result').css('margin-top') != '70px' ) {   
+        $('#pp-'+tab+' .fc-result').css({'padding-top': '30px'});
     } else {
-        $('#pp-'+tab+' .fencing-display-result').css({'margin-top': ''});        
+        $('#pp-'+tab+' .fc-result').css({'margin-top': ''});        
     }
 
     $('#pp-'+tab+' .raked-panel .fencing-panel-item').css({'width':1200*0.10});
 
 /*    setTimeout(function(){
         $('.fencing-panel-items').css({'justify-content':''});
-        if( $(".fencing-panel-items").prop('scrollWidth') <= $(".fencing-display-result").width() ) {
+        if( $(".fencing-panel-items").prop('scrollWidth') <= $(".fc-result").width() ) {
             $('.fencing-panel-items').css({'justify-content':'center'});
         }
     }, 100);*/

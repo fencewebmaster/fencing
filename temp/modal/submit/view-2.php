@@ -57,7 +57,7 @@
                     <div class="fc-form-plan-action">
                         <button type="submit" 
                             class="btn-fc project-details--update btn-fc-orange fc-text-uppercase fc-w-b">
-                            <b>Done</b>
+                            <b>Update</b>
                         </button>
                     </div>
                     <!-- END FORM MODAL ACTIONS - STEP 4 | SUBMIT -->

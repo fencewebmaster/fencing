@@ -88,9 +88,22 @@ function stripeTokenHandler(token) {
 
 $(document).on('click', '.fc-btn-download-fence', function (e) {    
 
+    const date = new Date();
+
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    // This arrangement can be altered based on how we want the date's format to appear.
+    let currentDate = `${day}-${month}-${year}`;
+
     window.jsPDF = window.jspdf.jsPDF;
 
-    var element = document.getElementById('fencing-display-result');
+    var element = document.getElementById('fc-fence-list');
+
+    // Add loading animation
+    $(this).find('i').removeAttr('class').addClass('fas fa-spinner fa-spin');
+    $(this).attr('disabled', true).find('span').html('Preparing Plans...');
 
     html2canvas(element,
         { 
@@ -100,6 +113,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
             height: 1350,
         }
     ).then(canvas => {
+
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF({
           orientation: 'landscape',
@@ -108,7 +122,12 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
         const pdfWidth = 300;
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
         pdf.addImage(imgData, 'PNG', 13, 0, pdfWidth, pdfHeight);
-        pdf.save('project-plan.pdf');
+        pdf.save(`project-plan-${currentDate}.pdf`);
+
+        // Return to default estate
+        $(this).find('i').removeAttr('class').addClass('fa-solid fa-download');
+        $(this).removeAttr('disabled').find('span').html('Download Plans');
+
     });
     
 
