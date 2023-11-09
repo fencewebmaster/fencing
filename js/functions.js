@@ -26,9 +26,9 @@ function load_fencing_items() {
             data_key = "post_options",
             panel_option_value = calc.selected_values.panel_option;
 
-            if( panel_option_value.indexOf('full') !== -1 ){
-                panel_option_value = panel_option_value.split('_')[0];
-            } 
+        if( panel_option_value.indexOf('full') !== -1 ){
+            panel_option_value = panel_option_value.split('_')[0];
+        } 
 
         var tpl = $('script[data-type="panel_item-'+info.panel_group+'"]').text()
                                                      .replace(/{{data_key}}/gi, center_point)
@@ -322,16 +322,17 @@ function load_post_options_all(custom_fence, info) {
             panel_post.not(exclude_panel_posts).addClass(post_options_setting.val).attr('data-cart-value', post_options_setting.val);
             panel_spacing_number.addClass(post_options_setting.val);
         }
-    
+
     } else {
 
         // Get default post options
         var post_options_default = info.settings.post_options.fields[0].options.find(function(item) {
+
             return item.default == true;
         });
-
-        panel_post.not(exclude_panel_posts).addClass(post_options_default.val);
-        panel_spacing_number.addClass(post_options_default.val);
+      
+        panel_post.not(exclude_panel_posts).addClass(post_options_default.slug);
+        panel_spacing_number.addClass(post_options_default.slug);
 
     }
 }

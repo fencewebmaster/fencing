@@ -28,13 +28,9 @@
                 <div class="fc-col-auto">
                     
                     <ul>
-                        <li>
-                            <div class="fc-mb-1"><small style="font-size:30px;">Preparing:</small></div>
+                        <li class="fc-text-success">
+                            <div class="fc-mb-1"><small style="font-size:30px;">Creating your plan...</small></div>
                         </li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Creating your plan... </li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Calculating your materials...</li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Confirming details...</li>
-                        <li></li>
                     </ul>
 
                 </div>
