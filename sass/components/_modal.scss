@@ -11,7 +11,6 @@
 
         @include sm {
             height: 100%;
-            padding: 26px 6px 26px 16px;
         }
     }
     .fencing-modal-title{
@@ -86,7 +85,7 @@
 
         @include md {
             padding-right: 10px;
-            padding-bottom: 30px;
+            padding-bottom: 0px;
         }
     }
 
@@ -236,11 +235,6 @@
         top: 0;
     }
 
-    @include sm {
-        top: -17px;
-        right: 4px;
-    }
-
     &:hover{
         background-color: #fff;
     }
@@ -256,12 +250,6 @@
 }
 
 #submit-modal.fencing-modal--v2 {
-
-    .fencing-modal-close{
-        @include sm{
-            top: -26px;
-        }
-    }
 
     .fencing-modal-content{
         @include sm{
@@ -297,24 +285,8 @@
     }
 
     .fc-form-plan-action {
-        @include md {            
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            left: 0;
-        }
-
-        button{
-            @include md {
-                border-radius: 0 0 8px 8px;
-            }
-        }
-
         button:last-child{
             margin-right: 16px;
-            @include lg {
-                margin-right: 0;
-            }
         }
     }
 
@@ -368,23 +340,23 @@
     .form-tab-4{
         .fc-col-3{
             padding: 0;
-            margin-right: pxTopercent(24, 760);
-            margin-bottom: pxTopercent(24, 760);
-            width: pxTopercent(170, 760);
+            margin-right: pxTopercent(20, 760);
+            margin-bottom: pxTopercent(20, 760);
+            width: pxTopercent(174, 760);
 
-            @include lg{
+            @media ( max-width: 767px ){
                 width: 48.4%;
             }
 
             &:nth-of-type(2n){
-                @include lg{
+                @media ( max-width: 767px ){
                     margin-right: 0 !important;
                 }
             }
 
             &:nth-of-type(4n){
                 margin-right: 0;
-                @include lg{
+                @media ( max-width: 767px ){
                     margin-right: pxTopercent(24, 760);
                 }
             }
@@ -408,13 +380,7 @@
         margin-bottom: 5px !important;
     }
 
-    .fc-modal-frame{
-        @include sm {
-            height: 100%;
-            padding-bottom: 30px;
-            box-sizing: border-box;
-        }
-    }
+    
 
     .fc-form-check-img {
 
@@ -450,5 +416,47 @@
             }
         }
 
+    }
+
+    .fc-modal-frame{
+        @include lg{
+            padding-bottom: 30px;
+        }
+    }
+
+    &.fencing-modal--project-plans {
+        .fc-form-plan-action {
+            @include md {            
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                left: 0;
+            }
+            button{
+                @include md {
+                    border-radius: 0 0 8px 8px;
+                }
+            }
+        }
+        .fencing-modal-body{
+            @include md {      
+                padding-bottom: 0;
+            }
+        }
+
+        .fc-modal-frame{
+            @include sm {
+                height: auto;
+                padding-bottom: 30px;
+                box-sizing: border-box;
+            }
+        }
+
+        .fencing-modal-close{
+            @include sm {
+                top: -26px;
+                right: 4px;
+            }
+        }
     }
 }
