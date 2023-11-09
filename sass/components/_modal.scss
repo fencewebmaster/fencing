@@ -256,6 +256,25 @@
 }
 
 #submit-modal.fencing-modal--v2 {
+
+    .fencing-modal-close{
+        @include sm{
+            top: -26px;
+        }
+    }
+
+    .fencing-modal-content{
+        @include sm{
+            padding-top: 36px;
+        }
+    }
+
+    .fencing-modal-body{
+        @include md{
+            position: static;
+        }
+    }
+
     .fc-col-half{
         padding-left: 0;
         padding-right: 0;
@@ -276,10 +295,26 @@
     .fc-form-check label{
         margin-left: 3px;
     }
-    .fc-form-plan-action button:last-child{
-        margin-right: 16px;
-        @include lg {
-            margin-right: 0;
+
+    .fc-form-plan-action {
+        @include md {            
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            left: 0;
+        }
+
+        button{
+            @include md {
+                border-radius: 0 0 8px 8px;
+            }
+        }
+
+        button:last-child{
+            margin-right: 16px;
+            @include lg {
+                margin-right: 0;
+            }
         }
     }
 
