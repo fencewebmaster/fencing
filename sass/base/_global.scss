@@ -938,7 +938,11 @@ thead.fc-border th:last-child {
 	font-size: 14px;
 	margin-top: 15px;
 
-	@include lg{
+	@media (max-width: 992px){
+		margin-top: 9px;
+	}
+
+	@media (max-width: 767px){
 		justify-content: center;
 		margin-bottom: 20px;
 		float: none !important;
@@ -954,7 +958,7 @@ thead.fc-border th:last-child {
     justify-content: space-around;	
 	flex-direction: row-reverse;
 
-	@include lg {
+	@include mmd {
 		display: block;
 	}
 
@@ -972,6 +976,7 @@ thead.fc-border th:last-child {
 	&:last-child{
 		@include lg {
 			margin-bottom: 0;
+			margin-right: 20px;
 		}
 	}
 }
