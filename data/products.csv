@@ -15,6 +15,6 @@ raked_post+opt-1,"IF ""Base Plated Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post
 raked_post+opt-2,"IF ""Cemented In Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post - 2400L - Cemented In,Post - 2400L - Cemented In,49862,49932,49933,49934
 raked_panel_post+opt-1,"IF ""Base Plated Posts"" = (Post - 1300L - Base Plated) + (Post - 1900L - Base Plated)",Post Covers,Post Covers,49840,49950,49951,49952
 panel_options+bracket,panel options,Brackets Set x4,Brackets Set x4,49324 x4,49935 x4,49936 x4,49937 x4
-swivel_bracket,Number of swivel brackets,Flexi Bracket x1,Flexi Bracket x1,49830,49830,49830,49830
+flexi_bracket,Number of swivel brackets,Flexi Bracket x1,Flexi Bracket x1,49830,49830,49830,49830
 gate_kit,Number of gates,Hinge & Latch Kit,Hinge & Latch Kit,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K
 post_options+opt-2,"IF post_options = ""Cemented In Posts"" = (Post - 1800L - Cemented In) + (Post - 2400L - Cemented In)",Fixing Kit - Dynabolts,Fixing Kit - Dynabolts,4 TIMES 43032,5 TIMES 43032,6 TIMES 43032,7 TIMES 43032
