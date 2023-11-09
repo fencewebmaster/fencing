@@ -1965,6 +1965,21 @@ thead.fc-border th:last-child {
   color: var(--fc-granite-gray);
 }
 
+@media (max-width: 600px) {
+  #submit-modal.fencing-modal--v2 .fencing-modal-close {
+    top: -26px;
+  }
+}
+@media (max-width: 600px) {
+  #submit-modal.fencing-modal--v2 .fencing-modal-content {
+    padding-top: 36px;
+  }
+}
+@media (max-width: 768px) {
+  #submit-modal.fencing-modal--v2 .fencing-modal-body {
+    position: static;
+  }
+}
 #submit-modal.fencing-modal--v2 .fc-col-half {
   padding-left: 0;
   padding-right: 0;
@@ -1987,6 +2002,19 @@ thead.fc-border th:last-child {
 }
 #submit-modal.fencing-modal--v2 .fc-form-check label {
   margin-left: 3px;
+}
+@media (max-width: 768px) {
+  #submit-modal.fencing-modal--v2 .fc-form-plan-action {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+  }
+}
+@media (max-width: 768px) {
+  #submit-modal.fencing-modal--v2 .fc-form-plan-action button {
+    border-radius: 0 0 8px 8px;
+  }
 }
 #submit-modal.fencing-modal--v2 .fc-form-plan-action button:last-child {
   margin-right: 16px;
@@ -2842,6 +2870,17 @@ thead.fc-border th:last-child {
     width: auto;
     margin-right: 12px;
     padding: 12px 24px;
+  }
+}
+@media (max-width: 768px) {
+  .fencing-panel-controls .btn-fc {
+    width: 49%;
+    margin-right: 2%;
+  }
+}
+@media (max-width: 768px) {
+  .fencing-panel-controls .btn-fc:nth-child(2n) {
+    margin-right: 0;
   }
 }
 .fencing-panel-controls div {

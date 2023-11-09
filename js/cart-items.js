@@ -37,35 +37,6 @@ FENCES.cartItems = {
 
     },
 
-    add_color_value: function(array){
-
-        try {
-
-            // Retrieve data from local storage
-            const projectPlans = localStorage.getItem('project-plans');
-
-            if( projectPlans === null ){
-                return array;
-            }
-
-            // Convert the string back to an array using JSON.parse
-            const projectPlansArray = JSON.parse(projectPlans);
-            
-            console.log('projectPlans', projectPlans);
-
-            let colorValue = projectPlansArray.color.value;
-            
-            array.color = colorValue;
-
-        } catch (error) {
-            // Handle errors
-            console.error('Error occurred while getting cart_items:', error);
-        }
-
-        return array;
-
-    },
-
     process: function() {   
         //Get all cart items
         // Added data-cart-key to identify the items that will appear in cart
@@ -74,7 +45,6 @@ FENCES.cartItems = {
         //Object that holds the color and cart items
         //This is the data that will be stored in localstorage and also sent to the server when form is submitted 
         let newCartItems = {
-            color: '',
             items: []
         };
         
@@ -148,7 +118,6 @@ FENCES.cartItems = {
             }
         }
         
-        newCartItems = FENCES.cartItems.add_color_value(newCartItems);
         newCartItems = FENCES.cartItems.apply_conditions(newCartItems);
 
         console.log('newCartItems', newCartItems);
