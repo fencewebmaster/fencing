@@ -511,6 +511,17 @@
             padding: 12px 24px;
         }
 
+        @include md { 
+            width: 49%;
+            margin-right: 2%;
+        }
+
+        &:nth-child(2n){
+            @include md { 
+                margin-right: 0;
+            }
+        }
+
     }
     div{
         display: none;
