@@ -293,10 +293,17 @@ $("#paymentFrm").validate({
                             }, 2000 * i);
 
                         });
-                        
+                
                         // Add clear fence planner local storage here
-                        let keysToRemove = ["project-plans", "countdown-date"];
+                        let keysToRemove = ["project-plans", "countdown-date", "cart_items"];
                         keysToRemove.forEach(k =>localStorage.removeItem(k))
+
+                        // Clear all stored items start with custom_fence-
+                        Object.entries(localStorage).forEach(([key, value]) => {
+                          if (key.startsWith("custom_fence-")) {
+                            localStorage.removeItem(key);
+                          }
+                        });
 
                         location.href = info.url;
 
