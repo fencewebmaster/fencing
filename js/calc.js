@@ -90,7 +90,7 @@ function calculate_fences( data ) {
 
 
     C3 = parseInt($('.measurement-box-number').val());  // overall width
-    C3 = C3 ? C3 :  custom_fence_tab[0].calculateValue;
+    C3 = C3 ? C3 :  custom_fence_tab[0]?.calculateValue;
 
     C4  = $('.left-panel-post.no-post').length ? no_post : 0;    // edit left side
 

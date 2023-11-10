@@ -104,19 +104,12 @@ if( location.host == 'localhostx' ) {
 
 
 
-/*var fc_selected_item = 1,
+var fc_selected_item = 1,
     fc_selected_tab = 0;
 
 function reload_fence_items() {
 
-    var a = {};
-    Object.entries(localStorage).forEach(([key, value]) => {
-      if (key.startsWith("custom_fence-")) {
-        a[key] = value;
-      }
-    });
-
-    var items = Object.keys(a).length / 2;
+    var items = localStorage.getItem('custom_fence-section');
 
     for (let i = 1; i < items; i++) {
         add_new_fence_section();
@@ -125,6 +118,3 @@ function reload_fence_items() {
 
 }
 reload_fence_items();
-
-
-*/

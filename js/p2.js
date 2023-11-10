@@ -1,18 +1,11 @@
 
 function reload_fence_items() {
 
-    var a = {};
-    Object.entries(localStorage).forEach(([key, value]) => {
-      if (key.startsWith("custom_fence-")) {
-        a[key] = value;
-      }
-    });
-
-    var items = Object.keys(a).length / 2;
+    var items = localStorage.getItem('custom_fence-section');
 
     for (let i = 0; i < items; i++) {
 
-      $('#fc-fence-list').append(`<div style="margin:20px 0;font-weight:bold;">SECTION ${i+1}</div> <div id="pp-${i}" class="fc-result"><div class="fencing-panel-container"></div></div>`);
+      $('#fc-fence-list').append(`<div style="margin:30px 0;font-weight:bold;">SECTION ${i+1}</div> <div id="pp-${i}" style="margin-bottom:60px;"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>`);
 
        reload_load_fencing_items(i);
     }
@@ -28,7 +21,7 @@ function reload_load_fencing_items(tab) {
 
     var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
         custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
-        i = custom_fence_tab[0].style,
+        i = custom_fence_tab[0]?.style,
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
@@ -120,7 +113,7 @@ function reload_load_fencing_items(tab) {
 
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);    
 
-        $('.fencing-offcut').css({'width':calc.offcut_panel.length*0.10});
+        $('#pp-'+tab+' .fencing-offcut').css({'width':calc.offcut_panel.length*0.10});
     }
 
     //updateFirstFencingPost();
@@ -135,7 +128,7 @@ function re_update_gate(action, tab) {
 
     var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
         custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
-        i = custom_fence_tab[0].style,
+        i = custom_fence_tab[0]?.style,
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
@@ -204,7 +197,7 @@ function re_update_raked_panels(side, tab) {
 
     var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
         custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
-        i = custom_fence_tab[0].style,
+        i = custom_fence_tab[0]?.style,
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
@@ -309,8 +302,9 @@ function re_update_raked_panels(side, tab) {
 
 
     $('#pp-'+tab+' .fc-result').css({'padding': ''});
-    if( $('#pp-'+tab+' .raked-panel .fencing-raked-panel').length && $('.fc-result').css('margin-top') != '70px' ) {   
-        $('#pp-'+tab+' .fc-result').css({'padding-top': '30px'});
+
+    if( $('#pp-'+tab+' .raked-panel .fencing-raked-panel').length && $('#pp-'+tab+' .fc-result').css('margin-top') != '70px' ) {   
+        $('#pp-'+tab+' .fc-result').css({'padding-top': '40px'});
     } else {
         $('#pp-'+tab+' .fc-result').css({'margin-top': ''});        
     }

@@ -780,6 +780,7 @@ function add_new_fence_section() {
 
     $('.fencing-tab').removeClass('fencing-tab-selected');
     $('.fencing-tab:last-child').addClass('fencing-tab-selected');
+
     $('.fencing-tab:last-child').find('.fencing-tab-number').html( $('.fencing-tab').length );
 
     $('.measurement-box-number').val(FENCES.defaultValues.measurement);
@@ -791,6 +792,9 @@ function add_new_fence_section() {
     $('.fc-tab-title, .fc-tab-subtitle').html('');
     $('.js-fc-form-step').hide();
     $('.fsi-selected').removeClass('fsi-selected');
+
+    // Store section count
+    localStorage.setItem('custom_fence-section', $('.fencing-tab').length);
 }
 
 function restore_items( remove_index ) {
@@ -1275,6 +1279,9 @@ function deleteSectionTab() {
     }
 
     $('.is-deleting').remove();
+
+    // Store section count
+    localStorage.setItem('custom_fence-section', $('.fencing-tab').length);
 }
 
 function refreshSectionTabIndex() {
