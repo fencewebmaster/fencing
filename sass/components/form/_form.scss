@@ -75,17 +75,43 @@
 }
 .fc-tab-control .fc-section-step {
     display: flex;
-    height: 52px;
 
     .btn-fc{
 	    margin-right: 16px;
         text-align: center;
-        @include lg {
+        margin-bottom: 0;
+        @include xs {
             margin-right: 0;
+        }
+        @include md {
+            margin-bottom: 16px;
+        }
+        &:last-child{
+            margin-right: 0;
+            @include md {
+                margin-bottom: 0;
+            }
+        }
+    }
+    
+    .btn-fc-orange,
+    .btn-delete-fence,
+    .fencing-tab-add{
+        @include lg{
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+        @media ( min-width: 768px ) and ( max-width: 860px ){
+            font-size: 11px !important;
+        }
+
+        @include mmd {
+            font-size: 14px !important;
         }
     }
 
-    @include lg {
+    @include mmd {
         display: block;
         height: auto;
     }
@@ -111,4 +137,6 @@
     .fc-col-half{
         width: calc( 50% - 0px);
     }
+
+    
 }

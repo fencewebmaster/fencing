@@ -955,11 +955,12 @@ thead.fc-border th:last-child {
 
 .fc-form-plan-action {
     display: flex;
-    justify-content: space-around;	
+    justify-content: space-between;	
 	flex-direction: row-reverse;
 
 	@include mmd {
-		display: block;
+		display: flex;
+		flex-direction: column-reverse;
 	}
 
 }
@@ -969,14 +970,25 @@ thead.fc-border th:last-child {
 	letter-spacing: 1px;
 	height: 52px;
 
-	@include lg {
-		margin-bottom: 16px;
+	&:not(.fc-btn-next){
+		margin-left: 16px;
+		@include md {
+			margin-top: 16px;
+			margin-left: 0;
+			margin-bottom: 0;
+		}
 	}
 
 	&:last-child{
 		@include lg {
 			margin-bottom: 0;
-			margin-right: 20px;
+		}
+	}
+}
+#place_order-section .form-tab-4 {
+	.fc-form-plan-action button {
+		&:not(.fc-btn-next){
+			margin-left: 0;
 		}
 	}
 }
