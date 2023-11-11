@@ -107,8 +107,8 @@
 				</div>
 
 
-				<div class="js-project-details-controls fc-d-none">
-					<button type="button" data-action="update" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
+				<div class="js-project-details-controls project-details-controls fc-d-none">
+					<button type="button" data-action="update" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" >
 						<i class="fa-solid fa-pencil"></i>
 						<span>Update</span>
 					</button>

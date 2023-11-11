@@ -3888,4 +3888,37 @@ thead.fc-border th:last-child {
   }
 }
 
+.project-details-controls:not(.fc-d-none) {
+  overflow: hidden;
+}
+@media (max-width: 992px) {
+  .project-details-controls:not(.fc-d-none) {
+    display: flex;
+    margin-bottom: 30px;
+  }
+}
+@media (max-width: 480px) {
+  .project-details-controls:not(.fc-d-none) {
+    display: block;
+  }
+}
+.project-details-controls:not(.fc-d-none) .btn-fc {
+  margin-left: 16px;
+}
+@media (max-width: 992px) {
+  .project-details-controls:not(.fc-d-none) .btn-fc {
+    margin: 0 20px 0 0;
+  }
+}
+@media (max-width: 480px) {
+  .project-details-controls:not(.fc-d-none) .btn-fc {
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+}
+.project-details-controls:not(.fc-d-none) .btn-fc:last-child {
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
 /*# sourceMappingURL=style.css.map */
