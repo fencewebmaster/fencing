@@ -6,13 +6,19 @@
         width: pxTopercent(255, 1080);
         margin-right: pxTopercent(24, 1080);
 
-        @include lg {
+        @media ( max-width: 800px ){
+            width: pxTopercent(250, 800);
+            margin-right: pxTopercent(20, 800);
+        }
+
+        @include sm {
             width: 100%;
             margin-bottom: 20px;
             margin-right: 0;
         }
 
-        &::last-child{
+        &:last-child{
+            margin-right: 0;
             @include lg{
                 margin-bottom: 0;
             }

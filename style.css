@@ -3810,15 +3810,24 @@ thead.fc-border th:last-child {
   width: 23.6111111111%;
   margin-right: 2.2222222222%;
 }
-@media (max-width: 992px) {
+@media (max-width: 800px) {
+  .fc-color-options .fc-col-3 {
+    width: 31.25%;
+    margin-right: 2.5%;
+  }
+}
+@media (max-width: 600px) {
   .fc-color-options .fc-col-3 {
     width: 100%;
     margin-bottom: 20px;
     margin-right: 0;
   }
 }
+.fc-color-options .fc-col-3:last-child {
+  margin-right: 0;
+}
 @media (max-width: 992px) {
-  .fc-color-options .fc-col-3::last-child {
+  .fc-color-options .fc-col-3:last-child {
     margin-bottom: 0;
   }
 }
