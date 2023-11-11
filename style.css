@@ -1178,12 +1178,13 @@ thead.fc-border th:last-child {
 
 .fc-form-plan-action {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   flex-direction: row-reverse;
 }
 @media (max-width: 767px) {
   .fc-form-plan-action {
-    display: block;
+    display: flex;
+    flex-direction: column-reverse;
   }
 }
 
@@ -1193,16 +1194,24 @@ thead.fc-border th:last-child {
   letter-spacing: 1px;
   height: 52px;
 }
-@media (max-width: 992px) {
-  .fc-form-plan-action button {
-    margin-bottom: 16px;
+.fc-form-plan-action button:not(.fc-btn-next) {
+  margin-left: 16px;
+}
+@media (max-width: 768px) {
+  .fc-form-plan-action button:not(.fc-btn-next) {
+    margin-top: 16px;
+    margin-left: 0;
+    margin-bottom: 0;
   }
 }
 @media (max-width: 992px) {
   .fc-form-plan-action button:last-child {
     margin-bottom: 0;
-    margin-right: 20px;
   }
+}
+
+.form-tab-4 .fc-form-plan-action button:not(.fc-btn-next) {
+  margin-left: 0;
 }
 
 .fc-form-plan h2 {
@@ -1695,19 +1704,29 @@ thead.fc-border th:last-child {
 
 .fc-tab-control .fc-section-step {
   display: flex;
-  height: 52px;
 }
 .fc-tab-control .fc-section-step .btn-fc {
   margin-right: 16px;
   text-align: center;
+  margin-bottom: 0;
 }
 @media (max-width: 480px) {
   .fc-tab-control .fc-section-step .btn-fc {
     margin-right: 0;
   }
 }
+@media (max-width: 768px) {
+  .fc-tab-control .fc-section-step .btn-fc {
+    margin-bottom: 16px;
+  }
+}
 .fc-tab-control .fc-section-step .btn-fc:last-child {
   margin-right: 0;
+}
+@media (max-width: 768px) {
+  .fc-tab-control .fc-section-step .btn-fc:last-child {
+    margin-bottom: 0;
+  }
 }
 @media (max-width: 992px) {
   .fc-tab-control .fc-section-step .btn-fc-orange,
@@ -1989,6 +2008,11 @@ thead.fc-border th:last-child {
   color: var(--fc-granite-gray);
 }
 
+@media (max-width: 768px) {
+  #submit-modal.fencing-modal--v2 .fencing-modal-content {
+    padding-bottom: 56px;
+  }
+}
 @media (max-width: 600px) {
   #submit-modal.fencing-modal--v2 .fencing-modal-content {
     padding-top: 36px;
@@ -2022,8 +2046,20 @@ thead.fc-border th:last-child {
 #submit-modal.fencing-modal--v2 .fc-form-check label {
   margin-left: 3px;
 }
-#submit-modal.fencing-modal--v2 .fc-form-plan-action button:last-child {
-  margin-right: 16px;
+@media (max-width: 992px) {
+  #submit-modal.fencing-modal--v2 .fc-form-plan-action {
+    justify-content: space-between;
+  }
+}
+@media (max-width: 768px) {
+  #submit-modal.fencing-modal--v2 .fc-form-plan-action button {
+    margin-left: 0;
+  }
+}
+@media (max-width: 992px) {
+  #submit-modal.fencing-modal--v2 .fc-form-plan-action .fc-btn-next {
+    margin-bottom: 0;
+  }
 }
 #submit-modal.fencing-modal--v2 .fc-color-options {
   padding: 0;

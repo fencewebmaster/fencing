@@ -75,17 +75,22 @@
 }
 .fc-tab-control .fc-section-step {
     display: flex;
-    height: 52px;
 
     .btn-fc{
 	    margin-right: 16px;
         text-align: center;
+        margin-bottom: 0;
         @include xs {
             margin-right: 0;
         }
-
+        @include md {
+            margin-bottom: 16px;
+        }
         &:last-child{
             margin-right: 0;
+            @include md {
+                margin-bottom: 0;
+            }
         }
     }
     
@@ -132,4 +137,6 @@
     .fc-col-half{
         width: calc( 50% - 0px);
     }
+
+    
 }

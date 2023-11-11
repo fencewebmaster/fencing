@@ -252,6 +252,9 @@
 #submit-modal.fencing-modal--v2 {
 
     .fencing-modal-content{
+        @include md{
+            padding-bottom: 56px;
+        }
         @include sm{
             padding-top: 36px;
         }
@@ -285,8 +288,19 @@
     }
 
     .fc-form-plan-action {
-        button:last-child{
-            margin-right: 16px;
+        @include lg{
+            justify-content: space-between;
+        }
+
+        button{
+            @include md {
+                margin-left: 0;
+            }
+        }
+        .fc-btn-next{
+            @include lg{
+                margin-bottom: 0;
+            }
         }
     }
 
