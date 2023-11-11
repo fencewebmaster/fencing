@@ -3169,9 +3169,17 @@ thead.fc-border th:last-child {
   display: flex;
   position: relative;
 }
-@media (max-width: 992px) {
+@media (max-width: 480px) {
   .fencing-measurement-box {
     display: block;
+  }
+}
+.fencing-measurement-box .btn-fc {
+  margin-top: 0;
+}
+@media (max-width: 480px) {
+  .fencing-measurement-box .btn-fc {
+    margin-top: 8px;
   }
 }
 .fencing-measurement .fc-input-container {

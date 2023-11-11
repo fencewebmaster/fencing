@@ -4,8 +4,16 @@
     &-box {
         display: flex;
         position: relative;
-        @include lg{
+        @include xs{
             display: block;
+        }
+
+        .btn-fc{
+            margin-top: 0;
+
+            @include xs{
+                margin-top: 8px;
+            }
         }
     }
 
