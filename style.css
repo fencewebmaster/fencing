@@ -3598,7 +3598,7 @@ thead.fc-border th:last-child {
 .fc-cart-items-btns {
   display: flex;
 }
-@media (max-width: 992px) {
+@media (max-width: 480px) {
   .fc-cart-items-btns {
     display: block;
   }
@@ -3620,6 +3620,12 @@ thead.fc-border th:last-child {
 @media (max-width: 992px) {
   .fc-cart-items-btns .btn-fc:last-child {
     margin-bottom: 0 !important;
+  }
+}
+@media (max-width: 1024px) {
+  .fc-cart-items-btns .btn-fc.fc-btn-md {
+    padding-left: 5px;
+    padding-right: 5px;
   }
 }
 .fc-cart-items-btns .btn-fc--live-support {
