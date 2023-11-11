@@ -80,12 +80,33 @@
     .btn-fc{
 	    margin-right: 16px;
         text-align: center;
-        @include lg {
+        @include xs {
+            margin-right: 0;
+        }
+
+        &:last-child{
             margin-right: 0;
         }
     }
+    
+    .btn-fc-orange,
+    .btn-delete-fence,
+    .fencing-tab-add{
+        @include lg{
+            padding-left: 5px;
+            padding-right: 5px;
+        }
 
-    @include lg {
+        @media ( min-width: 768px ) and ( max-width: 860px ){
+            font-size: 11px !important;
+        }
+
+        @include mmd {
+            font-size: 14px !important;
+        }
+    }
+
+    @include mmd {
         display: block;
         height: auto;
     }

@@ -1701,12 +1701,37 @@ thead.fc-border th:last-child {
   margin-right: 16px;
   text-align: center;
 }
-@media (max-width: 992px) {
+@media (max-width: 480px) {
   .fc-tab-control .fc-section-step .btn-fc {
     margin-right: 0;
   }
 }
+.fc-tab-control .fc-section-step .btn-fc:last-child {
+  margin-right: 0;
+}
 @media (max-width: 992px) {
+  .fc-tab-control .fc-section-step .btn-fc-orange,
+  .fc-tab-control .fc-section-step .btn-delete-fence,
+  .fc-tab-control .fc-section-step .fencing-tab-add {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
+@media (min-width: 768px) and (max-width: 860px) {
+  .fc-tab-control .fc-section-step .btn-fc-orange,
+  .fc-tab-control .fc-section-step .btn-delete-fence,
+  .fc-tab-control .fc-section-step .fencing-tab-add {
+    font-size: 11px !important;
+  }
+}
+@media (max-width: 767px) {
+  .fc-tab-control .fc-section-step .btn-fc-orange,
+  .fc-tab-control .fc-section-step .btn-delete-fence,
+  .fc-tab-control .fc-section-step .fencing-tab-add {
+    font-size: 14px !important;
+  }
+}
+@media (max-width: 767px) {
   .fc-tab-control .fc-section-step {
     display: block;
     height: auto;
