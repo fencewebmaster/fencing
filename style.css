@@ -1210,7 +1210,7 @@ thead.fc-border th:last-child {
   }
 }
 
-.form-tab-4 .fc-form-plan-action button:not(.fc-btn-next) {
+#place_order-section .form-tab-4 .fc-form-plan-action button:not(.fc-btn-next) {
   margin-left: 0;
 }
 
