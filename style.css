@@ -1197,7 +1197,7 @@ thead.fc-border th:last-child {
 .fc-form-plan-action button:not(.fc-btn-next) {
   margin-left: 16px;
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .fc-form-plan-action button:not(.fc-btn-next) {
     margin-top: 16px;
     margin-left: 0;
@@ -1212,6 +1212,11 @@ thead.fc-border th:last-child {
 
 #place_order-section .form-tab-4 .fc-form-plan-action button:not(.fc-btn-next) {
   margin-left: 0;
+}
+@media (max-width: 768px) {
+  #place_order-section #submit-modal.fencing-modal--v2 .fencing-modal-content {
+    padding-bottom: 56px;
+  }
 }
 
 .fc-form-plan h2 {
@@ -2008,11 +2013,6 @@ thead.fc-border th:last-child {
   color: var(--fc-granite-gray);
 }
 
-@media (max-width: 768px) {
-  #submit-modal.fencing-modal--v2 .fencing-modal-content {
-    padding-bottom: 56px;
-  }
-}
 @media (max-width: 600px) {
   #submit-modal.fencing-modal--v2 .fencing-modal-content {
     padding-top: 36px;
@@ -2051,7 +2051,7 @@ thead.fc-border th:last-child {
     justify-content: space-between;
   }
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   #submit-modal.fencing-modal--v2 .fc-form-plan-action button {
     margin-left: 0;
   }

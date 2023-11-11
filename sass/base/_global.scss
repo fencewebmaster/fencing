@@ -972,7 +972,7 @@ thead.fc-border th:last-child {
 
 	&:not(.fc-btn-next){
 		margin-left: 16px;
-		@include md {
+		@include mmd {
 			margin-top: 16px;
 			margin-left: 0;
 			margin-bottom: 0;
@@ -985,11 +985,22 @@ thead.fc-border th:last-child {
 		}
 	}
 }
-#place_order-section .form-tab-4 {
-	.fc-form-plan-action button {
-		&:not(.fc-btn-next){
-			margin-left: 0;
+#place_order-section {
+	.form-tab-4 {
+		.fc-form-plan-action button {
+			&:not(.fc-btn-next){
+				margin-left: 0;
+			}
 		}
+	}
+	#submit-modal.fencing-modal--v2{
+
+		.fencing-modal-content{
+			@include md{
+				padding-bottom: 56px;
+			}
+		}
+
 	}
 }
 .fc-form-plan {
