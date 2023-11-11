@@ -2085,12 +2085,6 @@ thead.fc-border th:last-child {
     margin-right: 2.2222222222%;
   }
 }
-@media (min-width: 600px) and (max-width: 992px) {
-  #submit-modal.fencing-modal--v2 .fc-color-options .fc-col-3 {
-    width: 26.6111111111%;
-    margin-right: 2.2222222222%;
-  }
-}
 #submit-modal.fencing-modal--v2 .fc-color-options .fc-select {
   height: 65px;
 }
@@ -3889,7 +3883,7 @@ thead.fc-border th:last-child {
   padding: 0;
   margin-right: 2%;
 }
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .fencing-modal .fc-color-options .fc-col-3 {
     width: 100%;
     margin-bottom: 10px;
@@ -3898,7 +3892,7 @@ thead.fc-border th:last-child {
   }
 }
 @media (max-width: 992px) {
-  .fencing-modal .fc-color-options .fc-col-3::last-child {
+  .fencing-modal .fc-color-options .fc-col-3:last-child {
     margin-bottom: 0;
   }
 }
