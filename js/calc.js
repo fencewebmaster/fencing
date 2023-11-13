@@ -94,9 +94,14 @@ function calculate_fences( data ) {
 
     C4  = $('.left-panel-post.no-post').length ? no_post : 0;    // edit left side
 
-
     panel_options_data = get_field_options(custom_fence, info, 'panel_options');
-    C5  = panel_options_data[0]?.size.width;   // panel options
+
+
+    if( Array.isArray(panel_options_data) ){
+        panel_options_data = panel_options_data[0];
+    }
+
+    C5  = panel_options_data?.size.width;   // panel options
 
     if( C5 == undefined ) {
         panel_options_data = get_field_by_slug(info.settings.panel_options.fields[0].options, 'even');
@@ -183,6 +188,7 @@ function calculate_fences( data ) {
     E24 = D23<1 ? (C7<0 ? -1 : 0) : 0;
 
     C19 =  E19 < 1 ? 0 : 1;
+    
 
     // C20 = C19;
     C20 = (panel_options_data?.slug == 'even' || panel_options_data?.slug == undefined) ? C17 : C19;
@@ -213,6 +219,8 @@ function calculate_fences( data ) {
     }
 
 
+
+
     offcut_panel_count = C20;
     offcut_panel_length = isNaN(D20) ? 0 : Math.round(D20);
 
@@ -232,10 +240,7 @@ function calculate_fences( data ) {
         console.log('offcut_panel', offcut_panel_count, offcut_panel_length);
         console.log('gate', gate_count, gate_width);
     */
-    
-    if( Array.isArray(panel_options_data) ){
-        panel_options_data = panel_options_data[0];
-    }
+
 
     data = {
         'full_panel' : {
@@ -273,7 +278,7 @@ function calculate_fences( data ) {
             'width' : right_raked_panel_width,
         },
         'selected_values': {
-            'panel_option': panel_options_data.slug
+            'panel_option': panel_options_data?.slug
         }
     }
 
