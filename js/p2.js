@@ -14,6 +14,31 @@ function reload_fence_items() {
 }
 reload_fence_items();
 
+function load_center_point() {
+
+    var first = `<div class="fc-center-point fc-first-c-p">
+        <span class="fc-div-c-p"></span>
+        <span class="fc-start-c-p">25</span>
+        2460<br>
+        Centers
+    </div>`;
+
+    var middle = `<div class="fc-center-point">
+        <span class="fc-div-c-p"></span>
+        2460<br>
+        Centers
+    </div>`;
+
+    var last = `<div class="fc-center-point fc-last-c-p">
+        <span class="fc-div-c-p"></span>
+        <span class="fc-div-c-p"></span>
+        <span class="fc-end-c-p">25</span>
+        2460<br>
+        Centers
+    </div>`;
+   
+}
+load_center_point();
 
 
 function reload_load_fencing_items(tab) {

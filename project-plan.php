@@ -168,10 +168,10 @@
 						</div>
 						<!-- [END] Label -->
 							
+							<?php // include 'data/plan-item.php'; ?>
+
 							<div>
-								<div id="fc-fence-list">
-									<?php // include 'data/plan-item.php'; ?>
-								</div>
+								<div id="fc-fence-list"></div>
 							</div>
 
 						</div>

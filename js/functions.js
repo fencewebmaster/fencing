@@ -418,7 +418,8 @@ function update_custom_fence_style_item() {
     var i = $('.fencing-style-item.fsi-selected').index(),
         info = fc_data[i];
 
-    mesurement = $('.measurement-box-number').val() + ' mm';
+    mesurement = $('.measurement-box-number').val();
+    mesurement = mesurement ? mesurement + ' mm' : '';
 
     $('.fencing-tab-selected').find('.ftm-title').html( 'SECTION' ); // info['name']
     $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement );
@@ -594,9 +595,9 @@ function update_custom_fence_tab() {
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
 
     mesurement = $('.measurement-box-number').val();
-    mesurement = parseInt(mesurement).toLocaleString();
+    mesurement = mesurement ? parseInt(mesurement).toLocaleString() + ' mm' : '';
 
-    $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement + ' mm' );
+    $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement );
 
     $('.fc-tab-title').html('SECTION ' + (tab+1) );
     $('.fc-tab-subtitle').html( mesurement + ' - ' + info['title']);
