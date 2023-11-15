@@ -1799,6 +1799,9 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 .fencing-modal-title {
   padding: 0;
 }
+.fencing-modal--v2 .fencing-modal-title__marker {
+  color: var(--fc-brand-primary);
+}
 .fencing-modal--v2 .fencing-modal-area {
   margin-bottom: 49px;
 }

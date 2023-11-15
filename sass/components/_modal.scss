@@ -15,6 +15,10 @@
     }
     .fencing-modal-title{
         padding: 0;
+
+        &__marker{
+            color: var(--fc-brand-primary);
+        }
     }
     .fencing-modal-area{
         margin-bottom: 49px;
