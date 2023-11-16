@@ -267,7 +267,7 @@ a div {
      transform: translate(-50%, -50%);
   */
   width: 90%;
-  max-width: 640px;
+  max-width: 688px;
   border-radius: 20px;
 }
 
@@ -779,7 +779,7 @@ a.fc-tab-active {
 
 .fencing-offcut > div {
   padding: 3px;
-  color: #D4112F;
+  color: var(--fc-brand-primary);
   border: 1px solid;
   background: #FFEEEE;
   border-radius: 7px;
@@ -1103,7 +1103,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-move-post[data-move=delete] p span {
-  color: #D4112F;
+  color: var(--fc-brand-primary);
 }
 
 .fencing-btn-modal {
@@ -1796,6 +1796,9 @@ thead.fc-border th:last-child {
     height: 100%;
   }
 }
+.fencing-modal--v2 .fencing-form-group:last-child {
+  margin-bottom: 0;
+}
 .fencing-modal--v2 .fencing-modal-title {
   padding: 0;
 }
@@ -1804,10 +1807,14 @@ thead.fc-border th:last-child {
 }
 .fencing-modal--v2 .fencing-modal-area {
   margin-bottom: 49px;
+  padding: 15px 24px 24px;
+  border-radius: 16px;
+  border: 2px solid #F67925;
 }
 @media (max-width: 992px) {
   .fencing-modal--v2 .fencing-modal-area {
     margin-bottom: 19px;
+    padding: 17px 24px 24px;
   }
 }
 .fencing-modal--v2 .fencing-modal-area:last-child {
@@ -1835,6 +1842,11 @@ thead.fc-border th:last-child {
   top: 5px;
   font-weight: 500;
 }
+@media (max-width: 992px) {
+  .fencing-modal--v2 .fencing-modal-area[data-field=range_option], .fencing-modal--v2 .fencing-modal-area[data-field=image_option] {
+    padding-bottom: 10px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-head {
   position: relative;
   z-index: 3;
@@ -1843,9 +1855,9 @@ thead.fc-border th:last-child {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0 16px;
+  padding: 0 0 13px;
   border-bottom: 1px solid var(--fc-bright-gray);
-  margin-bottom: 24px;
+  margin-bottom: 18px;
   position: relative;
 }
 @media (max-width: 992px) {
@@ -1879,15 +1891,21 @@ thead.fc-border th:last-child {
   border-width: 1px;
   border-radius: 8px;
   transition: border 0.2s ease;
-  padding: 0;
   overflow: hidden;
+}
+.fencing-modal--v2 .fc-select[data-key=post_options] {
+  padding: 8px;
+  background-color: #EEEEEE;
+}
+.fencing-modal--v2 .fc-select[data-key=post_options] img {
+  border-radius: 8px;
 }
 .fencing-modal--v2 .fc-select:after {
   width: 24px;
   height: 24px;
   box-sizing: border-box;
-  top: 8px;
-  right: 12px;
+  top: 16px;
+  right: 16px;
 }
 .fencing-modal--v2 [name=panel_option] .fc-select:after {
   top: 50%;
@@ -1905,7 +1923,7 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 [type=range_option] [class*=fc-col],
 .fencing-modal--v2 [type=image_option] [class*=fc-col] {
   width: 172px;
-  margin-right: 3.9285714286%;
+  margin-right: 3.5971223022%;
 }
 .fencing-modal--v2 [type=range_option] [class*=fc-col]:last-child,
 .fencing-modal--v2 [type=image_option] [class*=fc-col]:last-child {
@@ -1921,8 +1939,12 @@ thead.fc-border th:last-child {
   .fencing-modal--v2 [type=range_option] [class*=fc-col],
   .fencing-modal--v2 [type=image_option] [class*=fc-col] {
     width: 46%;
-    margin-bottom: 4px;
+    margin-bottom: 14px;
   }
+}
+.fencing-modal--v2 [type=range_option] .fc-select,
+.fencing-modal--v2 [type=image_option] .fc-select {
+  margin-bottom: 0;
 }
 .fencing-modal--v2 .fencing-modal-notes {
   padding: 0;
@@ -1994,7 +2016,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-modal-close {
-  top: -10px;
+  top: 3px;
   right: 0;
   background-color: #fff;
   border-color: var(--fc-granite-gray);

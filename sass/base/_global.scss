@@ -110,7 +110,7 @@
     transform: translate(-50%, -50%);
 	*/
     width: 90%;
-    max-width: 640px;
+    max-width: 688px;
     border-radius: 20px;
 }
 .fencing-modal-lg {
@@ -584,7 +584,7 @@ a.fc-tab-active {
 }
 .fencing-offcut > div {
 	padding: 3px;
-	color: #D4112F;
+	color: var(--fc-brand-primary);
 	border: 1px solid;
 	background: #FFEEEE;
     border-radius: 7px;
@@ -875,7 +875,7 @@ thead.fc-border th:last-child {
 	font-size: 16px;
 }
 .fc-move-post[data-move="delete"] p span {
-	color: #D4112F;	
+	color: var(--fc-brand-primary);	
 }
 
 .fencing-btn-modal {
