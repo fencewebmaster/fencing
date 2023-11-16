@@ -457,6 +457,35 @@
         }
 
         .fc-empty-img{
+            font-weight: 700;
+            overflow: hidden;
+            position: relative;
+
+            &:before{
+                content: "";
+                width: 2px;
+                height: 150%;
+                background-color: #AAAAAA;
+                position: absolute;
+                transform: rotate(45deg);
+            }
+
+            &:after{
+                content: "";
+                width: 2px;
+                height: 150%;
+                background-color: #AAAAAA;
+                position: absolute;
+                transform: rotate(-45deg);
+            }
+
+            span{
+                background-color: #F5F5F5;
+                padding: 5px 0;
+                position: relative;
+                z-index: 2;
+            }
+
             @include sm {
                 height: 100%;
             }

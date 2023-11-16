@@ -329,7 +329,11 @@ a div {
   position: absolute;
   bottom: 10px;
   right: 10px;
+  width: 16px;
+  height: 16px;
 }
+
+
 .fc-form-check-img .fc-rounded {
   border-radius: 8px 8px 0 0 !important;
   height: 170px;
@@ -568,7 +572,7 @@ a.fc-tab-active {
   font-size: 16px;
   font-weight: 500;
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .fc-dropdown_option select {
@@ -2189,6 +2193,33 @@ thead.fc-border th:last-child {
     left: 50%;
     transform: translate(-50%, -50%);
   }
+}
+#submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img {
+  font-weight: 700;
+  overflow: hidden;
+  position: relative;
+}
+#submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img:before {
+  content: "";
+  width: 2px;
+  height: 150%;
+  background-color: #AAAAAA;
+  position: absolute;
+  transform: rotate(45deg);
+}
+#submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img:after {
+  content: "";
+  width: 2px;
+  height: 150%;
+  background-color: #AAAAAA;
+  position: absolute;
+  transform: rotate(-45deg);
+}
+#submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img span {
+  background-color: #F5F5F5;
+  padding: 5px 0;
+  position: relative;
+  z-index: 2;
 }
 @media (max-width: 600px) {
   #submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img {
