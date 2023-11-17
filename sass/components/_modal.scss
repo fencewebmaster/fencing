@@ -13,14 +13,28 @@
             height: 100%;
         }
     }
+
+    .fencing-form-group{
+        &:last-child{
+            margin-bottom: 0;
+        }
+    }
     .fencing-modal-title{
         padding: 0;
+
+        &__marker{
+            color: var(--fc-brand-primary);
+        }
     }
     .fencing-modal-area{
         margin-bottom: 49px;
+        padding: 15px 24px 24px;
+        border-radius: 16px;
+        border: 2px solid #F67925;
 
         @include lg{
             margin-bottom: 19px;
+            padding: 17px 24px 24px;
         }
 
         &:last-child{
@@ -53,6 +67,14 @@
                 }
             }
         }
+
+        &[data-field="range_option"],
+        &[data-field="image_option"]{
+            @include lg {
+                padding-bottom: 10px;
+            }
+        }
+
     }
     .fencing-modal-head{
         position: relative;
@@ -62,9 +84,9 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 0 16px;
+        padding: 0 0 13px;
         border-bottom: 1px solid var(--fc-bright-gray);
-        margin-bottom: 24px;
+        margin-bottom: 18px;
         position: relative;
 
         @include lg {
@@ -97,15 +119,23 @@
         border-width: 1px;
         border-radius: 8px;
         transition: border .2s ease;
-        padding: 0;
         overflow: hidden;
+        
+        &[data-key=post_options]{
+            padding: 8px;
+            background-color: #EEEEEE;
+
+            img{
+                border-radius: 8px;
+            }
+        }
 
         &:after{
             width: 24px;
             height: 24px;
             box-sizing: border-box;
-            top: 8px;
-            right: 12px;
+            top: 16px;
+            right: 16px;
         }
     }
 
@@ -125,7 +155,7 @@
         }
         [class*="fc-col"]{
             width: 172px;
-            margin-right: pxTopercent(22, 560);
+            margin-right: pxTopercent(20, 556);
 
             &:last-child{
                 margin-right: 0;
@@ -139,8 +169,12 @@
 
             @include lg {
                 width: 46%;
-                margin-bottom: 4px;
+                margin-bottom: 14px;
             }
+        }
+
+        .fc-select{
+            margin-bottom: 0;
         }
     }
 
@@ -226,7 +260,7 @@
 }
 
 .fencing-modal-close{
-   top: -10px;
+   top: 3px;
     right: 0;
     background-color: #fff;
     border-color: var(--fc-granite-gray);
@@ -333,6 +367,7 @@
 
         .fc-select{
             height: 65px;
+
             @include min-lg{
                 height: 81px;
             }
@@ -422,6 +457,35 @@
         }
 
         .fc-empty-img{
+            font-weight: 700;
+            overflow: hidden;
+            position: relative;
+
+            &:before{
+                content: "";
+                width: 2px;
+                height: 150%;
+                background-color: #AAAAAA;
+                position: absolute;
+                transform: rotate(45deg);
+            }
+
+            &:after{
+                content: "";
+                width: 2px;
+                height: 150%;
+                background-color: #AAAAAA;
+                position: absolute;
+                transform: rotate(-45deg);
+            }
+
+            span{
+                background-color: #F5F5F5;
+                padding: 5px 0;
+                position: relative;
+                z-index: 2;
+            }
+
             @include sm {
                 height: 100%;
             }

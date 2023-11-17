@@ -17,8 +17,8 @@
             <div class="fc-form-check-img fc-form-check-empty fc-rounded">
                 <label class="fc-form-check">
                     <div class="fc-empty-img">
-                        Nothing Extra<br>
-                        Just Fencing
+                        <span>Nothing Extra<br>
+                        Just Fencing</span>
                     </div>
                     <input type="radio" name="nothing_extra" value="nothing">
                 </label>

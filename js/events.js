@@ -401,8 +401,15 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
         $.each(fields, function(k, v){
 
+            let marker = '';
+
+            if( v.marker !== undefined && v.marker !== "" ){
+                marker = `<span class="fencing-modal-title__marker">${v.marker})</span> `;
+            }
+
             var tpl = $('script[data-type="'+v.type+'"]').text()
                                                          .replace(/{{field_title}}/gi, v.title)
+                                                         .replace(/{{marker}}/gi, marker)
                                                          .replace(/{{title}}/gi, v.label)
                                                          .replace(/{{image}}/gi, v.image)
                                                          .replace(/{{default}}/gi, v.default)
