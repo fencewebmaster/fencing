@@ -316,10 +316,10 @@ $(document).on('click', '.fencing-style-item', function() {
 
 $(document).on('click', '.js-btn-delete-fence', function(){
 
+    $(this).attr('disabled', 'disabled');
+
     let getActiveTab = $('.fencing-tab-selected');
     let getActiveTabIndex = getActiveTab.index();
-
-    hideDeleteSectionBtn();
 
     stopSectionDeletion();
 
@@ -330,6 +330,8 @@ $(document).on('click', '.js-btn-delete-fence', function(){
     deleteLocalStorageEntry();
     
     refreshLocalStorage(getActiveTabIndex);
+
+    hideDeleteSectionBtn();
 
 });
 

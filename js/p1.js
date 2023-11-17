@@ -102,19 +102,39 @@ if( location.host == 'localhostx' ) {
 } 
 
 
-
-
-var fc_selected_item = 1,
-    fc_selected_tab = 0;
-
 function reload_fence_items() {
 
-    var items = localStorage.getItem('custom_fence-section');
+    var items = localStorage.getItem('custom_fence-section') ?? 1;
 
-    for (let i = 1; i < items; i++) {
-        add_new_fence_section();
+    for (let i = 1; i <= items; i++) {
+
+        var index = i-1;
+
+        var tab = `<div class="fencing-tab fencing-tab-selected fc-d-none">
+                <div class="fencing-tab-name">
+                    <span class="ftm-title">SECTION</span> <span class="fencing-tab-number">${i}</span>
+                    <div class="ftm-measurement"></div>
+                </div>
+            </div>`;
+
+        $('.fencing-tab-container-area').append(tab);
+
+        $('.fencing-tab').removeClass('fencing-tab-selected');
+        $('.fencing-tab:last-child').addClass('fencing-tab-selected');
+
+        var  custom_fence_tabs = localStorage.getItem('custom_fence-'+index);
+        const data_tabs = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
+        mesurement = data_tabs[0]?.calculateValue ? parseInt(data_tabs[0]?.calculateValue).toLocaleString() + ' ' + FENCES.defaultValues.unit : '';
+
+        $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement );
+        $('.js-btn-delete-fence').show();
+        $('.js-fc-form-step').hide();
+
     }
 
+    setTimeout(function(){
+        $('.fencing-tab.fencing-tab-selected').click();
+    }, 100);
 
 }
 reload_fence_items();

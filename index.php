@@ -78,17 +78,8 @@
             <div class="fencing-tabs-area">
                 <div class="fencing-tabs fc-row-flex">
                 
-                <div class="fencing-tab-container js-fencing-tab-container fc-row-flex">
-                    
-                    <div class="fencing-tab-container-area js-fencing-tab-container-area fc-row-flex">
-                        <div class="fencing-tab fencing-tab-selected fc-d-none">
-                            <div class="fencing-tab-name">
-                                <span class="ftm-title">SECTION</span> <span class="fencing-tab-number">1</span>
-                                <div class="ftm-measurement">11000 mm</div>
-                            </div>
-                        </div>
-                    </div>
-
+                <div class="fencing-tab-container js-fencing-tab-container fc-row-flex">            
+                    <div class="fencing-tab-container-area js-fencing-tab-container-area fc-row-flex"></div>
                 </div>
 
                 <a href="#" class="fencing-tab-add fc-d-none">
