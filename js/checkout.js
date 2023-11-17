@@ -203,6 +203,49 @@ $("#paymentFrm").validate({
                 }
             });
 
+        } else if( action == 'update_project_details' ) {
+
+            var pdBtnVisible = $('.project-details-controls button').is(':visible');
+
+            $(".fc-table-customer .fc-form-control").css({'color': '#4caf50'}); 
+
+            $.ajax({
+                url: 'checkout.php', 
+                type: "POST",  
+                data: formData,
+                beforeSend: function(){
+                    loadSectionOverlay('update_details-section');
+                },
+                headers: {},
+                contentType: false,  
+                cache: false,         
+                processData:false,    
+                success: function(response) {
+                    try {
+
+
+                        setTimeout(function() { 
+                            $(".fc-table-customer .fc-form-control").css({'color': ''}); 
+                            removeSectionOverlay();
+  
+                            $(".your-project-details").html(response);
+
+                            if( pdBtnVisible ) {
+
+                                $('.fc-btn-edit[data-action="edit"]').click();
+                                
+                            }
+
+                            window.onbeforeunload = function() {}
+
+                        } , 500);
+
+                    } catch(err){
+
+                    } 
+                }
+            });
+                
         } else if( action == 'update_details' ) {
 
             $('.fc-table-customer td').each(function(){
@@ -335,7 +378,7 @@ $(document).on('click', ".fc-btn-edit", function (e) {
     let _action = _this.attr('data-action');
 
     if( _action == 'edit' ) {
-
+        $('.project-details--edit').toggleClass('project-details--edit project-details--editable');
         $('.fc-project-details .fc-form-group, .fc-btn-reset').show();
         $('.fc-project-details table span:not([class^="js-"])').hide();
 
@@ -352,16 +395,16 @@ $(document).on('click', ".fc-btn-edit", function (e) {
 
 });
 
-$(document).on('click', '.project-details--edit', function(){
+$(document).on('click', '.project-details--editable', function(){
     $('#submit-modal').show();
-    restoreFormData();
+    restoreFormData();        
 });
 
 // PROJECT DETAILS SECTION
 $(document).on('click', ".project-details--update", function (e) {
     e.preventDefault();
 
-    $('[name="action"]').val('update_details');
+    $('[name="action"]').val('update_project_details');
     $('form').submit();
     $('#submit-modal').hide();
 });

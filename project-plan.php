@@ -105,7 +105,7 @@
                         </div>
 					</a>
 
-					<a href=".?step=4" class="fencing-tab fc-d-none">
+					<a href=".?tab=2" class="fencing-tab fc-d-none">
                         <div class="fencing-tab-name">
                             <span class="ftm-title">Project Options</span> 
                         </div>
@@ -199,7 +199,7 @@
 								bottom: 0;
 								z-index: 2;
 							}	
-							.project-details--edit:hover {
+							.project-details--editable:hover {
 								cursor: pointer;
 								background: #f6f6f6;
 							}
@@ -362,7 +362,8 @@
 <!-- Config -->
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
-var setcountDownDate = "<?php echo date('M d, Y H:i:s', strtotime('+3 hours')); ?>";	
+var setcountDownDate = "<?php echo date('M d, Y H:i:s', strtotime('+3 hours')); ?>";
+var base_url = '<?php echo base_url(); ?>';	
 </script>
 
 <!-- Required Libraries -->
