@@ -536,6 +536,14 @@
             margin-right: 2%;
         }
 
+        @include sm{
+            padding: 12px 8px;
+        }
+
+        @media ( max-width: 340px ){
+            padding: 12px 3px;
+        }
+
         &:nth-child(2n){
             @include md { 
                 margin-right: 0;
