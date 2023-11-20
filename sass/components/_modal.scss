@@ -270,6 +270,10 @@
         display: flex;
         flex-wrap: wrap;
 
+        @include md{
+            display: block;
+        }
+
         .fc-select{
             height: 40px;
             border-radius: 8px;
@@ -290,9 +294,23 @@
                 width: calc(50% - 8px);
             }
 
+            @include md{
+                width: 100%;
+            }
+
             &:nth-child(2n){
                 margin-right: 0;
             }
+        }
+
+        p strong{
+            display: block;
+        }
+    }
+
+    [data-field="text_option"] {
+        .fencing-modal-body{
+            margin-bottom: 10px;
         }
     }
 

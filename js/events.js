@@ -455,10 +455,10 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     
             if( v.type == 'text_option') {
     
-                const Item = ({ title, slug }) => `
+                const Item = ({ title, slug, desc }) => `
                 <div class="fc-col-4 fc-text-center">
                     <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
-                        <p>${title}</p>
+                        <p>${title}<strong>${desc ?? ''}</strong></p>
                     </div>
                 </div>`;
     

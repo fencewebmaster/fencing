@@ -2034,6 +2034,11 @@ thead.fc-border th:last-child {
   display: flex;
   flex-wrap: wrap;
 }
+@media (max-width: 768px) {
+  .fencing-modal--v2 [type=text_option] {
+    display: block;
+  }
+}
 .fencing-modal--v2 [type=text_option] .fc-select {
   height: 40px;
   border-radius: 8px;
@@ -2055,8 +2060,19 @@ thead.fc-border th:last-child {
     width: calc(50% - 8px);
   }
 }
+@media (max-width: 768px) {
+  .fencing-modal--v2 [type=text_option] .fc-col-4 {
+    width: 100%;
+  }
+}
 .fencing-modal--v2 [type=text_option] .fc-col-4:nth-child(2n) {
   margin-right: 0;
+}
+.fencing-modal--v2 [type=text_option] p strong {
+  display: block;
+}
+.fencing-modal--v2 [data-field=text_option] .fencing-modal-body {
+  margin-bottom: 10px;
 }
 
 .fencing-modal-close {
