@@ -516,6 +516,14 @@
             }
         }
 
+        &.fc-btn-active{
+            color: #fff;
+            border-color: var(--fc-princeton-orange);
+            span{
+                color: #fff;
+            }
+        }
+
         @include lg {
             display: inline-block;
             width: auto;
@@ -553,6 +561,7 @@
             position: relative;
             top: -1px;
         }
+        &.fc-btn-active:before,
         &:hover:before{
             @media ( min-width: 1024px ){
                 background-image: url(img/btn-arrow-white.png);
@@ -574,6 +583,7 @@
             position: relative;
             top: -1px;
         }
+        &.fc-btn-active:after,
         &:hover:after{
             @media ( min-width: 1024px ){
                 background-image: url(img/btn-arrow-white.png);

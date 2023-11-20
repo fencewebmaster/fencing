@@ -833,7 +833,7 @@ a.fc-tab-active {
   border: 1px solid #DDDDDD;
   border-bottom: 0;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .fc-card-body {
@@ -3070,6 +3070,13 @@ thead.fc-border th:last-child {
     margin-bottom: 0 !important;
   }
 }
+.fencing-panel-controls .btn-fc.fc-btn-active {
+  color: #fff;
+  border-color: var(--fc-princeton-orange);
+}
+.fencing-panel-controls .btn-fc.fc-btn-active span {
+  color: #fff;
+}
 @media (max-width: 992px) {
   .fencing-panel-controls .btn-fc {
     display: inline-block;
@@ -3105,7 +3112,7 @@ thead.fc-border th:last-child {
   top: -1px;
 }
 @media (min-width: 1024px) {
-  .fencing-panel-controls #btn-left_side:hover:before {
+  .fencing-panel-controls #btn-left_side.fc-btn-active:before, .fencing-panel-controls #btn-left_side:hover:before {
     background-image: url(img/btn-arrow-white.png);
   }
 }
@@ -3123,7 +3130,7 @@ thead.fc-border th:last-child {
   top: -1px;
 }
 @media (min-width: 1024px) {
-  .fencing-panel-controls #btn-right_side:hover:after {
+  .fencing-panel-controls #btn-right_side.fc-btn-active:after, .fencing-panel-controls #btn-right_side:hover:after {
     background-image: url(img/btn-arrow-white.png);
   }
 }
