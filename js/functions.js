@@ -22,7 +22,7 @@ function load_fencing_items() {
 
         var panel_number = i,
             panel_size = calc.long_panel.length,
-            panel_unit = 'mm',
+            panel_unit = FENCES.defaultValues.unit,
             data_key = "post_options",
             panel_option_value = calc.selected_values.panel_option;
 
@@ -54,7 +54,7 @@ function load_fencing_items() {
 
         var panel_number = i,
             panel_size = calc.short_panel.length,
-            panel_unit = 'mm';
+            panel_unit = FENCES.defaultValues.unit;
 
         var tpl = $('script[data-type="short_panel_item-'+info.panel_group+'"]').text()
                                                      .replace(/{{center_point}}/gi, center_point)
@@ -363,7 +363,7 @@ function update_gate(action) {
     var calc = calculate_fences();
 
     var panel_size = calc.gate.length,
-        panel_unit = 'mm',
+        panel_unit = FENCES.defaultValues.unit,
         gate_size  = calc.gate.length;
 
     if( action == 'add' || action == 'edit' ) {
@@ -419,7 +419,8 @@ function update_custom_fence_style_item() {
         info = fc_data[i],
         controlsContainer = '.fencing-panel-controls';
 
-    mesurement = $('.measurement-box-number').val() + ' mm';
+    mesurement = $('.measurement-box-number').val();
+    mesurement = mesurement ? mesurement + ' ' + FENCES.defaultValues.unit : '';
 
     $('.fencing-tab-selected').find('.ftm-title').html( 'SECTION' ); // info['name']
     $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement );
@@ -610,9 +611,9 @@ function update_custom_fence_tab() {
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
 
     mesurement = $('.measurement-box-number').val();
-    mesurement = parseInt(mesurement).toLocaleString();
+    mesurement = mesurement ? parseInt(mesurement).toLocaleString() + ' mm' : '';
 
-    $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement + ' mm' );
+    $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement );
 
     $('.fc-tab-title').html('SECTION ' + (tab+1) );
     $('.fc-tab-subtitle').html( mesurement + ' - ' + info['title']);
@@ -752,7 +753,7 @@ function update_custom_fence_gate() {
         'placement' :  placement,
         'index' : $('.fencing-panel-gate').index(),
         'size' : 800,
-        'unit' : 'mm'
+        'unit' : FENCES.defaultValues.unit
     }
 
     var filtered_data = data.filter(function(item) {
@@ -1481,10 +1482,12 @@ function hideDeleteSectionBtn() {
     let _remaining_tabs = $(FENCES.el.tabArea).children().length;
     let _delete_btn = $('.js-btn-delete-fence');
 
-    if ( _remaining_tabs <= 2 ){
+
+    if ( _remaining_tabs == 1 ){
         _delete_btn.hide();
     }
 
+    _delete_btn.removeAttr('disabled');
 }
 
 /**

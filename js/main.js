@@ -5,7 +5,8 @@ var FENCES = FENCES || {};
 FENCES = {
     //default values
     defaultValues: {
-        measurement: 11000
+        measurement: '',
+        unit: 'mm',
     },
     activeSetting: '',
     el:  {

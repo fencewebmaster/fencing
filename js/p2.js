@@ -5,7 +5,10 @@ function reload_fence_items() {
 
     for (let i = 0; i < items; i++) {
 
-      $('#fc-fence-list').append(`<div style="margin:30px 0;font-weight:bold;">SECTION ${i+1}</div> <div id="pp-${i}" style="margin-bottom:60px;"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>`);
+      $('#fc-fence-list').append(`<div style="margin:30px 0;font-weight:bold;">SECTION ${i+1}<a href="${base_url}?section=${i+1}" data-action="edit" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
+                                    <i class="fa-solid fa-pencil"></i>
+                                    <span>Edit Details</span>
+                                </a></div> <div id="pp-${i}" style="margin-bottom:60px;"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>`);
 
        reload_load_fencing_items(i);
     }
@@ -14,6 +17,31 @@ function reload_fence_items() {
 }
 reload_fence_items();
 
+function load_center_point() {
+
+    var first = `<div class="fc-center-point fc-first-c-p">
+        <span class="fc-div-c-p"></span>
+        <span class="fc-start-c-p">25</span>
+        2460<br>
+        Centers
+    </div>`;
+
+    var middle = `<div class="fc-center-point">
+        <span class="fc-div-c-p"></span>
+        2460<br>
+        Centers
+    </div>`;
+
+    var last = `<div class="fc-center-point fc-last-c-p">
+        <span class="fc-div-c-p"></span>
+        <span class="fc-div-c-p"></span>
+        <span class="fc-end-c-p">25</span>
+        2460<br>
+        Centers
+    </div>`;
+   
+}
+load_center_point();
 
 
 function reload_load_fencing_items(tab) {

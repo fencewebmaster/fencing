@@ -102,19 +102,57 @@ if( location.host == 'localhostx' ) {
 } 
 
 
-
-
-var fc_selected_item = 1,
-    fc_selected_tab = 0;
-
 function reload_fence_items() {
 
-    var items = localStorage.getItem('custom_fence-section');
+    var items = localStorage.getItem('custom_fence-section') ?? 1;
+    var section = getSearchParams('section');
+    var tab = getSearchParams('tab');
+    var form = getSearchParams('form');
 
-    for (let i = 1; i < items; i++) {
-        add_new_fence_section();
+    for (let i = 1; i <= items; i++) {
+
+        var index = i-1;
+
+        var sectionTab = `<div class="fencing-tab fencing-tab-selected fc-d-none fc-section-${i}">
+                <div class="fencing-tab-name">
+                    <span class="ftm-title">SECTION</span> <span class="fencing-tab-number">${i}</span>
+                    <div class="ftm-measurement"></div>
+                </div>
+            </div>`;
+
+        $('.fencing-tab-container-area').append(sectionTab);
+
+        $('.fencing-tab').removeClass('fencing-tab-selected');
+
+        if(section) { 
+            $('.fc-section-'+section).addClass('fencing-tab-selected');
+        } else {
+            $('.fencing-tab:last-child').addClass('fencing-tab-selected');
+        }
+
+        var  custom_fence_tabs = localStorage.getItem('custom_fence-'+index);
+        const data_tabs = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
+        mesurement = data_tabs[0]?.calculateValue ? parseInt(data_tabs[0]?.calculateValue).toLocaleString() + ' ' + FENCES.defaultValues.unit : '';
+
+        $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement );
+        $('.js-btn-delete-fence').show();
+        $('.js-fc-form-step').hide();
+
     }
 
-
+    if( tab ) {
+        $('.fc-section-step').hide();
+        $('[data-tab="'+tab+'"]').show();
+    } else {
+        setTimeout(function(){
+            $('.fencing-tab.fencing-tab-selected').click();
+        }, 100);
+    }
+    
+    if( tab == 2 && form ) {
+        $('#submit-modal').show();
+        $('.fc-form-plan').hide();
+        $('[data-formtab="'+form+'"]').show();
+    }
 }
 reload_fence_items();

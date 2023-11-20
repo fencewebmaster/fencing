@@ -113,7 +113,7 @@ if( @$_POST['action'] == 'push_order' ) {
 
     echo json_encode($data);
 
-} elseif( @$_POST['action'] == 'update_details' ) {
+} elseif( in_array(@$_POST['action'], ['update_details', 'update_project_details']) ) {
 
     /* START UPDATE item list & cart */
     $color = $_SESSION["fc_data"]['color'];
