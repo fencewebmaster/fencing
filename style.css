@@ -833,7 +833,7 @@ a.fc-tab-active {
   border: 1px solid #DDDDDD;
   border-bottom: 0;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .fc-card-body {
@@ -1824,6 +1824,11 @@ thead.fc-border th:last-child {
     padding: 17px 24px 24px;
   }
 }
+@media (max-width: 768px) {
+  .fencing-modal--v2 .fencing-modal-area {
+    padding: 15px 0 24px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-area:last-child {
   margin-bottom: 0;
 }
@@ -1848,15 +1853,31 @@ thead.fc-border th:last-child {
     margin-right: 10px;
   }
 }
+@media (max-width: 440px) {
+  .fencing-modal--v2 .fencing-modal-area--gate .fc-col-flex {
+    margin-right: 5px;
+    height: 84px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post {
   border-width: 1px;
   height: inherit;
   box-sizing: border-box;
 }
+@media (max-width: 440px) {
+  .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post {
+    padding: 5px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post p {
   position: relative;
   top: 5px;
   font-weight: 500;
+}
+@media (max-width: 440px) {
+  .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post p {
+    font-size: 12px;
+  }
 }
 @media (max-width: 992px) {
   .fencing-modal--v2 .fencing-modal-area[data-field=image_option] {
@@ -1866,6 +1887,11 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 .has-multiple-areas .fencing-modal-area {
   padding: 15px 24px 24px;
   border: 2px solid #F67925;
+}
+@media (max-width: 768px) {
+  .fencing-modal--v2 .has-multiple-areas .fencing-modal-area {
+    padding: 15px 16px 24px;
+  }
 }
 .fencing-modal--v2 .fencing-modal-head {
   position: relative;
@@ -1891,6 +1917,11 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
   position: relative;
   z-index: 2;
+}
+@media (max-width: 992px) {
+  .fencing-modal--v2 .fencing-modal-body {
+    max-height: 100%;
+  }
 }
 @media (max-width: 600px) {
   .fencing-modal--v2 .fencing-modal-body {
@@ -3070,6 +3101,13 @@ thead.fc-border th:last-child {
     margin-bottom: 0 !important;
   }
 }
+.fencing-panel-controls .btn-fc.fc-btn-active {
+  color: #fff;
+  border-color: var(--fc-princeton-orange);
+}
+.fencing-panel-controls .btn-fc.fc-btn-active span {
+  color: #fff;
+}
 @media (max-width: 992px) {
   .fencing-panel-controls .btn-fc {
     display: inline-block;
@@ -3082,6 +3120,16 @@ thead.fc-border th:last-child {
   .fencing-panel-controls .btn-fc {
     width: 49%;
     margin-right: 2%;
+  }
+}
+@media (max-width: 600px) {
+  .fencing-panel-controls .btn-fc {
+    padding: 12px 8px;
+  }
+}
+@media (max-width: 340px) {
+  .fencing-panel-controls .btn-fc {
+    padding: 12px 3px;
   }
 }
 @media (max-width: 768px) {
@@ -3105,7 +3153,7 @@ thead.fc-border th:last-child {
   top: -1px;
 }
 @media (min-width: 1024px) {
-  .fencing-panel-controls #btn-left_side:hover:before {
+  .fencing-panel-controls #btn-left_side.fc-btn-active:before, .fencing-panel-controls #btn-left_side:hover:before {
     background-image: url(img/btn-arrow-white.png);
   }
 }
@@ -3123,7 +3171,7 @@ thead.fc-border th:last-child {
   top: -1px;
 }
 @media (min-width: 1024px) {
-  .fencing-panel-controls #btn-right_side:hover:after {
+  .fencing-panel-controls #btn-right_side.fc-btn-active:after, .fencing-panel-controls #btn-right_side:hover:after {
     background-image: url(img/btn-arrow-white.png);
   }
 }

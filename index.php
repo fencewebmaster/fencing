@@ -340,7 +340,7 @@
                                 <div class="fc-card fc-mb-2">
                                     
                                     <div class="fc-card-header fc-bg-dark fc-border-top">
-                                        Colour Options
+                                        {Fence} - Colour Options
                                     </div>
 
                                     <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">

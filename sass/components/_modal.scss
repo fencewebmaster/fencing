@@ -36,6 +36,10 @@
             padding: 17px 24px 24px;
         }
 
+        @include md{
+            padding: 15px 0 24px;
+        }
+
         &:last-child{
             margin-bottom: 0;
         }
@@ -60,16 +64,30 @@
                     margin-right: 10px;
                 }
 
+                @media ( max-width: 440px ){
+                    margin-right: 5px;
+                    height: 84px;
+                }
+
+
             }
             .fc-move-post{
                 border-width: 1px;
                 height: inherit;
                 box-sizing: border-box;
 
+                @media ( max-width: 440px ){
+                    padding: 5px;
+                }
+
                 p{
                     position: relative;
                     top: 5px;
                     font-weight: 500;
+
+                    @media ( max-width: 440px ){
+                        font-size: 12px;
+                    }
                 }
             }
         }
@@ -85,6 +103,10 @@
     .has-multiple-areas .fencing-modal-area{
         padding: 15px 24px 24px;
         border: 2px solid #F67925;
+
+        @include md{
+            padding: 15px 16px 24px;
+        }
     }
 
     .fencing-modal-head{
@@ -110,6 +132,10 @@
         box-sizing: border-box;
         position: relative;
         z-index: 2;
+
+        @include lg{
+            max-height: 100%;
+        }
 
         @include sm {
             height: 100%;
