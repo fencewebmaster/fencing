@@ -40,8 +40,10 @@
         }
 
         &:hover{
-            background-color: var(--fc-dark-charcoal);
-            color: #fff;
+            @media ( min-width: 1024px ){
+                background-color: var(--fc-dark-charcoal);
+                color: #fff;
+            }
         }
     }
 
@@ -145,8 +147,10 @@
         color: var(--fc-dark-charcoal);
 
         &:hover{
-            background-color: var(--fc-dark-charcoal);
-            color: #fff;
+            @media ( min-width: 1024px ){
+                background-color: var(--fc-dark-charcoal);
+                color: #fff;
+            }
         }
     }
 }

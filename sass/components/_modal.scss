@@ -328,7 +328,9 @@
     }
 
     &:hover{
-        background-color: #fff;
+        @media ( min-width: 1024px ){
+            background-color: #fff;
+        }
     }
 
     &:after{

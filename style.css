@@ -1778,8 +1778,10 @@ thead.fc-border th:last-child {
   border-color: #cbcbcb;
   cursor: not-allowed !important;
 }
-[type=button]:disabled:hover {
-  color: #9E9E9E;
+@media (min-width: 1024px) {
+  [type=button]:disabled:hover {
+    color: #9E9E9E;
+  }
 }
 
 .fc-form-plan .fc-col-half {
@@ -2086,8 +2088,10 @@ thead.fc-border th:last-child {
     top: 0;
   }
 }
-.fencing-modal-close:hover {
-  background-color: #fff;
+@media (min-width: 1024px) {
+  .fencing-modal-close:hover {
+    background-color: #fff;
+  }
 }
 .fencing-modal-close:after {
   content: "×";
@@ -2345,6 +2349,14 @@ thead.fc-border th:last-child {
   line-height: 20px !important;
 }
 
+@media (min-width: 1024px) {
+  .btn-fc:hover {
+    background: #525252;
+    cursor: pointer;
+    color: #fff;
+  }
+}
+
 .btn-fc-default {
   background: #333;
   color: #fff;
@@ -2355,9 +2367,11 @@ thead.fc-border th:last-child {
   padding: 15px 30px;
 }
 
-.btn-fc-default:hover {
-  background: #000;
-  color: #fff;
+@media (min-width: 1024px) {
+  .btn-fc-default:hover {
+    background: #000;
+    color: #fff;
+  }
 }
 
 .btn-fc-black {
@@ -2370,9 +2384,11 @@ thead.fc-border th:last-child {
   padding: 15px 30px;
 }
 
-.btn-fc-black:hover {
-  background: #000;
-  color: #fff;
+@media (min-width: 1024px) {
+  .btn-fc-black:hover {
+    background: #000;
+    color: #fff;
+  }
 }
 
 .btn-fc-outline-default {
@@ -2393,9 +2409,11 @@ thead.fc-border th:last-child {
   border-color: var(--fc-dark-gray);
   color: var(--fc-dark-gray);
 }
-.btn-fc-outline-default--dark-gray:hover {
-  background-color: var(--fc-dark-gray);
-  color: #fff;
+@media (min-width: 1024px) {
+  .btn-fc-outline-default--dark-gray:hover {
+    background-color: var(--fc-dark-gray);
+    color: #fff;
+  }
 }
 
 .btn-fc-outline-light {
@@ -2407,8 +2425,10 @@ thead.fc-border th:last-child {
   background: transparent;
 }
 
-.btn-fc-outline-light:hover {
-  color: #fff;
+@media (min-width: 1024px) {
+  .btn-fc-outline-light:hover {
+    color: #fff;
+  }
 }
 
 .btn-fc-danger {
@@ -2422,8 +2442,10 @@ thead.fc-border th:last-child {
   background: #eb2424;
 }
 
-.btn-fc-danger:hover {
-  background: #ad0101;
+@media (min-width: 1024px) {
+  .btn-fc-danger:hover {
+    background: #ad0101;
+  }
 }
 
 .btn-fc-orange {
@@ -2470,9 +2492,11 @@ thead.fc-border th:last-child {
   padding: 5px 10px;
 }
 
-.btn-fc-outline-danger:hover {
-  background: #D4112F;
-  color: #fff;
+@media (min-width: 1024px) {
+  .btn-fc-outline-danger:hover {
+    background: #D4112F;
+    color: #fff;
+  }
 }
 
 .fc-btn-active {
@@ -2488,8 +2512,10 @@ thead.fc-border th:last-child {
   background: #e1e1e1;
 }
 
-.fc-btn-disabled:hover {
-  cursor: not-allowed;
+@media (min-width: 1024px) {
+  .fc-btn-disabled:hover {
+    cursor: not-allowed;
+  }
 }
 
 .fencing-qty-btn {
@@ -2792,9 +2818,11 @@ thead.fc-border th:last-child {
 }
 
 /* Handle on hover */
-.fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb:hover,
-.fencing-display-result::-webkit-scrollbar-thumb:hover {
-  background: #555;
+@media (min-width: 1024px) {
+  .fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb:hover,
+  .fencing-display-result::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 }
 
 .fc-section-details .fencing-display-result.grabbing .fencing-panel-container {
@@ -2909,8 +2937,10 @@ thead.fc-border th:last-child {
   padding-top: 1px;
 }
 
-.fencing-left-panel-o-a:hover {
-  background: var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .fencing-left-panel-o-a:hover {
+    background: var(--fc-princeton-orange);
+  }
 }
 
 /* Right panel - A */
@@ -2926,8 +2956,10 @@ thead.fc-border th:last-child {
   padding-top: 1px;
 }
 
-.fencing-right-panel-o-a:hover {
-  background: var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .fencing-right-panel-o-a:hover {
+    background: var(--fc-princeton-orange);
+  }
 }
 
 /* Left panel - B */
@@ -2943,8 +2975,10 @@ thead.fc-border th:last-child {
   padding-top: 1px;
 }
 
-.fencing-left-panel-o-b:hover {
-  background: var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .fencing-left-panel-o-b:hover {
+    background: var(--fc-princeton-orange);
+  }
 }
 
 /* Right panel - B */
@@ -2960,8 +2994,10 @@ thead.fc-border th:last-child {
   padding-top: 1px;
 }
 
-.fencing-right-panel-o-b:hover {
-  background: var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .fencing-right-panel-o-b:hover {
+    background: var(--fc-princeton-orange);
+  }
 }
 
 .raked-panel-post {
@@ -3066,8 +3102,10 @@ thead.fc-border th:last-child {
   position: relative;
   top: -1px;
 }
-.fencing-panel-controls #btn-left_side:hover:before {
-  background-image: url(img/btn-arrow-white.png);
+@media (min-width: 1024px) {
+  .fencing-panel-controls #btn-left_side:hover:before {
+    background-image: url(img/btn-arrow-white.png);
+  }
 }
 .fencing-panel-controls #btn-right_side:after {
   display: inline-block;
@@ -3082,8 +3120,10 @@ thead.fc-border th:last-child {
   position: relative;
   top: -1px;
 }
-.fencing-panel-controls #btn-right_side:hover:after {
-  background-image: url(img/btn-arrow-white.png);
+@media (min-width: 1024px) {
+  .fencing-panel-controls #btn-right_side:hover:after {
+    background-image: url(img/btn-arrow-white.png);
+  }
 }
 .fencing-panel-controls div {
   display: none;
@@ -3141,11 +3181,13 @@ thead.fc-border th:last-child {
     width: auto;
   }
 }
-.fencing-section__bottom .fencing-tab-add:hover {
-  background: #525252;
-  border-color: #525252;
-  cursor: pointer;
-  color: #fff;
+@media (min-width: 1024px) {
+  .fencing-section__bottom .fencing-tab-add:hover {
+    background: #525252;
+    border-color: #525252;
+    cursor: pointer;
+    color: #fff;
+  }
 }
 .fencing-section h4 {
   margin-bottom: 0;
@@ -3512,8 +3554,10 @@ thead.fc-border th:last-child {
   position: relative;
 }
 
-.panel-post:hover {
-  border: 1px solid var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .panel-post:hover {
+    border: 1px solid var(--fc-princeton-orange);
+  }
 }
 
 .panel-post:not(.panel-no-post).opt-1:after {
@@ -3549,9 +3593,11 @@ thead.fc-border th:last-child {
   justify-content: center;
 }
 
-.fencing-panel-item:hover {
-  border: 1px solid var(--fc-princeton-orange);
-  background-color: #ffeded;
+@media (min-width: 1024px) {
+  .fencing-panel-item:hover {
+    border: 1px solid var(--fc-princeton-orange);
+    background-color: #ffeded;
+  }
 }
 
 .fencing-panel-spacing-number {
@@ -3625,8 +3671,10 @@ thead.fc-border th:last-child {
   z-index: 1;
 }
 
-.fencing-panel-rail:hover {
-  border: 2px solid var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .fencing-panel-rail:hover {
+    border: 2px solid var(--fc-princeton-orange);
+  }
 }
 
 /* Spigot */
@@ -3649,8 +3697,10 @@ thead.fc-border th:last-child {
   border: 2px solid transparent;
 }
 
-.fencing-panel-spigot:hover {
-  border: 2px solid var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .fencing-panel-spigot:hover {
+    border: 2px solid var(--fc-princeton-orange);
+  }
 }
 
 /* Spinfix */
@@ -3712,10 +3762,12 @@ thead.fc-border th:last-child {
 .fc-cart-items .fc-edit-item i {
   margin-right: 4px;
 }
-.fc-cart-items .fc-reset-item:hover,
-.fc-cart-items .fc-edit-item:hover {
-  background-color: var(--fc-dark-charcoal);
-  color: #fff;
+@media (min-width: 1024px) {
+  .fc-cart-items .fc-reset-item:hover,
+  .fc-cart-items .fc-edit-item:hover {
+    background-color: var(--fc-dark-charcoal);
+    color: #fff;
+  }
 }
 .fc-cart-items p {
   color: var(--fc-dark-gray);
@@ -3808,9 +3860,11 @@ thead.fc-border th:last-child {
   border-color: var(--fc-dark-charcoal);
   color: var(--fc-dark-charcoal);
 }
-.fc-cart-items-btns .btn-fc-outline-light:hover {
-  background-color: var(--fc-dark-charcoal);
-  color: #fff;
+@media (min-width: 1024px) {
+  .fc-cart-items-btns .btn-fc-outline-light:hover {
+    background-color: var(--fc-dark-charcoal);
+    color: #fff;
+  }
 }
 
 .fc-cart-stock-area p {
@@ -4064,8 +4118,10 @@ thead.fc-border th:last-child {
   right: 10px;
   box-sizing: border-box;
 }
-.fc-select:hover {
-  border-color: var(--fc-princeton-orange);
+@media (min-width: 1024px) {
+  .fc-select:hover {
+    border-color: var(--fc-princeton-orange);
+  }
 }
 .fc-select.fc-selected {
   border-color: var(--fc-princeton-orange);

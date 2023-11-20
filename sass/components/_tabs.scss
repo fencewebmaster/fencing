@@ -269,7 +269,9 @@
 /* Handle on hover */
 .fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb:hover,
 .fencing-display-result::-webkit-scrollbar-thumb:hover {
-  background: #555;
+    @media ( min-width: 1024px ){
+        background: #555;
+    }
 }	
 
 // .fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before{
@@ -393,7 +395,9 @@
     padding-top: 1px;
 }
 .fencing-left-panel-o-a:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 /* Right panel - A */
@@ -408,7 +412,9 @@
     padding-top: 1px;
 }
 .fencing-right-panel-o-a:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 /* Left panel - B */
@@ -423,7 +429,9 @@
     padding-top: 1px;
 }
 .fencing-left-panel-o-b:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 /* Right panel - B */
@@ -438,7 +446,9 @@
     padding-top: 1px;
 }
 .fencing-right-panel-o-b:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 .raked-panel-post {
@@ -544,7 +554,9 @@
             top: -1px;
         }
         &:hover:before{
-            background-image: url(img/btn-arrow-white.png);
+            @media ( min-width: 1024px ){
+                background-image: url(img/btn-arrow-white.png);
+            }
         }
     }
 
@@ -563,7 +575,9 @@
             top: -1px;
         }
         &:hover:after{
-            background-image: url(img/btn-arrow-white.png);
+            @media ( min-width: 1024px ){
+                background-image: url(img/btn-arrow-white.png);
+            }
         }
     }
 

@@ -90,7 +90,9 @@
         box-sizing: border-box;
     }
     &:hover {
-        border-color: var(--fc-princeton-orange);
+        @media ( min-width: 1024px ){
+            border-color: var(--fc-princeton-orange);
+        }
     }
     &.fc-selected {
         border-color: var(--fc-princeton-orange);
