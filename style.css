@@ -2345,12 +2345,6 @@ thead.fc-border th:last-child {
   line-height: 20px !important;
 }
 
-.btn-fc:hover {
-  background: #525252;
-  cursor: pointer;
-  color: #fff;
-}
-
 .btn-fc-default {
   background: #333;
   color: #fff;
@@ -3024,6 +3018,7 @@ thead.fc-border th:last-child {
 }
 .fencing-panel-controls .btn-fc {
   margin: 0 10px 0 0;
+  font-weight: 500;
   /** @TODO revisit, see if buttons can be scrollable to remove !important **/
 }
 .fencing-panel-controls .btn-fc.fc-mb-1 {
@@ -3055,6 +3050,40 @@ thead.fc-border th:last-child {
   .fencing-panel-controls .btn-fc:nth-child(2n) {
     margin-right: 0;
   }
+}
+.fencing-panel-controls .btn-fc span {
+  color: var(--fc-princeton-orange);
+}
+.fencing-panel-controls #btn-left_side:before {
+  display: inline-block;
+  vertical-align: middle;
+  content: "";
+  background: url(img/btn-arrow.png) no-repeat center;
+  width: 20px;
+  height: 12px;
+  background-size: 100% auto;
+  margin-right: 8px;
+  position: relative;
+  top: -1px;
+}
+.fencing-panel-controls #btn-left_side:hover:before {
+  background-image: url(img/btn-arrow-white.png);
+}
+.fencing-panel-controls #btn-right_side:after {
+  display: inline-block;
+  vertical-align: middle;
+  content: "";
+  background: url(img/btn-arrow.png) no-repeat center;
+  width: 20px;
+  height: 12px;
+  background-size: 100% auto;
+  margin-left: 8px;
+  transform: rotate(180deg);
+  position: relative;
+  top: -1px;
+}
+.fencing-panel-controls #btn-right_side:hover:after {
+  background-image: url(img/btn-arrow-white.png);
 }
 .fencing-panel-controls div {
   display: none;

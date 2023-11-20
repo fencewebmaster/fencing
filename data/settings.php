@@ -712,6 +712,21 @@ $fences = [
 					],						
 				]
 			],
+			'gate' => [
+				'title' => 'Add / Remove Gate',
+				'label' => 'Gate',
+				'action' => ['add', 'edit'],
+				'size' => [
+					'width' => 1060
+				],
+				'fields' => [
+					[
+						'slug' => 'move',
+						'type' => 'move',
+						'label' => '',
+					],			
+				]
+			],
 			'panel_options'	=> [
 				'title' => 'Panel Options',
 				'label' => 'Panel Options',
@@ -965,21 +980,6 @@ $fences = [
 							],
 						]
 					],						
-				]
-			],
-			'gate' => [
-				'title' => 'Add / Remove Gate',
-				'label' => 'Gate',
-				'action' => ['add', 'edit'],
-				'size' => [
-					'width' => 1060
-				],
-				'fields' => [
-					[
-						'slug' => 'move',
-						'type' => 'move',
-						'label' => '',
-					],			
 				]
 			],
 			/**
