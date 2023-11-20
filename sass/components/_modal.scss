@@ -6,7 +6,6 @@
 
         @include lg{
             padding: 26px 16px;
-            border-radius: 16px;
         }
 
         @include sm {
@@ -27,10 +26,8 @@
         }
     }
     .fencing-modal-area{
-        margin-bottom: 49px;
-        padding: 15px 24px 24px;
+        margin-bottom: 24px;
         border-radius: 16px;
-        border: 2px solid #F67925;
 
         @include lg{
             margin-bottom: 19px;
@@ -47,6 +44,8 @@
         }
 
         &--gate{
+            border: 0;
+            padding: 0;
             .fc-col-flex{
                 width: 96px;
                 height: 96px;
@@ -54,6 +53,11 @@
                 &:last-child{
                     margin-right: 0;
                 }
+
+                @include md{
+                    margin-right: 10px;
+                }
+
             }
             .fc-move-post{
                 border-width: 1px;
@@ -68,7 +72,6 @@
             }
         }
 
-        &[data-field="range_option"],
         &[data-field="image_option"]{
             @include lg {
                 padding-bottom: 10px;
@@ -76,6 +79,12 @@
         }
 
     }
+
+    .has-multiple-areas .fencing-modal-area{
+        padding: 15px 24px 24px;
+        border: 2px solid #F67925;
+    }
+
     .fencing-modal-head{
         position: relative;
         z-index: 3;
@@ -84,9 +93,9 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 0 13px;
+        padding: 0 0 11px;
         border-bottom: 1px solid var(--fc-bright-gray);
-        margin-bottom: 18px;
+        margin-bottom: 24px;
         position: relative;
 
         @include lg {
@@ -106,7 +115,7 @@
         }
 
         @include md {
-            padding-right: 10px;
+            padding-right: 0px;
             padding-bottom: 0px;
         }
     }
@@ -123,7 +132,7 @@
         
         &[data-key=post_options]{
             padding: 8px;
-            background-color: #EEEEEE;
+            background-color: #FAFAFA;
 
             img{
                 border-radius: 8px;
@@ -171,12 +180,35 @@
                 width: 46%;
                 margin-bottom: 14px;
             }
+
+            @include md{
+                width: 48%;
+            }
         }
 
         .fc-select{
             margin-bottom: 0;
         }
     }
+
+
+    [type="range_option"]{
+        .fc-select{
+            padding: 0;
+            &:after{
+                top: 8px;
+                right: 12px;
+            }
+        }
+        .fc-alert-gray p{
+            font-size: 14px;
+            line-height: 20px;
+        }
+        .fc-selection-details label{
+            margin-bottom: 8px;
+        }
+    }
+    
 
     .fencing-modal-notes{
         padding: 0;
@@ -203,6 +235,14 @@
             margin-bottom: 0;
         }
 
+        &.field-note{
+            margin-top: 24px;
+
+            @include lg{
+                margin-top: 10px;
+            }
+        }
+
         .fc-icon{
             width: 16px;
             display: inline-block;
@@ -212,10 +252,10 @@
 
     .fc-dropdown_option {
         max-width: 387px;
+        width: 100%;
 
         @include lg{
             max-width: 100%;
-            width: 100%;
         }
 
         select{

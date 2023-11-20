@@ -388,7 +388,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
    
     if( typeof key !== "undefined" ){
         modal.el.find(".fencing-modal-notes").html('');
-        modal.el.find(".fencing-modal-content").html('');
+        modal.content.html('');
     }
 
     FENCES.setActiveSetting(key);
@@ -397,9 +397,17 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     if( typeof fields !== "undefined" ){
 
+        if( fields.length > 1 ){
+            modal.content.addClass('has-multiple-areas');
+        } else {
+            modal.content.removeClass('has-multiple-areas');
+        }
+
         $.each(fields, function(k, v){
 
             let marker = '';
+
+            
 
             if( v.marker !== undefined && v.marker !== "" ){
                 marker = `<span class="fencing-modal-title__marker">${v.marker})</span> `;
@@ -440,6 +448,9 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 </div>`;
     
                 modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
+
+                addNotesOrInfo(modal.el.find('[data-field="range_option"] .fencing-form-group'), v);
+
             }
     
             if( v.type == 'text_option') {
@@ -468,7 +479,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
             }
     
-            addNotesOrInfo(modal, v);
+            addNotesOrInfo(modal.el.find('.fencing-modal-notes'), v);
     
             // GET/SET DEFAULT VALUE
             var default_value = v.options?.filter(function(item) {
@@ -507,11 +518,11 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 /**
  * Add Notes or Info if value exists in array
  */
-function addNotesOrInfo(modal, v) {
+function addNotesOrInfo(el, v) {
 
     var details = v.info;
     var notes = v.notes;
-    
+
     if( details || notes ){
    
         if( details ) {
@@ -520,16 +531,16 @@ function addNotesOrInfo(modal, v) {
                     <p>${description}</p>
                 </div>`;
     
-            modal.el.find('.fencing-modal-notes').append( details.map(Item).join('') );
+                el.append( details.map(Item).join('') );
         }
        
         if( notes ) {
-            var notes_html =  `<div class="fc-selection-details fc-alert-gray">
+            var notes_html =  `<div class="fc-selection-details fc-alert-gray field-note">
                     <label><i class="fc-icon fc-icon-capa"></i> ${notes.title}</label>
                     <p class="fc-text-gray">${notes.description}</p>
                 </div>`;
     
-            modal.el.find('.fencing-modal-notes').append( notes_html );
+                el.append( notes_html );
         }
     }
 

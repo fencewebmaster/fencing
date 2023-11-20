@@ -401,9 +401,16 @@ a.fc-tab-active {
 .fc-dropdown_option select {
     border: 1px solid #9E9E9E;
     font-size: 14px;
-    padding: 10px;
+    padding: 10px 10px 10px 24px;
     width: 100%;
     border-radius: 5px;
+
+	/* Arrow */
+	appearance: none;
+	background-image: url(img/arrow-s.png);
+	background-repeat: no-repeat;
+	background-position: right 15px top 50%;
+	background-size: 13px auto;
 }
 .fencing-modal-footer {
 	border-top: 1px solid var(--fc-gray);	
