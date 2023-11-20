@@ -1824,6 +1824,11 @@ thead.fc-border th:last-child {
     padding: 17px 24px 24px;
   }
 }
+@media (max-width: 768px) {
+  .fencing-modal--v2 .fencing-modal-area {
+    padding: 15px 0 24px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-area:last-child {
   margin-bottom: 0;
 }
@@ -1883,6 +1888,11 @@ thead.fc-border th:last-child {
   padding: 15px 24px 24px;
   border: 2px solid #F67925;
 }
+@media (max-width: 768px) {
+  .fencing-modal--v2 .has-multiple-areas .fencing-modal-area {
+    padding: 15px 16px 24px;
+  }
+}
 .fencing-modal--v2 .fencing-modal-head {
   position: relative;
   z-index: 3;
@@ -1907,6 +1917,11 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
   position: relative;
   z-index: 2;
+}
+@media (max-width: 992px) {
+  .fencing-modal--v2 .fencing-modal-body {
+    max-height: 100%;
+  }
 }
 @media (max-width: 600px) {
   .fencing-modal--v2 .fencing-modal-body {
