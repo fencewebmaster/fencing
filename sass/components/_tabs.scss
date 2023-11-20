@@ -524,6 +524,16 @@
             }
         }
 
+        &:hover{
+            border-color: var(--fc-princeton-orange);
+            background-color: var(--fc-princeton-orange);
+            color: #fff;
+
+            span{
+                color: inherit;
+            }
+        }
+
         @include lg {
             display: inline-block;
             width: auto;
