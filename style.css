@@ -3108,13 +3108,15 @@ thead.fc-border th:last-child {
 .fencing-panel-controls .btn-fc.fc-btn-active span {
   color: #fff;
 }
-.fencing-panel-controls .btn-fc:hover {
-  border-color: var(--fc-princeton-orange);
-  background-color: var(--fc-princeton-orange);
-  color: #fff;
-}
-.fencing-panel-controls .btn-fc:hover span {
-  color: inherit;
+@media (min-width: 1024px) {
+  .fencing-panel-controls .btn-fc:hover {
+    border-color: var(--fc-princeton-orange);
+    background-color: var(--fc-princeton-orange);
+    color: #fff;
+  }
+  .fencing-panel-controls .btn-fc:hover span {
+    color: inherit;
+  }
 }
 @media (max-width: 992px) {
   .fencing-panel-controls .btn-fc {

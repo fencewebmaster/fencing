@@ -525,12 +525,14 @@
         }
 
         &:hover{
-            border-color: var(--fc-princeton-orange);
-            background-color: var(--fc-princeton-orange);
-            color: #fff;
+            @media ( min-width: 1024px ){
+                border-color: var(--fc-princeton-orange);
+                background-color: var(--fc-princeton-orange);
+                color: #fff;
 
-            span{
-                color: inherit;
+                span{
+                    color: inherit;
+                }
             }
         }
 
