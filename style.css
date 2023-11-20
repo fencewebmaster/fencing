@@ -255,6 +255,7 @@ a div {
   place-content: center;
   align-items: flex-start;
   padding-top: 30px;
+  padding-bottom: 30px;
 }
 
 /* Modal Content/Box */
@@ -1795,7 +1796,8 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-modal--v2 .fencing-modal-content {
-    padding: 26px 16px;
+    padding: 16px;
+    border-radius: 16px;
   }
 }
 @media (max-width: 600px) {
