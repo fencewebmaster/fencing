@@ -416,7 +416,8 @@ $.fn.swapWith = function(to) {
 function update_custom_fence_style_item() {
 
     var i = $('.fencing-style-item.fsi-selected').index(),
-        info = fc_data[i];
+        info = fc_data[i],
+        controlsContainer = '.fencing-panel-controls';
 
     mesurement = $('.measurement-box-number').val();
     mesurement = mesurement ? mesurement + ' ' + FENCES.defaultValues.unit : '';
@@ -424,7 +425,7 @@ function update_custom_fence_style_item() {
     $('.fencing-tab-selected').find('.ftm-title').html( 'SECTION' ); // info['name']
     $('.fencing-tab-selected').find('.ftm-measurement').html( mesurement );
 
-    $('.fencing-panel-controls').html('');
+    $(controlsContainer).html('');
 
 
     $.each(info?.settings, function(k, v){
@@ -439,6 +440,7 @@ function update_custom_fence_style_item() {
         if( v.length !== 0 ) {
 
           var action = '';
+          let label = v.label;
 
           if( v.action, v.action.includes('edit')  ) {
               var action = 'Edit ';
@@ -447,13 +449,27 @@ function update_custom_fence_style_item() {
               var action = 'Add ';            
           }
 
-          $('<button>').html(action+v.label).attr({
+          if( label ){
+            label = label.split(' ');
+
+            if(Array.isArray(label)){
+                label[0] = `<span>${label[0]}</span>`;
+            }
+
+            label = label.join(" ");
+          }
+
+          $('<button>').html(action+label).attr({
             'type' : 'button',
             'id' : 'btn-'+k,
             'data-key' : k,
             'data-target' : "#fc-control-modal",
             'class' : 'btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1'
-          }).appendTo(".fencing-panel-controls");
+          }).appendTo(controlsContainer);
+
+          setTimeout(function(){
+            $(controlsContainer + " > div").remove();
+          }, 100);
 
         }
    

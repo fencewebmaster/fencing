@@ -129,7 +129,9 @@
     cursor: not-allowed !important;
 
     &:hover{
-        color: #9E9E9E;
+        @media ( min-width: 1024px ){
+            color: #9E9E9E;
+        }
     }
 }
 

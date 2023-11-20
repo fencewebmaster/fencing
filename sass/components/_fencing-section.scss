@@ -46,9 +46,12 @@
             }
 
             &:hover{
-                background: #525252;
-                cursor: pointer;
-                color: #fff;
+                @media ( min-width: 1024px ){
+                    background: #525252;
+                    border-color: #525252;
+                    cursor: pointer;
+                    color: #fff;
+                }
             }
         }
     }

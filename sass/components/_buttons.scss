@@ -25,9 +25,11 @@
 	}
 }
 .btn-fc:hover {
-	background: #525252;
-	cursor: pointer;
-	color: #fff;
+	@media ( min-width: 1024px ){
+		background: #525252;
+		cursor: pointer;
+		color: #fff;
+	}
 }
 
 
@@ -41,8 +43,10 @@
 	padding: 15px 30px;
 }
 .btn-fc-default:hover {
-	background: #000;
-	color: #fff;
+	@media ( min-width: 1024px ){
+		background: #000;
+		color: #fff;
+	}
 }
 
 .btn-fc-black {
@@ -55,8 +59,10 @@
 	padding: 15px 30px;
 }
 .btn-fc-black:hover {
-	background: #000;
-	color: #fff;
+	@media ( min-width: 1024px ){
+		background: #000;
+		color: #fff;
+	}
 }
 
 .btn-fc-outline-default {
@@ -80,8 +86,10 @@
 	}
 
 	&--dark-gray:hover{
-		background-color: var(--fc-dark-gray);
-		color: #fff;
+		@media ( min-width: 1024px ){
+			background-color: var(--fc-dark-gray);
+			color: #fff;
+		}
 	}
 	
 }
@@ -95,7 +103,9 @@
 	background: transparent;
 }
 .btn-fc-outline-light:hover {
-	color: #fff;	
+	@media ( min-width: 1024px ){
+		color: #fff;	
+	}
 }
 
 .btn-fc-danger {
@@ -109,7 +119,9 @@
     background: #eb2424;
 }
 .btn-fc-danger:hover {
-	background: #ad0101;	
+	@media ( min-width: 1024px ){
+		background: #ad0101;	
+	}
 }
 .btn-fc-orange {
 	background: #F67925;
@@ -153,8 +165,10 @@
 	padding: 5px 10px;
 }
 .btn-fc-outline-danger:hover {
-	background: #D4112F;	
-	color: #fff;
+	@media ( min-width: 1024px ){
+		background: #D4112F;	
+		color: #fff;
+	}
 }
 .fc-btn-active {
 	background: #F67925;
@@ -167,7 +181,9 @@
     background: #e1e1e1;	
 }
 .fc-btn-disabled:hover {	
-    cursor: not-allowed
+	@media ( min-width: 1024px ){
+    	cursor: not-allowed
+	}
 }
 .fencing-qty-btn {
 	position: absolute;

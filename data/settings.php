@@ -712,6 +712,21 @@ $fences = [
 					],						
 				]
 			],
+			'gate' => [
+				'title' => 'Add / Remove Gate',
+				'label' => 'Gate',
+				'action' => ['add', 'edit'],
+				'size' => [
+					'width' => 1060
+				],
+				'fields' => [
+					[
+						'slug' => 'move',
+						'type' => 'move',
+						'label' => '',
+					],			
+				]
+			],
 			'panel_options'	=> [
 				'title' => 'Panel Options',
 				'label' => 'Panel Options',
@@ -726,7 +741,7 @@ $fences = [
 						'description' => 'This option evenly spaces out the posts, which also means you will need to cut down every individual panel.',
 					],
 					[
-						'title' => 'Use 2400W / 3000W Panels',
+						'title' => 'Full Size 2400W / 3000W Panels:',
 						'description' => 'This option uses full length panels, which means you will ONLY need to cut down 1x panel. ',
 					]
 				],
@@ -740,16 +755,25 @@ $fences = [
 							[
 								'slug' => 'even',
 								'type' => 'text_option',
-								'title' => 'Even Size Panels',
+								'title' => 'Even Size Panels 2400W',
 								'default' => TRUE,
 								'size' => [
 									'width' => 2450,
 								]
 							],
 							[
+								'slug' => 'even_3000',
+								'type' => 'text_option',
+								'title' => 'Even Size Panels 3000W',
+								'desc' => 'ONLY Available In BLACK',
+								'size' => [
+									'width' => 3050,
+								]
+							],
+							[
 								'slug' => 'full_2400',
 								'type' => 'text_option',
-								'title' => 'Use 2400W Panels',
+								'title' => 'Full Size Panels 2400W',
 								'size' => [
 									'width' => 2450,
 								]
@@ -757,7 +781,8 @@ $fences = [
 							[
 								'slug' => 'full_3000',
 								'type' => 'text_option',
-								'title' => 'Use 3000W Panels',
+								'title' => 'Full Size Panels 3000W',
+								'desc' => 'ONLY Available In BLACK',
 								'size' => [
 									'width' => 3050,
 								]
@@ -955,21 +980,6 @@ $fences = [
 							],
 						]
 					],						
-				]
-			],
-			'gate' => [
-				'title' => 'Add / Remove Gate',
-				'label' => 'Gate',
-				'action' => ['add', 'edit'],
-				'size' => [
-					'width' => 1060
-				],
-				'fields' => [
-					[
-						'slug' => 'move',
-						'type' => 'move',
-						'label' => '',
-					],			
 				]
 			],
 			/**

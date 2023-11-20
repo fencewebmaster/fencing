@@ -66,7 +66,9 @@
 }
 
 .panel-post:hover {
-    border: 1px solid var(--fc-princeton-orange);
+    @media ( min-width: 1024px ){
+        border: 1px solid var(--fc-princeton-orange);
+    }
 }
 .panel-post:not(.panel-no-post).opt-1:after {
 	content: "";
@@ -99,8 +101,10 @@
     justify-content: center;
 }
 .fencing-panel-item:hover {
-	border: 1px solid var(--fc-princeton-orange);
-	background-color: #ffeded;
+    @media ( min-width: 1024px ){
+	    border: 1px solid var(--fc-princeton-orange);
+	    background-color: #ffeded;
+    }
 }
 .fencing-panel-spacing-number {
     width: 100%;
@@ -165,7 +169,9 @@
 	z-index: 1;
 }
 .fencing-panel-rail:hover {
-	border: 2px solid var(--fc-princeton-orange);
+    @media ( min-width: 1024px ){
+	    border: 2px solid var(--fc-princeton-orange);
+    }
 }
 
 /* Spigot */
@@ -187,7 +193,9 @@
 	border: 2px solid transparent;
 }
 .fencing-panel-spigot:hover {
-	border: 2px solid var(--fc-princeton-orange);
+    @media ( min-width: 1024px ){
+	    border: 2px solid var(--fc-princeton-orange);
+    }
 }
 
 /* Spinfix */

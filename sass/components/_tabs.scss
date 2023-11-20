@@ -269,7 +269,9 @@
 /* Handle on hover */
 .fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb:hover,
 .fencing-display-result::-webkit-scrollbar-thumb:hover {
-  background: #555;
+    @media ( min-width: 1024px ){
+        background: #555;
+    }
 }	
 
 // .fencing-tabs-container.enable-scroll .fencing-tab-container.grabbing:before{
@@ -328,6 +330,7 @@
     align-items: center;
     height: 55px;
     box-sizing: border-box;
+    border-top-right-radius: 16px;
 
     @include lg {
         display: block;
@@ -392,7 +395,9 @@
     padding-top: 1px;
 }
 .fencing-left-panel-o-a:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 /* Right panel - A */
@@ -407,7 +412,9 @@
     padding-top: 1px;
 }
 .fencing-right-panel-o-a:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 /* Left panel - B */
@@ -422,7 +429,9 @@
     padding-top: 1px;
 }
 .fencing-left-panel-o-b:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 /* Right panel - B */
@@ -437,7 +446,9 @@
     padding-top: 1px;
 }
 .fencing-right-panel-o-b:hover {
-    background: var(--fc-princeton-orange);	
+    @media ( min-width: 1024px ){
+        background: var(--fc-princeton-orange);	
+    }
 }
 
 .raked-panel-post {
@@ -491,6 +502,7 @@
     }
     .btn-fc {
         margin: 0 10px 0 0;
+        font-weight: 500;
         /** @TODO revisit, see if buttons can be scrollable to remove !important **/
         &.fc-mb-1{
             margin-bottom: 0 !important;
@@ -522,7 +534,53 @@
             }
         }
 
+        span{
+            color: var(--fc-princeton-orange);
+        }
+
     }
+
+    #btn-left_side{
+        &:before{
+            display: inline-block;
+            vertical-align: middle;
+            content: "";
+            background: url(img/btn-arrow.png) no-repeat center;
+            width: 20px;
+            height: 12px;
+            background-size: 100% auto;
+            margin-right: 8px;
+            position: relative;
+            top: -1px;
+        }
+        &:hover:before{
+            @media ( min-width: 1024px ){
+                background-image: url(img/btn-arrow-white.png);
+            }
+        }
+    }
+
+    #btn-right_side{
+        &:after{
+            display: inline-block;
+            vertical-align: middle;
+            content: "";
+            background: url(img/btn-arrow.png) no-repeat center;
+            width: 20px;
+            height: 12px;
+            background-size: 100% auto;
+            margin-left: 8px;
+            transform: rotate(180deg);
+            position: relative;
+            top: -1px;
+        }
+        &:hover:after{
+            @media ( min-width: 1024px ){
+                background-image: url(img/btn-arrow-white.png);
+            }
+        }
+    }
+
     div{
         display: none;
     }
