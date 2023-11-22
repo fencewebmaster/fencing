@@ -84,6 +84,20 @@ $custom_fence_data = [
     ]
 ];
 
+/*$custom_fence_data = [
+    'color' => $color['value'],
+    'items' => [
+      ['slug' => "raked_post+opt-1", 'qty' => 2],
+      ['slug' => "raked_panel+1300x1200", 'qty' => 1],
+      ['slug' => "panel_options+full", 'qty' => 3],
+      ['slug' => "gate_kit", 'qty' => 1],
+      ['slug' => "gate", 'qty' => 1],
+      ['slug' => "raked_panel+1700x1200", 'qty' => 1],
+      ['slug' => "panel_options+bracket", 'qty' => 3],
+  ]
+];
+*/
+
 $post_query = array();
 
 

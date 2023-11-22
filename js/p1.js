@@ -154,5 +154,12 @@ function reload_fence_items() {
         $('.fc-form-plan').hide();
         $('[data-formtab="'+form+'"]').show();
     }
+
+
+    // Store default section count
+    if(  localStorage.getItem('custom_fence-section') == null && $('.fencing-tab').length == 1) {
+        localStorage.setItem('custom_fence-section', 1);    
+    }
+
 }
 reload_fence_items();

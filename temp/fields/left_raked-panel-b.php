@@ -12,4 +12,11 @@
 		</div>
 	</div>
 
+	<div class="fc-center-point fc-first-c-p">
+	    <span class="fc-div-c-p"></span>
+	    <span class="fc-start-c-p">50</span>
+	    {{panel_unit}}<br>
+	    Centers
+	</div>
+
 </div>

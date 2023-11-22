@@ -19,6 +19,9 @@
 .fencing-style-item:first-child {
     display: none;
 }    
+.fc-center-point {
+    display: none;
+}
 </style>
 
 <!-- START FORM SUBMISSION LOADER -->

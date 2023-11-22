@@ -5,43 +5,74 @@ function reload_fence_items() {
 
     for (let i = 0; i < items; i++) {
 
-      $('#fc-fence-list').append(`<div style="margin:30px 0;font-weight:bold;">SECTION ${i+1}<a href="${base_url}?section=${i+1}" data-action="edit" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
+      $('#fc-fence-list').append(`<div style="margin:120px 0 40px;font-weight:bold;">SECTION ${i+1}<a href="${base_url}?section=${i+1}" data-action="edit" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
                                     <i class="fa-solid fa-pencil"></i>
                                     <span>Edit Details</span>
                                 </a></div> <div id="pp-${i}" style="margin-bottom:60px;"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>`);
 
+
+
        reload_load_fencing_items(i);
+
+       load_center_point(i);
     }
 
 
 }
 reload_fence_items();
 
-function load_center_point() {
+function load_center_point(tab) {
 
-    var first = `<div class="fc-center-point fc-first-c-p">
+    var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
+        custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
+        i = custom_fence_tab[0]?.style,
+        custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
+        custom_fence = custom_fence ? JSON.parse(custom_fence) : [];
+
+
+    var overall = `<div class="fc-overall">${(custom_fence_tab[0]?.calculateValue).toLocaleString()} Overall</div>`;
+
+    var first_point = `<span class="fc-start-c-p">50</span>`;
+
+    var gate = `<div class="fc-center-point">
         <span class="fc-div-c-p"></span>
-        <span class="fc-start-c-p">25</span>
-        2460<br>
+        970<br>
         Centers
     </div>`;
 
-    var middle = `<div class="fc-center-point">
+    var last_point = `<span class="fc-div-c-p"></span>
         <span class="fc-div-c-p"></span>
-        2460<br>
-        Centers
-    </div>`;
+        <span class="fc-end-c-p">50</span>
+        1200W<br>
+        Centers`;
 
-    var last = `<div class="fc-center-point fc-last-c-p">
-        <span class="fc-div-c-p"></span>
-        <span class="fc-div-c-p"></span>
-        <span class="fc-end-c-p">25</span>
-        2460<br>
-        Centers
-    </div>`;
-   
+    if( ! $('#pp-'+tab+' .left_raked-panel .fencing-raked-panel').length ) {
+         $('#pp-'+tab+' .panel-item').first().find('.fc-div-c-p').after(first_point);
+    } 
+
+
+
+    if( ! $('#pp-'+tab+' .right_raked-panel .fencing-raked-panel').length ) {
+         $('#pp-'+tab+' .panel-item').last().find('.fc-center-point').addClass('fc-last-c-p').html(last_point);
+    } 
+
+    $('#pp-'+tab+' .fc-result').append(overall);
+
+    $('#pp-'+tab+' .fencing-panel-gate').append(gate);
+
+    if( $('#pp-'+tab+' .post-left.panel-no-post').length ) {
+        
+       $('#pp-'+tab+'  .panel-item').first().find('.fc-center-point').addClass('fc-first-c-p');
+
+        $('#pp-'+tab+' .fc-first-c-p').addClass('cp_no-post--left');
+    }
+
+    if( $('#pp-'+tab+' .post-right.panel-no-post').length ) {
+        $('#pp-'+tab+' .fc-last-c-p').addClass('cp_no-post--right');
+    }
+      
 }
-load_center_point();
+
 
 
 function reload_load_fencing_items(tab) {

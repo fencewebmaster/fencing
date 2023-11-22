@@ -203,6 +203,24 @@
 								cursor: pointer;
 								background: #f6f6f6;
 							}
+							.fc-result {
+								position: relative;
+							}
+							.fc-overall {
+								margin-left: auto;
+								position: initial;
+								text-align: center;
+							}
+
+							.cp_no-post--left:before,
+							.cp_no-post--left .fc-div-c-p,
+							.cp_no-post--left .fc-start-c-p, 
+							.cp_no-post--right:after,
+							.cp_no-post--right .fc-div-c-p:nth-child(2),
+							.cp_no-post--right .fc-end-c-p
+							{
+								color: #f70000;
+							}
 							</style>
 
 							<div id="update_cart-section">
