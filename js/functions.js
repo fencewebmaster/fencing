@@ -212,11 +212,11 @@ function update_raked_panels(side) {
 
     // Left Panel post
     var left_panel_post = $('.left-panel-post.no-post span').text().replace('(', '').replace(')', '');
-    $('.left-panel-post.no-post span').text('('+left_panel_post+')');
+    $('.left-panel-post.no-post span').text('(-'+left_panel_post+')');
 
     // Right Panel Post
     var right_panel_post = $('.right-panel-post.no-post span').text().replace('(', '').replace(')', '');
-    $('.right-panel-post.no-post span').text('('+right_panel_post+')');
+    $('.right-panel-post.no-post span').text('(-'+right_panel_post+')');
 
     
     load_post_options_first_last_values(custom_fence, info);
