@@ -23,6 +23,9 @@ reload_fence_items();
 
 function load_center_point(tab) {
 
+    var defaultCenterPoint = 50;
+    var defaultRakedWidth = 1200;
+
     var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
         custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
         i = custom_fence_tab[0]?.style,
@@ -32,7 +35,7 @@ function load_center_point(tab) {
 
     var overall = `<div class="fc-overall">${(custom_fence_tab[0]?.calculateValue).toLocaleString()} Overall</div>`;
 
-    var first_point = `<span class="fc-start-c-p">50</span>`;
+    var first_point = `<span class="fc-start-c-p">${defaultCenterPoint}</span>`;
 
     var gate = `<div class="fc-center-point">
         <span class="fc-div-c-p"></span>
@@ -42,18 +45,25 @@ function load_center_point(tab) {
 
     var last_point = `<span class="fc-div-c-p"></span>
         <span class="fc-div-c-p"></span>
-        <span class="fc-end-c-p">50</span>
-        1200W<br>
-        Centers`;
+        <span class="fc-end-c-p">${defaultCenterPoint}</span><br>Centers`;
+
 
     if( ! $('#pp-'+tab+' .left_raked-panel .fencing-raked-panel').length ) {
          $('#pp-'+tab+' .panel-item').first().find('.fc-div-c-p').after(first_point);
     } 
 
 
+    if( !$('#pp-'+tab+' .right_raked-panel .fencing-raked-panel').length && $('#pp-'+tab+' .post-right.panel-no-post').prev().prev().attr('data-key') != 'gate' ) {
 
-    if( ! $('#pp-'+tab+' .right_raked-panel .fencing-raked-panel').length ) {
-         $('#pp-'+tab+' .panel-item').last().find('.fc-center-point').addClass('fc-last-c-p').html(last_point);
+         $('#pp-'+tab+' .panel-item').last().find('.fc-center-point').addClass('fc-last-c-p');
+
+        if( $('#pp-'+tab+' .right-panel-post.no-post').length ) {
+            $('#pp-'+tab+' .fc-last-c-p').addClass('cp_no-post--right');
+        }
+
+        $('#pp-'+tab+' .fc-last-c-p').prepend(`<span class="fc-end-c-p">${defaultCenterPoint}</span><span class="fc-div-c-p"></span>`);
+    
+
     } 
 
     $('#pp-'+tab+' .fc-result').append(overall);
@@ -62,13 +72,30 @@ function load_center_point(tab) {
 
     if( $('#pp-'+tab+' .post-left.panel-no-post').length ) {
         
-       $('#pp-'+tab+'  .panel-item').first().find('.fc-center-point').addClass('fc-first-c-p');
+       $('#pp-'+tab+' .panel-item').first().find('.fc-center-point').addClass('fc-first-c-p');
+       
+       // If there is no post and the next item is gate
+       if( $('#pp-'+tab+' .post-left.panel-no-post').next().attr('data-key') == 'gate' ) {
+            $('#pp-'+tab+' .fencing-panel-gate').find('.fc-center-point').addClass('cp_no-post--left');
+            $('#pp-'+tab+' .cp_no-post--left').append(`<span class="fc-start-c-p">${defaultCenterPoint}</span><span class="fc-div-c-p"></span>`);
+       } else {
+           $('#pp-'+tab+' .fc-first-c-p').addClass('cp_no-post--left');
+       }
 
-        $('#pp-'+tab+' .fc-first-c-p').addClass('cp_no-post--left');
     }
 
     if( $('#pp-'+tab+' .post-right.panel-no-post').length ) {
-        $('#pp-'+tab+' .fc-last-c-p').addClass('cp_no-post--right');
+
+       // If there is no post and the previous item is gate
+       if( $('#pp-'+tab+' .post-right.panel-no-post').prev().prev().attr('data-key') == 'gate' ) {
+
+            $('#pp-'+tab+' .fencing-panel-gate').find('.fc-center-point').addClass('fc-last-c-p cp_no-post--right');
+            $('#pp-'+tab+' .cp_no-post--right').prepend(`<span class="fc-end-c-p">${defaultCenterPoint}</span><span class="fc-div-c-p"></span>`);
+    
+       } else {
+            $('#pp-'+tab+' .fc-last-c-p').addClass('cp_no-post--right');
+       }
+
     }
       
 }
@@ -142,7 +169,7 @@ function reload_load_fencing_items(tab) {
     
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);
 
-        $('.short-panel-item').attr('data-id', calc.long_panel.count+1)
+        $('#pp-'+tab+' .short-panel-item').attr('data-id', calc.long_panel.count+1)
                               .attr('id', 'panel-item-'+(calc.long_panel.count+1))
                               .css({'width':panel_size*0.10});
 
@@ -353,9 +380,8 @@ function re_update_raked_panels(side, tab) {
     // Right Panel Post
     var right_panel_post = $('#pp-'+tab+' .right-panel-post.no-post span').text().replace('(', '').replace(')', '');
     $('#pp-'+tab+' .right-panel-post.no-post span').text('('+right_panel_post+')');
-
     
-    load_post_options_first_last_values(custom_fence, info);
+    load_post_options_first_last_values(custom_fence, info, tab);
 
     load_post_options_all(custom_fence, info);
 

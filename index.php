@@ -22,6 +22,10 @@
 .fc-center-point {
     display: none;
 }
+.fencing-style-item .fencing-style-btn {
+    background: #f67925;
+    color: #fff;
+}
 </style>
 
 <!-- START FORM SUBMISSION LOADER -->
@@ -149,7 +153,7 @@
                                         <?php echo $fence['title']; ?>
                                     </div>
 
-                                    <button class="fencing-style-btn js-fencing-style-btn"></button>
+                                    <button class="fencing-style-btn js-fencing-style-btn"><i class="fa fa-check"></i></button>
 
                                 </div>
                             </div>
@@ -269,7 +273,7 @@
                                     <div class="fencing-panel-rail fencing-btn-modal" 
                                         data-key="rail_options" 
                                         data-target="#fc-control-modal" style="display:none;"></div>
-                                    <div class="fencing-panel-container"></div>
+                                    <div id="pp-0" class="fencing-panel-container"></div>
                                 </div>
 
                             </div>

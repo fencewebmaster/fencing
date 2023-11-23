@@ -221,6 +221,18 @@
 							{
 								color: #f70000;
 							}
+							.panel-post {
+
+							}
+							.fencing-panel-spacing-number.opt-2 span {
+								    bottom: -5px;
+							}
+							.panel-post:not(.panel-no-post).opt-2 {
+								margin-bottom: 15px;
+							}
+							.panel-post:not(.panel-no-post).opt-2:after {
+								bottom: 15px;
+							}
 							</style>
 
 							<div id="update_cart-section">

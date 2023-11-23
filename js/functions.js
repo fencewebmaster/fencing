@@ -219,7 +219,7 @@ function update_raked_panels(side) {
     $('.right-panel-post.no-post span').text('(-'+right_panel_post+')');
 
     
-    load_post_options_first_last_values(custom_fence, info);
+    load_post_options_first_last_values(custom_fence, info, 0);
 
     load_post_options_all(custom_fence, info);
 
@@ -246,7 +246,8 @@ function update_raked_panels(side) {
  * This function will update either First or Last post after user selection
  * @param {array} custom_fence 
  */
-function load_post_options_first_last_values(custom_fence, info) {
+function load_post_options_first_last_values(custom_fence, info, sectionId) {
+
 
     var side_post = '';
 
@@ -267,9 +268,10 @@ function load_post_options_first_last_values(custom_fence, info) {
                 let value = settings[idx].val;
 
                 if(key === "post_option" ){
+
                     //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                     //Find the element that matches the condition below and add the class
-                    $('.panel-post[data-key='+activeSetting+'], .fencing-panel-spacing-number').addClass(value).attr('data-cart-value', value);
+                    $('#pp-'+sectionId+' .panel-post[data-key='+activeSetting+'], #pp-'+sectionId+' .fencing-panel-spacing-number').addClass(value).attr('data-cart-value', value);
                 }
             }
 
@@ -278,7 +280,6 @@ function load_post_options_first_last_values(custom_fence, info) {
         var side_post = post_options_filtered_data[0].control_key;
     }
 
-
     // Get default post options
     var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
         return item.default == true;
@@ -286,12 +287,12 @@ function load_post_options_first_last_values(custom_fence, info) {
 
     // Set default option on left side
     if( side_post != 'left_side' ) {
-        $('.panel-post.post-left').addClass(post_options_default[0].slug);   
+        $('#pp-'+sectionId+' .panel-post.post-left').addClass(post_options_default[0].slug);   
     } 
 
     // Set default option on right side
     if( side_post != 'right_side' ) {
-        $('.panel-post.post-right').addClass(post_options_default[0].slug);
+        $('#pp-'+sectionId+' .panel-post.post-right').addClass(post_options_default[0].slug);
     }
 
 }
