@@ -161,5 +161,9 @@ function reload_fence_items() {
         localStorage.setItem('custom_fence-section', 1);    
     }
 
+    // Initiate tab container scroll
+    tabContainerScroll();    
+
 }
 reload_fence_items();
+

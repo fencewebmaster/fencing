@@ -1201,17 +1201,23 @@ function addObjectByKey(objectArray, obj) {
  * Toggle Tab Container Scroll
  * @param {obj} _this 
  */
-function tabContainerScroll(_this) {
+function tabContainerScroll() {
+
     let _tab_parent_class = FENCES.el.tabContainer;
     let _tab_content_class = '.js-fencing-tab-container-area';
     let _main_parent = $('.js-fencing-tabs-container');
+
+    _main_parent.removeClass('enable-scroll');
+
     let _main_parent_width = _main_parent.width();
-    let _width = _this.outerWidth(true);
-    let _trigger_width = (_this.position().left + _width);
+    let _trigger_width = $('.fencing-tabs-area').width();
+
+    $('.fc-content-tab-title').css({'border-top-right-radius':''});
 
     if( _trigger_width >= _main_parent_width ) {
         _main_parent.addClass('enable-scroll');
         draggable(_tab_parent_class, _tab_content_class);
+        $('.fc-content-tab-title').css({'border-top-right-radius':0});
     }
 
     moveScrollPosition(_tab_parent_class, $(_tab_parent_class).prop('scrollWidth'));
@@ -1222,8 +1228,7 @@ function tabContainerScroll(_this) {
  * @param {string} _el 
  */
 function moveScrollPosition(_el, _position) {
-    console.log('s');
-    $(_el).animate({scrollLeft:  _position}, 500);
+    $(_el).animate({scrollLeft:  _position}, 0);
 }
 
 /**
@@ -1297,6 +1302,8 @@ function deleteSectionTab() {
     }
 
     $('.is-deleting').remove();
+
+    tabContainerScroll();
 
     // Store section count
     localStorage.setItem('custom_fence-section', $('.fencing-tab').length);
@@ -1660,6 +1667,7 @@ if( submitModal ){
 }
 
 
+
 function updateOrCreateObjectInLocalStorage(key, newData) {
     // Check if the key already exists in localStorage
     if (localStorage.getItem(key)) {
@@ -1701,3 +1709,4 @@ function setActiveColor() {
 }
 
 setActiveColor();
+

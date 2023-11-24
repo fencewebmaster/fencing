@@ -81,7 +81,7 @@
         </div>
 
         <!-- START TABS -->
-        <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2" data-tab="1">
+        <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 " data-tab="1">
             <div class="fencing-tabs-area">
                 <div class="fencing-tabs fc-row-flex">
                 

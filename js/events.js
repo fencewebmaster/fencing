@@ -865,3 +865,7 @@ $(document).on('click', '.fc-zoom-fence', function(e){
 });
 
 
+// Initiate tab container scroll on window resize
+$(window).resize(function(){
+    tabContainerScroll();   
+});
