@@ -97,6 +97,9 @@ function load_fencing_items() {
         $('.fencing-offcut').css({'width':calc.offcut_panel.length*0.10});
     }
 
+    // Clear tooltip like error massage
+    $('.fc-input-msg').removeClass('fcim-show').html('');
+
     //updateFirstFencingPost();
     //updateLastFencingPost();
 }

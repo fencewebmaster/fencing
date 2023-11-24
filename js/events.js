@@ -580,6 +580,10 @@ $(document).on('keyup', '.measurement-box-number', function(){
             var alert = ' Invalid '+max+'mm max';
         } 
 
+        if( $(this).val() == '' ) {
+            var alert = 'Please enter the amount';
+        }
+
         $(this).closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert);
 
         $('.btn-fc-calculate').attr('disabled', 'disabled');
@@ -597,7 +601,10 @@ $(document).on('keyup', '.measurement-box-number', function(){
         var alert_msg = 'Invalid, remove '+alert.join(' or ')+' first';
 
         if( alert.length ) {
-            $('.measurement-box-number').closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert_msg);
+            $('.measurement-box-number').closest('.fc-input-container')
+                                        .find('.fc-input-msg')
+                                        .addClass('fcim-show')
+                                        .html(alert_msg);
         }
 
     }
@@ -618,6 +625,14 @@ $(document).on('click', '.btn-fc-calculate', function(){
 
     box.attr('data-last', box.val());
 
+    if( ! $('.measurement-box-number').val() ) {
+
+        $('.measurement-box-number').closest('.fc-input-container')
+                                    .find('.fc-input-msg')
+                                    .addClass('fcim-show')
+                                    .html('Please enter the amount');
+        return;
+    }
 
     /*
     // Use only on database query
