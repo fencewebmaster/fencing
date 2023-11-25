@@ -101,6 +101,13 @@ FENCES.cartItems = {
                 }
             }
 
+            //additional condition for raked_post to exclude el with class `panel-no-post`
+            if( cartKey === "raked_post" ){
+                if(el.classList.contains('panel-no-post')){
+                    qty = 0;
+                }
+            }
+
             //Update the object `slug` and `qty` property before pushing to the array
             entry.slug = modifiedCartKey;
             entry.qty = qty;
