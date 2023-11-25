@@ -107,11 +107,15 @@ function get_product_skus($data = array()) {
 	foreach ($items as $item) {
 
 		$key = array_search($item['slug'], array_column($the_products, $column));
-		$products[] = [
-			'sku'  => $the_products[$key][$color],
-			'qty'  => $item['qty'],
-			'slug' => $item['slug']
-		]; 
+    
+    if( $key !== false ){
+      $products[] = [
+        'sku'  => $the_products[$key][$color],
+        'qty'  => $item['qty'],
+        'slug' => $item['slug']
+      ]; 
+    }
+		
 
 		$skus[] = $the_products[$key][$color];
 	}
@@ -188,7 +192,7 @@ function post_product_skus($cart_items = array()) {
     $i=1;
     foreach ($items as $item) {
 
-        $key = array_search($item['slug'], array_column($custom_fence_products, 'slug'));
+        $key = array_search($item['sku'], array_column($custom_fence_products, 'sku'));
 
         $cart['items'][] = [
             'name'  => $item['name'],
