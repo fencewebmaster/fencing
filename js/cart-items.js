@@ -127,7 +127,7 @@ FENCES.cartItems = {
             }
             
             //If the cart item slug does not exists in array, push/add it into the array
-            if( !found && cartValue !== null ){
+            if( !found && cartValue !== null && entry.qty != 0 ){
                 newCartItems.items.push(entry);
             }
         }
@@ -166,12 +166,15 @@ FENCES.cartItems = {
 
         //Get offcut size
         let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
+        let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
+
+        console.log('getPanelItems', getPanelItems, getOffCutValue);
         
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+even");
 
         if (foundObject) {
-            let qty = foundObject['qty'] + parseInt(getOffCutValue);
+            let qty = getPanelItems;
             //then update the qty value
             foundObject['qty'] = qty;
             FENCES.cartItems.apply_panel_options_bracket(array, qty);
