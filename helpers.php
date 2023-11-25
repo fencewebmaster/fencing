@@ -179,16 +179,16 @@ function post_product_skus($cart_items = array()) {
 
     curl_close($curl);*/
 
+
     $count = count($items);
     $rand  = rand(2, $count);
 
     $custom_fence_products = $_SESSION['custom_fence_products'];
 
-
     $i=1;
     foreach ($items as $item) {
 
-        $key = array_search($item['sku'], array_column($custom_fence_products, 'sku'));
+        $key = array_search($item['slug'], array_column($custom_fence_products, 'slug'));
 
         $cart['items'][] = [
             'name'  => $item['name'],
@@ -199,6 +199,9 @@ function post_product_skus($cart_items = array()) {
         ];
       $i++;
     }
+
+
+  
 
     $_SESSION['fc_cart'] = $cart;
 

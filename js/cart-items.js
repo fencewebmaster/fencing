@@ -167,8 +167,6 @@ FENCES.cartItems = {
         //Get offcut size
         let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
         let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
-
-        console.log('getPanelItems', getPanelItems, getOffCutValue);
         
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+even");
