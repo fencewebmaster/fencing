@@ -268,6 +268,7 @@ $(document).on('click', '.fencing-tab', function() {
 
     }
 
+
 });
 
 $(document).on('click', '.fencing-modal .fc-select', function() {
@@ -760,6 +761,7 @@ $(document).on('click', '.fc-btn-form-step', function(){
 
         $('.fc-form-plan').hide();
         $('[data-formtab="'+move+'"]').show();
+
     } 
 
     /*
@@ -793,6 +795,9 @@ $(document).on('click', '.fc-btn-step', function(){
     if( move < 2 ) {
         $('.fencing-container').addClass('w-side-section');
     }
+
+    // Push param in URL tab={tab}
+    history.pushState({}, '', `?tab=${move}`);
 
 });
 
@@ -848,6 +853,7 @@ $(document).on('click', '[name="color_options"]', function(e) {
     $('[name="color[value]"]').val( $(this).attr('value') );
     $('.fc-btn-create-plan').removeAttr('disabled');
 });
+
 
 $(document).on('keypress', '.no-enter', function(e) {
     if (e.keyCode == 13) {
