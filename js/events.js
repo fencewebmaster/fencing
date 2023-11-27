@@ -747,7 +747,9 @@ $(document).on('click', '.fc-select-item', function(){
 
 $(document).on('click', '#submit-modal .js-fencing-modal-close', function(){
     // Push param in URL tab={tab}
-    history.pushState({}, '', `?tab=${getSearchParams('tab')}`);
+    if( tab = getSearchParams('tab') ) {
+        history.pushState({}, '', `?tab=${tab}`);
+    }
 });
 
 $(document).on('click', '.fc-btn-form-step', function(){

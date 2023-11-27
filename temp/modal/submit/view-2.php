@@ -19,7 +19,7 @@
                             <?php foreach(fc_color() as $co_k => $co_v): ?>
                             <div class="fc-col-3">
                                 <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co_v['title']; ?>" data-color-code="<?php echo $co_v['background_color']; ?>" data-color-subtitle="<?php echo $co_v['sub_title']; ?>" data-slug="<?php echo $co_k; ?>" style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
-                                    <p><strong><?php echo $co_v['title']; ?></strong><br />
+                                    <p><strong><?php echo $co_v['title']; ?></strong>
                                     <span><?php echo $co_v['sub_title']; ?></span></p>
                                 </div>
                             </div>
