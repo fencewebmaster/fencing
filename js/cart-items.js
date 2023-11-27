@@ -94,6 +94,20 @@ FENCES.cartItems = {
                 modifiedCartKey = modifiedCartKey.replace("H", '').replace("W", '');
             }
 
+            //additional condition for panel_post to exclude el with class `post-left` OR `post-right`
+            if( cartKey === "panel_post" ){
+                if(el.classList.contains('post-left') || el.classList.contains('post-right')){
+                    qty = 0;
+                }
+            }
+
+            //additional condition for raked_post to exclude el with class `panel-no-post`
+            if( cartKey === "raked_post" ){
+                if(el.classList.contains('panel-no-post')){
+                    qty = 0;
+                }
+            }
+
             //Update the object `slug` and `qty` property before pushing to the array
             entry.slug = modifiedCartKey;
             entry.qty = qty;
@@ -105,7 +119,7 @@ FENCES.cartItems = {
                     //We are using the `slug` property to check if the cart item already exists in the array
                     if (newCartItems.items[i].slug === modifiedCartKey) {
                         //If it exists, increase the quantity by 1
-                        newCartItems.items[i].qty += 1;
+                        newCartItems.items[i].qty += qty;
                         found = true;
                         break;
                     }
@@ -113,7 +127,7 @@ FENCES.cartItems = {
             }
             
             //If the cart item slug does not exists in array, push/add it into the array
-            if( !found && cartValue !== null ){
+            if( !found && cartValue !== null && entry.qty != 0 ){
                 newCartItems.items.push(entry);
             }
         }
@@ -152,12 +166,13 @@ FENCES.cartItems = {
 
         //Get offcut size
         let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
+        let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
         
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+even");
 
         if (foundObject) {
-            let qty = foundObject['qty'] + parseInt(getOffCutValue);
+            let qty = getPanelItems;
             //then update the qty value
             foundObject['qty'] = qty;
             FENCES.cartItems.apply_panel_options_bracket(array, qty);
