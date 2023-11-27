@@ -935,8 +935,16 @@ function submit_fence_planner() {
         if (typeof value === 'object') {
             value = JSON.stringify(value);
         }
+
+        // remove brackets if key contains array format
+        if (key.includes("[]")) {
+            key = key.replace('[]', '');
+        }
+
         formData.set(key, value);
     });
+
+
 
     $.ajax({
         url: 'submit.php', 
@@ -1675,20 +1683,20 @@ if( submitModal ){
 function updateOrCreateObjectInLocalStorage(key, newData) {
     // Check if the key already exists in localStorage
     if (localStorage.getItem(key)) {
-      // If it exists, parse the JSON data and update the object
-      const existingData = JSON.parse(localStorage.getItem(key));
-      const updatedData = { ...existingData, ...newData };
-      // Save the updated object back to localStorage
+        // If it exists, parse the JSON data and update the object
+        const existingData = JSON.parse(localStorage.getItem(key));
+        const updatedData = { ...existingData, ...newData };
+        // Save the updated object back to localStorage
 
-    //convert array to string
-    if( updatedData['extra'] && Array.isArray(updatedData['extra']) ){
-        updatedData['extra'] = updatedData['extra'].join(', ');
-    }
+        //convert array to string
+        if( updatedData['extra'] && Array.isArray(updatedData['extra']) ){
+            updatedData['extra'] = updatedData['extra'].join(', ');
+        }
 
-      localStorage.setItem(key, JSON.stringify(updatedData));
+        localStorage.setItem(key, JSON.stringify(updatedData));
     } else {
-      // If the key doesn't exist, create a new object and save it to localStorage
-      localStorage.setItem(key, JSON.stringify(newData));
+        // If the key doesn't exist, create a new object and save it to localStorage
+        localStorage.setItem(key, JSON.stringify(newData));
     }
  }
   
