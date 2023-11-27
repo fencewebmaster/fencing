@@ -10,6 +10,7 @@
   //  dd($_SESSION);
 ?>
 
+<title>Fencing Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="style.css?v=<?php echo date('YmdHis'); ?>">
 <link rel="stylesheet" type="text/css" href="fonts/fa/css/all.min.css">
@@ -347,7 +348,7 @@
                                 <div class="fc-card fc-mb-2">
                                     
                                     <div class="fc-card-header fc-bg-dark fc-border-top">
-                                        {Fence} - Colour Options
+                                        Colour Options
                                     </div>
 
                                     <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">

@@ -143,11 +143,11 @@ function reload_fence_items() {
     if( tab ) {
         $('.fc-section-step').hide();
         $('[data-tab="'+tab+'"]').show();
-    } else {
-        setTimeout(function(){
-            $('.fencing-tab.fencing-tab-selected').click();
-        }, 100);
-    }
+    } 
+
+    setTimeout(function(){
+        $('.fencing-tab.fencing-tab-selected:visible').click();
+    }, 100);
     
     if( tab == 2 && form ) {
         $('#submit-modal').show();
@@ -163,6 +163,10 @@ function reload_fence_items() {
 
     // Initiate tab container scroll
     tabContainerScroll();    
+
+
+    // Restore form data when the page loads
+    restoreFormData();
 
 }
 reload_fence_items();

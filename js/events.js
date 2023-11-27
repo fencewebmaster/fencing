@@ -315,23 +315,20 @@ $(document).on('click', '.fencing-style-item', function() {
 
 });
 
-$(document).on('click', '.js-btn-delete-fence', function(){
+$(document).on('click', '.js-btn-delete-fence', function(e){
+    e.preventDefault();
 
     $(this).attr('disabled', 'disabled');
 
     let getActiveTab = $('.fencing-tab-selected');
     let getActiveTabIndex = getActiveTab.index();
 
+    // Call delete section functions in order
     stopSectionDeletion();
-
-    deleteSectionTab();
-
-    refreshSectionTabIndex();
-    
     deleteLocalStorageEntry();
-    
+    deleteSectionTab();
+    refreshSectionTabIndex();
     refreshLocalStorage(getActiveTabIndex);
-
     hideDeleteSectionBtn();
 
 });
@@ -509,11 +506,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     removeDuplicateCloseBtn();
     set_field_value( filtered_data );
-
-    if( target === "#submit-modal" ) {
-        // Restore form data when the page loads
-        restoreFormData();
-    }
 
 });
 
@@ -753,16 +745,23 @@ $(document).on('click', '.fc-select-item', function(){
     update_custom_fence(modal_key);
 });
 
+$(document).on('click', '#submit-modal .js-fencing-modal-close', function(){
+    // Push param in URL tab={tab}
+    history.pushState({}, '', `?tab=${getSearchParams('tab')}`);
+});
 
 $(document).on('click', '.fc-btn-form-step', function(){
 
+    var move = $(this).attr('data-move');
+
     if( ! $(this).hasClass('fc-btn-next') ) {
-        var move = $(this).attr('data-move');
 
         $('.fc-form-plan').hide();
         $('[data-formtab="'+move+'"]').show();
-
     } 
+
+    // Push param in URL tab={tab}
+    history.pushState({}, '', `?tab=${getSearchParams('tab')}&form=${move}`);
 
     /*
     $(this).closest('form').find('[type="submit"]')
@@ -784,7 +783,9 @@ $(document).on('click', '.fc-btn-next', function(){
 });
 
 
-$(document).on('click', '.fc-btn-step', function(){
+$(document).on('click', '.fc-btn-step', function(e){
+    e.preventDefault();
+
     var tab = $(this).attr('tab'),
         move = $(this).attr('data-move');
 
@@ -852,6 +853,17 @@ $(document).on('keydown', '.fencing-modal', function (e) {
 $(document).on('click', '[name="color_options"]', function(e) {
     $('[name="color[value]"]').val( $(this).attr('value') );
     $('.fc-btn-create-plan').removeAttr('disabled');
+});
+
+$(document).on('click', '.fc-btn-create-plan', function(e) {
+    // Push param in URL tab={tab}
+    history.pushState({}, '', `?tab=2&form=1`);
+
+    // Show form modal
+    $('.fc-form-plan').hide();
+
+    // Show the first step of the form
+    $('[data-formtab="1"]').show();
 });
 
 

@@ -10,6 +10,7 @@ function load_fencing_items() {
 
     var calc = calculate_fences();
 
+
     if( !calc ){
         return;
     }

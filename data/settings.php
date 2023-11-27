@@ -1219,7 +1219,7 @@ function fc_extra_needed($val ='') {
     if (!empty($textValues)) {
         return implode(', ', $textValues);
     } else {
-        return 'Not Found';
+        return 'Nothing Extra, Just Fencing';
     }
 
 } 
