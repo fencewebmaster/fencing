@@ -1,13 +1,19 @@
 <?php 
+session_start();
+$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
-    session_start();
-	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
+if( $sid = @$_GET['sid'] && $url = @$_GET['url'] ) {
+    $_SESSION["site"] = [
+        'id'  => $sid,
+        'url' => $url
+    ];     
+    header("Location: ./");
+    die();
+}
 
-	include('data/settings.php');
-	include('temp/fields.php');
-	include('helpers.php');
-
-  //  dd($_SESSION);
+include('data/settings.php');
+include('temp/fields.php');
+include('helpers.php');
 ?>
 
 <title>Fencing Calculator</title>
@@ -54,7 +60,6 @@
     </div>
 </div>
 <!-- END FORM SUBMISSION LOADER -->
-
 
 <div class="fencing-container w-side-section" data-tab="1">
     <form method="POST" id="fc-download-form" action="project-plan.php">

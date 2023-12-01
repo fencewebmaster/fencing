@@ -31,6 +31,18 @@ function get_items($key, $items, $list = false) {
 
 }
 
+
+function array_to_json($val='') {
+
+  if( is_array($val) ) {
+      return json_encode($val);    
+  }
+
+  return $val;
+}
+
+//----------------------------------------------------------------
+
 function dd($data ='') {
     echo '<pre>';
     print_r( $data );

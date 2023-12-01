@@ -1,17 +1,56 @@
 <?php
 session_start();
 
-include('data/settings.php');
-include('helpers.php');
+include 'data/settings.php';
+include 'helpers.php';
+include 'config/database.php'; 
 
 if( @$_POST['action'] == 'push_order' ) {
 
-    $data = json_encode($_SESSION);
+    $info = $_SESSION;
+
+    $info['planner_id'] = $planner_id  = md5(uniqid());
+
+    $data = json_encode($info);
+
+    $fc_data     = $info['fc_data'];
+    $fc_products = $info['custom_fence_products'];
+    $fc_cart     = $info['fc_cart'];
+    $fc_site     = $info['site'];
+
+    $data_inputs = [
+      'planner_id'         => $planner_id,
+      'site_id'            => $fc_site['id'],
+      'site_url'           => $fc_site['url'],
+      'section_count'      => count(json_decode($fc_data['fences'])),
+      'notes'              => $fc_data['notes'],
+      'name'               => $fc_data['name'],
+      'mobile'             => $fc_data['mobile'],
+      'email'              => $fc_data['email'],
+      'address'            => $fc_data['address'],
+      'fence_type'         => ['aluminum'],
+      'timeframe'          => $fc_data['timeframe'],
+      'installer'          => $fc_data['installer'],
+      'extra'              => $fc_data['extra'] ? $fc_data['extra'] : $fc_data['nothing_extra'],
+      'color_data'         => $fc_data['color'],
+      'products_data'      => $fc_products,
+      'fence_data'         => $fc_data['fences'],
+      'cart_data'          => $fc_cart['items'],
+      'cart_items_data'    => $fc_data['cart_items'],
+      'created_at'         => date('Y-m-d H:i:s'),
+    ];
+
+    $db = new Database();
+    $res = $db->insert('planners', $data_inputs);
+
+    if( ! $res['success'] ) {
+        return;
+    }
 
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
-      CURLOPT_URL => 'https://fencesperth.com?fc_action=push&date'.date('mdYHis'),
+      CURLOPT_URL => 'https://'.$fc_site['url'].'?fc_action=push&date'.date('mdYHis'),
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_ENCODING => '',
       CURLOPT_MAXREDIRS => 10,
