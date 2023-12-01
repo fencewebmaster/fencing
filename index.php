@@ -9,11 +9,18 @@ if( $sid = @$_GET['sid'] && $url = @$_GET['url'] ) {
     ];     
     header("Location: ./");
     die();
-}
+} 
 
 include('data/settings.php');
 include('temp/fields.php');
 include('helpers.php');
+
+if( ! isset($_SESSION['url']) ) {
+    $_SESSION["site"] = [
+        'id'  => 1,
+        'url' => $_SERVER['HTTP_HOST']
+    ];         
+}
 ?>
 
 <title>Fencing Calculator</title>
