@@ -18,10 +18,15 @@ if( @$_POST['action'] == 'push_order' ) {
     $fc_cart     = $info['fc_cart'];
     $fc_site     = $info['site'];
 
+
+
     $data_inputs = [
       'planner_id'         => $planner_id,
       'site_id'            => $fc_site['id'],
       'site_url'           => $fc_site['url'],
+      'order_id'           => 0,
+      'status'             => 'planning',
+      'status_updated_at'  => date('Y-m-d H:i:s'),
       'section_count'      => count(json_decode($fc_data['fences'])),
       'notes'              => $fc_data['notes'],
       'name'               => $fc_data['name'],
@@ -38,6 +43,7 @@ if( @$_POST['action'] == 'push_order' ) {
       'cart_data'          => $fc_cart['items'],
       'cart_items_data'    => $fc_data['cart_items'],
       'created_at'         => date('Y-m-d H:i:s'),
+      'updated_at'         => date('Y-m-d H:i:s'),
     ];
 
     $db = new Database();
