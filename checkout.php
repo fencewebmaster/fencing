@@ -18,8 +18,6 @@ if( @$_POST['action'] == 'push_order' ) {
     $fc_cart     = $info['fc_cart'];
     $fc_site     = $info['site'];
 
-
-
     $data_inputs = [
       'planner_id'         => $planner_id,
       'site_id'            => $fc_site['id'],

@@ -8,9 +8,34 @@ if( $_POST ) {
     $_SESSION["fc_data"]['color'] = json_decode($_SESSION["fc_data"]['color'], true);
 }
 
+$cart_items_grouped = json_decode($_SESSION["fc_data"]['cart_items'], true);
+
+$cart_items_regrouped = $cart_items_formatted = [];
+
+// Merged the cart items
+$cart_items_merged = array_merge(...$cart_items_grouped);
+
+// Regrouped the cart items
+foreach($cart_items_merged as $cart_item) {
+    $cart_items_regrouped[$cart_item['slug']][] = $cart_item['qty']; 
+}
+
+// Reformat the cart items
+foreach($cart_items_regrouped as $ci_k => $ci_v) {
+    $cart_items_formatted[] = [
+        'slug' => $ci_k,
+        'qty' => array_sum($ci_v),
+    ];
+}
+
 $color = $_SESSION["fc_data"]['color'];
 
-$custom_fence_data = [
+$cart_items_data = [
+    'color' => $color['value'],
+    'items' => $cart_items_formatted
+];
+
+/*$custom_fence_data = [
     'color' => $color['value'],
     'items' => [
       [
@@ -84,7 +109,7 @@ $custom_fence_data = [
     ]
 ];
 
-/*$custom_fence_data = [
+$custom_fence_data = [
     'color' => $color['value'],
     'items' => [
       ['slug' => "raked_post+opt-1", 'qty' => 2],
@@ -98,13 +123,7 @@ $custom_fence_data = [
 ];
 */
 
-$post_query = array();
-
-
-$cart_items = json_decode($_SESSION["fc_data"]['cart_items'], true);
-$cart_items['color'] = $color['value'];
-
-post_product_skus($cart_items);
+post_product_skus($cart_items_data);
 
 // post_product_skus($custom_fence_data);
 

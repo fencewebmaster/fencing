@@ -10,7 +10,9 @@ FENCES.cartItems = {
         }
     },
 
-    init: function() {
+    init: function(i) {
+
+        $(`.fc-section-${i}`).click();
 
         // Sample data (object or multi-dimensional array)
         const multiArray = FENCES.cartItems.process();
@@ -20,19 +22,20 @@ FENCES.cartItems = {
 
         try {
             // Save the string in local storage
-            localStorage.setItem('cart_items', multiArrayString);
+            localStorage.setItem('cart_items-'+i, multiArrayString);
 
             // Retrieve data from local storage
-            const storedMultiArrayString = localStorage.getItem('cart_items');
+            const storedMultiArrayString = localStorage.getItem('cart_items-'+i);
 
             // Convert the string back to an array using JSON.parse
             const storedMultiArray = JSON.parse(storedMultiArrayString);
 
             // Output the retrieved data
-            console.log('Retrieved cart_items:', storedMultiArray);
+           // console.log('Retrieved cart_items:', storedMultiArray);
+
         } catch (error) {
             // Handle errors
-            console.error('Error occurred while getting cart_items:', error);
+            //console.error('Error occurred while getting cart_items:', error);
         }
 
     },
@@ -44,10 +47,8 @@ FENCES.cartItems = {
 
         //Object that holds the color and cart items
         //This is the data that will be stored in localstorage and also sent to the server when form is submitted 
-        let newCartItems = {
-            items: []
-        };
-        
+        var newCartItems = [];
+
         //Iterate all items found with [data-cart-key] attribute
         for( let i = 0; i < getItemsByCartKey.length; i++ ){
 
@@ -71,7 +72,7 @@ FENCES.cartItems = {
             //This will contain the cart item data
             let entry = {};
 
-            //This variable is used to add a check before adding new object to the `newCartItems.items` array
+            //This variable is used to add a check before adding new object to the `newCartItems` array
             //If an object is found in the array, update it. if not, push the new object to array
             let found = false;
             let qty = 1;
@@ -83,13 +84,17 @@ FENCES.cartItems = {
 
                 //Since `gate_kit` shares the same value with `gate`
                 //create the entry for `gate_kit` manually
-                newCartItems.items.push(FENCES.cartItems.item.gateKit);
+                newCartItems.push(FENCES.cartItems.item.gateKit);
 
             }
 
             //additional condition for some cart items
             //for raked_panel, we removed extra characters from the slug
-            if( cartKey === "raked_panel" ){
+            if( cartKey === "left_raked_panel" ){
+                //Remove H and W chars
+                modifiedCartKey = modifiedCartKey.replace("H", '').replace("W", '');
+            }
+            if( cartKey === "right_raked_panel" ){
                 //Remove H and W chars
                 modifiedCartKey = modifiedCartKey.replace("H", '').replace("W", '');
             }
@@ -114,12 +119,12 @@ FENCES.cartItems = {
 
             //Iterate though existing cart items array
             //This condition will handle the check if the cart item slug already exists in the array
-            if( newCartItems.items.length > 0 ){
-                for (let i = 0; i < newCartItems.items.length; i++) {
+            if( newCartItems.length > 0 ){
+                for (let i = 0; i < newCartItems.length; i++) {
                     //We are using the `slug` property to check if the cart item already exists in the array
-                    if (newCartItems.items[i].slug === modifiedCartKey) {
+                    if (newCartItems[i].slug === modifiedCartKey) {
                         //If it exists, increase the quantity by 1
-                        newCartItems.items[i].qty += qty;
+                        newCartItems[i].qty += qty;
                         found = true;
                         break;
                     }
@@ -128,13 +133,13 @@ FENCES.cartItems = {
             
             //If the cart item slug does not exists in array, push/add it into the array
             if( !found && cartValue !== null && entry.qty != 0 ){
-                newCartItems.items.push(entry);
+                newCartItems.push(entry);
             }
         }
         
         newCartItems = FENCES.cartItems.apply_conditions(newCartItems);
 
-        console.log('newCartItems', newCartItems);
+       // console.log('newCartItems', newCartItems);
 
         return newCartItems;
     },
@@ -142,16 +147,16 @@ FENCES.cartItems = {
     apply_conditions: function(newCartItems) {
 
         //Apply condition for panel_options+even
-        newCartItems.items = FENCES.cartItems.apply_panel_options_even(newCartItems.items);
+        newCartItems = FENCES.cartItems.apply_panel_options_even(newCartItems);
 
         //Apply condition for panel_options+full
-        newCartItems.items = FENCES.cartItems.apply_panel_options_full(newCartItems.items);
+        newCartItems = FENCES.cartItems.apply_panel_options_full(newCartItems);
 
         //Apply condition for raked_panel_post+opt-1 | Row 16
-        newCartItems.items = FENCES.cartItems.apply_raked_panel_post_opt1(newCartItems.items);
+        newCartItems = FENCES.cartItems.apply_raked_panel_post_opt1(newCartItems);
 
         //Apply condition for post_options+opt-2 | Row 20
-        newCartItems.items = FENCES.cartItems.apply_post_options_opt2(newCartItems.items);
+        newCartItems = FENCES.cartItems.apply_post_options_opt2(newCartItems);
 
         return newCartItems;
 

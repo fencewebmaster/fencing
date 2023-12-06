@@ -144,7 +144,7 @@ function update_raked_panels(side) {
         var side_part = v.replace('_raked', ''),
             has_post = 'yes-post',
             center_point = 50;
-        
+
         var filtered_side_data = custom_fence.filter(function(item) {
             return item.control_key == side_part+'_side';
         });
@@ -175,21 +175,28 @@ function update_raked_panels(side) {
 
             if( filtered_settings[0]?.val != 'none' ) {
 
+                var dim = filtered_settings[0]?.val.split('x');
+
                 if( side_part == 'left') {
                     panel_w = calc.left_raked.width;
-                    panel_h = calc.left_raked.height;
                 } else {
                     panel_w = calc.right_raked.width;
-                    panel_h = calc.right_raked.height;
                 } 
 
-                
+                panel_h      = '';
+                panel_height = ''; 
+
+                if( dim ) {
+                    panel_h      = dim[0];
+                    panel_height = dim[1];                    
+                }
+
                 var tpl = $('script[data-type="'+v+'-panel-'+info.panel_group+'"]').text()
                                                                 .replace(/{{center_point}}/gi, center_point)
-                                                                .replace(/{{panel_size}}/gi, panel_h+'H')
-                                                                .replace(/{{panel_unit}}/gi,  panel_w+'W')
+                                                                .replace(/{{panel_size}}/gi, panel_h)
+                                                                .replace(/{{panel_unit}}/gi,  panel_w)
                                                                 .replace(/{{panel_number}}/gi, 4)                                                     
-                                                                .replace(/{{panel_size}}/gi, 5)
+                                                                .replace(/{{panel_height}}/gi, panel_height)
                                                                 .replace(/{{panel_unit}}/gi, 6)
                                                                 .replace(/{{panel_number}}/gi, 7)
                                                                 .replace(/{{post}}/gi, has_post);   
@@ -203,12 +210,20 @@ function update_raked_panels(side) {
         }
 
         if( side_part == 'left' ) {
-            $('.panel-post:not(.post-left):not(.post-right)').first().addClass('post-left panel-'+has_post).attr('data-key',"left_side").attr('post-side',"post_left");
+            $('.panel-post:not(.post-left):not(.post-right)').first()
+                                                             .addClass('post-left panel-'+has_post)
+                                                             .attr('data-key',"left_side")
+                                                             .attr('post-side',"post_left");
+
             $('.fencing-panel-spacing-number').first().addClass(has_post);
         }
 
         if( side_part == 'right' ) {
-            $('.panel-post:not(.post-left):not(.post-right)').last().addClass('post-right panel-'+has_post).attr('data-key',"right_side").attr('post-side',"post_right");
+            $('.panel-post:not(.post-left):not(.post-right)').last()
+                                                             .addClass('post-right panel-'+has_post)
+                                                             .attr('data-key',"right_side")
+                                                             .attr('post-side',"post_right");
+
             $('.fencing-panel-spacing-number').last().addClass(has_post);
         }
 
@@ -227,8 +242,8 @@ function update_raked_panels(side) {
 
     load_post_options_all(custom_fence, info);
 
-
     $('.fencing-display-result').css({'padding': ''});
+
     if( $('.raked-panel .fencing-raked-panel').length && $('.fencing-display-result').css('margin-top') != '70px' ) {   
         $('.fencing-display-result').css({'padding-top': '30px'});
     } else {
@@ -803,7 +818,11 @@ function add_new_fence_section() {
     $('.fencing-tab').removeClass('fencing-tab-selected');
     $('.fencing-tab:last-child').addClass('fencing-tab-selected');
 
-    $('.fencing-tab:last-child').find('.fencing-tab-number').html( $('.fencing-tab').length );
+    var tabCount = $('.fencing-tab').length;
+
+    $('.fencing-tab:last-child').find('.fencing-tab-number').html( tabCount );
+
+    $('.fencing-tab:last-child').toggleClass(`fc-section-1 fc-section-${tabCount}`);
 
     $('.measurement-box-number').val(FENCES.defaultValues.measurement);
 
@@ -889,18 +908,35 @@ $.fn.scrollCenter = function(elem, speed) {
     return this;
 };
 
+
+function getCartItemStorage() {
+
+    var values = [];
+
+    Object.entries(localStorage).forEach(([key, value]) => {
+      if (key.startsWith("cart_items")) {
+        var cartData = JSON.parse(localStorage.getItem(key));
+        values.push(cartData);
+      }
+    });
+
+    return values;
+}
+
+
 function submit_fence_planner() {
 
     window.onbeforeunload = function() {}
 
     //Set some delay to make sure the local storage and the html markup are loaded
-    setTimeout(function(){
-        FENCES.cartItems.init();
-    }, 100);
 
+    var items = localStorage.getItem('custom_fence-section') ?? 1;
+    for (let i = 0; i < items; i++) {
+        FENCES.cartItems.init(i);
+    }    
     var set_fc_data = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
-    var cart_items = JSON.parse(localStorage.getItem('cart_items'));
+    var cart_items = getCartItemStorage();
 
     $( ".fencing-tab" ).each(function() {
 
@@ -1347,6 +1383,7 @@ function deleteLocalStorageEntry(){
 
     //Find and delete all instance of it in local storage
     deleteAllEntriesBySubstring("custom_fence-" + getActiveTabIndex);
+    deleteAllEntriesBySubstring("cart_items-" + getActiveTabIndex);
 
 }
 
@@ -1414,10 +1451,10 @@ function getSearchParams(k){
  * that appear after the deleted entry based on the index position
  * `custom_fence-{idx}` and `custom_fence-{idx}-{styleIdx}`
  */
-function refreshLocalStorage(activeSectionIndex) {
+function refreshLocalStorage(activeSectionIndex, target) {
 
     //Only get storage entries related to custom fence
-    const totalEntries = countLocalStorageFenceKeys();
+    const totalEntries = countLocalStorageFenceKeys(target);
 
     //Iterate each entries
     for (let i = activeSectionIndex; i <= totalEntries; i++) {
@@ -1430,10 +1467,10 @@ function refreshLocalStorage(activeSectionIndex) {
         }
 
         //Retrieve to the old key
-        const oldKey = `custom_fence-${i}`;
+        const oldKey = `${target}-${i}`;
 
         //Prepare the new key string format
-        const newKey = `custom_fence-${newIndex}`;
+        const newKey = `${target}-${newIndex}`;
         
         // Check if the oldKey exists in localStorage and update it
         if (localStorage.getItem(oldKey)) {
@@ -1452,10 +1489,10 @@ function refreshLocalStorage(activeSectionIndex) {
 
             //For Styles
             //Grab the old style key value
-            const oldStyleKey = `custom_fence-${i}-${value[0].style}`;
+            const oldStyleKey = `${target}-${i}-${value[0].style}`;
 
             //Prepare new key string format
-            const newStyleKey = `custom_fence-${newIndex}-${value[0].style}`;
+            const newStyleKey = `${target}-${newIndex}-${value[0].style}`;
 
             // Check if the old style Key exists in localStorage
             if (localStorage.getItem(oldStyleKey)) {
@@ -1476,7 +1513,7 @@ function refreshLocalStorage(activeSectionIndex) {
 }
 
 
-function countLocalStorageFenceKeys() {
+function countLocalStorageFenceKeys(target) {
     
     let count = 0;
 
@@ -1484,7 +1521,7 @@ function countLocalStorageFenceKeys() {
         const key = localStorage.key(i);
 
         // Check if the key contains the substring "custom_fence"
-        if (key.includes("custom_fence")) {
+        if (key.includes(target)) {
             count++;
         }
     }
@@ -1721,4 +1758,5 @@ function setActiveColor() {
 }
 
 setActiveColor();
+
 

@@ -328,7 +328,8 @@ $(document).on('click', '.js-btn-delete-fence', function(e){
     deleteLocalStorageEntry();
     deleteSectionTab();
     refreshSectionTabIndex();
-    refreshLocalStorage(getActiveTabIndex);
+    refreshLocalStorage(getActiveTabIndex, 'custom_fence');
+    refreshLocalStorage(getActiveTabIndex, 'cart_items');
     hideDeleteSectionBtn();
 
 });
@@ -693,9 +694,11 @@ $(document).on('click', '.btn-fc-calculate', function(){
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
 
     //Set some delay to make sure the local storage and the html markup are loaded
+    /*
     setTimeout(function(){
         FENCES.cartItems.init();
     }, 500);
+*/
 
     window.onbeforeunload = function() {
         return false;

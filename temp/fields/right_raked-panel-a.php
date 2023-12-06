@@ -1,8 +1,8 @@
 <div class="raked-panel-container">
 
 	<div class="fencing-right-panel-o-a">
-		<div data-cart-key="raked_panel" data-cart-value="{{panel_size}}x{{panel_unit}}" id="panel-item-{{panel_number}}" data-id="{{panel_number}}" class="fencing-panel-item fencing-raked-panel fencing-right-panel-a fencing-btn-modal panel-item" data-key="right_side" data-target="#fc-control-modal">
-			<div class="fencing-panel-item-size">{{panel_size}} {{panel_unit}}</div>
+		<div data-cart-key="right_raked_panel" data-cart-value="{{panel_size}}x{{panel_height}}" id="panel-item-{{panel_number}}" data-id="{{panel_number}}" class="fencing-panel-item fencing-raked-panel fencing-right-panel-a fencing-btn-modal panel-item" data-key="right_side" data-target="#fc-control-modal">
+			<div class="fencing-panel-item-size">{{panel_size}}H {{panel_unit}}W</div>
 		</div>	
 	</div>
 
