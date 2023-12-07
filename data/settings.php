@@ -762,15 +762,6 @@ $fences = [
 								]
 							],
 							[
-								'slug' => 'even_3000',
-								'type' => 'text_option',
-								'title' => 'Even Size Panels 3000W',
-								'desc' => 'ONLY Available In BLACK',
-								'size' => [
-									'width' => 3050,
-								]
-							],
-							[
 								'slug' => 'full_2400',
 								'type' => 'text_option',
 								'title' => 'Full Size Panels 2400W',

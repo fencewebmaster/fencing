@@ -74,101 +74,7 @@ $(document).on('click', '.fc-move-post', function(){
     var move = $(this).data('move'),
         gate = $('.fencing-panel-gate');
 
-    if( move == 'left' ) {
-
-        closest_id = gate.prev().prev().prev().attr('id');
-
-        if( $('.fencing-panel-gate').index() == 1 || closest_id == undefined ) {
-            return;
-        }
-
-        $(gate).swapWith( $('#'+closest_id) );
-
-        gate.remove();
-
-    } else if( move == 'right' ) {
-
-        closest_id = gate.next().next().next().attr('id');
-
-        if( closest_id == undefined ) {
-            return;
-        }
-
-        $(gate).swapWith( $('#'+closest_id) );
-
-        gate.remove();
-
-    } if( move == 'first' ) {
-
-        var index =  $('#panel-item-0').index()/3;
-
-        if( index != 2 ) {
-
-            move_gate = gate.prop("outerHTML") + gate.prev().prop("outerHTML") + gate.prev().prev().prop("outerHTML");
-            
-            gate.prev().prev().remove();
-            gate.prev().remove();
-
-            $('#panel-item-0').before( move_gate ); 
-
-            gate.remove();
-        }
-
-    } else if( move == 'last' ) {
-
-        var closest_id = $('.panel-item').length-1,
-            last_id = $('.panel-item').last().attr('data-id');
-
-        if( $('.right_raked-panel .fencing-raked-panel').length ) {            
-            last_id = $('.panel-item').last().attr('data-id')-1;
-        }
-
-        var index =  ($('#panel-item-'+last_id).index()/3)+1,
-            gate_index = gate.index()/3;         
-
-
-        if( index != gate_index ) {
-
-            move_gate = gate.next().next().prop("outerHTML") + gate.next().prop("outerHTML") + gate.prop("outerHTML");
-
-            gate.next().next().remove();
-            gate.next().remove();
-
-            $('#panel-item-'+last_id).after( move_gate );  
-
-            gate.remove();
-
-        }
-
-    } else if( move == 'delete' ) {
-
-        var index =  $('#panel-item-0').index()/3;
-
-        $('#btn-gate').html('Add Gate');
-        $('.fencing-panel-gate').removeAttr('data-cart-value');
-        FCModal.close();
-        $('.fc-btn-active').removeClass('fc-btn-active');
-
- 
-        if( index == 2 ) {
-            gate.next().next().remove();   
-            gate.next().remove();              
-        } else {
-            gate.prev().prev().remove();   
-            gate.prev().remove();    
-        }
-
-        gate.remove();
-
-        setTimeout(function(){
-            $('.btn-fc-calculate').click();            
-        });
-
-    }
-
-    update_custom_fence_gate();
-
-    $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
+    move_the_gate(move);
 
 });
 
@@ -307,6 +213,43 @@ $(document).on('click', '.fencing-tab-add', function(e) {
     tabContainerScroll($(this));
     
 });
+
+$(document).on('click', '.fc-fence-reset-all', function(e) {
+    e.preventDefault();
+
+    var i   = $('.fencing-style-item.fsi-selected').index(),
+        tab = $('.fencing-tab.fencing-tab-selected').index();
+
+    localStorage.removeItem('custom_fence-'+tab); 
+    localStorage.removeItem('custom_fence-'+tab+'-'+i);
+
+    $('.fsi-selected').removeClass('fsi-selected');
+    $('.fencing-tab-selected').find('.ftm-measurement').html('');
+
+    move_the_gate('delete');
+
+    update_custom_fence_tab();
+
+    load_fencing_items();
+
+});
+
+$(document).on('click', '.fc-fence-reset', function(e) {
+    e.preventDefault();
+
+    var i   = $('.fencing-style-item.fsi-selected').index(),
+        tab = $('.fencing-tab.fencing-tab-selected').index();
+
+    localStorage.removeItem('custom_fence-'+tab+'-'+i);
+
+    move_the_gate('delete');
+
+    update_custom_fence_tab();
+
+    load_fencing_items();
+
+});
+
 
 
 $(document).on('click', '.fencing-style-item', function() {

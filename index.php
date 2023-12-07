@@ -26,6 +26,7 @@ if( ! isset($_SESSION['url']) ) {
 <title>Fencing Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="style.css?v=<?php echo date('YmdHis'); ?>">
+<link rel="stylesheet" type="text/css" href="style-v2.css?v=<?php echo date('YmdHis'); ?>">
 <link rel="stylesheet" type="text/css" href="fonts/fa/css/all.min.css">
 
 <style type="text/css">
@@ -37,8 +38,9 @@ if( ! isset($_SESSION['url']) ) {
     display: none;
 }
 .fencing-style-item .fencing-style-btn {
-    background: #f67925;
-    color: #fff;
+    border: 2px solid #ffffff;
+    box-shadow: 1px 1px 4px 1px #939393;
+    color: #f67925;
 }
 </style>
 
@@ -139,7 +141,7 @@ if( ! isset($_SESSION['url']) ) {
                     
                         <!-- START STYLES AREA -->
                         <div class="fencing-section__cmp fencing-section-step fencing-section--step1">
-                            
+
                             <button type="button" 
                                 class="btn-fc btn-fc-outline-danger btn-fc-sm btn-delete-fence js-btn-delete-fence" 
                                 style="display:none;">
@@ -166,7 +168,7 @@ if( ! isset($_SESSION['url']) ) {
                                         <?php echo $fence['title']; ?>
                                     </div>
 
-                                    <button class="fencing-style-btn js-fencing-style-btn"><i class="fa fa-check"></i></button>
+                                    <button class="fencing-style-btn js-fencing-style-btn fc-fence-reset-all"><i class="fa fa-times"></i></button>
 
                                 </div>
                             </div>
@@ -313,6 +315,13 @@ if( ! isset($_SESSION['url']) ) {
                                         class="btn-fc btn-fc-outline-default fc-tab-add fencing-tab-add fc-px-2">
                                         <b>
                                             <i class="fa-solid fa-plus"></i> Add Another Section
+                                        </b>
+                                    </button>
+
+                                    <button type="button" 
+                                        class="btn-fc btn-fc-outline-default fc-fence-reset fc-text-uppercase">
+                                        <b>
+                                            <i class="fa-solid fa-rotate"></i> Reset
                                         </b>
                                     </button>
 
