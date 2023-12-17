@@ -168,9 +168,10 @@ if( @$_POST['action'] == 'push_order' ) {
         foreach ( $_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
 
             $custom_fence_data['items'][] = [
-                'sku'  => $cart_item['sku'], 
-                'qty'  => $cart_item['qty'],
-                'slug' => $cart_item['slug']
+                'sku'         => $cart_item['sku'], 
+                'qty'         => $cart_item['qty'],
+                'orignal_qty' => $cart_item['orignal_qty'],
+                'slug'        => $cart_item['slug']
             ];
 
         } 

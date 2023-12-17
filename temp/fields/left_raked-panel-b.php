@@ -14,8 +14,8 @@
 
 	<div class="fc-center-point fc-first-c-p">
 	    <span class="fc-div-c-p"></span>
-	    <span class="fc-start-c-p">50</span>
-	    {{panel_unit}}<br>
+	    <span class="fc-start-c-p">{{center_post}}</span>
+	    {{panel_unit_center}}<br>
 	    Centers
 	</div>
 

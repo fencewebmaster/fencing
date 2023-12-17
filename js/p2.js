@@ -23,8 +23,9 @@ reload_fence_items();
 
 function load_center_point(tab) {
 
-    var defaultCenterPoint = 50;
+    var defaultCenterPoint = 25;
     var defaultRakedWidth = 1200;
+    var gateGap = 20 + 20;
 
     var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
         custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
@@ -37,20 +38,17 @@ function load_center_point(tab) {
 
     var first_point = `<span class="fc-start-c-p">${defaultCenterPoint}</span>`;
 
+    gate_size = 970 + 50 + gateGap;
+
     var gate = `<div class="fc-center-point">
         <span class="fc-div-c-p"></span>
-        970<br>
+        ${gate_size}<br>
         Centers
     </div>`;
 
     var last_point = `<span class="fc-div-c-p"></span>
         <span class="fc-div-c-p"></span>
         <span class="fc-end-c-p">${defaultCenterPoint}</span><br>Centers`;
-
-
-    if( ! $('#pp-'+tab+' .left_raked-panel .fencing-raked-panel').length ) {
-         $('#pp-'+tab+' .panel-item').first().find('.fc-div-c-p').after(first_point);
-    } 
 
 
     if( !$('#pp-'+tab+' .right_raked-panel .fencing-raked-panel').length && $('#pp-'+tab+' .post-right.panel-no-post').prev().prev().attr('data-key') != 'gate' ) {
@@ -98,6 +96,16 @@ function load_center_point(tab) {
 
     }
       
+
+    if( $('#pp-'+tab+' .fencing-panel-gate').length && ! $('#pp-'+tab+' .left_raked-panel .fencing-raked-panel').length  ) {
+        // If there is a gate and no step up
+         $('#pp-'+tab+' .fencing-panel-gate').find('.fc-div-c-p').after(first_point);
+
+    } else if( ! $('#pp-'+tab+' .left_raked-panel .fencing-raked-panel').length ) {
+        // If there is no step up
+        $('#pp-'+tab+' .panel-item').first().find('.fc-div-c-p').after(first_point);
+    } 
+
 }
 
 
@@ -138,11 +146,10 @@ function reload_load_fencing_items(tab) {
                                                      .replace(/{{data_key}}/gi, center_point)
                                                      .replace(/{{center_point}}/gi, center_point)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
+                                                     .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
                                                      .replace(/{{panel_number}}/gi, panel_number);    
     
-
-
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);
   
         $('#pp-'+tab+' .fencing-panel-item').css({'width':panel_size*0.10});
@@ -297,6 +304,8 @@ function re_update_raked_panels(side, tab) {
     var cf_data = {item:i,tab:tab}
     var calc = calculate_fences(cf_data);
 
+    var defaultCenterPoint = 25;
+
     $(side).each(function(k, v){
 
         // Side
@@ -345,13 +354,12 @@ function re_update_raked_panels(side, tab) {
                 
                 var tpl = $('script[data-type="'+v+'-panel-'+info.panel_group+'"]').text()
                                                                 .replace(/{{center_point}}/gi, center_point)
-                                                                .replace(/{{panel_size}}/gi, panel_h+'H')
-                                                                .replace(/{{panel_unit}}/gi,  panel_w+'W')
-                                                                .replace(/{{panel_number}}/gi, 4)                                                     
-                                                                .replace(/{{panel_size}}/gi, 5)
-                                                                .replace(/{{panel_unit}}/gi, 6)
-                                                                .replace(/{{panel_number}}/gi, 7)
-                                                                .replace(/{{post}}/gi, has_post);   
+                                                                .replace(/{{panel_size}}/gi, panel_h)
+                                                                .replace(/{{panel_unit}}/gi,  panel_w)
+                                                                .replace(/{{panel_unit_center}}/gi, panel_w+center_point)
+                                                                .replace(/{{post}}/gi, has_post)
+                                                                .replace(/{{center_post}}/gi, defaultCenterPoint);   
+                                                                
 
                 if( typeof panel_h !== "undefined"){
                     $('#pp-'+tab+' .'+v+'-panel').html(tpl);    
@@ -362,12 +370,20 @@ function re_update_raked_panels(side, tab) {
         }
 
         if( side_part == 'left' ) {
-            $('#pp-'+tab+' .panel-post:not(.post-left):not(.post-right)').first().addClass('post-left panel-'+has_post).attr('data-key',"left_side").attr('post-side',"post_left");
+            $('#pp-'+tab+' .panel-post:not(.post-left):not(.post-right)').first()
+                                                                         .addClass('post-left panel-'+has_post)
+                                                                         .attr('data-key',"left_side")
+                                                                         .attr('post-side',"post_left");
+
             $('#pp-'+tab+' .fencing-panel-spacing-number').first().addClass(has_post);
         }
 
         if( side_part == 'right' ) {
-            $('#pp-'+tab+' .panel-post:not(.post-left):not(.post-right)').last().addClass('post-right panel-'+has_post).attr('data-key',"right_side").attr('post-side',"post_right");
+            $('#pp-'+tab+' .panel-post:not(.post-left):not(.post-right)').last()
+                                                                         .addClass('post-right panel-'+has_post)
+                                                                         .attr('data-key',"right_side")
+                                                                         .attr('post-side',"post_right");
+
             $('#pp-'+tab+' .fencing-panel-spacing-number').last().addClass(has_post);
         }
 

@@ -15,9 +15,9 @@ function load_fencing_items() {
         return;
     }
 
-    for (let i = 0; i < calc.long_panel.count; i++) {
+    var center_point = 50;
 
-        var center_point = 50;
+    for (let i = 0; i < calc.long_panel.count; i++) {
         
         mesurement = $('.measurement-box-number').val();
 
@@ -51,30 +51,30 @@ function load_fencing_items() {
 
     if( calc.short_panel.count ) {
 
-    for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 1; i++) {
 
-        var panel_number = i,
-            panel_size = calc.short_panel.length,
-            panel_unit = FENCES.defaultValues.unit;
+            var panel_number = i,
+                panel_size = calc.short_panel.length,
+                panel_unit = FENCES.defaultValues.unit;
 
-        var tpl = $('script[data-type="short_panel_item-'+info.panel_group+'"]').text()
-                                                     .replace(/{{center_point}}/gi, center_point)
-                                                     .replace(/{{panel_size}}/gi, panel_size+'W')
-                                                     .replace(/{{panel_unit}}/gi, '<br>PANEL')
-                                                     .replace(/{{panel_number}}/gi, panel_number);    
-    
+            var tpl = $('script[data-type="short_panel_item-'+info.panel_group+'"]').text()
+                                                         .replace(/{{center_point}}/gi, center_point)
+                                                         .replace(/{{panel_size}}/gi, panel_size+'W')
+                                                         .replace(/{{panel_unit}}/gi, '<br>PANEL')
+                                                         .replace(/{{panel_number}}/gi, panel_number);    
+        
+            $('.fencing-panel-container').append(tpl);
+
+            $('.short-panel-item').attr('data-id', calc.long_panel.count+1)
+                                  .attr('id', 'panel-item-'+(calc.long_panel.count+1))
+                                  .css({'width':panel_size*0.10});
+
+        }  
+
+        var tpl = $('script[data-type="panel_spacing-'+info.panel_group+'"]').text()
+                                                         .replace(/{{center_point}}/gi, center_point);
+
         $('.fencing-panel-container').append(tpl);
-
-        $('.short-panel-item').attr('data-id', calc.long_panel.count+1)
-                              .attr('id', 'panel-item-'+(calc.long_panel.count+1))
-                              .css({'width':panel_size*0.10});
-
-    }  
-
-    var tpl = $('script[data-type="panel_spacing-'+info.panel_group+'"]').text()
-                                                     .replace(/{{center_point}}/gi, center_point);
-
-    $('.fencing-panel-container').append(tpl);
 
     }
 
@@ -166,6 +166,7 @@ function update_raked_panels(side) {
         }
 
 
+
         // Raked
         var filtered_settings = settings?.filter(function(item) {
             return item.key == v;
@@ -201,7 +202,7 @@ function update_raked_panels(side) {
                                                                 .replace(/{{panel_number}}/gi, 7)
                                                                 .replace(/{{post}}/gi, has_post);   
 
-                if( typeof panel_h !== "undefined"){
+                if( panel_h ){
                     $('.'+v+'-panel').html(tpl);    
                 }
                 
@@ -219,6 +220,7 @@ function update_raked_panels(side) {
         }
 
         if( side_part == 'right' ) {
+
             $('.panel-post:not(.post-left):not(.post-right)').last()
                                                              .addClass('post-right panel-'+has_post)
                                                              .attr('data-key',"right_side")
@@ -230,11 +232,19 @@ function update_raked_panels(side) {
     });
 
     // Left Panel post
-    var left_panel_post = $('.left-panel-post.no-post span').text().replace('(', '').replace(')', '');
+    var left_panel_post = $('.left-panel-post.no-post span').text()
+                                                            .replace('-', '')
+                                                            .replace('(', '')
+                                                            .replace(')', '');
+
     $('.left-panel-post.no-post span').text('(-'+left_panel_post+')');
 
     // Right Panel Post
-    var right_panel_post = $('.right-panel-post.no-post span').text().replace('(', '').replace(')', '');
+    var right_panel_post = $('.right-panel-post.no-post span').text()
+                                                              .replace('-', '')
+                                                              .replace('(', '')
+                                                              .replace(')', '');
+
     $('.right-panel-post.no-post span').text('(-'+right_panel_post+')');
 
     
@@ -347,10 +357,9 @@ function load_post_options_all(custom_fence, info) {
 
         // Get default post options
         var post_options_default = info.settings.post_options.fields[0].options.find(function(item) {
-
             return item.default == true;
         });
-      
+
         panel_post.not(exclude_panel_posts).addClass(post_options_default.slug);
         panel_spacing_number.addClass(post_options_default.slug);
 

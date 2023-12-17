@@ -9,8 +9,8 @@
 	<div class="fc-center-point fc-last-c-p">
 	    <span class="fc-div-c-p"></span>
 	    <span class="fc-div-c-p"></span>
-	    <span class="fc-end-c-p">50</span>
-	    {{panel_unit}}<br>
+	    <span class="fc-end-c-p">{{center_post}}</span>
+	    {{panel_unit_center}}<br>
 	    Centers
 	</div>
 	

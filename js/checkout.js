@@ -460,7 +460,7 @@ $(document).on('click', ".fc-reset-item", function (e) {
 
     $('.fc-table-items td').each(function(){
         if( $(this).find('.fc-form-control').length ) {
-            var val = $(this).find('.fc-item-value').text();
+            var val = $(this).find('.fc-item-value').data('original');
             $(this).find('.fc-form-control').val(val)
         }
     });

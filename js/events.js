@@ -282,7 +282,7 @@ $(document).on('change', '.fc-select-option', function(event){
 
     var side = ['left_raked', 'right_raked'];
 
-    setTimeout(function(){
+  //  setTimeout(function(){
         $('.raked-panel').html('');
         update_raked_panels( side ); 
 
@@ -299,7 +299,7 @@ $(document).on('change', '.fc-select-option', function(event){
             $('.btn-fc-calculate').click();
         }
 
-    });    
+  //  });    
      
     
 

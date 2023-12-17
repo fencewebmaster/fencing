@@ -423,7 +423,7 @@ if( ! isset($_SESSION['url']) ) {
                                             <strong>Create Project Plan</strong><br>
                                             <small>View Costing, Plan & Materials List</small>
                                         </button>
-
+                                        
                                         <button type="button" 
                                             class="btn-fc fc-btn-step btn-fc-outline-default fc-text-uppercase fc-px-3" 
                                             data-tab="2" 

@@ -212,6 +212,7 @@ function post_product_skus($cart_items = array()) {
             'slug'  => $item['slug'],
             'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
             'qty'   => $custom_fence_products[$key]['qty'],
+            'orignal_qty' => $custom_fence_products[$key]['qty'],
         ];
       $i++;
     }

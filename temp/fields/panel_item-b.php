@@ -9,7 +9,7 @@
 
 	<div class="fc-center-point">
         <span class="fc-div-c-p"></span>
-        {{panel_size}}<br>
+        {{panel_size_center}}<br>
         Centers
     </div>
     

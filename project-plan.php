@@ -234,6 +234,17 @@
 							.panel-post:not(.panel-no-post).opt-2:after {
 								bottom: 15px;
 							}
+							.qty-edited {
+								position: absolute;
+								left: -10px;
+								top: calc(50% - 12px);
+								font-size: 12px;
+								background: #fff;
+								padding: 5px;
+								border-radius: 100%;
+								border: 1px solid #dddddd;
+								color: #8e8e8e;
+							}
 							</style>
 
 							<div id="update_cart-section">

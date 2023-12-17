@@ -22,12 +22,23 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
             	<?php $ci = 0; ?>
             	<?php foreach( @$cart['items'] as $cart_item ): ?>
+
+                <input name="cart[orignal_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['orignal_qty']; ?>" class="fc-form-control" min="1" required>
+
                 <tr class="fc-position-relative">
-                    <td width="54" class="valign-top">
-                        <span class="fc-item-value"><?php echo @$cart_item['qty']; ?></span>
-                        <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control" min="1" required>
+                    <td width="90" class="valign-top">                        
+
+                        <span class="fc-item-value" data-original="<?php echo @$cart_item['orignal_qty']; ?>"><?php echo @$cart_item['qty']; ?></span>
+                        <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control" min="0">
+
+                        <?php if( @$cart_item['qty'] != @$cart_item['orignal_qty'] ): ?>
+                        <div class="qty-edited">
+                            <i class="fa fa-pencil"></i>       
+                        </div>
+                        <?php endif; ?>
+
                     </td>
-                    <td width="279">
+                    <td>
                         <p><strong><?php echo @$cart_item['name']; ?></strong><br /><?php echo @$cart_item['sku']; ?></p>
 
                         <br><small class="fc-text-success"><?php echo @$cart_item['slug']; ?></small>
@@ -36,7 +47,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                     <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>
                     <td>$<?php echo @$cart_item['trade_price']; ?></td>
                     <td>$<?php echo number_format(@$cart_item['subtotal'], 2); ?></td> -->
-                    <td>
+                    <td width="115">
                         <div class="fc-stock-status fc-stock-status--<?php echo @$cart_item['stock']; ?>"><?php echo ucwords(@$cart_item['stock']); ?></div>
                     </td>
                 </tr>
