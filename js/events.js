@@ -220,17 +220,18 @@ $(document).on('click', '.fc-fence-reset-all', function(e) {
     var i   = $('.fencing-style-item.fsi-selected').index(),
         tab = $('.fencing-tab.fencing-tab-selected').index();
 
-    localStorage.removeItem('custom_fence-'+tab); 
-    localStorage.removeItem('custom_fence-'+tab+'-'+i);
+    setTimeout(function(){
+        $('.fsi-selected').removeClass('fsi-selected');
+        $('.fencing-tab-selected').find('.ftm-measurement').html('');
+        $('.fc-content-tab-title').html('');
+        $('.measurement-box-number').val('');
 
-    $('.fsi-selected').removeClass('fsi-selected');
-    $('.fencing-tab-selected').find('.ftm-measurement').html('');
+        localStorage.removeItem('custom_fence-'+tab); 
+        localStorage.removeItem('custom_fence-'+tab+'-'+i);
 
-    move_the_gate('delete');
+        $('.js-fc-form-step').fadeOut('fast');
+    });
 
-    update_custom_fence_tab();
-
-    load_fencing_items();
 
 });
 
@@ -495,6 +496,7 @@ function removeDuplicateCloseBtn() {
 $(document).on('keypress', '.measurement-box-number', function(e){
     if(event.which == 13) {
         $('.btn-fc-calculate').click();
+        e.preventDefault();
     }
 });
 
