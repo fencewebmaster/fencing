@@ -172,7 +172,9 @@ function reload_load_fencing_items(tab) {
                                                      .replace(/{{center_point}}/gi, center_point)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
-                                                     .replace(/{{panel_number}}/gi, panel_number);    
+                                                     .replace(/{{panel_number}}/gi, panel_number)
+                                                     .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W');   
+                                                      
     
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);
 
