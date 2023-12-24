@@ -217,9 +217,6 @@ function post_product_skus($cart_items = array()) {
       $i++;
     }
 
-
-  
-
     $_SESSION['fc_cart'] = $cart;
 
 }

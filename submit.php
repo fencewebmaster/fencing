@@ -128,3 +128,6 @@ post_product_skus($cart_items_data);
 // post_product_skus($custom_fence_data);
 
 // END - GET PRODUCTS FROM THE STORE
+
+echo 'SUCCESS';
+exit;

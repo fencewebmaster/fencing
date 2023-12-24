@@ -57,7 +57,7 @@ if( ! isset($_SESSION['url']) ) {
                 <div class="fc-col-auto">
                     
                     <ul>
-                        <li class="fc-text-success">
+                        <li class="fc-text-success li-create">
                             <div class="fc-mb-1"><small style="font-size:30px;">Creating your plan...</small></div>
                         </li>
                     </ul>
@@ -302,7 +302,14 @@ if( ! isset($_SESSION['url']) ) {
                             <div class="fc-tab-control">
 
                                 <div class="fc-section-step" data-tab="1">
-                                    
+
+                                    <?php if( isset($_GET['section']) ): ?>
+                                    <button type="submit" 
+                                        class="btn-fc btn-fc-orange fc-btn-update">
+                                        <b>UPDATE <i class="fa-regular fa-pen-to-square"></i></b>
+                                    </button>
+                                    <?php endif; ?>
+
                                     <button type="button" 
                                         class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step" 
                                         data-tab="1" 
