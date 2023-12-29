@@ -1,0 +1,9 @@
+.fc-cart-items .fc-edit-item {
+    border: 1px solid #f67925;
+    background: #f67925;
+    color: #ffffff;
+}
+.fc-cart-items .fc-edit-item:hover {
+    border: 1px solid #525252!important;
+    background: #525252 !important;
+}

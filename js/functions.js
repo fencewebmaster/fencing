@@ -248,9 +248,9 @@ function update_raked_panels(side) {
     $('.right-panel-post.no-post span').text('(-'+right_panel_post+')');
 
     
-    load_post_options_first_last_values(custom_fence, info, 0);
-
     load_post_options_all(custom_fence, info);
+
+    load_post_options_first_last_values(custom_fence, info, 0);
 
     $('.fencing-display-result').css({'padding': ''});
 
@@ -277,7 +277,7 @@ function update_raked_panels(side) {
  */
 function load_post_options_first_last_values(custom_fence, info, sectionId) {
 
-
+    var modal_key = $('.fencing-container').attr('data-key');
     var side_post = '';
 
     //Get the settings of post_option from left_side and right_side
@@ -296,7 +296,7 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
                 let key = settings[idx].key;
                 let value = settings[idx].val;
 
-                if(key === "post_option" ){
+                if(key === "post_option" && modal_key != 'post_options' ){
 
                     //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                     //Find the element that matches the condition below and add the class
@@ -335,11 +335,32 @@ function load_post_options_all(custom_fence, info) {
 
     let panel_post = $('.panel-post');
     let panel_spacing_number = $('.fencing-panel-spacing-number');
-    let exclude_panel_posts = ".post-left, .post-right";
+    var modal_key = $('.fencing-container').attr('data-key');
+    var exclude_panel_posts = '';
+    var i = $('.fencing-style-item.fsi-selected').index();
+    var tab = $('.fencing-tab.fencing-tab-selected').index();
 
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === 'post_options';
     });
+
+    var left_side_filtered_data = custom_fence.filter(function(item) {
+        return item.control_key === 'left_side';
+    });
+
+    var right_side_filtered_data = custom_fence.filter(function(item) {
+        return item.control_key === 'right_side';
+    });
+
+    var left_planel_class = right_planel_class = "";
+
+    if( modal_key != 'post_options' && left_side_filtered_data.length) {
+        var left_planel_class  = ".post-left";
+    }
+
+    if( modal_key != 'post_options' && right_side_filtered_data.length ) {
+        var right_planel_class  = ".post-right";
+    }
 
     if( post_options_filtered_data.length ) {
 
@@ -349,7 +370,11 @@ function load_post_options_all(custom_fence, info) {
         });
 
         if( typeof post_options_setting !== "undefined" ){
-            panel_post.not(exclude_panel_posts).addClass(post_options_setting.val).attr('data-cart-value', post_options_setting.val);
+            panel_post.not(left_planel_class)
+                      .not(right_planel_class)
+                      .addClass(post_options_setting.val)
+                      .attr('data-cart-value', post_options_setting.val);
+
             panel_spacing_number.addClass(post_options_setting.val);
         }
 
@@ -360,10 +385,30 @@ function load_post_options_all(custom_fence, info) {
             return item.default == true;
         });
 
-        panel_post.not(exclude_panel_posts).addClass(post_options_default.slug);
+        panel_post.not(left_planel_class)   
+                  .not(right_planel_class)
+                  .addClass(post_options_default.slug);
+
         panel_spacing_number.addClass(post_options_default.slug);
 
     }
+
+    // Overwrite side panel posts
+    if( modal_key == 'post_options' ) {
+        $(custom_fence).each(function(k, v){
+            if( v.control_key == 'left_side' || v.control_key == 'right_side' ) {
+
+                $(custom_fence[k].settings).each(function(lok, lov) {
+
+                    if( lov.key == 'post_option' ) {
+                       custom_fence[k].settings[lok].val = post_options_filtered_data[0].settings[0].val;
+                        localStorage.setItem(`custom_fence-${tab}-${i}`, JSON.stringify(custom_fence));
+                    }
+                });
+            }
+        });
+    }
+
 }
 
 function update_gate(action) {
@@ -1078,6 +1123,8 @@ function submit_fence_planner() {
 
     formData.set("cart_items", JSON.stringify(cart_items));
 
+    formData.set("project_plans", JSON.stringify(project_plans));
+
     Object.entries(project_plans).forEach(([key, value]) => {
         if (typeof value === 'object') {
             value = JSON.stringify(value);
@@ -1112,7 +1159,50 @@ function submit_fence_planner() {
 
 }
 
+function reloadFencingData() {
 
+    if( fc_fence_info.length == 0 ) {
+        return;
+    }
+
+    var custom_fence_items = JSON.parse(fc_fence_info.fence_data, true);
+
+    $(custom_fence_items).each(function(k, v){
+
+        v.form[0].style = v.form[0].style - 1;
+        v.form[0].tab = v.form[0].tab - 1;
+
+        localStorage.setItem('custom_fence-'+v.form[0].tab, JSON.stringify(v.form));
+        localStorage.setItem('custom_fence-'+v.form[0].tab+'-'+v.form[0].style,  JSON.stringify(v.settings));
+    });
+
+
+    var cart_items = JSON.parse(fc_fence_info.cart_items_data);
+    $(cart_items).each(function(k, v){
+
+        localStorage.setItem('cart_items-'+k, JSON.stringify(v));
+    });
+
+    localStorage.setItem('custom_fence-section', fc_fence_info.section_count);
+
+    localStorage.setItem('project-plans', fc_fence_info.project_plans_data);
+
+    // Reset URL
+    history.pushState({}, '', location.origin+location.pathname);
+}
+
+function clearFencingData() {
+    // Add clear fence planner local storage here
+    let keysToRemove = ["project-plans", "countdown-date", "cart_items"];
+    keysToRemove.forEach(k =>localStorage.removeItem(k))
+
+    // Clear all stored items start with custom_fence-
+    Object.entries(localStorage).forEach(([key, value]) => {
+      if (key.startsWith("custom_fence-")) {
+        localStorage.removeItem(key);
+      }
+    });    
+}
 
 function zooming(zoom) {
 
@@ -1362,7 +1452,7 @@ function addObjectByKey(objectArray, obj) {
  */
 function tabContainerScroll() {
 
-    let _tab_parent_class = FENCES.el.tabContainer;
+    let _tab_parent_class = FENCES?.el?.tabContainer;
     let _tab_content_class = '.js-fencing-tab-container-area';
     let _main_parent = $('.js-fencing-tabs-container');
 

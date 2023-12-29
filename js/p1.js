@@ -138,6 +138,8 @@ if( location.host == 'localhostx' ) {
 
 function reload_fence_items() {
 
+    reloadFencingData();
+
     var items = localStorage.getItem('custom_fence-section') ?? 1;
     var section = getSearchParams('section');
     var tab = getSearchParams('tab');

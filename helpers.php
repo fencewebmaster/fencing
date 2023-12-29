@@ -220,3 +220,7 @@ function post_product_skus($cart_items = array()) {
     $_SESSION['fc_cart'] = $cart;
 
 }
+
+function is_localhost($whitelist = ['127.0.0.1', '::1']) {
+    return in_array($_SERVER['REMOTE_ADDR'], $whitelist);
+}

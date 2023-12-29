@@ -11,15 +11,22 @@ if( $sid = @$_GET['sid'] && $url = @$_GET['url'] ) {
     die();
 } 
 
-include('data/settings.php');
-include('temp/fields.php');
-include('helpers.php');
+include 'data/settings.php';
+include 'temp/fields.php';
+include 'helpers.php';
+include 'config/database.php'; 
 
 if( ! isset($_SESSION['url']) ) {
     $_SESSION["site"] = [
         'id'  => 1,
-        'url' => $_SERVER['HTTP_HOST']
+        'url' => is_localhost() ? 'fencesperth.com' : $_SERVER['HTTP_HOST'] 
     ];         
+}
+
+$res = array();
+if( isset($_GET['planner_id']) ) {
+    $db = new Database();
+    $res = $db->select_where('planners', 'WHERE `planner_id` LIKE "'.$_GET['planner_id'].'"');    
 }
 ?>
 
@@ -303,7 +310,7 @@ if( ! isset($_SESSION['url']) ) {
 
                                 <div class="fc-section-step" data-tab="1">
 
-                                    <?php if( isset($_GET['section']) ): ?>
+                                    <?php if( isset($_SESSION['fc_data']) ): ?>
                                     <button type="submit" 
                                         class="btn-fc btn-fc-orange fc-btn-update">
                                         <b>UPDATE <i class="fa-regular fa-pen-to-square"></i></b>
@@ -462,6 +469,8 @@ if( ! isset($_SESSION['url']) ) {
 
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
+var fc_fence_info = <?php echo json_encode($res); ?>;
+console.log( fc_fence_info );
 </script>
 
 <script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
@@ -471,7 +480,6 @@ var fc_data = <?php echo json_encode($fences); ?>;
 <script type="text/javascript" src="js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/cart-items.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/p1.js?v=<?php echo date('YmdHis'); ?>"></script>
-
 
 
 

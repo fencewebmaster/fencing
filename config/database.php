@@ -72,6 +72,24 @@ class Database {
         $conn->close();
     }
 
+
+    function select_where($table, $where) {
+
+        $sql = "SELECT * FROM ".$this->prefix.$table." ".$where;
+
+        $conn = $this->connect();
+
+        $data = $conn->query($sql);
+
+        $conn->close();
+
+        if( $data->num_rows == 0 ) {
+            return array();
+        }
+
+        return $data->fetch_object();
+    }
+
 }
 
 

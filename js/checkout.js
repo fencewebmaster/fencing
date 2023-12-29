@@ -318,6 +318,10 @@ $("#paymentFrm").validate({
                 processData:false,    
                 success: function(response) {
                     
+                    if( ! response ) {
+                        return;
+                    }
+
                     var info = JSON.parse(response);
 
                     if( ! info.error ) {
@@ -337,16 +341,7 @@ $("#paymentFrm").validate({
 
                         });
                 
-                        // Add clear fence planner local storage here
-                        let keysToRemove = ["project-plans", "countdown-date", "cart_items"];
-                        keysToRemove.forEach(k =>localStorage.removeItem(k))
-
-                        // Clear all stored items start with custom_fence-
-                        Object.entries(localStorage).forEach(([key, value]) => {
-                          if (key.startsWith("custom_fence-")) {
-                            localStorage.removeItem(key);
-                          }
-                        });
+                        clearFencingData();
 
                         location.href = info.url;
 
@@ -445,7 +440,7 @@ $(document).on('click', ".js-fc-edit-item", function (e) {
     if( $(this).find('span').text() === 'Edit' ) {
         $('.fc-table-items input, .fc-reset-item').show();
         $('.fc-item-value').hide();
-        $(this).find('span').html('Update');
+        $(this).find('span').html('Save');
     } else {
 
         $('form').submit();

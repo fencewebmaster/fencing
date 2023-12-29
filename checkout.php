@@ -40,6 +40,7 @@ if( @$_POST['action'] == 'push_order' ) {
       'fence_data'         => $fc_data['fences'],
       'cart_data'          => $fc_cart['items'],
       'cart_items_data'    => $fc_data['cart_items'],
+      'project_plans_data' => $fc_data['project_plans'],
       'created_at'         => date('Y-m-d H:i:s'),
       'updated_at'         => date('Y-m-d H:i:s'),
     ];
