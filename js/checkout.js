@@ -325,7 +325,7 @@ $("#paymentFrm").validate({
                     var info = JSON.parse(response);
 
                     if( ! info.error ) {
-                        alert(1);
+ 
                         window.onbeforeunload = function() {}
 
                         var count = 0;
