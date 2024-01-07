@@ -160,11 +160,7 @@ function reload_fence_items() {
 
         $('.fencing-tab').removeClass('fencing-tab-selected');
 
-        if(section) { 
-            $('.fc-section-'+section).addClass('fencing-tab-selected');
-        } else {
-            $('.fencing-tab:last-child').addClass('fencing-tab-selected');
-        }
+        $('.fencing-tab:last-child').addClass('fencing-tab-selected');
 
         var  custom_fence_tabs = localStorage.getItem('custom_fence-'+index);
         const data_tabs = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
@@ -182,7 +178,15 @@ function reload_fence_items() {
     } 
 
     setTimeout(function(){
+         if(section) { 
+            $('.fencing-tab-selected').removeClass('fencing-tab-selected');
+            $('.fc-section-'+section).addClass('fencing-tab-selected');
+        } 
+
         $('.fencing-tab.fencing-tab-selected:visible').click();
+
+
+
     }, 100);
     
     if( tab == 2 && form ) {

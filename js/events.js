@@ -159,11 +159,10 @@ $(document).on('click', '.fencing-tab', function() {
 
     resetSectionsBlocks();
 
-    if( custom_fence_tab.length > 0 ){
+  //  if( custom_fence_tab.length > 0 ){
 
         $('.fencing-style-item').eq(custom_fence_tab[0]?.style).addClass('fsi-selected');
-
-        var measurement = custom_fence_tab[0]?.mbn ? custom_fence_tab[0].mbn : FENCES.defaultValues.measurement;
+        var measurement = custom_fence_tab[0]?.calculateValue ? custom_fence_tab[0]?.calculateValue : FENCES.defaultValues.measurement;
         $('.measurement-box-number').val(measurement);
 
         update_custom_fence_tab();
@@ -172,8 +171,11 @@ $(document).on('click', '.fencing-tab', function() {
 
         loadStep3(custom_fence_tab[0]);
 
-    }
+  //  }
 
+    if( $(this).hasClass('fencing-tab') ) {        
+        setSectionURLParam();
+    }
 
 });
 
@@ -230,8 +232,9 @@ $(document).on('click', '.fc-fence-reset-all', function(e) {
         localStorage.removeItem('custom_fence-'+tab+'-'+i);
 
         $('.js-fc-form-step').fadeOut('fast');
-    });
+        $('.fc-fence-reset-all').hide();
 
+    });
 
 });
 
@@ -254,9 +257,10 @@ $(document).on('click', '.fc-fence-reset', function(e) {
 
 
 $(document).on('click', '.fencing-style-item', function() {
-    
+
     update_custom_fence_style_item();
 
+    set_cutom_fence_data();
 });
 
 $(document).on('click', '.js-btn-delete-fence', function(e){

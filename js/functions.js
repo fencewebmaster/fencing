@@ -103,6 +103,13 @@ function load_fencing_items() {
 
     //updateFirstFencingPost();
     //updateLastFencingPost();
+
+    setTimeout(function(){
+        $('.fc-fence-reset-all').hide();
+        if( $('.fsi-selected').length ) {
+            $('.fc-fence-reset-all').show();
+        }        
+    });
 }
 
 function updateLastFencingPost(){
@@ -363,7 +370,6 @@ function load_post_options_all(custom_fence, info) {
     }
 
     if( post_options_filtered_data.length ) {
-
         //Get the value of Post Option
         var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
             return item.key === "post_option";
@@ -387,6 +393,7 @@ function load_post_options_all(custom_fence, info) {
 
         panel_post.not(left_planel_class)   
                   .not(right_planel_class)
+                  .attr('data-cart-value', post_options_default.slug)
                   .addClass(post_options_default.slug);
 
         panel_spacing_number.addClass(post_options_default.slug);
@@ -647,8 +654,7 @@ function get_field_value(tag, key, val) {
     }
 }
 
-
-function update_custom_fence_tab() {
+function set_cutom_fence_data() {
 
     var i = $('.fencing-style-item.fsi-selected').index(),
         tab = $('.fencing-tab.fencing-tab-selected').index(),      
@@ -683,6 +689,48 @@ function update_custom_fence_tab() {
     });
 
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
+
+}
+
+function update_custom_fence_tab() {
+
+    var i = $('.fencing-style-item.fsi-selected').index(),
+        tab = $('.fencing-tab.fencing-tab-selected').index(),      
+        modal_key = $('.fencing-container').attr('data-key'),
+        mbn = $('.measurement-box-number').val(),
+        custom_fence_tabs = localStorage.getItem('custom_fence-'+tab),
+        info = fc_data[i];
+
+    const data_tabs = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
+
+   
+    var filtered_data_tabs = data_tabs.filter(function(item) {
+        return item.tab != tab;
+    });
+
+    if( info == undefined ) {
+
+        $('.fc-tab-title').html('Section ' + (tab+1) );
+        $('.fc-tab-subtitle').html('');
+
+        $('.js-fc-form-step').hide();
+        $('.fsi-selected').removeClass('fsi-selected');
+
+        return;
+    }
+
+    /*
+    filtered_data_tabs.push({
+        tab: tab,
+        style: i,
+        fence: info.slug,
+        mbn: mbn,
+        isCalculate: data_tabs[0]?.isCalculate || FENCES.defaultValues.measurement,
+        calculateValue: data_tabs[0]?.calculateValue || FENCES.defaultValues.measurement
+    });
+
+    localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
+    */
 
     mesurement = $('.measurement-box-number').val();
     mesurement = mesurement ? parseInt(mesurement).toLocaleString() + ' mm' : '';
@@ -771,7 +819,7 @@ function update_custom_fence(modal_key, fc_form_field = false) {
     
     }
 
-    update_custom_fence_tab();
+   update_custom_fence_tab();
 
 }
 
@@ -888,8 +936,13 @@ function add_new_fence_section() {
     $('.js-fc-form-step').hide();
     $('.fsi-selected').removeClass('fsi-selected');
 
+    $('.fc-fence-reset-all').hide();
+
     // Store section count
     localStorage.setItem('custom_fence-section', $('.fencing-tab').length);
+
+    setSectionURLParam();
+
 }
 
 function move_the_gate(move) {
@@ -1084,12 +1137,13 @@ function submit_fence_planner() {
 
     window.onbeforeunload = function() {}
 
-    //Set some delay to make sure the local storage and the html markup are loaded
 
+    //Set some delay to make sure the local storage and the html markup are loaded
     var items = localStorage.getItem('custom_fence-section') ?? 1;
     for (let i = 0; i < items; i++) {
         FENCES.cartItems.init(i);
     }    
+
     var set_fc_data = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
     var cart_items = getCartItemStorage();
@@ -1099,17 +1153,27 @@ function submit_fence_planner() {
         var tid = $( this ).index();
 
         form = JSON.parse(localStorage.getItem('custom_fence-'+tid));
-        settings = JSON.parse(localStorage.getItem('custom_fence-'+tid+'-'+form[0].style));
 
-        form[0].style = form[0].style + 1;
-        form[0].tab = form[0].tab + 1;
+        settings = JSON.parse(localStorage.getItem('custom_fence-'+tid+'-'+form[0]?.style));
+
+        form[0].style = form[0]?.style + 1;
+        form[0].tab = form[0]?.tab + 1;
 
         set_fc_data.push({
             'form': form,
             'settings': settings
         }); 
 
+
     });
+
+/*    var sectionCount = $(".fencing-tab").find('.ftm-measurement').filter(function () {
+        return !$(this).is(':empty');
+    }).length;
+
+    localStorage.setItem('custom_fence-section', sectionCount);
+
+    return;*/
 
 /*    $.post('submit.php', {data : JSON.stringify(set_fc_data)}, 
         function(data, status) {
@@ -1158,6 +1222,12 @@ function submit_fence_planner() {
     });
 
 }
+
+function setSectionURLParam() {
+    var tab = $('.fencing-tab-selected').index() + 1;
+    history.pushState({}, '', '?section='+tab);    
+}
+
 
 function reloadFencingData() {
 
@@ -1556,12 +1626,15 @@ function deleteSectionTab() {
 
     // Store section count
     localStorage.setItem('custom_fence-section', $('.fencing-tab').length);
+
 }
 
 function refreshSectionTabIndex() {
     $('.fencing-tab-container .fencing-tab').each(function(index) {
         $(this).find('.fencing-tab-number').html( index+1 );
     });
+
+    setSectionURLParam();
 }
 
 function resetSectionsBlocks() {
@@ -1597,7 +1670,7 @@ function deleteLocalStorageEntry(){
  */
 function loadStep3(custom_fence_tab) {
     //Check if user clicks the calculate button for fence section
-    if( custom_fence_tab.isCalculate ){
+    if( custom_fence_tab?.isCalculate ){
         //Set the mm field value
         $('.btn-fc-calculate').prev().find('input').val(custom_fence_tab.calculateValue);
         //Then trigger click into the calculate button to load section 3
@@ -1746,6 +1819,7 @@ function hideDeleteSectionBtn() {
     }
 
     _delete_btn.removeAttr('disabled');
+
 }
 
 /**

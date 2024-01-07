@@ -317,7 +317,7 @@ $("#paymentFrm").validate({
                 cache: false,         
                 processData:false,    
                 success: function(response) {
-                    
+                    console.log('response', response);
                     if( ! response ) {
                         return;
                     }
@@ -325,7 +325,7 @@ $("#paymentFrm").validate({
                     var info = JSON.parse(response);
 
                     if( ! info.error ) {
-
+                        alert(1);
                         window.onbeforeunload = function() {}
 
                         var count = 0;
@@ -488,23 +488,23 @@ if( ! getcountDownDate ) {
 var countDownDateFormat = new Date(getcountDownDate).getTime(),
     cont = 'fc-countdown-timer';
 
-    // Update the count down every 1 second
-    var x = setInterval(function() {
+// Update the count down every 1 second
+var x = setInterval(function() {
 
-  // Get today's date and time
-  var now = new Date().getTime();
+    // Get today's date and time
+    var now = new Date().getTime();
 
-  // Find the distance between now and the count down date
-  var distance = countDownDateFormat - now;
+    // Find the distance between now and the count down date
+    var distance = countDownDateFormat - now;
 
-  // Time calculations for days, hours, minutes and seconds
-  var days    = Math.floor(distance / (1000 * 60 * 60 * 24));
-  var hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    // Time calculations for days, hours, minutes and seconds
+    var days    = Math.floor(distance / (1000 * 60 * 60 * 24));
+    var hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-  // Display the result in the element with id="demo"
-  document.getElementById(cont).innerHTML = hours + "hrs " + minutes + "mins " + seconds + "secs ";
+    // Display the result in the element with id="demo"
+    document.getElementById(cont).innerHTML = hours + "hrs " + minutes + "mins " + seconds + "secs ";
 
   // If the count down is finished, write some text
   if (distance < 0) {

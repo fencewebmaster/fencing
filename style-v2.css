@@ -7,3 +7,11 @@
     border: 1px solid #525252!important;
     background: #525252 !important;
 }
+
+.btn-fc-outline-danger {
+	background: #fff;
+}
+
+.fencing-section--step1 .btn-delete-fence {
+	padding: 0;
+}

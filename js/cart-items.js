@@ -21,6 +21,10 @@ FENCES.cartItems = {
         const multiArrayString = JSON.stringify(multiArray);
 
         try {
+
+            // Remove the string in local storage
+            localStorage.removeItem('cart_items-'+i);
+
             // Save the string in local storage
             localStorage.setItem('cart_items-'+i, multiArrayString);
 
@@ -100,22 +104,23 @@ FENCES.cartItems = {
             }
 
             //additional condition for panel_post to exclude el with class `post-left` OR `post-right`
-            if( cartKey === "panel_post" ){
-                if(el.classList.contains('post-left') || el.classList.contains('post-right')){
+            if( cartKey === "panel_post" || cartKey === "raked_post" ){
+                  if(el.classList.contains('panel-no-post')){
                     qty = 0;
                 }
             }
 
             //additional condition for raked_post to exclude el with class `panel-no-post`
-            if( cartKey === "raked_post" ){
+/*            if( cartKey === "raked_post" ){
                 if(el.classList.contains('panel-no-post')){
                     qty = 0;
                 }
-            }
+            }*/
 
             //Update the object `slug` and `qty` property before pushing to the array
             entry.slug = modifiedCartKey;
             entry.qty = qty;
+
 
             //Iterate though existing cart items array
             //This condition will handle the check if the cart item slug already exists in the array
@@ -136,7 +141,7 @@ FENCES.cartItems = {
                 newCartItems.push(entry);
             }
         }
-        
+
         newCartItems = FENCES.cartItems.apply_conditions(newCartItems);
 
        // console.log('newCartItems', newCartItems);
@@ -153,10 +158,13 @@ FENCES.cartItems = {
         newCartItems = FENCES.cartItems.apply_panel_options_full(newCartItems);
 
         //Apply condition for raked_panel_post+opt-1 | Row 16
-        newCartItems = FENCES.cartItems.apply_raked_panel_post_opt1(newCartItems);
+        // newCartItems = FENCES.cartItems.apply_raked_panel_post_opt1(newCartItems);
 
         //Apply condition for post_options+opt-2 | Row 20
-        newCartItems = FENCES.cartItems.apply_post_options_opt2(newCartItems);
+        // newCartItems = FENCES.cartItems.apply_post_options_opt2(newCartItems);
+
+        //Apply condition for post_options+opt-1 
+        newCartItems = FENCES.cartItems.apply_post_options_opt1(newCartItems);
 
         return newCartItems;
 
@@ -308,6 +316,54 @@ FENCES.cartItems = {
 
         return array;
 
+    },
+
+    /**
+     * Apply Condition for Cemented Post
+     * Condition: Object with slug `panel_post+opt-1` AND `raked_post+opt-1` must be in array
+     * 
+     * @param {*} array 
+     * @returns 
+     */
+    apply_post_options_opt1: function(array) {
+
+        var total = 0;
+
+        //Find the two objects with slug `panel_post+opt-1` and `raked_post+opt-1` in the array
+        //If it exists means user selected it
+        const foundPanelPostOpt1 = array.find(obj => obj['slug'] === "panel_post+opt-1");
+        const foundRakedPostOpt1 = array.find(obj => obj['slug'] === "raked_post+opt-1");
+
+        //If any of the slug returns undefined, do nothing
+        if( typeof foundPanelPostOpt1 !== "undefined" ) {
+            total += foundPanelPostOpt1.qty;
+        } 
+
+        if( typeof foundRakedPostOpt1 !== "undefined" ){
+            total += foundRakedPostOpt1.qty;
+        }
+
+        //Remove `raked_panel_post+opt-1` from array
+        // array = FENCES.cartItems.remove_raked_panel_post_opt1(array);
+
+console.log(total);
+
+        if( total ) {
+
+            array.push({
+                "slug": "base_plate_dynabolts",
+                "qty": total,
+            });
+
+            array.push({
+                "slug": "base_plate_cover",
+                "qty": total,
+            });
+
+            return array;
+        }
+
+        return array;
     },
 
     remove_raked_panel_post_opt1: function(array) {

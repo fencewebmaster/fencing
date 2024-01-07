@@ -149,12 +149,22 @@ if( isset($_GET['planner_id']) ) {
                         <!-- START STYLES AREA -->
                         <div class="fencing-section__cmp fencing-section-step fencing-section--step1">
 
-                            <button type="button" 
-                                class="btn-fc btn-fc-outline-danger btn-fc-sm btn-delete-fence js-btn-delete-fence" 
-                                style="display:none;">
-                                <span><i class="fa fa-trash-can"></i>Delete <span>Section</span></span>
-                            </button>
-                            
+                            <div class="btn-delete-fence">
+
+                                <button type="button" 
+                                    class="btn-fc btn-fc-outline-danger btn-fc-sm js-btn-delete-fence" 
+                                    style="display:none;">
+                                    <span><i class="fa fa-trash-can"></i>Delete <span>Section</span></span>
+                                </button>
+
+                                <button type="button" 
+                                    class="btn-fc btn-fc-outline-danger btn-fc-sm fc-fence-reset-all fc-ml-1" 
+                                    style="display:none;">
+                                    <span><i class="fa-solid fa-circle-minus"></i> Reset</span>
+                                </button>
+
+                            </div>
+
                             <div class="step-label">Step <span>01</span></div>
 
                             <h4 class="fencing-content-title">Choose Your Fencing Style</h4>

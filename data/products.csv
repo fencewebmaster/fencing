@@ -1,30 +1,26 @@
 SLUG,CONDITION,NAME,TYPE,BLACK,WHITE,MONUMENT,CREAM
 panel_options+even,"IF panel options = ""Evenly Spaced Posts"" = (Number of Fence Panels) + (short panel offcut panel length)",Panel - 1200H x 2400W,2400W Panels,49312,49920,49921,49922
-panel_options+full,"IF panel options = ""Full Panels - 3000W"" = (Number of full length Panels) + (Number of short length panels)",Panel - 1200H x 3000W,3000W Panels,49313,49313,49313,49313
+panel_options+full,"IF panel options = ""Full Panels - 3000W"" = (Number of full length Panels) + (Number of short length panels)",Panel - 1200H x 3000W,3000W Panels,49313,NA,NA,NA
 left_raked_panel+1300x300,IF LEFT RAKED PANEL,1300H - 300 Step-Up,Raked Panels,49315,CUSTOM-WHITE-49315,CUSTOM-MONUMENT-49315,CUSTOM-CREAM-49315
 left_raked_panel+1400x400,IF LEFT RAKED PANEL,1400H - 400 Step-Up,Raked Panels,49316,CUSTOM-WHITE-49316,CUSTOM-MONUMENT-49316,CUSTOM-CREAM-49316
 left_raked_panel+1500x500,IF LEFT RAKED PANEL,1500H - 500 Step-Up,Raked Panels,49317,CUSTOM-WHITE-49317,CUSTOM-MONUMENT-49317,CUSTOM-CREAM-49317
 left_raked_panel+1600x600,IF LEFT RAKED PANEL,1600H - 600 Step-Up,Raked Panels,49318,CUSTOM-WHITE-49318,CUSTOM-MONUMENT-49318,CUSTOM-CREAM-49318
 left_raked_panel+1700x700,IF LEFT RAKED PANEL,1700H - 700 Step-Up,Raked Panels,49319,CUSTOM-WHITE-49319,CUSTOM-MONUMENT-49319,CUSTOM-CREAM-49319
 left_raked_panel+1800x600,IF LEFT RAKED PANEL,1800H - 600 Step-Up,Raked Panels,49320,CUSTOM-WHITE-49320,CUSTOM-MONUMENT-49320,CUSTOM-CREAM-49320
-left_raked_panel+1500x1200,IF LEFT  PANEL,1500H - 1200 Step-Up,Raked Panels,49321,CUSTOM-WHITE-49321,CUSTOM-MONUMENT-49321,CUSTOM-CREAM-49321
-left_raked_panel+1300x1200,IF LEFT RAKED PANEL,1300H - 1200 Step-Up,Raked Panels,49322,CUSTOM-WHITE-49322,CUSTOM-MONUMENT-49322,CUSTOM-CREAM-49322
 right_raked_panel+1300x300,IF RIGHT RAKED PANEL,1300H - 300 Step-Up,Raked Panels,49315,CUSTOM-WHITE-49315,CUSTOM-MONUMENT-49315,CUSTOM-CREAM-49315
 right_raked_panel+1400x400,IF RIGHT RAKED PANEL,1400H - 400 Step-Up,Raked Panels,49316,CUSTOM-WHITE-49316,CUSTOM-MONUMENT-49316,CUSTOM-CREAM-49316
 right_raked_panel+1500x500,IF RIGHT RAKED PANEL,1500H - 500 Step-Up,Raked Panels,49317,CUSTOM-WHITE-49317,CUSTOM-MONUMENT-49317,CUSTOM-CREAM-49317
 right_raked_panel+1600x600,IF RIGHT RAKED PANEL,1600H - 600 Step-Up,Raked Panels,49318,CUSTOM-WHITE-49318,CUSTOM-MONUMENT-49318,CUSTOM-CREAM-49318
 right_raked_panel+1700x700,IF RIGHT RAKED PANEL,1700H - 700 Step-Up,Raked Panels,49319,CUSTOM-WHITE-49319,CUSTOM-MONUMENT-49319,CUSTOM-CREAM-49319
 right_raked_panel+1800x600,IF RIGHT RAKED PANEL,1800H - 600 Step-Up,Raked Panels,49320,CUSTOM-WHITE-49320,CUSTOM-MONUMENT-49320,CUSTOM-CREAM-49320
-right_raked_panel+1500x1200,IF RIGHT RAKED PANEL,1500H - 1200 Step-Up,Raked Panels,49321,CUSTOM-WHITE-49321,CUSTOM-MONUMENT-49321,CUSTOM-CREAM-49321
-right_raked_panel+1300x1200,IF RIGHT RAKED PANEL,1300H - 1200 Step-Up,Raked Panels,49322,CUSTOM-WHITE-49322,CUSTOM-MONUMENT-49322,CUSTOM-CREAM-49322
 gate,Number of gates,Gate - 1200H x 970W,Gates,49314,49923,49924,49925
-gate_converter,,Gate Converter - 1200H,Gate Converter,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B,SS-1200-GC-2PK-B
+gate_converter,,Gate Converter - 1200H,Gate Converter,50103,50105,50104,50106
 panel_post+opt-1,"IF ""Base Plated Posts"" = Number of Posts - STD",Post - 1300L - Base Plated,Post - 1300L - Base Plated,49838,49941,49942,49943
 panel_post+opt-2,"IF ""Cemented In Posts"" = Number of Posts - STD",Post - 1800L - Cemented In,Post - 1800L - Cemented In,49321,49926,49927,49928
 raked_post+opt-1,"IF ""Base Plated Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post - 1900L - Base Plated,Post - 1900L - Base Plated,49896,49947,49948,49949
 raked_post+opt-2,"IF ""Cemented In Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post - 2400L - Cemented In,Post - 2400L - Cemented In,49862,49932,49933,49934
-raked_panel_post+opt-1,"IF ""Base Plated Posts"" = (Post - 1300L - Base Plated) + (Post - 1900L - Base Plated)",Post Covers,Post Covers,49840,49950,49951,49952
 panel_options+bracket,panel options,Brackets Set x4,Brackets Set x4,49324 x4,49935 x4,49936 x4,49937 x4
-flexi_bracket,Number of swivel brackets,Flexi Bracket x1,Flexi Bracket x1,49830,49830,49830,49830
+flexi_bracket,Number of swivel brackets,Flexi Bracket x1,Flexi Bracket x1,49830 x1,49830,49830,49830
 gate_kit,Number of gates,Hinge & Latch Kit,Hinge & Latch Kit,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K
-post_options+opt-2,"IF post_options = ""Cemented In Posts"" = (Post - 1800L - Cemented In) + (Post - 2400L - Cemented In)",Fixing Kit - Dynabolts,Fixing Kit - Dynabolts,4 TIMES 43032,5 TIMES 43032,6 TIMES 43032,7 TIMES 43032
+base_plate_dynabolts,"IF post_options = ""Base Plated Posts"" ",Base Plate Dynabolts,Base Plate Dynabolts,43032 x4,43032 x4,43032 x4,43032 x4
+base_plate_cover,"IF ""Base Plated Posts"" = (Post - 1300L - Base Plated) + (Post - 1900L - Base Plated)",Post Covers,Post Covers,49971,49950,49951,49952
