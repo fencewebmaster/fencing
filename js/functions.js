@@ -1288,9 +1288,9 @@ function zooming(zoom) {
 
     if( zoom == 'in' ) {
         if( step < 1 ) {
-             step = step + 0.02;
+             step = step + 0.10;
         } else {
-            step = step + 0.2;       
+            step = step + 0.10;       
         }
     }
 
@@ -1298,9 +1298,9 @@ function zooming(zoom) {
 
     if( zoom == 'out' ) {
         if( step <= 1 ) {
-             step = step - 0.02;
+             step = step - 0.10;
         } else {
-            step = step - 0.2;            
+            step = step - 0.10;            
         }
     }
     
@@ -1344,7 +1344,6 @@ function zooming(zoom) {
         cursordown = false;
         
       }).mouseleave(end);
-
 
 $('.fencing-display-result').on("mousedown touchstart", function(e) {
     var $this = $(this);

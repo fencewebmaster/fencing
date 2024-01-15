@@ -99,6 +99,8 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
 
     window.jsPDF = window.jspdf.jsPDF;
 
+    $('#fc-fence-list .btn-fc').hide();
+
     var element = document.getElementById('fc-fence-list');
 
     // Add loading animation
@@ -107,26 +109,46 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
 
     html2canvas(element,
         { 
-            scale: 3,
-            dpi: 300,
-            width: 1350,
-            height: 1350,
+
+            width: 1500,
         }
     ).then(canvas => {
 
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'landscape',
-        });
-        const imgProps= pdf.getImageProperties(imgData);
-        const pdfWidth = 300;
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, 'PNG', 13, 0, pdfWidth, pdfHeight);
-        pdf.save(`project-plan-${currentDate}.pdf`);
+
+        const doc = new jsPDF('l', 'mm', 'letter');
+
+    //    const imgWidth = 220;
+        const pageHeight = 220;
+     //   const imgHeight = ((canvas.height * imgWidth) / canvas.width);
+
+        const imgProps = doc.getImageProperties(imgData);
+        const imgWidth = doc.internal.pageSize.getWidth();
+        const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+        let heightLeft = imgHeight;
+
+
+        let position = 10;
+        doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight  - 10);
+        heightLeft -= pageHeight;
+
+
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            doc.addPage();
+            doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight  + 20);
+            heightLeft -= pageHeight;
+        }
+
+
+       // pdf.addImage(imgData, 'PNG', 13, 0, pdfWidth, pdfHeight);
+        doc.save(`project-plan-${currentDate}.pdf`);
 
         // Return to default estate
         $(this).find('i').removeAttr('class').addClass('fa-solid fa-download');
         $(this).removeAttr('disabled').find('span').html('Download Plans');
+        $('#fc-fence-list .btn-fc').show();
 
     });
     

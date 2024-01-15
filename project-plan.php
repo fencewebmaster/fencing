@@ -30,6 +30,9 @@
 .fc-form-group {
 	position: relative;
 }	
+@media print { 
+     .btn-fc { display: none !important; } 
+    }
 </style>
 
 <!-- START FORM SUBMISSION LOADER -->

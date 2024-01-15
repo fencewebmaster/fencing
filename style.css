@@ -321,6 +321,8 @@ a div {
   border: 2px solid #e9e9e9;
   color: #000;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 .fc-form-check-img label {
   cursor: pointer;
@@ -330,6 +332,7 @@ a div {
   position: absolute;
   bottom: 10px;
   right: 10px;
+  display: flex;
 }
 .fc-form-check-img .fc-rounded {
   border-radius: 8px 8px 0 0 !important;
