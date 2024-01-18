@@ -2,31 +2,30 @@
 session_start();
 $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
-if( $sid = @$_GET['sid'] && $url = @$_GET['url'] ) {
-    $_SESSION["site"] = [
-        'id'  => $sid,
-        'url' => $url
-    ];     
-    header("Location: ./");
-    die();
+include 'helpers.php';
+
+if( @$_GET['sid'] && @$_GET['url'] ) {
+    $site = sites($_GET['sid'], true);
+
+    if( $site ) {
+        $_SESSION["site"] = $site;  
+        header("Location: ./");   
+    } else {
+       header("Location: ".toURL($_GET['url']));
+    }
+    exit;      
 } 
 
 include 'data/settings.php';
 include 'temp/fields.php';
-include 'helpers.php';
 include 'config/database.php'; 
-
-if( ! isset($_SESSION['url']) ) {
-    $_SESSION["site"] = [
-        'id'  => 1,
-        'url' => is_localhost() ? 'fencesperth.com' : $_SERVER['HTTP_HOST'] 
-    ];         
-}
 
 $res = array();
 if( isset($_GET['planner_id']) ) {
     $db = new Database();
-    $res = $db->select_where('planners', 'WHERE `planner_id` LIKE "'.$_GET['planner_id'].'"');    
+    $res = $db->select_where('planners', '`planner_id` LIKE "'.$_GET['planner_id'].'"');   
+
+    $_SESSION['planner_id'] = $_GET['planner_id'];
 }
 ?>
 
@@ -480,7 +479,6 @@ if( isset($_GET['planner_id']) ) {
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
 var fc_fence_info = <?php echo json_encode($res); ?>;
-console.log( fc_fence_info );
 </script>
 
 <script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>

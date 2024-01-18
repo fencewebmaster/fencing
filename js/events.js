@@ -94,6 +94,30 @@ $(document).on('click', '.fencing-qty-minus', function(){
         }
 });
 
+$(document).on('click', '.btn-get-link', function(){
+    savePlanner();
+});
+
+$(document).on('click', '.btn-copy-link', function(e) {
+    e.preventDefault();
+    var $this = $(this),
+        id = $this.attr('data-id')
+        text = $this.html(),
+        r  = document.createRange();
+    
+    $('#'+id).show();
+    r.selectNode(document.getElementById(id));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+
+    $this.html('Copied');
+
+    setTimeout(function(){ 
+        $this.html(text);
+    }, 1000);
+});
 
 $(document).on('change', '.fc-select-option', function(){
     var slug = $(this).val();

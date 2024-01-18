@@ -9,6 +9,46 @@ function base_url($param ='') {
 	);
 }
 
+function toURL($url){
+    if(isset($_SERVER['HTTPS'])){
+        $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
+    } else {
+        $protocol = 'http';
+    }
+    return $protocol . "://" . $url;
+}
+
+function sites($id = '', $search = false) {
+
+    $data = [
+        [
+            'id'   => 1,
+            'url'  => 'fencesperth.com',
+            'logo' => 'https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png',
+            'name' => "Perth's Fencing Outlet"
+        ],
+        [ 
+            'id'   => 2,
+            'url'  => 'fencesmelbourne.au',
+            'logo' => 'https://fencesmelbourne.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-V2.png',
+            'name' => "Melbourne's Fencing Outlet"
+        ],
+    ];
+
+    if( $search ) {
+        $key = array_search($id, array_column($data, 'id'));
+
+        if( !empty($key) || $key === 0 ) {
+            return $data[$key];
+        }
+
+        return FALSE;
+    }
+
+    return $data;
+
+}
+
 function get_items($key, $items, $list = false) {  
 
     if( !is_array($items) ) {

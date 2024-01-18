@@ -143,6 +143,7 @@
 						<!-- [START] Step 5 | Edit Controls -->
 						<div class="fencing-section__cmp fencing-section__step-label">
 							<div class="step-label">Your Project <span> Details</span></div>
+
 							<div>
 								<button type="button" data-action="edit" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
 									<i class="fa-solid fa-pencil"></i>
@@ -167,11 +168,22 @@
 						<!-- [START] Label -->
 						<div class="fencing-section__cmp fencing-section__step-label">
 							<div class="step-label">Project <span>Plans</span></div>
-							<div>
-								
-							</div>
 						</div>
 						<!-- [END] Label -->
+
+							<div class="fc-form-group">
+
+								<?php if( isset($_SESSION['planner_id']) ): ?>
+									<button type="button" data-id="copy-link" class="btn-fc btn-copy-link btn-fc-sm btn-fc-light fc-text-uppercase btn-fc-orange fc-w-700">Copy Link</button>
+									<small id="copy-link" class="get-link-msg"><?php echo base_url('?planner_id='.$_SESSION['planner_id']); ?></small>
+								<?php else: ?>
+									<button type="button" data-id="copy-link" class="btn-fc btn-get-link btn-fc-sm btn-get-link btn-fc-light fc-text-uppercase btn-fc-orange fc-w-700">Save & Get Link</button>
+									<small id="copy-link" class="get-link-msg"></small>
+								<?php endif; ?>
+
+
+							</div>
+
 							
 							<?php // include 'data/plan-item.php'; ?>
 

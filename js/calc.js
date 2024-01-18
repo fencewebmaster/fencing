@@ -102,7 +102,7 @@ function calculate_fences( data ) {
     }
 
     C5  = panel_options_data?.size.width;   // panel options
-
+    
     if( C5 == undefined ) {
         panel_options_data = get_field_by_slug(info.settings.panel_options.fields[0].options, 'even');
         C5 = panel_options_data.size?.width;        
@@ -188,7 +188,6 @@ function calculate_fences( data ) {
     E24 = D23<1 ? (C7<0 ? -1 : 0) : 0;
 
     C19 =  E19 < 1 ? 0 : 1;
-    
 
     // C20 = C19;
     C20 = (panel_options_data?.slug == 'even' || panel_options_data?.slug == undefined) ? C17 : C19;
@@ -196,6 +195,7 @@ function calculate_fences( data ) {
     D20 = D19<post_panel ? 0 : E18-E19;
 
     D20 = panel_options_data?.slug == 'even' ? E18-E17 : (D19<50 ? 0 : E18-E19);
+
 
     // Outputs
     full_panel_count  = isNaN(C18) ? 0 : C18;

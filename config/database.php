@@ -72,10 +72,68 @@ class Database {
         $conn->close();
     }
 
+    function update($table = '', $data  = array(), $where  = array()) {
 
-    function select_where($table, $where) {
+        $new_data = $where_data = array();
 
-        $sql = "SELECT * FROM ".$this->prefix.$table." ".$where;
+        foreach ($data as $key => $value) {
+            $new_data[] = $key."=".(is_numeric($value) ? $value : "'".array_to_json($value)."'");
+        }
+
+        $set_data = implode(', ', $new_data);
+
+        foreach ($where as $key => $value) {
+            $where_data[] = $key."=".(is_numeric($value) ? $value : "'".$value."'");
+        }
+
+        $where_data = implode(' AND ', $where_data);
+
+
+        $sql = "UPDATE ".$this->prefix.$table." SET $set_data WHERE $where_data;";
+
+        $conn = $this->connect();
+
+        if ($conn->query($sql) === TRUE) {
+            return [
+                'success' => TRUE,
+                'message' => "Record is updated successfully"
+            ];
+        } else {
+            return [
+                'success' => FALSE,
+                'message' => "Error: " . $sql . "<br>" . $conn->error
+            ];
+        }
+
+        $conn->close();
+        
+    }
+
+    function updateOrCreate($table, $data, $where) {
+
+        $where_data = array();
+        
+        foreach ($where as $key => $value) {
+            $where_data[] = $key."=".(is_numeric($value) ? $value : "'".$value."'");
+        }
+
+        $where_data = implode(' AND ', $where_data);
+
+        $find = $this->select_where($table, $where_data, 'id');
+
+        if( $find ) {
+            $q = $this->update($table, $data, $where);
+        } else {
+            $q = $this->insert($table, $data);
+        }
+
+        return $q;
+
+    }
+
+    function select_where($table, $where, $select = '*') {
+
+        $sql = "SELECT $select FROM ".$this->prefix.$table." WHERE ".$where;
 
         $conn = $this->connect();
 

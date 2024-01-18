@@ -104,12 +104,13 @@ FENCES.cartItems = {
             }
 
             //additional condition for panel_post to exclude el with class `post-left` OR `post-right`
-            if( cartKey === "panel_post" || cartKey === "raked_post" ){
-                  if(el.classList.contains('panel-no-post')){
+            if( cartKey === "panel_post" || cartKey === "raked_post" ){   
+                if(el.classList.contains('panel-no-post') ) {
                     qty = 0;
-                }
+                }                
             }
 
+        
             //additional condition for raked_post to exclude el with class `panel-no-post`
 /*            if( cartKey === "raked_post" ){
                 if(el.classList.contains('panel-no-post')){
@@ -142,9 +143,8 @@ FENCES.cartItems = {
             }
         }
 
-        newCartItems = FENCES.cartItems.apply_conditions(newCartItems);
 
-       // console.log('newCartItems', newCartItems);
+        newCartItems = FENCES.cartItems.apply_conditions(newCartItems);
 
         return newCartItems;
     },
@@ -166,9 +166,34 @@ FENCES.cartItems = {
         //Apply condition for post_options+opt-1 
         newCartItems = FENCES.cartItems.apply_post_options_opt1(newCartItems);
 
+        //Apply condition for panel_post
+        newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
+console.log(newCartItems);
         return newCartItems;
 
     },
+
+    
+    /**
+     * IF gate is found
+     * @param {*} array 
+     * @returns 
+     */
+    apply_panel_post: function(array) {
+
+        const foundGate = array.find(obj => obj['slug'] === "gate");
+
+        array.forEach(function(v, k){
+
+            if( foundGate &&  v.slug.includes('panel_post') ) {
+                v.qty = v.qty - 1; 
+                array[k] = v;
+            }
+     
+        });
+
+       return array;
+    },    
 
     /**
      * IF panel options = "Evenly Spaced Posts" = (Number of Fence Panels) + (short panel offcut panel length)
@@ -333,6 +358,7 @@ FENCES.cartItems = {
         //If it exists means user selected it
         const foundPanelPostOpt1 = array.find(obj => obj['slug'] === "panel_post+opt-1");
         const foundRakedPostOpt1 = array.find(obj => obj['slug'] === "raked_post+opt-1");
+        const foundGate = array.find(obj => obj['slug'] === "gate");
 
         //If any of the slug returns undefined, do nothing
         if( typeof foundPanelPostOpt1 !== "undefined" ) {
@@ -343,10 +369,14 @@ FENCES.cartItems = {
             total += foundRakedPostOpt1.qty;
         }
 
+        /*
+        if( typeof foundGate !== "undefined"  ) {
+            total -= 1;
+        }
+        */
+
         //Remove `raked_panel_post+opt-1` from array
         // array = FENCES.cartItems.remove_raked_panel_post_opt1(array);
-
-console.log(total);
 
         if( total ) {
 

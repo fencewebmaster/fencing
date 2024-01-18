@@ -1154,17 +1154,20 @@ function submit_fence_planner() {
 
         form = JSON.parse(localStorage.getItem('custom_fence-'+tid));
 
-        settings = JSON.parse(localStorage.getItem('custom_fence-'+tid+'-'+form[0]?.style));
+        if( form[0].calculateValue ) {
 
-        form[0].style = form[0]?.style + 1;
-        form[0].tab = form[0]?.tab + 1;
+            settings = JSON.parse(localStorage.getItem('custom_fence-'+tid+'-'+form[0]?.style));
 
-        set_fc_data.push({
-            'form': form,
-            'settings': settings
-        }); 
+            form[0].style = form[0]?.style + 1;
+            form[0].tab = form[0]?.tab + 1;
 
+            set_fc_data.push({
+                'form': form,
+                'settings': settings
+            }); 
 
+        } 
+        
     });
 
 /*    var sectionCount = $(".fencing-tab").find('.ftm-measurement').filter(function () {
@@ -1989,6 +1992,40 @@ if( submitModal ){
     submitModal.addEventListener("change", saveFormData);
 }
 
+function savePlanner() {
+
+   // var form = $('form')[0]; 
+    var formData = new FormData();
+
+    formData.set("action", 'save_planner');
+    
+    $('.get-link-msg').html(' Generating link ...');
+
+    $.ajax({
+        url: 'checkout.php', 
+        type: "POST",  
+        data: formData,
+        headers: {},
+        contentType: false,  
+        cache: false,         
+        processData:false,    
+        success: function(response) {
+            try {
+                var info = JSON.parse(response);
+
+                if( ! info.error ) {
+                    $('.get-link-msg').html(info.url);
+                    $('.btn-get-link').html('Copy Link')
+                                      .toggleClass('btn-get-link btn-copy-link');
+                }
+
+            } catch(err){
+
+            } 
+        }
+    });
+
+}
 
 
 function updateOrCreateObjectInLocalStorage(key, newData) {
