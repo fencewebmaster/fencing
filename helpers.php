@@ -23,13 +23,13 @@ function sites($id = '', $search = false) {
     $data = [
         [
             'id'   => 1,
-            'url'  => 'fencesperth.com',
+            'url'  => toURL('fencesperth.com'),
             'logo' => 'https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png',
             'name' => "Perth's Fencing Outlet"
         ],
         [ 
             'id'   => 2,
-            'url'  => 'fencesmelbourne.au',
+            'url'  => toURL('fencesmelbourne.au'),
             'logo' => 'https://fencesmelbourne.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-V2.png',
             'name' => "Melbourne's Fencing Outlet"
         ],

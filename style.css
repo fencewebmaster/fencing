@@ -3007,12 +3007,13 @@ thead.fc-border th:last-child {
 .fencing-left-panel-o-b {
   -webkit-clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
   clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-  background: #000;
   padding-top: 1px;
+  background: #000;
 }
 
+
 @media (min-width: 1024px) {
-  .fencing-left-panel-o-b:hover {
+  #fc-download-form .fencing-left-panel-o-b:hover {
     background: var(--fc-princeton-orange);
   }
 }
@@ -3026,9 +3027,30 @@ thead.fc-border th:last-child {
 .fencing-right-panel-o-b {
   -webkit-clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
   clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
-  background: #000;
   padding-top: 1px;
+  background: #000;
 }
+
+.downloading .fencing-left-panel-o-b,
+.downloading .fencing-right-panel-o-b {
+  background: transparent;
+}
+
+.downloading .fencing-left-panel-o-b .fencing-panel-item {
+    background: url(img/raked-top-left.png) !important;
+    background-size: contain !important;
+    background-position: top;
+    background-repeat: no-repeat !important;
+}
+
+.downloading .fencing-right-panel-o-b .fencing-panel-item {
+    background: url(img/raked-top-right.png) !important;
+    background-size: contain !important;
+    background-position: top;
+    background-repeat: no-repeat !important;
+}
+
+
 
 @media (min-width: 1024px) {
   .fencing-right-panel-o-b:hover {

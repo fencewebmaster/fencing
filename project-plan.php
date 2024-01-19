@@ -3,10 +3,10 @@
 	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
     $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
-	if( empty($info) ) {
+/*	if( empty($info) ) {
 		header("Location: ./");
 		die();
-	}
+	}*/
 
 	date_default_timezone_set('Asia/Manila');
 
@@ -432,6 +432,7 @@ var base_url = '<?php echo base_url(); ?>';
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <!-- Scripts -->
+<script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>

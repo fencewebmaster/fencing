@@ -168,7 +168,7 @@ FENCES.cartItems = {
 
         //Apply condition for panel_post
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
-console.log(newCartItems);
+
         return newCartItems;
 
     },

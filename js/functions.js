@@ -1137,7 +1137,6 @@ function submit_fence_planner() {
 
     window.onbeforeunload = function() {}
 
-
     //Set some delay to make sure the local storage and the html markup are loaded
     var items = localStorage.getItem('custom_fence-section') ?? 1;
     for (let i = 0; i < items; i++) {

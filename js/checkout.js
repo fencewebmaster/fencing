@@ -100,6 +100,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
     window.jsPDF = window.jspdf.jsPDF;
 
     $('#fc-fence-list .btn-fc').hide();
+    $('#fc-fence-list').addClass('downloading');
 
     var element = document.getElementById('fc-fence-list');
 
@@ -129,7 +130,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
         let heightLeft = imgHeight;
 
 
-        let position = 10;
+        let position = 8;
         doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight  - 10);
         heightLeft -= pageHeight;
 
@@ -137,7 +138,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
         while (heightLeft >= 0) {
             position = heightLeft - imgHeight;
             doc.addPage();
-            doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight  + 20);
+            doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight + 20);
             heightLeft -= pageHeight;
         }
 
@@ -149,6 +150,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
         $(this).find('i').removeAttr('class').addClass('fa-solid fa-download');
         $(this).removeAttr('disabled').find('span').html('Download Plans');
         $('#fc-fence-list .btn-fc').show();
+        $('#fc-fence-list').removeClass('downloading');
 
     });
     
