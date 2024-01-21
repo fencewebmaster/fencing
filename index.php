@@ -16,6 +16,12 @@ if( @$_GET['sid'] && @$_GET['url'] ) {
     exit;      
 } 
 
+if( ! @$_SESSION["site"] ) {
+    $site = sites(1, true);    
+    $_SESSION["site"] = $site;  
+}
+
+
 include 'data/settings.php';
 include 'temp/fields.php';
 include 'config/database.php'; 
