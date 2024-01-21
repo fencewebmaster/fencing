@@ -55,7 +55,7 @@ if( @$_POST['action'] == 'push_order' ) {
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
-      CURLOPT_URL => 'https://'.$fc_site['url'].'?fc_action=push&date'.date('mdYHis'),
+      CURLOPT_URL => $fc_site['url'].'?fc_action=push&date='.date('mdYHis'),
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_ENCODING => '',
       CURLOPT_MAXREDIRS => 10,
@@ -76,7 +76,7 @@ if( @$_POST['action'] == 'push_order' ) {
     echo $response;
 
     // Clear fence session data
-    unset($_SESSION['fc_data'], $_SESSION['custom_fence_products'], $_SESSION['fc_cart'], $_SESSION['planner_id']);
+   // unset($_SESSION['fc_data'], $_SESSION['custom_fence_products'], $_SESSION['fc_cart'], $_SESSION['planner_id']);
 
     exit;
 

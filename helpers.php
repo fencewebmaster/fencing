@@ -13,7 +13,7 @@ function toURL($url){
     if(isset($_SERVER['HTTPS'])){
         $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
     } else {
-        $protocol = 'http';
+        $protocol = 'https';
     }
     return $protocol . "://" . $url;
 }

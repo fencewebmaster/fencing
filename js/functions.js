@@ -1216,7 +1216,7 @@ function submit_fence_planner() {
         processData:false,    
         success: function(response) {
             try {
-
+                console.log(response);
             } catch(err){
 
             } 
