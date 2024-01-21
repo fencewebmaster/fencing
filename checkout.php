@@ -76,7 +76,7 @@ if( @$_POST['action'] == 'push_order' ) {
     echo $response;
 
     // Clear fence session data
-   // unset($_SESSION['fc_data'], $_SESSION['custom_fence_products'], $_SESSION['fc_cart'], $_SESSION['planner_id']);
+    unset($_SESSION['fc_data'], $_SESSION['custom_fence_products'], $_SESSION['fc_cart'], $_SESSION['planner_id'], $_SESSION['site']);
 
     exit;
 
