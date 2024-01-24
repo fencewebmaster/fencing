@@ -16,7 +16,15 @@ class Database {
 	        $this->database = "fencing_calculator";
 	        $this->prefix   = 'fc_';
 
-	    } else {
+	    } elseif( $_SERVER['HTTP_HOST'] == 'fencingwarehouse.au' ) {
+
+            $this->host     = "localhost";
+            $this->username = "u643294075_3MkJ3";
+            $this->password = "lxOCJYvEvB";
+            $this->database = "u643294075_zZTA7";
+            $this->prefix   = 'wp_';
+
+        } else {
 
 	        $this->host     = "localhost";
 	        $this->username = "u643294075_aMvzg";

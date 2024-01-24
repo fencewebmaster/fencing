@@ -31,34 +31,11 @@ $("#fc-download-form").validate({
 
         if( tab == 4 ) {
 
-            var count = 0;
-
             FCModal.close('#submit-modal');
             $('.fc-loader-overlay').show();
 
-            submit_fence_planner();            
-
-            setTimeout(function(){
-                $('.fc-loader ul li').each(function(i) {
-                    var $this = $(this);
-                    setTimeout(function(){
-                       $this.addClass('fc-text-success');
-                       count++;
-
-                       if( count == 1 ) {
-                            window.onbeforeunload = function () {
-                                return;
-                            }
-                            window.location = 'project-plan.php';
-                       }
-                       
-                    }, 1000 * i);
-
-
-                });
-
-            }, 1000);
-
+            res = submit_fence_planner('new');            
+            
         } else {
             $('.fc-form-plan').hide();
             $('[data-formtab="'+move+'"]').show();
@@ -70,35 +47,12 @@ $("#fc-download-form").validate({
 $(document).on('click', '.fc-btn-update', function(e) {
     e.preventDefault();
    
-    var count = 0;
-
     FCModal.close('#submit-modal');
     $('.fc-loader-overlay').show();
 
     $('.li-create small').html('Updating your plan...');
 
-    submit_fence_planner();            
-
-    setTimeout(function(){
-        $('.fc-loader ul li').each(function(i) {
-            var $this = $(this);
-            setTimeout(function(){
-               $this.addClass('fc-text-success');
-               count++;
-
-               if( count == 1 ) {
-                    window.onbeforeunload = function () {
-                        return;
-                    }
-                    window.location = 'project-plan.php';
-               }
-               
-            }, 1000 * i);
-
-
-        });
-
-    }, 1000);
+    res = submit_fence_planner('update');            
 
 });
 

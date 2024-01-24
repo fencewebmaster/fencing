@@ -18,25 +18,45 @@ function toURL($url){
     return $protocol . "://" . $url;
 }
 
-function sites($id = '', $search = false) {
+function get_uid($l=10) {
+    return strtoupper(substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyz"), 0, $l));
+}
+
+function sites($key = '', $value = 'id', $search = false) {
 
     $data = [
         [
-            'id'   => 1,
-            'url'  => toURL('fencesperth.com'),
-            'logo' => 'https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png',
-            'name' => "Perth's Fencing Outlet"
+            'id'     => 999999,
+            'domain' => 'localhost',
+            'url'    => toURL('fencesperth.com'),
+            'logo'   => 'https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png',
+            'name'   => "Perth's Fencing Outlet"
+        ],
+        [
+            'id'     => 1,
+            'domain' => 'fencesperth',
+            'url'    => toURL('fencesperth.com'),
+            'logo'   => 'https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png',
+            'name'   => "Perth's Fencing Outlet"
         ],
         [ 
-            'id'   => 2,
-            'url'  => toURL('fencesmelbourne.au'),
-            'logo' => 'https://fencesmelbourne.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-V2.png',
-            'name' => "Melbourne's Fencing Outlet"
+            'id'     => 2,
+            'domain' => 'fencingwarehouse.au',
+            'url'    => toURL('fencingwarehouse.au'),
+            'logo'   => 'https://new.fencesbrisbane.au/wp-content/uploads/2023/10/FencingWarehouse-W300px.png',
+            'name'   => "Fencing Warehouse"
+        ],
+        [ 
+            'id'     => 3,
+            'domain' => 'fencesmelbourne.au',
+            'url'    => toURL('fencesmelbourne.au'),
+            'logo'   => 'https://fencesmelbourne.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-V2.png',
+            'name'   => "Melbourne's Fencing Outlet"
         ],
     ];
 
     if( $search ) {
-        $key = array_search($id, array_column($data, 'id'));
+        $key = array_search($key, array_column($data, $value));
 
         if( !empty($key) || $key === 0 ) {
             return $data[$key];

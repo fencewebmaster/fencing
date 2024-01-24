@@ -17,7 +17,7 @@ if( @$_GET['sid'] && @$_GET['url'] ) {
 } 
 
 if( ! @$_SESSION["site"] ) {
-    $site = sites(1, true);    
+    $site = sites($_SERVER['HTTP_HOST'], 'domain', true);    
     $_SESSION["site"] = $site;  
 }
 
@@ -27,11 +27,12 @@ include 'temp/fields.php';
 include 'config/database.php'; 
 
 $res = array();
-if( isset($_GET['planner_id']) ) {
-    $db = new Database();
-    $res = $db->select_where('planners', '`planner_id` LIKE "'.$_GET['planner_id'].'"');   
-
-    $_SESSION['planner_id'] = $_GET['planner_id'];
+if( $qid = @$_GET['qid'] ) {
+    $db = new Database();    
+    $res = $db->select_where('planners', '`planner_id`="'.$qid.'"');   
+    if( $res ) {
+        $_SESSION['planner_id'] = $qid;
+    }
 }
 ?>
 
@@ -84,7 +85,7 @@ if( isset($_GET['planner_id']) ) {
 <!-- END FORM SUBMISSION LOADER -->
 
 <div class="fencing-container w-side-section" data-tab="1">
-    <form method="POST" id="fc-download-form" action="project-plan.php">
+    <form method="POST" id="fc-download-form" action="project-plan">
 
         <div class="fencing-container__header">
             <div class="fc-row">

@@ -112,7 +112,8 @@ $(document).on('click', '.btn-copy-link', function(e) {
     document.execCommand('copy');
     window.getSelection().removeAllRanges();
 
-    $this.html('Copied');
+    $this.html('COPIED');
+    $('#'+id).hide();
 
     setTimeout(function(){ 
         $this.html(text);

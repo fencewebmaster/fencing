@@ -9,7 +9,7 @@ if( @$_POST['action'] == 'push_order' ) {
 
     $info = $_SESSION;
 
-    $info['planner_id'] = $planner_id  = md5(uniqid());
+    $info['planner_id'] = @$info['planner_id'];
 
     $data = json_encode($info);
 
@@ -161,7 +161,7 @@ if( @$_POST['action'] == 'push_order' ) {
 
     $info = $_SESSION;
 
-    $planner_id  = isset($info['planner_id']) ? $info['planner_id'] : md5(uniqid());
+    $planner_id  = isset($info['planner_id']) ? $info['planner_id'] : get_uid(6);
 
     $_SESSION['planner_id'] = $planner_id;
 
@@ -217,7 +217,7 @@ if( @$_POST['action'] == 'push_order' ) {
         $data = [
             'error' => FALSE,
             'message' => 'Planner has been successfully saved!',
-            'url' => base_url('?planner_id='.$planner_id)
+            'id' => $planner_id
         ];
 
     }

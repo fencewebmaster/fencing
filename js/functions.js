@@ -110,6 +110,8 @@ function load_fencing_items() {
             $('.fc-fence-reset-all').show();
         }        
     });
+
+    $('.ftm-measurement:not(:empty)').closest('.fencing-tab').removeClass('incomplete-section');
 }
 
 function updateLastFencingPost(){
@@ -1133,7 +1135,7 @@ function getCartItemStorage() {
 }
 
 
-function submit_fence_planner() {
+function submit_fence_planner(status ='') {
 
     window.onbeforeunload = function() {}
 
@@ -1143,9 +1145,11 @@ function submit_fence_planner() {
         FENCES.cartItems.init(i);
     }    
 
-    var set_fc_data = [];
+    var set_fc_data   = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
-    var cart_items = getCartItemStorage();
+    var cart_items    = getCartItemStorage();
+
+    var incompleteSection = 0; 
 
     $( ".fencing-tab" ).each(function() {
 
@@ -1153,7 +1157,7 @@ function submit_fence_planner() {
 
         form = JSON.parse(localStorage.getItem('custom_fence-'+tid));
 
-        if( form[0].calculateValue ) {
+        if( form != null ) {
 
             settings = JSON.parse(localStorage.getItem('custom_fence-'+tid+'-'+form[0]?.style));
 
@@ -1165,9 +1169,27 @@ function submit_fence_planner() {
                 'settings': settings
             }); 
 
-        } 
-        
+            if( ! form[0]?.calculateValue ) {
+                incompleteSection += 1; 
+            }
+
+        } else {
+            incompleteSection += 1; 
+        }
+
     });
+
+    if( incompleteSection > 0 ) {
+
+        $('.ftm-measurement:empty').closest('.fencing-tab').addClass('incomplete-section');
+
+        $('.fc-loader-overlay').hide();
+        $('.fc-section-step').hide();
+        $('[data-tab="1"]').show();
+
+        return false;
+    }        
+
 
 /*    var sectionCount = $(".fencing-tab").find('.ftm-measurement').filter(function () {
         return !$(this).is(':empty');
@@ -1204,8 +1226,6 @@ function submit_fence_planner() {
         formData.set(key, value);
     });
 
-
-
     $.ajax({
         url: 'submit.php', 
         type: "POST",  
@@ -1216,7 +1236,57 @@ function submit_fence_planner() {
         processData:false,    
         success: function(response) {
             try {
-                console.log(response);
+ 
+                var count = 0;
+                   
+                if( status == 'new' ) {
+
+                     setTimeout(function(){
+                        $('.fc-loader ul li').each(function(i) {
+                            var $this = $(this);
+                            setTimeout(function(){
+                               $this.addClass('fc-text-success');
+                               count++;
+
+                               if( count == 1 ) {
+                                    window.onbeforeunload = function () {
+                                        return;
+                                    }
+                                    window.location = 'project-plan.php';
+                               }
+                               
+                            }, 1000 * i);
+
+
+                        });
+
+                    }, 1000);
+
+                } else {
+
+                    setTimeout(function(){
+                        $('.fc-loader ul li').each(function(i) {
+                            var $this = $(this);
+                            setTimeout(function(){
+                               $this.addClass('fc-text-success');
+                               count++;
+
+                               if( count == 1 ) {
+                                    window.onbeforeunload = function () {
+                                        return;
+                                    }
+                                    window.location = 'project-plan.php';
+                               }
+                               
+                            }, 1000 * i);
+
+
+                        });
+
+                    }, 1000);
+
+                }
+
             } catch(err){
 
             } 
@@ -1233,8 +1303,12 @@ function setSectionURLParam() {
 
 function reloadFencingData() {
 
+    if( getSearchParams('qid') && !fc_fence_info.fence_data ) {
+        location.href = location.origin+location.pathname;
+    }
+
     if( fc_fence_info.length == 0 ) {
-        return;
+       return;
     }
 
     var custom_fence_items = JSON.parse(fc_fence_info.fence_data, true);
@@ -1243,9 +1317,12 @@ function reloadFencingData() {
 
         v.form[0].style = v.form[0].style - 1;
         v.form[0].tab = v.form[0].tab - 1;
-
+        
         localStorage.setItem('custom_fence-'+v.form[0].tab, JSON.stringify(v.form));
-        localStorage.setItem('custom_fence-'+v.form[0].tab+'-'+v.form[0].style,  JSON.stringify(v.settings));
+
+        if( v.settings ) {
+            localStorage.setItem('custom_fence-'+v.form[0].tab+'-'+v.form[0].style,  JSON.stringify(v.settings));            
+        }
     });
 
 
@@ -1997,8 +2074,6 @@ function savePlanner() {
     var formData = new FormData();
 
     formData.set("action", 'save_planner');
-    
-    $('.get-link-msg').html(' Generating link ...');
 
     $.ajax({
         url: 'checkout.php', 
@@ -2013,9 +2088,7 @@ function savePlanner() {
                 var info = JSON.parse(response);
 
                 if( ! info.error ) {
-                    $('.get-link-msg').html(info.url);
-                    $('.btn-get-link').html('Copy Link')
-                                      .toggleClass('btn-get-link btn-copy-link');
+                    $('.quote-id-card .qic-body').html(info.id);
                 }
 
             } catch(err){
@@ -2025,7 +2098,6 @@ function savePlanner() {
     });
 
 }
-
 
 function updateOrCreateObjectInLocalStorage(key, newData) {
     // Check if the key already exists in localStorage

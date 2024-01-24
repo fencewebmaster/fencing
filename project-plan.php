@@ -3,10 +3,10 @@
 	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
     $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
-/*	if( empty($info) ) {
+	if( empty($info) ) {
 		header("Location: ./");
 		die();
-	}*/
+	}
 
 	date_default_timezone_set('Asia/Manila');
 
@@ -166,24 +166,28 @@
 					<div class="fencing-section fencing-section--has-border">
 						<div class="fc-card">
 
-						<!-- [START] Label -->
-						<div class="fencing-section__cmp fencing-section__step-label">
-							<div class="step-label">Project <span>Plans</span></div>
-						</div>
-						<!-- [END] Label -->
-
-							<div class="fc-form-group">
-
-								<?php if( isset($_SESSION['planner_id']) ): ?>
-									<button type="button" data-id="copy-link" class="btn-fc btn-copy-link btn-fc-sm btn-fc-light fc-text-uppercase btn-fc-orange fc-w-700">Copy Link</button>
-									<small id="copy-link" class="get-link-msg"><?php echo base_url('?planner_id='.$_SESSION['planner_id']); ?></small>
-								<?php else: ?>
-									<button type="button" data-id="copy-link" class="btn-fc btn-get-link btn-fc-sm btn-get-link btn-fc-light fc-text-uppercase btn-fc-orange fc-w-700">Save & Get Link</button>
-									<small id="copy-link" class="get-link-msg"></small>
-								<?php endif; ?>
-
-
+							<div class="fc-row-flex">
+								<div class="fc-col-6">
+									
+																<!-- [START] Label -->
+							<div class="fencing-section__cmp fencing-section__step-label">
+								<div class="step-label">Project <span>Plans</span></div>
 							</div>
+							<!-- [END] Label -->
+
+								</div>
+								<div class="fc-col-6 fc-flex-end">
+									
+									<div class="quote-id-card">
+										<div class="qic-head">Your Quote ID</div>
+										<div class="qic-body btn-copy-link" data-id="quote-id">
+											<div id="quote-id"><?php echo @$_SESSION['planner_id']; ?></div>
+										</div>
+									</div>
+
+								</div>
+							</div>
+
 
 							
 							<?php // include 'data/plan-item.php'; ?>
@@ -421,7 +425,6 @@
 <!-- Config -->
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
-var setcountDownDate = "<?php echo date('M d, Y H:i:s', strtotime('+3 hours')); ?>";
 var base_url = '<?php echo base_url(); ?>';	
 </script>
 
