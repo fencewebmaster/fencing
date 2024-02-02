@@ -1,26 +1,42 @@
-SLUG,CONDITION,NAME,TYPE,BLACK,WHITE,MONUMENT,CREAM
-panel_options+even,"IF panel options = ""Evenly Spaced Posts"" = (Number of Fence Panels) + (short panel offcut panel length)",Panel - 1200H x 2400W,2400W Panels,49312,49920,49921,49922
-panel_options+full,"IF panel options = ""Full Panels - 3000W"" = (Number of full length Panels) + (Number of short length panels)",Panel - 1200H x 3000W,3000W Panels,49313,NA,NA,NA
-left_raked_panel+1300x300,IF LEFT RAKED PANEL,1300H - 300 Step-Up,Raked Panels,49315,CUSTOM-WHITE-49315,CUSTOM-MONUMENT-49315,CUSTOM-CREAM-49315
-left_raked_panel+1400x400,IF LEFT RAKED PANEL,1400H - 400 Step-Up,Raked Panels,49316,CUSTOM-WHITE-49316,CUSTOM-MONUMENT-49316,CUSTOM-CREAM-49316
-left_raked_panel+1500x500,IF LEFT RAKED PANEL,1500H - 500 Step-Up,Raked Panels,49317,CUSTOM-WHITE-49317,CUSTOM-MONUMENT-49317,CUSTOM-CREAM-49317
-left_raked_panel+1600x600,IF LEFT RAKED PANEL,1600H - 600 Step-Up,Raked Panels,49318,CUSTOM-WHITE-49318,CUSTOM-MONUMENT-49318,CUSTOM-CREAM-49318
-left_raked_panel+1700x700,IF LEFT RAKED PANEL,1700H - 700 Step-Up,Raked Panels,49319,CUSTOM-WHITE-49319,CUSTOM-MONUMENT-49319,CUSTOM-CREAM-49319
-left_raked_panel+1800x600,IF LEFT RAKED PANEL,1800H - 600 Step-Up,Raked Panels,49320,CUSTOM-WHITE-49320,CUSTOM-MONUMENT-49320,CUSTOM-CREAM-49320
-right_raked_panel+1300x300,IF RIGHT RAKED PANEL,1300H - 300 Step-Up,Raked Panels,49315,CUSTOM-WHITE-49315,CUSTOM-MONUMENT-49315,CUSTOM-CREAM-49315
-right_raked_panel+1400x400,IF RIGHT RAKED PANEL,1400H - 400 Step-Up,Raked Panels,49316,CUSTOM-WHITE-49316,CUSTOM-MONUMENT-49316,CUSTOM-CREAM-49316
-right_raked_panel+1500x500,IF RIGHT RAKED PANEL,1500H - 500 Step-Up,Raked Panels,49317,CUSTOM-WHITE-49317,CUSTOM-MONUMENT-49317,CUSTOM-CREAM-49317
-right_raked_panel+1600x600,IF RIGHT RAKED PANEL,1600H - 600 Step-Up,Raked Panels,49318,CUSTOM-WHITE-49318,CUSTOM-MONUMENT-49318,CUSTOM-CREAM-49318
-right_raked_panel+1700x700,IF RIGHT RAKED PANEL,1700H - 700 Step-Up,Raked Panels,49319,CUSTOM-WHITE-49319,CUSTOM-MONUMENT-49319,CUSTOM-CREAM-49319
-right_raked_panel+1800x600,IF RIGHT RAKED PANEL,1800H - 600 Step-Up,Raked Panels,49320,CUSTOM-WHITE-49320,CUSTOM-MONUMENT-49320,CUSTOM-CREAM-49320
-gate,Number of gates,Gate - 1200H x 970W,Gates,49314,49923,49924,49925
-gate_converter,,Gate Converter - 1200H,Gate Converter,50103,50105,50104,50106
-panel_post+opt-1,"IF ""Base Plated Posts"" = Number of Posts - STD",Post - 1300L - Base Plated,Post - 1300L - Base Plated,49838,49941,49942,49943
-panel_post+opt-2,"IF ""Cemented In Posts"" = Number of Posts - STD",Post - 1800L - Cemented In,Post - 1800L - Cemented In,49321,49926,49927,49928
-raked_post+opt-1,"IF ""Base Plated Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post - 1900L - Base Plated,Post - 1900L - Base Plated,49896,49947,49948,49949
-raked_post+opt-2,"IF ""Cemented In Posts"" = (LEFT RAKED) + (RIGHT RACKED)",Post - 2400L - Cemented In,Post - 2400L - Cemented In,49862,49932,49933,49934
-panel_options+bracket,panel options,Brackets Set x4,Brackets Set x4,49324 x4,49935 x4,49936 x4,49937 x4
-flexi_bracket,Number of swivel brackets,Flexi Bracket x1,Flexi Bracket x1,49830 x1,49830,49830,49830
-gate_kit,Number of gates,Hinge & Latch Kit,Hinge & Latch Kit,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K,SHG-90L & SL-50K
-base_plate_dynabolts,"IF post_options = ""Base Plated Posts"" ",Base Plate Dynabolts,Base Plate Dynabolts,43032 x4,43032 x4,43032 x4,43032 x4
-base_plate_cover,"IF ""Base Plated Posts"" = (Post - 1300L - Base Plated) + (Post - 1900L - Base Plated)",Post Covers,Post Covers,49971,49950,49951,49952
+SLUG,PRODUCT,DESCRIPTION,SUPPLIER,BLACK,WHITE,MONUMENT,CREAM,CUSTOM
+base_plate+dynabolts,Fasteners,Dynabolts M10 x 120mm Stainless Steel x4,JG,FFX-DB-M10-120-4PK-SS-JG,FFX-DB-M10-120-4PK-SS-JG,FFX-DB-M10-120-4PK-SS-JG,FFX-DB-M10-120-4PK-SS-JG,OFF
+raked_post+opt-2,Bracket - Flex,PoolSafe Flex Bracket Black,JG,FTP-BRFx1-B-JG,FTP-BRFx1-B-JG,FTP-BRFx1-B-JG,FTP-BRFx1-B-JG,OFF
+panel_options+bracket,Bracket - STD,PoolSafe Bracket Black x4,JG,FTP-BRx4-B-JG,FTP-BRx4-W-JG,FTP-BRx4-M-JG,FTP-BRx4-C-JG,OFF
+gate,Gate,PoolSafe Gate Black 1200H x 970W,JG,FTP-G970-B-JG,FTP-G970-W-JG,FTP-G970-M-JG,FTP-G970-C-JG,OFF
+gate_converter,Gate Converter,PoolSafe Gate-Converter Black 1200H,JG,FTP-GC1200-B-JG,FTP-GC1200-W-JG,FTP-GC1200-M-JG,FTP-GC1200-C-JG,OFF
+panel_options+even,Panel - STD,PoolSafe Panel Black 1200H x 2400W,JG,FTP-P2400-B-JG,FTP-P2400-W-JG,FTP-P2400-M-JG,FTP-P2400-C-JG,OFF
+panel_options+full,Panel - 3m,PoolSafe Panel Black 1200H x 3000W,JG,FTP-P3000-B-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG
+left_raked_panel+1300x300,1300H - 300 Step-Up,LEFT Raked Panels,JG,FTP-RP1300-B,FTP-RP1300-CPC,FTP-RP1300-CPC,FTP-RP1300-CPC,OFF
+left_raked_panel+1400x400,1400H - 400 Step-Up,LEFT Raked Panels,JG,FTP-RP1400-B,FTP-RP1400-CPC,FTP-RP1400-CPC,FTP-RP1400-CPC,OFF
+left_raked_panel+1500x500,1500H - 500 Step-Up,LEFT Raked Panels,JG,FTP-RP1500-B,FTP-RP1500-CPC,FTP-RP1500-CPC,FTP-RP1500-CPC,OFF
+left_raked_panel+1600x600,1600H - 600 Step-Up,LEFT Raked Panels,JG,FTP-RP1600-B,FTP-RP1600-CPC,FTP-RP1600-CPC,FTP-RP1600-CPC,OFF
+left_raked_panel+1700x700,1700H - 700 Step-Up,LEFT Raked Panels,JG,FTP-RP1700-B,FTP-RP1700-CPC,FTP-RP1700-CPC,FTP-RP1700-CPC,OFF
+left_raked_panel+1800x600,1800H - 600 Step-Up,LEFT Raked Panels,JG,FTP-RP1800-B,FTP-RP1800-CPC,FTP-RP1800-CPC,FTP-RP1800-CPC,OFF
+right_raked_panel+1300x300,1300H - 300 Step-Up,RIGHT Raked Panels,JG,FTP-RP1300-B,FTP-RP1300-CPC,FTP-RP1300-CPC,FTP-RP1300-CPC,OFF
+right_raked_panel+1400x400,1400H - 400 Step-Up,RIGHT Raked Panels,JG,FTP-RP1400-B,FTP-RP1400-CPC,FTP-RP1400-CPC,FTP-RP1400-CPC,OFF
+right_raked_panel+1500x500,1500H - 500 Step-Up,RIGHT Raked Panels,JG,FTP-RP1500-B,FTP-RP1500-CPC,FTP-RP1500-CPC,FTP-RP1500-CPC,OFF
+right_raked_panel+1600x600,1600H - 600 Step-Up,RIGHT Raked Panels,JG,FTP-RP1600-B,FTP-RP1600-CPC,FTP-RP1600-CPC,FTP-RP1600-CPC,OFF
+right_raked_panel+1700x700,1700H - 700 Step-Up,RIGHT Raked Panels,JG,FTP-RP1700-B,FTP-RP1700-CPC,FTP-RP1700-CPC,FTP-RP1700-CPC,OFF
+right_raked_panel+1800x600,1800H - 600 Step-Up,RIGHT Raked Panels,JG,FTP-RP1800-B,FTP-RP1800-CPC,FTP-RP1800-CPC,FTP-RP1800-CPC,OFF
+gate+hinges,Hinges,SafeTech Hinges - Adjustable Self Closing,JG,HIN-HD-ASC-B-JG,HIN-HD-ASC-B-JG,HIN-HD-ASC-B-JG,HIN-HD-ASC-B-JG,OFF
+gate+kit,Kit,SafeTech Hinge & Latch Kit - HD Adjustable Self Closing,JG,KIT-HL-MTP-HD-B-JG,KIT-HL-MTP-HD-B-JG,KIT-HL-MTP-HD-B-JG,KIT-HL-MTP-HD-B-JG,OFF
+gate+latch,Latch,SafeTech Latch - Magnetic Top Pull - Keyless,JG,LAT-MTP-B-JG,LAT-MTP-B-JG,LAT-MTP-B-JG,LAT-MTP-B-JG,OFF
+panel_post+opt-1,Post - 1300,PoolSafe Post Black 1300L - Base Plated,JG,PO-1300-B-JG,PO-1300-W-JG,PO-1300-M-JG,PO-1300-C-JG,OFF
+panel_post+opt-2,Post - 1800,PoolSafe Post Black 1800L,JG,PO-1800-B-JG,PO-1800-W-JG,PO-1800-M-JG,PO-1800-C-JG,OFF
+raked_post+opt-1,Post - 1900,PoolSafe Post Black 1900L,JG,PO-1900-B-JG,PO-1900-W-JG,PO-1900-M-JG,PO-1900-C-JG,OFF
+raked_post+opt-2,Post - 2400,PoolSafe Post Black 2400L - Cemented-In,JG,PO-2400-B-JG,PO-2400-W-JG,PO-2400-M-JG,PO-2400-C-JG,OFF
+base_plate+post_cap,Post Cap,PoolSafe Post Cap,JG,PO-CAP-B-JG,OFF,OFF,OFF,OFF
+base_plate+post_cover,Post Cover,PoolSafe Post Cover - 2pc - 50x50mm - Black,JG,PO-COV-2P-B-JG,PO-COV-2P-W-JG,PO-COV-2P-M-JG,PO-COV-2P-C-JG,OFF
+panel_options+bracket,Bracket - STD,PoolSafe Bracket Black x4,GO,FTP-BRx4-B-GO,FTP-BRx4-W-GO,FTP-BRx4-M-GO,OFF,OFF
+gate,Gate,PoolSafe Gate Black 1200H x 970W,GO,FTP-G975-B-GO,FTP-G975-W-GO,FTP-G975-M-GO,OFF,OFF
+gate_converter,Gate Converter,PoolSafe Gate-Converter Black 1200H,GO,FTP-GC1200-B-GO,FTP-GC1200-W-GO,FTP-GC1200-M-GO,OFF,OFF
+panel_options+even,Panel - STD,PoolSafe Panel Black 1200H x 2400W,GO,FTP-P2450-B-GO,FTP-P2450-W-GO,FTP-P2450-M-GO,OFF,OFF
+panel_options+full,Panel - 3m,PoolSafe Panel Black 1200H x 3000W,GO,FTP-P3000-B-GO,FTP-P3000-B-GO,FTP-P3000-B-GO,OFF,FTP-P3000-CPC-JG
+gate+hinges,Hinges,SafeTech Hinges - Adjustable Self Closing,GO,HIN-HD-ASC-B-GO,HIN-HD-ASC-W-GO,HIN-HD-ASC-B-GO,OFF,OFF
+gate+kit,Kit,SafeTech Hinge & Latch Kit - HD Adjustable Self Closing,GO,KIT-HL-MTP-HD-B-GO,KIT-HL-MTP-HD-W-GO,KIT-HL-MTP-HD-B-GO,OFF,OFF
+gate+latch,Latch,SafeTech Latch - Magnetic Top Pull - Keyless,GO,LAT-MTP-B-GO,LAT-MTP-W-GO,LAT-MTP-B-GO,OFF,OFF
+panel_post+opt-1,Post - 1300,PoolSafe Post Black 1300L - Base Plated,GO,PO-1300-B-GO,PO-1300-W-GO,PO-1300-M-GO,OFF,OFF
+panel_post+opt-2,Post - 1800,PoolSafe Post Black 1800L,GO,PO-1800-B-GO,PO-1800-W-GO,PO-1800-M-GO,OFF,OFF
+raked_post+opt-2,Post - 2400,PoolSafe Post Black 2400L - Cemented-In,GO,PO-2400-B-GO,PO-2400-W-GO,PO-2400-M-GO,OFF,OFF
+base_plate+post_cap,Post Cap,PoolSafe Post Cap,GO,PO-CAP-B-GO,OFF,OFF,OFF,OFF
+base_plate+post_cover,Post Cover,PoolSafe Post Cover - 2pc - 50x50mm - Black,GO,PO-COV-2P-B-GO,PO-COV-2P-W-GO,PO-COV-2P-M-GO,OFF,OFF

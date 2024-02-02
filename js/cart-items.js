@@ -4,8 +4,16 @@ FENCES = FENCES || {};
 FENCES.cartItems = {
     
     item: {
-        gateKit: {
-            slug: 'gate_kit',
+        gateKit1: {
+            slug: 'gate+hinges',
+            qty: 1
+        },
+        gateKit2: {
+            slug: 'gate+kit',
+            qty: 1
+        },
+        gateKit3: {
+            slug: 'gate+latch',
             qty: 1
         }
     },
@@ -88,7 +96,9 @@ FENCES.cartItems = {
 
                 //Since `gate_kit` shares the same value with `gate`
                 //create the entry for `gate_kit` manually
-                newCartItems.push(FENCES.cartItems.item.gateKit);
+                newCartItems.push(FENCES.cartItems.item.gateKit1);
+                newCartItems.push(FENCES.cartItems.item.gateKit2);
+                newCartItems.push(FENCES.cartItems.item.gateKit3);
 
             }
 
@@ -381,12 +391,17 @@ FENCES.cartItems = {
         if( total ) {
 
             array.push({
-                "slug": "base_plate_dynabolts",
+                "slug": "base_plate+dynabolts",
                 "qty": total,
             });
 
             array.push({
-                "slug": "base_plate_cover",
+                "slug": "base_plate+post_cover",
+                "qty": total,
+            });
+
+            array.push({
+                "slug": "base_plate+post_cap",
                 "qty": total,
             });
 

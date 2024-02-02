@@ -10,6 +10,7 @@ if( $_POST ) {
     $_SESSION["fc_data"]['color'] = json_decode($_SESSION["fc_data"]['color'], true);
 }
 
+
 $cart_items_grouped = json_decode($_SESSION["fc_data"]['cart_items'], true);
 
 $cart_items_regrouped = $cart_items_formatted = [];

@@ -26,33 +26,77 @@ function sites($key = '', $value = 'id', $search = false) {
 
     $data = [
         [
-            'id'     => 999999,
-            'domain' => 'localhost',
-            'url'    => toURL('fencesperth.com'),
-            'logo'   => 'https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png',
-            'name'   => "Perth's Fencing Outlet"
+            'id'       => 999999,
+            'domain'   => "localhost",
+            'url'      => toURL('fencesperth.com'),
+            'supplier' => "JG",
+            'logo'     => "https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png",
+            'name'     => "Localhost Fencing Outlet"
         ],
         [
-            'id'     => 1,
-            'domain' => 'fencesperth',
-            'url'    => toURL('fencesperth.com'),
-            'logo'   => 'https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png',
-            'name'   => "Perth's Fencing Outlet"
+            'id'       => 1,
+            'domain'   => "fencesperth.com",
+            'url'      => toURL('fencesperth.com'),
+            'supplier' => "JG",
+            'logo'     => "https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png",
+            'name'     => "Perth's Fencing Outlet"
         ],
-        [ 
-            'id'     => 2,
-            'domain' => 'fencingwarehouse.au',
-            'url'    => toURL('fencingwarehouse.au'),
-            'logo'   => 'https://new.fencesbrisbane.au/wp-content/uploads/2023/10/FencingWarehouse-W300px.png',
-            'name'   => "Fencing Warehouse"
+        [
+            'id'       => 2,
+            'domain'   => "fencesbrisbane.au",
+            'url'      => toURL('fencesbrisbane.au'),
+            'supplier' => "JG",
+            'logo'     => "https://fencesbrisbane.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
+            'name'     => "Brisbane's Fencing Outlet"
         ],
-        [ 
-            'id'     => 3,
-            'domain' => 'fencesmelbourne.au',
-            'url'    => toURL('fencesmelbourne.au'),
-            'logo'   => 'https://fencesmelbourne.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-V2.png',
-            'name'   => "Melbourne's Fencing Outlet"
+        [
+            'id'       => 3,
+            'domain'   => "fencingwarehouse.au",
+            'url'      => toURL('fencingwarehouse.au'),
+            'supplier' => "JG",
+            'logo'     => "https://new.fencesbrisbane.au/wp-content/uploads/2023/10/FencingWarehouse-W300px.png",
+            'name'     => "Dencing Warehouse"
         ],
+        [
+            'id'       => 4,
+            'domain'   => "fencinggoldcoast.au",
+            'url'      => toURL('fencinggoldcoast.au'),
+            'supplier' => "GO",
+            'logo'     => "https://fencinggoldcoast.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
+            'name'     => "Gold Coast's Fencing Outlet"
+        ],
+        [
+            'id'       => 5,
+            'domain'   => "fencesadelaide.au",
+            'url'      => toURL('fencesadelaide.au'),
+            'supplier' => "GO",
+            'logo'     => "https://fencesadelaide.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
+            'name'     => "Adelaide's Fencing Outlet"
+        ],
+        [
+            'id'       => 6,
+            'domain'   => "fencessydney.au",
+            'url'      => toURL('fencessydney.au'),
+            'supplier' => "GO",
+            'logo'     => "https://fencessydney.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
+            'name'     => "Sydney's Fencing Outlet"
+        ],
+        [
+            'id'       => 7,
+            'domain'   => "fencesmelbourne.au",
+            'url'      => toURL('fencesmelbourne.au'),
+            'supplier' => "GO",
+            'logo'     => "https://fencesmelbourne.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-V2.png",
+            'name'     => "Melbourne's Fencing Outlet"
+        ],
+        [
+            'id'       => 8,
+            'domain'   => "fencesnewcastle.au",
+            'url'      => toURL('fencesnewcastle.au'),
+            'supplier' => "GO",
+            'logo'     => "",
+            'name'     => ""
+        ]
     ];
 
     if( $search ) {

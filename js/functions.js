@@ -1182,7 +1182,7 @@ function submit_fence_planner(status ='') {
     if( incompleteSection > 0 ) {
 
         $('.ftm-measurement:empty').closest('.fencing-tab').addClass('incomplete-section');
-
+        
         $('.fc-loader-overlay').hide();
         $('.fc-section-step').hide();
         $('[data-tab="1"]').show();

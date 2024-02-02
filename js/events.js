@@ -761,6 +761,11 @@ $(document).on('click', '.fc-btn-next', function(){
     $(this).closest('form').submit();
 });
 
+$(document).on('click', '[type="submit"]', function(){
+    window.onbeforeunload = function () {
+        return;
+    }
+});
 
 $(document).on('click', '.fc-btn-step', function(e){
     e.preventDefault();

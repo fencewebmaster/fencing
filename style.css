@@ -3031,19 +3031,19 @@ thead.fc-border th:last-child {
   background: #000;
 }
 
-.downloading .fencing-left-panel-o-b,
-.downloading .fencing-right-panel-o-b {
+.downloading-pdf .fencing-left-panel-o-b,
+.downloading-pdf .fencing-right-panel-o-b {
   background: transparent;
 }
 
-.downloading .fencing-left-panel-o-b .fencing-panel-item {
+.downloading-pdf .fencing-left-panel-o-b .fencing-panel-item {
     background: url(img/raked-top-left.png) !important;
     background-size: contain !important;
     background-position: top;
     background-repeat: no-repeat !important;
 }
 
-.downloading .fencing-right-panel-o-b .fencing-panel-item {
+.downloading-pdf .fencing-right-panel-o-b .fencing-panel-item {
     background: url(img/raked-top-right.png) !important;
     background-size: contain !important;
     background-position: top;
@@ -3345,6 +3345,7 @@ thead.fc-border th:last-child {
   padding: 12px 16px;
   margin-right: 8px;
   display: block;
+  color: initial;
 }
 .fencing-section .fencing-tab-add {
   border-radius: 8px;
@@ -3407,6 +3408,7 @@ thead.fc-border th:last-child {
   }
 }
 
+.load-quote, 
 .fencing-style-item {
   margin-right: 29px;
   width: 184px;
@@ -3417,11 +3419,41 @@ thead.fc-border th:last-child {
   transition: all 0.2s ease;
 }
 @media (max-width: 768px) {
+  .load-quote,
   .fencing-style-item {
     width: 152px;
     margin-right: 16px;
   }
 }
+
+.load-quote .fencing-style-img {
+  position: relative;
+  opacity: 1 !important;
+  border: 2px solid #646464 !important;
+}
+.load-quote .lq-icon {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+.load-quote .fencing-style-title {
+   border: 2px solid #646464 !important; 
+   border-top: 0 !important; 
+}
+.lq-mid-desc {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+}
+.load-quote:hover .fencing-style-title,
+.load-quote:hover .fencing-style-img {
+  border-color: #F67925 !important;
+}
+
+.load-quote  .fencing-style-title,
 .fencing-style-item .fencing-style-title {
   text-align: center;
   font-size: 14px;
@@ -3433,14 +3465,17 @@ thead.fc-border th:last-child {
   padding: 10px;
 }
 @media (max-width: 768px) {
+  .load-quote .fencing-style-title,
   .fencing-style-item .fencing-style-title {
     font-size: 12px;
   }
 }
+.load-quote .fencing-style-item img,
 .fencing-style-item .fencing-style-item img {
   width: 100%;
   margin-bottom: 10px;
 }
+.load-quote .fencing-style-img,
 .fencing-style-item .fencing-style-img {
   opacity: 0.5;
   transition: transform 0.3s;
@@ -4325,4 +4360,55 @@ thead.fc-border th:last-child {
   margin-bottom: 0;
 }
 
+.downloading-pdf button,
+.downloading-pdf a,
+.downloading-pdf .fc-cart-countdown,
+.downloading-pdf .fc-text-success,
+.downloading-pdf .fc-stock-status:before,
+.downloading-pdf .fc-icon,
+.print-label {
+  display: none;
+}
+.downloading-pdf .step-label {
+  display: block;
+  font-family: sans-serif;
+  font-size: 25px;
+  font-weight: bold;
+  width: 100%;
+}
+.downloading-pdf {
+  padding: 0 !important;
+  border: 0 !important;
+}
+.downloading-pdf .quote-id-card {
+  border: 0 !important;
+}
+.downloading-pdf .qic-head {
+    color: #000;
+    background: #fff;  
+}
+.downloading-pdf .fc-bg-dark {
+  background: #fff;
+  color: #333333;
+}
+.downloading-pdf .fc-table-rounded-border,
+.downloading-pdf table,
+.downloading-pdf table tr,
+.downloading-pdf table th,
+.downloading-pdf table td {
+  border: 0 !important;
+}
+.downloading-pdf .fc-step-2-alert.fc-alert-gray {
+    padding: 0;  
+  background-color: #ffffff !important;
+}
+.downloading-pdf .fc-cart-stock-area span {
+  background-color: #ffffff !important;
+}
+.downloading-pdf tr {
+  background-color: #ffffff !important;
+}
 
+@media print {
+  #fc-follow {break-after:page;}
+}

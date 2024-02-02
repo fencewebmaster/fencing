@@ -85,6 +85,13 @@ function stripeTokenHandler(token) {
 }
 */
 
+/*window.jsPDF = window.jspdf.jsPDF;
+
+
+    $('#update_cart-section').addClass('downloading-pdf');
+
+*/
+
 
 $(document).on('click', '.fc-btn-download-fence', function (e) {    
 
@@ -99,18 +106,22 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
 
     window.jsPDF = window.jspdf.jsPDF;
 
-    $('#fc-fence-list .btn-fc').hide();
-    $('#fc-fence-list').addClass('downloading');
+    $('#project-plans-section').addClass('downloading-pdf').append('<div id="fc-follow"></div>');
+    $('#update_cart-section').addClass('downloading-pdf')
 
-    var element = document.getElementById('fc-fence-list');
+ // $('#update_cart-section').clone().appendTo("#fc-follow");
+
+    var element = document.getElementById('project-plans-section');
 
     // Add loading animation
     $(this).find('i').removeAttr('class').addClass('fas fa-spinner fa-spin');
     $(this).attr('disabled', true).find('span').html('Preparing Plans...');
 
+
+
+
     html2canvas(element,
         { 
-
             width: 1500,
         }
     ).then(canvas => {
@@ -129,28 +140,47 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
 
         let heightLeft = imgHeight;
 
-
-        let position = 8;
-        doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight  - 10);
+        doc.addImage(imgData, 'PNG', 10, 0, imgWidth, imgHeight  - 10);
         heightLeft -= pageHeight;
 
 
         while (heightLeft >= 0) {
             position = heightLeft - imgHeight;
             doc.addPage();
-            doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight + 20);
+            doc.addImage(imgData, 'PNG', 10, position - 5, imgWidth, imgHeight + 20);    
             heightLeft -= pageHeight;
         }
 
+        element = document.getElementById("update_cart-section");
+
+        var sectionCount = localStorage.getItem('custom_fence-section') ?? 1;
+
+        // https://stackoverflow.com/questions/36472094/how-to-set-image-to-fit-width-of-the-page-using-jspdf
+        doc.html(element, {
+            callback: function (doc) {
+                doc.save(`project-plan-${currentDate}.pdf`);
+
+                // Return to default estate
+                $(this).find('i').removeAttr('class').addClass('fa-solid fa-download');
+                $(this).removeAttr('disabled').find('span').html('Download Plans');
+                $('.downloading-pdf').removeClass('downloading-pdf');
+                $("#fc-follow").remove();
+
+            },
+            margin: [10, 10, 10, 10],
+            x: 0,
+            y: 198 * Math.ceil((sectionCount / 3)),
+            html2canvas: {
+                autoPaging: 'text',
+                scale: 0.16, //this was my solution, you have to adjust to your size
+                width: 1000 //for some reason width does nothing
+            },
+        });
+
 
        // pdf.addImage(imgData, 'PNG', 13, 0, pdfWidth, pdfHeight);
-        doc.save(`project-plan-${currentDate}.pdf`);
 
-        // Return to default estate
-        $(this).find('i').removeAttr('class').addClass('fa-solid fa-download');
-        $(this).removeAttr('disabled').find('span').html('Download Plans');
-        $('#fc-fence-list .btn-fc').show();
-        $('#fc-fence-list').removeClass('downloading');
+
 
     });
     

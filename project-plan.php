@@ -67,6 +67,9 @@
 <!-- END FORM SUBMISSION LOADER -->
 
 
+<div id="Page1">1</div>
+<div id="Page2">2</div>
+<div id="Page3">3</div>
 
 <!-- START FENCING CONTAINER -->
 <div id="place_order-section" class="fencing-container fc-project-plan fc-position-relative" data-tab="1">
@@ -163,7 +166,7 @@
 
 
 		            <!-- START PROJECT PLAN -->
-					<div class="fencing-section fencing-section--has-border">
+					<div id="project-plans-section" class="fencing-section fencing-section--has-border">
 						<div class="fc-card">
 
 							<div class="fc-row-flex">
@@ -273,8 +276,10 @@
 								<div class="fc-row-container fc-row-container--cart-stock">
 									<div class="fc-col-half fc-position-relative" id="update_cart-list">
 										<!-- [START] Label -->
-										<div class="fencing-section__cmp fencing-section__step-label">
-											<div class="step-label">Item List & <span>Cart</span></div>
+										<div class="fencing-section__cmp fencing-section__step-label">										
+											<div class="step-label">
+												Item List & <span>Cart</span>
+											</div>
 											<div>
 												<a href="" class="fc-edit-item js-fc-edit-item"><i class="fa-solid fa-pencil"></i> <span>Edit</span></a>
         										<a href="" class="fc-reset-item" style="display: none;">Reset</a>
@@ -299,15 +304,20 @@
 										</div>
 
 									</div>
-									
-									<div class="fc-col-half fc-position-relative" id="update_stock-delivery">
-										<!-- [START] Label -->
-										<div class="fencing-section__cmp fencing-section__step-label">
-											<div class="step-label">Stock & <span>Delivery</span></div>
+
+										<!-- [START] Label -->									
+										<div class="fc-col-half fc-position-relative" id="update_stock-delivery">
+
+											<div class="fencing-section__cmp fencing-section__step-label">
+												<div class="step-label">
+													Stock & <span>Delivery</span>
+												</div>
 											<div>
-											</div>
+
+										</div>
 										</div>
 										<!-- [END] Label -->
+
 										<!-- START SHIPPING OPTION -->
 										<h4 class="fc-mb-2  fc-d-none">Pick-Up / Delivery</h4>
 

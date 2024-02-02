@@ -21,7 +21,6 @@ if( ! @$_SESSION["site"] ) {
     $_SESSION["site"] = $site;  
 }
 
-
 include 'data/settings.php';
 include 'temp/fields.php';
 include 'config/database.php'; 
@@ -42,6 +41,9 @@ if( $qid = @$_GET['qid'] ) {
 <link rel="stylesheet" type="text/css" href="style.css?v=<?php echo date('YmdHis'); ?>">
 <link rel="stylesheet" type="text/css" href="style-v2.css?v=<?php echo date('YmdHis'); ?>">
 <link rel="stylesheet" type="text/css" href="fonts/fa/css/all.min.css">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
 
 <style type="text/css">
 /* Temporary solution to hide frameless pool from the selection */
@@ -83,6 +85,30 @@ if( $qid = @$_GET['qid'] ) {
     </div>
 </div>
 <!-- END FORM SUBMISSION LOADER -->
+
+
+<!-- Load Quote Modal -->
+<form method="get">
+    <div class="modal fade" id="load-quote" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Load Quote</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="qid" class="form-control form-control-lg no-space" placeholder="Enter Quote ID" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary text-uppercase px-3">
+                        <i class="fa fa-check me-2"></i>
+                        <strong>Confirm</strong>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 <div class="fencing-container w-side-section" data-tab="1">
     <form method="POST" id="fc-download-form" action="project-plan">
@@ -180,23 +206,46 @@ if( $qid = @$_GET['qid'] ) {
                         <!-- START STYLES -->
                         <div class="fencing-section__cmp fencing-styles">
                             <div class="fencing-styles__area">
-                            <?php foreach( $fences as $fence ): ?>
-                            <div class="fencing-style-item" data-title="<?php echo $fence['title']; ?>">
-                                <div>
 
-                                    <div class="fencing-style-img">
-                                        <img src="<?php echo $fence['image']; ?>">				
+                                <?php foreach( $fences as $fence ): ?>
+                                <div class="fencing-style-item" data-title="<?php echo $fence['title']; ?>">
+                                    <div>
+
+                                        <div class="fencing-style-img">
+                                            <img src="<?php echo $fence['image']; ?>">				
+                                        </div>
+
+                                        <div class="fencing-style-title">
+                                            <?php echo $fence['title']; ?>
+                                        </div>
+
+                                        <button class="fencing-style-btn js-fencing-style-btn fc-fence-reset-all"><i class="fa fa-times"></i></button>
+
                                     </div>
-
-                                    <div class="fencing-style-title">
-                                        <?php echo $fence['title']; ?>
-                                    </div>
-
-                                    <button class="fencing-style-btn js-fencing-style-btn fc-fence-reset-all"><i class="fa fa-times"></i></button>
-
                                 </div>
-                            </div>
-                            <?php endforeach; ?>	
+                                <?php endforeach; ?>	
+
+
+                                <div class="load-quote" data-bs-toggle="modal" data-bs-target="#load-quote">
+                                    <div>
+
+                                        <div class="fencing-style-img">
+                                            <img src="img/plain-white.jpg">  
+                                            <div class="lq-mid-desc">
+                                                <div class="lq-icon">
+                                                    <i class="fa-solid fa-file-circle-plus"></i>                                         
+                                                </div>
+                                                Click Here to<br> Load Quote                                                             
+                                            </div>
+                                        </div>
+
+                                        <div class="fencing-style-title">
+                                            Quote
+                                        </div>
+
+                                    </div>
+                                </div>
+
                             </div>			
                         </div>
                         <!-- END STYLES -->
@@ -327,7 +376,7 @@ if( $qid = @$_GET['qid'] ) {
 
                                 <div class="fc-section-step" data-tab="1">
 
-                                    <?php if( isset($_SESSION['fc_data']) ): ?>
+                                    <?php if( isset($_SESSION['planner_id']) ): ?>
                                     <button type="submit" 
                                         class="btn-fc btn-fc-orange fc-btn-update">
                                         <b>UPDATE <i class="fa-regular fa-pen-to-square"></i></b>
@@ -483,6 +532,8 @@ if( $qid = @$_GET['qid'] ) {
 <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="js/jquery-scrollspy.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
