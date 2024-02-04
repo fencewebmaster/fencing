@@ -145,7 +145,6 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
 
     });
 
-
     html2canvas(element,
         { 
             width: 1600,
@@ -192,6 +191,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
                 $('.downloading-pdf').removeClass('downloading-pdf');
                 $("#fc-follow").remove();
                 $('.fc-loader-overlay').hide();
+                $('.fc-loader ul li').remove();
 
             },
             margin: [10, 10, 10, 10],
