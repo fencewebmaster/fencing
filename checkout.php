@@ -5,11 +5,11 @@ include 'data/settings.php';
 include 'helpers.php';
 include 'config/database.php'; 
 
-if( @$_POST['action'] == 'push_order' ) {
+if( @$_GET['action'] == 'push_order' ) {
 
     $info = $_SESSION;
 
-    $info['planner_id'] = @$info['planner_id'];
+    $info['planner_id'] = $planner_id = @$info['planner_id'];
 
     $data = json_encode($info);
 
