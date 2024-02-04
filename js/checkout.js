@@ -125,6 +125,7 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
     var count = 0;
 
     $('.fc-loader-overlay').show();
+    $('.fc-loader ul li').remove();
 
     var items = [
         'Converting to PDF...',
@@ -386,6 +387,7 @@ $("#paymentFrm").validate({
         } else if( action == 'push_order' ) {
 
             $('.fc-loader-overlay').show();
+            $('.fc-loader ul li').remove();
 
             var items = [
                 'Preparing:',
