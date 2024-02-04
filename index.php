@@ -4,8 +4,8 @@ $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
 include 'helpers.php';
 
-if( @$_GET['sid'] && @$_GET['url'] ) {
-    $site = sites($_GET['sid'], true);
+if( @$_GET['sid'] && @$_GET['site'] ) {
+    $site = sites($_GET['site'], 'domain', true);
 
     if( $site ) {
         $_SESSION["site"] = $site;  

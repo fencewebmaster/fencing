@@ -387,6 +387,17 @@ $("#paymentFrm").validate({
 
             $('.fc-loader-overlay').show();
 
+            var items = [
+                'Preparing:',
+                'Checking customer details...',
+                'Pushing order into cart...',
+                'Redirecting to fencing website...',
+            ];
+
+            $.each(items, function(k, v){
+                $('.fc-loader ul').append(`<li><i class="fa fa-check fc-mr-1"></i> ${v}</li>`);
+            });
+
             setTimeout(function(){
                 $('.fc-loader ul li:first-child').addClass('fc-text-success');
             }, 500);
@@ -413,17 +424,6 @@ $("#paymentFrm").validate({
 
                         var count = 0;
 
-                        var items = [
-                            'Preparing:',
-                            'Checking customer details...',
-                            'Pushing order into cart...',
-                            'Redirecting to fencing website...',
-                        ];
-
-                        $.each(items, function(k, v){
-                            $('.fc-loader ul').append(`<li><i class="fa fa-check fc-mr-1"></i> ${v}</li>`);
-                        });
-            
                         $('.fc-loader ul li:not(.fc-text-success)').each(function(i) {
                             var $this = $(this);
 

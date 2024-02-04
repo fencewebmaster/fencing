@@ -5,7 +5,7 @@ include 'data/settings.php';
 include 'helpers.php';
 include 'config/database.php'; 
 
-if( @$_GET['action'] == 'push_order' ) {
+if( @$_POST['action'] == 'push_order' ) {
 
     $info = $_SESSION;
 
@@ -26,21 +26,21 @@ if( @$_GET['action'] == 'push_order' ) {
       'status'             => 'planning',
       'status_updated_at'  => date('Y-m-d H:i:s'),
       'section_count'      => count(json_decode($fc_data['fences'])),
-      'notes'              => $fc_data['notes'],
-      'name'               => $fc_data['name'],
-      'mobile'             => $fc_data['mobile'],
-      'email'              => $fc_data['email'],
-      'address'            => $fc_data['address'],
+      'notes'              => @$fc_data['notes'],
+      'name'               => @$fc_data['name'],
+      'mobile'             => @$fc_data['mobile'],
+      'email'              => @$fc_data['email'],
+      'address'            => @$fc_data['address'],
       'fence_type'         => ['aluminum'],
-      'timeframe'          => $fc_data['timeframe'],
-      'installer'          => $fc_data['installer'],
-      'extra'              => $fc_data['extra'] ? $fc_data['extra'] : $fc_data['nothing_extra'],
-      'color_data'         => $fc_data['color'],
+      'timeframe'          => @$fc_data['timeframe'],
+      'installer'          => @$fc_data['installer'],
+      'extra'              => @$fc_data['extra'] ? $fc_data['extra'] : $fc_data['nothing_extra'],
+      'color_data'         => @$fc_data['color'],
       'products_data'      => $fc_products,
-      'fence_data'         => $fc_data['fences'],
-      'cart_data'          => $fc_cart['items'],
-      'cart_items_data'    => $fc_data['cart_items'],
-      'project_plans_data' => $fc_data['project_plans'],
+      'fence_data'         => @$fc_data['fences'],
+      'cart_data'          => @$fc_cart['items'],
+      'cart_items_data'    => @$fc_data['cart_items'],
+      'project_plans_data' => @$fc_data['project_plans'],
       'created_at'         => date('Y-m-d H:i:s'),
       'updated_at'         => date('Y-m-d H:i:s'),
     ];
