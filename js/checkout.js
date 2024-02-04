@@ -92,8 +92,12 @@ function stripeTokenHandler(token) {
 
 */
 
+            
+
 
 $(document).on('click', '.fc-btn-download-fence', function (e) {    
+
+    var $this = $(this);
 
     const date = new Date();
 
@@ -114,25 +118,48 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
     var element = document.getElementById('project-plans-section');
 
     // Add loading animation
-    $(this).find('i').removeAttr('class').addClass('fas fa-spinner fa-spin');
-    $(this).attr('disabled', true).find('span').html('Preparing Plans...');
+    $this.find('i').removeAttr('class').addClass('fas fa-spinner fa-spin');
+    $this.attr('disabled', true).find('span').html('Preparing Plans...');
 
 
+    var count = 0;
+
+    $('.fc-loader-overlay').show();
+
+    var items = [
+        'Converting to PDF...',
+    ];
+
+    $.each(items, function(k, v){
+        $('.fc-loader ul').append(`<li><i class="fa fa-check fc-mr-1"></i> ${v}</li>`);
+    });
+
+    $('.fc-loader ul li:not(.fc-text-success)').each(function(i) {
+        var $this = $(this);
+
+        setTimeout(function(){
+           $this.addClass('fc-text-success');
+           count++;
+
+        }, 500 * i);
+
+    });
 
 
     html2canvas(element,
         { 
-            width: 1500,
+            width: 1600,
         }
     ).then(canvas => {
+
+        var sectionCount = localStorage.getItem('custom_fence-section') ?? 1;
+        var sectionGroupCount = Math.ceil((sectionCount / 3));
 
         const imgData = canvas.toDataURL('image/png');
 
         const doc = new jsPDF('l', 'mm', 'letter');
 
-    //    const imgWidth = 220;
-        const pageHeight = 220;
-     //   const imgHeight = ((canvas.height * imgWidth) / canvas.width);
+        const pageHeight =  doc.internal.pageSize.getHeight();
 
         const imgProps = doc.getImageProperties(imgData);
         const imgWidth = doc.internal.pageSize.getWidth();
@@ -140,20 +167,19 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
 
         let heightLeft = imgHeight;
 
-        doc.addImage(imgData, 'PNG', 10, 0, imgWidth, imgHeight  - 10);
+        doc.addImage(imgData, 'PNG', 10, 0, imgWidth, imgHeight - 10);
         heightLeft -= pageHeight;
 
-
         while (heightLeft >= 0) {
+
             position = heightLeft - imgHeight;
+
             doc.addPage();
-            doc.addImage(imgData, 'PNG', 10, position - 5, imgWidth, imgHeight + 20);    
+            doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight + 25);    
             heightLeft -= pageHeight;
         }
 
         element = document.getElementById("update_cart-section");
-
-        var sectionCount = localStorage.getItem('custom_fence-section') ?? 1;
 
         // https://stackoverflow.com/questions/36472094/how-to-set-image-to-fit-width-of-the-page-using-jspdf
         doc.html(element, {
@@ -161,15 +187,16 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
                 doc.save(`project-plan-${currentDate}.pdf`);
 
                 // Return to default estate
-                $(this).find('i').removeAttr('class').addClass('fa-solid fa-download');
-                $(this).removeAttr('disabled').find('span').html('Download Plans');
+                $this.find('i').removeAttr('class').addClass('fa-solid fa-download');
+                $this.removeAttr('disabled').find('span').html('Download Plans');
                 $('.downloading-pdf').removeClass('downloading-pdf');
                 $("#fc-follow").remove();
+                $('.fc-loader-overlay').hide();
 
             },
             margin: [10, 10, 10, 10],
             x: 0,
-            y: 198 * Math.ceil((sectionCount / 3)),
+            y: 196 * sectionGroupCount,
             html2canvas: {
                 autoPaging: 'text',
                 scale: 0.16, //this was my solution, you have to adjust to your size
@@ -186,6 +213,8 @@ $(document).on('click', '.fc-btn-download-fence', function (e) {
     
 
 });
+
+
 
 $("#paymentFrm").validate({   
     rules: {
@@ -383,6 +412,17 @@ $("#paymentFrm").validate({
                         window.onbeforeunload = function() {}
 
                         var count = 0;
+
+                        var items = [
+                            'Preparing:',
+                            'Checking customer details...',
+                            'Pushing order into cart...',
+                            'Redirecting to fencing website...',
+                        ];
+
+                        $.each(items, function(k, v){
+                            $('.fc-loader ul').append(`<li><i class="fa fa-check fc-mr-1"></i> ${v}</li>`);
+                        });
             
                         $('.fc-loader ul li:not(.fc-text-success)').each(function(i) {
                             var $this = $(this);

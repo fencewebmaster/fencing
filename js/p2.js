@@ -5,12 +5,16 @@ function reload_fence_items() {
 
     for (let i = 0; i < items; i++) {
 
-      $('#fc-fence-list').append(`<div style="margin:10px 0 20px;font-weight:bold;">SECTION ${i+1}<a href="${base_url}?section=${i+1}" data-action="edit" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
+        $('#fc-fence-list').append(`<div style="margin:10px 0 20px;font-weight:bold;">SECTION ${i+1}<a href="${base_url}?section=${i+1}" data-action="edit" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
                                     <i class="fa-solid fa-pencil"></i>
                                     <span>Edit Details</span>
-                                </a></div> <div id="pp-${i}" style="height:312px;"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>`);
+                                </a></div> <div id="pp-${i}" style="height:310px;border:1px solid #fff;"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>`);
 
 
+
+        if( (i+1) % 3 === 0 & i != 1 ) {
+            $('#fc-fence-list').append(`<div style="border: 1px solid #fff;height:99px;"></div>`);
+        }
 
        reload_load_fencing_items(i);
 

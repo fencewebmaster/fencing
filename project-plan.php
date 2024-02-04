@@ -48,15 +48,7 @@
 
                 <div class="fc-col-auto">
                     
-                    <ul>
-                        <li>
-                            <div class="fc-mb-1"><small style="font-size:30px;">Preparing:</small></div>
-                        </li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Checking customer details... </li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Pushing order into cart...</li>
-                        <li><i class="fa fa-check fc-mr-1"></i> Redirecting to fencing website...</li>
-                        <li></li>
-                    </ul>
+                    <ul></ul>
 
                 </div>
 
@@ -66,10 +58,6 @@
 </div>
 <!-- END FORM SUBMISSION LOADER -->
 
-
-<div id="Page1">1</div>
-<div id="Page2">2</div>
-<div id="Page3">3</div>
 
 <!-- START FENCING CONTAINER -->
 <div id="place_order-section" class="fencing-container fc-project-plan fc-position-relative" data-tab="1">

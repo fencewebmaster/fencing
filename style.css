@@ -880,7 +880,7 @@ a.fc-tab-active {
 
 /* Page Loader */
 .fc-loader-overlay {
-  background: rgba(0, 0, 0, 0.9411764706);
+  background: rgb(0 0 0 / 98%);
   position: fixed;
   top: 0;
   right: 0;
@@ -4375,6 +4375,9 @@ thead.fc-border th:last-child {
   font-size: 25px;
   font-weight: bold;
   width: 100%;
+}
+.downloading-pdf  .fc-table-rounded-border table td {
+    padding: 4px 15px;
 }
 .downloading-pdf {
   padding: 0 !important;

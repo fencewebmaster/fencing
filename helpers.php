@@ -220,20 +220,31 @@ function get_product_skus($data = array()) {
  	$column = 'slug';
  	$color  = $data['color'];
 
+    $supplier = $_SESSION['site']['supplier'];
+
 	foreach ($items as $item) {
 
-		$key = array_search($item['slug'], array_column($the_products, $column));
-    
-    if( $key !== false ){
-      $products[] = [
-        'sku'  => $the_products[$key][$color],
-        'qty'  => $item['qty'],
-        'slug' => $item['slug']
-      ]; 
-    }
-		
+        $filtered_product = array_filter($the_products, function($val) use($item, $supplier){
+            return ( $val['slug'] == $item['slug'] && $val['supplier'] == $supplier );
+        });
 
-		$skus[] = $the_products[$key][$color];
+        if( $filtered_product ) {
+            $key = array_keys($filtered_product)[0];
+
+            $sku = $the_products[$key][$color];
+
+            if( $key !== false && strtolower($sku) != 'off' ){
+              $products[] = [
+                'sku'  => $sku,
+                'qty'  => $item['qty'],
+                'slug' => $item['slug']
+              ]; 
+            }
+            
+
+            $skus[] = $the_products[$key][$color];
+        }
+
 	}
 
 	$_SESSION['custom_fence_products'] = $products;
@@ -243,6 +254,8 @@ function get_product_skus($data = array()) {
 
 function post_product_skus($cart_items = array()) {
 
+    $supplier = strtoupper($_SESSION['site']['supplier']);
+
 	$items = $cart = array();
 
     $skus = get_product_skus($cart_items);
@@ -251,7 +264,7 @@ function post_product_skus($cart_items = array()) {
         $post_query[] = $sku;
     }
 
- 	  $the_products = load_csv('data/wc-products.csv');
+ 	  $the_products = load_csv('data/wc-products-'.$supplier.'.csv');
 
     foreach ($post_query as $query) {
 
