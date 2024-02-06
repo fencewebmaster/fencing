@@ -31,6 +31,8 @@ if( @$_POST['action'] == 'push_order' ) {
       'mobile'             => @$fc_data['mobile'],
       'email'              => @$fc_data['email'],
       'address'            => @$fc_data['address'],
+      'postcode'           => @$fc_data['postcode'],
+      'state'              => @$fc_data['state'],
       'fence_type'         => ['aluminum'],
       'timeframe'          => @$fc_data['timeframe'],
       'installer'          => @$fc_data['installer'],
@@ -52,6 +54,62 @@ if( @$_POST['action'] == 'push_order' ) {
         return;
     }
 
+    // Push to ZAP
+    $post_data = [
+        "contacts" => [
+            [
+                "name"   => @$fc_data['name'],
+                "email"  => @$fc_data['email'],
+                "phones" => @$fc_data['mobile'],
+            ],
+        ],
+        "addresses" => [
+            [
+                "city"      => '',
+                "state"     => @$fc_data['state'],
+                "country"   => "US",
+            ],
+        ],
+        "opportunities" => [
+            [
+                "value"          => 0,
+                "date_won"       => date('Y-m-d'),
+                "form_name"      => 'Fencing Calculator',
+                "note"           => @$fc_data['notes'],
+                "summary"        => "Fencing Calculator - ". date('Y-m-d') ." - ".PHP_EOL." FORM NOTES/DETAILS: " .PHP_EOL. fc_timeframe(@$fc_data['timeframe']) .PHP_EOL. fc_installer(@$fc_data['installer']) . PHP_EOL . @$fc_data['notes'],
+                "installer"      => fc_installer(@$fc_data['installer']),
+                "quote_id"       => $planner_id,
+                "planner_url"    => base_url('?qid='.$planner_id),
+                "fencing_type"   => 'aluminum',
+                "timeframe"      => fc_timeframe(@$fc_data['timeframe']),
+            ],
+        ],
+    ];
+
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'https://hooks.zapier.com/hooks/catch/13215869/b0451hl/',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => json_encode($post_data),
+      CURLOPT_HTTPHEADER => array(
+        'Content-Type: application/json'
+      ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+
+
+
+    // push to WP
     $curl = curl_init();
 
     curl_setopt_array($curl, array(

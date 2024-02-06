@@ -264,7 +264,7 @@ function post_product_skus($cart_items = array()) {
         $post_query[] = $sku;
     }
 
- 	  $the_products = load_csv('data/wc-products-'.$supplier.'.csv');
+ 	$the_products = load_csv('data/wc-products-'.$supplier.'.csv');
 
     foreach ($post_query as $query) {
 

@@ -15,6 +15,8 @@ $cart_items_grouped = json_decode($_SESSION["fc_data"]['cart_items'], true);
 
 $cart_items_regrouped = $cart_items_formatted = [];
 
+
+
 // Merged the cart items
 $cart_items_merged = array_merge(...$cart_items_grouped);
 
@@ -30,6 +32,7 @@ foreach($cart_items_regrouped as $ci_k => $ci_v) {
         'qty' => array_sum($ci_v),
     ];
 }
+
 
 $color = $_SESSION["fc_data"]['color'];
 

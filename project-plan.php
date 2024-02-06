@@ -25,7 +25,7 @@
 <link rel="stylesheet" type="text/css" href="style-v2.css?v=<?php echo date('YmdHis'); ?>">
 
 <link rel="stylesheet" type="text/css" href="fonts/fa/css/all.min.css">
-<script src="https://js.stripe.com/v3/" async></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
 <style type="text/css">
 .fc-form-group {
@@ -68,11 +68,20 @@
 		<input type="hidden" name="action" value="">
 
 		<!-- START PAGE HEADER TITLE -->
-		<div class="fc-mb-2">
-		    <div class="fc-row">
-		        <div class="fc-col-half fc-lg-col-full">
+		<div class="mt-5">
+		    <div class="row">
+		        <div class="col">
 		            <h2 class="fc-header-title">Fencing Calculator</h2>
 		            <p>Calculate your fence cost and the materials needed.</p>
+		        </div>
+		        <div class="col">
+					<div class="quote-id-card float-end">
+						<div class="qic-head">Your Quote ID</div>
+						<div class="qic-body btn-copy-link" data-id="quote-id-1">
+							<div id="quote-id-1"><?php echo @$_SESSION['planner_id']; ?></div>
+						</div>
+					</div>
+
 		        </div>
 		    </div>
 		</div>

@@ -1142,7 +1142,7 @@ function submit_fence_planner(status ='') {
     //Set some delay to make sure the local storage and the html markup are loaded
     var items = localStorage.getItem('custom_fence-section') ?? 1;
     for (let i = 0; i < items; i++) {
-        FENCES.cartItems.init(i);
+        FENCES.cartItems.init(i+1);
     }    
 
     var set_fc_data   = [];
@@ -1213,6 +1213,7 @@ function submit_fence_planner(status ='') {
 
     formData.set("project_plans", JSON.stringify(project_plans));
 
+
     Object.entries(project_plans).forEach(([key, value]) => {
         if (typeof value === 'object') {
             value = JSON.stringify(value);
@@ -1225,6 +1226,7 @@ function submit_fence_planner(status ='') {
 
         formData.set(key, value);
     });
+
 
     $.ajax({
         url: 'submit.php', 
