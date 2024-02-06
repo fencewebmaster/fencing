@@ -19,7 +19,7 @@ FENCES.cartItems = {
     },
 
     init: function(i) {
-
+        
         $(`.fc-section-${i}`).click();
 
         // Sample data (object or multi-dimensional array)

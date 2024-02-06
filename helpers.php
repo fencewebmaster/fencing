@@ -28,10 +28,14 @@ function sites($key = '', $value = 'id', $search = false) {
         [
             'id'       => 999999,
             'domain'   => "localhost",
-            'url'      => toURL('fencesperth.com'),
+            'url'      => toURL('fencingwarehouse.au'),
             'supplier' => "JG",
             'logo'     => "https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png",
-            'name'     => "Localhost Fencing Outlet"
+            'name'     => "Localhost Fencing Outlet",
+            'restrict' => [
+                'left_raked',
+                'right_raked'
+            ]
         ],
         [
             'id'       => 1,
