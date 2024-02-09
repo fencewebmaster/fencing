@@ -268,10 +268,12 @@
 							}
 							</style>
 
-							<div id="update_cart-section">
+							<div id="update_cart-section" class="fencing-section fencing-section--has-border">
 
-								<div class="fc-row-container fc-row-container--cart-stock">
-									<div class="fc-col-half fc-position-relative" id="update_cart-list">
+								<div class="row">
+
+									<div class="col-md-8 fc-position-relative" id="update_cart-list">
+
 										<!-- [START] Label -->
 										<div class="fencing-section__cmp fencing-section__step-label">										
 											<div class="step-label">
@@ -303,7 +305,7 @@
 									</div>
 
 										<!-- [START] Label -->									
-										<div class="fc-col-half fc-position-relative" id="update_stock-delivery">
+										<div class="col-md-4 fc-position-relative" id="update_stock-delivery">
 
 											<div class="fencing-section__cmp fencing-section__step-label">
 												<div class="step-label">
@@ -392,16 +394,17 @@
 											</p>
 										</div>
 
-										<div class="fc-cart-items-btns">
+									<div class="d-grid gap-2">
 											<button type="submit" 
-												class="btn-fc btn-fc--large-text btn-submit fc-btn-md btn-fc-black fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
+												class="btn-fc btn-fc--large-text fc-btn-md btn-fc-black fc-text-uppercase mb-1 fc-w-700 w-100-sm">
 												Order Items Now!
 											</button>
+
 											<button type="button" 
 												class="btn-fc btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
 												<span>Speak To Trade Support</span>
 											</button>
-										</div>
+									</div>
 
 									</div>
 

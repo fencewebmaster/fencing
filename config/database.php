@@ -14,7 +14,7 @@ class Database {
 	        $this->username = "root";
 	        $this->password = "";
 	        $this->database = "fencing_calculator";
-	        $this->prefix   = 'fc_';
+	        $this->prefix   = 'wp_';
 
 	    } elseif( $_SERVER['HTTP_HOST'] == 'fencingwarehouse.au' ) {
 

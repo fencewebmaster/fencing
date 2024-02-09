@@ -274,10 +274,16 @@ function post_product_skus($cart_items = array()) {
 
 		$key = array_search($query['sku'], array_column($the_products, 'sku'));
 
+        $image = '';
+        if( isset($the_products[$key]['images']) ) {
+            $image = explode(', ', $the_products[$key]['images'])[0];
+        }
+
         $items[]  = [
             'sku'     => $query['sku'],
             'name'    => $the_products[$key]['name'],
             'slug'    => $query['slug'],
+            'image'   => $image,
         ];
 
     }
@@ -327,15 +333,19 @@ function post_product_skus($cart_items = array()) {
 
         $key = array_search($item['sku'], array_column($custom_fence_products, 'sku'));
 
-        $cart['items'][] = [
-            'name'  => $item['name'],
-            'sku'   => $item['sku'],
-            'slug'  => $item['slug'],
-            'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
-            'qty'   => $custom_fence_products[$key]['qty'],
-            'orignal_qty' => $custom_fence_products[$key]['qty'],
-        ];
-      $i++;
+        if( $custom_fence_products[$key]['qty'] ) {
+
+            $cart['items'][] = [
+                'name'  => $item['name'],
+                'image' => $item['image'],
+                'sku'   => $item['sku'],
+                'slug'  => $item['slug'],
+                'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
+                'qty'   => $custom_fence_products[$key]['qty'],
+                'orignal_qty' => $custom_fence_products[$key]['qty'],
+            ];
+            $i++;
+        }
     }
 
     $_SESSION['fc_cart'] = $cart;

@@ -5,16 +5,21 @@ FENCES.cartItems = {
     
     item: {
         gateKit1: {
-            slug: 'gate+hinges',
+            slug: 'gate+kit',
             qty: 1
         },
         gateKit2: {
-            slug: 'gate+kit',
+            slug: 'gate+hinges',
             qty: 1
         },
         gateKit3: {
             slug: 'gate+latch',
             qty: 1
+        },
+        swivelBrackets: {
+            slug: 'swivel_brackets',
+            qty: 2,
+            className: 'no-post-swivel-bracket'
         }
     },
 
@@ -97,8 +102,8 @@ FENCES.cartItems = {
                 //Since `gate_kit` shares the same value with `gate`
                 //create the entry for `gate_kit` manually
                 newCartItems.push(FENCES.cartItems.item.gateKit1);
-                newCartItems.push(FENCES.cartItems.item.gateKit2);
-                newCartItems.push(FENCES.cartItems.item.gateKit3);
+                // newCartItems.push(FENCES.cartItems.item.gateKit2);
+                // newCartItems.push(FENCES.cartItems.item.gateKit3);
 
             }
 
@@ -118,6 +123,11 @@ FENCES.cartItems = {
                 if(el.classList.contains('panel-no-post') ) {
                     qty = 0;
                 }                
+
+                if( el.classList.contains(FENCES.cartItems.item.swivelBrackets.className) ){
+                    modifiedCartKey = FENCES.cartItems.item.swivelBrackets.slug;
+                    qty = FENCES.cartItems.item.swivelBrackets.qty;
+                }
             }
 
         
@@ -146,6 +156,7 @@ FENCES.cartItems = {
                     }
                 }
             }
+
             
             //If the cart item slug does not exists in array, push/add it into the array
             if( !found && cartValue !== null && entry.qty != 0 ){
@@ -171,13 +182,15 @@ FENCES.cartItems = {
         // newCartItems = FENCES.cartItems.apply_raked_panel_post_opt1(newCartItems);
 
         //Apply condition for post_options+opt-2 | Row 20
-        // newCartItems = FENCES.cartItems.apply_post_options_opt2(newCartItems);
+        // newCartItems = FENCES.cartItems.apply_raked_panel_post_opt2(newCartItems);
 
         //Apply condition for post_options+opt-1 
         newCartItems = FENCES.cartItems.apply_post_options_opt1(newCartItems);
 
         //Apply condition for panel_post
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
+
+console.log(newCartItems);
 
         return newCartItems;
 
@@ -196,7 +209,7 @@ FENCES.cartItems = {
         array.forEach(function(v, k){
 
             if( foundGate &&  v.slug.includes('panel_post') ) {
-                v.qty = v.qty - 1; 
+                v.qty = v.qty; //  - 1
                 array[k] = v;
             }
      
@@ -327,27 +340,23 @@ FENCES.cartItems = {
      * @param {*} array 
      * @returns 
      */
-    apply_post_options_opt2: function(array) {
+    apply_raked_panel_post_opt2: function(array) {
 
-        //Find the two objects with slug `panel_post+opt-2` and `raked_post+opt-2` in the array
-        //If it exists means user selected it
-        const foundPanelPostOpt2 = array.find(obj => obj['slug'] === "panel_post+opt-2");
         const foundRakedPostOpt2 = array.find(obj => obj['slug'] === "raked_post+opt-2");
 
         //If any of the slug returns undefined, do nothing
-        if( typeof foundPanelPostOpt2 === "undefined" || typeof foundRakedPostOpt2 === "undefined" ){
+        if( typeof foundRakedPostOpt2 === "undefined" ){
             return array;
         }
 
-        //Remove `raked_panel_post+opt-1` from array
-        array = FENCES.cartItems.remove_raked_panel_post_opt1(array);
-
-        let total = foundPanelPostOpt2.qty + foundRakedPostOpt2.qty;
-
-        array.push({
-            "slug": "post_options+opt-2",
-            "qty": total,
-        });
+        //Find the two objects with slug `panel_post+opt-2` and `raked_post+opt-2` in the array
+        //If it exists means user selected it
+       for (var i = 0; i < array.length; i++) {
+            if (array[i].slug == 'raked_post+opt-2') {
+                array[i].qty = array[i].qty + 1; 
+                break;
+            }
+        }
 
         return array;
 
@@ -411,8 +420,8 @@ FENCES.cartItems = {
         return array;
     },
 
-    remove_raked_panel_post_opt1: function(array) {
-        let slug = "raked_panel_post+opt-1";
+    remove_item: function(array, slug) {
+
         //To removed
         const foundPostOptionsOpt2 = array.find(obj => obj['slug'] === slug);
         if( typeof foundPostOptionsOpt2 !== "undefined" ){

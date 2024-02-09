@@ -6,16 +6,12 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
     <div class="fc-table-rounded-border">
         
-        <table class="fc-table fc-table-bordered fc-table-striped">
-            <thead class="fc-bg-dark fc-border">
+        <table class="table table-hover fc-table fc-table-bordered fc-table-striped">
+            <thead class="table-dark fc-border">
                 <tr>
-                    <th>QTY</th>
-                    <th>Description</th>
-                    <!-- <th>SKU</th>
-                    <th>RRP</th>
-                    <th>Trade Price</th>
-                    <th>Sub Total</th> -->
-                    <th>In-stock</th>
+                    <th class="text-center">QTY</th>
+                    <th colspan="2">Description</th>
+                    <th class="text-center">In-stock</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,9 +22,9 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                 <input name="cart[orignal_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['orignal_qty']; ?>" class="fc-form-control" min="1" required>
 
                 <tr class="fc-position-relative">
-                    <td width="90" class="valign-top">                        
+                    <td width="90" class="text-center align-middle">                        
 
-                        <span class="fc-item-value" data-original="<?php echo @$cart_item['orignal_qty']; ?>"><?php echo @$cart_item['qty']; ?></span>
+                        <span class="fc-item-value fw-bold" data-original="<?php echo @$cart_item['orignal_qty']; ?>"><?php echo @$cart_item['qty']; ?></span>
                         <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control" min="0">
 
                         <?php if( @$cart_item['qty'] != @$cart_item['orignal_qty'] ): ?>
@@ -38,10 +34,14 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                         <?php endif; ?>
 
                     </td>
-                    <td>
-                        <p><strong><?php echo @$cart_item['name']; ?></strong><br /><?php echo @$cart_item['sku']; ?></p>
+                    <td style="min-width:50px;max-width:100px;" class="p-1">
+                        <img src="<?php echo @$cart_item['image']; ?>">
+                    </td>
+                    <td class="align-top">
+                        <h6 class="fw-bold"><?php echo @$cart_item['name']; ?></h6>
+                        <?php echo @$cart_item['sku']; ?>
 
-                        <small class="fc-text-success"><?php echo @$cart_item['slug']; ?></small>
+                        <small class="fc-text-success d-none"><?php echo @$cart_item['slug']; ?></small>
                     </td>
                     <!-- <td><?php echo @$cart_item['sku']; ?></td>
                     <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>

@@ -170,7 +170,7 @@ function update_raked_panels(side) {
 
 
             if( has_post != 'yes-post' ) {
-                var has_post = 'no-post '+side_part+'-panel-post';
+                var has_post = 'no-post '+side_part+'-panel-post '+has_post;
             }
         }
 
@@ -410,7 +410,7 @@ function load_post_options_all(custom_fence, info) {
                 $(custom_fence[k].settings).each(function(lok, lov) {
 
                     if( lov.key == 'post_option' ) {
-                       custom_fence[k].settings[lok].val = post_options_filtered_data[0].settings[0].val;
+                       custom_fence[k].settings[lok].val = post_options_filtered_data[0]?.settings[0]?.val;
                         localStorage.setItem(`custom_fence-${tab}-${i}`, JSON.stringify(custom_fence));
                     }
                 });
@@ -1138,6 +1138,9 @@ function getCartItemStorage() {
 function submit_fence_planner(status ='') {
 
     window.onbeforeunload = function() {}
+
+    // Removed unwanted cart
+    localStorage.removeItem('cart_items-0');
 
     //Set some delay to make sure the local storage and the html markup are loaded
     var items = localStorage.getItem('custom_fence-section') ?? 1;
