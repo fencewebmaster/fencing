@@ -1617,6 +1617,7 @@ function tabContainerScroll() {
     $('.fc-content-tab-title').css({'border-top-right-radius':''});
 
     if( _trigger_width >= _main_parent_width ) {
+        console.log(11);
         _main_parent.addClass('enable-scroll');
         draggable(_tab_parent_class, _tab_content_class);
         $('.fc-content-tab-title').css({'border-top-right-radius':0});

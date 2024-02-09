@@ -886,3 +886,18 @@ $(document).on('click', '.fc-zoom-fence', function(e){
 $(window).resize(function(){
     tabContainerScroll();   
 });
+
+$(window).on('scroll', function(){
+
+    var target =  $('[data-spy="scroll"]').attr('data-target'),
+        w = $(target).width();
+console.log(target);
+    if( target ) {
+        if( $(window).scrollTop() > ($(target).offset().top) ) {        
+            $('[data-spy="scroll"]').addClass('sticky-roll').css({'width':w});
+        } else {
+            $('[data-spy="scroll"]').removeClass('sticky-roll').css({'width':''});
+        }        
+    }
+
+});

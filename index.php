@@ -138,16 +138,16 @@ if( $qid = @$_GET['qid'] ) {
 
         <!-- START TABS -->
         <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 " data-tab="1">
-            <div class="fencing-tabs-area">
+            <div class="fencing-tabs-area bg-white" data-spy="scroll" data-target=".js-fencing-tabs-container">
                 <div class="fencing-tabs fc-row-flex">
                 
-                <div class="fencing-tab-container js-fencing-tab-container fc-row-flex">            
-                    <div class="fencing-tab-container-area js-fencing-tab-container-area fc-row-flex"></div>
-                </div>
+                    <div class="fencing-tab-container js-fencing-tab-container fc-row-flex">            
+                        <div class="fencing-tab-container-area js-fencing-tab-container-area fc-row-flex"></div>
+                    </div>
 
-                <a href="#" class="fencing-tab-add fc-d-none">
-                &#43; <span>Add Section</span>		
-                </a>
+                    <a href="#" class="fencing-tab-add fc-d-none">
+                    &#43; <span>Add Section</span>      
+                    </a>
 
             </div>
             </div>

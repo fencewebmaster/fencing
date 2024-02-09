@@ -1,15 +1,3 @@
-$(window).on('scroll', function(){
-
-    var ha = $('.fc-content-tab-title').height(),
-        hb = $('.fc-header-tab').height();
-
-    if( $(window).scrollTop() > ($('.fc-content-tab-title').offset().top) ) {
-        $('.fencing-tabs-container').addClass('fc-sticky');
-    } else {
-        $('.fencing-tabs-container').removeClass('fc-sticky');
-    }
-
-});
 
 
 // https://jqueryvalidation.org/validate/

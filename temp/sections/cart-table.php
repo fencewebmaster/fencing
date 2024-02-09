@@ -6,7 +6,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
     <div class="fc-table-rounded-border">
         
-        <table class="table table-hover fc-table fc-table-bordered fc-table-striped">
+        <table class="table table-hover fc-table-bordered table-striped">
             <thead class="table-dark fc-border">
                 <tr>
                     <th class="text-center">QTY</th>
@@ -22,7 +22,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                 <input name="cart[orignal_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['orignal_qty']; ?>" class="fc-form-control" min="1" required>
 
                 <tr class="fc-position-relative">
-                    <td width="90" class="text-center align-middle">                        
+                    <td class="text-center align-middle">                        
 
                         <span class="fc-item-value fw-bold" data-original="<?php echo @$cart_item['orignal_qty']; ?>"><?php echo @$cart_item['qty']; ?></span>
                         <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control" min="0">
@@ -34,12 +34,12 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                         <?php endif; ?>
 
                     </td>
-                    <td style="min-width:50px;max-width:100px;" class="p-1">
+                    <td style="min-width:50px;max-width:80px;" class="p-1">
                         <img src="<?php echo @$cart_item['image']; ?>">
                     </td>
                     <td class="align-top">
-                        <h6 class="fw-bold"><?php echo @$cart_item['name']; ?></h6>
-                        <?php echo @$cart_item['sku']; ?>
+                        <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>
+                        <span class="text-muted"><?php echo @$cart_item['sku']; ?></span>
 
                         <small class="fc-text-success d-none"><?php echo @$cart_item['slug']; ?></small>
                     </td>
@@ -47,7 +47,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                     <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>
                     <td>$<?php echo @$cart_item['trade_price']; ?></td>
                     <td>$<?php echo number_format(@$cart_item['subtotal'], 2); ?></td> -->
-                    <td width="115">
+                    <td width="90" class="px-1 align-middle text-center">
                         <div class="fc-stock-status fc-stock-status--<?php echo @$cart_item['stock']; ?>"><?php echo ucwords(@$cart_item['stock']); ?></div>
                     </td>
                 </tr>

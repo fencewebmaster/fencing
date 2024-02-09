@@ -270,141 +270,77 @@
 
 							<div id="update_cart-section" class="fencing-section fencing-section--has-border">
 
-								<div class="row">
+									<div class="row">
 
-									<div class="col-md-8 fc-position-relative" id="update_cart-list">
+										<div class="col-lg-7 col-md-8 col-sm-12 fc-position-relative order-md-1 order-2" id="update_cart-list">
+										    <!-- [START] Label -->
+										    <div class="fencing-section__cmp fencing-section__step-label">
+										        <div class="step-label">Item List & <span>Cart</span></div>
+										        <div>
+										            <a href="" class="fc-edit-item js-fc-edit-item"><i class="fa-solid fa-pencil"></i> <span>Edit</span></a>
+										            <a href="" class="fc-reset-item" style="display: none;">Reset</a>
+										        </div>
+										    </div>
+										    <!-- [END] Label -->
+										    <div class="fc-card fc-table-items">
+										        <?php include('temp/sections/cart-table.php'); ?>
+										    </div>
+										    <div class="fc-cart-items-btns">
+										        <button type="submit" class="btn-fc btn-submit fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
+										            <i class="fa-solid fa-cart-shopping"></i>
+										            Order Items Now!
+										        </button>
 
-										<!-- [START] Label -->
-										<div class="fencing-section__cmp fencing-section__step-label">										
-											<div class="step-label">
-												Item List & <span>Cart</span>
-											</div>
-											<div>
-												<a href="" class="fc-edit-item js-fc-edit-item"><i class="fa-solid fa-pencil"></i> <span>Edit</span></a>
-        										<a href="" class="fc-reset-item" style="display: none;">Reset</a>
-											</div>
-										</div>
-										<!-- [END] Label -->
-										<div class="fc-card fc-table-items">          		
-											<?php include('temp/sections/cart-table.php'); ?>
-										</div>
-
-										<div class="fc-cart-items-btns">
-											<button type="submit" 
-												class="btn-fc btn-submit fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
-												<i class="fa-solid fa-cart-shopping"></i>
-												Order Items Now!
-											</button>
-											<button type="button" 
-												class="btn-fc fc-btn-download-fence btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
-												<i class="fa-solid fa-download"></i>
-												<span>Download Plans</span>
-											</button>
+										        <button type="button" class="btn-fc fc-btn-download-fence btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
+										            <i class="fa-solid fa-download"></i>
+										            <span>Download Plans</span>
+										        </button>
+										    </div>
 										</div>
 
-									</div>
+										<div class="col fc-position-relative order-1" id="update_stock-delivery">
 
-										<!-- [START] Label -->									
-										<div class="col-md-4 fc-position-relative" id="update_stock-delivery">
+											<div data-spy="scroll" data-target="#update_stock-delivery">
+												<div class="fencing-section__cmp fencing-section__step-label">
+											        <div class="step-label">Stock & <span>Delivery</span></div>
+											    </div>
+									
+												<div class="fc-cart-stock-area">
+												    <p>Approx Delivery Run: <span>2-3 Days</span></p>
 
-											<div class="fencing-section__cmp fencing-section__step-label">
-												<div class="step-label">
-													Stock & <span>Delivery</span>
+												    <p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
+
+												    <div class="fc-alert-gray fc-step-2-alert fc-alert-gray--low-stock">
+												        <h3 class="fc-mb-1"><i class="fc-icon fc-icon-info"></i> Low Stock Warning</h3>
+												        <p class="fc-text-red">
+												            Some items have limited stock available. <br />
+												            Your cart can only be Reserved for a Limited Time <br />
+												            Then its released for other customers.
+												        </p>
+												    </div>
 												</div>
-											<div>
 
-										</div>
-										</div>
-										<!-- [END] Label -->
-
-										<!-- START SHIPPING OPTION -->
-										<h4 class="fc-mb-2  fc-d-none">Pick-Up / Delivery</h4>
-
-										<div class="fc-form-group fc-form-check fc-mb-3 " style="display: none !important;">
-
-											<?php foreach( fc_deliver_options() as $delivery_option ): ?>
-											<?php 						
-												$default_shipping_type = '';					
-												if( isset($cart['shipping_type']) ) {
-													if( $cart['shipping_type'] == $delivery_option['value'] ) {
-														$default_shipping_type = 'checked';
-													}
-												} else {
-													$default_shipping_type = $delivery_option['default'] ? 'checked' : '';
-												}
-											?>
-											<label class="fc-mb-1">
-												<input type="radio" name="cart[shipping_type]" class="fc-mr-1" value="<?php echo $delivery_option['value']; ?>" <?php echo $default_shipping_type; ?> required>
-												<?php echo $delivery_option['label']; ?>
-											</label>
-											<?php endforeach; ?>
-
-										</div>
-										<!-- END SHIPPING OPTION -->
-
-
-										<!-- START SRTIPE PAYMENT -->
-										<h4 class="fc-mb-3 fc-d-none">Pay with creditcard</h4>
-
-										<div class="select-cards  fc-d-none">
-											<div class="fc-label-group fc-mb-1">
-												<label class="fc-form-label">Card Number <span class="fc-text-danger">*</span></label>
-												<div id="card_number" class="fc-form-control form-control-lg rounded-0"></div>
-											</div>
-											<div class="fc-row-container">
-												<div class="fc-col-half">
-													<div class="fc-label-group">
-														<label class="fc-form-label">Expiry Date <span class="fc-text-danger">*</span></label>
-														<div id="card_expiry" class="fc-form-control form-control-lg rounded-0"></div>
-													</div>
-												</div>
-												<div class="fc-col-half">
-													<div class="fc-label-group">
-														<label class="fc-form-label">CVC Code <span class="fc-text-danger">*</span></label>
-														<div id="card_cvc" class="fc-form-control form-control-lg rounded-0"></div>
-													</div>
-												</div>
-											</div>
-											<!-- Display errors returned by createToken -->
-											<div id="paymentResponse" class="fc-text-danger fc-mb-1"></div>
-										</div>
-										<!-- END STRIPE PAYMENT -->
-
-										<div class="fc-cart-stock-area">
+												<div style="clear: both;"></div>
 												
-											<p>Approx Delivery Run: <span>2-3 Days</span></p>
+												<div class="fc-cart-countdown">
+												    <p>
+												        <strong>ORDER WITHIN:</strong><br />
+												        <span id="fc-countdown-timer"></span>
+												    </p>
+												</div>
+												
+												<div class="d-grid gap-2">
+												    <button type="submit" class="btn-fc btn-fc--large-text fc-btn-md btn-fc-black fc-text-uppercase mb-1 fc-w-700 w-100-sm">
+												        Order Items Now!
+												    </button>
 
-											<p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
-
-											<div class="fc-alert-gray fc-step-2-alert fc-alert-gray--low-stock">
-												<h3 class="fc-mb-1"><i class="fc-icon fc-icon-info"></i> Low Stock Warning</h3>
-												<p class="fc-text-red">Some items have limited stock available. <br />Your cart can only be Reserved for a Limited Time <br />Then its released for other customers.
-												</p>
+												    <button type="button" class="btn-fc btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
+												        <span>Speak To Trade Support</span>
+												    </button>
+												</div>
 											</div>
-											
 
 										</div>
-
-										<div style="clear: both;"></div>
-										
-										<div class="fc-cart-countdown">
-											<p>
-												<strong>ORDER WITHIN:</strong><br />
-												<span id="fc-countdown-timer"></span>
-											</p>
-										</div>
-
-									<div class="d-grid gap-2">
-											<button type="submit" 
-												class="btn-fc btn-fc--large-text fc-btn-md btn-fc-black fc-text-uppercase mb-1 fc-w-700 w-100-sm">
-												Order Items Now!
-											</button>
-
-											<button type="button" 
-												class="btn-fc btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
-												<span>Speak To Trade Support</span>
-											</button>
-									</div>
 
 									</div>
 
@@ -443,6 +379,8 @@ var base_url = '<?php echo base_url(); ?>';
 <script type="text/javascript" src="js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 
 <!-- Scripts -->
 <script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>

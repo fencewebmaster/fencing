@@ -409,10 +409,12 @@ console.log(newCartItems);
                 "qty": total,
             });
 
+            /*
             array.push({
                 "slug": "base_plate+post_cap",
                 "qty": total,
             });
+            */
 
             return array;
         }

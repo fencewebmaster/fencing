@@ -2652,7 +2652,7 @@ thead.fc-border th:last-child {
 }
 @media (max-width: 992px) {
   .fencing-tabs-container.enable-scroll .fencing-tab-container {
-    width: 78%;
+    width: 100%;
   }
 }
 .fencing-tabs-container.enable-scroll .fencing-tabs-area {
@@ -4414,4 +4414,19 @@ thead.fc-border th:last-child {
 
 @media print {
   #fc-follow {break-after:page;}
+}
+
+.sticky-roll {
+  top: 0;
+  position: fixed;
+  z-index: 1;
+}
+
+.fencing-tabs {
+  justify-content: space-between;
+}
+.sticky-roll .fencing-tabs {
+    border-right: 2px solid #f67925;
+    border-left: 2px solid #f67925;  
+    border-bottom: 2px solid #f67925; 
 }
