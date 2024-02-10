@@ -101,6 +101,10 @@
   background: url("img/icons/rectangle.jpg");
 }
 
+.bg-orange {
+  background: var(--fc-princeton-orange)  
+}
+
 .btn-fc i {
   margin-right: 5px;
 }
@@ -908,7 +912,7 @@ a.fc-tab-active {
   list-style: none;
   color: #1b1b1b;
   letter-spacing: 2px;
-  font-size: 40px;
+  font-size: 2em;
   text-transform: uppercase;
 }
 

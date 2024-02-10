@@ -890,9 +890,10 @@ $(window).resize(function(){
 $(window).on('scroll', function(){
 
     var target =  $('[data-spy="scroll"]').attr('data-target'),
+        screenSize = parseInt($('[data-spy="scroll"]').attr('data-screen')),
         w = $(target).width();
 
-    if( target && $('body').width() > 767 ) {
+    if( target && $('body').width() > screenSize ) {
         if( $(window).scrollTop() > ($(target).offset().top) ) {        
             $('[data-spy="scroll"]').addClass('sticky-roll').css({'width':w});
         } else {

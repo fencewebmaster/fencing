@@ -33,7 +33,6 @@ if( $qid = @$_GET['qid'] ) {
         $_SESSION['planner_id'] = $qid;
     }
 }
-
 ?>
 
 <title>Fencing Calculator</title>
@@ -65,17 +64,17 @@ if( $qid = @$_GET['qid'] ) {
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
         <div class="fc-loader">
-            <div class="fc-row">
+            <div class="row align-items-center">
                 
-                <div class="fc-col-auto">
+                <div class="col-auto">
                     <div class="fc-loader-gif"></div>
                 </div>
 
-                <div class="fc-col-auto">
+                <div class="col-auto">
                     
-                    <ul>
+                    <ul class="mb-0">
                         <li class="fc-text-success li-create">
-                            <div class="fc-mb-1"><small style="font-size:30px;">Creating your plan...</small></div>
+                            <div><small>Creating your plan...</small></div>
                         </li>
                     </ul>
 
@@ -93,36 +92,34 @@ if( $qid = @$_GET['qid'] ) {
     <div class="modal fade" id="load-quote" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Load Quote</h1>
+                <div class="modal-header fw-bold">
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="exampleModalLabel">Load Quote</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" name="qid" class="form-control form-control-lg no-space" placeholder="Enter Quote ID" required>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary text-uppercase px-3">
-                        <i class="fa fa-check me-2"></i>
-                        <strong>Confirm</strong>
-                    </button>
+                    <div class="input-group mb-3">
+                        <input type="text" name="qid" class="form-control form-control-lg no-space text-center" placeholder="Enter Quote ID" required>
+                        <button type="submit" class="btn btn-primary text-uppercase px-3">
+                            <i class="fa fa-check me-2"></i>
+                            <strong>Confirm</strong>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </form>
 
-<div class="fencing-container w-side-section" data-tab="1">
+<div class="fencing-container w-side-section mt-5" data-tab="1">
     <form method="POST" id="fc-download-form" action="project-plan">
 
         <div class="fencing-container__header">
-            <div class="fc-row">
+            <div class="row align-items-center">
                 
-                <div class="fc-col-half">
-                    <h2 class="fc-header-title">Fencing Calculator</h2>
-                    <p>Calculate your fence cost and the materials needed.</p>
+                <div class="col">
+                    <?php include 'temp/header-left.php'; ?>                
                 </div>
-
-                <div class="fc-col-half">
+                <div class="col">
                     <div class="fc-flex-end">
                         <div class="fc-video-bg">
                             <i class="fa-solid fa-circle-play fc-mb-1"></i>
@@ -138,7 +135,7 @@ if( $qid = @$_GET['qid'] ) {
 
         <!-- START TABS -->
         <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 " data-tab="1">
-            <div class="fencing-tabs-area bg-white" data-spy="scroll" data-target=".js-fencing-tabs-container">
+            <div class="fencing-tabs-area bg-white" data-spy="scroll" data-screen="0" data-target=".js-fencing-tabs-container">
                 <div class="fencing-tabs fc-row-flex">
                 
                     <div class="fencing-tab-container js-fencing-tab-container fc-row-flex">            

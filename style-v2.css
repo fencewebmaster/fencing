@@ -25,3 +25,71 @@
 	padding-left: 10px;
 	padding-right: 10px;
 }
+
+.fc-card-body {
+	position: relative;	
+}
+.fc-card-body .fc-loader-container {
+	height: 100%;
+}
+.fc-section-loader-overlay {
+	position: absolute;
+	background: #000000e0;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 2;
+}	
+.project-details--editable:hover {
+	cursor: pointer;
+	background: #f6f6f6;
+}
+.fc-result {
+	position: relative;
+}
+.fc-overall {
+	margin-left: auto;
+	position: initial;
+	text-align: center;
+}
+
+.cp_no-post--left:before,
+.cp_no-post--left .fc-div-c-p,
+.cp_no-post--left .fc-start-c-p, 
+.cp_no-post--right:after,
+.cp_no-post--right .fc-div-c-p:nth-child(2),
+.cp_no-post--right .fc-end-c-p
+{
+	color: #f70000;
+}
+.panel-post {
+
+}
+.fencing-panel-spacing-number.opt-2 span {
+	    bottom: -5px;
+}
+.panel-post:not(.panel-no-post).opt-2 {
+	margin-bottom: 15px;
+}
+.panel-post:not(.panel-no-post).opt-2:after {
+	bottom: 15px;
+}
+.qty-edited {
+	position: absolute;
+	left: -10px;
+	top: calc(50% - 12px);
+	font-size: 12px;
+	background: #fff;
+	padding: 5px;
+	border-radius: 100%;
+	border: 1px solid #dddddd;
+	color: #8e8e8e;
+}
+
+.fc-form-group {
+	position: relative;
+}	
+@media print { 
+ .btn-fc { display: none !important; } 
+}

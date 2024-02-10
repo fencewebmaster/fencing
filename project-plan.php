@@ -27,15 +27,6 @@
 <link rel="stylesheet" type="text/css" href="fonts/fa/css/all.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
-<style type="text/css">
-.fc-form-group {
-	position: relative;
-}	
-@media print { 
-     .btn-fc { display: none !important; } 
-    }
-</style>
-
 <!-- START FORM SUBMISSION LOADER -->
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
@@ -60,7 +51,7 @@
 
 
 <!-- START FENCING CONTAINER -->
-<div id="place_order-section" class="fencing-container fc-project-plan fc-position-relative" data-tab="1">
+<div id="place_order-section" class="fencing-container fc-project-plan fc-position-relative mt-5" data-tab="1">
 
 	<!-- START CHECKOUT FORM -->
 	<form method="POST" id="paymentFrm" action="<?php echo base_url('checkout.php'); ?>">
@@ -68,13 +59,14 @@
 		<input type="hidden" name="action" value="">
 
 		<!-- START PAGE HEADER TITLE -->
-		<div class="mt-5">
-		    <div class="row">
-		        <div class="col">
-		            <h2 class="fc-header-title">Fencing Calculator</h2>
-		            <p>Calculate your fence cost and the materials needed.</p>
-		        </div>
-		        <div class="col">
+        <div class="fencing-container__header">
+            <div class="row align-items-center">
+                
+                <div class="col">
+	                <?php include 'temp/header-left.php'; ?>            	
+                </div>
+                <div class="col">
+
 					<div class="quote-id-card float-end">
 						<div class="qic-head">Your Quote ID</div>
 						<div class="qic-body btn-copy-link" data-id="quote-id-1">
@@ -82,9 +74,10 @@
 						</div>
 					</div>
 
-		        </div>
-		    </div>
-		</div>
+                </div>
+
+            </div>
+        </div>
 		<!-- END PAGE HEADER TITLE -->
 
 
@@ -205,69 +198,6 @@
 					<div class="fc-cart-items">
 						<div class="fc-card fc-mb-3">
 
-							<style type="text/css">
-							.fc-card-body {
-								position: relative;	
-							}
-							.fc-card-body .fc-loader-container {
-								height: 100%;
-							}
-							.fc-section-loader-overlay {
-								position: absolute;
-								background: #000000e0;
-								top: 0;
-								left: 0;
-								right: 0;
-								bottom: 0;
-								z-index: 2;
-							}	
-							.project-details--editable:hover {
-								cursor: pointer;
-								background: #f6f6f6;
-							}
-							.fc-result {
-								position: relative;
-							}
-							.fc-overall {
-								margin-left: auto;
-								position: initial;
-								text-align: center;
-							}
-
-							.cp_no-post--left:before,
-							.cp_no-post--left .fc-div-c-p,
-							.cp_no-post--left .fc-start-c-p, 
-							.cp_no-post--right:after,
-							.cp_no-post--right .fc-div-c-p:nth-child(2),
-							.cp_no-post--right .fc-end-c-p
-							{
-								color: #f70000;
-							}
-							.panel-post {
-
-							}
-							.fencing-panel-spacing-number.opt-2 span {
-								    bottom: -5px;
-							}
-							.panel-post:not(.panel-no-post).opt-2 {
-								margin-bottom: 15px;
-							}
-							.panel-post:not(.panel-no-post).opt-2:after {
-								bottom: 15px;
-							}
-							.qty-edited {
-								position: absolute;
-								left: -10px;
-								top: calc(50% - 12px);
-								font-size: 12px;
-								background: #fff;
-								padding: 5px;
-								border-radius: 100%;
-								border: 1px solid #dddddd;
-								color: #8e8e8e;
-							}
-							</style>
-
 							<div id="update_cart-section" class="fencing-section fencing-section--has-border">
 
 									<div class="row">
@@ -300,7 +230,7 @@
 
 										<div class="col fc-position-relative order-1" id="update_stock-delivery">
 
-											<div data-spy="scroll" data-target="#update_stock-delivery">
+											<div data-spy="scroll" data-screen="767" data-target="#update_stock-delivery">
 												<div class="fencing-section__cmp fencing-section__step-label">
 											        <div class="step-label">Stock & <span>Delivery</span></div>
 											    </div>
