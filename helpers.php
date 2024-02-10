@@ -59,7 +59,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'url'      => toURL('fencingwarehouse.au'),
             'supplier' => "JG",
             'logo'     => "https://new.fencesbrisbane.au/wp-content/uploads/2023/10/FencingWarehouse-W300px.png",
-            'name'     => "Dencing Warehouse"
+            'name'     => "Fencing Warehouse"
         ],
         [
             'id'       => 4,
