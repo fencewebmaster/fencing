@@ -106,18 +106,18 @@ $(document).on('click', '.btn-copy-link', function(e) {
         r  = document.createRange();
     
     $('#'+id).show();
-    r.selectNode(document.getElementById(id));
+    r?.selectNode(document.getElementById(id));
     window.getSelection().removeAllRanges();
     window.getSelection().addRange(r);
     document.execCommand('copy');
     window.getSelection().removeAllRanges();
 
-    $this.html('COPIED');
-    $('#'+id).hide();
+   // $this.html('COPIED');
+    $('#'+id).css({'background':'#ffeb3b','cursor':'progress'});
 
     setTimeout(function(){ 
-        $this.html(text);
-    }, 1000);
+       $('#'+id).css({'background':'', 'cursor': ''});
+    }, 500);
 });
 
 $(document).on('change', '.fc-select-option', function(){

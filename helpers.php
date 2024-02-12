@@ -151,11 +151,39 @@ function array_to_json($val='') {
 
 //----------------------------------------------------------------
 
+
+function convert_inputs($val='') {
+
+    if( is_array($val) ) {
+        return json_encode($val);
+    }
+
+    if ( $data = json_decode($val, true) ) {
+        return $data;
+    }
+
+    if (preg_match("/\d{4}\-\d{2}-\d{2}/", $val) || preg_match("/\d{2}\-\d{2}-\d{4}/", $val) ) {
+        
+        if( strlen($val) > 10 ) {
+            return $val;            
+        } else {
+            return date_formatted_b($val);
+        }
+
+    }
+
+    return $val;
+}
+
+//----------------------------------------------------------------
+
 function dd($data ='') {
     echo '<pre>';
     print_r( $data );
     exit;
 }
+
+//----------------------------------------------------------------
 
 function fc_deliver_options() {
     $data = [

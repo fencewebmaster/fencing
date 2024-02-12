@@ -110,31 +110,35 @@ if( $qid = @$_GET['qid'] ) {
     </div>
 </form>
 
-<div class="fencing-container w-side-section mt-5" data-tab="1">
+<div class="fencing-container container-lg w-side-section mt-5" data-tab="1">
     <form method="POST" id="fc-download-form" action="project-plan">
 
         <div class="fencing-container__header">
             <div class="row align-items-center">
                 
-                <div class="col">
+                <div class="col-md-6 col-sm">
                     <?php include 'temp/header-left.php'; ?>                
                 </div>
-                <div class="col">
-                    <div class="fc-flex-end">
-                        <div class="fc-video-bg">
-                            <i class="fa-solid fa-circle-play fc-mb-1"></i>
-                            <h4 class="fc-mb-0">How to Use This<br>
-                                Fence Planner
-                            </h4>
-                        </div>
+                <div class="col-md-6 col-sm-auto">
+
+                    <div class="d-sm-block d-none">
+                        <div class="fc-flex-end">
+                            <div class="fc-video-bg">
+                                <i class="fa-solid fa-circle-play fc-mb-1"></i>
+                                <h4 class="fc-mb-0">How to Use This<br>
+                                    Fence Planner
+                                </h4>
+                            </div>
+                        </div>                        
                     </div>
+
                 </div>
 
             </div>
         </div>
 
         <!-- START TABS -->
-        <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 " data-tab="1">
+        <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 mt-3" data-tab="1">
             <div class="fencing-tabs-area bg-white" data-spy="scroll" data-screen="0" data-target=".js-fencing-tabs-container">
                 <div class="fencing-tabs fc-row-flex">
                 

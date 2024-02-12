@@ -51,7 +51,7 @@
 
 
 <!-- START FENCING CONTAINER -->
-<div id="place_order-section" class="fencing-container fc-project-plan fc-position-relative mt-5" data-tab="1">
+<div id="place_order-section" class="fencing-container container-lg fc-project-plan fc-position-relative mt-5" data-tab="1">
 
 	<!-- START CHECKOUT FORM -->
 	<form method="POST" id="paymentFrm" action="<?php echo base_url('checkout.php'); ?>">
@@ -61,19 +61,19 @@
 		<!-- START PAGE HEADER TITLE -->
         <div class="fencing-container__header">
             <div class="row align-items-center">
-                
-                <div class="col">
-	                <?php include 'temp/header-left.php'; ?>            	
-                </div>
-                <div class="col">
 
+                <div class="col-sm">
+                	<div class="mb-3 mb-sm-0">
+                		<?php include 'temp/header-left.php'; ?>     
+                	</div>
+                </div>
+                <div class="col-sm-auto">
 					<div class="quote-id-card float-end">
 						<div class="qic-head">Your Quote ID</div>
 						<div class="qic-body btn-copy-link" data-id="quote-id-1">
 							<div id="quote-id-1"><?php echo @$_SESSION['planner_id']; ?></div>
 						</div>
 					</div>
-
                 </div>
 
             </div>
@@ -92,7 +92,7 @@
 		<!-- END SECTION TABS -->
 
 		<!-- START TABS -->
-        <div class="fencing-tabs-container fencing-tabs-container--project-plan fc-section-step fc-d-none fc-font-2" data-tab="1">
+        <div class="fencing-tabs-container fencing-tabs-container--project-plan fc-section-step fc-d-none fc-font-2 mt-3" data-tab="1">
             <div class="fencing-tabs-area">
                 <div class="fencing-tabs fc-row-flex">
                 

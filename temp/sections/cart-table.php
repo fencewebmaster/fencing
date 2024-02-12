@@ -39,9 +39,9 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                     </td>
                     <td class="align-top">
                         <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>
-                        <span class="text-muted"><?php echo @$cart_item['sku']; ?></span>
+                        <div class="text-muted"><?php echo @$cart_item['sku']; ?></div>
 
-                        <small class="fc-text-success d-none"><?php echo @$cart_item['slug']; ?></small>
+                        <small class="fc-text-success d-nonex"><?php echo @$cart_item['slug']; ?></small>
                     </td>
                     <!-- <td><?php echo @$cart_item['sku']; ?></td>
                     <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>

@@ -1452,21 +1452,6 @@ $('.fencing-display-result').on("mouseup touchend", function(e) {
     }, 200);         
 });
 
-// $('.panel-post:not(.panel-no-post)').length
-// $('.fencing-panel-gate').length
-// $('.right_raked-panel .fencing-raked-panel').length
-// $('.left_raked-panel .fencing-raked-panel').length
-
-/*Panel - 1200H x 2400W
-Panel Raked - 1300H x 1200W
-Gate - 1200H x 970W
-Post - 1300L - Base Plated
-Post Covers
-Brackets Set x4
-Flexi Bracket x1
-Hinge & Latch Kit
-Fixing Kit - Dynabolts*/
-
 
 /**
  * Get the color title and subtitle
@@ -1785,8 +1770,6 @@ function deleteAllEntriesBySubstring(substring) {
       localStorage.removeItem(matchingKey);
   
     }
-
-    console.log(localStorage);
   
 }
 
@@ -2000,7 +1983,8 @@ const projectPlanKey = "project-plans";
 function restoreFormData() {
     const formData = JSON.parse(localStorage.getItem(projectPlanKey)) || {};
     for (const key in formData) {
-      const input = submitModal.querySelector(`[name="${key}"]`);
+      const input = document.querySelector(`[name="${key}"]`);
+
       if (input) {
         if (input.type === "checkbox") {
           let selectedValues = formData[key];
@@ -2040,37 +2024,45 @@ function saveFormData() {
     const formFields = submitModal.querySelectorAll("[name]");
     let formFieldsArray = [...formFields, ...otherFormFields];
 
-    formFields.forEach(input => {
-        if (input.type === "checkbox") {
-            formData[input.name] = formData[input.name] || [];
+    $(formFieldsArray).each(function(i, item){
 
-            if (input.checked) {
-                formData[input.name].push(input.value);
+        var name = $(item).attr('name'),
+            type = $(item).attr('type'),
+            val  = $(item).val();
+
+        if (type === "checkbox") {
+            formData[name] = formData[name] || [];
+
+            if ( $(item).is(':checked') ) {
+                formData[name].push(val);
             }
              
-        } else if (input.type === "radio") {
+        } else if (type === "radio") {
 
-            if (input.checked) {
-                formData[input.name] = input.value;
+            if ( $(item).is(':checked') ) {
+                formData[name] = val;
             }  
 
-            if( $('[name="'+input.name+'"]').length == 1 ) {
-                if (input.checked == false) {
-                    formData[input.name] = '';
+            if( $('[name="'+name+'"]').length == 1 ) {
+                if ( ! $(item).is(':checked') ) {
+                    formData[name] = '';
                 }                
             } 
 
         } else {
-            formData[input.name] = input.value;
+
+            formData[name] = val;
         }
+
     });
 
     updateOrCreateObjectInLocalStorage(projectPlanKey, formData);
 }
 
+
 // Add event listeners TO form elements inside the submit-modal div
 if( submitModal ){
-    submitModal.addEventListener("input", saveFormData); 
+   $(document).on('keyup', 'textarea, input', saveFormData);
     submitModal.addEventListener("change", saveFormData);
 }
 

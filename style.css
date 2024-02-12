@@ -565,6 +565,7 @@ a.fc-tab-active {
   padding: 0 40px 0;
   max-height: calc(100vh - 210px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .fencing-modal-body .body-title {
@@ -4294,6 +4295,14 @@ thead.fc-border th:last-child {
   font-size: 2em;
   font-weight: bold;
   padding: 3px;
+}
+@media (max-width: 600px) {
+  .quote-id-card {
+    max-width:100%;    
+  }
+  .quote-id-card div {
+    font-size: 16px;
+  }
 }
 
 .fc-form-field p {

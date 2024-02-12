@@ -81,7 +81,7 @@
 					<table class="fc-table">
 						<tr>
 							<td width="180">Fence Type</td>
-							<td>Flat Top Pool Fencing, Glass Pool Fencing</td>
+							<td>Flat Top Pool Fencing</td>
 						</tr>
 						<tr>
 							<td>When Needed</td>
@@ -95,8 +95,10 @@
 							<td>Other Items Needed</td>
 							<td>
 								<?php  
-								if( is_array(@$info['extra']) ): ?>
-									<?php echo get_items('fc_extra_needed', $info['extra']); ?>
+								$extra = convert_inputs(@$info['extra']);
+								if( $extra ): ?>
+									<?php 
+									echo get_items('fc_extra_needed', $extra); ?>
 								<?php else: ?>
 									Nothing Extra, Just Fencing															
 								<?php endif; ?>

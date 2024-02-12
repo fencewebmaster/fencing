@@ -12,7 +12,7 @@
 
                 <div class="fc-form-plan" data-formtab="1">
                     
-                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-1">Color Options</h2>
+                    <div class="text-uppercase mb-2 fw-bold">Color Options</div>
 
                     <div class="fencing-form-group fc-mb-0">
                         <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
@@ -30,31 +30,36 @@
 
                 </div>
 
-                <div class="fc-form-plan" data-formtab="2">
+                <hr>
 
-                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-1">When Do You Need The Materials?</h2>
-                    
+                <div class="fc-form-plan" data-formtab="2">
+                    <div class="text-uppercase mb-2 fw-bold">When Do You Need The Materials?</div>
+
                     <?php include 'temp/modal/submit/form/timeframe.php'; ?>
 
                 </div>
 
+                <hr>
+
                 <div class="fc-form-plan" data-formtab="3">
 
-                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-1">Do You Need An Installer?</h2>
+                    <div class="text-uppercase mb-2 fw-bold">Do You Need An Installer?</div>
                     
                     <?php include 'temp/modal/submit/form/installer.php'; ?>
 
                 </div>
 
-                <div class="fc-form-plan form-tab-4" data-formtab="4">
+                <hr>
+
+                <div class="fc-form-plan" data-formtab="4">
                     
                   
-                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-1">Anything Else We Can Help You With?</h2>
+                    <div class="text-uppercase mb-2 fw-bold">Anything Else We Can Help You With?</div>
 
                     <?php include 'temp/modal/submit/form/other-items-needed.php'; ?>                        
 
                     <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
-                    <div class="fc-form-plan-action">
+                   <div class="d-grid gap-2">
                         <button type="submit" 
                             class="btn-fc project-details--update btn-fc-orange fc-text-uppercase fc-w-b">
                             <b>Update</b>

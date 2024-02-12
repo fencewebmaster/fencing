@@ -243,7 +243,7 @@ console.log(newCartItems);
 
     },
 
-    /**
+    /**  1 + 3
      * IF panel options = "Full Panels - 3000W" = (Number of full length Panels) + (Number of short length panels)
      * @param {*} array 
      * @returns 
