@@ -262,7 +262,9 @@ function update_raked_panels(side) {
 
     $('.right-panel-post.no-post span').text('(-'+right_panel_post+')');
 
-    
+    $('.no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');    
+
+
     load_post_options_all(custom_fence, info);
 
     load_post_options_first_last_values(custom_fence, info, 0);

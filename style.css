@@ -4443,3 +4443,24 @@ thead.fc-border th:last-child {
     border-left: 2px solid #f67925;  
     border-bottom: 2px solid #f67925; 
 }
+
+.no-post-swivel-bracket .sw {
+    position: absolute;
+    bottom: 10px !important;
+    background: #fff;
+    border: 1px solid #d4d4d4;
+    height: 15px;
+    width: 20px;
+    text-align: center;
+    line-height: 10px;
+    font-size: 10px;
+}
+.no-post-swivel-bracket .sw-top {
+    top: -5px;
+}
+.no-post-swivel-bracket .sw-bot {
+    bottom: 40px !important;
+}
+.raked-panel .no-post-swivel-bracket .sw-top {
+    top: -50px;
+}

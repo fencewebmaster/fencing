@@ -363,7 +363,7 @@ function re_update_raked_panels(side, tab) {
 
 
             if( has_post != 'yes-post' ) {
-                var has_post = 'no-post '+side_part+'-panel-post';
+                var has_post = 'no-post '+side_part+'-panel-post '+has_post;
             }
         }
 
@@ -430,6 +430,8 @@ function re_update_raked_panels(side, tab) {
     // Right Panel Post
     var right_panel_post = $('#pp-'+tab+' .right-panel-post.no-post span').text().replace('(', '').replace(')', '');
     $('#pp-'+tab+' .right-panel-post.no-post span').text('('+right_panel_post+')');
+
+    $('.no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');    
     
     load_post_options_first_last_values(custom_fence, info, tab);
 
