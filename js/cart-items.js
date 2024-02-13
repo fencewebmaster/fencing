@@ -130,7 +130,6 @@ FENCES.cartItems = {
                 }
             }
 
-        
             //additional condition for raked_post to exclude el with class `panel-no-post`
 /*            if( cartKey === "raked_post" ){
                 if(el.classList.contains('panel-no-post')){
@@ -190,8 +189,6 @@ FENCES.cartItems = {
         //Apply condition for panel_post
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
 
-console.log(newCartItems);
-
         return newCartItems;
 
     },
@@ -227,15 +224,14 @@ console.log(newCartItems);
 
         //Get offcut size
         let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
-        let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
-        
+        let getPanelItems  = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
+
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+even");
 
-        if (foundObject) {
-            let qty = getPanelItems;
-            //then update the qty value
-            foundObject['qty'] = qty;
+        let qty = getPanelItems;
+
+        if( qty ) {
             FENCES.cartItems.apply_panel_options_bracket(array, qty);
         }
 
@@ -252,14 +248,15 @@ console.log(newCartItems);
 
         //Get all short panel item
         let noOfShortPanel = document.querySelectorAll('.short-panel-item').length;
+        let getPanelItems  = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
+        let getRakedPanelItems = document.querySelectorAll('.panel-item.fencing-raked-panel').length;
 
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+full");
 
-        if (foundObject) {
-            let qty = foundObject['qty'] + parseInt(noOfShortPanel);
-            //then update the qty value
-            foundObject['qty'] = qty;
+        var qty = getPanelItems + getRakedPanelItems;
+
+        if( qty ) {
             FENCES.cartItems.apply_panel_options_bracket(array, qty);
         }
 
@@ -296,7 +293,6 @@ console.log(newCartItems);
 
         }
 
-        return array;
 
     },
 

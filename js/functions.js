@@ -56,10 +56,16 @@ function load_fencing_items() {
             var panel_number = i,
                 panel_size = calc.short_panel.length,
                 panel_unit = FENCES.defaultValues.unit;
+                panel_option_value = calc.selected_values.panel_option;
 
+            if( panel_option_value.indexOf('full') !== -1 ){
+                panel_option_value = panel_option_value.split('_')[0];
+            } 
+            
             var tpl = $('script[data-type="short_panel_item-'+info.panel_group+'"]').text()
                                                          .replace(/{{center_point}}/gi, center_point)
                                                          .replace(/{{panel_size}}/gi, panel_size+'W')
+                                                         .replace(/{{panel_value}}/gi, panel_option_value)
                                                          .replace(/{{panel_unit}}/gi, '<br>PANEL')
                                                          .replace(/{{panel_number}}/gi, panel_number);    
         
@@ -306,7 +312,6 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
                 let value = settings[idx].val;
 
                 if(key === "post_option" && modal_key != 'post_options' ){
-
                     //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                     //Find the element that matches the condition below and add the class
                     $('#pp-'+sectionId+' .panel-post[data-key='+activeSetting+'], #pp-'+sectionId+' .fencing-panel-spacing-number').addClass(value).attr('data-cart-value', value);
@@ -1562,7 +1567,6 @@ function loadSectionOverlay(target) {
  * Remove section overlay
  */
 function removeSectionOverlay(){
-    console.log(document.querySelector('.fc-section-loader-overlay').length);
     document.querySelector('.fc-section-loader-overlay').remove();
 }
 
@@ -1574,7 +1578,7 @@ function removeSectionOverlay(){
  */
 function addObjectByKey(objectArray, obj) {
     const existingIndex = objectArray.findIndex(item => item.control_key === obj.control_key);
-  console.log(existingIndex);
+
     if (existingIndex !== -1) {
       objectArray[existingIndex] = obj;
     } else {
@@ -1602,7 +1606,6 @@ function tabContainerScroll() {
     $('.fc-content-tab-title').css({'border-top-right-radius':''});
 
     if( _trigger_width >= _main_parent_width ) {
-        console.log(11);
         _main_parent.addClass('enable-scroll');
         draggable(_tab_parent_class, _tab_content_class);
         $('.fc-content-tab-title').css({'border-top-right-radius':0});
