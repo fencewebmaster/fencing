@@ -127,6 +127,8 @@ FENCES.cartItems = {
                 if( el.classList.contains(FENCES.cartItems.item.swivelBrackets.className) ){
                     modifiedCartKey = FENCES.cartItems.item.swivelBrackets.slug;
                     qty = FENCES.cartItems.item.swivelBrackets.qty;
+                console.log(FENCES.cartItems.item.swivelBrackets.slug, qty);
+
                 }
             }
 
@@ -188,7 +190,7 @@ FENCES.cartItems = {
 
         //Apply condition for panel_post
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
-
+console.log(newCartItems);
         return newCartItems;
 
     },
