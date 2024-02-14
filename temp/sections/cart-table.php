@@ -3,6 +3,9 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 ?>
 
 <?php if( @$cart ): ?>
+
+<span class="badge bg-danger mb-2 text-uppercase p-2"><?php echo count($cart['items']); ?> Items</span>
+
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
     <div class="fc-table-rounded-border">
         
@@ -19,15 +22,15 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
             	<?php $ci = 0; ?>
             	<?php foreach( @$cart['items'] as $cart_item ): ?>
 
-                <input name="cart[orignal_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['orignal_qty']; ?>" class="fc-form-control" min="1" required>
+                <input name="cart[original_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['original_qty']; ?>" class="fc-form-control" min="1" required>
 
                 <tr class="fc-position-relative">
                     <td class="text-center align-middle">                        
 
-                        <span class="fc-item-value fw-bold" data-original="<?php echo @$cart_item['orignal_qty']; ?>"><?php echo @$cart_item['qty']; ?></span>
+                        <span class="fc-item-value fw-bold" data-original="<?php echo @$cart_item['original_qty']; ?>"><?php echo @$cart_item['qty']; ?></span>
                         <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control" min="0">
 
-                        <?php if( @$cart_item['qty'] != @$cart_item['orignal_qty'] ): ?>
+                        <?php if( @$cart_item['qty'] != @$cart_item['original_qty'] ): ?>
                         <div class="qty-edited">
                             <i class="fa fa-pencil"></i>       
                         </div>

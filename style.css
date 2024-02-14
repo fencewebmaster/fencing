@@ -3055,6 +3055,10 @@ thead.fc-border th:last-child {
     background-repeat: no-repeat !important;
 }
 
+.downloading-pdf .dl-page-separator {
+  border: 1px solid #fff;
+  height:99px;
+}
 
 
 @media (min-width: 1024px) {

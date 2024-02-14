@@ -13,7 +13,7 @@ function reload_fence_items() {
 
 
         if( (i+1) % 3 === 0 & i != 1 ) {
-            $('#fc-fence-list').append(`<div style="border: 1px solid #fff;height:99px;"></div>`);
+            $('#fc-fence-list').append(`<div style="dl-page-separator"></div>`);
         }
 
        reload_load_fencing_items(i);
@@ -162,10 +162,11 @@ function reload_load_fencing_items(tab) {
         return;
     }
 
+    var center_point = 50;
 
     for (let i = 0; i < calc.long_panel.count; i++) {
 
-        var center_point = 50;
+ 
         
         mesurement = $('.measurement-box-number').val();
 
@@ -190,6 +191,7 @@ function reload_load_fencing_items(tab) {
     var tpl = $('script[data-type="panel_spacing-'+info.panel_group+'"]').text()
                                                      .replace(/{{center_point}}/gi, center_point);
 
+
     $(`#pp-${tab} .fencing-panel-container`).append(tpl);
 
     if( calc.short_panel.count ) {
@@ -199,14 +201,14 @@ function reload_load_fencing_items(tab) {
         var panel_number = i,
             panel_size = calc.short_panel.length,
             panel_unit = 'mm';
-
+   
         var tpl = $('script[data-type="short_panel_item-'+info.panel_group+'"]').text()
                                                      .replace(/{{center_point}}/gi, center_point)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
                                                      .replace(/{{panel_number}}/gi, panel_number)
                                                      .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W');   
-                                                      
+                                         
     
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);
 

@@ -210,6 +210,8 @@ function fc_deliver_options() {
     return $data;
 }
 
+//----------------------------------------------------------------
+
 function load_csv($file = '') {
 
     if( ! file_exists($file) ) {
@@ -240,6 +242,8 @@ function load_csv($file = '') {
 
     return $rows;
 }
+
+//----------------------------------------------------------------
 
 function get_product_skus($data = array()) {
 
@@ -283,6 +287,8 @@ function get_product_skus($data = array()) {
 
 	return $products;
 }
+
+//----------------------------------------------------------------
 
 function post_product_skus($cart_items = array()) {
 
@@ -370,16 +376,37 @@ function post_product_skus($cart_items = array()) {
                 'slug'  => $item['slug'],
                 'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
                 'qty'   => $custom_fence_products[$key]['qty'],
-                'orignal_qty' => $custom_fence_products[$key]['qty'],
+                'original_qty' => $custom_fence_products[$key]['qty'],
             ];
             $i++;
         }
     }
 
+    // Sort by SKU
+    array_multisort(array_map(function($element) {
+        return $element['sku'];
+    }, $cart['items']), SORT_ASC, $cart['items']);
+
+
     $_SESSION['fc_cart'] = $cart;
 
 }
 
+//----------------------------------------------------------------
+
 function is_localhost($whitelist = ['127.0.0.1', '::1']) {
     return in_array($_SERVER['REMOTE_ADDR'], $whitelist);
 }
+
+//----------------------------------------------------------------
+
+function array_sort_by_column(&$arr, $col, $dir = SORT_ASC) {
+    $sort_col = array();
+    foreach ($arr as $key => $row) {
+        $sort_col[$key] = $row[$col];
+    }
+
+    array_multisort($sort_col, $dir, $arr);
+}
+
+//----------------------------------------------------------------

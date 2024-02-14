@@ -15,7 +15,6 @@
 	include('helpers.php');
 
 	// unset($_SESSION['fc_cart']);
-
 ?>
 
 <title>Fencing Calculator</title>
