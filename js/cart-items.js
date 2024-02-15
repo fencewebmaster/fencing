@@ -127,8 +127,7 @@ FENCES.cartItems = {
                 if( el.classList.contains(FENCES.cartItems.item.swivelBrackets.className) ){
                     modifiedCartKey = FENCES.cartItems.item.swivelBrackets.slug;
                     qty = FENCES.cartItems.item.swivelBrackets.qty;
-                console.log(FENCES.cartItems.item.swivelBrackets.slug, qty);
-
+                    cartValue = true;
                 }
             }
 
@@ -158,13 +157,12 @@ FENCES.cartItems = {
                 }
             }
 
-            
             //If the cart item slug does not exists in array, push/add it into the array
             if( !found && cartValue !== null && entry.qty != 0 ){
                 newCartItems.push(entry);
             }
-        }
 
+        }
 
         newCartItems = FENCES.cartItems.apply_conditions(newCartItems);
 

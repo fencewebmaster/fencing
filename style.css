@@ -3059,7 +3059,13 @@ thead.fc-border th:last-child {
   border: 1px solid #fff;
   height:99px;
 }
-
+.dl-row {
+  height:260px;
+  border:1px solid #fff;
+}
+.has-raked, .downloading-pdf .dl-row {
+  height:310px;  
+}
 
 @media (min-width: 1024px) {
   .fencing-right-panel-o-b:hover {

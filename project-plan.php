@@ -155,7 +155,7 @@
 
 
 		            <!-- START PROJECT PLAN -->
-					<div id="project-plans-section" class="fencing-section fencing-section--has-border">
+					<div id="project-plans-section" class="fencing-section fencing-section--has-border p-3 pb-0">
 						<div class="fc-card">
 
 							<div class="fc-row-flex">
@@ -185,7 +185,7 @@
 							<?php // include 'data/plan-item.php'; ?>
 
 							<div>
-								<div id="fc-fence-list"></div>
+								<div id="fc-fence-list" class="pb-1"></div>
 							</div>
 
 						</div>

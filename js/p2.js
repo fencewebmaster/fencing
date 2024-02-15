@@ -5,12 +5,22 @@ function reload_fence_items() {
 
     for (let i = 0; i < items; i++) {
 
-        $('#fc-fence-list').append(`<div style="margin:10px 0 20px;font-weight:bold;">SECTION ${i+1}<a href="${base_url}?section=${i+1}" data-action="edit" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
-                                    <i class="fa-solid fa-pencil"></i>
-                                    <span>Edit Details</span>
-                                </a></div> <div id="pp-${i}" style="height:310px;border:1px solid #fff;"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>`);
+        var section = `<div class="border p-3 rounded mb-4">
+            <div class="row">
+                <div class="col fw-bold">
+                    SECTION ${i+1}  
+                </div>
+                <div class="col text-end">
+                    <a href="${base_url}?section=${i+1}" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange">
+                        <i class="fa-solid fa-pencil"></i>
+                        <span>Edit Details</span>
+                    </a>    
+                </div>
+            </div>
+            <div id="pp-${i}" class="dl-row"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>
+        </div> `;
 
-
+        $('#fc-fence-list').append(section);
 
         if( (i+1) % 3 === 0 & i != 1 ) {
             $('#fc-fence-list').append(`<div style="dl-page-separator"></div>`);
@@ -19,6 +29,10 @@ function reload_fence_items() {
        reload_load_fencing_items(i);
 
        load_center_point(i);
+
+       if( $('#pp-'+i+' .panel-post').hasClass('raked-panel-post') ) {
+           $('#pp-'+i).addClass('has-raked');
+       }
     }
 
 
@@ -437,7 +451,7 @@ function re_update_raked_panels(side, tab) {
     
     load_post_options_first_last_values(custom_fence, info, tab);
 
-    load_post_options_all(custom_fence, info);
+    load_post_options_all(custom_fence, info, tab);
 
 
     $('#pp-'+tab+' .fc-result').css({'padding': ''});

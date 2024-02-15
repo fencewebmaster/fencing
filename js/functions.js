@@ -347,7 +347,7 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
  * @param {array} custom_fence 
  * @param {obj} info 
  */
-function load_post_options_all(custom_fence, info) {
+function load_post_options_all(custom_fence, info, tab) {
 
     let panel_post = $('.panel-post');
     let panel_spacing_number = $('.fencing-panel-spacing-number');
@@ -378,13 +378,15 @@ function load_post_options_all(custom_fence, info) {
         var right_planel_class  = ".post-right";
     }
 
+
     if( post_options_filtered_data.length ) {
         //Get the value of Post Option
         var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
             return item.key === "post_option";
         });
 
-        if( typeof post_options_setting !== "undefined" ){
+        if( typeof post_options_setting !== "undefined" && panel_post.attr('class').includes('opt-') == false ){
+
             panel_post.not(left_planel_class)
                       .not(right_planel_class)
                       .addClass(post_options_setting.val)
