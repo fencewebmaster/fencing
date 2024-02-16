@@ -307,7 +307,9 @@ $("#paymentFrm").validate({
                 success: function(response) {
                     try {
 
-
+                        $('[name="action"]').val('update_cart');
+                        $('form').submit();
+                        
                         setTimeout(function() { 
                             $(".fc-table-customer .fc-form-control").css({'color': ''}); 
                             removeSectionOverlay();
@@ -367,13 +369,15 @@ $("#paymentFrm").validate({
                             
                         setTimeout(function() { 
                             $(".fc-table-customer .fc-form-control").css({'color': ''}); 
+                            
                             removeSectionOverlay();
+
                             $('.fc-table-customer span').show();
                             $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
                             $('.js-project-details-controls').addClass('fc-d-none');
-
+                            $(".fc-btn-edit[data-action='edit']").show();
                             $(".your-project-details").html(response);
-
+                            
                             window.onbeforeunload = function() {}
 
                         } , 500);
@@ -465,7 +469,6 @@ $(document).on('click', ".fc-btn-edit", function (e) {
     $('[name="action"]').val('update_details');
 
     let _this = $(this);
-    let _edit_btn = $(".fc-btn-edit[data-action='edit']");
     let _action = _this.attr('data-action');
 
     if( _action == 'edit' ) {
@@ -478,7 +481,6 @@ $(document).on('click', ".fc-btn-edit", function (e) {
     } else {
        
         $('form').submit();
-        _edit_btn.show();
 
     }
 

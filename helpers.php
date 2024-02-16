@@ -410,3 +410,22 @@ function array_sort_by_column(&$arr, $col, $dir = SORT_ASC) {
 }
 
 //----------------------------------------------------------------
+
+function add_filepath_last($filename, $add ='') {
+
+    $arr = pathinfo($filename);
+
+    $file = [
+        $arr['dirname'].'/', 
+        $arr['filename'], 
+        $add,
+        '.'.$arr['extension']
+    ];
+
+    $url = implode('', $file);
+
+    return $url;
+
+}
+
+//----------------------------------------------------------------

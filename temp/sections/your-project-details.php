@@ -109,17 +109,6 @@
 				</div>
 
 
-				<div class="js-project-details-controls project-details-controls fc-d-none">
-					<button type="button" data-action="update" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" >
-						<i class="fa-solid fa-pencil"></i>
-						<span>Save</span>
-					</button>
-					<button type="button" 
-						class="btn-fc fc-btn-reset btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" 
-						style="display:none;">
-							<i class="fa-solid fa-rotate-left"></i> <span>Reset</span>
-					</button>
-				</div>
 
 			</div>
 

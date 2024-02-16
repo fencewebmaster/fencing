@@ -38,7 +38,8 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
                     </td>
                     <td style="min-width:50px;max-width:80px;" class="p-1">
-                        <img src="<?php echo @$cart_item['image']; ?>">
+                        <?php $featured_image = add_filepath_last(@$cart_item['image'], '-600x600'); ?>
+                        <img src="<?php echo @$featured_image; ?>">
                     </td>
                     <td class="align-top">
                         <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>

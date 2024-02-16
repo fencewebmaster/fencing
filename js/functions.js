@@ -302,21 +302,29 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
         return item.control_key === "left_side" || item.control_key === "right_side";
     });
 
+    // Get default post options
+    var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
+        return item.default == true;
+    });
+
     if( post_options_filtered_data.length ) {
 
         //iterate both left and right side and get the values of post_options
         for( let i = 0; i < post_options_filtered_data.length; i++ ){
             let activeSetting = post_options_filtered_data[i].control_key;
             let settings = post_options_filtered_data[i].settings;
-
+    
             for( let idx = 0; idx < settings.length; idx++ ){
-                let key = settings[idx].key;
-                let value = settings[idx].val;
+                let key   = settings[idx].key;
+                let value = settings[idx].val ? settings[idx].val : post_options_default[0].slug;
 
                 if(key === "post_option" && modal_key != 'post_options' ){
+
                     //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                     //Find the element that matches the condition below and add the class
-                    $('#pp-'+sectionId+' .panel-post[data-key='+activeSetting+'], #pp-'+sectionId+' .fencing-panel-spacing-number').addClass(value).attr('data-cart-value', value);
+                    $('#pp-'+sectionId+' .panel-post[data-key='+activeSetting+'], #pp-'+sectionId+' .fencing-panel-spacing-number')
+                        .addClass(value)
+                        .attr('data-cart-value', 'opt-1');
                 }
             }
 
@@ -325,10 +333,6 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
         var side_post = post_options_filtered_data[0].control_key;
     }
 
-    // Get default post options
-    var post_options_default = info.settings.post_options.fields[0].options.filter(function(item) {
-        return item.default == true;
-    });
 
     // Set default option on left side
     if( side_post != 'left_side' ) {
@@ -632,6 +636,8 @@ function set_field_value(filtered_data) {
  */
 function get_field_value(tag, key, val) {
 
+    if( ! val ) return; 
+
     if( tag == 'input' ) {
 
         $('[name='+key+']').val(val);
@@ -649,9 +655,9 @@ function get_field_value(tag, key, val) {
         if( getSelectedEl.length ) {
             getSelectedEl.removeClass('fc-selected'); 
         }
-       
+
         getElement.attr('value', val);
-        getElement.find('[data-slug="'+val+'"]').addClass('fc-selected');
+        getElement.find('[data-slug="'+val+'"]').addClass('fc-selected');            
 
         // Set preselected value for right and left raked inside modal
         if( key === "left_raked" || key === "right_raked" ){

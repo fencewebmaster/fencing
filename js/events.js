@@ -466,8 +466,10 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     
                 get_field_value(tag, v?.slug, opt?.slug);                        
             }
+
+
             
-    
+        
         });
 
     }
