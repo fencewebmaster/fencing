@@ -3,10 +3,6 @@
     background: #f67925;
     color: #ffffff;
 }
-.fc-cart-items .fc-edit-item:hover {
-    border: 1px solid #525252!important;
-    background: #525252 !important;
-}
 
 .btn-fc-outline-danger {
 	background: #fff;
@@ -18,12 +14,6 @@
 .fc-label-group .fc-form-control {
 	width: 100%;
 	background: #fff;
-}
-
-#fc-fence-list {
-	padding-bottom: 20px;
-	padding-left: 10px;
-	padding-right: 10px;
 }
 
 .fc-card-body {

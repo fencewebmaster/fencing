@@ -184,33 +184,41 @@ if( $qid = @$_GET['qid'] ) {
                         <!-- START STYLES AREA -->
                         <div class="fencing-section__cmp fencing-section-step fencing-section--step1">
 
-                            <div class="btn-delete-fence">
+                            <div class="row align-items-center">
+                                <div class="col-sm mb-sm-0 mb-3">
+                                    <div class="step-label">Step <span>01</span></div>
 
-                                <button type="button" 
-                                    class="btn-fc btn-fc-outline-danger btn-fc-sm js-btn-delete-fence" 
-                                    style="display:none;">
-                                    <span><i class="fa fa-trash-can"></i>Delete <span>Section</span></span>
-                                </button>
+                                    <h4 class="fencing-content-title">Choose Your Fencing Style</h4>                                    
+                                </div>
+                                <div class="col-sm">
 
-                                <button type="button" 
-                                    class="btn-fc btn-fc-outline-danger btn-fc-sm fc-fence-reset-all fc-ml-1" 
-                                    style="display:none;">
-                                    <span><i class="fa-solid fa-circle-minus"></i> Reset</span>
-                                </button>
+                                    <div class="btn-delete-fence text-end">
 
+                                        <button type="button" 
+                                            class="btn btn-danger btn-sm js-btn-delete-fence px-2" 
+                                            style="display:none;">
+                                            <i class="fa fa-trash-can me-1"></i> Delete <span>Section</span>
+                                        </button>
+
+                                        <button type="button" 
+                                            class="btn btn-outline-danger btn-sm fc-fence-reset-all px-2" 
+                                            style="display:none;">
+                                            <i class="fa-solid fa-circle-minus me-1"></i> Reset
+                                        </button>
+
+                                    </div>
+
+                                </div>
                             </div>
 
-                            <div class="step-label">Step <span>01</span></div>
-
-                            <h4 class="fencing-content-title">Choose Your Fencing Style</h4>
                         </div>
 
                         <!-- START STYLES -->
                         <div class="fencing-section__cmp fencing-styles">
-                            <div class="fencing-styles__area">
+                            <div class="fencing-styles__area row">
 
                                 <?php foreach( $fences as $fence ): ?>
-                                <div class="fencing-style-item" data-title="<?php echo $fence['title']; ?>">
+                                <div class="fencing-style-item col-lg-2 col-md-3 col-sm-4 col-6 mb-3" data-title="<?php echo $fence['title']; ?>">
                                     <div>
 
                                         <div class="fencing-style-img">
@@ -228,7 +236,7 @@ if( $qid = @$_GET['qid'] ) {
                                 <?php endforeach; ?>	
 
 
-                                <div class="load-quote" data-bs-toggle="modal" data-bs-target="#load-quote">
+                                <div class="load-quote col-lg-2 col-md-3 col-sm-4 col-6 mb-3" data-bs-toggle="modal" data-bs-target="#load-quote">
                                     <div>
 
                                         <div class="fencing-style-img">

@@ -1277,15 +1277,8 @@ thead.fc-border th:last-child {
   .fc-project-plan .fencing-section {
     margin-bottom: 20px;
   }
-  .fc-project-plan .btn-fc-orange {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-  #fc-fence-list {
-    overflow: auto;
-    flex-direction: column;
-    display: flex;
-  }
+
+
 }
 @media only screen and (max-width: 768px) {
   .fc-show-md {
@@ -2489,6 +2482,14 @@ thead.fc-border th:last-child {
   }
 }
 
+.btn-orange {
+  background: #F67925 !important;
+  color: #fff !important;
+}
+.btn-orange:hover {
+  background: #ff6b08 !important;
+}
+
 .btn-fc-orange {
   background: #F67925;
   color: #fff;
@@ -2573,17 +2574,7 @@ thead.fc-border th:last-child {
   bottom: 12px;
 }
 
-.btn-delete-fence {
-  font-size: 14px !important;
-  padding: 16px 18px;
-  display: flex;
-  justify-content: center;
-  background-color: #fff;
-  align-items: center;
-  font-weight: 700;
-  width: auto;
-  height: 52px;
-}
+
 @media (max-width: 992px) {
   .btn-delete-fence {
     padding: 12px 16px;
@@ -3318,24 +3309,8 @@ thead.fc-border th:last-child {
 .fencing-section.fencing-styles {
   margin-top: 24px;
 }
-.fencing-section--step1 .btn-delete-fence {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-}
-@media (max-width: 992px) {
-  .fencing-section--step1 .btn-delete-fence {
-    right: 0;
-    width: auto !important;
-    height: 40px;
-  }
-}
-@media (max-width: 992px) {
-  .fencing-section--step1 .btn-delete-fence span span {
-    display: none;
-  }
-}
+
+
 @media (max-width: 992px) {
   .fencing-section--step3 {
     margin-bottom: 0;
@@ -3407,16 +3382,12 @@ thead.fc-border th:last-child {
 
 .fencing-styles {
   display: block;
-  overflow-y: hidden;
-  overflow-x: auto;
   padding-bottom: 20px;
   margin-bottom: 12px;
   width: 100%;
   box-sizing: border-box;
 }
-.fencing-styles__area {
-  display: inline-flex;
-}
+
 @media (max-width: 1200px) {
   .fencing-styles {
     display: inline-block;
@@ -3425,21 +3396,13 @@ thead.fc-border th:last-child {
 
 .load-quote, 
 .fencing-style-item {
-  margin-right: 29px;
-  width: 184px;
   cursor: pointer;
   float: left;
   background: #fff;
   position: relative;
   transition: all 0.2s ease;
 }
-@media (max-width: 768px) {
-  .load-quote,
-  .fencing-style-item {
-    width: 152px;
-    margin-right: 16px;
-  }
-}
+
 
 .load-quote .fencing-style-img {
   position: relative;
@@ -3504,8 +3467,8 @@ thead.fc-border th:last-child {
   background: #fff url(img/icons/close@2x.png) no-repeat center;
   background-size: 100%;
   position: absolute;
-  top: 11px;
-  right: 11px;
+  top: 10px;
+  right: 20px;
   outline: none;
   border: 0;
   border-radius: 50%;
@@ -3883,27 +3846,7 @@ thead.fc-border th:last-child {
     margin-bottom: 16px;
   }
 }
-.fc-cart-items .fc-reset-item,
-.fc-cart-items .fc-edit-item {
-  border: 1px solid #DDDDDD;
-  padding: 12px 16px;
-  border-radius: 8px;
-  color: #666666;
-  font-size: 12px;
-  text-transform: uppercase;
-  transition: all 0.2s ease;
-}
-.fc-cart-items .fc-reset-item i,
-.fc-cart-items .fc-edit-item i {
-  margin-right: 4px;
-}
-@media (min-width: 1024px) {
-  .fc-cart-items .fc-reset-item:hover,
-  .fc-cart-items .fc-edit-item:hover {
-    background-color: var(--fc-dark-charcoal);
-    color: #fff;
-  }
-}
+
 .fc-cart-items p {
   color: var(--fc-dark-gray);
   font-size: 12px;
@@ -4473,4 +4416,23 @@ thead.fc-border th:last-child {
 }
 .raked-panel .no-post-swivel-bracket .sw-top {
     top: -50px;
+}
+.product-image {
+    background-size: contain !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    width: 10% !important;
+}
+.dl-row  {
+  margin-top: 20px;
+  padding: 0 10px;
+}
+
+@media (max-width: 768px) {
+  .plan-item {
+      overflow: auto;
+  }
+  .dl-row  {
+    width: fit-content;
+  }
 }

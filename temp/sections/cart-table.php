@@ -7,14 +7,14 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 <span class="badge bg-danger mb-2 text-uppercase p-2"><?php echo count($cart['items']); ?> Items</span>
 
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
-    <div class="fc-table-rounded-border">
+    <div class="fc-table-rounded-border table-responsive">
         
         <table class="table table-hover fc-table-bordered table-striped">
             <thead class="table-dark fc-border">
                 <tr>
                     <th class="text-center">QTY</th>
                     <th colspan="2">Description</th>
-                    <th class="text-center">In-stock</th>
+                    <th class="text-center d-sm-block d-none">In-stock</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,22 +37,30 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                         <?php endif; ?>
 
                     </td>
-                    <td style="min-width:50px;max-width:80px;" class="p-1">
-                        <?php $featured_image = add_filepath_last(@$cart_item['image'], '-600x600'); ?>
-                        <img src="<?php echo @$featured_image; ?>">
+                    <?php $featured_image = add_filepath_last(@$cart_item['image'], '-600x600'); ?>
+                    <td style="background:url(<?php echo @$featured_image; ?>);" class="product-image p-1">
                     </td>
                     <td class="align-top">
                         <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>
-                        <div class="text-muted"><?php echo @$cart_item['sku']; ?></div>
+                        <div class="text-muted mb-2"><?php echo @$cart_item['sku']; ?></div>
 
-                        <small class="fc-text-success d-nonex"><?php echo @$cart_item['slug']; ?></small>
+                        <div class="d-block d-sm-none fc-stock-status fc-stock-status--<?php echo @$cart_item['stock']; ?>">
+                            In-stock: <?php echo ucwords(@$cart_item['stock']); ?>
+                        </div>
+
+                        <small class="fc-text-success d-none"><?php echo @$cart_item['slug']; ?></small>
+
                     </td>
                     <!-- <td><?php echo @$cart_item['sku']; ?></td>
                     <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>
                     <td>$<?php echo @$cart_item['trade_price']; ?></td>
                     <td>$<?php echo number_format(@$cart_item['subtotal'], 2); ?></td> -->
-                    <td width="90" class="px-1 align-middle text-center">
-                        <div class="fc-stock-status fc-stock-status--<?php echo @$cart_item['stock']; ?>"><?php echo ucwords(@$cart_item['stock']); ?></div>
+                    <td width="90" class="px-1 align-middle text-center text-center d-sm-table-cell d-none">
+
+                        <div class="fc-stock-status fc-stock-status--<?php echo @$cart_item['stock']; ?>">
+                            <?php echo ucwords(@$cart_item['stock']); ?>
+                        </div>
+
                     </td>
                 </tr>
                 <?php $ci++; ?>

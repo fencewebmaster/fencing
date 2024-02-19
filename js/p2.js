@@ -5,19 +5,21 @@ function reload_fence_items() {
 
     for (let i = 0; i < items; i++) {
 
-        var section = `<div class="border p-3 rounded mb-4">
-            <div class="row">
+        var section = `<div class="border p-3 rounded mb-4 mx-2">
+            <div class="row align-items-center mb-3">
                 <div class="col fw-bold">
                     SECTION ${i+1}  
                 </div>
-                <div class="col text-end">
-                    <a href="${base_url}?section=${i+1}" class="btn-fc btn-fc-sm btn-fc-outline-light fc-text-uppercase btn-fc-orange">
-                        <i class="fa-solid fa-pencil"></i>
+                <div class="col-auto text-end">
+                    <a href="${base_url}?section=${i+1}" class="btn btn-sm text-uppercase btn-orange px-3">
+                        <i class="fa-solid fa-pencil me-1"></i>
                         <span>Edit Details</span>
                     </a>    
                 </div>
             </div>
-            <div id="pp-${i}" class="dl-row"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>
+            <div class="plan-item">
+                <div id="pp-${i}" class="dl-row"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>
+            </div>
         </div> `;
 
         $('#fc-fence-list').append(section);

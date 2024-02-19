@@ -889,7 +889,7 @@ $(window).resize(function(){
     tabContainerScroll();   
 });
 
-$(window).on('scroll', function(){
+$(window).on('scroll resize', function(){
 
     var target =  $('[data-spy="scroll"]').attr('data-target'),
         screenSize = parseInt($('[data-spy="scroll"]').attr('data-screen')),

@@ -66,10 +66,10 @@
                 		<?php include 'temp/header-left.php'; ?>     
                 	</div>
                 </div>
-                <div class="col-sm-auto">
+                <div class="col-sm-auto col-auto">
 					<div class="quote-id-card float-end">
-						<div class="qic-head">Your Quote ID</div>
-						<div class="qic-body btn-copy-link" data-id="quote-id-1">
+						<div class="qic-head px-3">Your Quote ID</div>
+						<div class="qic-body btn-copy-link px-3" data-id="quote-id-1">
 							<div id="quote-id-1"><?php echo @$_SESSION['planner_id']; ?></div>
 						</div>
 					</div>
@@ -217,17 +217,28 @@
 
 										<div class="col-lg-7 col-md-8 col-sm-12 fc-position-relative order-md-1 order-2" id="update_cart-list">
 										    <!-- [START] Label -->
-										    <div class="fencing-section__cmp fencing-section__step-label">
-										        <div class="step-label">Item List & <span>Cart</span></div>
-										        <div>
-										            <a href="" class="fc-edit-item js-fc-edit-item"><i class="fa-solid fa-pencil"></i> <span>Edit</span></a>
-										            <a href="" class="fc-reset-item" style="display: none;">Reset</a>
-										        </div>
-										    </div>
+									        <div class="row align-items-center mb-2">
+									        	<div class="col-sm col">
+									        		<div class="step-label">Item List & <span>Cart</span></div>
+
+									        	</div>
+									        	<div class="col-sm col-auto text-end">
+										        		
+										        	<a href="" class="btn btn-orange fc-edit-item text-uppercase js-fc-edit-item">
+										            	<i class="fa-solid fa-pencil me-2"></i> <span>Edit</span>
+										            </a>
+
+										            <a href="" class="btn btn-secondary fc-reset-item" style="display: none;">
+										            	<i class="fa-solid fa-rotate-left me-2"></i> Reset</a>
+
+									        	</div>
+									        </div>
 										    <!-- [END] Label -->
+
 										    <div class="fc-card fc-table-items">
 										        <?php include('temp/sections/cart-table.php'); ?>
 										    </div>
+
 										    <div class="fc-cart-items-btns">
 										        <button type="submit" class="btn-fc btn-submit fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
 										            <i class="fa-solid fa-cart-shopping"></i>
@@ -239,9 +250,10 @@
 										            <span>Download Plans</span>
 										        </button>
 										    </div>
+
 										</div>
 
-										<div class="col fc-position-relative order-1" id="update_stock-delivery">
+										<div class="col fc-position-relative order-1 mb-md-0 mb-4" id="update_stock-delivery">
 
 											<div data-spy="scroll" data-screen="767" data-target="#update_stock-delivery">
 												<div class="fencing-section__cmp fencing-section__step-label">
@@ -273,14 +285,16 @@
 												</div>
 												
 												<div class="d-grid gap-2">
-												    <button type="submit" class="btn-fc btn-fc--large-text fc-btn-md btn-fc-black fc-text-uppercase mb-1 fc-w-700 w-100-sm">
+
+												    <button type="submit" class="btn btn-lg btn-dark text-uppercase fw-bold">
 												        Order Items Now!
 												    </button>
 
-												    <button type="button" class="btn-fc btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
-												        <span>Speak To Trade Support</span>
+												    <button type="button" class="btn btn-lg btn-outline-dark text-uppercase">
+												        Speak To Trade Support
 												    </button>
 												</div>
+
 											</div>
 
 										</div>
