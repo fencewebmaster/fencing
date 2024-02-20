@@ -1,7 +1,7 @@
 
 
 // https://jqueryvalidation.org/validate/
-$("#fc-download-form").validate({   
+$("#fc-planning-form").validate({   
     rules: {
         email: {
             required: true,

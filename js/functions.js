@@ -210,11 +210,8 @@ function update_raked_panels(side) {
                 var tpl = $('script[data-type="'+v+'-panel-'+info.panel_group+'"]').text()
                                                                 .replace(/{{center_point}}/gi, center_point)
                                                                 .replace(/{{panel_size}}/gi, panel_h)
-                                                                .replace(/{{panel_unit}}/gi,  panel_w)
-                                                                .replace(/{{panel_number}}/gi, 4)                                                     
+                                                                .replace(/{{panel_unit}}/gi,  panel_w)                                                 
                                                                 .replace(/{{panel_height}}/gi, panel_height)
-                                                                .replace(/{{panel_unit}}/gi, 6)
-                                                                .replace(/{{panel_number}}/gi, 7)
                                                                 .replace(/{{post}}/gi, has_post);   
 
                 if( panel_h ){
@@ -382,14 +379,15 @@ function load_post_options_all(custom_fence, info, tab) {
         var right_planel_class  = ".post-right";
     }
 
-
     if( post_options_filtered_data.length ) {
         //Get the value of Post Option
         var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
             return item.key === "post_option";
         });
 
-        if( typeof post_options_setting !== "undefined" && panel_post.attr('class').includes('opt-') == false ){
+        if( !$('#fc-planning-form').length || 
+            typeof post_options_setting !== "undefined" && 
+            panel_post.attr('class').includes('opt-') == false ) {
 
             panel_post.not(left_planel_class)
                       .not(right_planel_class)
@@ -397,7 +395,8 @@ function load_post_options_all(custom_fence, info, tab) {
                       .attr('data-cart-value', post_options_setting.val);
 
             panel_spacing_number.addClass(post_options_setting.val);
-        }
+            
+        } 
 
     } else {
 
@@ -1988,7 +1987,7 @@ function getSelectedCheckboxes(name) {
 }
   
 const submitModal = document.getElementById("submit-modal");
-const formDownload = document.getElementById("fc-download-form");
+const formDownload = document.getElementById("fc-planning-form");
 const projectPlanKey = "project-plans";
 
 /**

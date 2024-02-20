@@ -111,7 +111,7 @@ if( $qid = @$_GET['qid'] ) {
 </form>
 
 <div class="fencing-container container-lg w-side-section mt-5" data-tab="1">
-    <form method="POST" id="fc-download-form" action="project-plan">
+    <form method="POST" id="fc-planning-form" action="project-plan">
 
         <div class="fencing-container__header">
             <div class="row align-items-center">

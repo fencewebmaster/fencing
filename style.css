@@ -3009,7 +3009,7 @@ thead.fc-border th:last-child {
 
 
 @media (min-width: 1024px) {
-  #fc-download-form .fencing-left-panel-o-b:hover {
+  #fc-planning-form .fencing-left-panel-o-b:hover {
     background: var(--fc-princeton-orange);
   }
 }

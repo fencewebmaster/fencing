@@ -337,7 +337,6 @@ function re_update_gate(action, tab) {
 }
 
 
-
 function re_update_raked_panels(side, tab) {
 
     var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
