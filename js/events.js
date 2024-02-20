@@ -786,6 +786,8 @@ $(document).on('click', '.fc-btn-step', function(e){
     // Push param in URL tab={tab}
     history.pushState({}, '', `?tab=${move}`);
 
+    tabContainerScroll();
+
 });
 
 $(document).on('click', '.form-tab-4 input[type="checkbox"], .form-tab-4 input[type="radio"]', function(){
