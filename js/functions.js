@@ -1331,6 +1331,7 @@ function reloadFencingData() {
        return;
     }
 
+
     var custom_fence_items = JSON.parse(fc_fence_info.fence_data, true);
 
     $(custom_fence_items).each(function(k, v){
@@ -1357,7 +1358,7 @@ function reloadFencingData() {
     localStorage.setItem('project-plans', fc_fence_info.project_plans_data);
 
     // Reset URL
-    history.pushState({}, '', location.origin+location.pathname);
+    // history.pushState({}, '', location.origin+location.pathname);
 }
 
 function clearFencingData() {

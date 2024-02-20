@@ -38,7 +38,11 @@ $(document).on('click', '.fc-btn-update', function(e) {
     FCModal.close('#submit-modal');
     $('.fc-loader-overlay').show();
 
-    $('.li-create small').html('Updating your plan...');
+    if( getSearchParams('qid') ) {
+        $('.li-create small').html('Reloading your plan...');
+    } else {
+        $('.li-create small').html('Updating your plan...');
+    }
 
     res = submit_fence_planner('update');            
 
@@ -149,6 +153,10 @@ function reload_fence_items() {
 
     // Restore form data when the page loads
     restoreFormData();
+
+    if( getSearchParams('qid') ) {
+       $('.fc-btn-update').click();
+    }
 
 }
 reload_fence_items();

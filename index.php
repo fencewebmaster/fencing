@@ -72,7 +72,7 @@ if( $qid = @$_GET['qid'] ) {
 
                 <div class="col-auto">
                     
-                    <ul class="mb-0">
+                    <ul class="mb-0 p-0">
                         <li class="fc-text-success li-create">
                             <div><small>Creating your plan...</small></div>
                         </li>
