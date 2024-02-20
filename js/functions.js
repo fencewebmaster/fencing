@@ -1295,7 +1295,7 @@ function submit_fence_planner(status ='') {
                                     window.onbeforeunload = function () {
                                         return;
                                     }
-                                    window.location = 'project-plan.php';
+                                    window.location = 'project-plan.php?qid='+planner_id;
                                }
                                
                             }, 1000 * i);
