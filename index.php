@@ -168,10 +168,11 @@ if( $qid = @$_GET['qid'] ) {
         <!-- START TABS -->
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
                 <div class="fc-header-tab__area">
-                    <a href="#" data-tab="2" data-move="1" class="fc-btn-step">
+                    <a href="#" class="fc-btn-step" data-tab="2" data-move="1">
                         <div class="fencing-tab-name">Section Details</div>
                     </a>
-                    <a href="#" data-tab="2" data-move="1" class="fc-tab-active tab-selected">
+
+                    <a class="fc-tab-active tab-selected">
                         <div class="fencing-tab-name">Project Options</div>
                     </a>
                 </div>	
@@ -200,13 +201,13 @@ if( $qid = @$_GET['qid'] ) {
                                     <div class="btn-delete-fence text-end">
 
                                         <button type="button" 
-                                            class="btn btn-danger btn-sm js-btn-delete-fence px-2" 
+                                            class="btn btn-danger btn-sm js-btn-delete-fence px-2 fw-bold text-uppercase" 
                                             style="display:none;">
                                             <i class="fa fa-trash-can me-1"></i> Delete <span>Section</span>
                                         </button>
 
                                         <button type="button" 
-                                            class="btn btn-outline-danger btn-sm fc-fence-reset-all px-2" 
+                                            class="btn btn-outline-danger btn-sm fc-fence-reset-all px-2 fw-bold text-uppercase" 
                                             style="display:none;">
                                             <i class="fa-solid fa-circle-minus me-1"></i> Reset
                                         </button>
@@ -339,29 +340,47 @@ if( $qid = @$_GET['qid'] ) {
 
                                 <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
 
-                                <div class="fencing-section__controls">
-                                
-                                    <a href="#" style="display: none;">
-                                        <i class="fc-icon fc-rectangle"></i>
-                                    </a>
+                                <div class="row align-items-center">
+                                    <div class="col mb-sm-0 mb-3">
 
-                                    <a href="#" class="fc-zoom-fence" data-zoom="in">
-                                        <i class="fc-icon fc-magnify-plus"></i>
-                                        Zoom in
-                                    </a>
+                                        <div class="fencing-section__controls">
+                                            
+                                            <a href="#" style="display: none;">
+                                                <i class="fc-icon fc-rectangle"></i>
+                                            </a>
 
-                                    <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
+                                            <a href="#" class="fc-zoom-fence" data-zoom="in">
+                                                <i class="fc-icon fc-magnify-plus"></i>
+                                                Zoom in
+                                            </a>
 
-                                    <a href="#" class="fc-zoom-fence" data-zoom="out">
-                                        <i class="fc-icon fc-magnify-munis"></i>
-                                        Zoom out
-                                    </a>
+                                            <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
 
-                                    <a href="#" class="fc-zoom-reset js-fc-zoom-reset" data-zoom="reset">
-                                        <i class="fc-icon fc-icon-arrow-cc"></i>
-                                        Reset
-                                    </a>
+                                            <a href="#" class="fc-zoom-fence" data-zoom="out">
+                                                <i class="fc-icon fc-magnify-munis"></i>
+                                                Zoom out
+                                            </a>
 
+                                            <a href="#" class="fc-zoom-reset js-fc-zoom-reset" data-zoom="reset">
+                                                <i class="fc-icon fc-icon-arrow-cc"></i>
+                                                Reset
+                                            </a>
+
+                                        </div>                                        
+
+                                    </div>
+                                    <div class="col-auto">
+
+                                        <?php if( isset($_SESSION['planner_id']) ): ?>
+                                        <div class="col-lg-auto px-1">
+                                            <button type="submit" class="btn btn-sm btn-orange fc-btn-update w-100 fw-bold">
+                                                <i class="fa-regular fa-pen-to-square me-2"></i> 
+                                                UPDATE
+                                            </button>
+                                        </div>
+                                        <?php endif; ?>    
+
+                                    </div>
                                 </div>
 
                             </div>
@@ -387,50 +406,52 @@ if( $qid = @$_GET['qid'] ) {
                         </div>
                         
                         <div class="fencing-section__bottom">
-                            <div class="fc-tab-control">
+                            <div class="">
 
-                                <div class="fc-section-step" data-tab="1">
+                                <div class="row" data-tab="1">
+                                
+                                    <div class="col-lg col-sm-6 px-1 mb-lg-0 mb-2">
+                                        <button type="button" 
+                                            class="btn btn-orange fc-btn-next-step fc-btn-step p-3 text-uppercase w-100" 
+                                            data-tab="1" 
+                                            data-move="2"
+                                            disabled>
+                                            <b>NEXT - Select PLAN OPTIONS</b>
+                                        </button>
+                                    </div>
 
-                                    <?php if( isset($_SESSION['planner_id']) ): ?>
-                                    <button type="submit" 
-                                        class="btn-fc btn-fc-orange fc-btn-update">
-                                        <b>UPDATE <i class="fa-regular fa-pen-to-square"></i></b>
-                                    </button>
-                                    <?php endif; ?>
+                                    <div class="col-lg col-sm-6 px-1 mb-lg-0 mb-2">
+                                        <button type="button" 
+                                            class="btn btn-secondary fc-tab-add fencing-tab-add p-3 w-100">
+                                            <b>
+                                                <i class="fa-solid fa-plus"></i> Add Another Section
+                                            </b>
+                                        </button>
+                                    </div>
 
-                                    <button type="button" 
-                                        class="btn-fc btn-fc-orange fc-btn-next-step fc-btn-step" 
-                                        data-tab="1" 
-                                        data-move="2"
-                                        disabled>
-                                        <b>NEXT - Select PLAN OPTIONS &#8594;</b>
-                                    </button>
+                                    <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
+                                        <button type="button" 
+                                            class="btn btn-outline-secondary  fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
+                                            <b>
+                                                <i class="fa-solid fa-rotate"></i> Reset
+                                            </b>
+                                        </button>
+                                    </div>
 
-                                    <button type="button" 
-                                        class="btn-fc btn-fc-outline-default fc-tab-add fencing-tab-add fc-px-2">
-                                        <b>
-                                            <i class="fa-solid fa-plus"></i> Add Another Section
-                                        </b>
-                                    </button>
+                                    <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
+                                        <button type="button" 
+                                            class="btn btn-danger btn-fc-sm btn-delete-fence js-btn-delete-fence fw-bold text-uppercase p-3 w-100" 
+                                            >
+                                            <span><i class="fa fa-trash-can"></i> Delete <span>Section</span></span>
+                                        </button>
+                                    </div>
 
-                                    <button type="button" 
-                                        class="btn-fc btn-fc-outline-default fc-fence-reset fc-text-uppercase">
-                                        <b>
-                                            <i class="fa-solid fa-rotate"></i> Reset
-                                        </b>
-                                    </button>
-
-                                    <button type="button" 
-                                        class="btn-fc btn-fc-outline-danger btn-fc-sm btn-delete-fence js-btn-delete-fence" 
-                                        >
-                                        <span><i class="fa fa-trash-can"></i>Delete <span>Section</span></span>
-                                    </button>
                                 </div>
 
                                 <div class=" fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
                                     
                                     <button type="button" 
-                                        class="btn-fc btn-fc-orange fc-btn-create-plan fencing-btn-modal" 
+                                        class="btn btn-orange fc-btn-create-plan fencing-btn-modal" 
                                         data-target="#submit-modal" 
                                         disabled>
                                         <strong>Create Project Plan</strong><br>
@@ -438,7 +459,7 @@ if( $qid = @$_GET['qid'] ) {
                                     </button>
 
                                     <button type="button" 
-                                        class="btn-fc fc-btn-step btn-fc-outline-default fc-text-uppercase fc-px-3" 
+                                        class="btn fc-btn-step btn-outline-secondary text-uppercase fc-px-3" 
                                         data-tab="2" 
                                         data-move="1"><b>Back</b>
                                     </button>

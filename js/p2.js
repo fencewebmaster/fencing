@@ -11,8 +11,8 @@ function reload_fence_items() {
                     SECTION ${i+1}  
                 </div>
                 <div class="col-auto text-end">
-                    <a href="${base_url}?section=${i+1}" class="btn btn-sm text-uppercase btn-orange px-3">
-                        <i class="fa-solid fa-pencil me-1"></i>
+                    <a href="${base_url}?section=${i+1}" class="btn btn-sm text-uppercase btn-orange fw-bold px-3">
+                        <i class="fa-regular fa-pen-to-square me-1"></i>
                         <span>Edit Details</span>
                     </a>    
                 </div>

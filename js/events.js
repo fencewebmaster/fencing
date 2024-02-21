@@ -784,7 +784,7 @@ $(document).on('click', '.fc-btn-step', function(e){
     }
 
     // Push param in URL tab={tab}
-    history.pushState({}, '', `?tab=${move}`);
+    history.pushState({}, '', `?tab=${move}`);     
 
     tabContainerScroll();
 

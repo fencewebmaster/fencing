@@ -140,13 +140,13 @@
 							<div>
 								
 								<button type="button" data-action="edit" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" style=" margin-left: 16px;">
-									<i class="fa-solid fa-pencil"></i>
+									<i class="fa-regular fa-pen-to-square"></i>
 									<span>Edit Details</span>
 								</button>
 
 								<div class="js-project-details-controls project-details-controls fc-d-none">
 									<button type="button" data-action="update" class="btn-fc fc-btn-edit btn-fc-outline-light fc-text-uppercase btn-fc-orange fc-w-700 fc-float-r" >
-										<i class="fa-solid fa-pencil"></i>
+										<i class="fa-regular fa-pen-to-square"></i>
 										<span>Save</span>
 									</button>
 									<button type="button" 
@@ -224,11 +224,11 @@
 									        	</div>
 									        	<div class="col-sm col-auto text-end">
 										        		
-										        	<a href="" class="btn btn-orange fc-edit-item text-uppercase js-fc-edit-item">
-										            	<i class="fa-solid fa-pencil me-2"></i> <span>Edit</span>
+										        	<a href="" class="btn btn-orange fc-edit-item text-uppercase js-fc-edit-item fw-bold">
+										            	<i class="fa-regular fa-pen-to-square me-2"></i> <span>Edit</span>
 										            </a>
 
-										            <a href="" class="btn btn-secondary fc-reset-item" style="display: none;">
+										            <a href="" class="btn btn-secondary fc-reset-item fw-bold text-uppercase" style="display: none;">
 										            	<i class="fa-solid fa-rotate-left me-2"></i> Reset</a>
 
 									        	</div>
@@ -239,16 +239,22 @@
 										        <?php include('temp/sections/cart-table.php'); ?>
 										    </div>
 
-										    <div class="fc-cart-items-btns">
-										        <button type="submit" class="btn-fc btn-submit fc-btn-md btn-fc-orange fc-text-uppercase fc-mb-1 fc-w-700 w-100-sm">
-										            <i class="fa-solid fa-cart-shopping"></i>
-										            Order Items Now!
-										        </button>
+				
+										    <div class="row">
 
-										        <button type="button" class="btn-fc fc-btn-download-fence btn-fc-outline-light fc-text-uppercase fc-w-700 fc-float-r">
-										            <i class="fa-solid fa-download"></i>
-										            <span>Download Plans</span>
-										        </button>
+										    	<div class="col-sm mb-sm-0 mb-3">
+											        <button type="submit" class="btn btn-submit btn-lg btn-orange text-uppercase w-100 fs-6 text fw-bold">
+											            <i class="fa-solid fa-cart-shopping me-2"></i>
+											            Order Items Now!
+											        </button>
+										    	</div>
+										    	<div class="col-sm">
+											        <button type="button" class="btn btn-lg fc-btn-download-fence btn-outline-dark text-uppercase w-100 fs-6 text">
+											            <i class="fa-solid fa-download me-2"></i>
+											            <span>Download Plans</span>
+											        </button>										    		
+										    	</div>
+
 										    </div>
 
 										</div>
@@ -286,13 +292,16 @@
 												
 												<div class="d-grid gap-2">
 
-												    <button type="submit" class="btn btn-lg btn-dark text-uppercase fw-bold">
-												        Order Items Now!
-												    </button>
-
-												    <button type="button" class="btn btn-lg btn-outline-dark text-uppercase">
-												        Speak To Trade Support
-												    </button>
+											        <button type="submit" class="btn btn-submit btn-lg btn-dark text-uppercase w-100 fs-6 text fw-bold">
+											            <i class="fa-solid fa-cart-shopping me-2"></i>
+											            Order Items Now!
+											        </button>
+										
+											        <button type="button" class="btn btn-lg btn-outline-dark text-uppercase w-100 fs-6 text">
+											            <i class="fa-regular fa-comments me-2"></i>
+											            Speak To Trade Support
+											        </button>										    		
+								
 												</div>
 
 											</div>
