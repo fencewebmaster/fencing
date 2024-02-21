@@ -498,7 +498,7 @@ $(document).on('click', ".project-details--update", function (e) {
     e.preventDefault();
 
     $('[name="action"]').val('update_project_details');
-    $('form').submit();
+    $('.fc-btn-edit[data-action="update"]').click();
     $('#submit-modal').hide();
 });
 

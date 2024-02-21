@@ -242,13 +242,13 @@
 				
 										    <div class="row">
 
-										    	<div class="col-sm mb-sm-0 mb-3">
+										    	<div class="col-sm mb-sm-0 mb-3 pe-1">
 											        <button type="submit" class="btn btn-submit btn-lg btn-orange text-uppercase w-100 fs-6 text fw-bold">
 											            <i class="fa-solid fa-cart-shopping me-2"></i>
 											            Order Items Now!
 											        </button>
 										    	</div>
-										    	<div class="col-sm">
+										    	<div class="col-sm ps-1">
 											        <button type="button" class="btn btn-lg fc-btn-download-fence btn-outline-dark text-uppercase w-100 fs-6 text">
 											            <i class="fa-solid fa-download me-2"></i>
 											            <span>Download Plans</span>

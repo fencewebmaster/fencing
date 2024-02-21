@@ -71,7 +71,7 @@
                     <?php include 'temp/modal/submit/form/timeframe.php'; ?>
 
                     <!-- START FORM MODAL ACTIONS - STEP 2 -->
-                    <div class="fc-form-plan-action">
+                    <div class="fc-form-plan-action mt-3">
                         <button type="button" 
                             class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
                             data-move="1"><b>Back</b>
@@ -106,7 +106,7 @@
                     <?php include 'temp/modal/submit/form/installer.php'; ?>
 
                     <!-- START FORM MODAL ACTIONS - STEP 3 -->
-                    <div class="fc-form-plan-action">
+                    <div class="fc-form-plan-action mt-3">
                         <button type="button" class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" data-move="2"><b>Back</b></button>
                         <button type="button" class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" data-move="4"><b>Next > Needed Options</b></button>
                     </div>
@@ -136,7 +136,7 @@
                     <?php include 'temp/modal/submit/form/other-items-needed.php'; ?>                        
 
                     <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
-                    <div class="fc-form-plan-action">
+                    <div class="fc-form-plan-action mt-2">
                         <button type="button" 
                             class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
                             data-move="3"><b>Back</b>

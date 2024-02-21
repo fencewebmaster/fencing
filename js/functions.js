@@ -1737,9 +1737,10 @@ function deleteLocalStorageEntry(){
     //Get selected tab index
     let getActiveTabIndex = getActiveTab.index();
 
+
     //Find and delete all instance of it in local storage
     deleteAllEntriesBySubstring("custom_fence-" + getActiveTabIndex);
-    deleteAllEntriesBySubstring("cart_items-" + getActiveTabIndex);
+    localStorage.removeItem("cart_items-" + getActiveTabIndex+1);
 
 }
 

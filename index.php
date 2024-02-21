@@ -340,49 +340,31 @@ if( $qid = @$_GET['qid'] ) {
 
                                 <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
 
-                                <div class="row align-items-center">
-                                    <div class="col mb-sm-0 mb-3">
+                                <div class="fencing-section__controls">
+                                    
+                                    <a href="#" style="display: none;">
+                                        <i class="fc-icon fc-rectangle"></i>
+                                    </a>
 
-                                        <div class="fencing-section__controls">
-                                            
-                                            <a href="#" style="display: none;">
-                                                <i class="fc-icon fc-rectangle"></i>
-                                            </a>
+                                    <a href="#" class="fc-zoom-fence" data-zoom="in">
+                                        <i class="fc-icon fc-magnify-plus"></i>
+                                        Zoom in
+                                    </a>
 
-                                            <a href="#" class="fc-zoom-fence" data-zoom="in">
-                                                <i class="fc-icon fc-magnify-plus"></i>
-                                                Zoom in
-                                            </a>
+                                    <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
 
-                                            <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
+                                    <a href="#" class="fc-zoom-fence" data-zoom="out">
+                                        <i class="fc-icon fc-magnify-munis"></i>
+                                        Zoom out
+                                    </a>
 
-                                            <a href="#" class="fc-zoom-fence" data-zoom="out">
-                                                <i class="fc-icon fc-magnify-munis"></i>
-                                                Zoom out
-                                            </a>
+                                    <a href="#" class="fc-zoom-reset js-fc-zoom-reset" data-zoom="reset">
+                                        <i class="fc-icon fc-icon-arrow-cc"></i>
+                                        Reset
+                                    </a>
 
-                                            <a href="#" class="fc-zoom-reset js-fc-zoom-reset" data-zoom="reset">
-                                                <i class="fc-icon fc-icon-arrow-cc"></i>
-                                                Reset
-                                            </a>
-
-                                        </div>                                        
-
-                                    </div>
-                                    <div class="col-auto">
-
-                                        <?php if( isset($_SESSION['planner_id']) ): ?>
-                                        <div class="col-lg-auto px-1">
-                                            <button type="submit" class="btn btn-sm btn-orange fc-btn-update w-100 fw-bold">
-                                                <i class="fa-regular fa-pen-to-square me-2"></i> 
-                                                UPDATE
-                                            </button>
-                                        </div>
-                                        <?php endif; ?>    
-
-                                    </div>
-                                </div>
-
+                                </div>                                        
+          
                             </div>
 
                             <div class="fencing-section__cmp fencing-display-result">
@@ -401,7 +383,24 @@ if( $qid = @$_GET['qid'] ) {
                             </div>
 
                             <!-- START PANEL CONTROLS -->	
-                            <div class="fencing-section__cmp fencing-panel-controls"></div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="fencing-section__cmp fencing-panel-controls"></div>
+                                </div>
+                                <div class="col-auto">
+
+                                    <?php if( isset($_SESSION['planner_id']) ): ?>
+                                    <button type="submit" class="btn btn-sm btn-orange fc-btn-update w-100 fw-bold">
+                                        <i class="fa-regular fa-pen-to-square me-2"></i> 
+                                        UPDATE
+                                    </button>
+                                    <?php endif; ?>    
+
+                                </div>
+                            </div>
+ 
+
+
                             <!-- END PANEL CONTROLS -->
                         </div>
                         
@@ -410,7 +409,7 @@ if( $qid = @$_GET['qid'] ) {
 
                                 <div class="row" data-tab="1">
                                 
-                                    <div class="col-lg col-sm-6 px-1 mb-lg-0 mb-2">
+                                    <div class="col-lg col-sm-6 pe-1 mb-lg-0 mb-2">
                                         <button type="button" 
                                             class="btn btn-orange fc-btn-next-step fc-btn-step p-3 text-uppercase w-100" 
                                             data-tab="1" 
