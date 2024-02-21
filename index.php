@@ -33,6 +33,7 @@ if( $qid = @$_GET['qid'] ) {
         $_SESSION['planner_id'] = $qid;
     }
 }
+
 ?>
 
 <title>Fencing Calculator</title>
@@ -552,7 +553,7 @@ if( $qid = @$_GET['qid'] ) {
 <script type="text/javascript">
 var fc_data = <?php echo json_encode($fences); ?>;
 var fc_fence_info = <?php echo json_encode($res); ?>;
-var planner_id = "<?php echo $_SESSION['planner_id']; ?>";  
+var planner_id = "<?php echo @$_SESSION['planner_id']; ?>";  
 </script>
 
 <script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>

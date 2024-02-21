@@ -48,7 +48,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                             In-stock: <?php echo ucwords(@$cart_item['stock']); ?>
                         </div>
 
-                        <small class="fc-text-success d-none"><?php echo @$cart_item['slug']; ?></small>
+                        <small class="fc-text-success d-nonex"><?php echo @$cart_item['slug']; ?></small>
 
                     </td>
                     <!-- <td><?php echo @$cart_item['sku']; ?></td>

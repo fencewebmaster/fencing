@@ -321,7 +321,7 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
                     //Find the element that matches the condition below and add the class
                     $('#pp-'+sectionId+' .panel-post[data-key='+activeSetting+'], #pp-'+sectionId+' .fencing-panel-spacing-number')
                         .addClass(value)
-                        .attr('data-cart-value', 'opt-1');
+                        .attr('data-cart-value', value);
                 }
             }
 
@@ -1326,7 +1326,7 @@ function reloadFencingData() {
         location.href = location.origin+location.pathname;
     }
 
-    if( fc_fence_info.length == 0 ) {
+    if( fc_fence_info?.length == 0 ) {
        return;
     }
 

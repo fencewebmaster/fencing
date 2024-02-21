@@ -188,7 +188,9 @@ FENCES.cartItems = {
 
         //Apply condition for panel_post
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
-console.log(newCartItems);
+        
+        console.log(newCartItems);
+
         return newCartItems;
 
     },
@@ -383,6 +385,7 @@ console.log(newCartItems);
         if( typeof foundRakedPostOpt1 !== "undefined" ){
             total += foundRakedPostOpt1.qty;
         }
+
 
         /*
         if( typeof foundGate !== "undefined"  ) {

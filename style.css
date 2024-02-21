@@ -4383,7 +4383,7 @@ thead.fc-border th:last-child {
 .sticky-roll {
   top: 0;
   position: fixed;
-  z-index: 1;
+  z-index: 2;
 }
 
 .fencing-tabs {
@@ -4405,6 +4405,7 @@ thead.fc-border th:last-child {
     text-align: center;
     line-height: 10px;
     font-size: 10px;
+    z-index: 1;
 }
 .no-post-swivel-bracket .sw-top {
     top: -5px;
