@@ -3,6 +3,9 @@
 		<div class="fencing-modal-title fc-font-2">{{marker}}{{field_title}}</div>
 		<button class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
 	</div>
+
+	<div class="fencing-modal-notes mb-4"></div>
+
 	<div class="fencing-modal-body fc-font-1 fc-p-0">
 		<div class="fc-col-half fc-dropdown_option">
 			<h2 class="body-title">{{title}}</h2>
@@ -11,5 +14,4 @@
 			</div>			
 		</div>
 	</div>
-	<div class="fencing-modal-notes"></div>
 </div>

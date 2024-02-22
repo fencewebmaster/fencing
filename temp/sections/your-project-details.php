@@ -81,7 +81,7 @@
 					<table class="fc-table">
 						<tr>
 							<td width="180">Fence Type</td>
-							<td>Flat Top Pool Fencing</td>
+							<td><?php echo implode(', ', selected_fences($fences, 'name')); ?></td>
 						</tr>
 						<tr>
 							<td>When Needed</td>

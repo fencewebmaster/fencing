@@ -1,7 +1,8 @@
 <?php
 session_start();
 
-include('helpers.php');
+include 'data/settings.php';
+include 'helpers.php';
 include 'config/database.php'; 
 
 
@@ -14,8 +15,6 @@ if( $_POST ) {
 $cart_items_grouped = json_decode($_SESSION["fc_data"]['cart_items'], true);
 
 $cart_items_regrouped = $cart_items_formatted = [];
-
-
 
 // Merged the cart items
 $cart_items_merged = array_merge(...$cart_items_grouped);
@@ -162,7 +161,7 @@ $data_inputs = [
   'mobile'             => @$fc_data['mobile'],
   'email'              => @$fc_data['email'],
   'address'            => @$fc_data['address'],
-  'fence_type'         => ['aluminum'],
+  'fence_type'         => selected_fences($fences, 'slug'),
   'timeframe'          => @$fc_data['timeframe'],
   'installer'          => @$fc_data['installer'],
   'extra'              => @$fc_data['extra'] ? @$fc_data['extra'] : @$fc_data['nothing_extra'],

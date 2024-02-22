@@ -117,6 +117,21 @@ function sites($key = '', $value = 'id', $search = false) {
 
 }
 
+function selected_fences($fences, $column = 'slug') {
+    
+    $info = $_SESSION['fc_data'];
+
+    $fence_data = array();
+
+    foreach ( convert_inputs($info['fences']) as $fence) {
+        $slug = $fence['form'][0]['fence'];
+        $key = array_search($slug, array_column($fences, 'slug'));
+        $fence_data[$key] = $fences[$key][$column];
+    }   
+
+    return $fence_data; 
+}
+
 function get_items($key, $items, $list = false) {  
 
     if( !is_array($items) ) {

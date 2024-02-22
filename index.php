@@ -48,16 +48,8 @@ if( $qid = @$_GET['qid'] ) {
 
 <style type="text/css">
 /* Temporary solution to hide frameless pool from the selection */
-.fencing-style-item:first-child {
-    display: none;
-}    
 .fc-center-point {
     display: none;
-}
-.fencing-style-item .fencing-style-btn {
-    border: 2px solid #ffffff;
-    box-shadow: 1px 1px 4px 1px #939393;
-    color: #f67925;
 }
 </style>
 

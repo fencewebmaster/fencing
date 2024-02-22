@@ -3449,18 +3449,20 @@ thead.fc-border th:last-child {
   padding: 10px;
 }
 .fencing-style-item .fencing-style-btn {
-  width: 26px;
-  height: 26px;
-  background: #fff url(img/icons/close@2x.png) no-repeat center;
-  background-size: 100%;
+  border: 2px solid #ffffff;
+  background: #dc3545;
+  width: 27px;
+  height: 27px;
   position: absolute;
-  top: 10px;
+  top: 8px;
   right: 20px;
+  color: #fff;
   outline: none;
-  border: 0;
   border-radius: 50%;
   cursor: pointer;
-  display: none;
+}
+.fencing-style-item .fencing-style-btn:hover {
+  background: #b20b1b;
 }
 .fencing-style-item.fsi-selected .fencing-style-btn {
   display: block;
@@ -3469,6 +3471,13 @@ thead.fc-border th:last-child {
   border-color: #F67925;
   opacity: 1;
 }
+.fencing-style-item .fc-fence-reset-all {
+  display: none!important;
+}
+.fencing-style-item.fsi-selected .fc-fence-reset-all {
+  display: block!important;
+}
+
 .fencing-style-item.fsi-selected .fencing-style-title {
   color: #fff;
   background: var(--fc-princeton-orange);

@@ -33,7 +33,7 @@ if( @$_POST['action'] == 'push_order' ) {
       'address'            => @$fc_data['address'],
       'postcode'           => @$fc_data['postcode'],
       'state'              => @$fc_data['state'],
-      'fence_type'         => ['aluminum'],
+      'fence_type'         => selected_fences($fences, 'slug'),
       'timeframe'          => @$fc_data['timeframe'],
       'installer'          => @$fc_data['installer'],
       'extra'              => @$fc_data['extra'] ? $fc_data['extra'] : $fc_data['nothing_extra'],
@@ -82,7 +82,7 @@ if( @$_POST['action'] == 'push_order' ) {
                     "installer"      => fc_installer(@$fc_data['installer']),
                     "quote_id"       => $planner_id,
                     "planner_url"    => base_url('?qid='.$planner_id),
-                    "fencing_type"   => 'aluminum',
+                    "fencing_type"   => implode(', ', selected_fences($fences, 'slug')),
                     "timeframe"      => fc_timeframe(@$fc_data['timeframe']),
                 ],
             ],
@@ -247,7 +247,7 @@ if( @$_POST['action'] == 'push_order' ) {
       'mobile'             => @$fc_data['mobile'],
       'email'              => @$fc_data['email'],
       'address'            => @$fc_data['address'],
-      'fence_type'         => ['aluminum'],
+      'fence_type'         => selected_fences($fences, 'slug'),
       'timeframe'          => @$fc_data['timeframe'],
       'installer'          => @$fc_data['installer'],
       'extra'              => @$fc_data['extra'] ? @$fc_data['extra'] : @$fc_data['nothing_extra'],
@@ -309,6 +309,8 @@ if( @$_POST['action'] == 'push_order' ) {
         post_product_skus($custom_fence_data);
     }
     /* END UPDATE item list & cart */
+
+    $_POST['extra'] = convert_inputs($_POST['extra']);
 
     $_SESSION["fc_data"] = array_merge($_SESSION["fc_data"], $_POST);
     

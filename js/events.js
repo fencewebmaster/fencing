@@ -423,8 +423,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     
                 modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
 
-                addNotesOrInfo(modal.el.find('[data-field="range_option"] .fencing-form-group'), v);
-
             }
     
             if( v.type == 'text_option') {
@@ -453,8 +451,10 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
             }
     
-            addNotesOrInfo(modal.el.find('.fencing-modal-notes'), v);
-    
+                
+            addNotesOrInfo(modal.el.find('[data-field="'+v.type+'"] .fencing-modal-notes'), v);
+
+
             // GET/SET DEFAULT VALUE
             var default_value = v.options?.filter(function(item) {
                 return item.default == true;
@@ -506,12 +506,21 @@ function addNotesOrInfo(el, v) {
         }
        
         if( notes ) {
-            var notes_html =  `<div class="fc-selection-details fc-alert-gray field-note">
-                    <label><i class="fc-icon fc-icon-capa"></i> ${notes.title}</label>
-                    <p class="fc-text-gray">${notes.description}</p>
-                </div>`;
-    
-                el.append( notes_html );
+
+            notes_html = `<div class="row align-items-center">`;
+
+            if( notes.image ) {
+                notes_html +=  `<div class="col-3"><img src="${notes.image}" class="border rounded p-2"></div>`;
+            }
+
+            notes_html +=  `<div class="col"><div class="fc-alert-gray field-note">
+                <label class="mb-2"><i class="fc-icon fc-icon-capa me-2"></i> ${notes.title}</label>
+                <p class="fc-text-gray">${notes.description}</p>
+            </div></div>`;  
+
+            notes_html += `</div>`;
+
+            el.append( notes_html );
         }
     }
 
