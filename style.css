@@ -3516,10 +3516,6 @@ thead.fc-border th:last-child {
     margin-top: 8px;
   }
 }
-.fencing-measurement .fc-input-container {
-  padding-left: 0;
-  padding-bottom: 0;
-}
 .fencing-measurement .fc-col-half {
   padding: 0;
 }
@@ -4054,10 +4050,8 @@ thead.fc-border th:last-child {
   }
 }
 
-.fc-alert-gray {
-  background-color: var(--fc-cultured);
-  border-radius: 8px;
-  padding: 16px;
+.alert-gray {
+  background: var(--fc-cultured) !important;
 }
 .fc-alert-gray h4 {
   font-weight: 500;

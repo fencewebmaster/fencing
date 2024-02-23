@@ -381,8 +381,6 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
             let marker = '';
 
-            
-
             if( v.marker !== undefined && v.marker !== "" ){
                 marker = `<span class="fencing-modal-title__marker">${v.marker})</span> `;
             }
@@ -399,8 +397,9 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                                                          .replace(/{{sub_default}}/gi, v?.weight?.default)
                                                          .replace(/{{sub_unit}}/gi, v?.weight?.unit)
                                                          .split(/\$\{(.+?)\}/g);
-
+            
             modal.content.append(tpl);
+                                                     
     
             if( v.type == 'dropdown_option') {
     
@@ -454,6 +453,9 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 
             addNotesOrInfo(modal.el.find('[data-field="'+v.type+'"] .fencing-modal-notes'), v);
 
+            if( v.class ) {
+                $('.fencing-modal-area[data-field="'+v.type+'"]').addClass(v.class)
+            }
 
             // GET/SET DEFAULT VALUE
             var default_value = v.options?.filter(function(item) {

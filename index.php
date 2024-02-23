@@ -266,13 +266,19 @@ if( $qid = @$_GET['qid'] ) {
                         
                         <div class="fencing-measurement fencing-section--step2">
 
-                            <div class="fc-row">
+                            <div class="row align-items-center">
                                 
-                                <div class="fc-col-half fc-input-container">
+                                <div class="col-lg-4 col-md-7 fc-input-container mb-4">
                                     
-                                    <div class="step-label">Step <span>02</span></div>
+                                    <div class="step-label mb-2">Step <span>02</span></div>
 
-                                    <h4 class="fencing-content-title fc-mb-2">Enter the overall length (mm)</h4>
+                                    <h4 class="fencing-content-title mb-2">Enter the overall length (mm)</h4>
+
+                                    <div class="step-2_field" data-action="change">
+                                                                             
+                                    </div>
+
+                                    <div class="fw-bold small mb-1">Overall Length</div>
                                     
                                     <div class="fencing-measurement-box">
                                     
@@ -298,14 +304,25 @@ if( $qid = @$_GET['qid'] ) {
 
                                     <div class="fc-input-msg error-msg"></div>
                                 </div>
+                                <div class="col-lg-3 col-md-auto"></div>
+                                <div class="col-lg-5 col-md">
 
-                                <div class="fc-col-half">
-                                    <div class="fc-alert-gray fc-step-2-alert">
-                                        <h3 class="fc-mb-1"><i class="fc-icon fc-icon-capa"></i> Measuring Your Fencing Section</h3>
-                                        <p class="fc-text-gray">Ensure your overall dimension includes the posts each end.
-                                            NOTE: "Panel & Post Options" below will deduct based on options selected.
-                                        </p>
+                                    <div class="alert alert-gray float-end">
+
+                                        <div class="text-uppercase fw-bold text-dark mb-3">
+                                            <i class="fc-icon fc-icon-capa me-1"></i> Important
+                                        </div>
+
+                                        <div class="step-2_notes" data-action="change"></div>
+                                                    
+                                        <div>
+                                            <strong class="mb-1">Overall  Length</strong>
+                                            <p class="text-secondary small">Ensure your overall dimension includes the posts each end. NOTE: "Panel & Post Options" below will deduct based on options selected.
+                                            </p>                                            
+                                        </div>                    
+                                        
                                     </div>
+
                                 </div>
 
                             </div>

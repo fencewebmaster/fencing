@@ -6,6 +6,26 @@ $fences[] = [
 	'panel_group' => 'b',
 	'image' => 'img/aluminium.jpg',
 	'panel_count' => 4,
+	'form' => [
+		[
+			'slug' => 'fence_height',
+			'title' => 'Fence Height',
+			'target' => '.step-2_field',
+			'type' => 'select-field',
+			'option' => [
+				1000 => '1000mm',
+				1200 => '1200mm',
+				1800 => '1800mm',
+			] 
+		],
+		[
+			'slug' => 'important_note',
+			'title' => 'Fence Height',
+			'description' => 'Ensure your overall dimension includes the posts each end. NOTE: "Panel & Post Options" below will deduct based on options selected.',
+			'target' => '.step-2_notes',
+			'type' => 'important-note',
+		]
+	],
 	'settings' => [
 		'rail_options' => [],
 		'left_side'	=> [
@@ -20,6 +40,7 @@ $fences[] = [
 				[
 					'title' => 'Edit Left Side',
 					'marker' => 'A',
+					'class' => 'd-none',
 					'slug' => 'left_option',
 					'type' => 'range_option',
 					'label' => '',
@@ -64,7 +85,7 @@ $fences[] = [
 				],
 				[
 					'title' => 'Post Options',
-					'marker' => 'B',
+					'marker' => 'A',
 					'slug' => 'post_option',
 					'type' => 'image_option',
 					'key' => 'left_side',
@@ -92,6 +113,7 @@ $fences[] = [
 					'title' => 'Add Step-Up Panel',
 					'slug' => 'left_raked',
 					'marker' => 'C',
+					'class' => 'd-none',
 					'type' => 'dropdown_option',
 					'key' => 'add_step_up_panels',
 					'label' => 'Left Hand Step-Up Panel',
@@ -181,20 +203,6 @@ $fences[] = [
 			'title' => 'Panel Options',
 			'label' => 'Panel Options',
 			'action' => ['default'],
-			'notes' => [
-				'title' => 'Panel Off-Cuts',
-				'description' => 'The off-cut can be used for another fence section (where applicable). If the off-cut is used ensure you manually update the panel quantities to account for this as this planner does NOT use Off-Cuts.',
-			],
-			'info' => [
-				[
-					'title' => 'Even Size Panels',
-					'description' => 'This option evenly spaces out the posts, which also means you will need to cut down every individual panel.',
-				],
-				[
-					'title' => 'Full Size 2400W / 3000W Panels:',
-					'description' => 'This option uses full length panels, which means you will ONLY need to cut down 1x panel. ',
-				]
-			],
 			'fields' => [
 				[
 					'title' => 'Panel Options',
@@ -217,15 +225,6 @@ $fences[] = [
 							'title' => 'Full Size Panels 2400W',
 							'size' => [
 								'width' => 2450,
-							]
-						],
-						[
-							'slug' => 'full_3000',
-							'type' => 'text_option',
-							'title' => 'Full Size Panels 3000W',
-							'desc' => 'ONLY Available In BLACK',
-							'size' => [
-								'width' => 3050,
 							]
 						]
 					],
@@ -278,14 +277,11 @@ $fences[] = [
 			'title' => 'Edit Right Side',
 			'label' => 'Right Side',
 			'action' => ['edit'],
-			'notes' => [
-				'title' => 'When To Use Swivel Brackets',
-				'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
-			],
 			'fields' => [
 				[
 					'title' => 'Edit Right Side',
 					'marker' => 'A',
+					'class' => 'd-none',
 					'slug' => 'right_option',
 					'type' => 'range_option',
 					'label' => '',
@@ -301,36 +297,12 @@ $fences[] = [
 							'size' => [
 								'width' => 0,
 							]
-						],
-						[
-							'slug' => 'no-post',
-							'type' => 'range_option',
-							'key' => 'right_side',
-							'image' => 'img/no-post-1.png',
-							'title' => '',
-							'size' => [
-								'width' => -50,
-							]
-						],
-						[
-							'slug' => 'no-post-swivel-bracket',
-							'type' => 'range_option',
-							'key' => 'right_side',
-							'image' => 'img/no-post-2.png',
-							'title' => '',
-							'size' => [
-								'width' => -50,
-							]
-						],
-					],
-					'notes' => [
-						'title' => 'When To Use Swivel Brackets',
-						'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
-					],
+						]
+					]
 				],
 				[
 					'title' => 'Post Options',
-					'marker' => 'B',
+					'marker' => 'A',
 					'slug' => 'post_option',
 					'type' => 'image_option',
 					'key' => 'left_side',
@@ -357,6 +329,7 @@ $fences[] = [
 				[
 					'title' => 'Add Step-Up Panel',
 					'marker' => 'C',
+					'class' => 'd-none',
 					'slug' => 'right_raked',
 					'type' => 'dropdown_option',
 					'key' => 'add_step_up_panels',

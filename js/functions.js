@@ -10,7 +10,6 @@ function load_fencing_items() {
 
     var calc = calculate_fences();
 
-
     if( !calc ){
         return;
     }
@@ -76,6 +75,7 @@ function load_fencing_items() {
                                   .css({'width':panel_size*0.10});
 
         }  
+
 
         var tpl = $('script[data-type="panel_spacing-'+info.panel_group+'"]').text()
                                                          .replace(/{{center_point}}/gi, center_point);
@@ -174,8 +174,7 @@ function update_raked_panels(side) {
                 }).get().join("");
             }
 
-
-            if( has_post != 'yes-post' ) {
+            if( has_post != 'yes-post' && has_post ) {
                 var has_post = 'no-post '+side_part+'-panel-post '+has_post;
             }
         }
@@ -276,12 +275,6 @@ function update_raked_panels(side) {
 
     $('.raked-panel .fencing-panel-item').css({'width':1200*0.10});
 
-/*    setTimeout(function(){
-        $('.fencing-panel-items').css({'justify-content':''});
-        if( $(".fencing-panel-items").prop('scrollWidth') <= $(".fencing-display-result").width() ) {
-            $('.fencing-panel-items').css({'justify-content':'center'});
-        }
-    }, 100);*/
 
 }
 
@@ -694,6 +687,29 @@ function set_cutom_fence_data() {
 
         return;
     }
+
+    $('[data-action="change"]').html('');
+
+    $.each(info.form, function(k, v){
+
+        var tpl = $('script[data-type="'+v.type+'"]').text()
+                                                     .replace(/{{title}}/gi, v.title)
+                                                     .replace(/{{slug}}/gi, v.slug)
+                                                     .replace(/{{description}}/gi, v.description);
+
+
+        $(v.target).append(tpl);
+
+        $.each(v.option, function (i, item) {
+
+            $('[name="'+v.slug+'"]').append($('<option>', { 
+                value: i,
+                text : item 
+            }));
+        });
+        
+    });
+
 
     filtered_data_tabs.push({
         tab: tab,
@@ -2137,7 +2153,9 @@ function setActiveColor() {
     setTimeout(function(){
         if( document.querySelector('.fc-color-options') !== null ){
             let getColor = JSON.parse(localStorage.getItem('project-plans'));
-            if( getColor){
+
+            if( getColor?.color?.value ){
+
                 let colorParentEl = document.querySelector('.fc-color-options');
                 let createPlanBtn = document.querySelector('.fc-step-4 .fc-btn-create-plan');
                 colorParentEl.querySelector('[data-slug="'+getColor.color.value+'"]').classList.add('fc-selected');
