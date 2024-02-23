@@ -16,12 +16,13 @@ $fences[] = [
 				1000 => '1000mm',
 				1200 => '1200mm',
 				1800 => '1800mm',
-			] 
+			], 
+			'default' => 1200,
 		],
 		[
 			'slug' => 'important_note',
 			'title' => 'Fence Height',
-			'description' => 'Ensure your overall dimension includes the posts each end. NOTE: "Panel & Post Options" below will deduct based on options selected.',
+			'description' => 'To meer pool compliance your fence height MUST BE above 1200H',
 			'target' => '.step-2_notes',
 			'type' => 'important-note',
 		]
@@ -188,6 +189,7 @@ $fences[] = [
 			'title' => 'Add / Remove Gate',
 			'label' => 'Gate',
 			'action' => ['add', 'edit'],
+			'custom' => TRUE,
 			'size' => [
 				'width' => 1060
 			],

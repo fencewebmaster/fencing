@@ -92,7 +92,7 @@ if( $qid = @$_GET['qid'] ) {
                 <div class="modal-body">
                     <div class="input-group mb-3">
                         <input type="text" name="qid" class="form-control form-control-lg no-space text-center" placeholder="Enter Quote ID" required>
-                        <button type="submit" class="btn btn-primary text-uppercase px-3">
+                        <button type="submit" class="btn btn-dark text-uppercase px-4">
                             <i class="fa fa-check me-2"></i>
                             <strong>Confirm</strong>
                         </button>
@@ -223,7 +223,7 @@ if( $qid = @$_GET['qid'] ) {
                                             <img src="<?php echo $fence['image']; ?>">				
                                         </div>
 
-                                        <div class="fencing-style-title">
+                                        <div class="fencing-style-title fw-bold fs-6">
                                             <?php echo $fence['title']; ?>
                                         </div>
 
@@ -247,7 +247,7 @@ if( $qid = @$_GET['qid'] ) {
                                             </div>
                                         </div>
 
-                                        <div class="fencing-style-title">
+                                        <div class="fencing-style-title fw-bold fs-6">
                                             Quote
                                         </div>
 

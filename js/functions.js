@@ -700,6 +700,7 @@ function set_cutom_fence_data() {
 
         $(v.target).append(tpl);
 
+        // Select field
         $.each(v.option, function (i, item) {
 
             $('[name="'+v.slug+'"]').append($('<option>', { 
@@ -707,7 +708,17 @@ function set_cutom_fence_data() {
                 text : item 
             }));
         });
-        
+
+        var selectValue = v.default;
+
+        $('[name='+v.slug+']').val(selectValue);
+
+    });
+
+    $.each(data_tabs[0]?.fields , function(k, v){
+        if( v.value ) {
+            $('[name='+v.name+']').val(v.value);
+        }
     });
 
 
@@ -719,6 +730,8 @@ function set_cutom_fence_data() {
         isCalculate: data_tabs[0]?.isCalculate || FENCES.defaultValues.measurement,
         calculateValue: data_tabs[0]?.calculateValue || FENCES.defaultValues.measurement
     });
+
+    // 
 
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
 
@@ -864,7 +877,7 @@ function mergeSettings(data, settings, key,  modal_key){
 
         let merge_settings = [];
 
-        find_existing_data.settings.forEach(obj => {
+        find_existing_data.settings?.forEach(obj => {
             merge_settings.push(obj);
         });
 

@@ -81,13 +81,13 @@ $(document).on('click', '.fc-move-post', function(){
 
 
 $(document).on('click', '.fencing-qty-plus', function(){
-    var input = $('.measurement-box-number'),
+    var input = $(this).closest('.fencing-mb-input').find('input'),
         val = input.val();
         input.val( parseInt(val) + 1 );
 });
 
 $(document).on('click', '.fencing-qty-minus', function(){
-    var input = $('.measurement-box-number'),
+    var input = $(this).closest('.fencing-mb-input').find('input'),
         val = input.val();
         if( val > 1) {
             input.val( parseInt(val) - 1 );
@@ -469,9 +469,11 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 get_field_value(tag, v?.slug, opt?.slug);                        
             }
 
+            if( info?.settings[key]?.custom ) {
+                var tpl = $('script[data-type="custom-gate"]').text();
+                $('.custom-gate').html('').html(tpl);                
+            }
 
-            
-        
         });
 
     }
@@ -675,7 +677,9 @@ $(document).on('click', '.btn-fc-calculate', function(){
 
     }, 200);
 
-    
+    // Save custom fields changes
+    custom_fence_tab[0].fields = $('[data-action="change"] .form-control').serializeArray();
+
     custom_fence_tab[0].isCalculate = 1;
     custom_fence_tab[0].calculateValue = length;
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
