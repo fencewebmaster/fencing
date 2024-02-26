@@ -32,13 +32,13 @@
         <i class="fc-icon fc-icon-capa me-1"></i> Custom Gates
     </div>
 
-    <p class="text-secondary">
-    	Custom Gates use:<br>
-    	1x Gate Converted Kit
-    	1x Standard Panel
+    <p class="text-secondary mb-2">
+    	Custom Gates require:<br>
+    	1x Gate Converter Kit<br>
+    	1x STD Barr Panel
     </p>
     <p class="text-secondary">
-    	You cut the panel to the width you need, then screw on the sides                                
+    	Simply cut the panel to the width you need, then screw the Gate Converter onto each end.                              
 	</p>
 
 </div>

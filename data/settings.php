@@ -5,6 +5,7 @@ foreach (glob('data/fences/*') as $fence) {
 }
 
 
+
 function fc_color($val ='') {
  
 	$data = [

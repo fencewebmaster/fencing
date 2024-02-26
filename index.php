@@ -114,7 +114,7 @@ if( $qid = @$_GET['qid'] ) {
                 </div>
                 <div class="col-md-6 col-sm-auto">
 
-                    <div class="d-sm-block d-none">
+                    <div class="d-sm-block-x d-none">
                         <div class="fc-flex-end">
                             <div class="fc-video-bg">
                                 <i class="fa-solid fa-circle-play fc-mb-1"></i>
@@ -248,7 +248,7 @@ if( $qid = @$_GET['qid'] ) {
                                         </div>
 
                                         <div class="fencing-style-title fw-bold fs-6">
-                                            Quote
+                                            Load Quote
                                         </div>
 
                                     </div>
@@ -317,7 +317,7 @@ if( $qid = @$_GET['qid'] ) {
                                                     
                                         <div>
                                             <strong class="mb-1">Overall  Length</strong>
-                                            <p class="text-secondary small">Ensure your overall dimension includes the posts each end. NOTE: "Panel & Post Options" below will deduct based on options selected.
+                                            <p class="text-secondary small">Ensure your overall length includes the posts each end. NOTE: "Panel & Post Options" below will deduct based on options selected.
                                             </p>                                            
                                         </div>                    
                                         

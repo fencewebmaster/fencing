@@ -157,7 +157,7 @@ $fences[] = [
 					'notes' => [
 						'image' => 'img/poolsafe-step-up panel-v3.jpg',
 						'title' => 'When To Use Step-Up Panels',
-						'description' => 'Step-Up panels are used when you need to change the heoghts or go ever an object. e,g, over a retaining wall, over a few steps... agains a boundary fence etc...',
+						'description' => 'Step-Up panels are used when you need to change the heights or go ever an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],
 				],						
 			]
@@ -423,7 +423,7 @@ $fences[] = [
 					'notes' => [
 						'image' => 'img/poolsafe-step-up panel-v3.jpg',
 						'title' => 'When To Use Step-Up Panels',
-						'description' => 'Step-Up panels are used when you need to change the heoghts or go ever an object. e,g, over a retaining wall, over a few steps... agains a boundary fence etc...',
+						'description' => 'Step-Up panels are used when you need to change the heights or go ever an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],
 				],						
 			]
