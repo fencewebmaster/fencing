@@ -9,7 +9,9 @@ $fences_data = array();
 foreach($fences as $fik => $fence_info ) {
 	$fences_data[] = $fence_info;
 
-	if( !$fence_info['live'] && !in_array(get_last_segment(), ['dev']) && !is_localhost()  ) {
+    $uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
+
+	if( !$fence_info['live'] && !in_array($uri_segments, ['dev']) && !is_localhost()  ) {
 		unset($fences_data[$fik]);
 	} 
 }
