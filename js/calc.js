@@ -88,6 +88,20 @@ function calculate_fences( data ) {
     post_panel = 50;
     no_post = -50;
 
+    fence_height = '';
+    if( info.form ) {
+        fence_height = parseInt($('[name="fence_height"]').val());
+
+        var filtered_fence_height = custom_fence_tab[0]?.fields?.filter(function(item) {
+            return item.name == 'fence_height';
+        });
+        filtered_fence_height_value = '';
+        if( filtered_fence_height ) {
+            filtered_fence_height_value = filtered_fence_height[0]?.value;
+        }
+
+        fence_height = fence_height ? fence_height : filtered_fence_height_value;        
+    }
 
     C3 = parseInt($('.measurement-box-number').val());  // overall width
     C3 = C3 ? C3 :  custom_fence_tab[0]?.calculateValue;
@@ -241,8 +255,11 @@ function calculate_fences( data ) {
         console.log('gate', gate_count, gate_width);
     */
 
-
     data = {
+        'fence_size' : {
+            'width': '',
+            'height': fence_height,
+        },
         'full_panel' : {
             'count' : full_panel_count, 
             'length' : full_panel_length            

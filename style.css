@@ -672,7 +672,7 @@ a.fc-tab-active {
 .fencing-panel-items {
   position: relative;
   width: -webkit-fill-available;
-  height: 195px;
+  height: 240px;
   display: flex;
   align-items: flex-end;
   padding: 0 10px;
@@ -2882,7 +2882,8 @@ thead.fc-border th:last-child {
   align-items: center;
   justify-content: center;
   min-height: 250px;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   cursor: grab;
 }
 @media (max-width: 992px) {

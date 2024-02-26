@@ -16,6 +16,7 @@ function load_fencing_items() {
 
     var center_point = 50;
 
+
     for (let i = 0; i < calc.long_panel.count; i++) {
         
         mesurement = $('.measurement-box-number').val();
@@ -117,7 +118,16 @@ function load_fencing_items() {
         }        
     });
 
+
+
+    if( calc.fence_size.height ) {
+        $('.fencing-panel-item, .short-panel-item, .fencing-offcut').css({'height':calc.fence_size.height*0.10});     
+        $('.panel-post.opt-1').css({'height': (calc.fence_size.height*0.10)+25 });        
+        $('.panel-post.opt-2').css({'height': (calc.fence_size.height*0.10)+35 });        
+    }
+
     $('.ftm-measurement:not(:empty)').closest('.fencing-tab').removeClass('incomplete-section');
+
 }
 
 function updateLastFencingPost(){
@@ -268,7 +278,7 @@ function update_raked_panels(side) {
     $('.fencing-display-result').css({'padding': ''});
 
     if( $('.raked-panel .fencing-raked-panel').length && $('.fencing-display-result').css('margin-top') != '70px' ) {   
-        $('.fencing-display-result').css({'padding-top': '30px'});
+        $('.fencing-display-result').css({'padding-top': ''});
     } else {
         $('.fencing-display-result').css({'margin-top': ''});        
     }
@@ -609,9 +619,9 @@ function update_color_options() {
  * 
  */
 function set_field_value(filtered_data) {
-  
+
     if( filtered_data ) {
-        $(filtered_data).each(function(i, item){
+        $(filtered_data).each(function(i, item){            
             $(item.settings).each(function(i, item){
                 get_field_value(item.tag, item.key, item.val);
             });    
@@ -663,7 +673,7 @@ function get_field_value(tag, key, val) {
     }
 }
 
-function set_cutom_fence_data() {
+function extra_fields() {
 
     var i = $('.fencing-style-item.fsi-selected').index(),
         tab = $('.fencing-tab.fencing-tab-selected').index(),      
@@ -674,20 +684,8 @@ function set_cutom_fence_data() {
 
     const data_tabs = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
 
-   
-    var filtered_data_tabs = data_tabs.filter(function(item) {
-        return item.tab != tab;
-    });
 
-    if( info == undefined ) {
-
-        $('.fc-tab-title, .fc-tab-subtitle').html('');
-        $('.js-fc-form-step').hide();
-        $('.fsi-selected').removeClass('fsi-selected');
-
-        return;
-    }
-
+    // START FORM FIELDS ON STEP 3
     $('[data-action="change"]').html('');
 
     $.each(info.form, function(k, v){
@@ -715,24 +713,51 @@ function set_cutom_fence_data() {
 
     });
 
-    $.each(data_tabs[0]?.fields , function(k, v){
+    $.each(data_tabs[0]?.fields, function(k, v){
         if( v.value ) {
             $('[name='+v.name+']').val(v.value);
         }
     });
+    // END FORM FIELDS ON STEP 3
 
+}
+
+function set_cutom_fence_data() {
+
+    var i = $('.fencing-style-item.fsi-selected').index(),
+        tab = $('.fencing-tab.fencing-tab-selected').index(),      
+        modal_key = $('.fencing-container').attr('data-key'),
+        mbn = $('.measurement-box-number').val(),
+        custom_fence_tabs = localStorage.getItem('custom_fence-'+tab),
+        info = fc_data[i];
+
+    const data_tabs = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
+
+   
+    var filtered_data_tabs = data_tabs.filter(function(item) {
+        return item.tab != tab;
+    });
+
+    if( info == undefined ) {
+
+        $('.fc-tab-title, .fc-tab-subtitle').html('');
+        $('.js-fc-form-step').hide();
+        $('.fsi-selected').removeClass('fsi-selected');
+
+        return;
+    }
 
     filtered_data_tabs.push({
         tab: tab,
         style: i,
         fence: info.slug,
         mbn: mbn,
+        fields: $('[data-action="change"] .form-control').serializeArray(),
         isCalculate: data_tabs[0]?.isCalculate || FENCES.defaultValues.measurement,
         calculateValue: data_tabs[0]?.calculateValue || FENCES.defaultValues.measurement
     });
 
     // 
-
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
 
 }

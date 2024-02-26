@@ -20,6 +20,8 @@ $(document).on('click', '.fencing-style-item', function(){
     /* Reset items */
     // localStorage.setItem('custom_fence-'+tab+'-'+i, '');
 
+    extra_fields();
+
     load_fencing_items();
 
     $('.js-fc-form-step[data-section="2"]').fadeIn(200);
@@ -31,7 +33,6 @@ $(document).on('click', '.fencing-style-item', function(){
             $('.fc-btn-next-step').removeAttr('disabled');
         }
     }, 100);
-
 
 });
 
@@ -710,7 +711,7 @@ $(document).on('input change', '.fencing-input-range input', function(event) {
 
     $(this).closest('.fencing-input-range').find('.fir-info span').text( $(event.currentTarget).val() );
 
-     $(this).closest('.fencing-input-range').find('.fir-info-sub span').text( 72 + 1.8 );
+    $(this).closest('.fencing-input-range').find('.fir-info-sub span').text( 72 + 1.8 );
 });
 
 $(document).on('change', '.fencing-modal', function(e){
@@ -718,9 +719,14 @@ $(document).on('change', '.fencing-modal', function(e){
     //Only need to run this if modal content is for fences
     if( e.currentTarget.id !== "submit-modal"){
         var modal_key = $('.fencing-container').attr('data-key');
-        update_custom_fence(modal_key);
+    //    update_custom_fence(modal_key);
     }
-    
+});
+
+$(document).on('click', '.fc-input-group button', function(){
+    var modal_key = $('.fencing-container').attr('data-key');
+
+    update_custom_fence(modal_key);
 });
 
 $(document).on('click', '.fc-select-post', function(){

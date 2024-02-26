@@ -1,13 +1,13 @@
 <div class="mb-2">
-	<input type="checkbox" name="use_std" id="use_std">
+	<input type="checkbox" name="use_std" id="use_std" class="fc-form-field">
 	<label for="use_std">Use STD Gate Width</label>				
 </div>
 
-<div class="fencing-measurement-box mb-3">
+<div class="fencing-measurement-box mb-3 fc-input-group">
 
     <span class="fencing-mb-input">
-        
-        <input type="text" class="numeric"> 
+
+        <input name="width" type="text" class="numeric fc-form-field py-1"> 
         
         <span>mm</span>				
         
@@ -21,7 +21,7 @@
 
     </span>
 
-    <button type="button" class="btn-fc btn-fc-calculate">Calculate</button>
+    <button type="button" class="btn btn-lg btn-dark px-4 text-uppercase fw-bold">Calculate</button>
 
 </div>
 
