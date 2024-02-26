@@ -724,9 +724,8 @@ $(document).on('change', '.fencing-modal', function(e){
 });
 
 $(document).on('click', '.fc-input-group button', function(){
-    var modal_key = $('.fencing-container').attr('data-key');
-
-    update_custom_fence(modal_key);
+    update_custom_fence_gate();
+    load_fencing_items();
 });
 
 $(document).on('click', '.fc-select-post', function(){

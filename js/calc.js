@@ -133,7 +133,12 @@ function calculate_fences( data ) {
 
     // add gate
     if( gate_data.length ) {
+        C8 = gate_data[0]?.settings.size;   
+        console.log(1, C8);     
+    } else {    
         C8  = info.settings.gate.size.width; 
+        console.log(2, C8);     
+
     }
 
     // raked panel left

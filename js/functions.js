@@ -494,10 +494,12 @@ function update_gate(action) {
 
     }
 
+
     $('.fencing-panel-gate')
         .prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
         .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
-        .attr('data-cart-value', 1);
+        .attr('data-cart-value', 1)
+        .css({'max-width': calc.gate.length * 0.1});
 
                       
 }
@@ -623,6 +625,11 @@ function set_field_value(filtered_data) {
     if( filtered_data ) {
         $(filtered_data).each(function(i, item){            
             $(item.settings).each(function(i, item){
+                
+                $(item.fields).each(function(i, item){
+                    get_field_value(item.tag, item.key, item.val);
+                });
+
                 get_field_value(item.tag, item.key, item.val);
             });    
         });
@@ -644,8 +651,9 @@ function get_field_value(tag, key, val) {
 
         $('[name='+key+']').val(val);
         $('[name='+key+']').closest('.fencing-form-group').find('.fir-info span').text(val);
-        
-    } if( tag == 'select' ) {
+        $('[name='+key+']').prop('checked', true);
+
+    } else if( tag == 'select' ) {
         $('[name='+key+']').val(val);
         $('[name='+key+']').attr('value', val);
 
@@ -849,7 +857,7 @@ function update_custom_fence(modal_key, fc_form_field = false) {
 
     }).get();
 
-    settings = mergeSettings(data, settings, 'control_key', modal_key);
+   settings = mergeSettings(data, settings, 'control_key', modal_key);
 
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;
@@ -944,9 +952,22 @@ function update_custom_fence_gate() {
     var settings = {
         'placement' :  placement,
         'index' : $('.fencing-panel-gate').index(),
-        'size' : 800,
+        'size' : $('[name="use_std"]').is(':checked') ? $('[name="width"]').val() : 1060,
         'unit' : FENCES.defaultValues.unit
     }
+
+    
+    settings.fields = $('.fc-form-field:visible').map(function(){
+
+        var key  = $(this).attr('name'),
+            val  = $.inArray($(this).attr('type'), ['radio','checkbox']) !== -1 ?  $('[name="use_std"]').is(':checked') : $(this).val(),
+            type = $(this).attr('type'),
+            tag  = $(this).get(0).tagName.toLowerCase(),
+            obj = {key:key, val:val, tag: tag, type: type};
+
+        return obj;
+
+    }).get();
 
     var filtered_data = data.filter(function(item) {
         return item.control_key != modal_key;

@@ -1,5 +1,5 @@
 <div class="mb-2">
-	<input type="checkbox" name="use_std" id="use_std" class="fc-form-field">
+	<input type="checkbox" name="use_std" id="use_std" class="fc-form-field" value="yes">
 	<label for="use_std">Use STD Gate Width</label>				
 </div>
 
