@@ -1,10 +1,11 @@
 <?php
 $fences[] = [
 	'title' => 'Barr',
+	'live' => FALSE,
 	'name' => 'BARR',
 	'slug' => 'barr',
 	'panel_group' => 'b',
-	'image' => 'img/aluminium.jpg',
+	'image' => 'img/barr-vis-assm-3.png',
 	'panel_count' => 4,
 	'form' => [
 		[

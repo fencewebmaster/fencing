@@ -1,6 +1,7 @@
 <?php
 $fences[] = [
 	'title' => 'Flat Top',
+	'live' => TRUE,
 	'name' => 'FLAT TOP',
 	'slug' => 'flat_top',
 	'panel_group' => 'b',

@@ -4,6 +4,17 @@ foreach (glob('data/fences/*') as $fence) {
 	include $fence;
 }
 
+$fences_data = array();
+
+foreach($fences as $fence_info ) {
+	if(  $fence_info['live'] == FALSE && in_array(get_last_segment(), ['dev']) || is_localhost()  ) {
+		$fences_data[] = $fence_info;
+	} else {
+		$fences_data[] = $fence_info;		
+	}
+}
+
+$fences = $fences_data;
 
 
 function fc_color($val ='') {

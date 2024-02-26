@@ -444,3 +444,9 @@ function add_filepath_last($filename, $add ='') {
 }
 
 //----------------------------------------------------------------
+
+function get_last_segment() {
+    $segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
+    $numSegments = count($segments); 
+    return $segments[$numSegments - 2];
+}
