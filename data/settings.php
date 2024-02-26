@@ -6,15 +6,15 @@ foreach (glob('data/fences/*') as $fence) {
 
 $fences_data = array();
 
-foreach($fences as $fence_info ) {
-	if(  $fence_info['live'] == FALSE && in_array(get_last_segment(), ['dev']) || is_localhost()  ) {
-		$fences_data[] = $fence_info;
-	} else {
-		$fences_data[] = $fence_info;		
-	}
+foreach($fences as $fik => $fence_info ) {
+	$fences_data[] = $fence_info;
+
+	if( $fence_info['live'] && !in_array(get_last_segment(), ['dev']) && !is_localhost()  ) {
+		unset($fences_data[$fik]);
+	} 
 }
 
-$fences = $fences_data;
+$fences = array_values($fences_data);
 
 
 function fc_color($val ='') {
