@@ -9,7 +9,7 @@ $fences_data = array();
 foreach($fences as $fik => $fence_info ) {
 	$fences_data[] = $fence_info;
 
-	if( !$fence_info['live'] && in_array(get_last_segment(), ['dev']) && !is_localhost()  ) {
+	if( !$fence_info['live'] && !in_array(get_last_segment(), ['dev']) && !is_localhost()  ) {
 		unset($fences_data[$fik]);
 	} 
 }
