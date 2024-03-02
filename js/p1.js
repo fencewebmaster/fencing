@@ -131,8 +131,6 @@ function reload_fence_items() {
 
         $('.fencing-tab.fencing-tab-selected:visible').click();
 
-
-
     }, 100);
     
     if( tab == 2 && form ) {
@@ -159,5 +157,6 @@ function reload_fence_items() {
     }
 
 }
+
 reload_fence_items();
 

@@ -1,5 +1,5 @@
 <?php
-$fences[] = [
+$fences['flat_top'] = [
 	'title' => 'Flat Top',
 	'live' => TRUE,
 	'name' => 'FLAT TOP',
@@ -7,6 +7,7 @@ $fences[] = [
 	'panel_group' => 'b',
 	'image' => 'img/aluminium.jpg',
 	'panel_count' => 4,
+	'color' => ['black', 'white', 'monument'],
 	'settings' => [
 		'rail_options' => [],
 		'left_side'	=> [

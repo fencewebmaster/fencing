@@ -1,12 +1,12 @@
 function load_fencing_items() {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
 
-    $('.fencing-panel-container').html('');
+    $('.fencing-panel-container').html('').attr('data-type', info?.slug);
 
     var calc = calculate_fences();
 
@@ -149,7 +149,7 @@ function updateFirstFencingPost(){
 
 function update_raked_panels(side) {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
@@ -357,7 +357,8 @@ function load_post_options_all(custom_fence, info, tab) {
     let panel_spacing_number = $('.fencing-panel-spacing-number');
     var modal_key = $('.fencing-container').attr('data-key');
     var exclude_panel_posts = '';
-    var i = $('.fencing-style-item.fsi-selected').index();
+
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug');
     var tab = $('.fencing-tab.fencing-tab-selected').index();
 
     var post_options_filtered_data = custom_fence.filter(function(item) {
@@ -437,7 +438,7 @@ function load_post_options_all(custom_fence, info, tab) {
 
 function update_gate(action) {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
@@ -515,7 +516,7 @@ $.fn.swapWith = function(to) {
 
 function update_custom_fence_style_item() {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         info = fc_data[i],
         controlsContainer = '.fencing-panel-controls';
 
@@ -580,14 +581,30 @@ function update_custom_fence_style_item() {
     update_custom_fence_tab();
 }
 
+
 function update_color_options() {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
-        tab = $('.fencing-tab.fencing-tab-selected').index(),
-        custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
-        custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
-        info = fc_data[i];
+    colorData = color_data = [];
 
+    $('.fc-color-options').each(function(k, v){
+        var color = $(this).find('.fc-selected').attr('data-slug');
+
+        if( color ) {
+            var data = {
+                fence: $(v).attr('data-slug'),
+                color: color
+            }
+
+            color_data.push(data);            
+        }
+
+    });
+
+    var colorData = { color: color_data }
+
+    updateOrCreateObjectInLocalStorage('project-plans', colorData);
+
+/*
     key = 'color_options';
 
     $('[data-key="'+key+'"]').html('');
@@ -610,7 +627,8 @@ function update_color_options() {
 
     });
 
-    set_field_value( filtered_data );
+    set_field_value( filtered_data );*/
+
 }
 
 
@@ -683,7 +701,7 @@ function get_field_value(tag, key, val) {
 
 function extra_fields() {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),      
         modal_key = $('.fencing-container').attr('data-key'),
         mbn = $('.measurement-box-number').val(),
@@ -732,7 +750,7 @@ function extra_fields() {
 
 function set_cutom_fence_data() {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),      
         modal_key = $('.fencing-container').attr('data-key'),
         mbn = $('.measurement-box-number').val(),
@@ -772,7 +790,7 @@ function set_cutom_fence_data() {
 
 function update_custom_fence_tab() {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),      
         modal_key = $('.fencing-container').attr('data-key'),
         mbn = $('.measurement-box-number').val(),
@@ -824,7 +842,7 @@ function update_custom_fence_tab() {
 
 function update_custom_fence(modal_key, fc_form_field = false) {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         mbn = $('.measurement-box-number').val(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i);
@@ -834,11 +852,11 @@ function update_custom_fence(modal_key, fc_form_field = false) {
     const data = custom_fence ? JSON.parse(custom_fence) : [];
 
     let itemKey = 'custom_fence-'+tab+'-'+i;
-    
+
     if( modal_key === "left_side" || modal_key === "right_side" || modal_key === "post_options" || modal_key === "panel_options" || modal_key === "gate" ){
         modal_key = FENCES.activeSetting;
     }
-    
+
     settings = form_field.map(function(){
 
         var key  = $(this).attr('name'),
@@ -938,7 +956,7 @@ function mergeSettings(data, settings, key,  modal_key){
 
 function update_custom_fence_gate() {
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         modal_key = 'gate',
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i);
@@ -955,7 +973,6 @@ function update_custom_fence_gate() {
         'size' : $('[name="use_std"]').is(':checked') ? $('[name="width"]').val() : 1060,
         'unit' : FENCES.defaultValues.unit
     }
-
     
     settings.fields = $('.fc-form-field:visible').map(function(){
 
@@ -1215,13 +1232,24 @@ function getCartItemStorage() {
 
     Object.entries(localStorage).forEach(([key, value]) => {
       if (key.startsWith("cart_items")) {
-        var cartData = JSON.parse(localStorage.getItem(key));
-        values.push(cartData);
+        var cartData = JSON.parse(localStorage.getItem(key)),
+            fence = key.split('-').pop();
+
+        values.push({[fence]:cartData});
       }
     });
 
     return values;
 }
+
+function removeItemStorageWith(startsWith) {
+    Object.entries(localStorage).forEach(([key, value]) => {
+        if (key.startsWith(startsWith)) {
+            localStorage.removeItem(key);
+        }
+    });
+}
+
 
 
 function submit_fence_planner(status ='') {
@@ -1229,12 +1257,13 @@ function submit_fence_planner(status ='') {
     window.onbeforeunload = function() {}
 
     // Removed unwanted cart
-    localStorage.removeItem('cart_items-0');
+  //  removeItemStorageWith('cart_items-');
 
     //Set some delay to make sure the local storage and the html markup are loaded
     var items = localStorage.getItem('custom_fence-section') ?? 1;
     for (let i = 0; i < items; i++) {
-        FENCES.cartItems.init(i+1);
+        var fence = JSON.parse(localStorage.getItem('custom_fence-'+i));
+        FENCES.cartItems.init( (i+1), fence[0].fence );
     }    
 
     var set_fc_data   = [];
@@ -1253,7 +1282,7 @@ function submit_fence_planner(status ='') {
 
             settings = JSON.parse(localStorage.getItem('custom_fence-'+tid+'-'+form[0]?.style));
 
-            form[0].style = form[0]?.style + 1;
+            form[0].style = form[0]?.style;
             form[0].tab = form[0]?.tab + 1;
 
             set_fc_data.push({
@@ -1305,7 +1334,6 @@ function submit_fence_planner(status ='') {
 
     formData.set("project_plans", JSON.stringify(project_plans));
 
-
     Object.entries(project_plans).forEach(([key, value]) => {
         if (typeof value === 'object') {
             value = JSON.stringify(value);
@@ -1319,7 +1347,6 @@ function submit_fence_planner(status ='') {
         formData.set(key, value);
     });
 
-
     $.ajax({
         url: 'submit.php', 
         type: "POST",  
@@ -1330,7 +1357,7 @@ function submit_fence_planner(status ='') {
         processData:false,    
         success: function(response) {
             try {
- 
+
                 var count = 0;
                    
                 if( status == 'new' ) {
@@ -2186,6 +2213,69 @@ function savePlanner() {
 
 }
 
+function getActiveFencing() {
+    let sectionCount = localStorage.getItem('custom_fence-section'),
+        fenceStyle   = [];
+
+    for (let i = 0; i < sectionCount; i++) {
+        var cf = JSON.parse(localStorage.getItem('custom_fence-'+i));
+
+        if( cf ) {
+            style = cf[0].style;
+            fenceStyle.push(style);            
+        }
+    }    
+    
+    return fenceStyle.filter((v, p) => fenceStyle.indexOf(v) == p);    
+}
+
+function loadColorOptions() {
+
+    const project = JSON.parse(localStorage.getItem('project-plans'));
+
+    var colorOption  = $('[data-load="color-options"]');
+
+    var items = getActiveFencing();
+
+    colorOption.html('');
+
+    $('.fc-btn-create-plan').attr('disabled');
+
+    $.each(items, function(k, v){
+
+        var slug = fc_data[v].slug,
+            title = fc_data[v].title,
+            colors = fc_data[v].color;
+
+        var tpl = $('script[data-type="color_options"]').text()
+                                                        .replace(/{{slug}}/gi, slug)
+                                                        .replace(/{{title}}/gi, title);       
+
+        colorOption.append(tpl);    
+
+        $.each(colors, function(k, v){
+            $('[data-load="color-options"] [data-slug="'+slug+'"] [data-slug="'+v+'"]').addClass('on');
+        });
+
+        $('.fc-select-color:not(.on)').remove();
+
+    });
+
+    if( project?.color ) {
+        $.each(project.color, function(k, v) {
+            $('.fc-color-options[data-slug="'+v.fence+'"] .fc-select-item[data-slug="'+v.color+'"]').addClass('fc-selected');
+        });        
+
+        if( $('.fc-color-options .fc-selected').length == items.length ) {
+            $('.fc-btn-create-plan').removeAttr('disabled');
+        }
+
+    }
+
+  //  setActiveColor();
+}
+loadColorOptions();
+
 function updateOrCreateObjectInLocalStorage(key, newData) {
     // Check if the key already exists in localStorage
     if (localStorage.getItem(key)) {
@@ -2207,27 +2297,4 @@ function updateOrCreateObjectInLocalStorage(key, newData) {
  }
   
   
-function setActiveColor() {
-
-    setTimeout(function(){
-        if( document.querySelector('.fc-color-options') !== null ){
-            let getColor = JSON.parse(localStorage.getItem('project-plans'));
-
-            if( getColor?.color?.value ){
-
-                let colorParentEl = document.querySelector('.fc-color-options');
-                let createPlanBtn = document.querySelector('.fc-step-4 .fc-btn-create-plan');
-                colorParentEl.querySelector('[data-slug="'+getColor.color.value+'"]').classList.add('fc-selected');
-
-                if( createPlanBtn ) {
-                    createPlanBtn.removeAttribute('disabled');
-                }
-            }
-        }
-    }, 100);
-
-}
-
-setActiveColor();
-
 

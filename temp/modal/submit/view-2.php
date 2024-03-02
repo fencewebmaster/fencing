@@ -14,19 +14,29 @@
                     
                     <div class="text-uppercase mb-2 fw-bold">Color Options</div>
 
+                    <?php $colors =  convert_inputs($info['color']); ?>
+                    <?php foreach( $colors as $color_data ): ?>
                     <div class="fencing-form-group fc-mb-0">
-                        <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
+                        
+                        <h6><span class="text-uppercase"><?php echo $fences[@$color_data['fence']]['title']; ?></span> - Color Options</h6>
+
+                        <div class="fc-row fc-form-field fc-color-options" data-slug="<?php echo $color_data['fence']; ?>" data-key="color_options" name="color_options" type="text_option" value="">
                             <?php foreach(fc_color() as $co_k => $co_v): ?>
-                            <div class="fc-col-3">
-                                <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co_v['title']; ?>" data-color-code="<?php echo $co_v['background_color']; ?>" data-color-subtitle="<?php echo $co_v['sub_title']; ?>" data-slug="<?php echo $co_k; ?>" style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
-                                    <p><strong><?php echo $co_v['title']; ?></strong>
-                                    <span><?php echo $co_v['sub_title']; ?></span></p>
+
+                                <?php if( in_array($co_k, $fences[$color_data['fence']]['color']) ): ?>
+                                <div class="fc-col-3">
+                                    <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co_v['title']; ?>" data-color-code="<?php echo $co_v['background_color']; ?>" data-color-subtitle="<?php echo $co_v['sub_title']; ?>" data-slug="<?php echo $co_k; ?>" style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
+                                        <p><strong><?php echo $co_v['title']; ?></strong>
+                                        <span><?php echo $co_v['sub_title']; ?></span></p>
+                                    </div>
                                 </div>
-                            </div>
+                                <?php endif; ?>
+
                             <?php endforeach; ?>
 
                         </div>
                     </div>
+                    <?php endforeach; ?>
 
                 </div>
 

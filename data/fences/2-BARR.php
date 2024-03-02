@@ -1,5 +1,5 @@
 <?php
-$fences[] = [
+$fences['barr'] = [
 	'title' => 'Barr',
 	'live' => FALSE,
 	'name' => 'BARR',
@@ -7,6 +7,7 @@ $fences[] = [
 	'panel_group' => 'b',
 	'image' => 'img/barr-vis-assm-3.png',
 	'panel_count' => 4,
+	'color' => ['black', 'white'],
 	'form' => [
 		[
 			'slug' => 'fence_height',

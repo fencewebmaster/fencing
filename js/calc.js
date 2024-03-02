@@ -4,11 +4,10 @@ function get_field_multi_option_value(custom_fence, info, control_key, slug){
         return item.control_key == control_key;
     });
 
-
     var custom_fence_data = custom_fence_data[0]?.settings.filter(function(item) {
         return item.key == slug;
     });
-
+    
     return custom_fence_data?.[0] ? custom_fence_data[0] : custom_fence_data;
 }
 
@@ -55,12 +54,14 @@ function get_field_by_slug(custom_fence, slug){
 function calculate_fences( data ) {
     // https://docs.google.com/spreadsheets/d/1Xxh9XsDy96cSQrPgR98rWZ1nwVORVxFL06OKQ8DhMEc/edit?pli=1#gid=0
 
-    var i = data?.item != null ? data?.item : $('.fencing-style-item.fsi-selected').index(),
+    var i = data?.item != null ? data?.item : $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = data?.tab != null ? data?.tab : $('.fencing-tab.fencing-tab-selected').index(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
-        custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [],
+        custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
+
+        if( !i ) return;
 
         info = fc_data[i];
 
@@ -89,7 +90,7 @@ function calculate_fences( data ) {
     no_post = -50;
 
     fence_height = '';
-    if( info.form ) {
+    if( info?.form ) {
         fence_height = parseInt($('[name="fence_height"]').val());
 
         var filtered_fence_height = custom_fence_tab[0]?.fields?.filter(function(item) {
@@ -132,17 +133,20 @@ function calculate_fences( data ) {
     });
 
     // add gate
-    if( gate_data.length ) {
-        C8 = gate_data[0]?.settings.size;   
-        console.log(1, C8);     
-    } else {    
-        C8  = info.settings.gate.size.width; 
-        console.log(2, C8);     
 
+    if( gate_data.length ) {
+
+        if( gate_data[0]?.settings.size ) {
+            C8 = gate_data[0]?.settings.size;    
+        } else {
+            C8  = info.settings.gate.size.width;   
+        }
+    
     }
 
+
     // raked panel left
-    step_up_panels = get_field_multi_options(custom_fence, info, 'left_side');
+    step_up_panels = get_field_multi_options(custom_fence, info, 'left_side');    
     step_up_panels = get_field_by_slug(step_up_panels, 'left_raked');
     step_up_panels_data = get_field_multi_option_value(custom_fence, info, 'left_side', 'left_raked');
     step_up_panels = get_field_by_slug(step_up_panels.options, step_up_panels_data?.val);

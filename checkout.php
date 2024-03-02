@@ -291,26 +291,37 @@ if( @$_POST['action'] == 'push_order' ) {
     /* START UPDATE item list & cart */
     $color = $_SESSION["fc_data"]['color'];
 
-    if( $_POST['color']['value'] != $color['value'] ) {
-        
-        $custom_fence_data['color'] = $_POST['color']['value'];
 
+    if( $_POST['color'] ) {
+          
         foreach ( $_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
 
-            $custom_fence_data['items'][] = [
+          $color_options = $_POST['color'];
+          $color_key = array_search($cart_item['fence'], array_column($color_options, 'fence'));
+
+
+          $custom_fence_data[$cart_item['fence']]['slug']  = $color_options[$color_key]['fence'];
+          $custom_fence_data[$cart_item['fence']]['color'] = $color_options[$color_key]['color'];
+  
+            $custom_fence_data[$cart_item['fence']]['items'][] = [
                 'sku'          => $cart_item['sku'], 
                 'qty'          => $cart_item['qty'],
                 'original_qty' => $cart_item['original_qty'],
-                'slug'         => $cart_item['slug']
+                'slug'         => $cart_item['slug'],
             ];
 
         } 
 
         post_product_skus($custom_fence_data);
+
     }
     /* END UPDATE item list & cart */
 
     $_POST['extra'] = convert_inputs($_POST['extra']);
+    $_POST['color'] = convert_inputs($_POST['color']);
+
+    unset($_POST['cart']);
+
 
     $_SESSION["fc_data"] = array_merge($_SESSION["fc_data"], $_POST);
     
@@ -329,7 +340,7 @@ if( @$_POST['action'] == 'push_order' ) {
     $cart = $_SESSION['fc_cart'];
 
     $color = $_SESSION["fc_data"]['color'];
-    $custom_fence_data['color'] = $color['value'];
+
 
     foreach ( $_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
 
@@ -345,7 +356,6 @@ if( @$_POST['action'] == 'push_order' ) {
     $cart_data = [
         'items' => $cart_items_data, 
     ];
-
 
     $_SESSION['fc_cart'] = $cart_data;
 

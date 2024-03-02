@@ -33,7 +33,6 @@ if( $qid = @$_GET['qid'] ) {
         $_SESSION['planner_id'] = $qid;
     }
 }
-
 ?>
 
 <title>Fencing Calculator</title>
@@ -216,7 +215,7 @@ if( $qid = @$_GET['qid'] ) {
                             <div class="fencing-styles__area row">
 
                                 <?php foreach( $fences as $fence ): ?>
-                                <div class="fencing-style-item col-lg-2 col-md-3 col-sm-4 col-6 mb-3" data-title="<?php echo $fence['title']; ?>">
+                                <div class="fencing-style-item col-lg-2 col-md-3 col-sm-4 col-6 mb-3" data-slug="<?php echo $fence['slug']; ?>" data-title="<?php echo $fence['title']; ?>">
                                     <div>
 
                                         <div class="fencing-style-img">
@@ -268,7 +267,7 @@ if( $qid = @$_GET['qid'] ) {
 
                             <div class="row align-items-center">
                                 
-                                <div class="col-lg-4 col-md-7 fc-input-container mb-4">
+                                <div class="col-lg-5 col-md-7 fc-input-container mb-4">
                                     
                                     <div class="step-label mb-2">Step <span>02</span></div>
 
@@ -284,7 +283,7 @@ if( $qid = @$_GET['qid'] ) {
                                     
                                         <span class="fencing-mb-input">
                                             
-                                            <input type="text" class="measurement-box-number numeric" value=""> 
+                                            <input type="text" class="measurement-box-number numeric py-1" data-min="300" data-max="100000" value=""> 
                                             
                                             <span>mm</span>				
                                             
@@ -298,13 +297,13 @@ if( $qid = @$_GET['qid'] ) {
 
                                         </span>
 
-                                        <button type="button" class="btn-fc btn-fc-calculate">Calculate</button>
+                                        <button type="button" class="fc-btn btn-lg py-3 text-uppercase btn-fc-calculate my-0 fw-bold"><small>Calculate</small></button>
 
                                     </div>
 
                                     <div class="fc-input-msg error-msg"></div>
                                 </div>
-                                <div class="col-lg-3 col-md-auto"></div>
+                                <div class="col-lg col-md-auto"></div>
                                 <div class="col-lg-5 col-md">
 
                                     <div class="alert alert-gray float-end">
@@ -490,29 +489,7 @@ if( $qid = @$_GET['qid'] ) {
                                 
                                 <h4 class="fencing-content-title fc-mb-2">Configure Your Project</h4>
                             
-                                <div class="fc-card fc-mb-2">
-                                    
-                                    <div class="fc-card-header fc-bg-dark fc-border-top">
-                                        Colour Options
-                                    </div>
-
-                                    <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
-                                        <div class="fencing-form-group fc-mb-0">
-                                            <div class="fc-row fc-form-field fc-color-options" data-key="color_options" name="color_options" type="text_option" value="">
-                                                <?php foreach(fc_color() as $co_k => $co_v): ?>
-                                                <div class="fc-col-3">
-                                                    <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co_v['title']; ?>" data-color-code="<?php echo $co_v['background_color']; ?>" data-color-subtitle="<?php echo $co_v['sub_title']; ?>" data-slug="<?php echo $co_k; ?>" style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
-                                                        <p><strong><?php echo $co_v['title']; ?></strong><br />
-                                                        <span><?php echo $co_v['sub_title']; ?></span></p>
-                                                    </div>
-                                                </div>
-                                                <?php endforeach; ?>
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
+                                <div class="fc-card fc-mb-2" data-load="color-options"></div>
 
                                 <div class="fc-card">
                                     

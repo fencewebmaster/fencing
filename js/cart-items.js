@@ -23,7 +23,7 @@ FENCES.cartItems = {
         }
     },
 
-    init: function(i) {
+    init: function(i, slug) {
         
         $(`.fc-section-${i}`).click();
 
@@ -34,15 +34,11 @@ FENCES.cartItems = {
         const multiArrayString = JSON.stringify(multiArray);
 
         try {
-
-            // Remove the string in local storage
-            localStorage.removeItem('cart_items-'+i);
-
             // Save the string in local storage
-            localStorage.setItem('cart_items-'+i, multiArrayString);
+            localStorage.setItem('cart_items-'+i+'-'+slug, multiArrayString);
 
             // Retrieve data from local storage
-            const storedMultiArrayString = localStorage.getItem('cart_items-'+i);
+            const storedMultiArrayString = localStorage.getItem('cart_items-'+i+'-'+slug);
 
             // Convert the string back to an array using JSON.parse
             const storedMultiArray = JSON.parse(storedMultiArrayString);

@@ -497,6 +497,17 @@ $(document).on('click', '.project-details--editable', function(){
 $(document).on('click', ".project-details--update", function (e) {
     e.preventDefault();
 
+    $('.fc-color-options').each(function(k, v){ 
+        var slug = $(this).attr('data-slug'),
+            val  = $(this).find('.fc-selected').attr('data-slug');
+
+        $('.fc-color-options[data-slug="'+slug+'"] .input-fence').val(slug);
+        $('.fc-color-options[data-slug="'+slug+'"] .input-color').val(val);
+    });
+
+    $('.fc-btn-create-plan').removeAttr('disabled');
+
+
     $('[name="action"]').val('update_project_details');
     $('.fc-btn-edit[data-action="update"]').click();
     $('#submit-modal').hide();

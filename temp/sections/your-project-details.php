@@ -116,8 +116,9 @@
 				<div class="fc-card fc-mb-2">
 
 					<div class="fc-card-header fc-bg-dark fc-border-top">
-						Flat Top Pool Fencing - Options
+						Color Options
 					</div>
+
 
 					<div class="fc-table-rounded-border fc-rounded-top-none fc-mb-2">
 					
@@ -126,17 +127,35 @@
 								<tr>
 									<td width="100" class="valign-top">Colour</td>
 									<td>
-										<?php 
-											$color_value = @$info['color']['value'];
-											$color = fc_color($color_value);
-										?>
-										<input type="hidden" name="color[value]" value="<?php echo $color_value; ?>">
+
+									<?php $colors = convert_inputs($info['color']); ?>
+
+									<div class="row">
+									<?php foreach( $colors as $cd_k => $color_data ):
+	
+										$color_fence = $color_data['fence'];
+										$color_value = $color_data['color'];
+
+										$color = fc_color($color_value);
+									?>
+
+										<div class="col fc-color-options" data-slug="<?php echo @$color_data['fence']; ?>">						
+										<input type="hidden" class="input-fence" name="color[<?php echo $cd_k; ?>][fence]" value="<?php echo @$color_data['fence']; ?>">
+										<input type="hidden" class="input-color" name="color[<?php echo $cd_k; ?>][color]" value="<?php echo $color_value; ?>">
 
 										<div style="background:<?php echo @$color['background_color']; ?>;color:<?php echo @$color['text_color']; ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
-											<br>   
-											<p style="color: <?php echo @$color['text_color']; ?>"><strong class="js-color_options-title"><?php echo @$color['title']; ?></strong><br />
-											<span class="js-color_options-subtitle"><?php echo @$color['sub_title']; ?></span></p>
+											<div style="color: <?php echo @$color['text_color']; ?>">
+												<div><?php echo $fences[@$color_data['fence']]['title']; ?></div>
+												<hr class="my-2">
+												<strong class="js-color_options-title"><?php echo @$color['title']; ?></strong><br />
+												<span class="js-color_options-subtitle"><?php echo @$color['sub_title']; ?></span>
+											</div>
 										</div>
+									
+									</div>
+
+									<?php endforeach; ?>
+									</div>
 
 									</td>
 								</tr>
@@ -144,6 +163,8 @@
 						</table>
 
 					</div>
+	
+
 				</div>
 
 				<div class="fc-card">

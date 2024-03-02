@@ -3,28 +3,33 @@
 	<label for="use_std">Use STD Gate Width</label>				
 </div>
 
-<div class="fencing-measurement-box mb-3 fc-input-group">
+<div class="fc-input-container">
 
-    <span class="fencing-mb-input">
+	<div class="fencing-measurement-box mb-3 fc-input-group">
 
-        <input name="width" type="text" class="numeric fc-form-field py-1"> 
-        
-        <span>mm</span>				
-        
-        <div class="fencing-qty-plus fencing-qty-btn">
-            <img src="img/quantity-plus.png" alt="" title="">
-        </div>
+	    <span class="fencing-mb-input">
 
-        <div class="fencing-qty-minus fencing-qty-btn">
-            <img src="img/quantity-minus.png" alt="" title="">
-        </div>
+	        <input name="width" type="text" class="numeric fc-form-field py-1" input-type="number" data-min="300" data-max="1000"> 
+	        
+	        <span>mm</span>				
+	        
+	        <div class="fencing-qty-plus fencing-qty-btn">
+	            <img src="img/quantity-plus.png" alt="" title="">
+	        </div>
 
-    </span>
+	        <div class="fencing-qty-minus fencing-qty-btn">
+	            <img src="img/quantity-minus.png" alt="" title="">
+	        </div>
 
-    <button type="button" class="btn btn-lg btn-dark px-4 text-uppercase fw-bold">Calculate</button>
+	    </span>
 
+	    <button type="button" class="btn btn-dark px-4 text-uppercase py-2 fw-bold"><small>Calculate</small></button>
+
+	</div>
+
+	<div class="fc-input-msg error-msg"></div>
+		
 </div>
-
 
 <div class="alert alert-gray">
 
@@ -32,12 +37,12 @@
         <i class="fc-icon fc-icon-capa me-1"></i> Custom Gates
     </div>
 
-    <p class="text-secondary mb-2">
+    <p class="text-secondary mb-2 small">
     	Custom Gates require:<br>
     	1x Gate Converter Kit<br>
     	1x STD Barr Panel
     </p>
-    <p class="text-secondary">
+    <p class="text-secondary small">
     	Simply cut the panel to the width you need, then screw the Gate Converter onto each end.                              
 	</p>
 

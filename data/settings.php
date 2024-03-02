@@ -7,17 +7,16 @@ foreach (glob('data/fences/*') as $fence) {
 $fences_data = array();
 
 foreach($fences as $fik => $fence_info ) {
-	$fences_data[] = $fence_info;
+	$fences_data[$fik] = $fence_info;
 
     $uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
 
-	if( !$fence_info['live'] && !in_array('dev', $uri_segments) && !is_localhost() ) {
+	if( !$fence_info['live'] && !in_array('dev', $uri_segments) && !in_array($_SERVER['HTTP_HOST'], ['localhost']) ) {
 		unset($fences_data[$fik]);
 	} 
 }
 
-$fences = array_values($fences_data);
-
+$fences = $fences_data;
 
 function fc_color($val ='') {
  

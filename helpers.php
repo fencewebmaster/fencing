@@ -125,8 +125,7 @@ function selected_fences($fences, $column = 'slug') {
 
     foreach ( convert_inputs($info['fences']) as $fence) {
         $slug = $fence['form'][0]['fence'];
-        $key = array_search($slug, array_column($fences, 'slug'));
-        $fence_data[$key] = $fences[$key][$column];
+        $fence_data[$slug] = $fences[$slug][$column];
     }   
 
     return $fence_data; 
@@ -266,37 +265,45 @@ function get_product_skus($data = array()) {
 
  	$the_products = load_csv('data/products.csv');
 
- 	$items = $data['items'];
 
- 	$column = 'slug';
- 	$color  = $data['color'];
+    foreach ($data as $d) {
 
-    $supplier = $_SESSION['site']['supplier'];
+     	$items = $d['items'];
 
-	foreach ($items as $item) {
+     	$column = 'slug';
+     	$color  = $d['color'];
 
-        $filtered_product = array_filter($the_products, function($val) use($item, $supplier){
-            return ( $val['slug'] == $item['slug'] && $val['supplier'] == $supplier );
-        });
+        $supplier = $_SESSION['site']['supplier'];
 
-        if( $filtered_product ) {
-            $key = array_keys($filtered_product)[0];
 
-            $sku = $the_products[$key][$color];
+    	foreach ($items as $item) {
 
-            if( $key !== false && strtolower($sku) != 'off' ){
-              $products[] = [
-                'sku'  => $sku,
-                'qty'  => $item['qty'],
-                'slug' => $item['slug']
-              ]; 
+            $filtered_product = array_filter($the_products, function($val) use($item, $supplier){
+                return ( $val['slug'] == $item['slug'] && $val['supplier'] == $supplier );
+            });
+
+            if( $filtered_product ) {
+                $key = array_keys($filtered_product)[0];
+
+                $sku = $the_products[$key][$color];
+
+                if( $key !== false && strtolower($sku) != 'off' ){
+                  $products[] = [
+                    'sku'   => $sku,
+                    'qty'   => $item['qty'],
+                    'slug'  => $item['slug'],
+                    'fence' => $d['slug'],
+                    'color' => $d['color'],
+                  ]; 
+                }
+                
+
+                $skus[] = $the_products[$key][$color];
             }
-            
 
-            $skus[] = $the_products[$key][$color];
-        }
+    	}
 
-	}
+    }
 
 	$_SESSION['custom_fence_products'] = $products;
 
@@ -329,10 +336,12 @@ function post_product_skus($cart_items = array()) {
         }
 
         $items[]  = [
-            'sku'     => $query['sku'],
-            'name'    => $the_products[$key]['name'],
-            'slug'    => $query['slug'],
-            'image'   => $image,
+            'sku'   => $query['sku'],
+            'name'  => $the_products[$key]['name'],
+            'slug'  => $query['slug'],
+            'color' => $query['color'],
+            'fence' => $query['fence'],
+            'image' => $image,
         ];
 
     }
@@ -389,6 +398,8 @@ function post_product_skus($cart_items = array()) {
                 'image' => $item['image'],
                 'sku'   => $item['sku'],
                 'slug'  => $item['slug'],
+                'color' => $item['color'],
+                'fence' => $item['fence'],
                 'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
                 'qty'   => $custom_fence_products[$key]['qty'],
                 'original_qty' => $custom_fence_products[$key]['qty'],
@@ -430,6 +441,8 @@ function add_filepath_last($filename, $add ='') {
 
     $arr = pathinfo($filename);
 
+    if( !$arr['filename'] ) return;
+
     $file = [
         $arr['dirname'].'/', 
         $arr['filename'], 
@@ -437,7 +450,7 @@ function add_filepath_last($filename, $add ='') {
         '.'.$arr['extension']
     ];
 
-    $url = implode('', $file);
+    $url = implode('', array_filter($file));
 
     return $url;
 

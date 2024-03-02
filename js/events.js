@@ -11,7 +11,7 @@ $(document).on("keypress", ".numeric", function( event ){
 
 $(document).on('click', '.fencing-style-item', function(){
 
-    var i = $('.fencing-style-item.fsi-selected').index(),
+    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index();
 
     $('.fencing-style-item').removeClass('fsi-selected');
@@ -83,16 +83,36 @@ $(document).on('click', '.fc-move-post', function(){
 
 $(document).on('click', '.fencing-qty-plus', function(){
     var input = $(this).closest('.fencing-mb-input').find('input'),
+        max = parseInt(input.attr('data-max')),
         val = input.val();
-        input.val( parseInt(val) + 1 );
+
+    if( !val ) {
+        input.val( max );
+    } else {
+        if( val < max ) {
+            input.val( parseInt(val) + 1 );
+        }
+    }
+  
+    console.log($(this).parent().html());
+
+    $('.error-msg').removeClass('fcim-show').html('');
 });
 
 $(document).on('click', '.fencing-qty-minus', function(){
     var input = $(this).closest('.fencing-mb-input').find('input'),
-        val = input.val();
-        if( val > 1) {
+        min = parseInt(input.attr('data-min')),
+        val = input.val() || min;
+
+    if( !val ) {
+        input.val( min );
+    } else {
+        if( val > min ) {
             input.val( parseInt(val) - 1 );
         }
+    }
+    $('.error-msg').removeClass('fcim-show').html('');
+
 });
 
 $(document).on('click', '.btn-get-link', function(){
@@ -187,7 +207,7 @@ $(document).on('click', '.fencing-tab', function() {
 
   //  if( custom_fence_tab.length > 0 ){
 
-        $('.fencing-style-item').eq(custom_fence_tab[0]?.style).addClass('fsi-selected');
+        $('.fencing-style-item[data-slug="'+custom_fence_tab[0]?.style+'"]').addClass('fsi-selected');
         var measurement = custom_fence_tab[0]?.calculateValue ? custom_fence_tab[0]?.calculateValue : FENCES.defaultValues.measurement;
         $('.measurement-box-number').val(measurement);
 
@@ -245,7 +265,7 @@ $(document).on('click', '.fencing-tab-add', function(e) {
 $(document).on('click', '.fc-fence-reset-all', function(e) {
     e.preventDefault();
 
-    var i   = $('.fencing-style-item.fsi-selected').index(),
+    var i   = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index();
 
     setTimeout(function(){
@@ -267,7 +287,7 @@ $(document).on('click', '.fc-fence-reset-all', function(e) {
 $(document).on('click', '.fc-fence-reset', function(e) {
     e.preventDefault();
 
-    var i   = $('.fencing-style-item.fsi-selected').index(),
+    var i   = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index();
 
     localStorage.removeItem('custom_fence-'+tab+'-'+i);
@@ -349,7 +369,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     //Button Data Information
     var target = $(this).data('target'),
         key = $(this).data('key'),
-        i = $('.fencing-style-item.fsi-selected').index(),
+        i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         tab = $('.fencing-tab.fencing-tab-selected').index(),
         custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
@@ -546,12 +566,51 @@ $(document).on('keypress', '.measurement-box-number', function(e){
 });
 
 
-$(document).on('keyup', '.measurement-box-number', function(){
+$(document).on('keyup', '[input-type="number"]', function(){
 
-    var min = 300,
-        max = 100000;
+    var min = parseInt($(this).attr('data-min')),
+        max = parseInt($(this).attr('data-max'));
 
     $(this).closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
+    $(this).closest('[type="button"]').removeAttr('disabled');
+
+    if( $(this).val() < min || $(this).val() > max ) {
+
+        if( $(this).val() < min  ) { 
+            var alert = ' Invalid '+min+'mm Min';
+        } 
+
+        if( $(this).val() > max  ) { 
+            var alert = ' Invalid '+max+'mm max';
+        } 
+
+        if( $(this).val() == '' ) {
+            var alert = 'Please enter the amount';
+        }
+
+        $(this).closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert);
+
+        $(this).closest('[type="button"]').attr('disabled', 'disabled');
+
+        if( alert.length ) {
+            $(this).closest('.fc-input-container')
+                                        .find('.fc-input-msg')
+                                        .addClass('fcim-show')
+                                        .html(alert);
+        }
+
+    }
+
+});
+
+$(document).on('keyup', '.measurement-box-number', function(){
+
+
+    $(this).closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
+
+    var min = parseInt($(this).attr('data-min')),
+        max = parseInt($(this).attr('data-max'));
+
     $('.btn-fc-calculate').removeAttr('disabled');
 
     if( $(this).val() < min || $(this).val() > max ) {
@@ -714,18 +773,17 @@ $(document).on('input change', '.fencing-input-range input', function(event) {
     $(this).closest('.fencing-input-range').find('.fir-info-sub span').text( 72 + 1.8 );
 });
 
-$(document).on('change', '.fencing-modal', function(e){
-
-    //Only need to run this if modal content is for fences
-    if( e.currentTarget.id !== "submit-modal"){
-        var modal_key = $('.fencing-container').attr('data-key');
-    //    update_custom_fence(modal_key);
-    }
+$(document).on('change', '.fc-form-field select', function(e){
+    var modal_key = $('.fencing-container').attr('data-key');
+    update_custom_fence(modal_key);
 });
+
 
 $(document).on('click', '.fc-input-group button', function(){
     update_custom_fence_gate();
     load_fencing_items();
+
+        $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
 });
 
 $(document).on('click', '.fc-select-post', function(){
@@ -739,9 +797,15 @@ $(document).on('click', '.fc-select-post', function(){
     update_custom_fence(modal_key);
 });
 
+/*
 $(document).on('click', '.fc-select-item', function(){
     var modal_key = $(this).closest('.fc-row').attr('data-key');
     update_custom_fence(modal_key);
+});
+*/
+
+$(document).on('click', '.fc-select-color', function(){
+    update_color_options();
 });
 
 $(document).on('click', '#submit-modal .js-fencing-modal-close', function(){
@@ -808,6 +872,13 @@ $(document).on('click', '.fc-btn-step', function(e){
 
     tabContainerScroll();
 
+    if( move == 2 ) {
+        loadColorOptions();        
+    }
+
+    if( move == 1 ) {
+        $('.fencing-tab.fencing-tab-selected:visible').click();        
+    }
 });
 
 $(document).on('click', '.form-tab-4 input[type="checkbox"], .form-tab-4 input[type="radio"]', function(){
@@ -858,10 +929,7 @@ $(document).on('keydown', '.fencing-modal', function (e) {
 });*/
 
 
-$(document).on('click', '[name="color_options"]', function(e) {
-    $('[name="color[value]"]').val( $(this).attr('value') );
-    $('.fc-btn-create-plan').removeAttr('disabled');
-});
+
 
 $(document).on('click', '.fc-btn-create-plan', function(e) {
     // Push param in URL tab={tab}
