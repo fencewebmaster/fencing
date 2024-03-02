@@ -5,7 +5,7 @@ $fences['flat_top'] = [
 	'name' => 'FLAT TOP',
 	'slug' => 'flat_top',
 	'panel_group' => 'b',
-	'image' => 'img/aluminium.jpg',
+	'image' => 'img/fences/ftp.png',
 	'panel_count' => 4,
 	'color' => ['black', 'white', 'monument'],
 	'settings' => [
@@ -159,7 +159,7 @@ $fences['flat_top'] = [
 					'notes' => [
 						'image' => 'img/poolsafe-step-up panel-v3.jpg',
 						'title' => 'When To Use Step-Up Panels',
-						'description' => 'Step-Up panels are used when you need to change the heights or go ever an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
+						'description' => 'Step-Up panels are used when you need to change the heights or go over an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],
 				],						
 			]
@@ -425,7 +425,7 @@ $fences['flat_top'] = [
 					'notes' => [
 						'image' => 'img/poolsafe-step-up panel-v3.jpg',
 						'title' => 'When To Use Step-Up Panels',
-						'description' => 'Step-Up panels are used when you need to change the heights or go ever an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
+						'description' => 'Step-Up panels are used when you need to change the heights or go over an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],
 				],						
 			]

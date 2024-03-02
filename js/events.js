@@ -535,10 +535,10 @@ function addNotesOrInfo(el, v) {
             notes_html = `<div class="row align-items-center">`;
 
             if( notes.image ) {
-                notes_html +=  `<div class="col-3"><img src="${notes.image}" class="border rounded p-2"></div>`;
+                notes_html +=  `<div class="col-sm-3 note-img"><img src="${notes.image}" class="border rounded p-2 mb-3"></div>`;
             }
 
-            notes_html +=  `<div class="col"><div class="fc-alert-gray field-note">
+            notes_html +=  `<div class="col-sm"><div class="fc-alert-gray field-note">
                 <label class="mb-2"><i class="fc-icon fc-icon-capa me-2"></i> ${notes.title}</label>
                 <p class="fc-text-gray">${notes.description}</p>
             </div></div>`;  

@@ -2032,9 +2032,7 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 .fc-row-container {
   margin: 0;
 }
-.fencing-modal--v2 .fc-alert-gray {
-  padding: 16px;
-}
+
 .fencing-modal--v2 .fc-selection-details {
   margin: 0 0 24px;
 }
@@ -4449,5 +4447,14 @@ thead.fc-border th:last-child {
   }
   .dl-row  {
     width: fit-content;
+  }
+}
+
+@media (max-width: 992px) {
+  .fencing-modal-notes .note-img {
+    text-align: -webkit-center;
+  }
+  .fencing-modal-notes img {
+    max-width: 120px;
   }
 }

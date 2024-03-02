@@ -417,7 +417,7 @@ if( $qid = @$_GET['qid'] ) {
 
                                 <div class="row" data-tab="1">
                                 
-                                    <div class="col-lg col-sm-6 pe-1 mb-lg-0 mb-2">
+                                    <div class="col-lg col-sm-6 px-1 mb-lg-0 mb-2">
                                         <button type="button" 
                                             class="btn btn-orange fc-btn-next-step fc-btn-step p-3 text-uppercase w-100" 
                                             data-tab="1" 
