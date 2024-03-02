@@ -929,7 +929,12 @@ $(document).on('keydown', '.fencing-modal', function (e) {
 });*/
 
 
-
+$(document).on('click', '[name="color_options"]', function(e) {
+    $('.fc-btn-create-plan').attr('disabled');
+    if( $('.fc-color-options .fc-selected').length == $('.fc-color-options').length ) {
+        $('.fc-btn-create-plan').removeAttr('disabled');
+    }
+});
 
 $(document).on('click', '.fc-btn-create-plan', function(e) {
     // Push param in URL tab={tab}

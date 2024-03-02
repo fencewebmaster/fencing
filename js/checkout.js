@@ -505,8 +505,6 @@ $(document).on('click', ".project-details--update", function (e) {
         $('.fc-color-options[data-slug="'+slug+'"] .input-color').val(val);
     });
 
-    $('.fc-btn-create-plan').removeAttr('disabled');
-
 
     $('[name="action"]').val('update_project_details');
     $('.fc-btn-edit[data-action="update"]').click();
