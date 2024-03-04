@@ -985,15 +985,17 @@ $(window).resize(function(){
 
 $(window).on('scroll resize', function(){
 
-    var target =  $('[data-spy="scroll"]').attr('data-target'),
-        screenSize = parseInt($('[data-spy="scroll"]').attr('data-screen')),
+    var spy    = $('[data-spy="scroll"]'),
+        target = spy.attr('data-target'),
+        offset = spy.attr('data-offset'),
+        screenSize = parseInt(spy.attr('data-screen')),
         w = $(target).width();
 
-    if( target && $('body').width() > screenSize ) {
+    spy.removeClass('sticky-roll').css({'width':''});
+
+    if( target && $('body').innerWidth() >= screenSize ) {
         if( $(window).scrollTop() > ($(target).offset().top) ) {        
-            $('[data-spy="scroll"]').addClass('sticky-roll').css({'width':w});
-        } else {
-            $('[data-spy="scroll"]').removeClass('sticky-roll').css({'width':''});
+            spy.addClass('sticky-roll').css({'width':w, 'top': offset});
         }        
     }
 

@@ -266,7 +266,7 @@
 
 										<div class="col fc-position-relative order-1 mb-md-0 mb-4" id="update_stock-delivery">
 
-											<div data-spy="scroll" data-screen="767" data-target="#update_stock-delivery">
+											<div data-spy="scroll" data-screen="768" data-offset="20" data-target="#update_stock-delivery">
 												<div class="fencing-section__cmp fencing-section__step-label">
 											        <div class="step-label">Stock & <span>Delivery</span></div>
 											    </div>
