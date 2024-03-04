@@ -472,7 +472,7 @@ function update_gate(action) {
            var tpl = $('script[data-type="panel_gate-'+info.panel_group+'-r"]').text()
                                                          .replace(/{{center_point}}/gi, center_point)
                                                          .replace(/{{panel_size}}/gi, gate_size)
-                                                         .replace(/{{panel_unit}}/gi, panel_unit);  
+                                                         .replace(/{{panel_unit}}/gi, panel_unit);
 
             $('#panel-item-0').before(tpl);
 
@@ -1432,13 +1432,12 @@ function reloadFencingData() {
        return;
     }
 
-
     var custom_fence_items = JSON.parse(fc_fence_info.fence_data, true);
 
     $(custom_fence_items).each(function(k, v){
 
-        v.form[0].style = v.form[0].style - 1;
-        v.form[0].tab = v.form[0].tab - 1;
+        v.form[0].style = v.form[0].style;
+        v.form[0].tab   = v.form[0].tab - 1;
         
         localStorage.setItem('custom_fence-'+v.form[0].tab, JSON.stringify(v.form));
 
@@ -2242,23 +2241,23 @@ function loadColorOptions() {
     $('.fc-btn-create-plan').attr('disabled');
 
     $.each(items, function(k, v){
+        if( v ) {
+            var slug   = fc_data[v].slug,
+                title  = fc_data[v].title,
+                colors = fc_data[v].color;
 
-        var slug = fc_data[v].slug,
-            title = fc_data[v].title,
-            colors = fc_data[v].color;
+            var tpl = $('script[data-type="color_options"]').text()
+                                                            .replace(/{{slug}}/gi, slug)
+                                                            .replace(/{{title}}/gi, title);       
 
-        var tpl = $('script[data-type="color_options"]').text()
-                                                        .replace(/{{slug}}/gi, slug)
-                                                        .replace(/{{title}}/gi, title);       
+            colorOption.append(tpl);    
 
-        colorOption.append(tpl);    
+            $.each(colors, function(k, v){
+                $('[data-load="color-options"] [data-slug="'+slug+'"] [data-slug="'+v+'"]').addClass('on');
+            });
 
-        $.each(colors, function(k, v){
-            $('[data-load="color-options"] [data-slug="'+slug+'"] [data-slug="'+v+'"]').addClass('on');
-        });
-
-        $('.fc-select-color:not(.on)').remove();
-
+            $('.fc-select-color:not(.on)').remove();
+        }
     });
 
     if( project?.color ) {

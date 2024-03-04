@@ -11,7 +11,7 @@ function reload_fence_items() {
                     SECTION ${i+1}  
                 </div>
                 <div class="col-auto text-end">
-                    <a href="${base_url}?section=${i+1}" class="btn btn-sm text-uppercase btn-orange fw-bold px-3">
+                    <a href="${base_url}?section=${i+1}" class="btn btn-sm text-uppercase btn-orange fw-bold">
                         <i class="fa-regular fa-pen-to-square me-1"></i>
                         <span>Edit Details</span>
                     </a>    
@@ -154,6 +154,7 @@ function load_center_point(tab) {
     if( ! $('#pp-'+tab+' .panel-item').first().prev().prev().prev().hasClass('fencing-panel-gate') ) {
         $('#pp-'+tab+' .panel-item').first().find('.fc-div-c-p').after(first_point);
     }
+
 }
 
 
@@ -168,8 +169,7 @@ function reload_load_fencing_items(tab) {
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info = fc_data[i];
 
-
-    $(`#pp-${tab} .fencing-panel-container`).html('');
+    $(`#pp-${tab} .fencing-panel-container`).html('').attr('data-type', info?.slug);
 
     var cf_data = {item:i,tab:tab}
     var calc = calculate_fences(cf_data);
@@ -261,6 +261,13 @@ function reload_load_fencing_items(tab) {
         $('#pp-'+tab+' .fencing-offcut').css({'width':calc.offcut_panel.length*0.10});
     }
 
+
+
+    if( calc.fence_size.height ) {
+        $('#pp-'+tab+' .fencing-panel-item, #pp-'+tab+' .short-panel-item, #pp-'+tab+' .fencing-offcut').css({'height':calc.fence_size.height*0.10});     
+        $('#pp-'+tab+' .panel-post.opt-1').css({'height': (calc.fence_size.height*0.10)+25 });        
+        $('#pp-'+tab+' .panel-post.opt-2').css({'height': (calc.fence_size.height*0.10)+35 });        
+    }
     //updateFirstFencingPost();
     //updateLastFencingPost();
 }
@@ -333,6 +340,13 @@ function re_update_gate(action, tab) {
     $('#pp-'+tab+' .fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
                             .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>');
 
+
+
+    $('.fencing-panel-gate')
+        .prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
+        .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
+        .attr('data-cart-value', 1)
+        .css({'max-width': calc.gate.length * 0.1});
                       
 }
 

@@ -93,8 +93,6 @@ $(document).on('click', '.fencing-qty-plus', function(){
             input.val( parseInt(val) + 1 );
         }
     }
-  
-    console.log($(this).parent().html());
 
     $('.error-msg').removeClass('fcim-show').html('');
 });
@@ -491,7 +489,9 @@ $(document).on('click', '.fencing-btn-modal', function(event){
             }
 
             if( info?.settings[key]?.custom ) {
-                var tpl = $('script[data-type="custom-gate"]').text();
+                var maxWidth = $('[name="fence_height"]').val();
+                var tpl = $('script[data-type="custom-gate"]').text()
+                                                              .replace(/{{maxWidth}}/gi, maxWidth);
                 $('.custom-gate').html('').html(tpl);                
             }
 
@@ -782,8 +782,7 @@ $(document).on('change', '.fc-form-field select', function(e){
 $(document).on('click', '.fc-input-group button', function(){
     update_custom_fence_gate();
     load_fencing_items();
-
-        $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
+    $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
 });
 
 $(document).on('click', '.fc-select-post', function(){

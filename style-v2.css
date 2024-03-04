@@ -38,11 +38,6 @@
 .fc-result {
 	position: relative;
 }
-.fc-overall {
-	margin-left: auto;
-	position: initial;
-	text-align: center;
-}
 
 .cp_no-post--left:before,
 .cp_no-post--left .fc-div-c-p,
@@ -80,6 +75,23 @@
 .fc-form-group {
 	position: relative;
 }	
+
+.btn-orange {
+    border-bottom: 4px solid #cb6520 !important;
+}
+.btn-secondary, .btn-outline-secondary {
+    border-bottom: 4px solid #4b5156 !important;
+}
+.btn-danger, .btn-outline-danger  {
+    border-bottom: 4px solid #90232e !important;
+}
+.btn-fc-outline-default{
+    border-bottom: 4px solid #414141 !important;
+}
+.btn-dark {
+    border-bottom: 4px solid #000000 !important;
+}
+
 @media print { 
  .btn-fc { display: none !important; } 
 }

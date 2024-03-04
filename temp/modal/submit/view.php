@@ -44,7 +44,7 @@
 
                     <!-- START FORM MODAL ACTIONS - STEP 1 -->
                     <div class="fc-form-plan-action">
-                        <button type="button" class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" data-move="2"><b>Next > Time Frame</b></button>				
+                        <button type="button" class="btn fc-btn-form-step fc-btn-next btn-orange fc-text-uppercase fc-w-b" data-move="2"><b>Next <i class="fa-solid fa-angle-right mx-2"></i> Time Frame</b></button>				
                     </div>
                     <!-- END FORM MODAL ACTIONS - STEP 1 -->
 
@@ -74,12 +74,13 @@
                     <!-- START FORM MODAL ACTIONS - STEP 2 -->
                     <div class="fc-form-plan-action mt-3">
                         <button type="button" 
-                            class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
-                            data-move="1"><b>Back</b>
+                            class="btn fc-btn-form-step btn-secondary fc-text-uppercase fc-w-b" 
+                            data-move="1"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b>
                         </button>	
+
                         <button type="button" 
-                            class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" 
-                            data-move="3"><b>Next > Install Options</b>
+                            class="btn fc-btn-form-step fc-btn-next btn-orange fc-text-uppercase fc-w-b" 
+                            data-move="3"><b>Next <i class="fa-solid fa-angle-right mx-2"></i> Install Options</b>
                         </button>					
                     </div>
                     <!-- END FORM MODAL ACTIONS - STEP 2 -->
@@ -108,8 +109,8 @@
 
                     <!-- START FORM MODAL ACTIONS - STEP 3 -->
                     <div class="fc-form-plan-action mt-3">
-                        <button type="button" class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" data-move="2"><b>Back</b></button>
-                        <button type="button" class="btn-fc fc-btn-form-step fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b" data-move="4"><b>Next > Needed Options</b></button>
+                        <button type="button" class="btn fc-btn-form-step btn-secondary fc-text-uppercase fc-w-b" data-move="2"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b></button>
+                        <button type="button" class="btn fc-btn-form-step fc-btn-next btn-orange fc-text-uppercase fc-w-b" data-move="4"><b>Next <i class="fa-solid fa-angle-right mx-2"></i> Needed Options</b></button>
                     </div>
                     <!-- END FORM MODAL ACTIONS - STEP 3 -->
 
@@ -139,13 +140,13 @@
                     <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
                     <div class="fc-form-plan-action mt-2">
                         <button type="button" 
-                            class="btn-fc fc-btn-form-step btn-fc-outline-default fc-text-uppercase fc-w-b" 
-                            data-move="3"><b>Back</b>
+                            class="btn fc-btn-form-step btn-secondary fc-text-uppercase fc-w-b" 
+                            data-move="3"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b>
                         </button>
 
                         <button type="submit" 
                             class="btn-fc fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b">
-                            <b>Done > View Plans & Costs</b>
+                            <b>Done <i class="fa-solid fa-angle-right mx-2"></i> View Plans & Costs</b>
                         </button>
                     </div>
                     <!-- END FORM MODAL ACTIONS - STEP 4 | SUBMIT -->

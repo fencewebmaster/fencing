@@ -153,7 +153,7 @@ function reload_fence_items() {
     restoreFormData();
 
     if( getSearchParams('qid') ) {
-       $('.fc-btn-update').click();
+    //   $('.fc-btn-update').click();
     }
 
 }

@@ -9,7 +9,7 @@
 
 	    <span class="fencing-mb-input">
 
-	        <input name="width" type="text" class="numeric fc-form-field py-1" input-type="number" data-min="300" data-max="1000"> 
+	        <input name="width" type="text" class="numeric fc-form-field py-1" input-type="number" data-min="300" data-max="{{maxWidth}}"> 
 	        
 	        <span>mm</span>				
 	        

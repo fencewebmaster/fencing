@@ -33,6 +33,8 @@ if( $qid = @$_GET['qid'] ) {
         $_SESSION['planner_id'] = $qid;
     }
 }
+
+
 ?>
 
 <title>Fencing Calculator</title>
@@ -81,17 +83,19 @@ if( $qid = @$_GET['qid'] ) {
 
 <!-- Load Quote Modal -->
 <form method="get">
-    <div class="modal fade" id="load-quote" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal modal-sm fade" id="load-quote" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header fw-bold">
-                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="exampleModalLabel">Load Quote</h1>
+                    <h5 class="modal-title text-uppercase fw-bold" id="exampleModalLabel">Load <span class="text-danger">Quote</span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="input-group mb-3">
-                        <input type="text" name="qid" class="form-control form-control-lg no-space text-center" placeholder="Enter Quote ID" required>
-                        <button type="submit" class="btn btn-dark text-uppercase px-4">
+                    <div class="input-groupx mb-3">
+                        
+                        <input type="text" name="qid" class="form-control border border-secondary form-control-lg no-space text-center mb-2" placeholder="Enter Quote ID" required>
+
+                        <button type="submit" class="btn btn-lg w-100 btn-orange text-uppercase px-4">
                             <i class="fa fa-check me-2"></i>
                             <strong>Confirm</strong>
                         </button>
@@ -198,7 +202,7 @@ if( $qid = @$_GET['qid'] ) {
                                         </button>
 
                                         <button type="button" 
-                                            class="btn btn-outline-danger btn-sm fc-fence-reset-all px-2 fw-bold text-uppercase" 
+                                            class="btn btn-danger btn-sm fc-fence-reset-all px-2 fw-bold text-uppercase" 
                                             style="display:none;">
                                             <i class="fa-solid fa-circle-minus me-1"></i> Reset
                                         </button>
@@ -215,7 +219,7 @@ if( $qid = @$_GET['qid'] ) {
                             <div class="fencing-styles__area row">
 
                                 <?php foreach( $fences as $fence ): ?>
-                                <div class="fencing-style-item col-lg-2 col-md-3 col-sm-4 col-6 mb-3" data-slug="<?php echo $fence['slug']; ?>" data-title="<?php echo $fence['title']; ?>">
+                                <div class="fencing-style-item col-lg-2 col-md-3 col-sm-4 col-6 mb-3 px-2" data-slug="<?php echo $fence['slug']; ?>" data-title="<?php echo $fence['title']; ?>">
                                     <div>
 
                                         <div class="fencing-style-img">
@@ -233,7 +237,7 @@ if( $qid = @$_GET['qid'] ) {
                                 <?php endforeach; ?>	
 
 
-                                <div class="load-quote col-lg-2 col-md-3 col-sm-4 col-6 mb-3" data-bs-toggle="modal" data-bs-target="#load-quote">
+                                <div class="load-quote col-lg-2 col-md-3 col-sm-4 col-6 mb-3 px-2" data-bs-toggle="modal" data-bs-target="#load-quote">
                                     <div>
 
                                         <div class="fencing-style-img">
@@ -370,9 +374,9 @@ if( $qid = @$_GET['qid'] ) {
                                         <i class="fc-icon fc-icon-arrow-cc"></i>
                                         Reset
                                     </a>
-
-                                </div>                                        
           
+                                </div>                                        
+
                             </div>
 
                             <div class="fencing-section__cmp fencing-display-result">
@@ -391,56 +395,50 @@ if( $qid = @$_GET['qid'] ) {
                             </div>
 
                             <!-- START PANEL CONTROLS -->	
-                            <div class="row">
-                                <div class="col">
-                                    <div class="fencing-section__cmp fencing-panel-controls"></div>
-                                </div>
-                                <div class="col-auto">
-
-                                    <?php if( isset($_SESSION['planner_id']) ): ?>
-                                    <button type="submit" class="btn btn-sm btn-orange fc-btn-update w-100 fw-bold">
-                                        <i class="fa-regular fa-pen-to-square me-2"></i> 
-                                        UPDATE
-                                    </button>
-                                    <?php endif; ?>    
-
-                                </div>
-                            </div>
- 
+                            <div class="fencing-section__cmp fencing-panel-controls"></div>
 
 
                             <!-- END PANEL CONTROLS -->
                         </div>
                         
-                        <div class="fencing-section__bottom">
+                        <div class="fencing-section__bottom py-3">
                             <div class="">
 
                                 <div class="row" data-tab="1">
                                 
+                                    <?php if( isset($_SESSION['planner_id']) ): ?>
+                                    <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
+                                        <button type="submit" class="btn btn-sm btn-orange fc-btn-update py-3 px-4 w-100">
+                                            <i class="fa-regular fa-pen-to-square me-1"></i> 
+                                            <b>UPDATE</b>
+                                        </button>
+                                    </div>
+                                    <?php endif; ?> 
+
                                     <div class="col-lg col-sm-6 px-1 mb-lg-0 mb-2">
                                         <button type="button" 
                                             class="btn btn-orange fc-btn-next-step fc-btn-step p-3 text-uppercase w-100" 
                                             data-tab="1" 
                                             data-move="2"
                                             disabled>
-                                            <b>NEXT - Select PLAN OPTIONS</b>
+                                            <b>NEXT <i class="fa-solid fa-angle-right mx-2"></i> Select PLAN OPTIONS</b>
                                         </button>
                                     </div>
 
                                     <div class="col-lg col-sm-6 px-1 mb-lg-0 mb-2">
                                         <button type="button" 
-                                            class="btn btn-secondary fc-tab-add fencing-tab-add p-3 w-100">
+                                            class="btn btn-dark fc-tab-add fencing-tab-add p-3 w-100">
                                             <b>
-                                                <i class="fa-solid fa-plus"></i> Add Another Section
+                                                <i class="fa-solid fa-plus me-1"></i> Add Another Section
                                             </b>
                                         </button>
                                     </div>
 
                                     <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
                                         <button type="button" 
-                                            class="btn btn-outline-secondary  fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
+                                            class="btn btn-secondary  fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
                                             <b>
-                                                <i class="fa-solid fa-rotate"></i> Reset
+                                                <i class="fa-solid fa-rotate me-1"></i> Reset
                                             </b>
                                         </button>
                                     </div>
@@ -449,13 +447,13 @@ if( $qid = @$_GET['qid'] ) {
                                         <button type="button" 
                                             class="btn btn-danger btn-fc-sm btn-delete-fence js-btn-delete-fence fw-bold text-uppercase p-3 w-100" 
                                             >
-                                            <span><i class="fa fa-trash-can"></i> Delete <span>Section</span></span>
+                                            <span><i class="fa fa-trash-can me-1"></i> Delete <span>Section</span></span>
                                         </button>
                                     </div>
 
                                 </div>
 
-                                <div class=" fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
+                                <div class="fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
                                     
                                     <button type="button" 
                                         class="btn btn-orange fc-btn-create-plan fencing-btn-modal" 
@@ -466,9 +464,9 @@ if( $qid = @$_GET['qid'] ) {
                                     </button>
 
                                     <button type="button" 
-                                        class="btn fc-btn-step btn-outline-secondary text-uppercase fc-px-3" 
+                                        class="btn btn-step btn-outline-secondary text-uppercase fc-px-3" 
                                         data-tab="2" 
-                                        data-move="1"><b>Back</b>
+                                        data-move="1"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b>
                                     </button>
 
                                 </div>
@@ -518,7 +516,7 @@ if( $qid = @$_GET['qid'] ) {
                                     <div class=" fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
                                         
                                         <button type="button" 
-                                            class="btn-fc btn-fc-orange fc-btn-create-plan fencing-btn-modal" 
+                                            class="btn btn-orange fc-btn-create-plan fencing-btn-modal me-2 px-4 text-uppercase" 
                                             data-target="#submit-modal" 
                                             disabled>
                                             <strong>Create Project Plan</strong><br>
@@ -526,9 +524,9 @@ if( $qid = @$_GET['qid'] ) {
                                         </button>
                                         
                                         <button type="button" 
-                                            class="btn-fc fc-btn-step btn-fc-outline-default fc-text-uppercase fc-px-3" 
+                                            class="btn fc-btn-step btn-secondary text-uppercase px-4" 
                                             data-tab="2" 
-                                            data-move="1"><b>Back</b>
+                                            data-move="1"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b>
                                         </button>
 
                                     </div>
