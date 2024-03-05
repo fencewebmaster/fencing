@@ -145,7 +145,7 @@
                         </button>
 
                         <button type="submit" 
-                            class="btn-fc fc-btn-next btn-fc-orange fc-text-uppercase fc-w-b">
+                            class="btn fc-btn-next btn-orange fc-text-uppercase fc-w-b">
                             <b>Done <i class="fa-solid fa-angle-right mx-2"></i> View Plans & Costs</b>
                         </button>
                     </div>

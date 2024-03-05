@@ -2584,24 +2584,9 @@ thead.fc-border th:last-child {
   }
 }
 
-.fc-btn-create-plan {
-  height: 69px;
-  line-height: 20px;
-  padding-left: 32px;
-  padding-right: 32px;
-}
-.fc-btn-create-plan + .btn-fc {
-  height: 69px;
-  width: 136px;
-}
 @media (max-width: 992px) {
-  .fc-btn-create-plan + .btn-fc {
+  .fc-tab-control .btn {
     width: 100%;
-  }
-}
-@media (max-width: 992px) {
-  .fc-btn-create-plan.btn-fc {
-    height: auto;
   }
 }
 
@@ -3225,7 +3210,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-section {
-  padding: 32px;
+  padding: 20px;
   border-radius: 16px;
   margin-bottom: 16px;
   position: relative;
@@ -3248,7 +3233,7 @@ thead.fc-border th:last-child {
   }
 }
 .fencing-section__top {
-  padding: 32px;
+  padding: 20px;
 }
 @media (max-width: 992px) {
   .fencing-section__top {

@@ -144,20 +144,20 @@
 								
 								<button type="button" data-action="edit" class="btn btn-sm fc-btn-edit btn-orange text-uppercase">
 									<i class="fa-regular fa-pen-to-square me-1"></i>
-									<span>Edit Details</span>
+									<b>Edit Details</b>
 								</button>
 
 								<div class="js-project-details-controls project-details-controls fc-d-none">
 									
 									<button type="button" data-action="update" class="btn btn-sm fc-btn-edit btn-orange text-uppercase btn-orange fc-w-700">
 										<i class="fa-regular fa-pen-to-square me-1"></i>
-										<span>Save</span>
+										<b>Save</b>
 									</button>
 
 									<button type="button" 
 										class="btn btn-sm fc-btn-reset btn-secondary text-uppercase" 
 										style="display:none;">
-											<i class="fa-solid fa-rotate-left"></i> <span>Reset</span>
+											<i class="fa-solid fa-rotate-left me-1"></i> <b>Reset</b>
 									</button>
 
 								</div>

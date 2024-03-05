@@ -271,7 +271,7 @@ if( $qid = @$_GET['qid'] ) {
 
                             <div class="row align-items-center">
                                 
-                                <div class="col-lg-5 col-md-7 fc-input-container mb-4">
+                                <div class="col-lg-5 col-md-7 fc-input-container mb-3">
                                     
                                     <div class="step-label mb-2">Step <span>02</span></div>
 
@@ -434,7 +434,7 @@ if( $qid = @$_GET['qid'] ) {
                                         </button>
                                     </div>
 
-                                    <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
+                                    <div class="col-lg-auto col-sm-6 col-auto px-1 mb-lg-0 mb-2">
                                         <button type="button" 
                                             class="btn btn-secondary  fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
                                             <b>
@@ -443,7 +443,7 @@ if( $qid = @$_GET['qid'] ) {
                                         </button>
                                     </div>
 
-                                    <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
+                                    <div class="col-lg-auto col-sm-6 col px-1 mb-lg-0 mb-2">
                                         <button type="button" 
                                             class="btn btn-danger btn-fc-sm btn-delete-fence js-btn-delete-fence fw-bold text-uppercase p-3 w-100" 
                                             >
@@ -478,7 +478,7 @@ if( $qid = @$_GET['qid'] ) {
                     <!-- END DISPLAY RESULT -->
                 </div>
 
-                <div class="fc-section-step  fc-d-none fc-step-4" data-tab="2" style="display: none;">
+                <div class="fc-section-step fc-d-none fc-step-4 mb-5" data-tab="2" style="display: none;">
                     
                     <div class="fencing-section fencing-section--no-padding fencing-section--has-border br-tl-0">
                         
@@ -510,13 +510,13 @@ if( $qid = @$_GET['qid'] ) {
                                 </div>
                             
                             </div>
-                            <div class="fencing-section__bottom">
+                            <div class="fencing-section__bottom py-3">
                                 <div class="fc-tab-control">
 
-                                    <div class=" fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
+                                    <div class="fc-section-step fencing-calculate-price fc-d-none" data-tab="2" style="display: none;">
                                         
                                         <button type="button" 
-                                            class="btn btn-orange fc-btn-create-plan fencing-btn-modal me-2 px-4 text-uppercase" 
+                                            class="btn btn-orange fc-btn-create-plan fencing-btn-modal me-2 py-2 px-4 text-uppercase mb-2" 
                                             data-target="#submit-modal" 
                                             disabled>
                                             <strong>Create Project Plan</strong><br>
@@ -524,7 +524,7 @@ if( $qid = @$_GET['qid'] ) {
                                         </button>
                                         
                                         <button type="button" 
-                                            class="btn fc-btn-step btn-secondary text-uppercase px-4" 
+                                            class="btn fc-btn-step btn-secondary text-uppercase py-3 px-4 mb-2" 
                                             data-tab="2" 
                                             data-move="1"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b>
                                         </button>
