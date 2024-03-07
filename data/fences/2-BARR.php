@@ -24,7 +24,12 @@ $fences['barr'] = [
 		[
 			'slug' => 'important_note',
 			'title' => 'Fence Height',
-			'description' => 'To meet pool compliance your fence height MUST BE above 1200H',
+			'description' => '<span class="mb-1 d-block">To meet pool compliance your fence height MUST BE above 1200H</span>
+			<b class="text-danger">1200mm:</b><br>
+			Base Plated Posts = 50x50mm Posts<br>
+			Cemented In Posts = 50x25mm Posts<br>
+			*Due to the 1800H height for Base Plated posts we need to use 50x50mm Base Plated Posts
+			',
 			'target' => '.step-2_notes',
 			'type' => 'important-note',
 		]
@@ -101,7 +106,6 @@ $fences['barr'] = [
 							'image' => 'img/base-plate-posts.png',
 							'extra' => '',
 							'key' => 'post_options',
-							'default' => TRUE,
 						],
 						[
 							'slug'  => 'opt-2',
@@ -109,6 +113,7 @@ $fences['barr'] = [
 							'image' => 'img/cement-in-posts.png',
 							'extra' => '',
 							'key' => 'post_options',
+							'default' => TRUE,
 						],
 					],
 				],
@@ -193,7 +198,7 @@ $fences['barr'] = [
 			'action' => ['add', 'edit'],
 			'custom' => TRUE,
 			'size' => [
-				'width' => 1060
+				'width' => 975
 			],
 			'fields' => [
 				[
@@ -265,13 +270,13 @@ $fences['barr'] = [
 							'title' => '',
 							'image' => 'img/base-plate-posts.png',
 							'extra' => '',
-							'default' => TRUE,
 						],
 						[
 							'slug'  => 'opt-2',
 							'title' => '',
 							'image' => 'img/cement-in-posts.png',
 							'extra' => '',
+							'default' => TRUE,
 						],
 					]
 				]									
@@ -319,7 +324,6 @@ $fences['barr'] = [
 							'image' => 'img/base-plate-posts.png',
 							'extra' => '',
 							'key' => 'post_options',
-							'default' => TRUE,
 						],
 						[
 							'slug'  => 'opt-2',
@@ -327,6 +331,7 @@ $fences['barr'] = [
 							'image' => 'img/cement-in-posts.png',
 							'extra' => '',
 							'key' => 'post_options',
+							'default' => TRUE,
 						],
 					]
 				],

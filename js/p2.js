@@ -2,7 +2,7 @@ function reload_fence_items() {
 
     var items = localStorage.getItem('custom_fence-section');
 
-    for (let i = 0; i < items; i++) {
+    for ( let i = 0; i < items; i++ ) {
 
         var section = `<div class="border p-3 rounded mb-4 mx-2">
             <div class="row align-items-center mb-3">
@@ -38,6 +38,8 @@ function reload_fence_items() {
 
 }
 reload_fence_items();
+
+//----------------------------------------------------------------
 
 function load_center_point(tab) {
 
@@ -81,7 +83,6 @@ function load_center_point(tab) {
         <span class="fc-div-c-p"></span>
         <span class="fc-end-c-p">${defaultCenterPoint}</span><br>Centers`;
 
-
     if( !$('#pp-'+tab+' .right_raked-panel .fencing-raked-panel').length && $('#pp-'+tab+' .post-right.panel-no-post').prev().prev().attr('data-key') != 'gate' ) {
 
         if( !$('#pp-'+tab+' .panel-item').last().next().next().next().hasClass('fencing-panel-gate') ) {
@@ -90,14 +91,12 @@ function load_center_point(tab) {
                                         .addClass('fc-last-c-p');
         }
 
-
         if( $('#pp-'+tab+' .right-panel-post.no-post').length ) {
             $('#pp-'+tab+' .fc-last-c-p').addClass('cp_no-post--right');
         }
 
         $('#pp-'+tab+' .fc-last-c-p').prepend(`<span class="fc-end-c-p">${defaultCenterPoint}</span><span class="fc-div-c-p"></span>`);
     
-
     } 
 
     $('#pp-'+tab+' .fc-result').append(overall);
@@ -138,12 +137,12 @@ function load_center_point(tab) {
 
     }
       
-
     if( $('#pp-'+tab+' .fencing-panel-gate').length && ! $('#pp-'+tab+' .left_raked-panel .fencing-raked-panel').length  ) {
       
         // If there is a gate and no step up & gate is not in the first order
         if( $('#pp-'+tab+' .fencing-panel-gate .fc-center-point .fc-start-c-p').length == 0 && $('#pp-'+tab+' .panel-item').first().prev().prev().prev().hasClass('fencing-panel-gate') ) {            
-            $('#pp-'+tab+' .fencing-panel-gate').find('.fc-div-c-p').after(first_point);
+            $('#pp-'+tab+' .fencing-panel-gate').find('.fc-div-c-p')
+                                                .after(first_point);
         }
     
     } 
@@ -161,10 +160,9 @@ function load_center_point(tab) {
 
 }
 
-
+//----------------------------------------------------------------
 
 function reload_load_fencing_items(tab) {
-
 
     var custom_fence_tab = localStorage.getItem('custom_fence-'+tab),
         custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
@@ -213,23 +211,22 @@ function reload_load_fencing_items(tab) {
     var tpl = $('script[data-type="panel_spacing-'+info.panel_group+'"]').text()
                                                      .replace(/{{center_point}}/gi, center_point);
 
-
     $(`#pp-${tab} .fencing-panel-container`).append(tpl);
 
     if( calc.short_panel.count ) {
 
-        for (let i = 0; i < 1; i++) {
+        for ( let i = 0; i < 1; i++ ) {
 
             var panel_number = i,
                 panel_size   = calc.short_panel.length,
                 panel_unit   = 'mm';
        
             var tpl = $('script[data-type="short_panel_item-'+info.panel_group+'"]').text()
-                                                         .replace(/{{center_point}}/gi, center_point)
-                                                         .replace(/{{panel_size}}/gi, panel_size+'W')
-                                                         .replace(/{{panel_unit}}/gi, '<br>PANEL')
-                                                         .replace(/{{panel_number}}/gi, panel_number)
-                                                         .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W');   
+                                                             .replace(/{{center_point}}/gi, center_point)
+                                                             .replace(/{{panel_size}}/gi, panel_size+'W')
+                                                             .replace(/{{panel_unit}}/gi, '<br>PANEL')
+                                                             .replace(/{{panel_number}}/gi, panel_number)
+                                                             .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W');   
                                              
         
             $(`#pp-${tab} .fencing-panel-container`).append(tpl);
@@ -279,9 +276,7 @@ function reload_load_fencing_items(tab) {
     //updateLastFencingPost();
 }
 
-
-
-
+//----------------------------------------------------------------
 
 function re_update_gate(action, tab) {
 
@@ -307,7 +302,7 @@ function re_update_gate(action, tab) {
     }
 
     var center_point = 50,        
-        mesurement = $('.measurement-box-number').val();
+        mesurement   = $('.measurement-box-number').val();
 
     var cf_data = {item:i,tab:tab},
         calc    = calculate_fences(cf_data);
@@ -347,7 +342,7 @@ function re_update_gate(action, tab) {
     }
 
     $('#pp-'+tab+' .fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
-                            .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>');
+                                        .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>');
 
 
 
@@ -358,6 +353,7 @@ function re_update_gate(action, tab) {
                       
 }
 
+//----------------------------------------------------------------
 
 function re_update_raked_panels(side, tab) {
 
@@ -402,7 +398,6 @@ function re_update_raked_panels(side, tab) {
                 }).get().join("");
             }
 
-
             if( has_post != 'yes-post' ) {
                 var has_post = 'no-post '+side_part+'-panel-post '+has_post;
             }
@@ -426,7 +421,6 @@ function re_update_raked_panels(side, tab) {
                     panel_h = calc.right_raked.height;
                 } 
 
-                
                 var tpl = $('script[data-type="'+v+'-panel-'+info.panel_group+'"]').text()
                                                                 .replace(/{{center_point}}/gi, center_point)
                                                                 .replace(/{{panel_size}}/gi, panel_h)
@@ -435,8 +429,7 @@ function re_update_raked_panels(side, tab) {
                                                                 .replace(/{{post}}/gi, has_post)
                                                                 .replace(/{{center_post}}/gi, defaultCenterPoint);   
                                                                 
-
-                if( typeof panel_h !== "undefined"){
+                if( typeof panel_h !== "undefined" ){
                     $('#pp-'+tab+' .'+v+'-panel').html(tpl);    
                 }
                 
@@ -465,7 +458,10 @@ function re_update_raked_panels(side, tab) {
     });
 
     // Left Panel post
-    var left_panel_post = $('#pp-'+tab+' .left-panel-post.no-post span').text().replace('(', '').replace(')', '');
+    var left_panel_post = $('#pp-'+tab+' .left-panel-post.no-post span').text()
+                                                                        .replace('(', '')
+                                                                        .replace(')', '');
+
     $('#pp-'+tab+' .left-panel-post.no-post span').text('('+left_panel_post+')');
 
     // Right Panel Post
@@ -476,7 +472,7 @@ function re_update_raked_panels(side, tab) {
     
     load_post_options_first_last_values(custom_fence, info, tab);
 
-    load_post_options_all(custom_fence, info, tab);
+    load_post_options_all(custom_fence, info, tab, calc);
 
 
     $('#pp-'+tab+' .fc-result').css({'padding': ''});

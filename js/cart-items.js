@@ -2,17 +2,21 @@
 FENCES = FENCES || {};
 
 FENCES.cartItems = {
-    
+   
     item: {
         gateKit1: {
             slug: 'gate+kit',
             qty: 1
         },
         gateKit2: {
-            slug: 'gate+hinges',
+            slug: 'gate+converter',
             qty: 1
         },
         gateKit3: {
+            slug: 'gate+hinges',
+            qty: 1
+        },        
+        gateKit4: {
             slug: 'gate+latch',
             qty: 1
         },
@@ -23,8 +27,18 @@ FENCES.cartItems = {
         }
     },
 
-    init: function(i, slug) {
-        
+    init: function(i) {
+
+        var tabInfo = JSON.parse(localStorage.getItem('custom_fence-'+i)),
+            slug = tabInfo[0].fence;
+
+        var fenceInfo = JSON.parse(localStorage.getItem('custom_fence-'+i+'-'+slug));
+
+        var i = i + 1;
+
+        window.tabInfo   = tabInfo;
+        window.fenceInfo = fenceInfo;
+
         $(`.fc-section-${i}`).click();
 
         // Sample data (object or multi-dimensional array)
@@ -79,7 +93,7 @@ FENCES.cartItems = {
             
             //Merge the two strings to create an cart item slug
             //example: `panel_options+even` = `{cartKey}+{cartValue}`
-            let modifiedCartKey = `${cartKey}+${cartValue}`;
+            let modifiedCartKey = cartValue ? `${cartKey}+${cartValue}` : cartKey;
 
             //Init an empty object
             //This will contain the cart item data
@@ -93,13 +107,11 @@ FENCES.cartItems = {
 
             //additional condition for some cart items
             if( cartKey === "gate" ){
-                modifiedCartKey = cartKey;
+             //   modifiedCartKey = cartKey;
 
                 //Since `gate_kit` shares the same value with `gate`
                 //create the entry for `gate_kit` manually
                 newCartItems.push(FENCES.cartItems.item.gateKit1);
-                // newCartItems.push(FENCES.cartItems.item.gateKit2);
-                // newCartItems.push(FENCES.cartItems.item.gateKit3);
 
             }
 
@@ -185,12 +197,64 @@ FENCES.cartItems = {
         //Apply condition for panel_post
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
         
+        newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
+
         console.log(newCartItems);
 
         return newCartItems;
 
     },
 
+    cart_conditions: function(array) {
+
+    var tabInfo   = window.tabInfo,
+        fenceInfo = window.fenceInfo;
+
+       if( tabInfo[0].fence == 'barr' && fenceInfo ) {
+
+            /*
+                1200H & 1800H Gates: 
+                - if Standard Size Gate is selected = add 1x 975W Gate & 1x Hinge & Latch Kit Only
+                - if Custom Size Gate is selected = add 1x Panel & 1x Gate Converter & 1x Hinge & Latch Kit
+            */
+            var tabInfo_filtered_data = tabInfo[0].fields.filter(function(item) {
+                if( item.name == 'fence_height' ) {
+                    return item;
+                }
+            });
+
+
+            const isSTDGate = fenceInfo[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val']);
+
+            fenceHeight = parseInt(tabInfo_filtered_data[0].value);
+
+            if( [1200, 1800].includes(fenceHeight) ) {
+
+                if( isSTDGate ) {
+                    array.push(FENCES.cartItems.item.gateKit3);
+                    array.push(FENCES.cartItems.item.gateKit4);
+                } else {
+
+                    // Converter
+                    FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
+                    array.push(FENCES.cartItems.item.gateKit2);
+            
+                    array.push(FENCES.cartItems.item.gateKit3);
+                    array.push(FENCES.cartItems.item.gateKit4);
+                }
+
+            } else {
+                // Converter
+                FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
+                array.push(FENCES.cartItems.item.gateKit2);                
+            }
+
+        }
+
+
+        return array;
+
+    },
     
     /**
      * IF gate is found
@@ -369,8 +433,8 @@ FENCES.cartItems = {
 
         //Find the two objects with slug `panel_post+opt-1` and `raked_post+opt-1` in the array
         //If it exists means user selected it
-        const foundPanelPostOpt1 = array.find(obj => obj['slug'] === "panel_post+opt-1");
-        const foundRakedPostOpt1 = array.find(obj => obj['slug'] === "raked_post+opt-1");
+        const foundPanelPostOpt1 = array.find(obj => obj['slug'].includes("panel_post+opt-1") );
+        const foundRakedPostOpt1 = array.find(obj => obj['slug'].includes("raked_post+opt-1") );
         const foundGate = array.find(obj => obj['slug'] === "gate");
 
         //If any of the slug returns undefined, do nothing

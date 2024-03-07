@@ -34,7 +34,10 @@ if( $qid = @$_GET['qid'] ) {
     }
 }
 
+/*    $the_products = load_csv('data/products.csv');
 
+dd($the_products);
+*/
 ?>
 
 <title>Fencing Calculator</title>
@@ -301,7 +304,7 @@ if( $qid = @$_GET['qid'] ) {
 
                                         </span>
 
-                                        <button type="button" class="fc-btn btn-lg py-3 text-uppercase btn-fc-calculate my-0 fw-bold"><small>Calculate</small></button>
+                                        <button type="button" class="btn btn-dark py-3 text-uppercase btn-fc-calculate px-3 fw-bold"><small>Calculate</small></button>
 
                                     </div>
 

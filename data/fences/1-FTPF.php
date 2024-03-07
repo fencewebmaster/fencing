@@ -168,6 +168,7 @@ $fences['flat_top'] = [
 			'title' => 'Add / Remove Gate',
 			'label' => 'Gate',
 			'action' => ['add', 'edit'],
+			'custom' => FALSE,
 			'size' => [
 				'width' => 1060
 			],

@@ -9,8 +9,10 @@ function base_url($param ='') {
 	);
 }
 
+//----------------------------------------------------------------
+
 function toURL($url){
-    if(isset($_SERVER['HTTPS'])){
+    if( isset($_SERVER['HTTPS'])){
         $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
     } else {
         $protocol = 'https';
@@ -18,9 +20,13 @@ function toURL($url){
     return $protocol . "://" . $url;
 }
 
+//----------------------------------------------------------------
+
 function get_uid($l=10) {
     return strtoupper(substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyz"), 0, $l));
 }
+
+//----------------------------------------------------------------
 
 function sites($key = '', $value = 'id', $search = false) {
 
@@ -117,6 +123,8 @@ function sites($key = '', $value = 'id', $search = false) {
 
 }
 
+//----------------------------------------------------------------
+
 function selected_fences($fences, $column = 'slug') {
     
     $info = $_SESSION['fc_data'];
@@ -130,6 +138,8 @@ function selected_fences($fences, $column = 'slug') {
 
     return $fence_data; 
 }
+
+//----------------------------------------------------------------
 
 function get_items($key, $items, $list = false) {  
 
@@ -153,6 +163,7 @@ function get_items($key, $items, $list = false) {
 
 }
 
+//----------------------------------------------------------------
 
 function array_to_json($val='') {
 

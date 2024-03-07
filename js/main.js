@@ -38,6 +38,8 @@ FENCES = {
     }
 };
 
+
+
 $(function(){
     FENCES.init();
 });

@@ -31,7 +31,9 @@ $("#fc-planning-form").validate({
 
     }
 });
-    
+
+
+
 $(document).on('click', '.fc-btn-update', function(e) {
     e.preventDefault();
    
@@ -91,7 +93,7 @@ function reload_fence_items() {
     var tab = getSearchParams('tab');
     var form = getSearchParams('form');
 
-    for (let i = 1; i <= items; i++) {
+    for ( let i = 1; i <= items; i++ ) {
 
         var index = i-1;
 
@@ -124,7 +126,7 @@ function reload_fence_items() {
     } 
 
     setTimeout(function(){
-         if(section) { 
+         if( section ) { 
             $('.fencing-tab-selected').removeClass('fencing-tab-selected');
             $('.fc-section-'+section).addClass('fencing-tab-selected');
         } 

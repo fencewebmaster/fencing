@@ -133,16 +133,17 @@ function calculate_fences( data ) {
     });
 
     // add gate
-
     if( gate_data.length ) {
-
+   
         if( gate_data[0]?.settings.size ) {
-            C8 = gate_data[0]?.settings.size;    
+            C8 = gate_data[0]?.settings.size;  
+      
         } else {
             C8  = info.settings.gate.size.width;   
         }
     
     }
+
 
 
     // raked panel left
@@ -242,13 +243,16 @@ function calculate_fences( data ) {
     }
 
 
-
-
     offcut_panel_count = C20;
     offcut_panel_length = isNaN(D20) ? 0 : Math.round(D20);
 
     gate_count = isNaN(C21) ? 0 : C21;
-    gate_width = isNaN(D21) ? 0 : (D21 ? D21-50-20-20 : 0);
+    gate_length = isNaN(D21) ? 0 : (D21 ? D21-50-20-20 : 0);
+
+    gate_width = C8;
+    if( info.settings.gate.custom == false ) {
+        gate_width = gate_length;
+    }
 
     /*    
         console.log('C', C3, C14, C5, C15, C16, C17, C19, C18, C21);
@@ -291,7 +295,8 @@ function calculate_fences( data ) {
         },
         'gate' : {
             'count' : gate_count,
-            'length' : gate_width
+            'width' : gate_width,
+            'length' : gate_length
         },
         'left_raked' : {
             'count' : gate_count,
