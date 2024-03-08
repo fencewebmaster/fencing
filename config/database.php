@@ -24,16 +24,9 @@ class Database {
             $this->database = "u643294075_zZTA7";
             $this->prefix   = 'wp_';
 
-        } elseif( $_SERVER['HTTP_HOST'] == 'fencesperth.com' ) {
-
-            $this->host     = "localhost";
-            $this->username = "u643294075_aMvzg";
-            $this->password = "mW5LMKeLEf";
-            $this->database = "u643294075_H57MF";
-            $this->prefix   = 'wp_';
-
         } else {
-
+            
+            // fencesperth.com
 	        $this->host     = "localhost";
 	        $this->username = "u643294075_aMvzg";
 	        $this->password = "mW5LMKeLEf";

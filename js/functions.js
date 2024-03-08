@@ -1257,7 +1257,7 @@ function removeItemStorageWith(startsWith) {
 
 function submit_fence_planner(status ='') {
 
-    // window.onbeforeunload = function() {}
+    window.onbeforeunload = function() {}
 
     // Removed unwanted cart
     removeItemStorageWith('cart_items-');

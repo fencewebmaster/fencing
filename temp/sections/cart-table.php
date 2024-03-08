@@ -14,7 +14,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                 <tr>
                     <th class="text-center">QTY</th>
                     <th colspan="2">Description</th>
-                    <th class="text-center d-sm-block d-none">In-stock</th>
+                    <th class="text-center d-md-table-cell d-none">In-stock</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,15 +37,23 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                         <?php endif; ?>
 
                     </td>
+
                     <?php $featured_image = add_filepath_last(@$cart_item['image'], '-600x600'); ?>
-                    <td style="background:url(<?php echo @$featured_image; ?>);" class="product-image p-1">
+                    <td style="background:url(<?php echo @$featured_image; ?>);" class="product-image p-1 d-sm-table-cell d-none">
+
                     </td>
-                    <td class="align-top">
+                    <td class="align-top" style="width: max-content;">
                         <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>
                         <div class="text-muted mb-2"><?php echo @$cart_item['sku']; ?></div>
 
-                        <div class="d-block d-sm-none fc-stock-status fc-stock-status--<?php echo @$cart_item['stock']; ?>">
-                            In-stock: <?php echo ucwords(@$cart_item['stock']); ?>
+                        <div class="d-block d-md-none">
+                            <div class="fw-bold d-flex align-items-center">
+                            <?php if(@$cart_item['stock'] == 'yes'): ?>
+                                 <i class="fa-solid fa-circle-check text-success me-2 fs-6"></i> In-stock: Yes
+                            <?php else: ?>
+                            <i class="fa-solid fa-circle-exclamation text-orange fs-6 me-2"></i> In-stock: Low
+                            <?php endif; ?>
+                            </div>
                         </div>
 
                         <small class="fc-text-success d-nonex"><?php echo @$cart_item['slug']; ?></small>
@@ -55,10 +63,14 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                     <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>
                     <td>$<?php echo @$cart_item['trade_price']; ?></td>
                     <td>$<?php echo number_format(@$cart_item['subtotal'], 2); ?></td> -->
-                    <td width="90" class="px-1 align-middle text-center text-center d-sm-table-cell d-none">
+                    <td width="90" class="px-1 align-middle text-center text-center d-md-table-cell d-none">
 
-                        <div class="fc-stock-status fc-stock-status--<?php echo @$cart_item['stock']; ?>">
-                            <?php echo ucwords(@$cart_item['stock']); ?>
+                        <div class="fw-bold d-flex align-items-center justify-content-center">
+                        <?php if(@$cart_item['stock'] == 'yes'): ?>
+                             <i class="fa-solid fa-circle-check text-success me-2 fs-4"></i> Yes
+                        <?php else: ?>
+                        <i class="fa-solid fa-circle-exclamation text-orange fs-4 me-2"></i> Low
+                        <?php endif; ?>                            
                         </div>
 
                     </td>

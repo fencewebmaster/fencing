@@ -41,7 +41,9 @@
   background-size: contain !important;
   vertical-align: top;
 }
-
+.text-orange {
+    color: #f67925;
+}
 .fc-icon-xs {
   width: 15px;
   height: 15px;
@@ -682,7 +684,7 @@ a.fc-tab-active {
   background: #e1ecf1;
   height: 120px;
   width: 150px;
-  border: 1px solid #d1d1d1;
+  border: 2px solid #d1d1d1;
   position: relative;
   display: flex;
   justify-content: center;
@@ -736,6 +738,10 @@ a.fc-tab-active {
 
 .fencing-panel-gate .fc-center-point {
   width: calc(100% + 10px);
+}
+
+.raked-panel-container .fc-center-point {
+    bottom: -63px;
 }
 
 .fc-overall {
@@ -809,7 +815,7 @@ a.fc-tab-active {
   width: 100%;
   max-width: 95px;
   margin: 0 5px;
-  border-top: 1px solid;
+  border-top: 2px solid;
   border-right-color: #000 !important;
   border-left-color: #000 !important;
 }
@@ -2591,12 +2597,15 @@ thead.fc-border th:last-child {
 .fencing-tabs-container {
   width: 100%;
   display: inline-block;
-  height: 66px;
+  height: 65px;
   margin-top: 40px;
 }
 @media (max-width: 992px) {
   .fencing-tabs-container--project-plan {
     height: 41px;
+  }
+  .fencing-tabs-container {
+    height: 55px;
   }
 }
 .fencing-tabs-area {
@@ -2722,7 +2731,7 @@ thead.fc-border th:last-child {
 @media (max-width: 992px) {
   .fencing-tab-name {
     width: 100%;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 24px;
     top: 0;
   }
@@ -2766,6 +2775,7 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
   transition: all 0.2s ease;
   border-radius: 0 16px 0 0;
+  height: 100%;
 }
 @media (max-width: 992px) {
   .fencing-tab-add {
@@ -2900,16 +2910,6 @@ thead.fc-border th:last-child {
     margin-bottom: 4px;
   }
 }
-@media (min-width: 768px) {
-  .fc-tab-title:not(:empty):after {
-    content: "";
-    background-color: #fff;
-    display: inline-block;
-    margin: 0 8px;
-    height: 20px;
-    width: 1px;
-  }
-}
 
 .fc-tab-subtitle {
   font-weight: 400;
@@ -2923,13 +2923,13 @@ thead.fc-border th:last-child {
 }
 
 .fencing-raked-panel {
-  height: 180px !important;
+  height: 159px !important;
   border-top: 0 !important;
 }
 
 .raked-panel-container {
   position: relative;
-  top: -46px;
+  top: -41px;
 }
 
 /* Left panel - A */
@@ -2942,7 +2942,7 @@ thead.fc-border th:last-child {
   -webkit-clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
   clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
   background: #bebebe;
-  padding-top: 1px;
+  padding-top: 2px;
 }
 
 @media (min-width: 1024px) {
@@ -2961,7 +2961,7 @@ thead.fc-border th:last-child {
   -webkit-clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
   clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
   background: #bebebe;
-  padding-top: 1px;
+  padding-top: 2px;
 }
 
 @media (min-width: 1024px) {
@@ -2972,14 +2972,14 @@ thead.fc-border th:last-child {
 
 /* Left panel - B */
 .fencing-left-panel-b {
-  -webkit-clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-  clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+  -webkit-clip-path: polygon(36% 0, 67% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+  clip-path: polygon(36% 0, 67% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
 }
 
 .fencing-left-panel-o-b {
   -webkit-clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
   clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-  padding-top: 1px;
+  padding-top: 2px;
   background: #000;
 }
 
@@ -2992,14 +2992,14 @@ thead.fc-border th:last-child {
 
 /* Right panel - B */
 .fencing-right-panel-b {
-  -webkit-clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
-  clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
+  -webkit-clip-path: polygon(37% 25%, 68% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
+  clip-path: polygon(37% 25%, 68% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
 }
 
 .fencing-right-panel-o-b {
   -webkit-clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
   clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
-  padding-top: 1px;
+  padding-top: 2px;
   background: #000;
 }
 
@@ -3619,9 +3619,11 @@ thead.fc-border th:last-child {
   background-color: initial;
   border-color: #000;
   background-size: 10px;
-  border-left-color: transparent;
-  border-right-color: transparent;
   background-color: #fff;
+}
+.fencing-panel-item:not(.fencing-panel-gate) {
+  margin-left: -1px;
+  margin-right: -5px;  
 }
 
 .offcut-b {
@@ -3685,7 +3687,7 @@ thead.fc-border th:last-child {
 
 @media (min-width: 1024px) {
   .fencing-panel-item:hover {
-    border: 1px solid var(--fc-princeton-orange);
+    border: 2px solid var(--fc-princeton-orange);
     background-color: #ffeded;
   }
 }
@@ -4381,10 +4383,9 @@ thead.fc-border th:last-child {
 
 .fencing-tabs {
   justify-content: space-between;
+  background: #fff;
 }
 .sticky-roll .fencing-tabs {
-    border-right: 2px solid #f67925;
-    border-left: 2px solid #f67925;  
     border-bottom: 2px solid #f67925; 
 }
 

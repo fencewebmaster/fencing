@@ -25,11 +25,11 @@ $fences['barr'] = [
 			'slug' => 'important_note',
 			'title' => 'Fence Height',
 			'description' => '<span class="mb-1 d-block">To meet pool compliance your fence height MUST BE above 1200H</span>
-			<b class="text-danger">1200mm:</b><br>
+			<span class="border d-block p-2 rounded">
+			<b class="text-danger">1200mm</b><br>
 			Base Plated Posts = 50x50mm Posts<br>
 			Cemented In Posts = 50x25mm Posts<br>
-			*Due to the 1800H height for Base Plated posts we need to use 50x50mm Base Plated Posts
-			',
+			*Due to the 1800H height for Base Plated posts we need to use 50x50mm Base Plated Posts</span>',
 			'target' => '.step-2_notes',
 			'type' => 'important-note',
 		]

@@ -29,14 +29,17 @@ FENCES.cartItems = {
 
     init: function(i) {
 
-        var tabInfo = JSON.parse(localStorage.getItem('custom_fence-'+i));
-        window.tabInfo   = tabInfo;
-        
+        var tabInfo    = JSON.parse(localStorage.getItem('custom_fence-'+i));
+        window.tabInfo = tabInfo;
+
+        var slug = tabInfo[0].fence;
+
         if( tabInfo ) {
-            var slug = tabInfo[0].fence;
-            var fenceInfo = JSON.parse(localStorage.getItem('custom_fence-'+i+'-'+slug));
+            var fenceInfo    = JSON.parse(localStorage.getItem('custom_fence-'+i+'-'+slug));
             window.fenceInfo = fenceInfo;            
         }
+
+
 
         var i = i + 1;
 
@@ -186,16 +189,18 @@ FENCES.cartItems = {
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
         
         newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
-
+        console.log(newCartItems);
         return newCartItems;
 
     },
 
     cart_conditions: function(array) {
 
-        var tabInfo   = window.tabInfo;
+        var tabInfo   = window.tabInfo,
+            fenceInfo = window.fenceInfo;
 
-       if( tabInfo[0].fence == 'barr' ) {
+
+        if( tabInfo[0].fence == 'barr' ) {
 
             /*
                 1200H & 1800H Gates: 
@@ -208,30 +213,39 @@ FENCES.cartItems = {
                 }
             });
 
+            const foundGate = array.find(obj => obj['slug'].includes('gate') );
 
-            const isSTDGate = fenceInfo[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val']);
+            if( foundGate ) {
 
-            fenceHeight = parseInt(tabInfo_filtered_data[0].value);
+                isSTDGate = false;
 
-            if( [1200, 1800].includes(fenceHeight) ) {
-
-                if( isSTDGate ) {
-                    array.push(FENCES.cartItems.item.gateKit3);
-                    array.push(FENCES.cartItems.item.gateKit4);
-                } else {
-
-                    // Converter
-                    FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
-                    array.push(FENCES.cartItems.item.gateKit2);
-            
-                    array.push(FENCES.cartItems.item.gateKit3);
-                    array.push(FENCES.cartItems.item.gateKit4);
+                if( fenceInfo ) {
+                    isSTDGate = fenceInfo[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val']);
                 }
 
-            } else {
-                // Converter
-                FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
-                array.push(FENCES.cartItems.item.gateKit2);                
+                fenceHeight = parseInt(tabInfo_filtered_data[0].value);
+
+                if( [1200, 1800].includes(fenceHeight) ) {
+
+                    if( isSTDGate ) {
+                        array.push(FENCES.cartItems.item.gateKit3);
+                        array.push(FENCES.cartItems.item.gateKit4);
+                    } else {
+
+                        // Converter
+                        FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
+                        array.push(FENCES.cartItems.item.gateKit2);
+                
+                        array.push(FENCES.cartItems.item.gateKit3);
+                        array.push(FENCES.cartItems.item.gateKit4);
+                    }
+
+                } else {
+                    // Converter
+                    FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
+                    array.push(FENCES.cartItems.item.gateKit2);                
+                }
+
             }
 
         }

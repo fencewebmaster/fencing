@@ -180,7 +180,8 @@ dd($the_products);
                 <div class="fc-section-step" data-tab="1">
                     
                     <div class="fc-content-tab-title">
-                        <span class="fc-tab-title"></span><span class="fc-tab-subtitle"></span>
+                        <span class="fc-tab-title me-2"></span>
+                        <span class="fc-tab-subtitle"></span>
                     </div>
 
                     <div class="fencing-section fencing-section--has-border fencing-section--no-radius-top">
@@ -274,7 +275,7 @@ dd($the_products);
 
                             <div class="row align-items-center">
                                 
-                                <div class="col-lg-5 col-md-7 fc-input-container mb-3">
+                                <div class="col-lg-5 col-md-6 fc-input-container mb-3">
                                     
                                     <div class="step-label mb-2">Step <span>02</span></div>
 
@@ -310,12 +311,12 @@ dd($the_products);
 
                                     <div class="fc-input-msg error-msg"></div>
                                 </div>
-                                <div class="col-lg col-md-auto"></div>
-                                <div class="col-lg-5 col-md">
+                                <div class="col-lg d-lg-inline-block d-md-none"></div>
+                                <div class="col-lg-6 col-md-6">
 
                                     <div class="alert alert-gray float-end">
 
-                                        <div class="text-uppercase fw-bold text-dark mb-3">
+                                        <div class="text-uppercase fw-bold text-dark mb-2">
                                             <i class="fc-icon fc-icon-capa me-1"></i> Important
                                         </div>
 
