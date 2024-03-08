@@ -35,7 +35,7 @@
                     <!-- END FORM MODAL PROGRESS BAR - STEP 1 -->
 
 
-                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Project Details</h2>
+                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Customer Details</h2>
 
                     <?php include 'temp/modal/submit/form/customer-details.php'; ?>
 

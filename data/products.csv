@@ -41,6 +41,9 @@ raked_post+opt-2,Post - 2400,PoolSafe Post Black 2400L - Cemented-In,GO,flat_top
 base_plate+post_cap,Post Cap,PoolSafe Post Cap,GO,flat_top,PO-CAP-B-GO,OFF,OFF,OFF,OFF
 base_plate+post_cover,Post Cover,PoolSafe Post Cover - 2pc - 50x50mm - Black,GO,flat_top,PO-COV-2P-B-GO,PO-COV-2P-W-GO,PO-COV-2P-M-GO,OFF,OFF
 ,,,,,,,,,
+panel_options+even+1000,Panel - 1000H,BARR Panel - 1000H x 1733W,JG,barr,BARR-P1000H-B-GO,BARR-P1000H-W-GO,,,
+panel_options+even+1200,Panel - 1200H,BARR Panel - 1200H x 2205W,JG,barr,BARR-P1200H-B-GO,BARR-P1200H-W-GO,,,
+panel_options+even+1800,Panel - 1800H,BARR Panel 1800H x 1969W,JG,barr,BARR-P1800H-B-GO,BARR-P1800H-W-GO,,,
 panel_options+full+1000,Panel - 1000H,BARR Panel - 1000H x 1733W,JG,barr,BARR-P1000H-B-GO,BARR-P1000H-W-GO,,,
 panel_options+full+1200,Panel - 1200H,BARR Panel - 1200H x 2205W,JG,barr,BARR-P1200H-B-GO,BARR-P1200H-W-GO,,,
 panel_options+full+1800,Panel - 1800H,BARR Panel 1800H x 1969W,JG,barr,BARR-P1800H-B-GO,BARR-P1800H-W-GO,,,

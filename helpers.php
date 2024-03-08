@@ -47,7 +47,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 1,
             'domain'   => "fencesperth.com",
             'url'      => toURL('fencesperth.com'),
-            'supplier' => "GO",
+            'supplier' => "JG",
             'logo'     => "https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png",
             'name'     => "Perth's Fencing Outlet"
         ],
