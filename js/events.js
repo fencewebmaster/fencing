@@ -364,26 +364,22 @@ $(document).on('change', '.fc-select-option', function(event){
 
     var side = ['left_raked', 'right_raked'];
 
-  //  setTimeout(function(){
-        $('.raked-panel').html('');
-        update_raked_panels( side ); 
+    $('.raked-panel').html('');
 
-        // raked panel
-        if( $('.fencing-raked-panel').length && $(".fencing-panel-spacing-number:contains('undefined')").length ) {
+    update_raked_panels( side ); 
 
-            var calc   = calculate_fences(),
-                raked  = 1200,
-                post   = 50,
-                length = $('.measurement-box-number');
+    // raked panel
+    if( $('.fencing-raked-panel').length && $(".fencing-panel-spacing-number:contains('undefined')").length ) {
 
-            length.val( parseInt(length.val()) + raked + post);
+        var calc   = calculate_fences(),
+            raked  = 1200,
+            post   = 50,
+            length = $('.measurement-box-number');
 
-            $('.btn-fc-calculate').click();
-        }
+        length.val( parseInt(length.val()) + raked + post);
 
-  //  });    
-     
-    
+        $('.btn-fc-calculate').click();
+    }
 
 });
 
@@ -401,12 +397,14 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     //Button Data Information
     var target = $(this).data('target'),
-        key = $(this).data('key'),
-        i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
-        tab = $('.fencing-tab.fencing-tab-selected').index(),
-        custom_fence = localStorage.getItem('custom_fence-'+tab+'-'+i),
-        custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
-        info = fc_data[i];
+        key = $(this).data('key');
+
+    var fd = getSelectedFenceData();
+    
+    var i    = fd.slug,
+        tab  = fd.tab,
+        info = fd.info,
+        data = fd.data;
 
     modal.el = $(target);
     modal.content = modal.el.find(modal.content);
@@ -421,7 +419,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     FENCES.setActiveSetting(key);
 
-    var fields = info?.settings[key]?.fields;
+    var fields = data?.settings[key]?.fields;
 
     if( typeof fields !== "undefined" ){
 
@@ -527,7 +525,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         });
     
         // Custom gate
-        if( info?.settings[key]?.custom ) {
+        if( data?.settings[key]?.custom ) {
             var maxWidth = $('[name="fence_height"]').val();
   
             var tpl = $('script[data-type="custom-gate"]').text()
@@ -537,19 +535,18 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     }
     
-
     //Get data based on key
-    var filtered_data = custom_fence.filter(function(item) {
+    var filtered_data = info.filter(function(item) {
         return item.control_key == key;
     });
 
     removeDuplicateCloseBtn();
-    set_field_value( filtered_data );
 
+    set_field_value( filtered_data );
 
     // Default load of STD gate
     if( ! $('[name="width"]').val() || $('[name="use_std"]').is(':checked') ) {
-        var gateWidth = info.settings.gate.size.width;
+        var gateWidth = data.settings.gate.size.width;
         $('[name="use_std"]').prop('checked', true);
         $('[name="width"]').val(gateWidth);
         disabledCustomGate();
@@ -1064,14 +1061,14 @@ $(window).on('scroll resize', function(){
     var spy    = $('[data-spy="scroll"]'),
         target = spy.attr('data-target'),
         offset = spy.attr('data-offset'),
-        screenSize = parseInt(spy.attr('data-screen')),
-        w = $(target).width();
+        screen = parseInt(spy.attr('data-screen')),
+        width  = $(target).width();
 
     spy.removeClass('sticky-roll').css({'width':''});
 
-    if( target && $('body').innerWidth() >= screenSize ) {
+    if( target && $('body').innerWidth() >= screen ) {
         if( $(window).scrollTop() > ($(target).offset().top) ) {        
-            spy.addClass('sticky-roll').css({'width':w, 'top': offset});
+            spy.addClass('sticky-roll').css({'width':width, 'top': offset});
         }        
     }
 

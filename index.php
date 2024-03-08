@@ -50,13 +50,6 @@ dd($the_products);
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
 
-<style type="text/css">
-/* Temporary solution to hide frameless pool from the selection */
-.fc-center-point {
-    display: none;
-}
-</style>
-
 <!-- START FORM SUBMISSION LOADER -->
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
@@ -156,12 +149,6 @@ dd($the_products);
 
         <div class="fc-section-details">
             
-            <!-- @TODO: Are we hiding this header tab? It no longer exists in figma -->
-            <!-- <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="1">
-                <div class="fc-header-tab__area">
-                    <a href="#" data-tab="1" data-move="2" class="tab-selected">Section Details</a>
-                </div>
-            </div> -->
 
         <!-- START TABS -->
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
@@ -559,9 +546,9 @@ dd($the_products);
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 
 <script type="text/javascript">
-var fc_data = <?php echo json_encode($fences); ?>;
+var fc_data       = <?php echo json_encode($fences); ?>;
 var fc_fence_info = <?php echo json_encode($res); ?>;
-var planner_id = "<?php echo @$_SESSION['planner_id']; ?>";  
+var planner_id    = "<?php echo @$_SESSION['planner_id']; ?>";  
 </script>
 
 <script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
