@@ -1,0 +1,1 @@
+ <div class="my-3 text-center text-secondary small">Fencing Calculator v<?php echo get_version(); ?></div>

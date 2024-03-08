@@ -63,7 +63,7 @@
 .qty-edited {
 	position: absolute;
 	left: -10px;
-	top: calc(50% - 12px);
+	top: 5px;
 	font-size: 12px;
 	background: #fff;
 	padding: 5px;

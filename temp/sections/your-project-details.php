@@ -15,8 +15,8 @@
 								<td width="100">Name</td>
 								<td>
 									<span><?php echo @$info['name']; ?></span>
-									<div class="fc-form-group">
-										<input type="text" name="name" value="<?php echo @$info['name']; ?>" class="fc-form-control fc-form-control-sm">
+									<div class="fc-form-group has-clear">
+										<input type="text" name="name" value="<?php echo @$info['name']; ?>" class="form-control">
 									</div>
 								</td>
 							</tr>
@@ -24,8 +24,8 @@
 								<td>Contact</td>
 								<td>
 									<span><?php echo @$info['mobile']; ?></span>
-									<div class="fc-form-group">
-										<input type="text" name="mobile" value="<?php echo @$info['mobile']; ?>" class="fc-form-control fc-form-control-sm">
+									<div class="fc-form-group has-clear">
+										<input type="text" name="mobile" value="<?php echo @$info['mobile']; ?>" class="form-control">
 									</div>
 								</td>
 							</tr>
@@ -33,8 +33,8 @@
 								<td>Email</td>
 								<td>
 									<span><?php echo @$info['email']; ?></span>
-									<div class="fc-form-group">
-										<input type="email" name="email" value="<?php echo @$info['email']; ?>" class="fc-form-control fc-form-control-sm no-space" required>
+									<div class="fc-form-group has-clear">
+										<input type="email" name="email" value="<?php echo @$info['email']; ?>" class="form-control no-space" required>
 									</div>
 								</td>
 							</tr>
@@ -42,8 +42,8 @@
 								<td>State</td>
 								<td>
 									<span><?php echo @$info['state'] ? fc_state(@$info['state']) : ''; ?></span>
-									<div class="fc-form-group">
-										<select name="state" class="fc-form-control fc-form-control-sm" required>
+									<div class="fc-form-group has-clear">
+										<select name="state" class="form-control" required>
 											<option value="">Select an option…</option>
 											<?php foreach( fc_state() as $state_k => $state_v ): ?>
 											<option value="<?php echo $state_k; ?>" <?php echo @$info['state']==$state_k ? 'selected': ''; ?>><?php echo $state_v; ?></option>
@@ -56,8 +56,8 @@
 								<td>Post Code</td>
 								<td>
 									<span><?php echo @$info['postcode']; ?></span>
-									<div class="fc-form-group">
-										<input type="text" name="postcode" value="<?php echo @$info['postcode']; ?>" class="fc-form-control fc-form-control-sm">
+									<div class="fc-form-group has-clear">
+										<input type="text" name="postcode" value="<?php echo @$info['postcode']; ?>" class="form-control">
 									</div>
 								</td>
 							</tr>
@@ -65,8 +65,8 @@
 								<td>Address</td>
 								<td>
 									<span><?php echo @$info['address']; ?></span>
-									<div class="fc-form-group">
-										<input type="text" name="address" value="<?php echo @$info['address']; ?>" class="fc-form-control fc-form-control-sm">
+									<div class="fc-form-group has-clear">
+										<input type="text" name="address" value="<?php echo @$info['address']; ?>" class="form-control">
 									</div>
 								</td>
 							</tr>
@@ -182,8 +182,8 @@
 									<td>
 										
 										<span><?php echo @$info['notes']; ?></span>
-										<div class="fc-form-group">
-												<textarea name="notes" placeholder="Write your notes here" class="fc-form-control" rows="5"><?php echo @$info['notes']; ?></textarea>
+										<div class="fc-form-group has-clear">
+												<textarea name="notes" placeholder="Write your notes here" class="form-control" rows="5"><?php echo @$info['notes']; ?></textarea>
 										</div>
 									</td>
 								</tr>

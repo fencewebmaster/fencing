@@ -215,7 +215,7 @@
 																		
 		            <!-- START PRODUCT LIST -->
 					<div class="fc-cart-items">
-						<div class="fc-card fc-mb-3">
+						<div class="fc-card">
 
 							<div id="update_cart-section" class="fencing-section fencing-section--has-border">
 
@@ -335,7 +335,8 @@
 	</form>
 	<!-- END CHECKOUT FORM -->
 
-
+    <?php include 'temp/copyright.php'; ?>
+    
 </div>
 <!-- END FENCING CONTAINER -->
 

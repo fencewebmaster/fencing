@@ -1073,3 +1073,25 @@ $(window).on('scroll resize', function(){
     }
 
 });
+
+
+
+$(document).on('keyup', '.form-control', function() {
+    var clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`;
+    $(this).siblings('.form-control-clear').remove();
+    if( $(this).val() ) $(this).after(clear);
+});
+
+$(document).on('click', '.form-control-clear', function() {
+    $(this).siblings('.form-control').val('').focus().trigger('keyup');
+    $(this).remove();
+});
+
+
+setTimeout(function(){
+    $('.has-clear .form-control').each(function(){
+        if( $(this).val() ) {
+            $(this).trigger('keyup');   
+        }
+    });
+}, 200);

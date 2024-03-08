@@ -147,8 +147,8 @@ dd($the_products);
         </div>
         <!-- END TABS -->
 
-        <div class="fc-section-details">
-            
+        <div class="fc-section-details">       
+
 
         <!-- START TABS -->
             <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
@@ -487,12 +487,14 @@ dd($the_products);
                                     </div>
 
                                     <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
-                                        <div class="fc-p-1">
-                                            <div class="fc-row">
-                                                <div class="fc-col-half fc-lg-col-full">
-                                                    <textarea name="notes" 
+                                        <div class="p-3">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group has-clear position-relative">
+                                                        <textarea name="notes" 
                                                     placeholder="Write your notes here" 
-                                                    class="fc-form-control fc-form-control--textarea" rows="7"><?php echo @$info['notes']; ?></textarea>
+                                                    class="form-control fc-form-control--textarea" rows="7"><?php echo @$info['notes']; ?></textarea>                                                        
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -537,6 +539,9 @@ dd($the_products);
         <?php include 'temp/modal.php'; ?>
 
     </form>
+
+    <?php include 'temp/copyright.php'; ?>
+
 </div>
 
 <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>

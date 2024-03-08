@@ -27,9 +27,10 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                 <tr class="fc-position-relative">
                     <td class="text-center align-middle px-1">                        
 
-                        <span class="fc-item-value fw-bold h6" data-original="<?php echo @$cart_item['original_qty']; ?>"><?php echo number_format(@$cart_item['qty']); ?></span>
+                        <span class="fc-item-value fw-bold" data-original="<?php echo @$cart_item['original_qty']; ?>"><?php echo number_format(@$cart_item['qty']); ?></span>
 
-                        <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control fc-form-control form-control form-control-lg no-enter" min="0">
+                        <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control fc-form-control no-enter" min="0">
+                            
 
                         <?php if( @$cart_item['qty'] != @$cart_item['original_qty'] ): ?>
                         <div class="qty-edited" data-toggle="toggle" title="Edited">

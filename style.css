@@ -1654,12 +1654,6 @@ thead.fc-border th:last-child {
   width: 100%;
 }
 
-.fc-label-group {
-  border: 1px solid var(--fc-gainsboro);
-  border-radius: 8px;
-  position: relative;
-}
-
 .fc-label-badge {
   color: #666666;
   background: #EEEEEE;
@@ -4456,4 +4450,33 @@ thead.fc-border th:last-child {
   .fencing-modal-notes img {
     max-width: 120px;
   }
+}
+
+
+::-ms-clear {
+  display: none;
+}
+
+.form-control-clear {
+    z-index: 10;
+    pointer-events: auto;
+    cursor: pointer;
+    position: absolute;
+    width: 18px;
+    height: 19px;
+    background: #fff;
+
+}
+.fc-label-group .form-control-clear,
+.form-group .form-control-clear {
+    right: 5px;
+    top: calc(50% - 10px);
+}
+.fc-form-group .form-control-clear {
+    right: 5px;
+    top: calc(50% - 7px);
+}
+.fencing-mb-input .form-control-clear {
+    right: 17%;
+    top: calc(50% - 7px);
 }
