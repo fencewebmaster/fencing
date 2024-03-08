@@ -4462,18 +4462,16 @@ thead.fc-border th:last-child {
     pointer-events: auto;
     cursor: pointer;
     position: absolute;
-    width: 18px;
-    height: 19px;
     background: #fff;
 
 }
 .fc-label-group .form-control-clear,
 .form-group .form-control-clear {
-    right: 5px;
+    right: 10px;
     top: calc(50% - 10px);
 }
 .fc-form-group .form-control-clear {
-    right: 5px;
+    right: 7px;
     top: calc(50% - 7px);
 }
 .fencing-mb-input .form-control-clear {

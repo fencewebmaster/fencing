@@ -1076,7 +1076,7 @@ $(window).on('scroll resize', function(){
 
 
 
-$(document).on('keyup', '.form-control', function() {
+$(document).on('keyup', '.has-clear .form-control', function() {
     var clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`;
     $(this).siblings('.form-control-clear').remove();
     if( $(this).val() ) $(this).after(clear);

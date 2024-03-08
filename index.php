@@ -88,8 +88,9 @@ dd($the_products);
                 </div>
                 <div class="modal-body">
                     <div class="input-groupx mb-3">
-                        
-                        <input type="text" name="qid" class="form-control border border-secondary form-control-lg no-space text-center mb-2" placeholder="Enter Quote ID" required>
+                        <div class="form-group has-clear position-relative">
+                            <input type="text" name="qid" class="form-control border border-secondary form-control-lg no-space text-center mb-2" placeholder="Enter Quote ID" required>                        
+                        </div>
 
                         <button type="submit" class="btn btn-lg w-100 btn-orange text-uppercase px-4">
                             <i class="fa fa-check me-2"></i>
