@@ -110,7 +110,7 @@ dd($the_products);
 </form>
 
 <div class="fencing-container container-lg w-side-section mt-5" data-tab="1">
-    <form method="POST" id="fc-planning-form" action="project-plan">
+    <form method="POST" id="fc-planning-form" action="project-plan.php">
 
         <div class="fencing-container__header">
             <div class="row align-items-center">
@@ -411,7 +411,7 @@ dd($the_products);
                                 
                                     <?php if( isset($_SESSION['planner_id']) ): ?>
                                     <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
-                                        <button type="submit" class="btn btn-sm btn-orange fc-btn-update py-3 px-4 w-100">
+                                        <button type="submit" class="btn btn-orange fc-btn-update py-3 px-4 w-100">
                                             <i class="fa-regular fa-pen-to-square me-1"></i> 
                                             <b>UPDATE</b>
                                         </button>

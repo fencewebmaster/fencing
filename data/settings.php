@@ -75,8 +75,8 @@ function fc_timeframe($val ='') {
 function fc_installer($val ='') {
  
 	$data = [
-		'yes' => 'YES - I need an installer',
-		'no' => 'NO - I can install it myself',
+		'diy' => 'DIY - I install myself <span class="badge bg-secondary py-1">cheaper</span>',
+		'install' => 'NO - I need an installer',
 	];
 
 	return ($val) ? $data[$val] : $data;

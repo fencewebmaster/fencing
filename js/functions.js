@@ -99,8 +99,8 @@ function load_fencing_items() {
 
     // $('.fpsn-b:not(:first-child):not(:last-child)').remove();
 
-    $('.fencing-panel-container').prepend('<div data-cart-key="raked-panel" class="left_raked-panel raked-panel"></div>');
-    $('.fencing-panel-container').append('<div data-cart-key="raked-panel" class="right_raked-panel raked-panel"></div>');
+    $('.fencing-panel-container').prepend('<div data-cart-key="raked-panel" class="left_raked-panel raked-panel"></div>')
+                                 .append('<div data-cart-key="raked-panel" class="right_raked-panel raked-panel"></div>');
 
     update_raked_panels(['left_raked', 'right_raked']);
 
@@ -118,8 +118,6 @@ function load_fencing_items() {
     // Clear tooltip like error massage
     $('.fc-input-msg').removeClass('fcim-show').html('');
 
-    //updateFirstFencingPost();
-    //updateLastFencingPost();
 
     setTimeout(function(){
         $('.fc-fence-reset-all').hide();
@@ -366,8 +364,10 @@ function load_post_options_all(custom_fence, info, tab, calc) {
     var modal_key            = $('.fencing-container').attr('data-key');
     var exclude_panel_posts  = '';
 
-    var i = $('.fencing-style-item.fsi-selected').attr('data-slug');
-    var tab = $('.fencing-tab.fencing-tab-selected').index();
+    var fd = getSelectedFenceData();
+    
+    var i   = fd.slug,
+        tab = fd.tab;
 
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === 'post_options';
@@ -549,8 +549,10 @@ $.fn.swapWith = function(to) {
 
 function update_custom_fence_style_item() {
 
-    var i    = $('.fencing-style-item.fsi-selected').attr('data-slug'),
-        info = fc_data[i];
+    var fd = getSelectedFenceData();
+    
+    var i    = fd.slug,
+        info = fd.data;;
 
     var controlsContainer = '.fencing-panel-controls';
 
@@ -1258,16 +1260,14 @@ function submit_fence_planner(status ='') {
     window.onbeforeunload = function() {}
 
     // Removed unwanted cart
-    removeItemStorageWith('cart_items-');
+   // removeItemStorageWith('cart_items-');
 
     //Set some delay to make sure the local storage and the html markup are loaded
     var items = localStorage.getItem('custom_fence-section') ?? 1;
     for (let i = 0; i < items; i++) {
         FENCES.cartItems.init( i );
     }    
-
-    return;
-
+    
     var set_fc_data   = [];
     var project_plans = JSON.parse(localStorage.getItem('project-plans'));
     var cart_items    = getCartItemStorage();
@@ -1785,10 +1785,10 @@ function isMobileDevice() {
 
 function deleteSectionTab() {
     
-    let getActiveTab = $('.fencing-tab-selected');
+    let getActiveTab      = $('.fencing-tab-selected');
     let getActiveTabIndex = getActiveTab.index();
-    let getPrevBtn = getActiveTab.prev();
-    let getNextBtn = getActiveTab.next();
+    let getPrevBtn        = getActiveTab.prev();
+    let getNextBtn        = getActiveTab.next();
 
     getActiveTab.addClass('is-deleting');
 
@@ -1871,9 +1871,7 @@ function deleteAllEntriesBySubstring(substring) {
     while (true) {
       // Find the index of the first matching key
       const index = Object.keys(localStorage).findIndex(key => key.indexOf(substring) !== -1);
-        
-      console.log('index', index);
-
+    
       // If no more matching keys are found, exit the loop
       if (index === -1) {
         break;

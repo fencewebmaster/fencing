@@ -727,20 +727,6 @@ $(document).on('click', '.btn-fc-calculate', function(){
         return;
     }
 
-    /*
-    // Use only on database query
-    $('.fencing-calculating').show();
-    $('.fencing-panel-items').hide();
-
-    setTimeout(function(){
-        $.get('/', function(){
-            $('.fencing-panel-items').show();
-            $('.fencing-calculating').hide();
-        });
-    }, 1000);
-    */
-
-
 
     update_custom_fence_tab();
 
@@ -794,12 +780,6 @@ $(document).on('click', '.btn-fc-calculate', function(){
     custom_fence_tab[0].calculateValue = length;
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
 
-    //Set some delay to make sure the local storage and the html markup are loaded
-    /*
-    setTimeout(function(){
-        FENCES.cartItems.init();
-    }, 500);
-*/
 
     window.onbeforeunload = function() {
         return false;

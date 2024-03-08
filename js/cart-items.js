@@ -29,15 +29,16 @@ FENCES.cartItems = {
 
     init: function(i) {
 
-        var tabInfo = JSON.parse(localStorage.getItem('custom_fence-'+i)),
-            slug = tabInfo[0].fence;
-
-        var fenceInfo = JSON.parse(localStorage.getItem('custom_fence-'+i+'-'+slug));
+        var tabInfo = JSON.parse(localStorage.getItem('custom_fence-'+i));
+        window.tabInfo   = tabInfo;
+        
+        if( tabInfo ) {
+            var slug = tabInfo[0].fence;
+            var fenceInfo = JSON.parse(localStorage.getItem('custom_fence-'+i+'-'+slug));
+            window.fenceInfo = fenceInfo;            
+        }
 
         var i = i + 1;
-
-        window.tabInfo   = tabInfo;
-        window.fenceInfo = fenceInfo;
 
         $(`.fc-section-${i}`).click();
 
@@ -139,13 +140,6 @@ FENCES.cartItems = {
                 }
             }
 
-            //additional condition for raked_post to exclude el with class `panel-no-post`
-/*            if( cartKey === "raked_post" ){
-                if(el.classList.contains('panel-no-post')){
-                    qty = 0;
-                }
-            }*/
-
             //Update the object `slug` and `qty` property before pushing to the array
             entry.slug = modifiedCartKey;
             entry.qty = qty;
@@ -185,12 +179,6 @@ FENCES.cartItems = {
         //Apply condition for panel_options+full
         newCartItems = FENCES.cartItems.apply_panel_options_full(newCartItems);
 
-        //Apply condition for raked_panel_post+opt-1 | Row 16
-        // newCartItems = FENCES.cartItems.apply_raked_panel_post_opt1(newCartItems);
-
-        //Apply condition for post_options+opt-2 | Row 20
-        // newCartItems = FENCES.cartItems.apply_raked_panel_post_opt2(newCartItems);
-
         //Apply condition for post_options+opt-1 
         newCartItems = FENCES.cartItems.apply_post_options_opt1(newCartItems);
 
@@ -199,16 +187,13 @@ FENCES.cartItems = {
         
         newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
 
-        console.log(newCartItems);
-
         return newCartItems;
 
     },
 
     cart_conditions: function(array) {
 
-    var tabInfo   = window.tabInfo,
-        fenceInfo = window.fenceInfo;
+        var tabInfo   = window.tabInfo;
 
        if( tabInfo[0].fence == 'barr' && fenceInfo ) {
 
@@ -445,16 +430,6 @@ FENCES.cartItems = {
         if( typeof foundRakedPostOpt1 !== "undefined" ){
             total += foundRakedPostOpt1.qty;
         }
-
-
-        /*
-        if( typeof foundGate !== "undefined"  ) {
-            total -= 1;
-        }
-        */
-
-        //Remove `raked_panel_post+opt-1` from array
-        // array = FENCES.cartItems.remove_raked_panel_post_opt1(array);
 
         if( total ) {
 

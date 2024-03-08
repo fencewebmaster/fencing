@@ -103,7 +103,7 @@
                     <!-- END FORM MODAL PROGRESS BAR - STEP 3 -->
 
 
-                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Do You Need An Installer?</h2>
+                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">DIY OR INSTALL??</h2>
                     
                     <?php include 'temp/modal/submit/form/installer.php'; ?>
 

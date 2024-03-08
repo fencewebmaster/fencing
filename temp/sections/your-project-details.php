@@ -88,7 +88,7 @@
 							<td><?php echo @$info['timeframe'] ? fc_timeframe(@$info['timeframe']) : ''; ?></td>
 						</tr>
 						<tr>
-							<td>Install Required</td>
+							<td>DIY OR INSTALL</td>
 							<td><?php echo @$info['installer'] ? fc_installer(@$info['installer']) : ''; ?></td>
 						</tr>
 						<tr>
