@@ -195,7 +195,7 @@ FENCES.cartItems = {
 
         var tabInfo   = window.tabInfo;
 
-       if( tabInfo[0].fence == 'barr' && fenceInfo ) {
+       if( tabInfo[0].fence == 'barr' ) {
 
             /*
                 1200H & 1800H Gates: 
