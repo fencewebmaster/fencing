@@ -1260,7 +1260,7 @@ function submit_fence_planner(status ='') {
     // window.onbeforeunload = function() {}
 
     // Removed unwanted cart
-   // removeItemStorageWith('cart_items-');
+    removeItemStorageWith('cart_items-');
 
     //Set some delay to make sure the local storage and the html markup are loaded
     var items = localStorage.getItem('custom_fence-section') ?? 1;
