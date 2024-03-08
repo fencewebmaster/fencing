@@ -2985,22 +2985,39 @@ thead.fc-border th:last-child {
 
 
 @media (min-width: 1024px) {
-  #fc-planning-form .fencing-left-panel-o-b:hover {
+  #fc-planning-form .fencing-left-panel-o-b:hover,
+  #fc-planning-form .fencing-right-panel-o-b:hover {
     background: var(--fc-princeton-orange);
   }
 }
 
 /* Right panel - B */
 .fencing-right-panel-b {
-  -webkit-clip-path: polygon(37% 25%, 68% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
-  clip-path: polygon(37% 25%, 68% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
+  -webkit-clip-path: polygon(36% 0, 67% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+  clip-path: polygon(36% 0, 67% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
 }
 
 .fencing-right-panel-o-b {
-  -webkit-clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
-  clip-path: polygon(37% 25%, 70% 0, 100% 0, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 25%);
+  -webkit-clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+  clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
   padding-top: 2px;
   background: #000;
+
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH";
+}
+
+.fencing-right-panel-o-b .fencing-panel-item-size {
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-filter: "FlipH";
 }
 
 .downloading-pdf .fencing-left-panel-o-b,
@@ -3034,11 +3051,7 @@ thead.fc-border th:last-child {
   height:310px;  
 }
 
-@media (min-width: 1024px) {
-  .fencing-right-panel-o-b:hover {
-    background: var(--fc-princeton-orange);
-  }
-}
+
 
 .raked-panel-post {
   margin-top: -50px !important;
