@@ -1418,6 +1418,7 @@ function setSectionURLParam() {
 function reloadFencingData() {
 
     if( getSearchParams('qid') && !fc_fence_info.fence_data ) {
+        clearFencingData();
         location.href = location.origin+location.pathname;
     }
 
@@ -1457,15 +1458,8 @@ function reloadFencingData() {
 
 function clearFencingData() {
     // Add clear fence planner local storage here
-    let keysToRemove = ["project-plans", "countdown-date", "cart_items"];
-    keysToRemove.forEach(k =>localStorage.removeItem(k))
-
-    // Clear all stored items start with custom_fence-
-    Object.entries(localStorage).forEach(([key, value]) => {
-      if (key.startsWith("custom_fence-")) {
-        localStorage.removeItem(key);
-      }
-    });    
+    let keysToRemove = ["project-plans", "countdown-date", "custom_fence-", "cart_items-"];
+    keysToRemove.forEach(k => removeItemStorageWith(k) );
 }
 
 //----------------------------------------------------------------

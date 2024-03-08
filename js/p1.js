@@ -88,10 +88,10 @@ function reload_fence_items() {
 
     reloadFencingData();
 
-    var items = localStorage.getItem('custom_fence-section') ?? 1;
+    var items   = localStorage.getItem('custom_fence-section') ?? 1;
     var section = getSearchParams('section');
-    var tab = getSearchParams('tab');
-    var form = getSearchParams('form');
+    var tab     = getSearchParams('tab');
+    var form    = getSearchParams('form');
 
     for ( let i = 1; i <= items; i++ ) {
 
@@ -155,7 +155,7 @@ function reload_fence_items() {
     restoreFormData();
 
     if( getSearchParams('qid') ) {
-    //   $('.fc-btn-update').click();
+       $('.fc-btn-update').click();
     }
 
 }

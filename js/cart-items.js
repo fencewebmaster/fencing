@@ -32,9 +32,8 @@ FENCES.cartItems = {
         var tabInfo    = JSON.parse(localStorage.getItem('custom_fence-'+i));
         window.tabInfo = tabInfo;
 
-        var slug = tabInfo[0].fence;
-
         if( tabInfo ) {
+            var slug = tabInfo[0].fence;
             var fenceInfo    = JSON.parse(localStorage.getItem('custom_fence-'+i+'-'+slug));
             window.fenceInfo = fenceInfo;            
         }
@@ -200,7 +199,7 @@ FENCES.cartItems = {
             fenceInfo = window.fenceInfo;
 
 
-        if( tabInfo[0].fence == 'barr' ) {
+        if( tabInfo[0]?.fence == 'barr' ) {
 
             /*
                 1200H & 1800H Gates: 

@@ -7,7 +7,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 <span class="badge bg-danger mb-2 text-uppercase p-2"><?php echo count($cart['items']); ?> Items</span>
 
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
-    <div class="fc-table-rounded-border table-responsive">
+    <div class="fc-table-rounded-border">
         
         <table class="table table-hover fc-table-bordered table-striped">
             <thead class="table-dark fc-border">
@@ -25,13 +25,14 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                 <input name="cart[original_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['original_qty']; ?>" class="fc-form-control" min="1" required>
 
                 <tr class="fc-position-relative">
-                    <td class="text-center align-middle">                        
+                    <td class="text-center align-middle px-1">                        
 
-                        <span class="fc-item-value fw-bold" data-original="<?php echo @$cart_item['original_qty']; ?>"><?php echo @$cart_item['qty']; ?></span>
-                        <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control" min="0">
+                        <span class="fc-item-value fw-bold h6" data-original="<?php echo @$cart_item['original_qty']; ?>"><?php echo number_format(@$cart_item['qty']); ?></span>
+
+                        <input name="cart[qty][<?php echo $ci; ?>]" type="number" value="<?php echo @$cart_item['qty']; ?>" class="fc-form-control fc-form-control form-control form-control-lg no-enter" min="0">
 
                         <?php if( @$cart_item['qty'] != @$cart_item['original_qty'] ): ?>
-                        <div class="qty-edited">
+                        <div class="qty-edited" data-toggle="toggle" title="Edited">
                             <i class="fa fa-pencil"></i>       
                         </div>
                         <?php endif; ?>
