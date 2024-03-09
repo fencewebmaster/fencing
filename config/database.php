@@ -142,7 +142,7 @@ class Database {
 
     function select_where($table, $where, $select = '*') {
 
-        $sql = "SELECT $select FROM ".$this->prefix.$table." WHERE ".$where;
+        $sql = "SELECT $select FROM ".$this->prefix.$table." WHERE ".$where .' ORDER BY id DESC';
 
         $conn = $this->connect();
 
