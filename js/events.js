@@ -858,19 +858,14 @@ $(document).on('click', '#submit-modal .js-fencing-modal-close', function(){
 $(document).on('click', '.fc-btn-form-step', function(){
 
     var move = $(this).attr('data-move'),
-        tab  = getSearchParams('tab'),
-        form = getSearchParams('tab');
+        tab  = getSearchParams('tab');
 
     if( ! $(this).hasClass('fc-btn-next') ) {
 
         $('.fc-form-plan').hide();
         $('[data-formtab="'+move+'"]').show();
-    } 
-
-    // Push param in URL tab={tab}
-    if( form == tab ) {
         history.pushState({}, '', `?tab=${tab}&form=${move}`);
-    }
+    } 
 
     $(this).closest('form').find('[type="submit"]')
                            .addClass('disabled')
@@ -883,7 +878,6 @@ $(document).on('click', '.fc-btn-form-step', function(){
     }
 
 });
-
 
 //----------------------------------------------------------------
 
