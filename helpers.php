@@ -474,7 +474,7 @@ function add_filepath_last($filename, $add ='') {
     X.Y.Z
 */
 function get_version() {
-    return '3.0.0';
+    return '3.0.1';
 }
 
 //----------------------------------------------------------------

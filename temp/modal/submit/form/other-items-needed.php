@@ -8,7 +8,7 @@
                 <img class="fc-rounded" src="img/plans/<?php echo $extra_k; ?>.png">								
                 <input type="checkbox" name="extra[]" value="<?php echo $extra_k; ?>">
                 </label>
-                <p class="fc-text-center"><?php echo $extra_v; ?></p>
+                <div class="text-center fw-bold py-2 small"><?php echo $extra_v; ?></div>
             </div>
         </div>
         <?php endforeach; ?>
@@ -22,7 +22,7 @@
                     </div>
                     <input type="radio" name="nothing_extra" value="nothing">
                 </label>
-                <p class="fc-text-center">NIL - Just Looking</p>
+                <div class="text-center fw-bold py-2 small">NIL - Just Looking</div>
             </div>
         </div>
 

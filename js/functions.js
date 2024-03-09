@@ -2292,6 +2292,7 @@ function updateOrCreateObjectInLocalStorage(key, newData) {
             updatedData['extra'] = updatedData['extra'].join(', ');
         }
 
+
         localStorage.setItem(key, JSON.stringify(updatedData));
     } else {
         // If the key doesn't exist, create a new object and save it to localStorage

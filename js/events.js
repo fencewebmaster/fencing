@@ -925,7 +925,7 @@ $(document).on('click', '.fc-btn-step', function(e){
 
 //----------------------------------------------------------------
 
-$(document).on('click', '.form-tab-4 input[type="checkbox"], .form-tab-4 input[type="radio"]', function(){
+$(document).on('click', '.fc-form-check input', function(){
 
     var type = $(this).attr('type');
 
@@ -1086,7 +1086,9 @@ $(document).on('click', '.form-control-clear', function() {
 setTimeout(function(){
     $('.has-clear .form-control').each(function(){
         if( $(this).val() ) {
-            $(this).trigger('keyup');   
+           var clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`;
+            $(this).siblings('.form-control-clear').remove();
+            if( $(this).val() ) $(this).after(clear);
         }
     });
 }, 200);

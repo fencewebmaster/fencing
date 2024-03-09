@@ -1186,13 +1186,8 @@ thead.fc-border th:last-child {
   display: flex;
   align-items: center;
   font-size: 14px;
-  margin-top: 15px;
 }
-@media (max-width: 992px) {
-  .fc-progress-container {
-    margin-top: 9px;
-  }
-}
+
 @media (max-width: 767px) {
   .fc-progress-container {
     justify-content: center;
@@ -4451,13 +4446,13 @@ thead.fc-border th:last-child {
 }
 
 .form-control-clear {
-    z-index: 10;
     pointer-events: auto;
     cursor: pointer;
     position: absolute;
     background: #fff;
-
+    color: #6c757d;
 }
+
 .fc-label-group .form-control-clear,
 .form-group .form-control-clear {
     right: 10px;
