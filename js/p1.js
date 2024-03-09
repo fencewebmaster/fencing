@@ -17,6 +17,8 @@ $("#fc-planning-form").validate({
         var tab  = $('.fc-form-plan:visible').attr('data-formtab'),
             move = $('.fc-form-plan:visible').find('.fc-btn-next').attr('data-move');
 
+            history.pushState({}, '', `?tab=${getSearchParams('tab')}&form=${move}`);
+
         if( tab == 4 ) {
 
             FCModal.close('#submit-modal');
@@ -156,6 +158,12 @@ function reload_fence_items() {
 
     if( getSearchParams('qid') ) {
        $('.fc-btn-update').click();
+    }
+
+    if( $('.fc-form-check-img input:checked').length ) {
+        $('.form-tab-4').closest('form').find('[type="submit"]')
+                        .removeClass('disabled')
+                        .removeAttr('disabled');
     }
 
 }

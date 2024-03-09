@@ -1785,16 +1785,9 @@ thead.fc-border th:last-child {
   position: relative;
 }
 
-[type=button]:disabled {
-  background: #ebebeb !important;
-  color: #9E9E9E;
-  border-color: #cbcbcb;
-  cursor: not-allowed !important;
-}
-@media (min-width: 1024px) {
-  [type=button]:disabled:hover {
-    color: #9E9E9E;
-  }
+.btn:disabled {
+  cursor: not-allowed;
+  pointer-events: all !important;
 }
 
 .fc-form-plan .fc-col-half {

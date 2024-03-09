@@ -857,7 +857,9 @@ $(document).on('click', '#submit-modal .js-fencing-modal-close', function(){
 
 $(document).on('click', '.fc-btn-form-step', function(){
 
-    var move = $(this).attr('data-move');
+    var move = $(this).attr('data-move'),
+        tab  = getSearchParams('tab'),
+        form = getSearchParams('tab');
 
     if( ! $(this).hasClass('fc-btn-next') ) {
 
@@ -866,21 +868,22 @@ $(document).on('click', '.fc-btn-form-step', function(){
     } 
 
     // Push param in URL tab={tab}
-    history.pushState({}, '', `?tab=${getSearchParams('tab')}&form=${move}`);
+    if( form == tab ) {
+        history.pushState({}, '', `?tab=${tab}&form=${move}`);
+    }
 
-    /*
     $(this).closest('form').find('[type="submit"]')
-                           .addClass('fc-btn-disabled')
+                           .addClass('disabled')
                            .attr('disabled', 'disabled');
 
     if( $('.fc-form-check-img input:checked').length ) {
         $(this).closest('form').find('[type="submit"]')
-                               .removeClass('fc-btn-disabled')
+                               .removeClass('disabled')
                                .removeAttr('disabled');
     }
-    */
 
 });
+
 
 //----------------------------------------------------------------
 
@@ -934,10 +937,10 @@ $(document).on('click', '.form-tab-4 input[type="checkbox"], .form-tab-4 input[t
 
     if( type == 'checkbox' ) {
         $('.fc-form-check-empty').removeClass('fc-selected');
-        $(this).closest('.fc-row-container').find('input[type="radio"]').prop('checked', false);
+        $(this).closest('.row').find('input[type="radio"]').prop('checked', false);
     } else {
         $('.fc-form-check-img').removeClass('fc-selected');
-        $(this).closest('.fc-row-container').find('input[type="checkbox"]').prop('checked', false);
+        $(this).closest('.row').find('input[type="checkbox"]').prop('checked', false);
     }
 
     var check = $(this).is(':checked');
@@ -948,18 +951,16 @@ $(document).on('click', '.form-tab-4 input[type="checkbox"], .form-tab-4 input[t
         $(this).closest('.fc-form-check-img').addClass('fc-selected');
     }
 
-    /*
     $(this).closest('form').find('[type="submit"]')
-                           .addClass('fc-btn-disabled')
+                           .addClass('disabled')
                            .attr('disabled', 'disabled');
+
 
     if( $('.fc-form-check-img input:checked').length ) {
         $(this).closest('form').find('[type="submit"]')
-                               .removeClass('fc-btn-disabled')
+                               .removeClass('disabled')
                                .removeAttr('disabled');
     }
-    */
-
 });
 /*
 $(document).on('keydown', '.fencing-modal', function (e) {
