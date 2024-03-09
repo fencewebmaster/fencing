@@ -474,7 +474,10 @@ function add_filepath_last($filename, $add ='') {
     X.Y.Z
 */
 function get_version() {
-    return '3.0.1';
+    $json = file_get_contents('package.json');
+    $info = convert_inputs($json);
+
+    return $info['version'];
 }
 
 //----------------------------------------------------------------
