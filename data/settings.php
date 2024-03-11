@@ -1,4 +1,5 @@
 <?php
+$uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
 
 foreach (glob('data/fences/*') as $fence) {
 	include $fence;
@@ -8,8 +9,6 @@ $fences_data = array();
 
 foreach($fences as $fik => $fence_info ) {
 	$fences_data[$fik] = $fence_info;
-
-    $uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
 
 	if( !$fence_info['live'] && !in_array('dev', $uri_segments) && !in_array($_SERVER['HTTP_HOST'], ['localhost']) ) {
 		unset($fences_data[$fik]);

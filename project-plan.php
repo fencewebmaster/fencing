@@ -303,8 +303,8 @@
 											        </button>
 																								
 											        <a href="tel:0480016687" class="btn btn-lg btn-secondary text-uppercase w-100 fs-6 text">
-											            <b>Speak To Trade Support</b><br>
-											           	<i class="fa-solid fa-phone me-2"></i> 0480016687
+											           	Speak To Trade Support<br>
+											           	<b><i class="fa-solid fa-phone me-2"></i> 0480016687</b>
 											        </a>										    		
 								
 												</div>

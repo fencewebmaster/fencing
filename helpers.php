@@ -286,7 +286,6 @@ function get_product_skus($data = array()) {
 
         $supplier = $_SESSION['site']['supplier'];
 
-
     	foreach ($items as $item) {
 
             $filtered_product = array_filter($the_products, function($val) use($item, $supplier){
@@ -308,13 +307,13 @@ function get_product_skus($data = array()) {
                   ]; 
                 }
                 
-
                 $skus[] = $the_products[$key][$color];
             }
 
     	}
 
     }
+
 
 	$_SESSION['custom_fence_products'] = $products;
 

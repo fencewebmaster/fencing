@@ -46,7 +46,10 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                     </td>
                     <td class="align-top" style="width: max-content;">
                         <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>
+
+                        <?php if( in_array('dev', $uri_segments) && !in_array($_SERVER['HTTP_HOST'], ['localhost']) ):?>
                         <div class="text-muted mb-2"><?php echo @$cart_item['sku']; ?></div>
+                        <?php endif; ?>
 
                         <div class="d-block d-md-none">
                             <div class="fw-bold d-flex align-items-center">
