@@ -714,6 +714,11 @@ a.fc-tab-active {
   font-size: 12px;
   text-transform: uppercase;
   padding-top: 5px;
+  line-height: 14px;
+}
+
+#fc-planning-form .fc-center-point {
+  display: none;
 }
 
 .fc-center-point:before {
@@ -741,7 +746,7 @@ a.fc-tab-active {
 }
 
 .raked-panel-container .fc-center-point {
-    bottom: -63px;
+    bottom: -78px;
 }
 
 .fc-overall {
@@ -3643,7 +3648,7 @@ thead.fc-border th:last-child {
   margin-bottom: 30px;
   border-radius: 2px;
   border: 1px solid;
-  min-height: 100px;
+  min-height: 140px;
   position: relative;
 }
 
@@ -3697,7 +3702,7 @@ thead.fc-border th:last-child {
   width: 100%;
   position: relative;
   max-width: 5px;
-  min-height: 177px;
+/*  min-height: 177px;*/
 }
 
 .fencing-panel-spacing-number.fpsn-b {
@@ -3749,6 +3754,7 @@ thead.fc-border th:last-child {
   text-align: -webkit-center;
   border: 1px solid #9e9e9e;
   border-radius: 5px;
+  line-height: 14px;
 }
 
 .fencing-panel-rail {

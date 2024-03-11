@@ -112,7 +112,7 @@ function load_fencing_items() {
 
         $(FENCES.el.fencingPanelContainer).append(tpl);    
 
-        // $(FENCES.el.fencingPanelGate).css({'width':calc.offcut_panel.length*0.10});
+        $('.fencing-offcut').css({'max-width':calc.offcut_panel.length*0.10});
     }
 
     // Clear tooltip like error massage
@@ -491,6 +491,7 @@ function update_gate(action) {
         panel_unit = FENCES.defaultValues.unit,
         gate_size  = calc.gate.width;
 
+
     if( action == 'add' || action == 'edit' ) {
 
         if( placement == -1 ) {
@@ -531,9 +532,11 @@ function update_gate(action) {
 
     $(FENCES.el.fencingPanelGate).prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
                                  .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
-                                 .attr('data-cart-value', gateValue)
-                                 .css({'max-width': calc.gate.width * 0.1});
-                      
+                                 .attr('data-cart-value', gateValue);
+
+    if( calc.fence_size.height ) {
+        $(FENCES.el.fencingPanelGate).css({'max-width': calc.gate.width * 0.1});
+    }
 }
 
 $.fn.swapWith = function(to) {
