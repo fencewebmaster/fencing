@@ -42,7 +42,7 @@
   vertical-align: top;
 }
 .text-orange {
-    color: #f67925;
+    color: var(--fc-princeton-orange);
 }
 .fc-icon-xs {
   width: 15px;
@@ -352,8 +352,8 @@ a div {
 
 .fc-form-check-img.fc-selected,
 .fc-form-check-img:hover {
-  border: 2px solid #F67925 !important;
-  background: #F67925;
+  border: 2px solid var(--fc-princeton-orange) !important;
+  background: var(--fc-princeton-orange);
   color: #fff;
 }
 
@@ -496,9 +496,9 @@ a.tab-selected {
 }
 
 a.fc-tab-active {
-  background: #F67925;
+  background: var(--fc-princeton-orange);
   color: #fff;
-  border-color: #F67925 !important;
+  border-color: var(--fc-princeton-orange) !important;
   border-radius: 16px 16px 0 0;
   background-color: #fff;
   color: #000;
@@ -932,7 +932,7 @@ a.fc-tab-active {
 }
 
 .fc-text-success {
-  color: #F67925 !important;
+  color: var(--fc-princeton-orange) !important;
 }
 
 .fc-loader ul li.fc-text-success:nth-of-type(2) {
@@ -1164,7 +1164,7 @@ thead.fc-border th:last-child {
 }
 .fc-progress-tabs > div:after {
   content: "";
-  background: #F67925;
+  background: var(--fc-princeton-orange);
   width: 0;
   display: block;
   height: 100%;
@@ -1891,7 +1891,7 @@ thead.fc-border th:last-child {
 }
 .fencing-modal--v2 .has-multiple-areas .fencing-modal-area {
   padding: 15px 24px 24px;
-  border: 2px solid #F67925;
+  border: 2px solid var(--fc-princeton-orange);
 }
 @media (max-width: 768px) {
   .fencing-modal--v2 .has-multiple-areas .fencing-modal-area {
@@ -2485,7 +2485,7 @@ thead.fc-border th:last-child {
 }
 
 .btn-orange {
-  background: #F67925 !important;
+  background: var(--fc-princeton-orange) !important;
   color: #fff !important;
 }
 .btn-orange:hover {
@@ -2493,7 +2493,7 @@ thead.fc-border th:last-child {
 }
 
 .btn-fc-orange {
-  background: #F67925;
+  background: var(--fc-princeton-orange);
   color: #fff;
   border: 0;
   border-radius: 8px;
@@ -2531,7 +2531,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-btn-active {
-  background: #F67925;
+  background: var(--fc-princeton-orange);
   color: #fff;
 }
 
@@ -2869,7 +2869,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-content-tab-title {
-  background: #F67925;
+  background: var(--fc-princeton-orange);
   color: #fff;
   padding: 15px 24px;
   font-weight: 400;
@@ -3391,7 +3391,7 @@ thead.fc-border th:last-child {
 }
 .load-quote:hover .fencing-style-title,
 .load-quote:hover .fencing-style-img {
-  border-color: #F67925 !important;
+  border-color: var(--fc-princeton-orange) !important;
 }
 
 .load-quote  .fencing-style-title,
@@ -3444,7 +3444,7 @@ thead.fc-border th:last-child {
   display: block;
 }
 .fencing-style-item.fsi-selected .fencing-style-img {
-  border-color: #F67925;
+  border-color: var(--fc-princeton-orange);
   opacity: 1;
 }
 .fencing-style-item .fc-fence-reset-all {
@@ -3980,14 +3980,14 @@ thead.fc-border th:last-child {
 .fc-cart-countdown p {
   font-size: 32px;
   line-height: 38px;
-  color: #F67925;
+  color: var(--fc-princeton-orange);
   font-weight: 700;
   text-transform: initial;
 }
 .fc-cart-countdown p strong {
   font-size: 14px;
   line-height: 25px;
-  color: #F67925;
+  color: var(--fc-princeton-orange);
 }
 @media (max-width: 992px) {
   .fc-cart-countdown {
@@ -4201,8 +4201,8 @@ thead.fc-border th:last-child {
   border-color: var(--fc-princeton-orange);
 }
 .fc-select.fc-selected:after {
-  border-color: #F67925;
-  background: #F67925;
+  border-color: var(--fc-princeton-orange);
+  background: var(--fc-princeton-orange);
   box-shadow: inset 0 0 0 3px #fff;
 }
 .fc-select img {
@@ -4389,7 +4389,7 @@ thead.fc-border th:last-child {
   background: #fff;
 }
 .sticky-roll .fencing-tabs {
-    border-bottom: 2px solid #f67925; 
+    border-bottom: 2px solid var(--fc-princeton-orange); 
 }
 
 .no-post-swivel-bracket .sw {

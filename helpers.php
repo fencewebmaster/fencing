@@ -28,6 +28,29 @@ function get_uid($l=10) {
 
 //----------------------------------------------------------------
 
+function in_uri_segment($keys) {
+    $uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
+    foreach ($uri_segments as $segment) {
+        if( in_array($segment, $keys) ) {
+            return TRUE;
+        }
+    }
+}
+
+//----------------------------------------------------------------
+
+function demo_stages() {
+    return [
+        'html',
+        'dev', 
+        'demo', 
+        'staging', 
+        'test'
+    ];
+}
+
+//----------------------------------------------------------------
+
 function sites($key = '', $value = 'id', $search = false) {
 
     $data = [

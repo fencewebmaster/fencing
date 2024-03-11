@@ -47,9 +47,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                     <td class="align-top" style="width: max-content;">
                         <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>
 
-                        <?php if( in_array('dev', $uri_segments) && !in_array($_SERVER['HTTP_HOST'], ['localhost']) ):?>
                         <div class="text-muted mb-2"><?php echo @$cart_item['sku']; ?></div>
-                        <?php endif; ?>
 
                         <div class="d-block d-md-none">
                             <div class="fw-bold d-flex align-items-center">
@@ -61,7 +59,9 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                             </div>
                         </div>
 
+                        <?php if( in_uri_segment(demo_stages()) ):?>
                         <small class="fc-text-success d-nonex"><?php echo @$cart_item['slug']; ?></small>
+                        <?php endif; ?>
 
                     </td>
                     <!-- <td><?php echo @$cart_item['sku']; ?></td>
