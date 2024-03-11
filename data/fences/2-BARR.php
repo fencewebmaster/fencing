@@ -214,6 +214,8 @@ $fences['barr'] = [
 			'action' => ['default'],
 			'fields' => [
 				[
+
+
 					'title' => 'Panel Options',
 					'slug' => 'panel_option',
 					'type' => 'text_option',
@@ -222,18 +224,28 @@ $fences['barr'] = [
 						[
 							'slug' => 'even',
 							'type' => 'text_option',
-							'title' => 'Even Size Panels 2400W',
-							'default' => TRUE,
+							'title' => 'Even Size Panels',
 							'size' => [
-								'width' => 2450,
+								'width' => 2205 + 50,
+								'width_based_height' => [
+									1000 => 1733 + 50,
+									1200 => 2205 + 50,
+									1800 => 1969 + 50,
+								],
 							]
 						],
 						[
-							'slug' => 'full_2400',
+							'slug' => 'full',
 							'type' => 'text_option',
-							'title' => 'Full Size Panels 2400W',
+							'title' => 'Full Size Panels',
+							'default' => TRUE,
 							'size' => [
-								'width' => 2450,
+								'width' => 2205 + 50,
+								'width_based_height' => [
+									1000 => 1733 + 50,
+									1200 => 2205 + 50,
+									1800 => 1969 + 50,
+								],
 							]
 						]
 					],
@@ -245,10 +257,6 @@ $fences['barr'] = [
 						[
 							'title' => 'Even Size Panels',
 							'description' => 'This option evenly spaces out the posts, which also means you will need to cut down every individual panel.',
-						],
-						[
-							'title' => 'Use 2400W / 3000W Panels',
-							'description' => 'This option uses full length panels, which means you will ONLY need to cut down 1x panel. ',
 						]
 					],
 				]

@@ -123,10 +123,20 @@ function calculate_fences( data ) {
         C5 = panel_options_data.size?.width;        
     }
 
+
+    if( panel_options_data.size?.width_based_height) {
+        /*
+            1000H Panels = 1733W
+            1200H Panels = 2205W
+            1800H Panels = 1969W
+        */
+        panel_opts = panel_options_data.size.width_based_height;
+        C5 = panel_opts[fence_height];      
+    }
+
     C6  = 0;      // post options
     
     C7  = $('.right-panel-post.no-post').length ? no_post : 0;      // edit right side
-
 
     var gate_data = custom_fence.filter(function(item) {
         return item.control_key == 'gate';
@@ -143,8 +153,6 @@ function calculate_fences( data ) {
         }
     
     }
-
-
 
     // raked panel left
     step_up_panels = get_field_multi_options(custom_fence, info, 'left_side');    
@@ -177,7 +185,6 @@ function calculate_fences( data ) {
 
     // C13 = 50*(C24+C22+C23);
     C14 = C3-C8-C9-C10-post_panel;
-
 
 
     C15 = C3+C7+C4;
@@ -214,11 +221,12 @@ function calculate_fences( data ) {
     C19 =  E19 < 1 ? 0 : 1;
 
     // C20 = C19;
-    C20 = (panel_options_data?.slug == 'even' || panel_options_data?.slug == undefined) ? C17 : C19;
+    C20 = (panel_options_data?.slug.includes('even') || panel_options_data?.slug == undefined) ? C17 : C19;
 
     D20 = D19<post_panel ? 0 : E18-E19;
 
-    D20 = panel_options_data?.slug == 'even' ? E18-E17 : (D19<50 ? 0 : E18-E19);
+    D20 = panel_options_data?.slug.includes('even') ? E18-E17 : (D19<50 ? 0 : E18-E19);
+
 
 
     // Outputs
@@ -228,7 +236,7 @@ function calculate_fences( data ) {
     even_panel_count  = isNaN(C17) ? 0 : C17;
     even_panel_length = isNaN(E17) ? 0 : E17;
 
-    if( panel_options_data?.slug == 'even' || panel_options_data?.slug == undefined ) {
+    if( panel_options_data?.slug.includes('even') || panel_options_data?.slug == undefined ) {
 
         long_panel_count  = even_panel_count;
         long_panel_length = Math.round(even_panel_length);  
