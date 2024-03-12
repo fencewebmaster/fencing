@@ -1504,8 +1504,7 @@ function zooming(zoom) {
     document.querySelector('.js-fc-zoom-progress').textContent = Math.floor(step*100) + "%";
 
     if( step >= 1 ) {
-        $('.fencing-panel-items').css({ 
-    'padding-top': raked_panel_mt, 'zoom': step,   'max-height' : '200px'});
+        $('.fencing-panel-items').css({'padding-top': raked_panel_mt, 'zoom': step,   'max-height' : '200px'});
         $('.fencing-display-result').css({'margin-top': 'auto'});
     } else {
         $('.fencing-panel-items').css({ 'zoom': step,   'max-height' : '200px'});

@@ -3388,6 +3388,7 @@ thead.fc-border th:last-child {
   transform: translate(-50%, -50%);
   text-align: center;
   width: 100%;
+  line-height: 20px;
 }
 .load-quote:hover .fencing-style-title,
 .load-quote:hover .fencing-style-img {
@@ -3436,7 +3437,8 @@ thead.fc-border th:last-child {
     border-radius: 50%;
     cursor: pointer;
     border: 0;
-    border-bottom: 4px solid #90232e !important;
+    border-bottom: 3px solid #90232e !important;
+    border-right: 2px solid #90232e !important;
 }
 .fencing-style-item .fencing-style-btn:hover {
   background: #b20b1b;
