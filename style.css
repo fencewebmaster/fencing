@@ -3425,17 +3425,18 @@ thead.fc-border th:last-child {
   padding: 10px;
 }
 .fencing-style-item .fencing-style-btn {
-  border: 2px solid #ffffff;
-  background: #dc3545;
-  width: 27px;
-  height: 27px;
-  position: absolute;
-  top: 8px;
-  right: 20px;
-  color: #fff;
-  outline: none;
-  border-radius: 50%;
-  cursor: pointer;
+    background: #dc3545;
+    width: 27px;
+    height: 27px;
+    position: absolute;
+    top: 8px;
+    right: 20px;
+    color: #fff;
+    outline: none;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 0;
+    border-bottom: 4px solid #90232e !important;
 }
 .fencing-style-item .fencing-style-btn:hover {
   background: #b20b1b;
@@ -4467,4 +4468,8 @@ thead.fc-border th:last-child {
 .fencing-mb-input .form-control-clear {
     right: 17%;
     top: calc(50% - 7px);
+}
+
+.form-control:focus {
+  box-shadow: unset !important;
 }

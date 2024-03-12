@@ -394,8 +394,9 @@ if( $qid = @$_GET['qid'] ) {
                             <div class="">
 
                                 <div class="row" data-tab="1">
-                                
-                                    <?php if( isset($_SESSION['planner_id']) ): ?>
+            
+
+                                    <?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>
                                     <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
                                         <button type="submit" class="btn btn-orange fc-btn-update py-3 px-4 w-100">
                                             <i class="fa-regular fa-pen-to-square me-1"></i> 

@@ -777,10 +777,11 @@ $(document).on('click', '.btn-fc-calculate', function(){
     custom_fence_tab[0].calculateValue = length;
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
 
-
+    /*
     window.onbeforeunload = function() {
         return false;
     }
+    */
 });
 
 //----------------------------------------------------------------
@@ -886,13 +887,13 @@ $(document).on('click', '.fc-btn-next', function(){
 });
 
 //----------------------------------------------------------------
-
+/*
 $(document).on('click', '[type="submit"]', function(){
     window.onbeforeunload = function () {
         return;
     }
 });
-
+*/
 //----------------------------------------------------------------
 
 $(document).on('click', '.fc-btn-step', function(e){

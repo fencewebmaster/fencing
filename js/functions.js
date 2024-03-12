@@ -1262,7 +1262,7 @@ function removeItemStorageWith(startsWith) {
 
 function submit_fence_planner(status ='') {
 
-    window.onbeforeunload = function() {}
+    // window.onbeforeunload = function() {}
 
     // Removed unwanted cart
     removeItemStorageWith('cart_items-');
@@ -1375,9 +1375,11 @@ function submit_fence_planner(status ='') {
                                $this.addClass('fc-text-success');
                                count++;
                                if( count == 1 ) {
+                                    /*
                                     window.onbeforeunload = function () {
                                         return;
                                     }
+                                    */
                                     window.location = 'project-plan.php';
                                }
                             }, 1000 * i);
@@ -1393,9 +1395,11 @@ function submit_fence_planner(status ='') {
                                count++;
 
                                if( count == 1 ) {
+                                    /*
                                     window.onbeforeunload = function () {
                                         return;
                                     }
+                                    */
                                     window.location = 'project-plan.php?qid='+planner_id;
                                }
                                
