@@ -429,7 +429,7 @@ function re_update_raked_panels(side, tab) {
                 }).get().join("");
             }
 
-            if( has_post != 'yes-post' ) {
+            if( has_post != 'yes-post' && has_post ) {
                 var has_post = 'no-post '+side_part+'-panel-post '+has_post;
             }
         }
