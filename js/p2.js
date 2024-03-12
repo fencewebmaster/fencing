@@ -273,17 +273,33 @@ function reload_load_fencing_items(tab) {
 
     re_update_raked_panels(['left_raked', 'right_raked'], tab);
 
+
+    // Panel off-cut
     if( calc.offcut_panel.count && calc.offcut_panel.length ) {
         var tpl = $('script[data-type="offcut"]').text()
+                                                 .replace(/{{slug}}/gi, 'panel-offcut') 
+                                                 .replace(/{{name}}/gi, 'Panel')
                                                  .replace(/{{count}}/gi, calc.offcut_panel.count)  
                                                  .replace(/{{group}}/gi, info.panel_group) 
                                                  .replace(/{{width}}/gi, calc.offcut_panel.length);     
 
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);    
 
-        $('#pp-'+tab+' .fencing-offcut').css({'width':calc.offcut_panel.length*0.10});
+        $('#pp-'+tab+' .fencing-offcut.panel-offcut').css({'width':calc.offcut_panel.length*0.10});
     }
 
+    // Custom gate off-cut
+    if( calc.offcut_gate_panel.count && calc.offcut_gate_panel.length ) {
+        var tpl = $('script[data-type="offcut"]').text()
+                                                 .replace(/{{slug}}/gi, 'gate-offcut') 
+                                                 .replace(/{{name}}/gi, 'Gate')
+                                                 .replace(/{{count}}/gi, calc.offcut_gate_panel.count)  
+                                                 .replace(/{{group}}/gi, info.panel_group) 
+                                                 .replace(/{{width}}/gi, calc.offcut_gate_panel.length);     
+
+        $(FENCES.el.fencingPanelContainer).append(tpl);    
+        $('#pp-'+tab+' .fencing-offcut.gate-offcut').css({'max-width':calc.offcut_gate_panel.length*0.10});
+    }
 
 
     if( calc.fence_size.height ) {

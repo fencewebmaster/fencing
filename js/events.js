@@ -531,7 +531,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
             var fence_height = $('[name="fence_height"]').val(),
                 panel_opts   = panel_options_data.size.width_based_height,
-                maxWidth     = panel_opts[fence_height];
+                maxWidth     = parseInt(panel_opts[fence_height]) - 50;
 
             var tpl = $('script[data-type="custom-gate"]').text()
                                                           .replace(/{{maxWidth}}/gi, maxWidth);
@@ -892,14 +892,15 @@ $(document).on('click', '.fc-btn-next', function(){
 });
 
 //----------------------------------------------------------------
+
 /*
 $(document).on('click', '[type="submit"]', function(){
     window.onbeforeunload = function () {
         return;
     }
 });
-*
-/
+*/
+
 //----------------------------------------------------------------
 
 $(document).on('click', '.fc-btn-step', function(e){
