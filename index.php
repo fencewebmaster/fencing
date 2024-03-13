@@ -38,11 +38,11 @@ if( $qid = @$_GET['qid'] ) {
 ?>
 
 <title>Fencing Calculator</title>
-<link rel="icon" type="image/x-icon" href="img/fav.ico">
+<link rel="icon" type="image/x-icon" href="<?php echo base_url(); ?>img/fav.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" type="text/css" href="style.css?v=<?php echo date('YmdHis'); ?>">
-<link rel="stylesheet" type="text/css" href="style-v2.css?v=<?php echo date('YmdHis'); ?>">
-<link rel="stylesheet" type="text/css" href="fonts/fa/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>style.css?v=<?php echo date('YmdHis'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>style-v2.css?v=<?php echo date('YmdHis'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>fonts/fa/css/all.min.css">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
@@ -544,9 +544,10 @@ if( $qid = @$_GET['qid'] ) {
 
 </div>
 
-<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="js/jquery.validate.min.js"></script>
-<script type="text/javascript" src="js/jquery-scrollspy.min.js"></script>
+
+<script type="text/javascript" src="<?php echo base_url(); ?>js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/jquery.validate.min.js"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/jquery-scrollspy.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 
@@ -556,13 +557,13 @@ var fc_fence_info = <?php echo json_encode($res); ?>;
 var planner_id    = "<?php echo @$_SESSION['planner_id']; ?>";  
 </script>
 
-<script type="text/javascript" src="js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="js/cart-items.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="js/p1.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/cart-items.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url(); ?>js/p1.js?v=<?php echo date('YmdHis'); ?>"></script>
 
 
 
