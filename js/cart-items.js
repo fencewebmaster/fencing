@@ -314,6 +314,7 @@ FENCES.cartItems = {
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+full");
 
+
         var qty = getPanelItems + getRakedPanelItems;
 
         if( qty ) {

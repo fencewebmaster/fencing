@@ -206,7 +206,7 @@ $fences['flat_top'] = [
 					'label' => '',
 					'options' => [
 						[
-							'slug' => 'even',
+							'slug' => 'even+2400',
 							'type' => 'text_option',
 							'title' => 'Even Size Panels 2400W',
 							'default' => TRUE,
@@ -215,7 +215,7 @@ $fences['flat_top'] = [
 							]
 						],
 						[
-							'slug' => 'full_2400',
+							'slug' => 'full+2400',
 							'type' => 'text_option',
 							'title' => 'Full Size Panels 2400W',
 							'size' => [
@@ -223,7 +223,7 @@ $fences['flat_top'] = [
 							]
 						],
 						[
-							'slug' => 'full_3000',
+							'slug' => 'full+3000',
 							'type' => 'text_option',
 							'title' => 'Full Size Panels 3000W',
 							'desc' => 'ONLY Available In BLACK',

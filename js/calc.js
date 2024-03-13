@@ -120,7 +120,15 @@ function calculate_fences( data ) {
     C5  = panel_options_data?.size.width;   // panel options
     
     if( C5 == undefined ) {
-        panel_options_data = get_field_by_slug(info.settings.panel_options.fields[0].options, 'even');
+
+        panel_options_data = info.settings.panel_options.fields[0].options.filter(function(item) {
+            return item.default;
+        });
+
+        if( Array.isArray(panel_options_data) ){
+            panel_options_data = panel_options_data[0];
+        }
+
         C5 = panel_options_data.size?.width;        
     }
 

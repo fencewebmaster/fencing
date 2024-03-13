@@ -51,6 +51,7 @@
 .panel-post {
 
 }
+
 .fencing-panel-spacing-number.opt-2 span {
 	    bottom: -5px;
 }
@@ -60,6 +61,7 @@
 .panel-post:not(.panel-no-post).opt-2:after {
 	bottom: 15px;
 }
+
 .qty-edited {
 	position: absolute;
 	left: -10px;

@@ -44,7 +44,7 @@ function load_fencing_items() {
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
                                                      .replace(/{{panel_number}}/gi, panel_number);    
-    
+
         $(FENCES.el.fencingPanelContainer).append(tpl);
 
         $(FENCES.el.fencingPanelItem).css({'width':panel_size*0.10});
@@ -340,7 +340,7 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
                 let value = settings[idx].val ? settings[idx].val : post_options_default[0].slug;
 
                 if( key === "post_option" && modal_key != 'post_options' ){
-
+            
                     //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                     //Find the element that matches the condition below and add the class
                     $('#pp-'+sectionId+' .panel-post[data-key='+activeSetting+'], #pp-'+sectionId+' .fencing-panel-spacing-number')

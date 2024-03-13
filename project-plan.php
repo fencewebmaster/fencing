@@ -336,13 +336,11 @@
 
 	</form>
 	<!-- END CHECKOUT FORM -->
-
-	<div class="container-lg">
-	    <?php include 'temp/copyright.php'; ?>	
-	</div>
     
 </div>
 <!-- END FENCING CONTAINER -->
+
+<?php include 'temp/copyright.php'; ?>	
 
 <!-- Config -->
 <script type="text/javascript">

@@ -3650,6 +3650,9 @@ thead.fc-border th:last-child {
   min-height: 140px;
   position: relative;
 }
+.panel-post.opt-2 {
+  min-height: 155px;  
+}
 
 @media (min-width: 1024px) {
   .panel-post:hover {

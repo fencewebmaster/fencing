@@ -1,6 +1,7 @@
 SLUG,PRODUCT,DESCRIPTION,SUPPLIER,STYLE,BLACK,WHITE,MONUMENT,CREAM,CUSTOM
-panel_options+even,Panel - STD,PoolSafe Panel Black 1200H x 2400W,JG,flat_top,FTP-P2400-B-JG,FTP-P2400-W-JG,FTP-P2400-M-JG,FTP-P2400-C-JG,OFF
-panel_options+full,Panel - 3m,PoolSafe Panel Black 1200H x 3000W,JG,flat_top,FTP-P3000-B-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG
+panel_options+even+2400,Panel - STD,PoolSafe Panel Black 1200H x 2400W,JG,flat_top,FTP-P2400-B-JG,FTP-P2400-W-JG,FTP-P2400-M-JG,FTP-P2400-C-JG,OFF
+panel_options+full+2400,Panel - STD,PoolSafe Panel Black 1200H x 2400W,JG,flat_top,FTP-P2400-B-JG,FTP-P2400-W-JG,FTP-P2400-M-JG,FTP-P2400-C-JG,OFF
+panel_options+full+3000,Panel - 3m,PoolSafe Panel Black 1200H x 3000W,JG,flat_top,FTP-P3000-B-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG,FTP-P3000-CPC-JG
 left_raked_panel+1300x300,1300H - 300 Step-Up,LEFT Raked Panels,JG,flat_top,FTP-RP1300-B-JG,FTP-RP1300-CPC-JG,FTP-RP1300-CPC-JG,FTP-RP1300-CPC-JG,OFF
 left_raked_panel+1400x400,1400H - 400 Step-Up,LEFT Raked Panels,JG,flat_top,FTP-RP1400-B-JG,FTP-RP1400-CPC-JG,FTP-RP1400-CPC-JG,FTP-RP1400-CPC-JG,OFF
 left_raked_panel+1500x500,1500H - 500 Step-Up,LEFT Raked Panels,JG,flat_top,FTP-RP1500-B-JG,FTP-RP1500-CPC-JG,FTP-RP1500-CPC-JG,FTP-RP1500-CPC-JG,OFF
@@ -27,11 +28,13 @@ base_plate+dynabolts,Fasteners,Dynabolts M10 x 120mm Stainless Steel x4,JG,flat_
 gate+hinges,Hinges,SafeTech Hinges - Adjustable Self Closing,JG,flat_top,HIN-HD-ASC-B-JG,HIN-HD-ASC-B-JG,HIN-HD-ASC-B-JG,HIN-HD-ASC-B-JG,OFF
 gate+latch,Latch,SafeTech Latch - Magnetic Top Pull - Keyless,JG,flat_top,LAT-MTP-B-JG,LAT-MTP-B-JG,LAT-MTP-B-JG,LAT-MTP-B-JG,OFF
 base_plate+post_cap,Post Cap,PoolSafe Post Cap,JG,flat_top,PO-CAP-B-JG,OFF,OFF,OFF,OFF
+,,,,,,,,,
 panel_options+bracket,Bracket - STD,PoolSafe Bracket Black x4,GO,flat_top,FTP-BRx4-B-GO,FTP-BRx4-W-GO,FTP-BRx4-M-GO,OFF,OFF
 gate,Gate,PoolSafe Gate Black 1200H x 970W,GO,flat_top,FTP-G975-B-GO,FTP-G975-W-GO,FTP-G975-M-GO,OFF,OFF
 gate+converter,Gate Converter,PoolSafe Gate-Converter Black 1200H,GO,flat_top,FTP-GC1200-B-GO,FTP-GC1200-W-GO,FTP-GC1200-M-GO,OFF,OFF
-panel_options+even,Panel - STD,PoolSafe Panel Black 1200H x 2400W,GO,flat_top,FTP-P2450-B-GO,FTP-P2450-W-GO,FTP-P2450-M-GO,OFF,OFF
-panel_options+full,Panel - 3m,PoolSafe Panel Black 1200H x 3000W,GO,flat_top,FTP-P3000-B-GO,FTP-P3000-B-GO,FTP-P3000-B-GO,OFF,FTP-P3000-CPC-JG
+panel_options+even+2400,Panel - STD,PoolSafe Panel Black 1200H x 2400W,GO,flat_top,FTP-P2450-B-GO,FTP-P2450-W-GO,FTP-P2450-M-GO,OFF,OFF
+panel_options+full+2400,Panel - STD,PoolSafe Panel Black 1200H x 2400W,GO,flat_top,FTP-P2450-B-GO,FTP-P2450-W-GO,FTP-P2450-M-GO,OFF,OFF
+panel_options+full+3000,Panel - 3m,PoolSafe Panel Black 1200H x 3000W,GO,flat_top,FTP-P3000-B-GO,FTP-P3000-B-GO,FTP-P3000-B-GO,OFF,FTP-P3000-CPC-JG
 gate+hinges,Hinges,SafeTech Hinges - Adjustable Self Closing,GO,flat_top,HIN-HD-ASC-B-GO,HIN-HD-ASC-W-GO,HIN-HD-ASC-B-GO,OFF,OFF
 gate+kit,Kit,SafeTech Hinge & Latch Kit - HD Adjustable Self Closing,GO,flat_top,KIT-HL-MTP-HD-B-GO,KIT-HL-MTP-HD-W-GO,KIT-HL-MTP-HD-B-GO,OFF,OFF
 gate+latch,Latch,SafeTech Latch - Magnetic Top Pull - Keyless,GO,flat_top,LAT-MTP-B-GO,LAT-MTP-W-GO,LAT-MTP-B-GO,OFF,OFF
@@ -40,6 +43,7 @@ panel_post+opt-2,Post - 1800,PoolSafe Post Black 1800L,GO,flat_top,PO-1800-B-GO,
 raked_post+opt-2,Post - 2400,PoolSafe Post Black 2400L - Cemented-In,GO,flat_top,PO-2400-B-GO,PO-2400-W-GO,PO-2400-M-GO,OFF,OFF
 base_plate+post_cap,Post Cap,PoolSafe Post Cap,GO,flat_top,PO-CAP-B-GO,OFF,OFF,OFF,OFF
 base_plate+post_cover,Post Cover,PoolSafe Post Cover - 2pc - 50x50mm - Black,GO,flat_top,PO-COV-2P-B-GO,PO-COV-2P-W-GO,PO-COV-2P-M-GO,OFF,OFF
+,,,,,,,,,
 panel_options+even+1000,Panel - 1000H,BARR Panel - 1000H x 1733W,JG,barr,BARR-P1000H-B-GO,BARR-P1000H-W-GO,,,
 panel_options+even+1200,Panel - 1200H,BARR Panel - 1200H x 2205W,JG,barr,BARR-P1200H-B-GO,BARR-P1200H-W-GO,,,
 panel_options+even+1800,Panel - 1800H,BARR Panel 1800H x 1969W,JG,barr,BARR-P1800H-B-GO,BARR-P1800H-W-GO,,,

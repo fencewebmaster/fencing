@@ -540,9 +540,9 @@ if( $qid = @$_GET['qid'] ) {
 
     </form>
 
-    <?php include 'temp/copyright.php'; ?>
-
 </div>
+
+<?php include 'temp/copyright.php'; ?>
 
 
 <script type="text/javascript" src="<?php echo base_url(); ?>js/jquery-3.3.1.min.js"></script>

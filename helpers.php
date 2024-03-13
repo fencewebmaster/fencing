@@ -94,7 +94,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 4,
             'domain'   => "fencinggoldcoast.au",
             'url'      => toURL('fencinggoldcoast.au'),
-            'supplier' => "GO",
+            'supplier' => "JG",
             'logo'     => "https://fencinggoldcoast.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
             'name'     => "Gold Coast's Fencing Outlet"
         ],
@@ -102,7 +102,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 5,
             'domain'   => "fencesadelaide.au",
             'url'      => toURL('fencesadelaide.au'),
-            'supplier' => "GO",
+            'supplier' => "JG",
             'logo'     => "https://fencesadelaide.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
             'name'     => "Adelaide's Fencing Outlet"
         ],
@@ -110,7 +110,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 6,
             'domain'   => "fencessydney.au",
             'url'      => toURL('fencessydney.au'),
-            'supplier' => "GO",
+            'supplier' => "JG",
             'logo'     => "https://fencessydney.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
             'name'     => "Sydney's Fencing Outlet"
         ],
@@ -118,7 +118,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 7,
             'domain'   => "fencesmelbourne.au",
             'url'      => toURL('fencesmelbourne.au'),
-            'supplier' => "GO",
+            'supplier' => "JG",
             'logo'     => "https://fencesmelbourne.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-V2.png",
             'name'     => "Melbourne's Fencing Outlet"
         ],
@@ -126,7 +126,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 8,
             'domain'   => "fencesnewcastle.au",
             'url'      => toURL('fencesnewcastle.au'),
-            'supplier' => "GO",
+            'supplier' => "JG",
             'logo'     => "",
             'name'     => ""
         ]
