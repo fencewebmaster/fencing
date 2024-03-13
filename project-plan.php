@@ -337,7 +337,9 @@
 	</form>
 	<!-- END CHECKOUT FORM -->
 
-    <?php include 'temp/copyright.php'; ?>
+	<div class="container-lg">
+	    <?php include 'temp/copyright.php'; ?>	
+	</div>
     
 </div>
 <!-- END FENCING CONTAINER -->
