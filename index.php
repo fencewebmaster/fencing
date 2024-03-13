@@ -212,7 +212,7 @@ if( $qid = @$_GET['qid'] ) {
                                     <div>
 
                                         <div class="fencing-style-img">
-                                            <img src="<?php echo $fence['image']; ?>">				
+                                            <img src="<?php echo base_url().$fence['image']; ?>">				
                                         </div>
 
                                         <div class="fencing-style-title fw-bold fs-6">
@@ -230,7 +230,7 @@ if( $qid = @$_GET['qid'] ) {
                                     <div>
 
                                         <div class="fencing-style-img">
-                                            <img src="img/plain-white.jpg">  
+                                            <img src="<?php echo base_url(); ?>img/plain-white.jpg">  
                                             <div class="lq-mid-desc">
                                                 <div class="lq-icon">
                                                     <i class="fa-solid fa-file-circle-plus"></i>                                         
@@ -281,11 +281,11 @@ if( $qid = @$_GET['qid'] ) {
                                             <span>mm</span>				
                                             
                                             <div class="fencing-qty-plus fencing-qty-btn">
-                                                <img src="img/quantity-plus.png" alt="" title="">
+                                                <img src="<?php echo base_url(); ?>img/quantity-plus.png" alt="" title="">
                                             </div>
 
                                             <div class="fencing-qty-minus fencing-qty-btn">
-                                                <img src="img/quantity-minus.png" alt="" title="">
+                                                <img src="<?php echo base_url(); ?>img/quantity-minus.png" alt="" title="">
                                             </div>
 
                                         </span>
