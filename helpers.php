@@ -28,6 +28,29 @@ function get_uid($l=10) {
 
 //----------------------------------------------------------------
 
+function in_uri_segment($keys) {
+    $uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
+    foreach ($uri_segments as $segment) {
+        if( in_array($segment, $keys) ) {
+            return TRUE;
+        }
+    }
+}
+
+//----------------------------------------------------------------
+
+function demo_stages() {
+    return [
+        'html',
+        'dev', 
+        'demo', 
+        'staging', 
+        'test'
+    ];
+}
+
+//----------------------------------------------------------------
+
 function sites($key = '', $value = 'id', $search = false) {
 
     $data = [
@@ -286,7 +309,6 @@ function get_product_skus($data = array()) {
 
         $supplier = $_SESSION['site']['supplier'];
 
-
     	foreach ($items as $item) {
 
             $filtered_product = array_filter($the_products, function($val) use($item, $supplier){
@@ -308,13 +330,13 @@ function get_product_skus($data = array()) {
                   ]; 
                 }
                 
-
                 $skus[] = $the_products[$key][$color];
             }
 
     	}
 
     }
+
 
 	$_SESSION['custom_fence_products'] = $products;
 

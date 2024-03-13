@@ -35,6 +35,11 @@ class Database {
 
 	    }
 
+        $this->is_demo = '';
+        if( in_uri_segment(demo_stages()) ) {
+            $this->is_demo = 'demo';
+        }
+
     }
 
     function connect() {
@@ -53,6 +58,8 @@ class Database {
 
     function insert($table, $data) {
 
+        $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+
         $new_data = array();
 
         foreach($data as $k => $v) {
@@ -62,7 +69,7 @@ class Database {
         $columns = implode(', ', array_keys($data));
         $values  = "'" .implode("','", array_values($new_data)). "'";
 
-        $sql = "INSERT INTO ".$this->prefix.$table." (".$columns.") VALUES (".$values.")";
+        $sql = "INSERT INTO ".$table." (".$columns.") VALUES (".$values.")";
 
         $conn = $this->connect();
 
@@ -83,6 +90,8 @@ class Database {
 
     function update($table = '', $data  = array(), $where  = array()) {
 
+        $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+
         $new_data = $where_data = array();
 
         foreach ($data as $key => $value) {
@@ -98,7 +107,7 @@ class Database {
         $where_data = implode(' AND ', $where_data);
 
 
-        $sql = "UPDATE ".$this->prefix.$table." SET $set_data WHERE $where_data;";
+        $sql = "UPDATE ".$table." SET $set_data WHERE $where_data;";
 
         $conn = $this->connect();
 
@@ -142,7 +151,9 @@ class Database {
 
     function select_where($table, $where, $select = '*') {
 
-        $sql = "SELECT $select FROM ".$this->prefix.$table." WHERE ".$where .' ORDER BY id DESC';
+        $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+
+        $sql = "SELECT $select FROM ".$table." WHERE ".$where .' ORDER BY id DESC';
 
         $conn = $this->connect();
 

@@ -186,8 +186,6 @@ function reload_load_fencing_items(tab) {
 
     for (let i = 0; i < calc.long_panel.count; i++) {
 
- 
-        
         mesurement = $('.measurement-box-number').val();
 
         var panel_number = i,
@@ -195,9 +193,21 @@ function reload_load_fencing_items(tab) {
             panel_unit   = 'mm',
             data_key     = "post_options";
 
+        var panel_option_value = calc.selected_values.panel_option;
+
+        if( panel_option_value.indexOf('full') !== -1 ){
+            panel_option_value = panel_option_value.split('_')[0];
+        } 
+
+        // Fence height
+        if( calc.fence_size.height ) {
+            panel_option_value = panel_option_value.concat("+", calc.fence_size.height);
+        }
+
         var tpl = $('script[data-type="panel_item-'+info.panel_group+'"]').text()
                                                      .replace(/{{data_key}}/gi, center_point)
                                                      .replace(/{{center_point}}/gi, center_point)
+                                                     .replace(/{{panel_value}}/gi, panel_option_value)
                                                      .replace(/{{panel_size}}/gi, panel_size+'W')
                                                      .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W')
                                                      .replace(/{{panel_unit}}/gi, '<br>PANEL')
@@ -218,15 +228,25 @@ function reload_load_fencing_items(tab) {
         for ( let i = 0; i < 1; i++ ) {
 
             var panel_number = i,
-                panel_size   = calc.short_panel.length,
-                panel_unit   = 'mm';
-       
+                panel_size = calc.short_panel.length,
+                panel_unit = FENCES.defaultValues.unit;
+                panel_option_value = calc.selected_values.panel_option;
+
+            if( panel_option_value.indexOf('full') !== -1 ){
+                panel_option_value = panel_option_value.split('_')[0];
+            } 
+
+            // Fence height
+            if( calc.fence_size.height ) {
+                panel_option_value = panel_option_value.concat("+", calc.fence_size.height);
+            }
+
             var tpl = $('script[data-type="short_panel_item-'+info.panel_group+'"]').text()
-                                                             .replace(/{{center_point}}/gi, center_point)
-                                                             .replace(/{{panel_size}}/gi, panel_size+'W')
-                                                             .replace(/{{panel_unit}}/gi, '<br>PANEL')
-                                                             .replace(/{{panel_number}}/gi, panel_number)
-                                                             .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W');   
+                                                         .replace(/{{center_point}}/gi, center_point)
+                                                         .replace(/{{panel_size}}/gi, panel_size+'W')
+                                                         .replace(/{{panel_value}}/gi, panel_option_value)
+                                                         .replace(/{{panel_unit}}/gi, '<br>PANEL')
+                                                         .replace(/{{panel_number}}/gi, panel_number);   
                                              
         
             $(`#pp-${tab} .fencing-panel-container`).append(tpl);
@@ -253,17 +273,33 @@ function reload_load_fencing_items(tab) {
 
     re_update_raked_panels(['left_raked', 'right_raked'], tab);
 
+
+    // Panel off-cut
     if( calc.offcut_panel.count && calc.offcut_panel.length ) {
         var tpl = $('script[data-type="offcut"]').text()
+                                                 .replace(/{{slug}}/gi, 'panel-offcut') 
+                                                 .replace(/{{name}}/gi, 'Panel')
                                                  .replace(/{{count}}/gi, calc.offcut_panel.count)  
                                                  .replace(/{{group}}/gi, info.panel_group) 
                                                  .replace(/{{width}}/gi, calc.offcut_panel.length);     
 
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);    
 
-        $('#pp-'+tab+' .fencing-offcut').css({'width':calc.offcut_panel.length*0.10});
+        $('#pp-'+tab+' .fencing-offcut.panel-offcut').css({'width':calc.offcut_panel.length*0.10});
     }
 
+    // Custom gate off-cut
+    if( calc.offcut_gate_panel.count && calc.offcut_gate_panel.length ) {
+        var tpl = $('script[data-type="offcut"]').text()
+                                                 .replace(/{{slug}}/gi, 'gate-offcut') 
+                                                 .replace(/{{name}}/gi, 'Gate')
+                                                 .replace(/{{count}}/gi, calc.offcut_gate_panel.count)  
+                                                 .replace(/{{group}}/gi, info.panel_group) 
+                                                 .replace(/{{width}}/gi, calc.offcut_gate_panel.length);     
+
+        $(FENCES.el.fencingPanelContainer).append(tpl);    
+        $('#pp-'+tab+' .fencing-offcut.gate-offcut').css({'max-width':calc.offcut_gate_panel.length*0.10});
+    }
 
 
     if( calc.fence_size.height ) {
@@ -309,7 +345,7 @@ function re_update_gate(action, tab) {
 
     var panel_size = calc.gate.length,
         panel_unit = 'mm',
-        gate_size  = calc.gate.length;
+        gate_size  = calc.gate.width;
 
     if( action == 'add' || action == 'edit' ) {
 
@@ -342,14 +378,9 @@ function re_update_gate(action, tab) {
     }
 
     $('#pp-'+tab+' .fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
-                                        .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>');
-
-
-
-    $('.fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
-                            .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
-                            .attr('data-cart-value', 1)
-                            .css({'max-width': calc.gate.length * 0.1});
+                                        .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
+                                        .attr('data-cart-value', 1)
+                                        .css({'max-width': calc.gate.length * 0.1});
                       
 }
 
@@ -398,7 +429,7 @@ function re_update_raked_panels(side, tab) {
                 }).get().join("");
             }
 
-            if( has_post != 'yes-post' ) {
+            if( has_post != 'yes-post' && has_post ) {
                 var has_post = 'no-post '+side_part+'-panel-post '+has_post;
             }
         }

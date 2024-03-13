@@ -29,6 +29,8 @@
 <link rel="stylesheet" type="text/css" href="fonts/fa/css/all.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
+
+
 <!-- START FORM SUBMISSION LOADER -->
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
@@ -72,7 +74,7 @@
                 <div class="col-sm-auto col-auto">
 					<div class="quote-id-card float-end">
 						<div class="qic-head px-3">Your Quote ID</div>
-						<div class="qic-body btn-copy-link px-3" data-id="quote-id-1">
+						<div class="qic-body btn-copy-link" data-id="quote-id-1">
 							<div id="quote-id-1"><?php echo @$_SESSION['planner_id']; ?></div>
 						</div>
 					</div>
@@ -301,11 +303,11 @@
 											            <i class="fa-solid fa-cart-shopping me-2"></i>
 											            Order Items Now!
 											        </button>
-										
-											        <button type="button" class="btn btn-lg btn-secondary text-uppercase w-100 fs-6 text">
-											            <i class="fa-regular fa-comments me-2"></i>
-											            Speak To Trade Support
-											        </button>										    		
+																								
+											        <a href="tel:0480016687" class="btn btn-lg btn-secondary text-uppercase w-100 fs-6 text">
+											           	Speak To Trade Support<br>
+											           	<b><i class="fa-solid fa-phone me-2"></i> 0480016687</b>
+											        </a>										    		
 								
 												</div>
 

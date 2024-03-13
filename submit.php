@@ -45,6 +45,8 @@ foreach($cart_items_regrouped as $cir_k => $cir_items) {
           'slug' => $ciri_k,
           'qty' => array_sum($ciri_v),
       ];
+
+
     }
 
     $c = explode('+', $cir_k);
@@ -56,7 +58,6 @@ foreach($cart_items_regrouped as $cir_k => $cir_items) {
     ];
 
 }
-
 
 post_product_skus($cart_items_data);
 

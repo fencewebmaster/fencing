@@ -5,3 +5,4 @@
 <a href="<?php echo $_SESSION["site"]['url']; ?>" class="btn btn-sm btn-dark px-3">
 	<i class="fa fa-arrow-left"></i> Back to <b><?php echo $_SESSION["site"]['name']; ?></b> Site
 </a>
+

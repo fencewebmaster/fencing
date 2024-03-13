@@ -193,7 +193,7 @@ if( $qid = @$_GET['qid'] ) {
                                         <button type="button" 
                                             class="btn btn-danger btn-sm fc-fence-reset-all px-2 fw-bold text-uppercase" 
                                             style="display:none;">
-                                            <i class="fa-solid fa-circle-minus me-1"></i> Reset
+                                            <i class="fa-solid fa-rotate-left me-1"></i> Reset
                                         </button>
 
                                     </div>
@@ -394,8 +394,9 @@ if( $qid = @$_GET['qid'] ) {
                             <div class="">
 
                                 <div class="row" data-tab="1">
-                                
-                                    <?php if( isset($_SESSION['planner_id']) ): ?>
+            
+
+                                    <?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>
                                     <div class="col-lg-auto col-sm-6 px-1 mb-lg-0 mb-2">
                                         <button type="submit" class="btn btn-orange fc-btn-update py-3 px-4 w-100">
                                             <i class="fa-regular fa-pen-to-square me-1"></i> 
@@ -425,9 +426,10 @@ if( $qid = @$_GET['qid'] ) {
 
                                     <div class="col-lg-auto col-sm-6 col-auto px-1 mb-lg-0 mb-2">
                                         <button type="button" 
-                                            class="btn btn-secondary  fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
+                                            class="btn btn-secondary fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
                                             <b>
-                                                <i class="fa-solid fa-rotate me-1"></i> Reset
+                                                <i class="fa-solid fa-rotate-left me-1"></i>
+                                                Reset
                                             </b>
                                         </button>
                                     </div>

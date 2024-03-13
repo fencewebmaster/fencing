@@ -104,15 +104,30 @@ function load_fencing_items() {
 
     update_raked_panels(['left_raked', 'right_raked']);
 
+    // Panel off-cut
     if( calc.offcut_panel.count && calc.offcut_panel.length ) {
         var tpl = $('script[data-type="offcut"]').text()
+                                                 .replace(/{{slug}}/gi, 'panel-offcut') 
+                                                 .replace(/{{name}}/gi, 'Panel')
                                                  .replace(/{{count}}/gi, calc.offcut_panel.count)  
                                                  .replace(/{{group}}/gi, info.panel_group) 
                                                  .replace(/{{width}}/gi, calc.offcut_panel.length);     
 
         $(FENCES.el.fencingPanelContainer).append(tpl);    
+        $('.fencing-offcut.panel-offcut').css({'max-width':calc.offcut_panel.length*0.10});
+    }
 
-        // $(FENCES.el.fencingPanelGate).css({'width':calc.offcut_panel.length*0.10});
+    // Custom gate off-cut
+    if( calc.offcut_gate_panel.count && calc.offcut_gate_panel.length ) {
+        var tpl = $('script[data-type="offcut"]').text()
+                                                 .replace(/{{slug}}/gi, 'gate-offcut') 
+                                                 .replace(/{{name}}/gi, 'Gate')
+                                                 .replace(/{{count}}/gi, calc.offcut_gate_panel.count)  
+                                                 .replace(/{{group}}/gi, info.panel_group) 
+                                                 .replace(/{{width}}/gi, calc.offcut_gate_panel.length);     
+
+        $(FENCES.el.fencingPanelContainer).append(tpl);    
+        $('.fencing-offcut.gate-offcut').css({'max-width':calc.offcut_gate_panel.length*0.10});
     }
 
     // Clear tooltip like error massage
@@ -491,6 +506,7 @@ function update_gate(action) {
         panel_unit = FENCES.defaultValues.unit,
         gate_size  = calc.gate.width;
 
+
     if( action == 'add' || action == 'edit' ) {
 
         if( placement == -1 ) {
@@ -531,9 +547,12 @@ function update_gate(action) {
 
     $(FENCES.el.fencingPanelGate).prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
                                  .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
-                                 .attr('data-cart-value', gateValue)
-                                 .css({'max-width': calc.gate.width * 0.1});
-                      
+                                 .attr('data-cart-value', gateValue);
+
+    if( calc.fence_size.height ) {
+        $(FENCES.el.fencingPanelGate).css({'max-width': calc.gate.width * 0.1});
+    }
+
 }
 
 $.fn.swapWith = function(to) {
@@ -837,9 +856,9 @@ function update_custom_fence_tab() {
 
     $(FENCES.el.fcTabTitle).html('SECTION ' + (tab+1) );
 
-    subTitle = [mesurement, info['title']].filter(function(e){return e}).join(' &#128900; ');
+    subTitle = [mesurement, info['title']].filter(function(e){return e}).join(' <i class="fa-solid fa-caret-right ms-3"></i> ');
 
-    $(FENCES.el.fcTabSubtitle).html(` &#128900; ${subTitle}`);
+    $(FENCES.el.fcTabSubtitle).html(` <i class="fa-solid fa-caret-right ms-3"></i> ${subTitle}`);
 
     load_fencing_items();
 
@@ -1259,7 +1278,7 @@ function removeItemStorageWith(startsWith) {
 
 function submit_fence_planner(status ='') {
 
-    window.onbeforeunload = function() {}
+    // window.onbeforeunload = function() {}
 
     // Removed unwanted cart
     removeItemStorageWith('cart_items-');
@@ -1372,9 +1391,11 @@ function submit_fence_planner(status ='') {
                                $this.addClass('fc-text-success');
                                count++;
                                if( count == 1 ) {
+                                    /*
                                     window.onbeforeunload = function () {
                                         return;
                                     }
+                                    */
                                     window.location = 'project-plan.php';
                                }
                             }, 1000 * i);
@@ -1390,9 +1411,11 @@ function submit_fence_planner(status ='') {
                                count++;
 
                                if( count == 1 ) {
+                                    /*
                                     window.onbeforeunload = function () {
                                         return;
                                     }
+                                    */
                                     window.location = 'project-plan.php?qid='+planner_id;
                                }
                                
@@ -1411,7 +1434,9 @@ function submit_fence_planner(status ='') {
 //----------------------------------------------------------------
 
 function setSectionURLParam() {
-    var tab = $(FENCES.el.fencingTabSelected).index() + 1;
+    var index = $(FENCES.el.fencingTabSelected).index();
+        tab   = index + 1;
+
     history.pushState({}, '', '?section='+tab);    
 }
 
@@ -1497,8 +1522,7 @@ function zooming(zoom) {
     document.querySelector('.js-fc-zoom-progress').textContent = Math.floor(step*100) + "%";
 
     if( step >= 1 ) {
-        $('.fencing-panel-items').css({ 
-    'padding-top': raked_panel_mt, 'zoom': step,   'max-height' : '200px'});
+        $('.fencing-panel-items').css({'padding-top': raked_panel_mt, 'zoom': step,   'max-height' : '200px'});
         $('.fencing-display-result').css({'margin-top': 'auto'});
     } else {
         $('.fencing-panel-items').css({ 'zoom': step,   'max-height' : '200px'});

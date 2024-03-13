@@ -1,6 +1,6 @@
 .fc-cart-items .fc-edit-item {
-    border: 1px solid #f67925;
-    background: #f67925;
+    border: 1px solid var(--fc-princeton-orange);
+    background: var(--fc-princeton-orange);
     color: #ffffff;
 }
 

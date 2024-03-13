@@ -526,8 +526,13 @@ $(document).on('click', '.fencing-btn-modal', function(event){
     
         // Custom gate
         if( data?.settings[key]?.custom ) {
-            var maxWidth = $('[name="fence_height"]').val();
-  
+            
+            panel_options_data = get_field_by_slug(data.settings.panel_options.fields[0].options, 'even');
+
+            var fence_height = $('[name="fence_height"]').val(),
+                panel_opts   = panel_options_data.size.width_based_height,
+                maxWidth     = parseInt(panel_opts[fence_height]) - 50;
+
             var tpl = $('script[data-type="custom-gate"]').text()
                                                           .replace(/{{maxWidth}}/gi, maxWidth);
             $('.custom-gate').html('').html(tpl);                
@@ -617,7 +622,7 @@ $(document).on('keyup', '[input-type="number"]', function(){
         max = parseInt($(this).attr('data-max'));
 
     $(this).closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
-    $(this).closest('[type="button"]').removeAttr('disabled');
+    $(this).closest('.fc-input-container').find('[type="button"]').removeAttr('disabled').removeClass('disabled');
 
     if( $(this).val() < min || $(this).val() > max ) {
 
@@ -635,7 +640,7 @@ $(document).on('keyup', '[input-type="number"]', function(){
 
         $(this).closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert);
 
-        $(this).closest('[type="button"]').attr('disabled', 'disabled');
+        $(this).closest('.fc-input-container').find('[type="button"]').attr('disabled', 'disabled').addClass('disabled');
 
         if( alert.length ) {
             $(this).closest('.fc-input-container')
@@ -777,10 +782,11 @@ $(document).on('click', '.btn-fc-calculate', function(){
     custom_fence_tab[0].calculateValue = length;
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(custom_fence_tab));
 
-
+    /*
     window.onbeforeunload = function() {
         return false;
     }
+    */
 });
 
 //----------------------------------------------------------------
@@ -887,11 +893,13 @@ $(document).on('click', '.fc-btn-next', function(){
 
 //----------------------------------------------------------------
 
+/*
 $(document).on('click', '[type="submit"]', function(){
     window.onbeforeunload = function () {
         return;
     }
 });
+*/
 
 //----------------------------------------------------------------
 
