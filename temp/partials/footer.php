@@ -64,3 +64,17 @@
 <script type="text/javascript" src="<?php echo base_url(); ?>js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="<?php echo base_url(); ?>js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
 
+<!-- Chatra {literal} -->
+<script>
+(function(d, w, c) {
+    w.ChatraID = 'zyiAwfgBp6aaDnXK2';
+    var s = d.createElement('script');
+    w[c] = w[c] || function() {
+        (w[c].q = w[c].q || []).push(arguments);
+    };
+    s.async = true;
+    s.src = 'https://call.chatra.io/chatra.js';
+    if (d.head) d.head.appendChild(s);
+})(document, window, 'Chatra');
+</script>
+<!-- /Chatra {/literal} -->
