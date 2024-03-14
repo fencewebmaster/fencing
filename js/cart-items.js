@@ -188,7 +188,7 @@ FENCES.cartItems = {
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
         
         newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
-        console.log(newCartItems);
+
         return newCartItems;
 
     },
