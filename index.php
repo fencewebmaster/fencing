@@ -31,9 +31,15 @@ if( $qid = @$_GET['qid'] ) {
     $res = $db->select_where('planners', '`planner_id`="'.$qid.'"');   
 
     if( $res ) {
+        $parse_url = parse_url($res->site_url);
+
         $_SESSION['planner_id'] = $qid;
+
+        $site = sites($parse_url['host'], 'domain', true);    
+        $_SESSION["site"] = $site;
     }
 }
+
 ?>
 
 <title>Fencing Calculator</title>
