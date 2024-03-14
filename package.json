@@ -1,6 +1,6 @@
 {
     "name": "fencing-calculator",
-    "version": "3.0.12",
+    "version": "3.0.13",
     "author": "Mhike <Mhike@fencingsuppliers.au>",
     "scripts": {
         "watch": "sass --watch sass/style.scss style.css"

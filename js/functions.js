@@ -536,7 +536,9 @@ function update_gate(action) {
                                                          .replace(/{{panel_size}}/gi, gate_size)
                                                          .replace(/{{panel_unit}}/gi, panel_unit);  
 
-            $('#'+$('.fencing-panel-item').attr('id')).after(tpl);    
+            var panelID = $('[data-cart-key="panel_options"].fencing-panel-item').attr('id');
+                                                                     
+            $('#'+panelID).after(tpl);    
 
             $(FENCES.el.btnGate).html('Edit Gate');
         }     
