@@ -505,3 +505,21 @@ function get_version() {
 }
 
 //----------------------------------------------------------------
+
+function clear_planner_sessions() {
+
+    $sessions = [
+        'fc_data',
+        'custom_fence_products',
+        'fc_cart',
+        'planner_id',
+        'site'
+    ];
+
+    foreach ( $sessions as $session ) {
+        unset($_SESSION[$session]);  
+    }
+}
+
+//----------------------------------------------------------------
+
