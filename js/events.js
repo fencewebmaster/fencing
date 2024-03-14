@@ -53,17 +53,35 @@ $(document).on('click', '#btn-gate', function(e){
     
     update_custom_fence_gate();
 
+
     setTimeout(function(){
 
-        if( $('.fencing-panel-gate').length == 0 ) {
 
-            var calc = calculate_fences(),
-                gate = calc.gate.length,
-                post = 50,
-                gate_spacing = 40,
-                length = $('.measurement-box-number');
+        if( $('.fencing-panel-gate').length ) {
+            var fd = getSelectedFenceData();
 
-            length.val( parseInt(length.val()) + calc.gate.length + post + gate_spacing);
+            var tabInfo = fd.tabInfo,
+                custom_fence = fd.info,
+                data = fd.data;
+
+            var mbn = parseInt(tabInfo[0].calculateValue),
+                defaultGateSize = data.settings.gate.size.width;
+                gateSize = defaultGateSize,
+                rakedSize = 0;
+
+            var gate_data = custom_fence.filter(function(item) {
+                return item.control_key == 'gate';
+            });
+
+            if( gate_data.length ) {   
+                if( gate_data[0]?.settings.size ) {
+                    gateSize = parseInt(gate_data[0]?.settings.size);  
+                } else {
+                    gateSize  = parseInt(info.settings.gate.size.width);   
+                }
+            }            
+
+            $('.measurement-box-number').val( mbn + gateSize );
 
             $('.btn-fc-calculate').trigger('click');
         }
@@ -71,6 +89,18 @@ $(document).on('click', '#btn-gate', function(e){
     });
 
     $('.btn-fc-calculate').trigger('click');
+
+});
+
+//----------------------------------------------------------------
+
+$(document).on('change', '.fc-select-option', function(event){
+
+    var side = ['left_raked', 'right_raked'];
+
+    $('.raked-panel').html('');
+
+    update_raked_panels( side ); 
 
 });
 
@@ -153,9 +183,19 @@ $(document).on('click', '.btn-copy-link', function(e) {
 
 //----------------------------------------------------------------
 
+
 $(document).on('change', '.fc-select-option', function(){
-    var slug = $(this).val();
-    $(this).parent().attr('value', slug);
+
+    leftRakedBefore = $('.left_raked-panel .fencing-panel-item-size').length;
+    rightRakedBefore = $('.right_raked-panel .fencing-panel-item-size').length;
+
+    var fd = getSelectedFenceData();
+
+    var tabInfo = fd.tabInfo,
+        info = fd.info;
+
+    var value = $(this).val();
+    $(this).parent().attr('value', value);
 
     var modal_key = $('.fencing-container').attr('data-key');
 
@@ -165,13 +205,19 @@ $(document).on('change', '.fc-select-option', function(){
     
     update_custom_fence(modal_key);
 
-    if( $(this).closest('.fc-form-field').attr('name') == 'right_raked' ) {   
+    var rakedSide = $(this).closest('.fc-form-field').attr('name');
+
+    if( rakedSide == 'right_raked' ) {   
         $(".fencing-display-result").scrollCenter(".panel-post:last", 300);
     }
 
-    if( $(this).closest('.fc-form-field').attr('name') == 'left_raked' ) {   
+    if( rakedSide == 'left_raked' ) {   
         $(".fencing-display-result").scrollCenter(".panel-post:first", 300);
     }
+
+    setTimeout(function(){
+        computeOverallraked(value, rakedSide, leftRakedBefore, rightRakedBefore);
+    });
 
     if( $(this).parents('.js-fencing-modal').length ){
         FCModal.close();
@@ -358,30 +404,6 @@ $(document).on('click', '.js-btn-delete-fence', function(e){
 
 });
 
-//----------------------------------------------------------------
-
-$(document).on('change', '.fc-select-option', function(event){
-
-    var side = ['left_raked', 'right_raked'];
-
-    $('.raked-panel').html('');
-
-    update_raked_panels( side ); 
-
-    // raked panel
-    if( $('.fencing-raked-panel').length && $(".fencing-panel-spacing-number:contains('undefined')").length ) {
-
-        var calc   = calculate_fences(),
-            raked  = 1200,
-            post   = 50,
-            length = $('.measurement-box-number');
-
-        length.val( parseInt(length.val()) + raked + post);
-
-        $('.btn-fc-calculate').trigger('click');
-    }
-
-});
 
 //----------------------------------------------------------------
 

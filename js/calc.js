@@ -258,17 +258,18 @@ function calculate_fences( data ) {
         short_panel_length = isNaN(E19) ? 0 : Math.round(E19);
     }
 
-
     offcut_panel_count = C20;
     offcut_panel_length = isNaN(D20) ? 0 : Math.round(D20);
 
     gate_count = isNaN(C21) ? 0 : C21;
     gate_length = isNaN(D21) ? 0 : (D21 ? D21-50-20-20 : 0);
 
-    gate_width = C8;
+    gate_width = parseInt(C8);
     if( info.settings.gate.custom == false ) {
-        gate_width = gate_length;
+        gate_width = parseInt(gate_length);
     }
+
+
 
     /*    
         console.log('C', C3, C14, C5, C15, C16, C17, C19, C18, C21);
@@ -332,7 +333,6 @@ function calculate_fences( data ) {
             'panel_option': panel_options_data?.slug
         }
     }
-
 
     return data;
 }

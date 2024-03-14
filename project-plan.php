@@ -22,27 +22,7 @@ $site_info = sites($_SESSION['site']['id'], 'id', true);
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Fencing Calculator</title>
-		<link rel="icon" type="image/x-icon" href="<?php echo base_url(); ?>img/fav.ico">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>style.css?v=<?php echo date('YmdHis'); ?>">
-		<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>style-v2.css?v=<?php echo date('YmdHis'); ?>">
-		<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>fonts/fa/css/all.min.css">
-
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-
-		<?php if( $gtagID = @$site_info['gtagID'] ): ?>
-		<!-- Google tag (gtag.js) -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=AW-11027308949"></script>
-		<script>
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){dataLayer.push(arguments);}
-		  gtag('js', new Date());
-
-		  gtag('config', '<?php echo @$gtagID; ?>');
-		</script>
-		<?php endif; ?>
-
+	<?php include 'temp/partials/head.php'; ?>
 	</head>
 	<body>
 
@@ -81,7 +61,7 @@ $site_info = sites($_SESSION['site']['id'], 'id', true);
 
 		                <div class="col-sm">
 		                	<div class="mb-3 mb-sm-0">
-		                		<?php include 'temp/header-left.php'; ?>     
+		                		<?php include 'temp/partials/header-left.php'; ?>     
 		                	</div>
 		                </div>
 		                <div class="col-sm-auto col-auto">
@@ -353,30 +333,15 @@ $site_info = sites($_SESSION['site']['id'], 'id', true);
 		</div>
 		<!-- END FENCING CONTAINER -->
 
-		<?php include 'temp/copyright.php'; ?>	
-
 		<!-- Config -->
 		<script type="text/javascript">
 		var fc_data = <?php echo json_encode($fences); ?>;
 		var base_url = '<?php echo base_url(); ?>';	
 		</script>
 
-		<!-- Required Libraries -->
-		<script type="text/javascript" src="<?php echo base_url(); ?>js/jquery-3.3.1.min.js"></script>
-		<script type="text/javascript" src="<?php echo base_url(); ?>js/jquery.validate.min.js"></script>
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-		<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+		<?php include 'temp/partials/footer.php'; ?>	
 
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
-
-		<!-- Scripts -->
-		<script type="text/javascript" src="<?php echo base_url(); ?>js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
-		<script type="text/javascript" src="<?php echo base_url(); ?>js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
-		<script type="text/javascript" src="<?php echo base_url(); ?>js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
-		<script type="text/javascript" src="<?php echo base_url(); ?>js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 		<script type="text/javascript" src="<?php echo base_url(); ?>js/checkout.js?v=<?php echo date('YmdHis'); ?>"></script>
-
-		<script type="text/javascript" src="<?php echo base_url(); ?>js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
 		<script type="text/javascript" src="<?php echo base_url(); ?>js/p2.js?v=<?php echo date('YmdHis'); ?>"></script>
 
 	</body>
