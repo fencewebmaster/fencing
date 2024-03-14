@@ -34,7 +34,6 @@ if( $qid = @$_GET['qid'] ) {
         $_SESSION['planner_id'] = $qid;
     }
 }
-
 ?>
 
 <title>Fencing Calculator</title>

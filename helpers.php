@@ -72,7 +72,8 @@ function sites($key = '', $value = 'id', $search = false) {
             'url'      => toURL('fencesperth.com'),
             'supplier' => "JG",
             'logo'     => "https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png",
-            'name'     => "Perth's Fencing Outlet"
+            'name'     => "Perth's Fencing Outlet",
+            'gtagID'   => 'AW-10902861992',
         ],
         [
             'id'       => 2,
@@ -80,7 +81,8 @@ function sites($key = '', $value = 'id', $search = false) {
             'url'      => toURL('fencesbrisbane.au'),
             'supplier' => "JG",
             'logo'     => "https://fencesbrisbane.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
-            'name'     => "Brisbane's Fencing Outlet"
+            'name'     => "Brisbane's Fencing Outlet",
+            'gtagID'   => 'AW-11027308949',
         ],
         [
             'id'       => 3,

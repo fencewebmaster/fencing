@@ -292,7 +292,7 @@ function update_raked_panels(side) {
     $('.no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');    
 
 
-    load_post_options_all(custom_fence, info, 1, calc);
+    load_post_options_all(custom_fence, info, 0, calc);
 
     load_post_options_first_last_values(custom_fence, info, 0);
 
@@ -374,15 +374,15 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
  */
 function load_post_options_all(custom_fence, info, tab, calc) {
 
-    let panel_post           = $('.panel-post');
-    let panel_spacing_number = $('.fencing-panel-spacing-number');
+
+    let panel_post           = $('#pp-'+tab+' .panel-post');
+    let panel_spacing_number = $('#pp-'+tab+' .fencing-panel-spacing-number');
     var modal_key            = $(FENCES.el.fencingContainer).attr('data-key');
     var exclude_panel_posts  = '';
-
-    var fd = getSelectedFenceData();
     
-    var i   = fd.slug,
-        tab = fd.tab;
+/*    var fd = getSelectedFenceData();
+    
+    var i   = fd.slug;*/
 
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === 'post_options';
@@ -411,7 +411,7 @@ function load_post_options_all(custom_fence, info, tab, calc) {
         var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
             return item.key === "post_option";
         });
-
+    
         if( !$('#fc-planning-form').length || 
             typeof post_options_setting !== "undefined" && 
             panel_post.attr('class').includes('opt-') == false ) {
@@ -429,7 +429,7 @@ function load_post_options_all(custom_fence, info, tab, calc) {
                       .attr('data-cart-value', postValue);
 
             panel_spacing_number.addClass(post_options_setting.val);
-            
+
         } 
 
     } else {
@@ -1177,7 +1177,7 @@ function move_the_gate(move) {
         gate.remove();
 
         setTimeout(function(){
-            $('.btn-fc-calculate').click();            
+            $('.btn-fc-calculate').trigger('click');            
         });
 
     }
@@ -1330,7 +1330,9 @@ function submit_fence_planner(status ='') {
         $('.fc-loader-overlay').hide();
         $('.fc-section-step').hide();
         $('[data-tab="1"]').show();
-
+        
+        tabContainerScroll();
+        
         return false;
     }        
 
@@ -1813,9 +1815,9 @@ function deleteSectionTab() {
     getActiveTab.addClass('is-deleting');
 
     if( getActiveTab.is(':last-child') ){
-        getPrevBtn.click();
+        getPrevBtn.trigger('click');
     } else {
-        getNextBtn.click();
+        getNextBtn.trigger('click');
     }
 
     $('.is-deleting').remove();
@@ -1877,7 +1879,7 @@ function loadStep3(custom_fence_tab) {
         //Set the mm field value
         $('.btn-fc-calculate').prev().find('input').val(custom_fence_tab.calculateValue);
         //Then trigger click into the calculate button to load section 3
-        $('.btn-fc-calculate').click();
+        $('.btn-fc-calculate').trigger('click');
     }
 }
 
@@ -2341,12 +2343,12 @@ function disabledCustomGate() {
 function getSelectedFenceData() {
 
     var slug = $('.fencing-style-item.fsi-selected').attr('data-slug'),
-        tab  = $('.fencing-tab.fencing-tab-selected').index(),
-        info = localStorage.getItem('custom_fence-'+tab+'-'+slug),
+        itab = $('.fencing-tab.fencing-tab-selected').index(),
+        info = localStorage.getItem('custom_fence-'+itab+'-'+slug),
         info = info ? JSON.parse(info) : [],
         data = fc_data[slug];   
 
-    var tabInfo = localStorage.getItem('custom_fence-'+tab),
+    var tabInfo = localStorage.getItem('custom_fence-'+itab),
         tabInfo = tabInfo ? JSON.parse(tabInfo) : [];
    
     var modalKey = $(FENCES.el.fencingContainer).attr('data-key'),
@@ -2354,7 +2356,7 @@ function getSelectedFenceData() {
 
     return {
         slug     : slug, 
-        tab      : tab, 
+        tab      : itab, 
         info     : info, 
         data     : data,
         mbn      : mbn,

@@ -38,6 +38,11 @@ $("#fc-planning-form").validate({
 
 $(document).on('click', '.fc-btn-update', function(e) {
     e.preventDefault();
+    reloadPlanCart();
+
+});
+
+function reloadPlanCart() {
    
     FCModal.close('#submit-modal');
     $('.fc-loader-overlay').show();
@@ -48,9 +53,8 @@ $(document).on('click', '.fc-btn-update', function(e) {
         $('.li-create small').html('Updating your plan...');
     }
 
-    res = submit_fence_planner('update');            
-
-});
+    res = submit_fence_planner('update');        
+}
 
 // localStorage.clear();
 
@@ -163,7 +167,7 @@ function reload_fence_items() {
     restoreFormData();
 
     if( getSearchParams('qid') ) {
-       $('.fc-btn-update').trigger('click');
+        reloadPlanCart();
     }
 
     if( $('.fc-form-check-img input:checked').length ) {

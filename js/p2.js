@@ -501,9 +501,9 @@ function re_update_raked_panels(side, tab) {
 
     $('.no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');    
     
-    load_post_options_first_last_values(custom_fence, info, tab);
-
     load_post_options_all(custom_fence, info, tab, calc);
+
+    load_post_options_first_last_values(custom_fence, info, tab);
 
 
     $('#pp-'+tab+' .fc-result').css({'padding': ''});
