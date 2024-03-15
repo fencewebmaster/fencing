@@ -245,6 +245,7 @@ function reload_load_fencing_items(tab) {
                                                          .replace(/{{center_point}}/gi, center_point)
                                                          .replace(/{{panel_size}}/gi, panel_size+'W')
                                                          .replace(/{{panel_value}}/gi, panel_option_value)
+                                                         .replace(/{{panel_size_center}}/gi, (panel_size+center_point)+'W')
                                                          .replace(/{{panel_unit}}/gi, '<br>PANEL')
                                                          .replace(/{{panel_number}}/gi, panel_number);   
                                              
