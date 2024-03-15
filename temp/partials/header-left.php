@@ -6,3 +6,4 @@
 	<i class="fa fa-arrow-left"></i> Back to <b><?php echo $_SESSION["site"]['name']; ?></b> Site
 </a>
 
+		

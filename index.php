@@ -9,10 +9,12 @@ $queries = ['sid', 'site', 'qid'];
 
 $not_found = TRUE;
 
-foreach ($queries as $q) {
-	if( !in_array($q, $_GET) ) {
-		$not_found = FALSE;
-	}
+if( $_GET ) {
+	foreach ($queries as $q) {
+		if( !in_array($q, $_GET) ) {
+			$not_found = FALSE;
+		}
+	}	
 }
 
 if( $not_found ) {

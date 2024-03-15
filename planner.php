@@ -4,6 +4,11 @@ $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
 include 'helpers.php';
 
+if( @$_GET['action'] == 'clear-all' || @$_GET['site'] || @$_GET['sid'] ) {
+    // Clear fence session data
+    clear_planner_sessions();
+}
+
 if( @$_GET['site'] || @$_GET['sid'] ) {
 
     $redirect_to    = base_url('planner');
@@ -43,6 +48,7 @@ if( $qid = @$_GET['qid'] ) {
 
         // Clear fence session data
         clear_planner_sessions();
+
         $parse_url = parse_url($res->site_url);
 
         $_SESSION['planner_id'] = $qid;
@@ -119,9 +125,11 @@ if( $qid = @$_GET['qid'] ) {
                 <div class="fencing-container__header">
                     <div class="row align-items-center">
                         
-                        <div class="col-md-6 col-sm">
+                        <div class="col col-sm">
                             <?php include 'temp/partials/header-left.php'; ?>                
                         </div>
+
+
                         <div class="col-md-6 col-sm-auto">
 
                             <div class="d-sm-block-x d-none">
@@ -350,8 +358,14 @@ if( $qid = @$_GET['qid'] ) {
 
                                     <div class="fencing-section__cmp fencing-section--step3">
                                         
-                                        <div class="step-label">Step <span>03</span></div>
+                                        <?php if( @$_SESSION['planner_id'] ): ?>
+                                        <div class="btn-copy-link badge border text-muted float-end" data-id="quote-id-1">
+                                            <span id="quote-id-1"><?php echo @$_SESSION['planner_id']; ?></span>
+                                        </div>
+                                        <?php endif; ?>
 
+                                        <div class="step-label">Step <span>03</span></div>
+              
                                         <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
 
                                         <div class="fencing-section__controls">

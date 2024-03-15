@@ -3584,10 +3584,37 @@ thead.fc-border th:last-child {
   box-sizing: border-box;
 }
 
+
+.ally {
+  background-image: url(img/ally-thin.png?v=1);
+  background-repeat: repeat;
+  background-color: initial;
+  border-color: #000;
+  background-size: 7px;
+  background-color: #fff;
+}
+.fencing-panel-item:not(.fencing-panel-gate) {
+  margin-left: -1px;
+  margin-right: -5px;  
+}
+
+.offcut-b {
+  background-image: url(img/ally-thin.png);
+  background-repeat: repeat;
+  background-color: initial;
+  background-size: 7px;
+  background-color: #ffeded;
+}
+
+[data-type="barr"] .ally,
+[data-type="barr"] .offcut-b {
+  background-image: url(img/ally-thick.png);
+  background-size: 10px;
+}
 [data-type="barr"] .ally:before,
 [data-type="barr"] .fencing-offcut:before {
     content: "";
-    background-image: url(img/ally.png?v=1);
+    background-image: url(img/ally-thick.png?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: #fff;
@@ -3599,7 +3626,7 @@ thead.fc-border th:last-child {
 [data-type="barr"] .ally:after,
 [data-type="barr"] .fencing-offcut:after {
     content: "";
-    background-image: url(img/ally.png?v=1);
+    background-image: url(img/ally-thick.png?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: #fff;
@@ -3609,26 +3636,6 @@ thead.fc-border th:last-child {
     height: 5px;
 }
 
-.ally {
-  background-image: url(img/ally.png?v=1);
-  background-repeat: repeat;
-  background-color: initial;
-  border-color: #000;
-  background-size: 10px;
-  background-color: #fff;
-}
-.fencing-panel-item:not(.fencing-panel-gate) {
-  margin-left: -1px;
-  margin-right: -5px;  
-}
-
-.offcut-b {
-  background-image: url(img/ally.png);
-  background-repeat: repeat;
-  background-color: initial;
-  background-size: 10px;
-  background-color: #ffeded;
-}
 
 .panel-post {
   background: rgb(37, 37, 37);
