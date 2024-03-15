@@ -3621,7 +3621,7 @@ thead.fc-border th:last-child {
     position: absolute;
     top: -6px;
     width: 100%;
-    height: 5px;
+    height: 4px;
 }
 [data-type="barr"] .ally:after,
 [data-type="barr"] .fencing-offcut:after {
@@ -3633,7 +3633,7 @@ thead.fc-border th:last-child {
     position: absolute;
     bottom: -6px;
     width: 100%;
-    height: 5px;
+    height: 4px;
 }
 
 
