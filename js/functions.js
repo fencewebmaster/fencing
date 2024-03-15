@@ -1463,7 +1463,7 @@ function submit_fence_planner(status ='') {
                                         return;
                                     }
                                     */
-                                    window.location = 'project-plan.php';
+                                    window.location = 'project-plan';
                                }
                             }, 1000 * i);
                         });
@@ -1483,7 +1483,7 @@ function submit_fence_planner(status ='') {
                                         return;
                                     }
                                     */
-                                    window.location = 'project-plan.php?qid='+planner_id;
+                                    window.location = 'project-plan?qid='+planner_id;
                                }
                                
                             }, 1000 * i);

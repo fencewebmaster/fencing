@@ -517,14 +517,14 @@ $(document).on('click', ".fc-btn-reset", function (e) {
     e.preventDefault();
 
     $('.fc-table-customer td').each(function(){
-        if( $(this).find('.fc-form-control').length ) {
+        if( $(this).find('.form-control').length ) {
 
             var val = $(this).find('span').text();
 
-            if( $(this).find('.fc-form-control').prop('tagName').toLowerCase() == 'select' ) {
+            if( $(this).find('.form-control').prop('tagName').toLowerCase() == 'select' ) {
                 $(this).find('option:contains('+val+')').prop('selected', true);
             } else {
-                $(this).find('.fc-form-control').val(val)
+                $(this).find('.form-control').val(val)
             }
 
         }

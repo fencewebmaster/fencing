@@ -39,6 +39,28 @@ function in_uri_segment($keys) {
 
 //----------------------------------------------------------------
 
+function query_vars($query ='') {
+
+  $qs = $_SERVER['QUERY_STRING'];
+  $vars = array();
+
+  if($query == '') return $qs;
+
+    parse_str($_SERVER['QUERY_STRING'], $qs);
+    
+    foreach ($qs as $key => $value) {     
+        $vars[$key] = $value;
+
+        if($value == '0') {
+            unset($vars[$key]);   
+        }
+    }
+
+    return $vars;
+}
+
+//----------------------------------------------------------------
+
 function demo_stages() {
     return [
         'html',

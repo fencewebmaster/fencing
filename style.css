@@ -4104,7 +4104,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-color-options {
-  padding: 12px 24px;
+  padding: 10px 15px;
   box-sizing: border-box;
 }
 .fc-color-options .fc-col-3 {
@@ -4120,7 +4120,7 @@ thead.fc-border th:last-child {
 @media (max-width: 600px) {
   .fc-color-options .fc-col-3 {
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     margin-right: 0;
   }
 }
@@ -4216,6 +4216,11 @@ thead.fc-border th:last-child {
   flex-direction: column;
   justify-content: flex-end;
   box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  .fc-step-4 .fc-select {
+    height: auto;
+  }
 }
 
 .btn-copy-link {  
