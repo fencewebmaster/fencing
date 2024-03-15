@@ -24,12 +24,7 @@ $fences['barr'] = [
 		[
 			'slug' => 'important_note',
 			'title' => 'Fence Height',
-			'description' => '<span class="mb-1 d-block">To meet pool compliance your fence height MUST BE above 1200H</span>
-			<span class="border d-block p-2 rounded">
-			<b class="text-danger">1200mm</b><br>
-			Base Plated Posts = 50x50mm Posts<br>
-			Cemented In Posts = 50x25mm Posts<br>
-			*Due to the 1800H height for Base Plated posts we need to use 50x50mm Base Plated Posts</span>',
+			'description' => '<span class="mb-1 d-block">To meet pool compliance your fence height MUST BE above 1200H</span>',
 			'target' => '.step-2_notes',
 			'type' => 'important-note',
 		]
@@ -99,6 +94,13 @@ $fences['barr'] = [
 					'key' => 'left_side',
 					'label' => '',
 					'close_btn' => false,
+					'notes' => [
+						'title' => '1200mm',
+						'description' => '
+							Base Plated Posts = 50x50mm Posts<br>
+							Cemented In Posts = 50x25mm Posts<br>
+							*Due to the 1800H height for Base Plated posts we need to use 50x50mm Base Plated Posts',
+					],
 					'options' => [
 						[
 							'slug'  => 'opt-1',
@@ -225,6 +227,7 @@ $fences['barr'] = [
 							'slug' => 'even',
 							'type' => 'text_option',
 							'title' => 'Even Size Panels',
+							'default' => TRUE,
 							'size' => [
 								'width' => 2205 + 50,
 								'width_based_height' => [
@@ -238,7 +241,6 @@ $fences['barr'] = [
 							'slug' => 'full',
 							'type' => 'text_option',
 							'title' => 'Full Size Panels',
-							'default' => TRUE,
 							'size' => [
 								'width' => 2205 + 50,
 								'width_based_height' => [
@@ -272,6 +274,13 @@ $fences['barr'] = [
 					'slug' => 'post_option',
 					'type' => 'image_option',
 					'label' => '',
+					'notes' => [
+						'title' => '1200mm',
+						'description' => '
+							Base Plated Posts = 50x50mm Posts<br>
+							Cemented In Posts = 50x25mm Posts<br>
+							*Due to the 1800H height for Base Plated posts we need to use 50x50mm Base Plated Posts',
+					],
 					'options' => [
 						[
 							'slug'  => 'opt-1',
@@ -325,6 +334,13 @@ $fences['barr'] = [
 					'key' => 'left_side',
 					'label' => '',
 					'close_btn' => false,
+					'notes' => [
+						'title' => '1200mm',
+						'description' => '
+							Base Plated Posts = 50x50mm Posts<br>
+							Cemented In Posts = 50x25mm Posts<br>
+							*Due to the 1800H height for Base Plated posts we need to use 50x50mm Base Plated Posts',
+					],
 					'options' => [
 						[
 							'slug'  => 'opt-1',

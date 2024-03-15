@@ -34,7 +34,7 @@
 <div class="alert alert-gray">
 
     <div class="text-uppercase fw-bold text-dark mb-2">
-        <i class="fc-icon fc-icon-capa me-1"></i> Custom Gates
+        <i class="fa-solid fa-circle-exclamation me-1"></i> Custom Gates
     </div>
 
     <p class="text-secondary mb-2 small">

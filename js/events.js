@@ -610,7 +610,7 @@ function addNotesOrInfo(el, v) {
             }
 
             notes_html +=  `<div class="col-sm"><div class="fc-alert-gray field-note">
-                <label class="mb-2"><i class="fc-icon fc-icon-capa me-2"></i> ${notes.title}</label>
+                <label class="mb-2 fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> ${notes.title}</label>
                 <p class="fc-text-gray">${notes.description}</p>
             </div></div>`;  
 
@@ -636,9 +636,16 @@ $(document).on('keypress', '.measurement-box-number', function(e){
     }
 });
 
+$(document).on('keypress', '[input-type="number"]', function(e){
+    if( event.which == 13) {
+        $(this).closest('.fc-input-container').find('[type="button"]').trigger('click');
+        e.preventDefault();
+    }
+});
+
 //----------------------------------------------------------------
 
-$(document).on('keyup', '[input-type="number"]', function(){
+$(document).on('keyup', '[input-type="number"]', function(e){
 
     var min = parseInt($(this).attr('data-min')),
         max = parseInt($(this).attr('data-max'));
@@ -845,6 +852,7 @@ $(document).on('click', '.fc-input-group button', function(){
     update_custom_fence_gate();
     load_fencing_items();
     $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
+    FCModal.close();
 });
 
 //----------------------------------------------------------------
@@ -1109,6 +1117,47 @@ $(document).on('keyup', '.has-clear .form-control', function() {
 $(document).on('click', '.form-control-clear', function() {
     $(this).siblings('.form-control').val('').focus().trigger('keyup');
     $(this).remove();
+});
+
+
+// https://stackoverflow.com/questions/19743228/scroll-the-page-on-drag-with-jquery
+var cursordown = false;
+var cursorypos = 0;
+var cursorxpos = 0;
+$('.fencing-display-result').mousedown(function(e){
+    cursordown = true; 
+    cursorxpos = $(this).scrollLeft() + e.clientX; 
+    cursorypos = $(this).scrollTop() +e.clientY;
+}).mousemove(function(e){
+    if(!cursordown) return;
+    try { $(this).scrollLeft(cursorxpos - e.clientX); } catch(e) { }
+    try { $(this).scrollTop(cursorypos - e.clientY); } catch(e) { }
+}).mouseup(end = function(e){
+    cursordown = false;
+}).mouseleave(end);
+
+
+
+$('.fencing-display-result').on("mouseup touchend", function(e) {
+    var $this = $(this);
+    $(this).removeClass('grabbing'); 
+
+    setTimeout(function(){
+        $this.removeClass('grabbing is-grabbing');  
+    }, 200);         
+});
+
+$('.fencing-display-result').on("mousedown touchstart", function(e) {
+    var $this = $(this);
+
+    $(this).addClass('is-grabbing');  
+
+    setTimeout(function(){
+        if( ! $('.fencing-modal').is(':visible') ) {
+            $this.addClass('grabbing').removeClass('is-grabbing');  
+        }
+    }, 200);
+
 });
 
 

@@ -1,7 +1,7 @@
 <div class="container-lg">
 	<div class="row row align-items-middle">
 		<div class="col">
-			<div class="mb-5 text-secondary small">
+			<div class="mb-5 pb-5 text-secondary small">
 				Fencing Calculator v<?php echo get_version(); ?>
 			</div>			
 		</div>

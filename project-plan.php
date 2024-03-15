@@ -283,7 +283,7 @@ $site_info = sites($_SESSION['site']['id'], 'id', true);
 
 														<div style="clear: both;"></div>
 														
-														<div class="fc-cart-countdown">
+														<div class="fc-cart-countdown mb-3">
 														    <p>
 														        <strong>ORDER WITHIN:</strong><br />
 														        <span id="fc-countdown-timer"></span>

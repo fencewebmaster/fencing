@@ -312,7 +312,7 @@ if( $qid = @$_GET['qid'] ) {
                                             <div class="alert alert-gray float-end">
 
                                                 <div class="text-uppercase fw-bold text-dark mb-2">
-                                                    <i class="fc-icon fc-icon-capa me-1"></i> Important
+                                                    <i class="fa-solid fa-circle-exclamation me-1"></i> Important
                                                 </div>
 
                                                 <div class="step-2_notes" data-action="change"></div>

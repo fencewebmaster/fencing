@@ -354,14 +354,35 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
     }
 
 
+  //  postValue = post_options_default[0].slug;
+
     // Set default option on left side
     if( side_post != 'left_side' ) {
-        $('#pp-'+sectionId+' .panel-post.post-left').addClass(post_options_default[0].slug);   
+
+        var left_post_filtered_data = custom_fence.filter(function(item) {
+            return item.control_key === "left_side";
+        });
+
+        if( left_post_filtered_data[0]?.settings[0]?.val) {
+            postValue = left_post_filtered_data[0]?.settings[0]?.val;
+            $('#pp-'+sectionId+' .panel-post.post-left').addClass(postValue);   
+        }
+
     } 
 
+
     // Set default option on right side
-    if( side_post != 'right_side' ) {
-        $('#pp-'+sectionId+' .panel-post.post-right').addClass(post_options_default[0].slug);
+    if( side_post != 'right_side' ) {   
+
+        var right_post_filtered_data = custom_fence.filter(function(item) {
+            return item.control_key === "right_side";
+        });
+
+        if( right_post_filtered_data[0]?.settings[0]?.val) {
+            postValue = right_post_filtered_data[0]?.settings[0]?.val;
+            $('#pp-'+sectionId+' .panel-post.post-right').addClass(postValue);
+        }
+
     }
 
 }
@@ -379,9 +400,9 @@ function load_post_options_all(custom_fence, info, tab, calc) {
     var modal_key            = $(FENCES.el.fencingContainer).attr('data-key');
     var exclude_panel_posts  = '';
     
-/*    var fd = getSelectedFenceData();
+    var fd = getSelectedFenceData();
     
-    var i   = fd.slug;*/
+    var i   = fd.slug;
 
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === 'post_options';
@@ -463,7 +484,7 @@ function load_post_options_all(custom_fence, info, tab, calc) {
                 $(custom_fence[k].settings).each(function(lok, lov) {
 
                     if( lov.key == 'post_option' ) {
-                       custom_fence[k].settings[lok].val = post_options_filtered_data[0]?.settings[0]?.val;
+                        custom_fence[k].settings[lok].val = post_options_filtered_data[0]?.settings[0]?.val;
                         localStorage.setItem(`custom_fence-${tab}-${i}`, JSON.stringify(custom_fence));
                     }
                 });
@@ -562,6 +583,8 @@ function update_gate(action) {
     }
 
 }
+
+//----------------------------------------------------------------
 
 $.fn.swapWith = function(to) {
     return this.each(function() {
@@ -739,6 +762,8 @@ function get_field_value(tag, key, val) {
     }
 }
 
+//----------------------------------------------------------------
+
 function extra_fields() {
 
     var fd = getSelectedFenceData();
@@ -789,6 +814,8 @@ function extra_fields() {
 
 }
 
+//----------------------------------------------------------------
+
 function set_cutom_fence_data() {
 
     var fd = getSelectedFenceData();
@@ -828,6 +855,8 @@ function set_cutom_fence_data() {
     localStorage.setItem('custom_fence-'+tab, JSON.stringify(filtered_data_tabs));
 
 }
+
+//----------------------------------------------------------------
 
 function update_custom_fence_tab() {
 
@@ -871,6 +900,8 @@ function update_custom_fence_tab() {
     load_fencing_items();
 
 }
+
+//----------------------------------------------------------------
 
 function update_custom_fence(modal_key, fc_form_field = false) {
 
@@ -1197,7 +1228,7 @@ function move_the_gate(move) {
                 return item.control_key == 'gate';
             });
 
-            var mbn = parseInt(tabInfo[0].calculateValue),
+            var mbn = parseInt(tabInfo[0]?.calculateValue),
                 defaultGateSize = data.settings.gate.size.width;
                 gateSize = defaultGateSize,
                 rakedSize = 0;
@@ -1215,6 +1246,8 @@ function move_the_gate(move) {
     $(FENCES.el.fencingDisplayResult).scrollCenter(".fencing-panel-gate", 300);
 
 }
+
+//----------------------------------------------------------------
 
 function restore_items( remove_index ) {
 
@@ -1246,6 +1279,8 @@ function restore_items( remove_index ) {
 //    localStorage.removeItem('custom_fence-'+last_tid);
 
 }
+
+//----------------------------------------------------------------
 
 $.fn.scrollCenter = function(elem, speed) {
 
@@ -1293,6 +1328,8 @@ function getCartItemStorage() {
 
     return values;
 }
+
+//----------------------------------------------------------------
 
 function removeItemStorageWith(startsWith) {
     Object.entries(localStorage).forEach(([key, value]) => {
@@ -1571,46 +1608,6 @@ function zooming(zoom) {
     toggleZoomResetButton(step);
 
 }
-
-// https://stackoverflow.com/questions/19743228/scroll-the-page-on-drag-with-jquery
-var cursordown = false;
-var cursorypos = 0;
-var cursorxpos = 0;
-$('.fencing-display-result').mousedown(function(e){
-    cursordown = true; 
-    cursorxpos = $(this).scrollLeft() + e.clientX; 
-    cursorypos = $(this).scrollTop() +e.clientY;
-}).mousemove(function(e){
-    if(!cursordown) return;
-    try { $(this).scrollLeft(cursorxpos - e.clientX); } catch(e) { }
-    try { $(this).scrollTop(cursorypos - e.clientY); } catch(e) { }
-}).mouseup(end = function(e){
-    cursordown = false;
-}).mouseleave(end);
-
-$('.fencing-display-result').on("mousedown touchstart", function(e) {
-    var $this = $(this);
-
-    $(this).addClass('is-grabbing');  
-
-    setTimeout(function(){
-        if( ! $('.fencing-modal').is(':visible') ) {
-            $this.addClass('grabbing').removeClass('is-grabbing');  
-        }
-    }, 200);
-
-});
-
-
-
-$('.fencing-display-result').on("mouseup touchend", function(e) {
-    var $this = $(this);
-    $(this).removeClass('grabbing'); 
-
-    setTimeout(function(){
-        $this.removeClass('grabbing is-grabbing');  
-    }, 200);         
-});
 
 
 /**

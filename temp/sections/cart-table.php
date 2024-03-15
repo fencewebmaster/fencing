@@ -7,10 +7,10 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 <span class="badge bg-danger mb-2 text-uppercase p-2"><?php echo count($cart['items']); ?> Items</span>
 
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
-    <div class="fc-table-rounded-border">
+    <div class="fc-table-rounded-border mb-3">
         
         <table class="table table-hover fc-table-bordered table-striped">
-            <thead class="table-dark fc-border">
+            <thead class="table-dark">
                 <tr>
                     <th class="text-center">QTY</th>
                     <th colspan="2">Description</th>
