@@ -53,7 +53,7 @@ $(document).on('click', '#btn-gate', function(e){
     
     update_custom_fence_gate();
 
-
+    /*
     setTimeout(function(){
 
 
@@ -87,6 +87,7 @@ $(document).on('click', '#btn-gate', function(e){
         }
 
     });
+    */
 
     $('.btn-fc-calculate').trigger('click');
 
@@ -215,9 +216,11 @@ $(document).on('change', '.fc-select-option', function(){
         $(".fencing-display-result").scrollCenter(".panel-post:first", 300);
     }
 
+    /*
     setTimeout(function(){
         computeOverallraked(value, rakedSide, leftRakedBefore, rightRakedBefore);
     });
+    */
 
     if( $(this).parents('.js-fencing-modal').length ){
         FCModal.close();

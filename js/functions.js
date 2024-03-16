@@ -1216,13 +1216,14 @@ function move_the_gate(move) {
 
         gate.remove();
 
+        /*
         setTimeout(function(){
 
-        var fd = getSelectedFenceData();
+            var fd = getSelectedFenceData();
 
-        var tabInfo = fd.tabInfo,
-            custom_fence = fd.info,
-            data = fd.data;
+            var tabInfo = fd.tabInfo,
+                custom_fence = fd.info,
+                data = fd.data;
 
             var gate = custom_fence.filter(function(item) {
                 return item.control_key == 'gate';
@@ -1238,6 +1239,7 @@ function move_the_gate(move) {
             $('.btn-fc-calculate').trigger('click');
 
         });
+        */
 
     }
 
