@@ -84,7 +84,8 @@ function calculate_fences( data ) {
         right_raked_panel_width  = 0,
         short_panel_count        = 0,
         short_panel_length       = 0,
-        offcut_gate_panel_length = 0;
+        offcut_gate_panel_length = 0,
+        offcut_gate_panel_count  = 0;
 
 
     post_panel = 50;
@@ -156,11 +157,20 @@ function calculate_fences( data ) {
         if( gate_data[0]?.settings.size ) {
             C8 = gate_data[0]?.settings.size;  
             offcut_gate_panel_length = (C5-50) - C8;
+            offcut_gate_panel_count = 1;
+
+            var standard_gate = gate_data[0]?.settings?.fields?.filter(function(item) {
+                return item.key == 'use_std' && item.val == true;
+            });
+            
+            if( standard_gate[0] ) {
+                offcut_gate_panel_count = 0;
+            }
+
         } else {
             C8  = info.settings.gate.size.width;   
         }
     }
-
 
     // raked panel left
     step_up_panels = get_field_multi_options(custom_fence, info, 'left_side');    
@@ -311,7 +321,7 @@ function calculate_fences( data ) {
             'length' : offcut_panel_length
         },
         'offcut_gate_panel' : {
-            'count' : 1, 
+            'count' : offcut_gate_panel_count, 
             'length' : offcut_gate_panel_length
         },
         'gate' : {

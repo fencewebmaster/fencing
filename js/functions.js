@@ -1216,9 +1216,9 @@ function move_the_gate(move) {
 
         gate.remove();
 
-        /*
+      
         setTimeout(function(){
-
+            /*
             var fd = getSelectedFenceData();
 
             var tabInfo = fd.tabInfo,
@@ -1235,11 +1235,12 @@ function move_the_gate(move) {
                 rakedSize = 0;
 
             $('.measurement-box-number').val( mbn - gateSize );
-
+            */
             $('.btn-fc-calculate').trigger('click');
 
         });
-        */
+
+
 
     }
 
@@ -2361,8 +2362,20 @@ function disabledCustomGate() {
     var width = fd.data.settings.gate.size.width;
 
     $('[name="width"]').attr('readonly', 'readonly').addClass('disabled text-muted').val(width);
+    
     $('.fencing-qty-btn').addClass('d-none');
-    $('.custom-gate button').click().attr('disabled', 'disabled').removeClass('btn-dark').addClass('btn-light');
+
+    $('.custom-gate button').attr('disabled', 'disabled')
+                            .removeClass('btn-dark')
+                            .addClass('btn-light');
+}
+
+//----------------------------------------------------------------
+
+function calculateCustomGate() {
+    update_custom_fence_gate();
+    load_fencing_items();
+    $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
 }
 
 //----------------------------------------------------------------

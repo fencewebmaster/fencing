@@ -30,7 +30,6 @@ $(document).on('click', '.fencing-style-item', function(){
 
     $('.js-fc-form-step[data-section="2"]').fadeIn(200);
 
-
     setTimeout(function(){
         $('.fc-btn-next-step').attr('disabled', 'disabled');
         if( $('.fencing-panel-item:visible').length > 0 ) {
@@ -89,7 +88,7 @@ $(document).on('click', '#btn-gate', function(e){
     });
     */
 
-    $('.btn-fc-calculate').trigger('click');
+    // $('.btn-fc-calculate').trigger('click');
 
 });
 
@@ -580,6 +579,8 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         $('[name="use_std"]').prop('checked', true);
         $('[name="width"]').val(gateWidth);
         disabledCustomGate();
+
+        calculateCustomGate();
     }
 
 });
@@ -852,9 +853,7 @@ $(document).on('change', '.fc-form-field select', function(e){
 //----------------------------------------------------------------
 
 $(document).on('click', '.fc-input-group button', function(){
-    update_custom_fence_gate();
-    load_fencing_items();
-    $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
+    calculateCustomGate();
     FCModal.close();
 });
 
@@ -996,6 +995,8 @@ $(document).on('click', '.fc-form-check input', function(){
                                .removeAttr('disabled');
     }
 });
+
+//----------------------------------------------------------------
 /*
 $(document).on('keydown', '.fencing-modal', function (e) {
     if(e.which == 13) {
@@ -1004,12 +1005,12 @@ $(document).on('keydown', '.fencing-modal', function (e) {
 
         if( $('.fc-form-control.error').length == 0 ) {
             $('.fc-form-plan').hide();
-            $('[data-formtab="'+move+'"]').show();    
+            $('[data-formtab="'+move+'"]').show();
         }
 
     }
-});*/
-
+});
+*/
 //----------------------------------------------------------------
 
 $(document).on('click', '[name="color_options"]', function(e) {
@@ -1043,7 +1044,9 @@ $(document).on('click', '[name="use_std"]', function(e) {
     // 975 default gate width
 
     if( $('[name="use_std"]').is(':checked') ) {
+        calculateCustomGate();
         disabledCustomGate();
+        FCModal.close();
     }
 
 });

@@ -318,7 +318,7 @@ $("#paymentFrm").validate({
 
                             if( pdBtnVisible ) {
 
-                                $('.fc-btn-edit[data-action="edit"]').click();
+                                $('.fc-btn-edit[data-action="edit"]').trigger('click');
                                 
                             }
 
@@ -459,7 +459,7 @@ $("#paymentFrm").validate({
 }); 
 
 $(document).on('change', '[name="cart[shipping_type]"]', function() {
-    $('form').find('[type="submit"]').click();
+    $('form').find('[type="submit"]').trigger('click');
 }); 
 
 // PROJECT DETAILS SECTION
@@ -507,7 +507,7 @@ $(document).on('click', ".project-details--update", function (e) {
 
 
     $('[name="action"]').val('update_project_details');
-    $('.fc-btn-edit[data-action="update"]').click();
+    $('.fc-btn-edit[data-action="update"]').trigger('click');
     $('#submit-modal').hide();
 });
 

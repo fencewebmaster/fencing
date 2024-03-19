@@ -373,7 +373,7 @@ function post_product_skus($cart_items = array()) {
 
     $supplier = strtoupper($_SESSION['site']['supplier']);
 
-	$items = $cart = array();
+	$items = $carts = array();
 
     $skus = get_product_skus($cart_items);
 
@@ -444,36 +444,65 @@ function post_product_skus($cart_items = array()) {
     $custom_fence_products = $_SESSION['custom_fence_products'];
 
     $i=1;
-    foreach ($items as $item) {
+    foreach ($custom_fence_products as $custom_fence_product) {
 
-        $key = array_search($item['sku'], array_column($custom_fence_products, 'sku'));
+        $key = array_search($custom_fence_product['sku'], array_column($items, 'sku'));
 
         if( $custom_fence_products[$key]['qty'] ) {
 
-            $cart['items'][] = [
-                'name'  => $item['name'],
-                'image' => $item['image'],
-                'sku'   => $item['sku'],
-                'slug'  => $item['slug'],
-                'color' => $item['color'],
-                'fence' => $item['fence'],
+            $sku = $custom_fence_product['sku'];
+
+            $carts[] = [
+                'name'  => $items[$key]['name'],
+                'image' => $items[$key]['image'],
+                'sku'   => $sku,
+                'slug'  => $custom_fence_product['slug'],
+                'color' => $custom_fence_product['color'],
+                'fence' => $custom_fence_product['fence'],
                 'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
-                'qty'   => $custom_fence_products[$key]['qty'],
-                'original_qty' => $custom_fence_products[$key]['qty'],
+                'qty'   => $custom_fence_product['qty'],
+                'original_qty' => $custom_fence_product['qty'],
             ];
             $i++;
         }
     }
 
+    $cart = unique_multidim_array($carts,"sku", ["qty", "original_qty"]);
+
     // Sort by SKU
     array_multisort(array_map(function($element) {
         return $element['sku'];
-    }, $cart['items']), SORT_ASC, $cart['items']);
+    }, $cart), SORT_ASC, $cart);
 
 
-    $_SESSION['fc_cart'] = $cart;
+    $_SESSION['fc_cart']['items'] = $cart;
 
 }
+
+//----------------------------------------------------------------
+
+function unique_multidim_array($array, $key, $addedKeys) { 
+    $temp_array = [];
+    $key_array = []; 
+    $i = 0;  
+
+    foreach($array as $val) { 
+        if (!in_array($val[$key], $key_array)) { 
+            $key_array[$i] = $val[$key]; 
+            $temp_array[$i] = $val; 
+        }else{
+            $pkey = array_search($val[$key],$key_array);
+
+            foreach ($addedKeys as $addedKey) {
+                $temp_array[$pkey][$addedKey] += $val[$addedKey];
+            }
+
+            // die;
+        }
+        $i++; 
+    } 
+    return $temp_array; 
+} 
 
 //----------------------------------------------------------------
 

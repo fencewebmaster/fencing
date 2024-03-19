@@ -188,7 +188,7 @@ FENCES.cartItems = {
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
         
         newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
-
+console.log(newCartItems);
         return newCartItems;
 
     },
@@ -206,6 +206,7 @@ FENCES.cartItems = {
                 - if Standard Size Gate is selected = add 1x 975W Gate & 1x Hinge & Latch Kit Only
                 - if Custom Size Gate is selected = add 1x Panel & 1x Gate Converter & 1x Hinge & Latch Kit
             */
+
             var tabInfo_filtered_data = tabInfo[0].fields.filter(function(item) {
                 if( item.name == 'fence_height' ) {
                     return item;
@@ -215,11 +216,15 @@ FENCES.cartItems = {
             const foundGate = array.find(obj => obj['slug'].includes('gate') );
 
             if( foundGate ) {
+         
+                var gate_data = fenceInfo.filter(function(item) {
+                   return item.control_key == 'gate';
+                });
 
                 isSTDGate = false;
 
                 if( fenceInfo ) {
-                    isSTDGate = fenceInfo[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val']);
+                    isSTDGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val']);
                 }
 
                 fenceHeight = parseInt(tabInfo_filtered_data[0].value);
@@ -227,16 +232,20 @@ FENCES.cartItems = {
                 if( [1200, 1800].includes(fenceHeight) ) {
 
                     if( isSTDGate ) {
+                        /*
                         array.push(FENCES.cartItems.item.gateKit3);
                         array.push(FENCES.cartItems.item.gateKit4);
+                        */
                     } else {
 
                         // Converter
                         FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
                         array.push(FENCES.cartItems.item.gateKit2);
-                
+                        
+                        /*
                         array.push(FENCES.cartItems.item.gateKit3);
                         array.push(FENCES.cartItems.item.gateKit4);
+                        */
                     }
 
                 } else {

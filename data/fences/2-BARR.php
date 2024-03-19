@@ -15,7 +15,7 @@ $fences['barr'] = [
 			'target' => '.step-2_field',
 			'type' => 'select-field',
 			'option' => [
-				1000 => '1000mm',
+				1000 => '1000mm (Not Pool Compliant)',
 				1200 => '1200mm',
 				1800 => '1800mm',
 			], 
