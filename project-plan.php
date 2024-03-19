@@ -15,8 +15,7 @@
 	include('helpers.php');
 
 	// unset($_SESSION['fc_cart']);
-
-$site_info = sites($_SESSION['site']['id'], 'id', true);
+	$site_info = sites($_SESSION['site']['id'], 'id', true);
 ?>
 
 <!DOCTYPE html>

@@ -57,6 +57,8 @@ if( $qid = @$_GET['qid'] ) {
         $_SESSION["site"] = $site;
     }
 }
+
+$site_info = sites($_SESSION['site']['id'], 'id', true);
 ?>
 
 <!DOCTYPE html>
