@@ -253,7 +253,7 @@ $site_info = sites($_SESSION['site']['id'], 'id', true);
                                             <div>
 
                                                 <div class="fencing-style-img">
-                                                    <img src="<?php echo base_url(); ?>img/plain-white.jpg">  
+                                                    <img src="<?php echo base_url(); ?>img/webp/plain-white.webp">  
                                                     <div class="lq-mid-desc">
                                                         <div class="lq-icon">
                                                             <i class="fa-solid fa-file-circle-plus"></i>                                         
@@ -304,11 +304,11 @@ $site_info = sites($_SESSION['site']['id'], 'id', true);
                                                     <span>mm</span>             
                                                     
                                                     <div class="fencing-qty-plus fencing-qty-btn">
-                                                        <img src="<?php echo base_url(); ?>img/quantity-plus.png" alt="" title="">
+                                                        <img src="<?php echo base_url(); ?>img/webp/quantity-plus.webp" alt="" title="">
                                                     </div>
 
                                                     <div class="fencing-qty-minus fencing-qty-btn">
-                                                        <img src="<?php echo base_url(); ?>img/quantity-minus.png" alt="" title="">
+                                                        <img src="<?php echo base_url(); ?>img/webp/quantity-minus.webp" alt="" title="">
                                                     </div>
 
                                                 </span>

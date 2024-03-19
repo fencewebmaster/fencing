@@ -5,7 +5,7 @@ $fences['barr'] = [
 	'name' => 'BARR',
 	'slug' => 'barr',
 	'panel_group' => 'b',
-	'image' => 'img/fences/barr.png',
+	'image' => 'img/fences/webp/barr.webp',
 	'panel_count' => 4,
 	'color' => ['black', 'white'],
 	'form' => [
@@ -53,7 +53,7 @@ $fences['barr'] = [
 							'slug' => 'yes-post',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'img/yes-post.png',
+							'image' => 'img/webp/yes-post.webp',
 							'default' => TRUE,
 							'title' => '',
 							'size' => [
@@ -64,7 +64,7 @@ $fences['barr'] = [
 							'slug' => 'no-post',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'img/no-post-1.png',
+							'image' => 'img/webp/no-post-1.webp',
 							'title' => '',
 							'size' => [
 								'width' => -50,
@@ -74,7 +74,7 @@ $fences['barr'] = [
 							'slug' => 'no-post-swivel-bracket',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'img/no-post-2.png',
+							'image' => 'img/webp/no-post-2.webp',
 							'title' => '',
 							'size' => [
 								'width' => -50,
@@ -105,14 +105,14 @@ $fences['barr'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => '',
-							'image' => 'img/base-plate-posts.png',
+							'image' => 'img/webp/base-plate-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 						],
 						[
 							'slug'  => 'opt-2',
 							'title' => '',
-							'image' => 'img/cement-in-posts.png',
+							'image' => 'img/webp/cement-in-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 							'default' => TRUE,
@@ -187,7 +187,7 @@ $fences['barr'] = [
 						],
 					],
 					'notes' => [
-						'image' => 'img/poolsafe-step-up panel-v3.jpg',
+						'image' => 'img/webp/poolsafe-step-up-panel-v3.webp',
 						'title' => 'When To Use Step-Up Panels',
 						'description' => 'Step-Up panels are used when you need to change the heights or go over an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],
@@ -285,13 +285,13 @@ $fences['barr'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => '',
-							'image' => 'img/base-plate-posts.png',
+							'image' => 'img/webp/base-plate-posts.webp',
 							'extra' => '',
 						],
 						[
 							'slug'  => 'opt-2',
 							'title' => '',
-							'image' => 'img/cement-in-posts.png',
+							'image' => 'img/webp/cement-in-posts.webp',
 							'extra' => '',
 							'default' => TRUE,
 						],
@@ -317,7 +317,7 @@ $fences['barr'] = [
 							'slug' => 'yes-post',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'img/yes-post.png',
+							'image' => 'img/webp/yes-post.webp',
 							'default' => TRUE,
 							'title' => '',
 							'size' => [
@@ -345,14 +345,14 @@ $fences['barr'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => '',
-							'image' => 'img/base-plate-posts.png',
+							'image' => 'img/webp/base-plate-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 						],
 						[
 							'slug'  => 'opt-2',
 							'title' => '',
-							'image' => 'img/cement-in-posts.png',
+							'image' => 'img/webp/cement-in-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 							'default' => TRUE,
@@ -427,7 +427,7 @@ $fences['barr'] = [
 						],
 					],
 					'notes' => [
-						'image' => 'img/poolsafe-step-up panel-v3.jpg',
+						'image' => 'img/webp/poolsafe-step-up-panel-v3.webp',
 						'title' => 'When To Use Step-Up Panels',
 						'description' => 'Step-Up panels are used when you need to change the heights or go ever an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],

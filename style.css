@@ -49,55 +49,6 @@
   height: 15px;
 }
 
-.fc-icon-copy-simple {
-  background: url("img/icons/copy-simple.png");
-}
-
-.fc-icon-file-pdf {
-  background: url("img/icons/file-pdf.png");
-}
-
-.fc-icon-pencil {
-  background: url("img/icons/pencil.png");
-}
-
-.fc-icon-chat-dots {
-  background: url("img/icons/chat-dots.png");
-}
-
-.fc-icon-phone {
-  background: url("img/icons/phone.png");
-}
-
-.fc-icon-pen-white {
-  background: url("img/icons/pen-white.png");
-}
-
-.fc-icon-cart {
-  background: url("img/icons/cart.png");
-}
-
-.fc-icon-arrow-cc {
-  background: url("img/icons/arrows-counter-clockwise.jpg");
-}
-
-
-.fc-icon-info {
-  background-image: url("img/icons/info-red.png");
-  background-size: 20px auto !important;
-}
-
-.fc-magnify-munis {
-  background: url("img/icons/magnifying-glass-minus.jpg");
-}
-
-.fc-magnify-plus {
-  background: url("img/icons/magnifying-glass-plus.jpg");
-}
-
-.fc-rectangle {
-  background: url("img/icons/rectangle.jpg");
-}
 
 .bg-orange {
   background: var(--fc-princeton-orange)  
@@ -440,7 +391,7 @@ h2.fc-header-title + p {
 }
 
 .fc-video-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75)), url(img/video-bg.png);
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75)), url(img/webp/video-bg.webp);
   width: 100%;
   max-width: 200px;
   background-size: cover;
@@ -586,7 +537,7 @@ a.fc-tab-active {
   border-radius: 5px;
   /* Arrow */
   appearance: none;
-  background-image: url(img/arrow-s.png);
+  background-image: url(img/webp/arrow-s.webp);
   background-repeat: no-repeat;
   background-position: right 15px top 50%;
   background-size: 13px auto;
@@ -3012,14 +2963,14 @@ thead.fc-border th:last-child {
 }
 
 .downloading-pdf .fencing-left-panel-o-b .fencing-panel-item {
-    background: url(img/raked-top-left.png) !important;
+    background: url(img/webp/raked-top-left.webp) !important;
     background-size: contain !important;
     background-position: top;
     background-repeat: no-repeat !important;
 }
 
 .downloading-pdf .fencing-right-panel-o-b .fencing-panel-item {
-    background: url(img/raked-top-right.png) !important;
+    background: url(img/webp/raked-top-right.webp) !important;
     background-size: contain !important;
     background-position: top;
     background-repeat: no-repeat !important;
@@ -3156,7 +3107,7 @@ thead.fc-border th:last-child {
   display: inline-block;
   vertical-align: middle;
   content: "";
-  background: url(img/btn-arrow.png) no-repeat center;
+  background: url(img/webp/btn-arrow.webp) no-repeat center;
   width: 20px;
   height: 12px;
   background-size: 100% auto;
@@ -3166,14 +3117,14 @@ thead.fc-border th:last-child {
 }
 @media (min-width: 1024px) {
   .fencing-panel-controls #btn-left_side.fc-btn-active:before, .fencing-panel-controls #btn-left_side:hover:before {
-    background-image: url(img/btn-arrow-white.png);
+    background-image: url(img/webp/btn-arrow-white.webp);
   }
 }
 .fencing-panel-controls #btn-right_side:after {
   display: inline-block;
   vertical-align: middle;
   content: "";
-  background: url(img/btn-arrow.png) no-repeat center;
+  background: url(img/webp/btn-arrow.webp) no-repeat center;
   width: 20px;
   height: 12px;
   background-size: 100% auto;
@@ -3184,7 +3135,7 @@ thead.fc-border th:last-child {
 }
 @media (min-width: 1024px) {
   .fencing-panel-controls #btn-right_side.fc-btn-active:after, .fencing-panel-controls #btn-right_side:hover:after {
-    background-image: url(img/btn-arrow-white.png);
+    background-image: url(img/webp/btn-arrow-white.webp);
   }
 }
 .fencing-panel-controls div {
@@ -3586,7 +3537,7 @@ thead.fc-border th:last-child {
 
 
 .ally {
-  background-image: url(img/ally-thin.png?v=1);
+  background-image: url(img/webp/ally-thin.webp?v=1);
   background-repeat: repeat;
   background-color: initial;
   border-color: #000;
@@ -3599,7 +3550,7 @@ thead.fc-border th:last-child {
 }
 
 .offcut-b {
-  background-image: url(img/ally-thin.png);
+  background-image: url(img/webp/ally-thin.webp);
   background-repeat: repeat;
   background-color: initial;
   background-size: 7px;
@@ -3608,13 +3559,13 @@ thead.fc-border th:last-child {
 
 [data-type="barr"] .ally,
 [data-type="barr"] .offcut-b {
-  background-image: url(img/ally-thick.png);
+  background-image: url(img/webp/ally-thick.webp);
   background-size: 10px;
 }
 [data-type="barr"] .ally:before,
 [data-type="barr"] .fencing-offcut:before {
     content: "";
-    background-image: url(img/ally-thick.png?v=1);
+    background-image: url(img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: #fff;
@@ -3626,7 +3577,7 @@ thead.fc-border th:last-child {
 [data-type="barr"] .ally:after,
 [data-type="barr"] .fencing-offcut:after {
     content: "";
-    background-image: url(img/ally-thick.png?v=1);
+    background-image: url(img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: #fff;
@@ -3760,7 +3711,7 @@ thead.fc-border th:last-child {
 .fencing-panel-rail {
   height: 9px;
   top: -10px;
-  background-image: url(img/hand-rail-round.png);
+  background-image: url(img/webp/hand-rail-round.webp);
   background-size: 100% 6px;
   position: absolute;
   width: 100%;
@@ -3785,7 +3736,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-spigot {
-  background-image: url(img/spigot-round.png);
+  background-image: url(img/webp/spigot-round.webp);
   background-size: contain;
   background-repeat: no-repeat;
   height: 30px;
@@ -3811,7 +3762,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-pinfix {
-  background-image: url(img/pinfix.png);
+  background-image: url(img/webp/pinfix.webp);
   background-size: contain;
   background-repeat: no-repeat;
   height: 15px;

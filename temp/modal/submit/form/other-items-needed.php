@@ -5,7 +5,7 @@
         <div class="col-md-3 col-sm-4 col-6">
             <div class="fc-form-check-img fc-rounded mb-3">
                 <label class="fc-form-check">
-                <img class="fc-rounded" src="<?php echo base_url(); ?>img/plans/<?php echo $extra_k; ?>.png">								
+                <img class="fc-rounded" src="<?php echo base_url(); ?>img/plans/webp/<?php echo $extra_k; ?>.webp">								
                 <input type="checkbox" name="extra[]" value="<?php echo $extra_k; ?>">
                 </label>
                 <div class="text-center fw-bold py-2 small"><?php echo $extra_v; ?></div>
