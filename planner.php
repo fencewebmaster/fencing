@@ -59,6 +59,8 @@ if( $qid = @$_GET['qid'] ) {
 }
 
 $site_info = sites($_SESSION['site']['id'], 'id', true);
+
+$_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
 ?>
 
 <!DOCTYPE html>
