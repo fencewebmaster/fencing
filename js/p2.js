@@ -298,10 +298,11 @@ function reload_load_fencing_items(tab) {
                                                  .replace(/{{group}}/gi, info.panel_group) 
                                                  .replace(/{{width}}/gi, calc.offcut_gate_panel.length);     
 
-        $(FENCES.el.fencingPanelContainer).append(tpl);    
+        $(`#pp-${tab} .fencing-panel-container`).append(tpl);    
+
         $('#pp-'+tab+' .fencing-offcut.gate-offcut').css({'max-width':calc.offcut_gate_panel.length*0.10});
     }
-
+        console.log(tab);
 
     if( calc.fence_size.height ) {
         $('#pp-'+tab+' .fencing-panel-item, #pp-'+tab+' .short-panel-item, #pp-'+tab+' .fencing-offcut').css({'height':calc.fence_size.height*0.10});     
