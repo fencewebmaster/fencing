@@ -58,9 +58,7 @@
 .panel-post:not(.panel-no-post).opt-2 {
 	margin-bottom: 15px;
 }
-.panel-post:not(.panel-no-post).opt-2:after {
-	bottom: 15px;
-}
+
 
 .qty-edited {
 	position: absolute;
