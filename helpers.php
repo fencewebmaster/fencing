@@ -335,8 +335,8 @@ function get_product_skus($data = array()) {
 
     	foreach ($items as $item) {
 
-            $filtered_product = array_filter($the_products, function($val) use($item, $supplier){
-                return ( $val['slug'] == $item['slug'] && $val['supplier'] == $supplier );
+            $filtered_product = array_filter($the_products, function($val) use($item, $supplier, $d){
+                return ( $val['slug'] == $item['slug'] && $val['supplier'] == $supplier && $d['slug'] == $val['style']);
             });
 
             if( $filtered_product ) {
