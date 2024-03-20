@@ -372,27 +372,27 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
               
                                         <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
 
-                                        <div class="fencing-section__controls">
+                                        <div class="fencing-section__controls d-flex">
                                             
                                             <a href="#" style="display: none;">
                                                 <i class="fc-icon fc-rectangle"></i>
                                             </a>
 
-                                            <a href="#" class="fc-zoom-fence btn-fc btn-fc-outline-default" data-zoom="in">
-                                                <i class="fa fa-magnifying-glass-minus me-1"></i>
-                                                Zoom in
+                                            <a href="#" class="fc-zoom-fence btn btn-sm btn-secondary d-flex align-items-center text-uppercase px-2 fw-bold" data-zoom="in">
+                                                <i class="fa fa-magnifying-glass-minus"></i>
+                                                <span class="d-none d-sm-inline-block ms-2">Zoom in</span>
                                             </a>
 
-                                            <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
+                                            <div class="fc-zoom-progress js-fc-zoom-progress mx-2">100%</div>
 
-                                            <a href="#" class="fc-zoom-fence btn-fc btn-fc-outline-default" data-zoom="out">
-                                                <i class="fa fa-magnifying-glass-plus me-1"></i>
-                                                Zoom out
+                                            <a href="#" class="fc-zoom-fence btn btn-sm btn-secondary d-flex align-items-center me-2 text-uppercase px-2 fw-bold" data-zoom="out">
+                                                <i class="fa fa-magnifying-glass-plus"></i>
+                                                <span class="d-none d-sm-inline-block ms-2">Zoom out</span>
                                             </a>
 
-                                            <a href="#" class="fc-zoom-reset js-fc-zoom-reset btn-fc btn-fc-outline-default" data-zoom="reset">
-                                                <i class="fa-solid fa-rotate-left me-1"></i>
-                                                Reset
+                                            <a href="#" class="fc-zoom-reset js-fc-zoom-reset btn btn-sm btn-danger align-items-center text-uppercase px-2 fw-bold" data-zoom="reset">
+                                                <i class="fa-solid fa-rotate-left"></i>
+                                                <span class="d-none d-sm-inline-block ms-2">Reset</span>
                                             </a>
                   
                                         </div>                                        
@@ -457,7 +457,7 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
 
                                             <div class="col-lg-auto col-sm-6 col-auto px-1 mb-lg-0 mb-2">
                                                 <button type="button" 
-                                                    class="btn btn-secondary fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
+                                                    class="btn btn-danger fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100">
                                                     <b>
                                                         <i class="fa-solid fa-rotate-left me-1"></i>
                                                         Reset
