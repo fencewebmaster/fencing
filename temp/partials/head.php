@@ -1,6 +1,9 @@
 <title>Fencing Calculator</title>
+
 <link rel="icon" type="image/x-icon" href="<?php echo base_url(); ?>img/fav.ico">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>style.css?v=<?php echo date('YmdHis'); ?>">
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>style-v2.css?v=<?php echo date('YmdHis'); ?>">
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>fonts/fa/css/all.min.css">

@@ -271,7 +271,7 @@
 														    <p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
 
 														    <div class="alert alert-danger fc-step-2-alert fc-alert-gray--low-stock">
-														        <h3 class="fc-mb-1"><i class="fc-icon fc-icon-info"></i> Low Stock Warning</h3>
+														        <h3 class="fc-mb-1"><i class="fa fa-exclamation-circle"></i> Low Stock Warning</h3>
 														        <p class="fc-text-red">
 														            Some items have limited stock available. <br />
 														            Your cart can only be Reserved for a Limited Time <br />

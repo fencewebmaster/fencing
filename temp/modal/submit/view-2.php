@@ -26,7 +26,7 @@
                                 <?php if( in_array($co_k, $fences[$color_data['fence']]['color']) ): ?>
                                 <div class="fc-col-3">
                                     <div class="fc-select-item fc-select fc-mb-0" data-color-title="<?php echo $co_v['title']; ?>" data-color-code="<?php echo $co_v['background_color']; ?>" data-color-subtitle="<?php echo $co_v['sub_title']; ?>" data-slug="<?php echo $co_k; ?>" style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
-                                        <p><strong><?php echo $co_v['title']; ?></strong>
+                                        <p class="mb-sm-2 mb-0"><strong><?php echo $co_v['title']; ?></strong>
                                         <span><?php echo $co_v['sub_title']; ?></span></p>
                                     </div>
                                 </div>
@@ -40,7 +40,7 @@
 
                 </div>
 
-                <hr>
+                <hr class="my-2">
 
                 <div class="fc-form-plan" data-formtab="2">
                     <div class="text-uppercase mb-2 fw-bold">When Do You Need The Materials?</div>
@@ -49,7 +49,7 @@
 
                 </div>
 
-                <hr>
+                <hr class="my-2">
 
                 <div class="fc-form-plan" data-formtab="3">
 
@@ -59,11 +59,10 @@
 
                 </div>
 
-                <hr>
+                <hr class="my-2">
 
                 <div class="fc-form-plan" data-formtab="4">
                     
-                  
                     <div class="text-uppercase mb-2 fw-bold">Anything Else We Can Help You With?</div>
 
                     <?php include 'temp/modal/submit/form/other-items-needed.php'; ?>                        
@@ -71,12 +70,11 @@
                     <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
                    <div class="d-grid gap-2">
                         <button type="submit" 
-                            class="btn-fc project-details--update btn-fc-orange fc-text-uppercase fc-w-b">
+                            class="btn btn-lg project-details--update btn-orange text-uppercase">
                             <b>Update</b>
                         </button>
                     </div>
                     <!-- END FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
-
 
                 </div>
             </div>

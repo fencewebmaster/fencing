@@ -1,8 +1,0 @@
-// -----------------------------------------------------------------------------
-// This file contains all application-wide Sass functions.
-// -----------------------------------------------------------------------------
-
-@function pxTopercent($px, $width) {
-    @return calc($px / $width * 100%);
-}
-  

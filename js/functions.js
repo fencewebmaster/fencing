@@ -7,7 +7,16 @@ function load_fencing_items() {
         custom_fence = fd.info,
         info         = fd.data;
 
-    $(FENCES.el.fencingPanelContainer).html('').attr('data-type', info?.slug);
+    $(FENCES.el.fencingPanelContainer).html('').attr('data-type', info?.slug).removeClass('custom-height');
+
+    var fence_height_filtered_data = info?.form?.filter(function(item) {
+        return item.slug == 'fence_height';
+    });
+
+    if( fence_height_filtered_data ) {
+        $(FENCES.el.fencingPanelContainer).addClass('custom-height');
+    }
+
 
     var calc = calculate_fences();
 

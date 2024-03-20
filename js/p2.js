@@ -173,7 +173,17 @@ function reload_load_fencing_items(tab) {
         custom_fence = custom_fence ? JSON.parse(custom_fence) : [],
         info         = fc_data[i];
 
-    $(`#pp-${tab} .fencing-panel-container`).html('').attr('data-type', info?.slug);
+    var  fencingPanelContainer = '#pp-'+tab+' .fencing-panel-container';
+
+    $(fencingPanelContainer).html('').attr('data-type', info?.slug);
+
+    var fence_height_filtered_data = info?.form?.filter(function(item) {
+        return item.slug == 'fence_height';
+    });
+
+    if( fence_height_filtered_data ) {
+        $(fencingPanelContainer).addClass('custom-height');
+    }
 
     var cf_data = {item:i,tab:tab},
         calc    = calculate_fences(cf_data);

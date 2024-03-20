@@ -378,20 +378,20 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
                                                 <i class="fc-icon fc-rectangle"></i>
                                             </a>
 
-                                            <a href="#" class="fc-zoom-fence" data-zoom="in">
-                                                <i class="fc-icon fc-magnify-plus"></i>
+                                            <a href="#" class="fc-zoom-fence btn-fc btn-fc-outline-default" data-zoom="in">
+                                                <i class="fa fa-magnifying-glass-minus me-1"></i>
                                                 Zoom in
                                             </a>
 
                                             <div class="fc-zoom-progress js-fc-zoom-progress">100%</div>
 
-                                            <a href="#" class="fc-zoom-fence" data-zoom="out">
-                                                <i class="fc-icon fc-magnify-munis"></i>
+                                            <a href="#" class="fc-zoom-fence btn-fc btn-fc-outline-default" data-zoom="out">
+                                                <i class="fa fa-magnifying-glass-plus me-1"></i>
                                                 Zoom out
                                             </a>
 
-                                            <a href="#" class="fc-zoom-reset js-fc-zoom-reset" data-zoom="reset">
-                                                <i class="fc-icon fc-icon-arrow-cc"></i>
+                                            <a href="#" class="fc-zoom-reset js-fc-zoom-reset btn-fc btn-fc-outline-default" data-zoom="reset">
+                                                <i class="fa-solid fa-rotate-left me-1"></i>
                                                 Reset
                                             </a>
                   
