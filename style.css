@@ -3251,7 +3251,7 @@ thead.fc-border th:last-child {
 }
 
 
-.fencing-container a {
+.fencing-section__controls a {
   display: flex;
   font-size: 12px;
 }
