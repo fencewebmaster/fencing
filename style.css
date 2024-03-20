@@ -3596,8 +3596,14 @@ thead.fc-border th:last-child {
   margin-bottom: 30px;
   border-radius: 2px;
   border: 1px solid;
-  min-height: 140px;
   position: relative;
+}
+
+.panel-post.opt-1 {
+  min-height: 140px;
+}
+.panel-post.opt-2 {
+  min-height: 155px;
 }
 
 .custom-height .panel-post {
@@ -3642,7 +3648,7 @@ thead.fc-border th:last-child {
   bottom: 14px;
 }
 .custom-height .panel-post:not(.panel-no-post).opt-2:after {
-  bottom: 8px;
+  bottom: 10px;
 }
 
 .fencing-panel-container {

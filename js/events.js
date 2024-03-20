@@ -580,7 +580,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
         $('[name="width"]').val(gateWidth);
         disabledCustomGate();
 
-        calculateCustomGate();
+        // calculateCustomGate();
     }
 
 });
