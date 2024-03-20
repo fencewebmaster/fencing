@@ -591,6 +591,10 @@ function update_gate(action) {
         $(FENCES.el.fencingPanelGate).css({'max-width': calc.gate.width * 0.1});
     }
 
+    if( action == 'add' ) {
+        calculateCustomGate();
+    }
+
 }
 
 //----------------------------------------------------------------
