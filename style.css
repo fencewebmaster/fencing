@@ -3541,7 +3541,7 @@ thead.fc-border th:last-child {
   background-repeat: repeat;
   background-color: initial;
   border-color: #000;
-  background-size: 7px;
+  background-size: 9px;
   background-color: #fff;
 }
 .fencing-panel-item:not(.fencing-panel-gate) {
@@ -3553,7 +3553,7 @@ thead.fc-border th:last-child {
   background-image: url(img/webp/ally-thin.webp);
   background-repeat: repeat;
   background-color: initial;
-  background-size: 7px;
+  background-size: 9px;
   background-color: #ffeded;
 }
 
