@@ -738,7 +738,7 @@ a.fc-tab-active {
   top: 10px;
 }
 
-.fencing-offcut {
+.offcut-body {
   padding: 0 5px;
   background: #ffeded;
   height: 135px;
@@ -751,7 +751,7 @@ a.fc-tab-active {
   margin-left: 20px;
 }
 
-.fencing-offcut > div {
+.offcut-body > div {
   padding: 3px 2px;
   color: var(--fc-brand-primary);
   border: 1px solid;
@@ -3527,7 +3527,7 @@ thead.fc-border th:last-child {
   margin-right: -1px;  
 }
 
-.offcut-b {
+.offcut-body {
   background-image: url(img/webp/ally-thin.webp);
   background-repeat: repeat;
   background-color: initial;
@@ -3536,12 +3536,12 @@ thead.fc-border th:last-child {
 }
 
 .custom-height .ally,
-.custom-height .offcut-b {
+.custom-height .offcut-body {
   background-image: url(img/webp/ally-thick.webp);
   background-size: 10px;
 }
 .custom-height .ally:before,
-.custom-height .fencing-offcut:before {
+.custom-height .offcut-body:before {
     content: "";
     background-image: url(img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
@@ -3553,7 +3553,7 @@ thead.fc-border th:last-child {
     height: 4px;
 }
 .custom-height .ally:after,
-.custom-height .fencing-offcut:after {
+.custom-height .offcut-body:after {
     content: "";
     background-image: url(img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
@@ -3580,18 +3580,19 @@ thead.fc-border th:last-child {
   border: 1px solid;
   position: relative;
   z-index: 1;
+
 }
 
-.panel-post.opt-2 {
+.panel-post:not(.panel-no-post).opt-2 {
   min-height: 155px;
 }
 
-.panel-post.opt-1 {
+.panel-post:not(.panel-no-post).opt-1 {
   min-height: 140px;
 }
 
 .custom-height .panel-post {
-  min-height: 125px;
+  min-height: 125px !important;
 }
 
 
