@@ -2935,8 +2935,8 @@ thead.fc-border th:last-child {
 }
 
 .fencing-right-panel-o-b {
-  -webkit-clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-  clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+  -webkit-clip-path: polygon(36.5% 0, 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+  clip-path: polygon(36.5% 0, 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
   padding-top: 2px;
   background: #000;
 
@@ -3523,8 +3523,8 @@ thead.fc-border th:last-child {
   background-color: #fff;
 }
 .fencing-panel-item:not(.fencing-panel-gate) {
-  margin-left: -2px;
-  margin-right: -2px;  
+  margin-left: -1px;
+  margin-right: -1px;  
 }
 
 .offcut-b {

@@ -356,9 +356,11 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
                         .addClass(value)
                         .attr('data-cart-value', value);
 
-                    postValue = post_options_default[0].slug;
+                  
 
- /*                   // Set default option on left side
+ /*                 
+  postValue = post_options_default[0].slug;
+   // Set default option on left side
                     if( side_post != 'left_side' ) {
 
                         var left_post_filtered_data = custom_fence.filter(function(item) {
@@ -468,10 +470,10 @@ function load_post_options_all(custom_fence, info, tab, calc) {
 
             panel_post.not(left_panel_class)
                       .not(right_panel_class)
-                      .addClass(postValue)
+                      .addClass(post_options_setting?.val)
                       .attr('data-cart-value', postValue);
 
-            panel_spacing_number.addClass(postValue);
+            panel_spacing_number.addClass(post_options_setting?.val);
 
         } 
 
@@ -488,13 +490,13 @@ function load_post_options_all(custom_fence, info, tab, calc) {
         if( calc.fence_size.height ) {
             postValue = postValue.concat("+", calc.fence_size.height);
         }
-
+     
         panel_post.not(left_panel_class)   
                   .not(right_panel_class)
                   .attr('data-cart-value', postValue)
-                  .addClass(postValue);
+                  .addClass(post_options_default?.slug);
 
-        panel_spacing_number.addClass(postValue);
+        panel_spacing_number.addClass(post_options_default?.slug);
 
     }
 
