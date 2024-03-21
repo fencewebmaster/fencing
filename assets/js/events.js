@@ -593,7 +593,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
 
     // Default load of STD gate
     if( ! $('[name="width"]').val() || $('[name="use_std"]').is(':checked') ) {
-        var gateWidth = data.settings.gate.size.width;
+        var gateWidth = data?.settings?.gate?.size.width;
         $('[name="use_std"]').prop('checked', true);
         $('[name="width"]').val(gateWidth);
         disabledCustomGate();

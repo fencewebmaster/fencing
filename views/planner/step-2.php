@@ -27,11 +27,11 @@
                                                     <span>mm</span>             
                                                     
                                                     <div class="fencing-qty-plus fencing-qty-btn">
-                                                        <img src="<?php echo base_url(); ?>img/webp/quantity-plus.webp" alt="" title="">
+                                                        <img src="<?php echo base_url(); ?>assets/img/webp/quantity-plus.webp" alt="" title="">
                                                     </div>
 
                                                     <div class="fencing-qty-minus fencing-qty-btn">
-                                                        <img src="<?php echo base_url(); ?>img/webp/quantity-minus.webp" alt="" title="">
+                                                        <img src="<?php echo base_url(); ?>assets/img/webp/quantity-minus.webp" alt="" title="">
                                                     </div>
 
                                                 </span>

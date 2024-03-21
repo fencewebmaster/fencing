@@ -59,7 +59,7 @@
                 <div>
 
                     <div class="fencing-style-img">
-                        <img src="<?php echo base_url(); ?>img/webp/plain-white.webp">  
+                        <img src="<?php echo base_url(); ?>assets/img/webp/plain-white.webp">  
                         <div class="lq-mid-desc">
                             <div class="lq-icon">
                                 <i class="fa-solid fa-file-circle-plus"></i>                                         
