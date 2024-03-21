@@ -65,6 +65,7 @@
 <script type="text/javascript" src="<?php echo base_url(); ?>js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
 <script type="text/javascript" src="<?php echo base_url(); ?>js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
 
+<?php if( !in_uri_segment(demo_stages()) ): ?>
 <!-- Chatra {literal} -->
 <script>
 (function(d, w, c) {
@@ -79,3 +80,4 @@
 })(document, window, 'Chatra');
 </script>
 <!-- /Chatra {/literal} -->
+<?php endif; ?>

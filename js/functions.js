@@ -363,7 +363,8 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
     }
 
 
-  //  postValue = post_options_default[0].slug;
+    postValue = post_options_default[0].slug;
+
 
     // Set default option on left side
     if( side_post != 'left_side' ) {
@@ -374,8 +375,9 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
 
         if( left_post_filtered_data[0]?.settings[0]?.val) {
             postValue = left_post_filtered_data[0]?.settings[0]?.val;
-            $('#pp-'+sectionId+' .panel-post.post-left').addClass(postValue);   
         }
+
+        $('#pp-'+sectionId+' .panel-post.post-left').addClass(postValue);   
 
     } 
 
@@ -389,8 +391,9 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
 
         if( right_post_filtered_data[0]?.settings[0]?.val) {
             postValue = right_post_filtered_data[0]?.settings[0]?.val;
-            $('#pp-'+sectionId+' .panel-post.post-right').addClass(postValue);
         }
+        
+        $('#pp-'+sectionId+' .panel-post.post-right').addClass(postValue);   
 
     }
 
@@ -411,7 +414,8 @@ function load_post_options_all(custom_fence, info, tab, calc) {
     
     var fd = getSelectedFenceData();
     
-    var i   = fd.slug;
+    var i   = fd.slug,
+        tab = fd.tab;
 
     var post_options_filtered_data = custom_fence.filter(function(item) {
         return item.control_key === 'post_options';
@@ -480,8 +484,7 @@ function load_post_options_all(custom_fence, info, tab, calc) {
                   .attr('data-cart-value', postValue)
                   .addClass(post_options_default.slug);
 
-        panel_spacing_number
-                  .addClass(post_options_default.slug);
+        panel_spacing_number.addClass(post_options_default.slug);
 
     }
 
@@ -489,9 +492,7 @@ function load_post_options_all(custom_fence, info, tab, calc) {
     if( modal_key == 'post_options' ) {
         $(custom_fence).each(function(k, v){
             if( v.control_key == 'left_side' || v.control_key == 'right_side' ) {
-
                 $(custom_fence[k].settings).each(function(lok, lov) {
-
                     if( lov.key == 'post_option' ) {
                         custom_fence[k].settings[lok].val = post_options_filtered_data[0]?.settings[0]?.val;
                         localStorage.setItem(`custom_fence-${tab}-${i}`, JSON.stringify(custom_fence));
@@ -718,7 +719,6 @@ function set_field_value(filtered_data) {
             $(item.settings).each(function(i, item){
                 
                 $(item.fields).each(function(i, item){
-
                     get_field_value(item.tag, item.key, item.val);
                 });
 
@@ -1999,7 +1999,7 @@ function refreshLocalStorage(activeSectionIndex, target) {
 
             //Update the tab value with new Index
             value[0].tab = newIndex;
-            
+
             //Set the new key entry
             localStorage.setItem(newKey, JSON.stringify(value));
 

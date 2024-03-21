@@ -92,7 +92,6 @@ if( location.host == 'localhostx' ) {
 
 function reload_fence_items() {
 
-
     if( getSearchParams('action') == 'clear-all' ) {
         clearFencingData();
         location.href = location.origin+location.pathname;

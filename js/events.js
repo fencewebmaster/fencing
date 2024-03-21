@@ -541,8 +541,8 @@ $(document).on('click', '.fencing-btn-modal', function(event){
             if( default_value ) {
                 var opt = default_value[0],
                     tag = $('.fc-form-field').get(0).tagName.toLowerCase();
-    
-                get_field_value(tag, v?.slug, opt?.slug);                        
+
+                 get_field_value(tag, v?.slug, opt?.slug);      
             }
 
 
