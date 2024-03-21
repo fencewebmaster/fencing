@@ -45,7 +45,7 @@
                 <div class="fc-form-plan" data-formtab="2">
                     <div class="text-uppercase mb-2 fw-bold">When Do You Need The Materials?</div>
 
-                    <?php include 'temp/modal/submit/form/timeframe.php'; ?>
+                    <?php include 'views/modal/submit/form/timeframe.php'; ?>
 
                 </div>
 
@@ -55,7 +55,7 @@
 
                     <div class="text-uppercase mb-2 fw-bold">DIY OR INSTALL??</div>
                     
-                    <?php include 'temp/modal/submit/form/installer.php'; ?>
+                    <?php include 'views/modal/submit/form/installer.php'; ?>
 
                 </div>
 
@@ -65,7 +65,7 @@
                     
                     <div class="text-uppercase mb-2 fw-bold">Anything Else We Can Help You With?</div>
 
-                    <?php include 'temp/modal/submit/form/other-items-needed.php'; ?>                        
+                    <?php include 'views/modal/submit/form/other-items-needed.php'; ?>                        
 
                     <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
                    <div class="d-grid gap-2">

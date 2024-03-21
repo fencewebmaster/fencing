@@ -1,4 +1,4 @@
-<?php $files = glob('temp/modal/*', GLOB_ONLYDIR); ?>
+<?php $files = glob('views/modal/*', GLOB_ONLYDIR); ?>
 
 <?php 
 foreach( $files as $file ):

@@ -1,5 +1,5 @@
 <?php
-include 'helpers.php';
+include 'config/helpers.php';
 
 $redirect_to = base_url('planner');
 

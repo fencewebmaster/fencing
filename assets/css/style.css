@@ -391,7 +391,7 @@ h2.fc-header-title + p {
 }
 
 .fc-video-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75)), url(img/webp/video-bg.webp);
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75)), url(../img/webp/video-bg.webp);
   width: 100%;
   max-width: 200px;
   background-size: cover;
@@ -537,7 +537,7 @@ a.fc-tab-active {
   border-radius: 5px;
   /* Arrow */
   appearance: none;
-  background-image: url(img/webp/arrow-s.webp);
+  background-image: url(../img/webp/arrow-s.webp);
   background-repeat: no-repeat;
   background-position: right 15px top 50%;
   background-size: 13px auto;
@@ -748,7 +748,6 @@ a.fc-tab-active {
   justify-content: center;
   align-items: center;
   text-align: center;
-  margin-left: 20px;
 }
 
 .offcut-body > div {
@@ -863,7 +862,7 @@ a.fc-tab-active {
 }
 
 .fc-loader-gif {
-  background: url(img/loaders/1.gif) no-repeat center;
+  background: url(../img/loaders/1.gif) no-repeat center;
   width: 80px;
   height: 80px;
   background-size: 100%;
@@ -2963,14 +2962,14 @@ thead.fc-border th:last-child {
 }
 
 .downloading-pdf .fencing-left-panel-o-b .fencing-panel-item {
-    background: url(img/webp/raked-top-left.webp) !important;
+    background: url(../img/webp/raked-top-left.webp) !important;
     background-size: contain !important;
     background-position: top;
     background-repeat: no-repeat !important;
 }
 
 .downloading-pdf .fencing-right-panel-o-b .fencing-panel-item {
-    background: url(img/webp/raked-top-right.webp) !important;
+    background: url(../img/webp/raked-top-right.webp) !important;
     background-size: contain !important;
     background-position: top;
     background-repeat: no-repeat !important;
@@ -3107,7 +3106,7 @@ thead.fc-border th:last-child {
   display: inline-block;
   vertical-align: middle;
   content: "";
-  background: url(img/webp/btn-arrow.webp) no-repeat center;
+  background: url(../img/webp/btn-arrow.webp) no-repeat center;
   width: 20px;
   height: 12px;
   background-size: 100% auto;
@@ -3117,14 +3116,14 @@ thead.fc-border th:last-child {
 }
 @media (min-width: 1024px) {
   .fencing-panel-controls #btn-left_side.fc-btn-active:before, .fencing-panel-controls #btn-left_side:hover:before {
-    background-image: url(img/webp/btn-arrow-white.webp);
+    background-image: url(../img/webp/btn-arrow-white.webp);
   }
 }
 .fencing-panel-controls #btn-right_side:after {
   display: inline-block;
   vertical-align: middle;
   content: "";
-  background: url(img/webp/btn-arrow.webp) no-repeat center;
+  background: url(../img/webp/btn-arrow.webp) no-repeat center;
   width: 20px;
   height: 12px;
   background-size: 100% auto;
@@ -3135,7 +3134,7 @@ thead.fc-border th:last-child {
 }
 @media (min-width: 1024px) {
   .fencing-panel-controls #btn-right_side.fc-btn-active:after, .fencing-panel-controls #btn-right_side:hover:after {
-    background-image: url(img/webp/btn-arrow-white.webp);
+    background-image: url(../img/webp/btn-arrow-white.webp);
   }
 }
 .fencing-panel-controls div {
@@ -3515,7 +3514,7 @@ thead.fc-border th:last-child {
 
 
 .ally {
-  background-image: url(img/webp/ally-thin.webp?v=1);
+  background-image: url(../img/webp/ally-thin.webp?v=1);
   background-repeat: repeat;
   background-color: initial;
   border-color: #000;
@@ -3528,7 +3527,7 @@ thead.fc-border th:last-child {
 }
 
 .offcut-body {
-  background-image: url(img/webp/ally-thin.webp);
+  background-image: url(../img/webp/ally-thin.webp);
   background-repeat: repeat;
   background-color: initial;
   background-size: 9px;
@@ -3537,13 +3536,13 @@ thead.fc-border th:last-child {
 
 .custom-height .ally,
 .custom-height .offcut-body {
-  background-image: url(img/webp/ally-thick.webp);
+  background-image: url(../img/webp/ally-thick.webp);
   background-size: 10px;
 }
 .custom-height .ally:before,
 .custom-height .offcut-body:before {
     content: "";
-    background-image: url(img/webp/ally-thick.webp?v=1);
+    background-image: url(../img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: #fff;
@@ -3555,7 +3554,7 @@ thead.fc-border th:last-child {
 .custom-height .ally:after,
 .custom-height .offcut-body:after {
     content: "";
-    background-image: url(img/webp/ally-thick.webp?v=1);
+    background-image: url(../img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: #fff;
@@ -3710,7 +3709,7 @@ thead.fc-border th:last-child {
 .fencing-panel-rail {
   height: 9px;
   top: -10px;
-  background-image: url(img/webp/hand-rail-round.webp);
+  background-image: url(../img/webp/hand-rail-round.webp);
   background-size: 100% 6px;
   position: absolute;
   width: 100%;
@@ -3735,7 +3734,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-spigot {
-  background-image: url(img/webp/spigot-round.webp);
+  background-image: url(../img/webp/spigot-round.webp);
   background-size: contain;
   background-repeat: no-repeat;
   height: 30px;
@@ -3761,7 +3760,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-pinfix {
-  background-image: url(img/webp/pinfix.webp);
+  background-image: url(../img/webp/pinfix.webp);
   background-size: contain;
   background-repeat: no-repeat;
   height: 15px;

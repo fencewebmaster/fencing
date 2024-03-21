@@ -188,7 +188,7 @@ FENCES.cartItems = {
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
         
         newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
-console.log(newCartItems);
+
         return newCartItems;
 
     },
@@ -465,13 +465,6 @@ console.log(newCartItems);
                 "slug": "base_plate+post_cover",
                 "qty": total,
             });
-
-            /*
-            array.push({
-                "slug": "base_plate+post_cap",
-                "qty": total,
-            });
-            */
 
             return array;
         }

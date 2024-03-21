@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include 'helpers.php';
+include 'config/helpers.php';
 include 'data/settings.php';
 include 'config/database.php'; 
 
@@ -60,8 +60,6 @@ foreach($cart_items_regrouped as $cir_k => $cir_items) {
 }
 
 post_product_skus($cart_items_data);
-
-// post_product_skus($custom_fence_data);
 
 // END - GET PRODUCTS FROM THE STORE
 

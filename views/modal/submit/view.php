@@ -37,7 +37,7 @@
 
                     <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Customer Details</h2>
 
-                    <?php include 'temp/modal/submit/form/customer-details.php'; ?>
+                    <?php include 'views/modal/submit/form/customer-details.php'; ?>
 
                     <p class="fc-mb-2 fc-text-gray"><span class="fc-text-danger">*</span> = Required</p>
                     
@@ -69,7 +69,7 @@
 
                     <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">When Do You Need The Materials?</h2>
                     
-                    <?php include 'temp/modal/submit/form/timeframe.php'; ?>
+                    <?php include 'views/modal/submit/form/timeframe.php'; ?>
 
                     <!-- START FORM MODAL ACTIONS - STEP 2 -->
                     <div class="fc-form-plan-action mt-3">
@@ -105,7 +105,7 @@
 
                     <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">DIY OR INSTALL??</h2>
                     
-                    <?php include 'temp/modal/submit/form/installer.php'; ?>
+                    <?php include 'views/modal/submit/form/installer.php'; ?>
 
                     <!-- START FORM MODAL ACTIONS - STEP 3 -->
                     <div class="fc-form-plan-action mt-3">
@@ -135,7 +135,7 @@
 
                     <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Anything Else We Can Help You With?</h2>
 
-                    <?php include 'temp/modal/submit/form/other-items-needed.php'; ?>                        
+                    <?php include 'views/modal/submit/form/other-items-needed.php'; ?>                        
 
                     <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
                     <div class="fc-form-plan-action mt-2">

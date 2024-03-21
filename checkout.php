@@ -2,7 +2,7 @@
 session_start();
 
 include 'data/settings.php';
-include 'helpers.php';
+include 'config/helpers.php';
 include 'config/database.php'; 
 
 if( @$_POST['action'] == 'push_order' ) {
@@ -267,7 +267,7 @@ if( @$_POST['action'] == 'push_order' ) {
 
     $_SESSION["fc_data"] = array_merge($_SESSION["fc_data"], $_POST);
     
-    include('temp/sections/your-project-details.php');
+    include('views/sections/your-project-details.php');
     $include = ob_get_contents();
     ob_end_clean();
 
@@ -301,7 +301,7 @@ if( @$_POST['action'] == 'push_order' ) {
 
     $_SESSION['fc_cart'] = $cart_data;
 
-    include('temp/sections/cart-table.php');
+    include('views/sections/cart-table.php');
     $include = ob_get_contents();
     ob_end_clean();
 

@@ -175,7 +175,7 @@
 					
 					<div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
 
-						<div class="fc-p-1">
+						<div class="m-3">
 
 							<table class="fc-table fc-table-customer">
 								<tr>
