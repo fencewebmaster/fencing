@@ -738,6 +738,12 @@ a.fc-tab-active {
   top: 10px;
 }
 
+.fencing-offcut {
+    min-width: 60px;
+    display: flex;
+    justify-content: center;  
+}
+
 .offcut-body {
   padding: 0 5px;
   background: #ffeded;
