@@ -259,6 +259,8 @@ $(document).on('click', '.fencing-modal-content', function(e) {
 
 $(document).on('click', '.fencing-tab', function() {
 
+    $(FENCES.el.fencingContainer).attr('data-key', '');
+
     $('.fencing-tab').removeClass('fencing-tab-selected');
 
     $(this).addClass('fencing-tab-selected');
@@ -542,7 +544,23 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                 var opt = default_value[0],
                     tag = $('.fc-form-field').get(0).tagName.toLowerCase();
 
-                 get_field_value(tag, v?.slug, opt?.slug);      
+
+                // Set overall value for side posts
+                if( v?.slug == 'post_option' && $.inArray(key, ['left_side', 'right_side']) !== -1 ) {
+
+                    var post_options_filtered_data = info.filter(function(item) {
+                        return item.control_key === "post_options";
+                    });
+
+                    var _postValue = post_options_filtered_data[0]?.settings[0]?.val || opt?.slug;
+
+                    get_field_value(tag, v?.slug, _postValue);    
+                    
+                } else {
+                    get_field_value(tag, v?.slug, opt?.slug);          
+                }
+                
+            
             }
 
 
@@ -868,6 +886,9 @@ $(document).on('click', '.fc-select-post', function(){
     }
     
     update_custom_fence(modal_key);
+
+    updateOverallPosts();
+
 });
 
 /*
@@ -1165,7 +1186,6 @@ $('.fencing-display-result').on("mousedown touchstart", function(e) {
     }, 200);
 
 });
-
 
 setTimeout(function(){
     $('.has-clear .form-control').each(function(){

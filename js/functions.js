@@ -336,6 +336,7 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
         return item.default == true;
     });
 
+
     if( post_options_filtered_data.length ) {
 
         //iterate both left and right side and get the values of post_options
@@ -354,48 +355,56 @@ function load_post_options_first_last_values(custom_fence, info, sectionId) {
                     $('#pp-'+sectionId+' .panel-post[data-key='+activeSetting+'], #pp-'+sectionId+' .fencing-panel-spacing-number')
                         .addClass(value)
                         .attr('data-cart-value', value);
+
+                    postValue = post_options_default[0].slug;
+
+ /*                   // Set default option on left side
+                    if( side_post != 'left_side' ) {
+
+                        var left_post_filtered_data = custom_fence.filter(function(item) {
+                            return item.control_key === "left_side";
+                        });
+
+                        var left_post_filtered_data = left_post_filtered_data[0]?.settings.filter(function(item) {
+                            return item.key === "post_option";
+                        });
+
+                        if( left_post_filtered_data ) {
+                            postValue = left_post_filtered_data[0]?.val;
+                        }
+
+                        $('#pp-'+sectionId+' .panel-post.post-left').addClass(postValue);   
+
+                    } 
+
+                    // Set default option on right side
+                    if( side_post != 'right_side' ) {   
+
+                        var right_post_filtered_data = custom_fence.filter(function(item) {
+                            return item.control_key === "right_side";
+                        });
+
+                        var right_post_filtered_data = right_post_filtered_data[0]?.settings.filter(function(item) {
+                            return item.key === "post_option";
+                        });
+
+                        if( right_post_filtered_data ) {
+                            postValue = right_post_filtered_data[0]?.val;
+                        }
+
+                        $('#pp-'+sectionId+' .panel-post.post-right').addClass(postValue);   
+
+                    }*/
+
+
                 }
             }
 
         }
 
-        var side_post = post_options_filtered_data[0].control_key;
     }
 
 
-    postValue = post_options_default[0].slug;
-
-
-    // Set default option on left side
-    if( side_post != 'left_side' ) {
-
-        var left_post_filtered_data = custom_fence.filter(function(item) {
-            return item.control_key === "left_side";
-        });
-
-        if( left_post_filtered_data[0]?.settings[0]?.val) {
-            postValue = left_post_filtered_data[0]?.settings[0]?.val;
-        }
-
-        $('#pp-'+sectionId+' .panel-post.post-left').addClass(postValue);   
-
-    } 
-
-
-    // Set default option on right side
-    if( side_post != 'right_side' ) {   
-
-        var right_post_filtered_data = custom_fence.filter(function(item) {
-            return item.control_key === "right_side";
-        });
-
-        if( right_post_filtered_data[0]?.settings[0]?.val) {
-            postValue = right_post_filtered_data[0]?.settings[0]?.val;
-        }
-        
-        $('#pp-'+sectionId+' .panel-post.post-right').addClass(postValue);   
-
-    }
 
 }
 
@@ -429,14 +438,15 @@ function load_post_options_all(custom_fence, info, tab, calc) {
         return item.control_key === 'right_side';
     });
 
+
     var left_planel_class = right_planel_class = "";
 
     if( modal_key != 'post_options' && left_side_filtered_data.length) {
-        var left_planel_class  = ".post-left";
+        var left_panel_class  = ".post-left";
     }
 
     if( modal_key != 'post_options' && right_side_filtered_data.length ) {
-        var right_planel_class  = ".post-right";
+        var right_panel_class  = ".post-right";
     }
 
     if( post_options_filtered_data.length ) {
@@ -456,12 +466,12 @@ function load_post_options_all(custom_fence, info, tab, calc) {
                 postValue = postValue.concat("+", calc.fence_size.height);
             }
 
-            panel_post.not(left_planel_class)
-                      .not(right_planel_class)
-                      .addClass(post_options_setting.val)
+            panel_post.not(left_panel_class)
+                      .not(right_panel_class)
+                      .addClass(postValue)
                       .attr('data-cart-value', postValue);
 
-            panel_spacing_number.addClass(post_options_setting.val);
+            panel_spacing_number.addClass(postValue);
 
         } 
 
@@ -479,31 +489,50 @@ function load_post_options_all(custom_fence, info, tab, calc) {
             postValue = postValue.concat("+", calc.fence_size.height);
         }
 
-        panel_post.not(left_planel_class)   
-                  .not(right_planel_class)
+        panel_post.not(left_panel_class)   
+                  .not(right_panel_class)
                   .attr('data-cart-value', postValue)
-                  .addClass(post_options_default.slug);
+                  .addClass(postValue);
 
-        panel_spacing_number.addClass(post_options_default.slug);
+        panel_spacing_number.addClass(postValue);
 
     }
 
+
+}
+
+//----------------------------------------------------------------
+
+function updateOverallPosts() {
+
+    var fd = getSelectedFenceData();
+    
+    var i            = fd.slug,
+        tab          = fd.tab,
+        custom_fence = fd.info,
+        info         = fd.data,
+        modalKey     = fd.modalKey;
+
     // Overwrite side panel posts
-    if( modal_key == 'post_options' ) {
+   if( modalKey == 'post_options' ) {
+
+        //Get the settings of post_option from left_side and right_side
+        var post_options_filtered_data = custom_fence.filter(function(item) {
+            return item.control_key === 'post_options';
+        });
+
         $(custom_fence).each(function(k, v){
             if( v.control_key == 'left_side' || v.control_key == 'right_side' ) {
                 $(custom_fence[k].settings).each(function(lok, lov) {
                     if( lov.key == 'post_option' ) {
-                        custom_fence[k].settings[lok].val = post_options_filtered_data[0]?.settings[0]?.val;
+                        custom_fence[k].settings[lok].val = post_options_filtered_data[0].settings[0].val;                
                         localStorage.setItem(`custom_fence-${tab}-${i}`, JSON.stringify(custom_fence));
                     }
                 });
             }
         });
     }
-
 }
-
 //----------------------------------------------------------------
 
 function update_gate(action) {
@@ -837,7 +866,7 @@ function set_cutom_fence_data() {
         tab          = fd.tab,
         custom_fence = fd.info,
         info         = fd.data,
-        tabInfo    = fd.tabInfo;
+        tabInfo      = fd.tabInfo;
 
     var modal_key = fd.modalKey,
         mbn       = fd.mbn;
