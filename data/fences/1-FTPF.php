@@ -5,7 +5,7 @@ $fences['flat_top'] = [
 	'name' => 'FLAT TOP',
 	'slug' => 'flat_top',
 	'panel_group' => 'b',
-	'image' => 'img/fences/webp/ftp.webp',
+	'image' => 'assets/img/fences/webp/ftp.webp',
 	'panel_count' => 4,
 	'color' => ['black', 'white', 'monument'],
 	'settings' => [
@@ -31,7 +31,7 @@ $fences['flat_top'] = [
 							'slug' => 'yes-post',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'img/webp/yes-post.webp',
+							'image' => 'assets/img/webp/yes-post.webp',
 							'default' => TRUE,
 							'title' => '',
 							'size' => [
@@ -42,7 +42,7 @@ $fences['flat_top'] = [
 							'slug' => 'no-post',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'img/webp/no-post-1.webp',
+							'image' => 'assets/img/webp/no-post-1.webp',
 							'title' => '',
 							'size' => [
 								'width' => -50,
@@ -52,7 +52,7 @@ $fences['flat_top'] = [
 							'slug' => 'no-post-swivel-bracket',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'img/webp/no-post-2.webp',
+							'image' => 'assets/img/webp/no-post-2.webp',
 							'title' => '',
 							'size' => [
 								'width' => -50,
@@ -76,7 +76,7 @@ $fences['flat_top'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => '',
-							'image' => 'img/webp/base-plate-posts.webp',
+							'image' => 'assets/img/webp/base-plate-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 							'default' => TRUE,
@@ -84,7 +84,7 @@ $fences['flat_top'] = [
 						[
 							'slug'  => 'opt-2',
 							'title' => '',
-							'image' => 'img/webp/cement-in-posts.webp',
+							'image' => 'assets/img/webp/cement-in-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 						],
@@ -157,7 +157,7 @@ $fences['flat_top'] = [
 						],
 					],
 					'notes' => [
-						'image' => 'img/webp/poolsafe-step-up-panel-v3.webp',
+						'image' => 'assets/img/webp/poolsafe-step-up-panel-v3.webp',
 						'title' => 'When To Use Step-Up Panels',
 						'description' => 'Step-Up panels are used when you need to change the heights or go over an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],
@@ -263,14 +263,14 @@ $fences['flat_top'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => '',
-							'image' => 'img/webp/base-plate-posts.webp',
+							'image' => 'assets/img/webp/base-plate-posts.webp',
 							'extra' => '',
 							'default' => TRUE,
 						],
 						[
 							'slug'  => 'opt-2',
 							'title' => '',
-							'image' => 'img/webp/cement-in-posts.webp',
+							'image' => 'assets/img/webp/cement-in-posts.webp',
 							'extra' => '',
 						],
 					]
@@ -298,7 +298,7 @@ $fences['flat_top'] = [
 							'slug' => 'yes-post',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'img/webp/yes-post.webp',
+							'image' => 'assets/img/webp/yes-post.webp',
 							'default' => TRUE,
 							'title' => '',
 							'size' => [
@@ -309,7 +309,7 @@ $fences['flat_top'] = [
 							'slug' => 'no-post',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'img/webp/no-post-1.webp',
+							'image' => 'assets/img/webp/no-post-1.webp',
 							'title' => '',
 							'size' => [
 								'width' => -50,
@@ -319,7 +319,7 @@ $fences['flat_top'] = [
 							'slug' => 'no-post-swivel-bracket',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'img/webp/no-post-2.webp',
+							'image' => 'assets/img/webp/no-post-2.webp',
 							'title' => '',
 							'size' => [
 								'width' => -50,
@@ -343,7 +343,7 @@ $fences['flat_top'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => '',
-							'image' => 'img/webp/base-plate-posts.webp',
+							'image' => 'assets/img/webp/base-plate-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 							'default' => TRUE,
@@ -351,7 +351,7 @@ $fences['flat_top'] = [
 						[
 							'slug'  => 'opt-2',
 							'title' => '',
-							'image' => 'img/webp/cement-in-posts.webp',
+							'image' => 'assets/img/webp/cement-in-posts.webp',
 							'extra' => '',
 							'key' => 'post_options',
 						],
@@ -424,7 +424,7 @@ $fences['flat_top'] = [
 						],
 					],
 					'notes' => [
-						'image' => 'img/webp/poolsafe-step-up-panel-v3.webp',
+						'image' => 'assets/img/webp/poolsafe-step-up-panel-v3.webp',
 						'title' => 'When To Use Step-Up Panels',
 						'description' => 'Step-Up panels are used when you need to change the heights or go over an object. e,g, over a retaining wall, over a few steps... against a boundary fence etc...',
 					],
