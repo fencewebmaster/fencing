@@ -1,6 +1,6 @@
 <title>Fencing Calculator</title>
 
-<link rel="icon" type="image/x-icon" href="<?php echo base_url(); ?>img/fav.ico">
+<link rel="icon" type="image/x-icon" href="<?php echo base_url(); ?>assets/img/fav.ico">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 

@@ -13,18 +13,7 @@
 </div>
 
 <?php if( in_uri_segment(demo_stages()) ): ?>
-
 <span class="badge bg-danger text-white text-uppercase p-1 is-demo">Demo<br> Version</span>
-
-<style type="text/css">
-.is-demo {
-	position: fixed;
-	bottom: 10px;
-	z-index: 10;
-	left: 10px;	
-	font-size: 10px;
-} 	
-</style>
 <?php endif; ?>
 
 

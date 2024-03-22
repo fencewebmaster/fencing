@@ -491,33 +491,33 @@ $(document).on('click', '.fencing-btn-modal', function(event){
             if( v.type == 'range_option') {
     
                 const Item = ({ image, title, slug, key }) => `
-                <div class="fc-col-4 fc-text-center">
+                <div class="col-sm-4 col-6 mb-2 px-1 text-center">
                     <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
                         <img src="${image}">
                     </div>
                     <p>${title}</p>
                 </div>`;
     
-                modal.el.find('[data-field="range_option"] .fc-row').html(v.options.map(Item).join(''));
+                modal.el.find('[data-field="range_option"] .row').html(v.options.map(Item).join(''));
 
             }
     
             if( v.type == 'text_option') {
     
                 const Item = ({ title, slug, desc }) => `
-                <div class="fc-col-4 fc-text-center">
+                <div class="col-sm-6 col-12 mb-2 text-center px-1">
                     <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
                         <p>${title}<strong>${desc ?? ''}</strong></p>
                     </div>
                 </div>`;
     
-                modal.el.find('[data-field="text_option"] .fc-row').html(v.options.map(Item).join(''));
+                modal.el.find('[data-field="text_option"] .row').html(v.options.map(Item).join(''));
             }
     
             if( v.type == 'image_option') {
     
                 const Item = ({ image, title, extra, slug, key }) => `
-                <div class="fc-col-4 fc-text-center">
+                <div class="col-sm-4 col-6 mb-2 text-center px-1">
                     <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">
                         <img src="${image}" class="fc-fullwidth">        
                     </div>
@@ -525,7 +525,7 @@ $(document).on('click', '.fencing-btn-modal', function(event){
                     <p>${extra}</p>
                 </div>`;
     
-                modal.el.find('[data-field="image_option"] .fc-row').html(v.options.map(Item).join(''));
+                modal.el.find('[data-field="image_option"] .row').html(v.options.map(Item).join(''));
             }
     
                 
@@ -893,7 +893,7 @@ $(document).on('click', '.fc-select-post', function(){
 
 /*
 $(document).on('click', '.fc-select-item', function(){
-    var modal_key = $(this).closest('.fc-row').attr('data-key');
+    var modal_key = $(this).closest('.row').attr('data-key');
     update_custom_fence(modal_key);
 });
 */

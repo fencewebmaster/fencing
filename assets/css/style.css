@@ -1299,6 +1299,7 @@ thead.fc-border th:last-child {
 .fc-row-flex {
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .fc-row-flex-fg-s {
@@ -1797,9 +1798,8 @@ thead.fc-border th:last-child {
   padding: 0;
 }
 .fencing-modal--v2 .fencing-modal-area--gate .fc-col-flex {
-  width: 96px;
   height: 96px;
-  margin-right: 20px;
+  margin-right: 15px;
 }
 .fencing-modal--v2 .fencing-modal-area--gate .fc-col-flex:last-child {
   margin-right: 0;
@@ -1827,7 +1827,6 @@ thead.fc-border th:last-child {
 }
 .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post p {
   position: relative;
-  top: 5px;
   font-weight: 500;
 }
 @media (max-width: 440px) {
@@ -2019,15 +2018,8 @@ thead.fc-border th:last-child {
   border-color: var(--fc-gainsboro);
   height: 59px;
 }
-.fencing-modal--v2 [type=text_option] {
-  display: flex;
-  flex-wrap: wrap;
-}
-@media (max-width: 768px) {
-  .fencing-modal--v2 [type=text_option] {
-    display: block;
-  }
-}
+
+
 .fencing-modal--v2 [type=text_option] .fc-select {
   height: 55px;
   border-radius: 8px;
@@ -4133,7 +4125,6 @@ thead.fc-border th:last-child {
   position: relative;
   padding: 10px;
   border-radius: 8px;
-  margin-bottom: 7px;
   transition: all 0.2s ease;
 }
 .fc-select::after {
@@ -4428,3 +4419,11 @@ thead.fc-border th:last-child {
 .form-control:focus {
   box-shadow: unset !important;
 }
+
+.is-demo {
+  position: fixed;
+  bottom: 10px;
+  z-index: 10;
+  left: 10px; 
+  font-size: 10px !important;
+}   

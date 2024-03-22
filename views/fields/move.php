@@ -2,7 +2,7 @@
 
 	<div class="fencing-modal-header">
 		<div class="fencing-modal-title fc-font-2">Add / Remove Gate</div>
-		<button class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
+		<button type="button" class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
 	</div>
 
 	<div class="fencing-modal-body fc-font-1">
