@@ -573,3 +573,30 @@ function clear_planner_sessions() {
 }
 
 //----------------------------------------------------------------
+
+function load_file($file) {
+
+    return base_url($file).'?v='.filemtime(realpath($file));
+
+}
+
+//----------------------------------------------------------------
+
+function minifiy_css($file ='') {
+
+    if( !file_exists($file) ) return FALSE;
+
+    $css = file_get_contents( $file );
+
+    $css = preg_replace('/\/\*((?!\*\/).)*\*\//', '', $css); // negative look ahead
+    $css = preg_replace('/\s{2,}/', ' ', $css);
+    $css = preg_replace('/\s*([:;{}])\s*/', '$1', $css);
+    $css = preg_replace('/;}/', '}', $css);
+
+    $min_file = str_replace('.css', '.min.css', $file);
+
+    file_put_contents($min_file, $css);
+}
+
+//----------------------------------------------------------------
+

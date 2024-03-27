@@ -81,18 +81,19 @@
 							    </p>
 							</div>
 							
-							<div class="d-grid gap-2">
+							<div class="row">
+								<div class="col-lg col-md-12 col-sm mb-2">
+							        <button type="submit" class="btn btn-submit btn-lg btn-dark text-uppercase w-100 fs-6 text fw-bold">
+							            <i class="fa-solid fa-cart-shopping me-2"></i>
+							            Order Items Now!
+							        </button>		
+								</div>
+								<div class="col-lg col-md-12 col-sm">
+							        <a href="tel:0480016687" class="btn btn-lg btn-secondary text-uppercase w-100 fs-6 text">
+							           	<b><i class="fa-solid fa-phone me-2"></i> Call 04800 166 87</b>
+							        </a>	
+						       </div>									    											
 
-						        <button type="submit" class="btn btn-submit btn-lg btn-dark text-uppercase w-100 fs-6 text fw-bold">
-						            <i class="fa-solid fa-cart-shopping me-2"></i>
-						            Order Items Now!
-						        </button>
-																			
-						        <a href="tel:0480016687" class="btn btn-lg btn-secondary text-uppercase w-100 fs-6 text">
-						           	Speak To Trade Support<br>
-						           	<b><i class="fa-solid fa-phone me-2"></i> 0480016687</b>
-						        </a>										    		
-			
 							</div>
 
 						</div>

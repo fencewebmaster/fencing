@@ -41,18 +41,22 @@
 
 
 <!-- Required Libraries -->
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/jquery.validate.min.js"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/jquery-scrollspy.min.js"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/jquery-3.3.1.min.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/jquery.validate.min.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/jquery-scrollspy.min.js'); ?>"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 
 <!-- Scripts -->
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/main.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/modal.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/functions.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/events.js?v=<?php echo date('YmdHis'); ?>"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/calc.js?v=<?php echo date('YmdHis'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/main.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/modal.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/helpers.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/functions.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/events.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo load_file('assets/js/calc.js'); ?>"></script>
+
+
+<?php include 'assets/js/fences/fences.php'; ?>
 
 <?php if( !in_uri_segment(demo_stages()) ): ?>
 <!-- Chatra {literal} -->

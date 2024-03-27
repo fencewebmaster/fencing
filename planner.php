@@ -36,7 +36,6 @@ if( ! @$_SESSION["site"] ) {
 }
 
 include 'data/settings.php';
-include 'views/fields.php';
 include 'config/database.php'; 
 
 $res = array();
@@ -160,6 +159,8 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
 
         <?php include 'views/planner/modals.php'; ?>
 
+        <?php include 'views/fields.php'; ?>
+
         <script type="text/javascript">
         var fc_data       = <?php echo json_encode($fences); ?>;
         var fc_fence_info = <?php echo json_encode($res); ?>;
@@ -168,8 +169,8 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
 
         <?php include 'views/partials/footer.php'; ?>
 
-        <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/cart-items.js?v=<?php echo date('YmdHis'); ?>"></script>
-        <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/p1.js?v=<?php echo date('YmdHis'); ?>"></script>
+        <script type="text/javascript" src="<?php echo load_file('assets/js/cart-items.js'); ?>"></script>
+        <script type="text/javascript" src="<?php echo load_file('assets/js/p1.js'); ?>"></script>
 
     </body>
 </html>

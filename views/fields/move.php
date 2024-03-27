@@ -16,27 +16,32 @@
 				<div class="fc-row-flex">
 					<div class="fc-col-flex fc-text-center">
 						<div class="fc-move-post" data-move="first">	
-							<p><span>&#8676;</span><br>First</p>
+							<p><span><i class="fa-solid fa-angles-left"></i></span>
+							First</p>
 						</div>
 					</div>
 					<div class="fc-col-flex fc-text-center">
 						<div class="fc-move-post" data-move="left">	
-							<p><span>&#8592;</span><br>Left</p>
+							<p><span><i class="fa-solid fa-angle-left"></i></span>
+							Left</p>
 						</div>
 					</div>
 					<div class="fc-col-flex fc-text-center">
 						<div class="fc-move-post" data-move="delete">	
-							<p><span>&#10005;</span><br>Delete</p>
+							<p><span><i class="fa-solid fa-xmark"></i></span>
+							Delete</p>
 						</div>
 					</div>
 					<div class="fc-col-flex fc-text-center">
 						<div class="fc-move-post" data-move="right">	
-							<p><span>&#8594;</span><br>Right</p>
+							<p><span><i class="fa-solid fa-angle-right"></i></span>
+							Right</p>
 						</div>
 					</div>
 					<div class="fc-col-flex fc-text-center">
 						<div class="fc-move-post" data-move="last">	
-							<p><span>&#8677;</span><br>Last</p>
+							<p><span><i class="fa-solid fa-angles-right"></i></span>
+							Last</p>
 						</div>
 					</div>
 				</div>	

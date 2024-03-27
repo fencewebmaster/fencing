@@ -7,21 +7,25 @@
 
 	<div class="fencing-measurement-box mb-3 fc-input-group">
 
-	    <span class="fencing-mb-input">
+	    <div class="fencing-mb-input">
 
-	        <input name="width" type="text" class="numeric fc-form-field py-1" input-type="number" data-min="300" data-max="{{maxWidth}}"> 
+	        <div class="d-flex align-items-center">
+
+	            <div class="fencing-qty-minus fencing-qty-btn px-3">
+	                <i class="fa fa-minus"></i>
+	            </div>
+	            
+	   	        <input name="width" type="text" class="numeric fc-form-field text-center py-1" input-type="number" data-min="300" data-max="{{maxWidth}}"> 
 	        
-	        <span>mm</span>				
-	        
-	        <div class="fencing-qty-plus fencing-qty-btn">
-	            <img src="img/quantity-plus.png" alt="" title="">
+	            <span class="me-2">mm</span>   
+
+	            <div class="fencing-qty-plus fencing-qty-btn px-3 ms-2">
+	                <i class="fa fa-plus"></i>
+	            </div>
+
 	        </div>
 
-	        <div class="fencing-qty-minus fencing-qty-btn">
-	            <img src="img/quantity-minus.png" alt="" title="">
-	        </div>
-
-	    </span>
+	    </div>
 
 	    <button type="button" class="btn btn-dark px-4 text-uppercase py-2 fw-bold"><small>Calculate</small></button>
 

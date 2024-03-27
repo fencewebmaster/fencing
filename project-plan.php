@@ -87,14 +87,14 @@
 
 		<!-- Config -->
 		<script type="text/javascript">
-		var fc_data = <?php echo json_encode($fences); ?>;
+		var fc_data  = <?php echo json_encode($fences); ?>;
 		var base_url = '<?php echo base_url(); ?>';	
 		</script>
 
 		<?php include 'views/partials/footer.php'; ?>	
 
-		<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/checkout.js?v=<?php echo date('YmdHis'); ?>"></script>
-		<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/p2.js?v=<?php echo date('YmdHis'); ?>"></script>
+		<script type="text/javascript" src="<?php echo load_file('assets/js/checkout.js'); ?>"></script>
+		<script type="text/javascript" src="<?php echo load_file('assets/js/p2.js'); ?>"></script>
 
 	</body>
 </html>

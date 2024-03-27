@@ -20,23 +20,27 @@
                                             
                                             <div class="fencing-measurement-box">
                                             
-                                                <span class="fencing-mb-input">
-                                                    
-                                                    <input type="text" class="measurement-box-number numeric py-1" data-min="300" data-max="100000" value=""> 
-                                                    
-                                                    <span>mm</span>             
-                                                    
-                                                    <div class="fencing-qty-plus fencing-qty-btn">
-                                                        <img src="<?php echo base_url(); ?>assets/img/webp/quantity-plus.webp" alt="" title="">
+                                                <div class="fencing-mb-input">
+
+                                                    <div class="d-flex align-items-center">
+
+                                                        <div class="fencing-qty-minus fencing-qty-btn px-3">
+                                                            <i class="fa fa-minus"></i>
+                                                        </div>
+                                                        
+                                                        <input type="text" class="measurement-box-number numeric text-center py-1" data-min="300" data-max="100000" value=""> 
+                                                        
+                                                        <span>mm</span>   
+
+                                                        <div class="fencing-qty-plus fencing-qty-btn px-3 ms-2">
+                                                            <i class="fa fa-plus"></i>
+                                                        </div>
+
                                                     </div>
 
-                                                    <div class="fencing-qty-minus fencing-qty-btn">
-                                                        <img src="<?php echo base_url(); ?>assets/img/webp/quantity-minus.webp" alt="" title="">
-                                                    </div>
+                                                </div>
 
-                                                </span>
-
-                                                <button type="button" class="btn btn-dark py-3 text-uppercase btn-fc-calculate px-3 fw-bold"><small>Calculate</small></button>
+                                                <button type="button" class="btn btn-dark text-uppercase btn-fc-calculate px-3 fw-bold"><small>Calculate</small></button>
 
                                             </div>
 
