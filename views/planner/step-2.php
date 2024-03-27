@@ -28,7 +28,7 @@
                                                             <i class="fa fa-minus"></i>
                                                         </div>
                                                         
-                                                        <input type="text" class="measurement-box-number numeric text-center py-1" data-min="300" data-max="100000" value=""> 
+                                                        <input type="text" class="measurement-box-number numeric text-center py-1" data-min="300" data-max="10000" maxlength="5" value=""> 
                                                         
                                                         <span>mm</span>   
 

@@ -153,6 +153,7 @@ function fencingQtyPlus() {
 
     if (!val) {
         input.val(max);
+        measurementBoxNumber();
     } else {
         if (val < max) {
             input.val(parseInt(val) + 1);
@@ -929,9 +930,9 @@ function numeric(event) {
 
 //----------------------------------------------------------------------------------
 
-_doc.on('keypress', '.measurement-box-number', measurementBoxNumber);
+_doc.on('keypress', '.measurement-box-number', measurementBoxNumber_kp);
 
-function measurementBoxNumber(e) {
+function measurementBoxNumber_kp(e) {
     if (event.which == 13) {
         btnFcCalculate();
         e?.preventDefault();
@@ -1124,7 +1125,7 @@ _doc.on('keyup', '.measurement-box-number', measurementBoxNumber);
 
 function measurementBoxNumber() {
 
-    var _this = $(this);
+    var _this = $('.measurement-box-number');
 
     _this.closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
 

@@ -643,7 +643,7 @@ FENCE = {
         var panel_size = calc.gate.length,
             panel_unit = FENCES.defaultValues.unit,
             gate_size = calc.gate.width;
-
+console.log(action);
         if (action == 'add' || action == 'edit') {
 
             if (placement == -1) {
