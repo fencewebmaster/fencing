@@ -300,7 +300,7 @@ function fencingTabAdd(e) {
     
     setTimeout(function(){
         $('[data-section="1"]').scrollTo(100, 110);
-    });
+    }, 500);
 }
 
 //----------------------------------------------------------------------------------
@@ -327,7 +327,10 @@ function fcFenceResetAll(e) {
 
     });
 
-    $('[data-section="1"]').scrollTo(100, 110);
+    setTimeout(function(){
+        $('[data-section="1"]').scrollTo(100, 110);
+    }, 500);
+    
 }
 
 //----------------------------------------------------------------------------------
@@ -383,7 +386,9 @@ function jsBtnDeleteFence(e) {
     refreshLocalStorage(getActiveTabIndex, 'cart_items');
     HELPER.hideDeleteSectionBtn();
 
-    $('[data-section="1"]').scrollTo(100, 110);
+    setTimeout(function(){
+        $('[data-section="1"]').scrollTo(100, 110);
+    }, 500);
 }
 
 //----------------------------------------------------------------------------------
