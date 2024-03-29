@@ -18,7 +18,7 @@
                 </div>
                 <?php endif; ?>
 
-                <div class="step-label">Step <span>03</span></div>
+                <div class="step-label" data-action="scroll" data-target="[data-section=3]" data-offset="54">Step <span>03</span></div>
 
                 <h4 class="fencing-content-title fc-mb-2">Configure this fence section</h4>
 

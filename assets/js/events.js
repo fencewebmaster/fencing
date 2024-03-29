@@ -296,7 +296,7 @@ function fencingTabAdd(e) {
 
     HELPER.tabContainerScroll(_this);
     
-    $('[data-section="1"]').scrollTo(100, 112);
+    $('[data-section="1"]').scrollTo(100, 110);
 }
 
 //----------------------------------------------------------------------------------
@@ -312,7 +312,7 @@ function fcFenceResetAll(e) {
     setTimeout(function() {
         $('.fsi-selected').removeClass('fsi-selected');
         $('.fencing-tab-selected').find('.ftm-measurement').html('');
-        $('.fc-content-tab-title').html('');
+        $('.fc-tab-title, .fc-tab-subtitle').html('');
         $('.measurement-box-number').val('');
 
         localStorage.removeItem('custom_fence-' + tab);
@@ -321,7 +321,21 @@ function fcFenceResetAll(e) {
         $('.js-fc-form-step').fadeOut('fast');
         $('.fc-fence-reset-all').hide();
 
+        $('[data-section="1"]').scrollTo(100, 110);
+
     });
+}
+
+//----------------------------------------------------------------------------------
+
+_doc.on('click', '[data-action="scroll"]', scrollToTarget);
+
+function scrollToTarget() {
+    var _this = $(this),
+        target = _this.attr('data-target'),
+        offset = _this.attr('data-offset');
+
+    $(target).scrollTo(100, offset);
 }
 
 //----------------------------------------------------------------------------------
@@ -365,6 +379,7 @@ function jsBtnDeleteFence(e) {
     refreshLocalStorage(getActiveTabIndex, 'cart_items');
     HELPER.hideDeleteSectionBtn();
 
+    $('[data-section="1"]').scrollTo(100, 110);
 }
 
 //----------------------------------------------------------------------------------
@@ -663,7 +678,7 @@ function btnFcCalculate() {
 _doc.on('click', '.btn-fc-calculate', btnFcCalculate_v2);
 
 function btnFcCalculate_v2() {
-    $('[data-section="3"]').scrollTo(100, 57);
+    $('[data-section="3"]:visible').scrollTo(100, 57);
 }
 
 
@@ -943,7 +958,7 @@ function measurementBoxNumber_kp(e) {
         btnFcCalculate();
         e?.preventDefault();
 
-        $('[data-section="3"]').scrollTo(100, 57);
+        $('[data-section="3"]:visible').scrollTo(100, 57);
     }
 }
 

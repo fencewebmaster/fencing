@@ -7,7 +7,7 @@
             
             <div class="col-lg-5 col-md-6 fc-input-container mb-3">
                 
-                <div class="step-label mb-2">Step <span>02</span></div>
+                <div class="step-label mb-2" data-action="scroll" data-target="[data-section=2]" data-offset="54">Step <span>02</span></div>
 
                 <h4 class="fencing-content-title mb-2">Enter the overall length (mm)</h4>
 

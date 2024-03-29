@@ -5,7 +5,7 @@
 
         <div class="row align-items-center">
             <div class="col-sm mb-sm-0 mb-3">
-                <div class="step-label">Step <span>01</span></div>
+                <div class="step-label" data-action="scroll" data-target="[data-section=1]" data-offset="46">Step <span>01</span></div>
 
                 <h4 class="fencing-content-title">Choose Your Fencing Style</h4>                                    
             </div>
