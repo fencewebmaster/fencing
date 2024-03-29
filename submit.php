@@ -61,7 +61,7 @@ foreach($cart_items_regrouped as $cir_k => $cir_items) {
 
 post_product_skus($cart_items_data);
 
-// END - GET PRODUCTS FROM THE STORE
+// [END] - GET PRODUCTS FROM THE STORE
 
 // Save or update planner
 $info = $_SESSION;

@@ -97,7 +97,7 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
                     </div>
                 </div>
 
-                <!-- START TABS -->
+                <!-- [START] TABS -->
                 <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 mt-3" data-tab="1">
                     <div class="fencing-tabs-area bg-white" data-spy="scroll" data-screen="0" data-target=".js-fencing-tabs-container">
                         <div class="fencing-tabs fc-row-flex">
@@ -113,12 +113,12 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
                     </div>
                     </div>
                 </div>
-                <!-- END TABS -->
+                <!-- [END] TABS -->
 
                 <div class="fc-section-details">       
 
-                    <!-- START TABS -->
-                    <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" style="display:none;">
+                    <!-- [START] TABS -->
+                    <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" data-section="4" style="display:none;">
                         <div class="fc-header-tab__area">
                             <a href="#" class="fc-btn-step" data-tab="2" data-move="1">
                                 <div class="fencing-tab-name">Section Details</div>

@@ -230,7 +230,7 @@ if( @$_POST['action'] == 'push_order' ) {
 
 } elseif( in_array(@$_POST['action'], ['update_details', 'update_project_details']) ) {
 
-    /* START UPDATE item list & cart */
+    /* [START] UPDATE item list & cart */
     $color = $_SESSION["fc_data"]['color'];
 
 
@@ -257,7 +257,7 @@ if( @$_POST['action'] == 'push_order' ) {
         post_product_skus($custom_fence_data);
 
     }
-    /* END UPDATE item list & cart */
+    /* [END] UPDATE item list & cart */
 
     $_POST['extra'] = convert_inputs($_POST['extra']);
     $_POST['color'] = convert_inputs($_POST['color']);

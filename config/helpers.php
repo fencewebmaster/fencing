@@ -403,7 +403,7 @@ function post_product_skus($cart_items = array()) {
 
     }
 
-    // START - GET PRODUCTS FROM THE STORE
+    // [START] - GET PRODUCTS FROM THE STORE
 	/*    
 	$curl = curl_init();
 

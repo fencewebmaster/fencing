@@ -1,4 +1,4 @@
-<!-- START TABS -->
+<!-- [START] TABS -->
 <div class="fencing-tabs-container fencing-tabs-container--project-plan fc-section-step fc-d-none fc-font-2 mt-3" data-tab="1">
     <div class="fencing-tabs-area">
         <div class="fencing-tabs fc-row-flex">
@@ -28,4 +28,4 @@
     </div>
     </div>
 </div>
-<!-- END TABS -->
+<!-- [END] TABS -->

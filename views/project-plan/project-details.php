@@ -1,4 +1,4 @@
-<!-- START PROJECT DETAILS -->
+<!-- [START] PROJECT DETAILS -->
 <div class="fencing-section fencing-section--has-border br-tl-0 br-tr-md-0">
 
 	<!-- [START] Step 5 | Edit Controls -->
@@ -35,5 +35,5 @@
 		<?php include 'views/sections/your-project-details.php'; ?>						
 	</div>
 
-	<!-- END PROJECT DETAILS -->
+	<!-- [END] PROJECT DETAILS -->
 </div>

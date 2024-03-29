@@ -3,7 +3,7 @@ var _doc = $(document),
 
 /*
     ----------------------------------------------------------------
-    START CLICK EVENT
+    [START] CLICK EVENT
     ----------------------------------------------------------------
 */
 
@@ -83,46 +83,10 @@ function btnGate() {
         return;
     }
 
+    updateOverAllonGate();
+
     FENCE.call('update_gate', 'add');
     FENCE.call('update_custom_fence_gate');
-
-    /*
-    setTimeout(function(){
-
-
-        if( $('.fencing-panel-gate').length ) {
-            var fd = getSelectedFenceData();
-
-            var tabInfo = fd.tabInfo,
-                custom_fence = fd.info,
-                data = fd.data;
-
-            var mbn = parseInt(tabInfo[0].calculateValue),
-                defaultGateSize = data.settings.gate.size.width;
-                gateSize = defaultGateSize,
-                rakedSize = 0;
-
-            var gate_data = custom_fence.filter(function(item) {
-                return item.control_key == 'gate';
-            });
-
-            if( gate_data.length ) {   
-                if( gate_data[0]?.settings.size ) {
-                    gateSize = parseInt(gate_data[0]?.settings.size);  
-                } else {
-                    gateSize  = parseInt(info.settings.gate.size.width);   
-                }
-            }            
-
-            $('.measurement-box-number').val( mbn + gateSize );
-
-            $('.btn-fc-calculate').trigger('click');
-        }
-
-    });
-    */
-
-    // $('.btn-fc-calculate').trigger('click');
 
 }
 
@@ -134,10 +98,11 @@ function fcMovePost() {
 
     var _this = $(this),
         move = _this.data('move'),
-        gate = $('.fencing-panel-gate');
+        gate = $('.fencing-panel-gate:visible');
 
     FENCE.call('move_the_gate', move);
 
+    $('[data-section="3"]').scrollTo(100, 57);
 }
 
 //----------------------------------------------------------------------------------
@@ -154,6 +119,12 @@ function fencingQtyPlus() {
     if (!val) {
         input.val(max);
         measurementBoxNumber();
+
+        _this.closest('.fc-input-container').find('[type="button"]').removeAttr('disabled')
+            .removeClass('disabled')
+            .removeClass('btn-light')
+            .addClass('btn-dark');
+        
     } else {
         if (val < max) {
             input.val(parseInt(val) + 1);
@@ -318,9 +289,14 @@ _doc.on('click', '.fencing-tab-add', fencingTabAdd);
 
 function fencingTabAdd(e) {
     var _this = $(this);
+    
     e?.preventDefault();
+    
     FENCE.call('add_new_fence_section');
+
     HELPER.tabContainerScroll(_this);
+    
+    $('[data-section="1"]').scrollTo(100, 112);
 }
 
 //----------------------------------------------------------------------------------
@@ -552,6 +528,13 @@ function fencingBtnModal(event) {
 
         });
 
+
+
+        // Disable gate controls
+        if( $('.fencing-panel-item').length == 1 ) {
+            $('.fc-move-post:not([data-move="delete"])').addClass('disabled');
+        }
+
         // Custom gate
         if (data?.settings[key]?.custom) {
 
@@ -604,6 +587,11 @@ function btnFcCalculate() {
         custom_fence_tabs = localStorage.getItem('custom_fence-' + tab),
         custom_fence_tab = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
 
+
+    if( $('.fencing-panel-gate:visible').length ) {
+        updateOverAllonGate();
+    }
+
     box.attr('data-last', box.val());
 
     if (!$('.measurement-box-number').val()) {
@@ -623,6 +611,9 @@ function btnFcCalculate() {
 
     setTimeout(function() {
 
+        if ($('.fencing-panel-gate:visible').length) {
+            FENCE.call('update_gate', 'add');
+        }
 
         $('.fc-btn-next-step').attr('disabled', 'disabled');
 
@@ -638,14 +629,14 @@ function btnFcCalculate() {
 
             var alert = [];
 
-            if ($('.fencing-panel-gate').length) {
+            if ($('.fencing-panel-gate:visible').length) {
                 alert.push('gate');
             }
             if ($('.fencing-raked-panel').length) {
                 alert.push('step up');
             }
 
-            if ($('.fencing-raked-panel').length || $('.fencing-panel-gate').length) {
+            if ($('.fencing-raked-panel').length || $('.fencing-panel-gate:visible').length) {
                 var alert_msg = 'Invalid, remove ' + alert.join(' or ') + ' first';
 
                 $('.measurement-box-number').closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert_msg);
@@ -656,7 +647,7 @@ function btnFcCalculate() {
             }, 5000);
         }
 
-    }, 200);
+    });
 
     // Save custom fields changes
     custom_fence_tab[0].fields = $('[data-action="change"] .form-control').serializeArray();
@@ -666,6 +657,15 @@ function btnFcCalculate() {
     localStorage.setItem('custom_fence-' + tab, JSON.stringify(custom_fence_tab));
 
 }
+
+//----------------------------------------------------------------------------------
+
+_doc.on('click', '.btn-fc-calculate', btnFcCalculate_v2);
+
+function btnFcCalculate_v2() {
+    $('[data-section="3"]').scrollTo(100, 57);
+}
+
 
 //----------------------------------------------------------------------------------
 
@@ -720,6 +720,8 @@ function fcSelectPost() {
 
     FENCE.call('update_custom_fence', modal_key);
     FENCE.call('updateOverallPosts');
+
+    $('[data-section="3"]').scrollTo(100, 57);
 
 }
 
@@ -789,6 +791,8 @@ function fcBtnStep(e) {
 
     var _this = $(this);
     var tab = _this.attr('tab'),
+        section = _this.attr('data-section'),
+        offset = _this.attr('data-offset'),
         move = _this.attr('data-move');
 
     $('.fc-section-step').hide();
@@ -811,6 +815,8 @@ function fcBtnStep(e) {
     if (move == 1) {
         $('.fencing-tab.fencing-tab-selected:visible').trigger('click');
     }
+
+    $('[data-section="'+section+'"]').scrollTo(100, offset);
 }
 
 //----------------------------------------------------------------------------------
@@ -885,7 +891,7 @@ function use_std(e) {
 
     $('[name="width"]').removeAttr('readonly').removeClass('disabled text-muted').val('').focus();
     $('.fencing-qty-btn').removeClass('disabled');
-    $('.custom-gate button').removeAttr('disabled').removeClass('btn-light').addClass('btn-dark');
+    $('.custom-gate button').removeAttr('disabled').removeClass('disabled btn-light').addClass('btn-dark');
 
     // 975 default gate width
 
@@ -900,12 +906,12 @@ function use_std(e) {
 }
 
 /* ----------------------------------------------------------------
-    END CLICK EVENT
+    [END] CLICK EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START KEYPRESS EVENT
+    [START] KEYPRESS EVENT
     ---------------------------------------------------------------- */
 
 _doc.on('keypress', '.numeric', numeric);
@@ -936,6 +942,8 @@ function measurementBoxNumber_kp(e) {
     if (event.which == 13) {
         btnFcCalculate();
         e?.preventDefault();
+
+        $('[data-section="3"]').scrollTo(100, 57);
     }
 }
 
@@ -972,25 +980,13 @@ function noSpace(e) {
 }
 
 /* ----------------------------------------------------------------
-    END KEYPRESS EVENT
+    [END] KEYPRESS EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START CHANGE EVENT
+    [START] CHANGE EVENT
     ---------------------------------------------------------------- */
-
-_doc.on('change', '.fc-select-option', function(event) {
-
-    var side = ['left_raked', 'right_raked'];
-
-    $('.raked-panel').html('');
-
-    FENCE.call('update_raked_panels', side);
-
-});
-
-//----------------------------------------------------------------------------------
 
 _doc.on('change', '.fc-select-option', fcSelectOption);
 
@@ -1037,13 +1033,32 @@ function fcSelectOption() {
 
 }
 
+//----------------------------------------------------------------------------------
+
+_doc.on('change', '.fc-select-option', fcSelectOption_v2);
+
+function fcSelectOption_v2() {
+
+    var side = ['left_raked', 'right_raked'];
+
+    $('.raked-panel').html('');
+
+    FENCE.call('update_raked_panels', side);
+
+    $('[data-section="3"]').scrollTo(100, 57);
+
+}
+
+//----------------------------------------------------------------------------------
+
+
 /* ----------------------------------------------------------------
-    END CHANGE EVENT
+    [END] CHANGE EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START KEYDOWN EVENT
+    [START] KEYDOWN EVENT
     ---------------------------------------------------------------- */
 
 _doc.on('keydown', function(e) {
@@ -1055,12 +1070,12 @@ _doc.on('keydown', function(e) {
 });
 
 /* ----------------------------------------------------------------
-    END KEYDOWN EVENT
+    [END] KEYDOWN EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START KEYUP EVENT
+    [START] KEYUP EVENT
     ---------------------------------------------------------------- */
 
 _doc.on('keyup', '.has-clear .form-control', hasClear_formControl);
@@ -1088,7 +1103,10 @@ function inputType_number() {
         max = parseInt(_this.attr('data-max'));
 
     _this.closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
-    _this.closest('.fc-input-container').find('[type="button"]').removeAttr('disabled').removeClass('disabled');
+    _this.closest('.fc-input-container').find('[type="button"]').removeAttr('disabled')
+        .removeClass('disabled')
+        .removeClass('btn-light')
+        .addClass('btn-dark');
 
     if (_this.val() < min || _this.val() > max) {
 
@@ -1106,7 +1124,9 @@ function inputType_number() {
 
         _this.closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert);
 
-        _this.closest('.fc-input-container').find('[type="button"]').attr('disabled', 'disabled').addClass('disabled');
+        _this.closest('.fc-input-container').find('[type="button"]').attr('disabled', 'disabled')
+            .removeClass('btn-dark')
+            .addClass('btn-light disabled');
 
         if (alert.length) {
             _this.closest('.fc-input-container')
@@ -1132,7 +1152,7 @@ function measurementBoxNumber() {
     var min = parseInt(_this.attr('data-min')),
         max = parseInt(_this.attr('data-max'));
 
-    $('.btn-fc-calculate').removeAttr('disabled');
+    $('.btn-fc-calculate').removeAttr('disabled').removeClass('btn-light disabled').addClass('btn-dark');
 
     if (_this.val() < min || _this.val() > max) {
 
@@ -1150,12 +1170,12 @@ function measurementBoxNumber() {
 
         _this.closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert);
 
-        $('.btn-fc-calculate').attr('disabled', 'disabled');
-
+        $('.btn-fc-calculate').attr('disabled', 'disabled').removeClass('btn-dark').addClass('btn-light disabled');
         // 2nd validation
+        /*
         var alert = [];
 
-        if ($('.fencing-panel-gate').length) {
+        if ($('.fencing-panel-gate:visible').length) {
             alert.push('gate');
         }
         if ($('.fencing-raked-panel').length) {
@@ -1163,12 +1183,13 @@ function measurementBoxNumber() {
         }
 
         var alert_msg = 'Invalid, remove ' + alert.join(' or ') + ' first';
+        */
 
         if (alert.length) {
             $('.measurement-box-number').closest('.fc-input-container')
                 .find('.fc-input-msg')
                 .addClass('fcim-show')
-                .html(alert_msg);
+                .html(alert);
         }
 
     }
@@ -1177,12 +1198,12 @@ function measurementBoxNumber() {
 }
 
 /* ----------------------------------------------------------------
-    END KEYUP EVENT
+    [END] KEYUP EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START CHANGE EVENT
+    [START] CHANGE EVENT
     ---------------------------------------------------------------- */
 
 _doc.on('input change', '.fencing-input-range input', fencingInputRange_input);
@@ -1210,12 +1231,12 @@ function fcFormField_select() {
 }
 
 /* ----------------------------------------------------------------
-    END CHANGE EVENT
+    [END] CHANGE EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START RESIZE EVENT
+    [START] RESIZE EVENT
     ---------------------------------------------------------------- */
 
 // Initiate tab container scroll on window resize
@@ -1244,12 +1265,12 @@ _win.on('scroll resize', function() {
 });
 
 /* ----------------------------------------------------------------
-    END RESIZE EVENT
+    [END] RESIZE EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START MOUSEDOWN EVENT
+    [START] MOUSEDOWN EVENT
     ---------------------------------------------------------------- */
 
 // https://stackoverflow.com/questions/19743228/scroll-the-page-on-drag-with-jquery
@@ -1269,12 +1290,12 @@ $('.fencing-display-result').mousedown(function(e) {
 }).mouseleave(end);
 
 /* ----------------------------------------------------------------
-    END MOUSEDOWN EVENT
+    [END] MOUSEDOWN EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START MOUSEUP / TOUCHEND EVENT
+    [START] MOUSEUP / TOUCH[END] EVENT
     ---------------------------------------------------------------- */
 
 _doc.on('mouseup touchend', '.fencing-display-result', mu_fencingDisplayResult);
@@ -1310,12 +1331,12 @@ function md_fencingDisplayResult() {
 }
 
 /* ----------------------------------------------------------------
-    END MOUSEUP / TOUCHEND EVENT
+    [END] MOUSEUP / TOUCH[END] EVENT
     ---------------------------------------------------------------- */
 
 
 /* ----------------------------------------------------------------
-    START TIMEOUT
+    [START] TIMEOUT
     ---------------------------------------------------------------- */
 
 setTimeout(function() {
@@ -1329,7 +1350,7 @@ setTimeout(function() {
 
 
 /* ----------------------------------------------------------------
-    START VALIDATE
+    [START] VALIDATE
     ---------------------------------------------------------------- */
 // https://jqueryvalidation.org/validate/
 
@@ -1367,5 +1388,5 @@ $("#fc-planning-form").validate({
 });
 
 /* ----------------------------------------------------------------
-    END START VALIDATE
+    [END] [START] VALIDATE
     ---------------------------------------------------------------- */

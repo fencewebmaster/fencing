@@ -15,7 +15,7 @@
 	                <i class="fa fa-minus"></i>
 	            </div>
 	            
-	   	        <input name="width" type="text" class="numeric fc-form-field text-center py-1" input-type="number" data-min="300" data-max="{{maxWidth}}"> 
+	   	        <input name="width" type="text" class="numeric fc-form-field text-center py-1" input-type="number" data-min="300" maxlength="6" data-max="{{maxWidth}}"> 
 	        
 	            <span class="me-2">mm</span>   
 

@@ -1,4 +1,4 @@
-<div class="fc-section-step fc-d-none fc-step-4 mb-5" data-tab="2" style="display: none;">
+<div class="fc-section-step fc-step-4 mb-5" data-tab="2" style="display: none;">
     
     <div class="fencing-section fencing-section--no-padding fencing-section--has-border br-tl-0">
         
@@ -20,9 +20,7 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group has-clear position-relative">
-                                        <textarea name="notes" 
-                                    placeholder="Write your notes here" 
-                                    class="form-control fc-form-control--textarea" rows="7"><?php echo @$info['notes']; ?></textarea>                                                        
+                                        <textarea name="notes" placeholder="Write your notes here" class="form-control fc-form-control--textarea" rows="7"><?php echo @$info['notes']; ?></textarea>                                                        
                                     </div>
                                 </div>
                             </div>
@@ -47,7 +45,9 @@
                         
                         <button type="button" 
                             class="btn fc-btn-step btn-secondary text-uppercase py-3 px-4 mb-2" 
-                            data-tab="2" 
+                            data-tab="2"
+                            data-section="1" 
+                            data-offset="110"
                             data-move="1"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b>
                         </button>
 

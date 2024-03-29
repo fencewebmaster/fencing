@@ -24,15 +24,15 @@
 	</head>
 	<body>
 
-		<!-- START FENCING CONTAINER -->
+		<!-- [START] FENCING CONTAINER -->
 		<div id="place_order-section" class="fencing-container container-lg fc-project-plan fc-position-relative mt-5" data-tab="1">
 
-			<!-- START CHECKOUT FORM -->
+			<!-- [START] CHECKOUT FORM -->
 			<form method="POST" id="paymentFrm" action="<?php echo base_url('checkout.php'); ?>">
 
 				<input type="hidden" name="action" value="">
 
-				<!-- START PAGE HEADER TITLE -->
+				<!-- [START] PAGE HEADER TITLE -->
 		        <div class="fencing-container__header">
 		            <div class="row align-items-center">
 
@@ -52,11 +52,11 @@
 
 		            </div>
 		        </div>
-				<!-- END PAGE HEADER TITLE -->
+				<!-- [END] PAGE HEADER TITLE -->
 
 				<?php include 'views/project-plan/header-tabs.php'; ?>
 
-				<!-- START FENCING CONTENT -->
+				<!-- [START] FENCING CONTENT -->
 				<div class="fencing-content fc-font-1">
 
 				    <div class="fc-section-step">
@@ -72,16 +72,16 @@
 				        </div>
 				    </div>
 				</div>
-				<!-- END FENCING CONTENT -->
+				<!-- [END] FENCING CONTENT -->
 
 		    	<?php include 'views/modal/submit/view-2.php'; ?>
 
 
 			</form>
-			<!-- END CHECKOUT FORM -->
+			<!-- [END] CHECKOUT FORM -->
 		    
 		</div>
-		<!-- END FENCING CONTAINER -->
+		<!-- [END] FENCING CONTAINER -->
 
 		<?php include 'views/project-plan/modals.php'; ?>
 

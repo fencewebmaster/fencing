@@ -67,14 +67,14 @@
 
                     <?php include 'views/modal/submit/form/other-items-needed.php'; ?>                        
 
-                    <!-- START FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
+                    <!-- [START] FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
                    <div class="d-grid gap-2">
                         <button type="submit" 
                             class="btn btn-lg project-details--update btn-orange text-uppercase">
                             <b>Update</b>
                         </button>
                     </div>
-                    <!-- END FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
+                    <!-- [END] FORM MODAL ACTIONS - STEP 4 | SUBMIT -->
 
                 </div>
             </div>

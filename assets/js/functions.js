@@ -715,7 +715,7 @@ function extra_fields() {
     var modal_key = fd.modKey,
         mbn = fd.mbn;
 
-    // START FORM FIELDS ON STEP 3
+    // [START] FORM FIELDS ON STEP 3
     $('[data-action="change"]').html('');
 
     $.each(info.form, function(k, v) {
@@ -748,7 +748,7 @@ function extra_fields() {
             $('[name=' + v.name + ']').val(v.value);
         }
     });
-    // END FORM FIELDS ON STEP 3
+    // [END] FORM FIELDS ON STEP 3
 
 }
 
@@ -805,7 +805,8 @@ function computeOverallraked(value, side, leftRakedBefore, rightRakedBefore) {
         $('.measurement-box-number').val(mbn - raked);
     }
 
-    $('.btn-fc-calculate').trigger('click');
+    // $('.btn-fc-calculate').trigger('click');
+    btnFcCalculate();
 
 }
 
@@ -876,3 +877,76 @@ function loadClearForm() {
 }
 
 //----------------------------------------------------------------------------------
+
+function updateOverAllonGate() {
+
+    var fd = getSelectedFenceData();
+
+   var mbn = parseInt($('.measurement-box-number').val());
+
+    if( mbn > FENCE.get(fd.slug, 'minOnGate') && mbn <= FENCE.get(fd.slug, 'maxOnGate') )     {
+        
+        // post + gap + gate + gap + post + post 
+        var overall = FENCE.get(fd.slug, 'maxOnGate');
+        $('.measurement-box-number').val( overall );
+
+    } else if( mbn < FENCE.get(fd.slug, 'minOnGate') )     {
+        
+        var overall = FENCE.get(fd.slug, 'minOnGate');
+        $('.measurement-box-number').val( overall );
+
+    }
+
+}
+
+
+//----------------------------------------------------------------------------------
+
+/*
+    Extended custom functions
+*/
+
+//----------------------------------------------------------------------------------
+
+$.fn.scrollTo = function(speed, offset) {
+    var offset = offset || 0;
+    $('html, body').animate({
+        scrollTop: $(this).offset().top - offset
+    },  speed == undefined ? 100 : speed);
+}
+
+//----------------------------------------------------------------------------------
+
+$.fn.swapWith = function(to) {
+    return this.each(function() {
+        var _this = $(this),
+            copy_to = $(to).clone(true),
+            copy_from = _this.clone(true);
+        $(to).replaceWith(copy_from);
+        _this.replaceWith(copy_to);
+    });
+}
+
+//----------------------------------------------------------------------------------
+
+$.fn.scrollCenter = function(elem, speed) {
+
+    var _this = $(this),
+        active = _this.find(elem); // find the active element
+
+    if (active.length == 0) {
+        return;
+    }
+
+    var activeWidth = _this.width(); // get active width center
+    var posLeft = active.position().left; //get left position of active li + center position
+    var elW = active.width(); //get div width
+
+    pos = (posLeft + (elW/2)) - (activeWidth/2); // for center position if you want adjust then change this
+
+    _this.animate({
+        scrollLeft: pos
+    }, speed == undefined ? 1000 : speed);
+
+    return this;
+}

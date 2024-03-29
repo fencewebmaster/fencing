@@ -317,7 +317,7 @@ function calculate_fences(data) {
         },
         'long_panel': {
             'count': long_panel_count,
-            'length': long_panel_length
+            'length': HELPER.isNumber(long_panel_length) ? long_panel_length : 0
         },
         'short_panel': {
             'count': short_panel_count,

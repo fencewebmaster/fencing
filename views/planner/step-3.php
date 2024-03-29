@@ -1,7 +1,8 @@
-    <!-- START DISPLAY RESULT -->   
+    <!-- [START] DISPLAY RESULT -->   
     <div class="fencing-section fencing-section--no-padding fencing-section--has-border fc-position-relative js-fc-form-step fc-d-none" data-section="3" style="display: none;">
-           
+
         <div class="fencing-section__top">
+
             <div class="fencing-calculating">
                 <div class="fc-calculating-loader">
                     <div class="fc-loader-gif"></div>
@@ -23,26 +24,26 @@
 
                 <div class="fencing-section__controls d-flex">
                     
-                    <a href="#" style="display: none;">
+                    <button type="button" style="display: none;">
                         <i class="fc-icon fc-rectangle"></i>
-                    </a>
+                    </button>
 
-                    <a href="#" class="fc-zoom-fence btn btn-sm btn-secondary d-flex align-items-center text-uppercase px-2 fw-bold" data-zoom="in">
+                    <button type="button" class="fc-zoom-fence btn btn-sm btn-secondary d-flex align-items-center text-uppercase px-2" data-zoom="in">
                         <i class="fa fa-magnifying-glass-minus"></i>
                         <span class="d-none d-sm-inline-block ms-2">Zoom in</span>
-                    </a>
+                    </button>
 
                     <div class="fc-zoom-progress js-fc-zoom-progress mx-2">100%</div>
 
-                    <a href="#" class="fc-zoom-fence btn btn-sm btn-secondary d-flex align-items-center me-2 text-uppercase px-2 fw-bold" data-zoom="out">
+                    <button type="button" class="fc-zoom-fence btn btn-sm btn-secondary d-flex align-items-center me-2 text-uppercase px-2" data-zoom="out">
                         <i class="fa fa-magnifying-glass-plus"></i>
                         <span class="d-none d-sm-inline-block ms-2">Zoom out</span>
-                    </a>
+                    </button>
 
-                    <a href="#" class="fc-zoom-reset js-fc-zoom-reset btn btn-sm btn-danger align-items-center text-uppercase px-2 fw-bold" data-zoom="reset">
+                    <button type="button" href="#" class="fc-zoom-reset js-fc-zoom-reset btn btn-sm btn-danger align-items-center text-uppercase px-2" data-zoom="reset">
                         <i class="fa-solid fa-rotate-left"></i>
                         <span class="d-none d-sm-inline-block ms-2">Reset</span>
-                    </a>
+                    </button>
 
                 </div>                                        
 
@@ -63,11 +64,11 @@
 
             </div>
 
-            <!-- START PANEL CONTROLS -->   
+            <!-- [START] PANEL CONTROLS -->   
             <div class="fencing-section__cmp fencing-panel-controls"></div>
 
 
-            <!-- END PANEL CONTROLS -->
+            <!-- [END] PANEL CONTROLS -->
         </div>
         
         <div class="fencing-section__bottom py-3">
@@ -90,6 +91,8 @@
                             class="btn btn-orange fc-btn-next-step fc-btn-step p-3 text-uppercase w-100" 
                             data-tab="1" 
                             data-move="2"
+                            data-section="4"
+                            data-offset="0"
                             disabled>
                             <b>NEXT <i class="fa-solid fa-angle-right mx-2"></i> Select PLAN OPTIONS</b>
                         </button>
@@ -146,4 +149,4 @@
 
         </div>
     </div>
-    <!-- END DISPLAY RESULT -->
+    <!-- [END] DISPLAY RESULT -->

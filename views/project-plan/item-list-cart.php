@@ -1,5 +1,5 @@
 													
-<!-- START PRODUCT LIST -->
+<!-- [START] PRODUCT LIST -->
 <div class="fc-cart-items">
 	<div class="fc-card">
 
@@ -108,4 +108,4 @@
 		</div>
 	</div>
 </div>
-<!-- END PRODUCT LIST -->
+<!-- [END] PRODUCT LIST -->

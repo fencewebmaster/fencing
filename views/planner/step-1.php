@@ -1,6 +1,6 @@
-<div class="fencing-section fencing-section--has-border fencing-section--no-radius-top">
+<div class="fencing-section fencing-section--has-border fencing-section--no-radius-top" data-section="1">
 
-    <!-- START STYLES AREA -->
+    <!-- [START] STYLES AREA -->
     <div class="fencing-section__cmp fencing-section-step fencing-section--step1">
 
         <div class="row align-items-center">
@@ -32,7 +32,7 @@
 
     </div>
 
-    <!-- START STYLES -->
+    <!-- [START] STYLES -->
     <div class="fencing-section__cmp fencing-styles">
         <div class="fencing-styles__area row">
 
@@ -77,6 +77,6 @@
 
         </div>          
     </div>
-    <!-- END STYLES -->
+    <!-- [END] STYLES -->
 
 </div>

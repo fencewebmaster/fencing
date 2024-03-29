@@ -329,7 +329,9 @@ HELPER = {
             //Set the mm field value
             $('.btn-fc-calculate').prev().find('input').val(custom_fence_tab.calculateValue);
             //Then trigger click into the calculate button to load section 3
-            $('.btn-fc-calculate').trigger('click');
+            // $('.btn-fc-calculate').trigger('click');
+            btnFcCalculate();
+
         }
     },
 
@@ -519,11 +521,17 @@ HELPER = {
 
     //----------------------------------------------------------------------------------
 
+    isNumber: function(value) {
+      return typeof value === 'number' &&  value != Infinity;
+    },
+
+    //----------------------------------------------------------------------------------
+
     call_fence_func: function(_this, func, a, b, c, d, e, f) {
         try {
-            _this[func](a, b, c, d, e, f)
+            _this[func](a, b, c, d, e, f);
         } catch {
-            FENCE[func](a, b, c, d, e, f)
+            FENCE[func](a, b, c, d, e, f);
         }
     }
 
@@ -532,38 +540,3 @@ HELPER = {
 }
 
 
-//----------------------------------------------------------------------------------
-
-$.fn.swapWith = function(to) {
-    return this.each(function() {
-        var _this = $(this),
-            copy_to = $(to).clone(true),
-            copy_from = _this.clone(true);
-        $(to).replaceWith(copy_from);
-        _this.replaceWith(copy_to);
-    });
-}
-
-//----------------------------------------------------------------------------------
-
-$.fn.scrollCenter = function(elem, speed) {
-
-    var _this = $(this),
-        active = _this.find(elem); // find the active element
-
-    if (active.length == 0) {
-        return;
-    }
-
-    var activeWidth = _this.width(); // get active width center
-    var posLeft = active.position().left; //get left position of active li + center position
-    var elW = active.width(); //get div width
-
-    pos = (posLeft + (elW/2)) - (activeWidth/2); // for center position if you want adjust then change this
-
-    _this.animate({
-        scrollLeft: pos
-    }, speed == undefined ? 1000 : speed);
-
-    return this;
-}

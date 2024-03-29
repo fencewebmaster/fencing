@@ -807,7 +807,6 @@ a.fc-tab-active {
 }
 
 .fencing-panel-gate {
-    width: 100%;
     max-width: 95px;
     margin: 0 5px;
     border-top: 2px solid;
@@ -816,8 +815,9 @@ a.fc-tab-active {
 }
 
 .fencing-panel-gate .fencing-panel-item-size {
-    background: #9E9E9E;
+    background: #f67925;
     color: #fff;
+    border: 1px solid #f67925;
 }
 
 .fc-gate-spacing {
@@ -1726,13 +1726,13 @@ thead.fc-border th:last-child {
 
 .fc-input-msg {
     margin: 5px 0;
-    background: #e91e1e;
+    background: #dc3545;
     color: #fff;
-    padding: 5px 10px;
+    padding: 2px 5px;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 12px;
     position: absolute;
-    bottom: -25px;
+    bottom: -30px;
     display: none;
     z-index: 1;
 }
@@ -1751,7 +1751,7 @@ thead.fc-border th:last-child {
     border-color: #e91e1e transparent;
     border-width: 0 7px 7px;
     top: -7px;
-    left: 30%;
+    right: 50%;
     margin-left: -20px;
 }
 
@@ -1837,7 +1837,7 @@ thead.fc-border th:last-child {
     pointer-events: all !important;
 }
 
-.disabled {
+.disabled *, .disabled {
     cursor: not-allowed;
     pointer-events: none !important; 
     color: #dddddd;
@@ -1978,16 +1978,9 @@ thead.fc-border th:last-child {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0 11px;
     border-bottom: 1px solid var(--fc-bright-gray);
-    margin-bottom: 24px;
+    margin-bottom: 10px;
     position: relative;
-}
-
-@media (max-width: 992px) {
-    .fencing-modal--v2 .fencing-modal-header {
-        padding-bottom: 10px;
-    }
 }
 
 .fencing-modal--v2 .fencing-modal-body {
@@ -2723,11 +2716,13 @@ thead.fc-border th:last-child {
 .fencing-qty-plus {
     right: 5px;
     border-radius: 0 9px 9px 0;
+    border-left: 1px solid var(--fc-dark-gray);
 }
 
 .fencing-qty-minus {
     bottom: 12px;
     border-radius: 9px 0 0 9px;
+    border-right: 1px solid var(--fc-dark-gray);
 }
 
 
@@ -4034,6 +4029,7 @@ thead.fc-border th:last-child {
     border-radius: 5px;
     line-height: 14px;
 }
+
 
 .fencing-panel-rail {
     height: 9px;

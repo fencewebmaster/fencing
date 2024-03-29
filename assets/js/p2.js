@@ -68,6 +68,7 @@ ProjectPlan = {
 
         gate_size = 970 + 50 + gateGap;
 
+
         // Check if the gate is on the first order
         if ($('#pp-' + tab + ' .fencing-panel-gate').prev().prev().index() == 1) {
             var gate = `<div class="fc-center-point">
@@ -84,11 +85,29 @@ ProjectPlan = {
             </div>`;
         }
 
+        // No other panel & Gate only
+        if( $('#pp-' + tab + ' .fencing-panel-item').length == 1 && $('#pp-' + tab + ' .fencing-panel-gate').length ) {
+            var gate = `<div class="fc-center-point">
+                <span class="fc-div-c-p"></span>
+                <span class="fc-start-c-p">25</span>
+                ${gate_size}<br>
+                Centers
+            </div>`;
+
+            var last_point = `<div class="fc-center-point fc-last-c-p">
+                <span class="fc-div-c-p"></span>
+            </div>`;
+
+            $('#pp-' + tab + ' .fencing-panel-gate').prepend(last_point);
+
+        }
+
 
         var last_point = `<span class="fc-div-c-p"></span>
             <span class="fc-div-c-p"></span>
             <span class="fc-end-c-p">${defaultCenterPoint}</span><br>Centers`;
 
+        // No right raked panel & no post on the right & no gate
         if (!$('#pp-' + tab + ' .right_raked-panel .fencing-raked-panel').length && $('#pp-' + tab + ' .post-right.panel-no-post').prev().prev().attr('data-key') != 'gate') {
 
             if (!$('#pp-' + tab + ' .panel-item').last().next().next().next().hasClass('fencing-panel-gate')) {
@@ -115,6 +134,7 @@ ProjectPlan = {
             $('#pp-' + tab + ' .fc-last-c-p').append(`<span class="fc-end-c-p">${defaultCenterPoint}</span>`);
         }
 
+        // No post on the left
         if ($('#pp-' + tab + ' .post-left.panel-no-post').length) {
 
             $('#pp-' + tab + ' .panel-item').first().find('.fc-center-point').addClass('fc-first-c-p');
@@ -129,6 +149,7 @@ ProjectPlan = {
 
         }
 
+        // No post on the right
         if ($('#pp-' + tab + ' .post-right.panel-no-post').length) {
 
             // If there is no post and the previous item is gate
@@ -142,7 +163,7 @@ ProjectPlan = {
             }
 
         }
-
+        
         if ($('#pp-' + tab + ' .fencing-panel-gate').length && !$('#pp-' + tab + ' .left_raked-panel .fencing-raked-panel').length) {
 
             // If there is a gate and no step up & gate is not in the first order
@@ -229,7 +250,9 @@ ProjectPlan = {
                 .replace(/{{panel_unit}}/gi, '<br>PANEL')
                 .replace(/{{panel_number}}/gi, panel_number);
 
-            $(`#pp-${tab} .fencing-panel-container`).append(tpl);
+            if( panel_size > FENCE.get(info?.slug, 'minPanelWidthOnGate') ) {                         
+                $(`#pp-${tab} .fencing-panel-container`).append(tpl);
+            } 
 
             $('#pp-' + tab + ' .fencing-panel-item').css({ 'width': panel_size * 0.10 });
         }
@@ -238,6 +261,13 @@ ProjectPlan = {
             .replace(/{{center_point}}/gi, center_point);
 
         $(`#pp-${tab} .fencing-panel-container`).append(tpl);
+
+
+        // Check if panel is less than 1 - On Gate
+        if($(`#pp-${tab} .single-panel, #pp-${tab} #panel-item-0`).length == 0) {
+            $(`#pp-${tab} .panel-post`).after('<div id="panel-item-x" class="single-panel"></div>'); 
+        }
+
 
         if (calc.short_panel.count) {
 
@@ -318,6 +348,12 @@ ProjectPlan = {
             $('#pp-' + tab + ' .fencing-offcut.gate-offcut .offcut-body').css({ 'max-width': calc.offcut_gate_panel.length * 0.10 });
         }
 
+        // Remove offcut - On Gate
+        if( custom_fence_tab[0].mbn <= FENCE.get(info?.slug, 'minOnGate') ) {
+             $('.fencing-offcut').remove();
+        }
+
+
         if (calc.fence_size.height) {
             $('#pp-' + tab + ' .fencing-panel-item, #pp-' + tab + ' .short-panel-item, #pp-' + tab + ' .fencing-offcut .offcut-body').css({ 'height': calc.fence_size.height * 0.10 });
 
@@ -364,14 +400,14 @@ ProjectPlan = {
 
         if (action == 'add' || action == 'edit') {
 
-            if (placement == -1) {
+            if (placement == -1 || $('#pp-' + tab + ' #panel-item-x').length ) {
 
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)
                     .replace(/{{panel_unit}}/gi, panel_unit);
 
-                $('#pp-' + tab + ' #panel-item-0').before(tpl);
+                $('#pp-' + tab + ' #panel-item-0, #pp-' + tab + ' #panel-item-x').before(tpl);
 
                 $('#pp-' + tab + ' #btn-gate').html('Edit Gate');
 

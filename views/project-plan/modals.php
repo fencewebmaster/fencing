@@ -1,4 +1,4 @@
-<!-- START FORM SUBMISSION LOADER -->
+<!-- [START] FORM SUBMISSION LOADER -->
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
         <div class="fc-loader">
@@ -16,4 +16,4 @@
         </div>
     </div>
 </div>
-<!-- END FORM SUBMISSION LOADER -->
+<!-- [END] FORM SUBMISSION LOADER -->
