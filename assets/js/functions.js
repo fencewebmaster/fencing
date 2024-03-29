@@ -913,6 +913,8 @@ $.fn.scrollTo = function(speed, offset) {
     $('html, body').animate({
         scrollTop: $(this).offset().top - offset
     },  speed == undefined ? 100 : speed);
+
+
 }
 
 //----------------------------------------------------------------------------------

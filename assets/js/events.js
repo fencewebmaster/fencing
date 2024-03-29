@@ -830,7 +830,7 @@ function fcBtnStep(e) {
         $('.fencing-tab.fencing-tab-selected:visible').trigger('click');
     }
 
-    $('[data-section="'+section+'"]').scrollTo(100, offset);
+    $('html').scrollTo(100, 0);
 }
 
 //----------------------------------------------------------------------------------
