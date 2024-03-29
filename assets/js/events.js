@@ -60,6 +60,8 @@ function fencingStyleItem() {
         }
     }, 100);
 
+    $('[data-section="1"]').scrollTo(100, 110);
+
 }
 
 //----------------------------------------------------------------------------------
@@ -296,7 +298,9 @@ function fencingTabAdd(e) {
 
     HELPER.tabContainerScroll(_this);
     
-    $('[data-section="1"]').scrollTo(100, 110);
+    setTimeout(function(){
+        $('[data-section="1"]').scrollTo(100, 110);
+    });
 }
 
 //----------------------------------------------------------------------------------
@@ -321,9 +325,9 @@ function fcFenceResetAll(e) {
         $('.js-fc-form-step').fadeOut('fast');
         $('.fc-fence-reset-all').hide();
 
-        $('[data-section="1"]').scrollTo(100, 110);
-
     });
+
+    $('[data-section="1"]').scrollTo(100, 110);
 }
 
 //----------------------------------------------------------------------------------
