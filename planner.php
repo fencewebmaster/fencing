@@ -1,4 +1,6 @@
 <?php 
+error_reporting(0);
+
 session_start();
 $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 

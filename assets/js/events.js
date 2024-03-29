@@ -58,9 +58,8 @@ function fencingStyleItem() {
         if ($('.fencing-panel-item:visible').length > 0) {
             $('.fc-btn-next-step').removeAttr('disabled');
         }
-    }, 100);
 
-    $('[data-section="1"]').scrollTo(100, 110);
+    }, 100);
 
 }
 
@@ -298,9 +297,7 @@ function fencingTabAdd(e) {
 
     HELPER.tabContainerScroll(_this);
     
-    setTimeout(function(){
-        $('[data-section="1"]').scrollTo(100, 110);
-    }, 500);
+    $('html').scrollTo(100, 0);
 }
 
 //----------------------------------------------------------------------------------
@@ -327,10 +324,6 @@ function fcFenceResetAll(e) {
 
     });
 
-    setTimeout(function(){
-        $('[data-section="1"]').scrollTo(100, 110);
-    }, 500);
-    
 }
 
 //----------------------------------------------------------------------------------
@@ -386,9 +379,6 @@ function jsBtnDeleteFence(e) {
     refreshLocalStorage(getActiveTabIndex, 'cart_items');
     HELPER.hideDeleteSectionBtn();
 
-    setTimeout(function(){
-        $('[data-section="1"]').scrollTo(100, 110);
-    }, 500);
 }
 
 //----------------------------------------------------------------------------------
@@ -1270,6 +1260,7 @@ _win.on('resize', function() {
 
 //----------------------------------------------------------------------------------
 
+
 _win.on('scroll resize', function() {
 
     var spy = $('[data-spy="scroll"]'),
@@ -1287,6 +1278,7 @@ _win.on('scroll resize', function() {
     }
 
 });
+
 
 /* ----------------------------------------------------------------
     [END] RESIZE EVENT
