@@ -45,7 +45,6 @@
 
                 </div>
 
-
                 <div class="fc-input-msg error-msg"></div>
             </div>
             <div class="col-lg d-lg-inline-block d-md-none"></div>

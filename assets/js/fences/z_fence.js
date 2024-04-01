@@ -2,8 +2,11 @@
 var FENCE = FENCE || {};
 
 FENCE = {
-
     settings: {
+        item: {
+            raked: 1300,
+            gate: 1060,                            
+        },
         flat_top: {
             minOnGate: 1110,
             maxOnGate: 1160,
@@ -210,14 +213,13 @@ FENCE = {
             $('.fencing-offcut.gate-offcut .offcut-body').css({ 'width': calc.offcut_gate_panel.length * 0.10 });
         }
 
-
         // Remove offcut - On Gate
-        if( fd.mbn <= this.get(slug, 'maxOnGate') ) {
+        if( parseInt(fd.mbn) <= this.get(slug, 'maxOnGate') ) {
             // $('.panel-offcut').remove();
-        } else if( fd.mbn <= this.get(slug, 'minOnGate') ) {
+        } else if( parseInt(fd.mbn) <= this.get(slug, 'minOnGate') ) {
             $('.fencing-offcut').remove();
         }
-
+        
         // Clear tooltip like error massage
         $(FENCES.el.fcInputMsg).removeClass('fcim-show').html('');
 
@@ -525,15 +527,10 @@ FENCE = {
         } else if (move == 'last') {
 
             var closest_id = $(FENCES.el.panelItem).length - 1,
-                last_id = $(FENCES.el.panelItem).last().attr('data-id');
-
-            if ($('.right_raked-panel .fencing-raked-panel').length) {
-                last_id = $(FENCES.el.panelItem).last().attr('data-id') - 1;
-            }
+                last_id = $(FENCES.el.panelItem+':not(.fencing-raked-panel)').last().attr('data-id');
 
             var index = ($('#panel-item-' + last_id).index() / 3) + 1,
                 gate_index = gate.index() / 3;
-
 
             if (index != gate_index) {
 
@@ -544,7 +541,7 @@ FENCE = {
 
                 $('#panel-item-' + last_id).after(move_gate);
 
-                gate.remove();
+                 gate.remove();
 
             }
 
@@ -567,6 +564,7 @@ FENCE = {
             }
 
             gate.remove();
+
 
             setTimeout(function() {
                 /*
@@ -621,10 +619,12 @@ FENCE = {
         placement = $(FENCES.el.fencingPanelGate).prev().prev().prev().attr('data-id');
         placement = placement == undefined ? -1 : placement;
 
+        var size = $('[name="width"]').val();
+
         var settings = {
             'placement': placement,
             'index': $(FENCES.el.fencingPanelGate).index(),
-            'size': $('[name="width"]').val(),
+            'size': size,
             'unit': FENCES.defaultValues.unit
         }
 
@@ -691,8 +691,8 @@ FENCE = {
 
         if (action == 'add' || action == 'edit') {
 
-            if (placement == -1 || $('#panel-item-x:visible').length ) {
-
+            if (placement == -1 ) {
+ 
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)
@@ -715,14 +715,20 @@ FENCE = {
 
             } else if (action == 'add' && placement == 0) {
 
-                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
+                temp = $('script[data-type="panel_gate-' + info.panel_group + '-l"]');
+
+                if($('.fencing-panel-items [data-key="panel_options"]').length) {
+                    temp = $('script[data-type="panel_gate-' + info.panel_group + '-r"]')
+                }
+
+                var tpl = temp.text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)
                     .replace(/{{panel_unit}}/gi, panel_unit);
 
                 var panelID = $('[data-cart-key="panel_options"].fencing-panel-item').attr('id');
 
-                $('#' + panelID).after(tpl);
+                $('#'+panelID+', .fencing-panel-items .raked-panel-container').after(tpl);
 
                 $(FENCES.el.btnGate).html('Edit Gate');
             }
@@ -827,6 +833,7 @@ FENCE = {
                         .replace(/{{panel_size}}/gi, panel_h)
                         .replace(/{{panel_unit}}/gi, panel_w)
                         .replace(/{{panel_height}}/gi, panel_height)
+                        .replace(/{{panel_number}}/gi, side_part+'-raked')
                         .replace(/{{post}}/gi, has_post);
 
                     if (panel_h) {
@@ -933,49 +940,6 @@ FENCE = {
                         $('#pp-' + sectionId + ' .panel-post[data-key=' + activeSetting + '], #pp-' + sectionId + ' .fencing-panel-spacing-number')
                             .addClass(value)
                             .attr('data-cart-value', value);
-
-
-
-                        /*                 
-                         postValue = post_options_default[0].slug;
-                          // Set default option on left side
-                                           if( side_post != 'left_side' ) {
-
-                                               var left_post_filtered_data = custom_fence.filter(function(item) {
-                                                   return item.control_key === "left_side";
-                                               });
-
-                                               var left_post_filtered_data = left_post_filtered_data[0]?.settings.filter(function(item) {
-                                                   return item.key === "post_option";
-                                               });
-
-                                               if( left_post_filtered_data ) {
-                                                   postValue = left_post_filtered_data[0]?.val;
-                                               }
-
-                                               $('#pp-'+sectionId+' .panel-post.post-left').addClass(postValue);   
-
-                                           } 
-
-                                           // Set default option on right side
-                                           if( side_post != 'right_side' ) {   
-
-                                               var right_post_filtered_data = custom_fence.filter(function(item) {
-                                                   return item.control_key === "right_side";
-                                               });
-
-                                               var right_post_filtered_data = right_post_filtered_data[0]?.settings.filter(function(item) {
-                                                   return item.key === "post_option";
-                                               });
-
-                                               if( right_post_filtered_data ) {
-                                                   postValue = right_post_filtered_data[0]?.val;
-                                               }
-
-                                               $('#pp-'+sectionId+' .panel-post.post-right').addClass(postValue);   
-
-                                           }*/
-
 
                     }
                 }

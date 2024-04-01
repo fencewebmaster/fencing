@@ -151,6 +151,7 @@ Planner = {
 
         localStorage.setItem('project-plans', fc_fence_info.project_plans_data);
 
+
     }
 
     //----------------------------------------------------------------------------------

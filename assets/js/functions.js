@@ -709,8 +709,8 @@ function extra_fields() {
     var i = fd.slug,
         tab = fd.tab,
         custom_fence = fd.info,
-        info = fd.data
-    tabInfo = fd.tabInfo;
+        info = fd.data,
+        tabInfo = fd.tabInfo;
 
     var modal_key = fd.modKey,
         mbn = fd.mbn;
@@ -878,27 +878,70 @@ function loadClearForm() {
 
 //----------------------------------------------------------------------------------
 
-function updateOverAllonGate() {
+function updateOverAllLength(data) {
 
-    var fd = getSelectedFenceData();
+    var fd = getSelectedFenceData(),
+        mbn = parseInt($('.measurement-box-number').val());
 
-   var mbn = parseInt($('.measurement-box-number').val());
+    var hasGate = data?.gate ? data.gate : $('.fencing-panel-gate').length,
+        hasRaked = data?.raked ? data.raked : $('.raked-panel-container').length;
 
-    if( mbn > FENCE.get(fd.slug, 'minOnGate') && mbn <= FENCE.get(fd.slug, 'maxOnGate') )     {
+    var raked = gate = 0;
+
+    // With raked and gate
+    if( hasRaked ) {
+        raked = hasRaked * FENCE.get('item', 'raked');
+    }
+    
+    if( hasGate ) {
+        gate = FENCE.get('item', 'gate');
+    }
+
+        console.log(hasRaked, hasGate);
+
+    // Gate Only
+    if(hasRaked && hasGate) {
+        
+        var overall = raked + gate;
+
+    } else if(hasRaked) {
+        
+        var overall = raked + gate;
+        console.log(2);
+
+    } else if( mbn > FENCE.get(fd.slug, 'minOnGate') && mbn <= FENCE.get(fd.slug, 'maxOnGate') )     {
         
         // post + gap + gate + gap + post + post 
         var overall = FENCE.get(fd.slug, 'maxOnGate');
-        $('.measurement-box-number').val( overall );
+        console.log(3);
 
-    } else if( mbn < FENCE.get(fd.slug, 'minOnGate') )     {
+    } else if( mbn < FENCE.get(fd.slug, 'minOnGate') ) {
         
         var overall = FENCE.get(fd.slug, 'minOnGate');
-        $('.measurement-box-number').val( overall );
+        console.log(4);
 
     }
 
+    if( mbn < overall ) {
+        $('.measurement-box-number').val( overall );
+    } 
+
 }
 
+//----------------------------------------------------------------------------------
+
+function checkGateOnly() {
+
+    var panelCount = $('.fencing-panel-items .fencing-panel-item').length,
+        gateCount = $('.fencing-panel-items .fencing-panel-gate').length;
+
+    $('[name="gate_only"]').prop('checked', false);
+
+    if( panelCount == 1 && gateCount ) {
+        $('[name="gate_only"]').prop('checked', true);
+    }
+
+}
 
 //----------------------------------------------------------------------------------
 

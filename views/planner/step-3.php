@@ -64,6 +64,13 @@
 
             </div>
 
+            <div class="mb-2">
+                <label>
+                    <input type="checkbox" name="gate_only">
+                    Gate Only
+                </label>                
+            </div>
+
             <!-- [START] PANEL CONTROLS -->   
             <div class="fencing-section__cmp fencing-panel-controls"></div>
 

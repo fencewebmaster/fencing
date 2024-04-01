@@ -34,6 +34,59 @@ function jsFcZoomReset() {
 
 //----------------------------------------------------------------------------------
 
+_doc.on('click', '.popup-alert', popupAlert);
+
+function popupAlert() {
+    $('#popup-alert').modal('show');
+}
+
+//----------------------------------------------------------------------------------
+
+_doc.on('click', '[name="gate_only"]', gateOnly);
+
+function gateOnly() {
+    var _this = $('[name="gate_only"]'),
+        data = {};
+
+    if( _this.is(':checked') ) {
+
+
+        var fd = getSelectedFenceData(),
+            slug = fd.slug,
+            tab = fd.tab,
+            mbn = fd.mbn,
+            key = `custom_fence-${tab}-${slug}`;
+
+        cf = JSON.parse(localStorage.getItem(key));
+
+        for (let i = 0; i < cf.length; i++) {
+            if( $.inArray(cf[i].control_key, ['left_side', 'right_side', 'add_step_up_panels']) !== -1) {
+                var left = cf[i].settings.filter(function(item) {
+                    return $.inArray(item.key, ['left_raked', 'right_raked']) == -1;
+                });
+                cf[i].settings = left;
+            }
+        }
+
+        // Remove step up panel
+        localStorage.setItem(key, JSON.stringify(cf));
+
+        var overall = FENCE.get(fd.slug, 'minOnGate');
+
+        $('.measurement-box-number').val( overall );
+
+        FENCE.call('update_gate', 'add');
+        FENCE.call('update_custom_fence_gate');
+
+        btnFcCalculate();
+    } else {
+        FENCE.call('move_the_gate', 'delete');
+    }
+
+}
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.fencing-style-item', fencingStyleItem);
 
 function fencingStyleItem() {
@@ -59,6 +112,7 @@ function fencingStyleItem() {
             $('.fc-btn-next-step').removeAttr('disabled');
         }
 
+        checkGateOnly();
     }, 100);
 
 }
@@ -78,13 +132,15 @@ _doc.on('click', '#btn-gate', btnGate);
 
 function btnGate() {
 
-    var _this = $(this);
+    var _this = $(this),
+        data = {};
 
     if (_this.text().toLowerCase().indexOf('edit') > -1) {
         return;
     }
 
-    updateOverAllonGate();
+    data.gate = 1;
+    updateOverAllLength(data);
 
     FENCE.call('update_gate', 'add');
     FENCE.call('update_custom_fence_gate');
@@ -545,7 +601,7 @@ function fencingBtnModal(event) {
 
 
         // Disable gate controls
-        if( $('.fencing-panel-item').length == 1 ) {
+        if( $('.fencing-panel-item:not(.fencing-raked-panel)').length == 1 ) {
             $('.fc-move-post:not([data-move="delete"])').addClass('disabled');
         }
 
@@ -601,9 +657,8 @@ function btnFcCalculate() {
         custom_fence_tabs = localStorage.getItem('custom_fence-' + tab),
         custom_fence_tab = custom_fence_tabs ? JSON.parse(custom_fence_tabs) : [];
 
-
     if( $('.fencing-panel-gate:visible').length ) {
-        updateOverAllonGate();
+        updateOverAllLength();
     }
 
     box.attr('data-last', box.val());
@@ -625,9 +680,9 @@ function btnFcCalculate() {
 
     setTimeout(function() {
 
-        if ($('.fencing-panel-gate:visible').length) {
+/*        if ($('.fencing-panel-gate:visible').length) {
             FENCE.call('update_gate', 'add');
-        }
+        }*/
 
         $('.fc-btn-next-step').attr('disabled', 'disabled');
 
@@ -662,6 +717,8 @@ function btnFcCalculate() {
         }
 
     });
+
+    checkGateOnly();
 
     // Save custom fields changes
     custom_fence_tab[0].fields = $('[data-action="change"] .form-control').serializeArray();
@@ -716,6 +773,7 @@ _doc.on('click', '.fc-input-group button', fcInputGroup_button);
 function fcInputGroup_button() {
     FENCE.call('calculateCustomGate');
     FCModal.close();
+    checkGateOnly();
 }
 
 //----------------------------------------------------------------------------------
@@ -1035,12 +1093,6 @@ function fcSelectOption() {
         $(".fencing-display-result").scrollCenter(".panel-post:first", 300);
     }
 
-    /*
-    setTimeout(function(){
-        computeOverallraked(value, rakedSide, leftRakedBefore, rightRakedBefore);
-    });
-    */
-
     if (_this.parents('.js-fencing-modal').length) {
         FCModal.close();
     }
@@ -1053,11 +1105,15 @@ _doc.on('change', '.fc-select-option', fcSelectOption_v2);
 
 function fcSelectOption_v2() {
 
+    updateOverAllLength();
+
     var side = ['left_raked', 'right_raked'];
 
     $('.raked-panel').html('');
 
     FENCE.call('update_raked_panels', side);
+
+    checkGateOnly();
 
     $('[data-section="3"]').scrollTo(100, 57);
 
