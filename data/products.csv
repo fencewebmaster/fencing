@@ -56,6 +56,8 @@ gate+1800,Gate - 1800H,BARR Gate - 1800H x 975W,JG,barr,BARR-G1800-B-GO,BARR-G18
 gate+converter+1000,Gate Converter - 1000H,BARR Gate Converter - 1000H,JG,barr,BARR-GC1000-B-GO,BARR-GC1000-W-GO,,,
 gate+converter+1200,Gate Converter - 1200H,BARR Gate Converter - 1200H,JG,barr,BARR-GC1200-B-GO,BARR-GC1200-W-GO,,,
 gate+converter+1800,Gate Converter - 1800H,BARR Gate Converter - 1800H,JG,barr,BARR-GC1800-B-GO,BARR-GC1800-W-GO,,,
+panel_post+opt-1+1000,Post - 1280L,PoolSafe Post 1280L - Base Plated,JG,barr,BARR-PO-1280L-BP-B-GO,BARR-PO-1280L-BP-W-GO,,,
+panel_post+opt-2+1000,Post - 1800L,PoolSafe Post 1800L - Cemented In,JG,barr,BARR-PO-1800L-B-GO,BARR-PO-1800L-W-GO,,,
 panel_post+opt-1+1200,Post - 1280L,PoolSafe Post 1280L - Base Plated,JG,barr,BARR-PO-1280L-BP-B-GO,BARR-PO-1280L-BP-W-GO,,,
 panel_post+opt-2+1200,Post - 1800L,PoolSafe Post 1800L - Cemented In,JG,barr,BARR-PO-1800L-B-GO,BARR-PO-1800L-W-GO,,,
 panel_post+opt-1+1800,Post - 2400L,PoolSafe Post 2400L - Base Plated,JG,barr,PO-2400-BPC-B-GO,PO-2400-BPC-B-GO,,,

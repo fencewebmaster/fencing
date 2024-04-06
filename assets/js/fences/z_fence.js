@@ -3,19 +3,31 @@ var FENCE = FENCE || {};
 
 FENCE = {
     settings: {
+        message: {
+            oal_changed: "Overall Length has changed!",
+            min_gate: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm",
+            min_gate_raked: "Minimum <b>Overall Length</b> for a <b>GATE & {{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
+            min_raked: "Minimum <b>Overall Length</b> for <b>{{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm"
+        },
         item: {
             raked: 1300,
-            gate: 1060,                            
+            gate: 1060,                             
         },
         flat_top: {
+            post: 50,
             minOnGate: 1110,
             maxOnGate: 1160,
             minPanelWidthOnGate: 86,
+            gate_post_gaps: 50 + 20 + 20,
+            gate_posts_gaps: 50 + 20 + 20 + 50,
         },
         barr: {
+            post: 25,
             minOnGate: 1115,
             maxOnGate: 1165,
             minPanelWidthOnGate: 86,
+            gate_post_gaps: 25 + 20 + 20,
+            gate_posts_gaps: 25 + 20 + 20 + 25,
         },
     },
     
@@ -82,7 +94,7 @@ FENCE = {
             return;
         }
 
-        var center_point = 50;
+        var center_point = FENCE.get(slug, 'post');
 
         for (let i = 0; i < calc.long_panel.count; i++) {
 
@@ -133,7 +145,8 @@ FENCE = {
             }     
         }*/
 
-        if($('.single-panel, #panel-item-0').length == 0) {
+        // No panel item 
+        if($('.single-panel, #panel-item-0').length == 0 && $('.panel-item:not(.fencing-raked-panel)').length == 0 ) {
             $(FENCES.el.fencingPanelContainer+' .panel-post').after('<div id="panel-item-x" class="single-panel"></div>'); 
         }
 
@@ -565,33 +578,11 @@ FENCE = {
 
             gate.remove();
 
+            $('[name="gate_only"]:checked').trigger('click');
 
             setTimeout(function() {
-                /*
-                var fd = getSelectedFenceData();
-
-                var tabInfo = fd.tabInfo,
-                    custom_fence = fd.info,
-                    data = fd.data;
-
-                var gate = custom_fence.filter(function(item) {
-                    return item.control_key == 'gate';
-                });
-
-                var mbn = parseInt(tabInfo[0]?.calculateValue),
-                    defaultGateSize = data.settings.gate.size.width;
-                    gateSize = defaultGateSize,
-                    rakedSize = 0;
-
-                $('.measurement-box-number').val( mbn - gateSize );
-                */
-                // $('.btn-fc-calculate').trigger('click');
-
-                btnFcCalculate();
-
+                btnCalculate();
             });
-
-
 
         }
 
@@ -619,12 +610,14 @@ FENCE = {
         placement = $(FENCES.el.fencingPanelGate).prev().prev().prev().attr('data-id');
         placement = placement == undefined ? -1 : placement;
 
-        var size = $('[name="width"]').val();
+        var size = $('[name="width"]').val(),
+            default_width = fd?.data?.settings?.gate?.size?.width,
+            gateOnly = fd?.tabInfo[0]?.gateOnly;
 
         var settings = {
             'placement': placement,
             'index': $(FENCES.el.fencingPanelGate).index(),
-            'size': size,
+            'size': size || default_width,
             'unit': FENCES.defaultValues.unit
         }
 
@@ -680,7 +673,7 @@ FENCE = {
             placement = 0;
         }
 
-        var center_point = 50,
+        var center_point = FENCE.get(i, 'post'),
             mesurement = $(FENCES.el.measurementBoxNumber).val();
 
         var calc = calculate_fences();
@@ -746,7 +739,15 @@ FENCE = {
             .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
             .attr('data-cart-value', gateValue);
 
-        if (calc.fence_size.height) {
+
+        // Is custom gate
+        var gate_data = custom_fence.filter(function(item) {
+            return item.control_key == 'gate';
+        });
+
+        isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
+
+        if (isCustomGate) {
             $(FENCES.el.fencingPanelGate).css({ 'max-width': calc.gate.width * 0.1 });
         }
 
@@ -780,7 +781,7 @@ FENCE = {
             // Side
             var side_part = v.replace('_raked', ''),
                 has_post = 'yes-post',
-                center_point = 50;
+                center_point = FENCE.get(i, 'post');
 
             var filtered_side_data = custom_fence.filter(function(item) {
                 return item.control_key == side_part + '_side';
@@ -886,7 +887,7 @@ FENCE = {
 
         FENCE.call('load_post_options_all', custom_fence, info, 0, calc);
 
-        FENCE.call('load_post_options_first_last_values', custom_fence, info, 0);
+        FENCE.call('load_post_options_first_last_values', custom_fence, info, 0, calc);
 
         $('.fencing-display-result').css({ 'padding': '' });
 
@@ -906,7 +907,7 @@ FENCE = {
      * This function will update either First or Last post after user selection
      * @param {array} custom_fence 
      */
-    load_post_options_first_last_values: function(custom_fence, info, sectionId) {
+    load_post_options_first_last_values: function(custom_fence, info, sectionId, calc) {
 
         var modal_key = $(FENCES.el.fencingContainer).attr('data-key');
         var side_post = '';
@@ -935,11 +936,17 @@ FENCE = {
 
                     if (key === "post_option" && modal_key != 'post_options') {
 
+                        postValue = value;
+
+                        if (calc.fence_size.height) {
+                            postValue = value.concat("+", calc.fence_size.height);
+                        }
+
                         //We added data-key attribute on the first and last panel post both will have either left_side or right_side value
                         //Find the element that matches the condition below and add the class
                         $('#pp-' + sectionId + ' .panel-post[data-key=' + activeSetting + '], #pp-' + sectionId + ' .fencing-panel-spacing-number')
                             .addClass(value)
-                            .attr('data-cart-value', value);
+                            .attr('data-cart-value', postValue);
 
                     }
                 }
@@ -1077,6 +1084,7 @@ FENCE = {
             style: i,
             fence: info.slug,
             mbn: mbn,
+            gateOnly: tabInfo[0]?.gateOnly || false,
             fields: $('[data-action="change"] .form-control').serializeArray(),
             isCalculate: tabInfo[0]?.isCalculate || FENCES.defaultValues.measurement,
             calculateValue: tabInfo[0]?.calculateValue || FENCES.defaultValues.measurement
@@ -1124,6 +1132,8 @@ FENCE = {
     disabledCustomGate: function() {
 
         var fd = getSelectedFenceData(),
+            tab = fd.tab,
+            slug = fd.slug,
             width = fd?.data?.settings?.gate?.size?.width;
 
         $('[name="width"]').attr('readonly', 'readonly').addClass('disabled text-muted').val(width);
@@ -1133,6 +1143,7 @@ FENCE = {
         $('.custom-gate button').attr('disabled', 'disabled')
             .removeClass('btn-dark')
             .addClass('btn-light disabled');
+
     },
 
     //----------------------------------------------------------------

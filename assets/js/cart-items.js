@@ -207,8 +207,7 @@ FENCES.cartItems = {
         var tabInfo = window.tabInfo,
             fenceInfo = window.fenceInfo;
 
-
-        if (tabInfo[0]?.fence == 'barr') {
+        if ($.inArray(tabInfo[0]?.fence, ['barr', 'flat_top']) !== -1) {
 
             /*
                 1200H & 1800H Gates: 
@@ -221,6 +220,7 @@ FENCES.cartItems = {
                     return item;
                 }
             });
+
 
             const foundGate = array.find(obj => obj['slug'].includes('gate'));
 
@@ -236,7 +236,8 @@ FENCES.cartItems = {
                     isSTDGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val']);
                 }
 
-                fenceHeight = parseInt(tabInfo_filtered_data[0].value);
+                fenceHeight = parseInt(tabInfo_filtered_data[0]?.value);
+                fenceHeight = !isNaN(fenceHeight) ? fenceHeight : '';
 
                 if ([1200, 1800].includes(fenceHeight)) {
 
@@ -259,7 +260,10 @@ FENCES.cartItems = {
 
                 } else {
                     // Converter
-                    FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
+
+                    var converterSlug = [FENCES.cartItems.item.gateKit2.slug, fenceHeight].filter(Boolean).join('+');
+
+                    FENCES.cartItems.item.gateKit2.slug = converterSlug;
                     array.push(FENCES.cartItems.item.gateKit2);
                 }
 
@@ -267,7 +271,7 @@ FENCES.cartItems = {
 
         }
 
-
+        console.log(array);
         return array;
 
     },

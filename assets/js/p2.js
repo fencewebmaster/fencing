@@ -66,7 +66,7 @@ ProjectPlan = {
 
         var first_point = `<span class="fc-start-c-p">${defaultCenterPoint}</span>`;
 
-        gate_size = 970 + 50 + gateGap;
+        gate_size = 970 + FENCE.get(i, 'post') + gateGap;
 
 
         // Check if the gate is on the first order
@@ -86,7 +86,8 @@ ProjectPlan = {
         }
 
         // No other panel & Gate only
-        if( $('#pp-' + tab + ' .fencing-panel-item').length == 1 && $('#pp-' + tab + ' .fencing-panel-gate').length ) {
+        if( $('#pp-' + tab + ' .fencing-panel-item').length == 1 && $('#pp-' + tab + ' .fencing-panel-gate').length || 
+            $('#pp-' + tab + ' [data-cart-key="right_raked_panel"]').length && $('#pp-' + tab + ' .fencing-panel-gate').length) {
             var gate = `<div class="fc-center-point">
                 <span class="fc-div-c-p"></span>
                 <span class="fc-start-c-p">25</span>
@@ -99,9 +100,22 @@ ProjectPlan = {
             </div>`;
 
             $('#pp-' + tab + ' .fencing-panel-gate').prepend(last_point);
-
         }
 
+        // Left Raked + Gate Only
+        if( $('#pp-' + tab + ' [data-cart-key="left_raked_panel"]').length && $('#pp-' + tab + ' .fencing-panel-gate').length ) {
+            var gate = `<div class="fc-center-point">
+                <span class="fc-div-c-p"></span>
+                ${gate_size}<br>
+                Centers
+            </div>`;
+
+            var last_point = `<div class="fc-center-point fc-last-c-p">
+                <span class="fc-div-c-p"></span>
+            </div>`;
+
+            $('#pp-' + tab + ' .fencing-panel-gate').prepend(last_point);
+        }
 
         var last_point = `<span class="fc-div-c-p"></span>
             <span class="fc-div-c-p"></span>
@@ -219,7 +233,7 @@ ProjectPlan = {
             return;
         }
 
-        var center_point = 50;
+        var center_point = FENCE.get(i, 'post');
 
         for (let i = 0; i < calc.long_panel.count; i++) {
 
@@ -388,7 +402,7 @@ ProjectPlan = {
 
         }
 
-        var center_point = 50,
+        var center_point = FENCE.get(i, 'post'),
             mesurement = $('.measurement-box-number').val();
 
         var cf_data = { item: i, tab: tab },
@@ -464,7 +478,7 @@ ProjectPlan = {
             // Side
             var side_part = v.replace('_raked', ''),
                 has_post = 'yes-post',
-                center_point = 50;
+                center_point = FENCE.get(i, 'post');
 
             var filtered_side_data = custom_fence.filter(function(item) {
                 return item.control_key == side_part + '_side';
@@ -554,7 +568,7 @@ ProjectPlan = {
 
         FENCE.call('load_post_options_all', custom_fence, info, tab, calc);
 
-        FENCE.call('load_post_options_first_last_values', custom_fence, info, tab);
+        FENCE.call('load_post_options_first_last_values', custom_fence, info, tab, calc);
 
         $('#pp-' + tab + ' .fc-result').css({ 'padding': '' });
 

@@ -791,11 +791,12 @@ function computeOverallraked(value, side, leftRakedBefore, rightRakedBefore) {
     var fd = getSelectedFenceData();
 
     var tabInfo = fd.tabInfo,
+        slug = fd.info,
         custom_fence = fd.info,
         data = fd.data;
 
     var mbn = parseInt($('.measurement-box-number').val()),
-        raked = 1200 + 50;
+        raked = 1200 + FENCE.get(slug, 'post');
 
     if (value != 'none' && rakedCount && rakedBefore == 0) {
         $('.measurement-box-number').val(mbn + raked);
@@ -806,7 +807,7 @@ function computeOverallraked(value, side, leftRakedBefore, rightRakedBefore) {
     }
 
     // $('.btn-fc-calculate').trigger('click');
-    btnFcCalculate();
+    btnCalculate();
 
 }
 
@@ -880,13 +881,16 @@ function loadClearForm() {
 
 function updateOverAllLength(data) {
 
+    var _mbn = $('.measurement-box-number');
+
     var fd = getSelectedFenceData(),
-        mbn = parseInt($('.measurement-box-number').val());
+        slug = fd.slug,
+        mbn = parseInt(_mbn.val());
 
     var hasGate = data?.gate ? data.gate : $('.fencing-panel-gate').length,
         hasRaked = data?.raked ? data.raked : $('.raked-panel-container').length;
 
-    var raked = gate = 0;
+    var raked = gate = overall = 0;
 
     // With raked and gate
     if( hasRaked ) {
@@ -897,33 +901,107 @@ function updateOverAllLength(data) {
         gate = FENCE.get('item', 'gate');
     }
 
-        console.log(hasRaked, hasGate);
 
-    // Gate Only
-    if(hasRaked && hasGate) {
+    // Is custom gate
+    var gate_data = fd.info.filter(function(item) {
+        return item.control_key == 'gate';
+    });
+
+    isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
+
+    gateOnly = fd.tabInfo[0]?.gateOnly;
+
+    fence_gate_posts_gaps = FENCE.get(slug, 'gate_posts_gaps');
+
+    gate_posts_gaps = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;
+
+/*
+    Use Custom Gate or change Overall Width to 1110mm
+    Use Custom Gate or change Overall Width to 2360mm
+    Minimum Overall Width for a gate is 600mm
+*/
+
+    if(gateOnly && !raked ||         
+       gateOnly && !isCustomGate && !raked ||
+       isCustomGate && !raked) {
+
+        var overall =  parseInt(gate_data[0]?.settings?.size) + fence_gate_posts_gaps;
+
+        var msg = FENCE.settings.message.min_gate
+            .replace(/{{overall}}/gi, overall);
+
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[1] "+FENCE.settings.message.oal_changed, msg);
+
+    } else if(mbn < (raked + gate) && hasRaked && hasGate) {
         
         var overall = raked + gate;
 
-    } else if(hasRaked) {
-        
-        var overall = raked + gate;
-        console.log(2);
+        var msg = FENCE.settings.message.min_gate_raked
+            .replace(/{{overall}}/gi, overall)
+            .replace(/{{hasRaked}}/gi, hasRaked);
 
-    } else if( mbn > FENCE.get(fd.slug, 'minOnGate') && mbn <= FENCE.get(fd.slug, 'maxOnGate') )     {
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[2] "+FENCE.settings.message.oal_changed, msg);
+
+    } else if(mbn < (raked + gate_posts_gaps) && hasRaked && isCustomGate) {
         
-        // post + gap + gate + gap + post + post 
+        var overall = raked + gate_posts_gaps;
+
+        var msg = FENCE.settings.message.min_gate_raked
+            .replace(/{{overall}}/gi, overall)
+            .replace(/{{hasRaked}}/gi, hasRaked);
+
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[2.1] "+FENCE.settings.message.oal_changed, msg);
+
+    } else if(mbn < raked && hasRaked) {
+        
+        var overall = raked;
+
+        var msg = FENCE.settings.message.min_raked
+            .replace(/{{overall}}/gi, overall)
+            .replace(/{{hasRaked}}/gi, hasRaked);
+
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[3] "+FENCE.settings.message.oal_changed, msg);
+
+    } else if(mbn > FENCE.get(fd.slug, 'minOnGate') && 
+              mbn <= FENCE.get(fd.slug, 'maxOnGate') ) {
+
         var overall = FENCE.get(fd.slug, 'maxOnGate');
-        console.log(3);
 
-    } else if( mbn < FENCE.get(fd.slug, 'minOnGate') ) {
+        var msg = FENCE.settings.message.min_gate
+            .replace(/{{overall}}/gi, overall);
+
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[4] "+FENCE.settings.message.oal_changed, msg);
+
+    } else if(mbn < FENCE.get(fd.slug, 'minOnGate') && gateOnly || 
+              mbn < FENCE.get(fd.slug, 'minOnGate') && !isCustomGate) {
         
         var overall = FENCE.get(fd.slug, 'minOnGate');
-        console.log(4);
+        
+        var msg = FENCE.settings.message.min_gate
+            .replace(/{{overall}}/gi, overall);
+
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[5] "+FENCE.settings.message.oal_changed, msg);
+
+    } else if(gateOnly) {
+        
+        var overall = FENCE.get(fd.slug, 'minOnGate');
+        
+        var msg = FENCE.settings.message.min_gate
+            .replace(/{{overall}}/gi, overall);
+
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[6] "+FENCE.settings.message.oal_changed, msg);
 
     }
 
-    if( mbn < overall ) {
-        $('.measurement-box-number').val( overall );
+    if(overall && !isNaN(overall) && overall != _mbn.val() ) {
+       _mbn.val(overall);
     } 
 
 }
@@ -932,13 +1010,64 @@ function updateOverAllLength(data) {
 
 function checkGateOnly() {
 
-    var panelCount = $('.fencing-panel-items .fencing-panel-item').length,
-        gateCount = $('.fencing-panel-items .fencing-panel-gate').length;
+    var fd = getSelectedFenceData(),
+        tab = fd.tab,
+        keyb = `custom_fence-${tab}`;
 
-    $('[name="gate_only"]').prop('checked', false);
+    cfb = JSON.parse(localStorage.getItem(keyb));
 
-    if( panelCount == 1 && gateCount ) {
-        $('[name="gate_only"]').prop('checked', true);
+    var value = cfb[0]?.gateOnly ? true : false;
+
+    $('[name="gate_only"]').prop('checked', value);
+
+}
+
+//----------------------------------------------------------------------------------
+
+function removeStepPanels(cf) {
+
+    var fd = getSelectedFenceData(),
+        slug = fd.slug,
+        tab = fd.tab,
+        key = `custom_fence-${tab}-${slug}`;
+
+        cf = JSON.parse(localStorage.getItem(key));
+
+    if( cf ) {
+
+        for(let i = 0; i < cf.length; i++) {
+            if($.inArray(cf[i].control_key, ['left_side', 'right_side', 'add_step_up_panels']) !== -1) {
+                var left = cf[i].settings.filter(function(item) {
+                    return $.inArray(item.key, ['left_raked', 'right_raked']) == -1;
+                });
+                cf[i].settings = left;
+            }
+        }            
+
+        // Remove step up panel
+        localStorage.setItem(key, JSON.stringify(cf));
+
+    }
+}
+
+//----------------------------------------------------------------------------------
+
+function updateGateOnly(val) {
+
+    var fd = getSelectedFenceData(),
+        tab = fd.tab,
+        slug = fd.slug,
+        key = `custom_fence-${tab}`,
+        width = fd?.data?.settings?.gate?.size?.width;
+
+    cf = JSON.parse(localStorage.getItem(key));
+
+    if( cf ) {
+
+        cf[0].gateOnly = val;
+
+        localStorage.setItem('custom_fence-' + tab, JSON.stringify(cf));
+
     }
 
 }

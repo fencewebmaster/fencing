@@ -330,7 +330,7 @@ HELPER = {
             $('.btn-fc-calculate').prev().find('input').val(custom_fence_tab.calculateValue);
             //Then trigger click into the calculate button to load section 3
             // $('.btn-fc-calculate').trigger('click');
-            btnFcCalculate();
+            btnCalculate();
 
         }
     },

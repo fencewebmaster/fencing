@@ -50,6 +50,11 @@ function get_field_by_slug(custom_fence, slug) {
 
 
     var custom_fence_data = custom_fence.filter(function(item) {
+
+        if(item.slug.includes('+')) {
+            return item.slug.includes(slug);
+        }
+
         return item.slug == slug;
     });
 
@@ -94,9 +99,9 @@ function calculate_fences(data) {
         offcut_gate_panel_length = 0,
         offcut_gate_panel_count = 0;
 
-
-    post_panel = 50;
-    no_post = -50;
+    gate_post_gaps = FENCE.get(i, 'gate_post_gaps');
+    post_panel = FENCE.get(i, 'post');
+    no_post = -post_panel;
 
     fence_height = '';
     if (info?.form) {
@@ -162,20 +167,21 @@ function calculate_fences(data) {
     // add gate
     if (gate_data.length) {
         if (gate_data[0]?.settings.size) {
-            C8 = gate_data[0]?.settings.size;
-            offcut_gate_panel_length = (C5 - 50) - C8;
-            offcut_gate_panel_count = 1;
+            C8 = parseInt(gate_data[0]?.settings.size) + gate_post_gaps;
+            offcut_gate_panel_length = (C5 - 50) - C8 + gate_post_gaps;
+           
+            offcut_gate_panel_count = 0;
 
-            var standard_gate = gate_data[0]?.settings?.fields?.filter(function(item) {
-                return item.key == 'use_std' && item.val == true;
+            var isCustomGate = gate_data[0]?.settings?.fields?.filter(function(item) {
+                return item.key == 'use_std' && item.val == false;
             });
 
-            if (standard_gate[0]) {
-                offcut_gate_panel_count = 0;
+            if (isCustomGate[0]) {
+                offcut_gate_panel_count = 1;
             }
 
         } else {
-            C8 = info.settings.gate.size.width;
+            C8 = parseInt(info.settings.gate.size.width) + post_panel + 20 + 20;
         }
     }
 
@@ -250,7 +256,7 @@ function calculate_fences(data) {
 
     D20 = D19 < post_panel ? 0 : E18 - E19;
 
-    D20 = panel_options_data?.slug.includes('even') ? E18 - E17 : (D19 < 50 ? 0 : E18 - E19);
+    D20 = panel_options_data?.slug.includes('even') ? E18 - E17 : (D19 < post_panel ? 0 : E18 - E19);
 
 
 
@@ -265,7 +271,7 @@ function calculate_fences(data) {
 
         long_panel_count = even_panel_count;
         long_panel_length = Math.round(even_panel_length);
-
+  
     } else {
 
         long_panel_count = full_panel_count;
@@ -275,17 +281,14 @@ function calculate_fences(data) {
         short_panel_length = isNaN(E19) ? 0 : Math.round(E19);
     }
 
+
+
     offcut_panel_count = C20;
     offcut_panel_length = isNaN(D20) ? 0 : Math.round(D20);
 
     gate_count = isNaN(C21) ? 0 : C21;
-    gate_length = isNaN(D21) ? 0 : (D21 ? D21 - 50 - 20 - 20 : 0);
-
-    gate_width = parseInt(C8);
-    if (info.settings.gate.custom == false) {
-        gate_width = parseInt(gate_length);
-    }
-
+    gate_length = isNaN(D21) ? 0 : parseInt(D21) - gate_post_gaps;
+    gate_width = parseInt(gate_length);
 
 
     /*    

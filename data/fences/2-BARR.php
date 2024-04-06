@@ -200,7 +200,7 @@ $fences['barr'] = [
 			'action' => ['add', 'edit'],
 			'custom' => TRUE,
 			'size' => [
-				'width' => 975
+				'width' => 975 // + 50 + 20 + 20
 			],
 			'fields' => [
 				[

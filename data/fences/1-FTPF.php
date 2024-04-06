@@ -168,9 +168,9 @@ $fences['flat_top'] = [
 			'title' => 'Add / Remove Gate',
 			'label' => 'Gate',
 			'action' => ['add', 'edit'],
-			'custom' => FALSE,
+			'custom' => TRUE,
 			'size' => [
-				'width' => 1060
+				'width' => 970 // + 50 + 20 + 20
 			],
 			'fields' => [
 				[
@@ -211,7 +211,7 @@ $fences['flat_top'] = [
 							'title' => 'Even Size Panels 2400W',
 							'default' => TRUE,
 							'size' => [
-								'width' => 2450,
+								'width' => 2400 + 50,
 							]
 						],
 						[
@@ -219,7 +219,7 @@ $fences['flat_top'] = [
 							'type' => 'text_option',
 							'title' => 'Full Size Panels 2400W',
 							'size' => [
-								'width' => 2450,
+								'width' => 2400 + 50,
 							]
 						],
 						[
@@ -228,7 +228,7 @@ $fences['flat_top'] = [
 							'title' => 'Full Size Panels 3000W',
 							'desc' => 'ONLY Available In BLACK',
 							'size' => [
-								'width' => 3050,
+								'width' => 3000 + 50,
 							]
 						]
 					],

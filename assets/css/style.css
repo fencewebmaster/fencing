@@ -814,6 +814,11 @@ a.fc-tab-active {
     min-width: 60px;
     background: #fff;
 }
+.gate-offcut .offcut-body>div {
+    background: #f67925;
+    color: #fff;
+    border-color: #f67925;
+}
 
 .fencing-panel-gate {
     max-width: 95px;
@@ -4037,6 +4042,7 @@ thead.fc-border th:last-child {
     border: 1px solid #9e9e9e;
     border-radius: 5px;
     line-height: 14px;
+    z-index: 2;
 }
 
 
@@ -4857,4 +4863,24 @@ thead.fc-border th:last-child {
     z-index: 10;
     left: 10px;
     font-size: 10px !important;
+}
+
+.or-divider {
+    margin: 20px 0;
+    text-align: center;
+}
+.or-divider strong {
+    background: #fff;
+    width: 60px;
+    display: inline-block;
+}
+.or-divider div {
+    border-bottom: 1px solid #c2c2c2;
+    margin-top: -12px;
+}
+
+@media (max-width: 600px) {
+    .toast-container, .toast-container .toast {
+        width: 100% !important;
+    }
 }

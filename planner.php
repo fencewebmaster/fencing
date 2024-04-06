@@ -159,6 +159,8 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
 
         </div>
 
+
+
         <?php include 'views/planner/modals.php'; ?>
 
         <?php include 'views/fields.php'; ?>
