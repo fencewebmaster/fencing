@@ -627,6 +627,7 @@ function fencingBtnModal(event) {
                     HELPER.get_field_value(tag, v?.slug, _postValue);
 
                 } else {
+                    
                     HELPER.get_field_value(tag, v?.slug, opt?.slug);
                 }
 
@@ -842,7 +843,7 @@ function fcSelectPost() {
         modal_key = $('.fencing-container').attr('data-key'),
         fc_form_field = _this.closest(".fc-form-field");
 
-    if (_this.attr('data-key') && _this.attr('data-key') !== undefined) {
+    if (_this.attr('data-key') && _this.attr('data-key') !== "undefined") {
         modal_key = _this.attr('data-key');
     }
 
@@ -1135,7 +1136,7 @@ function fcSelectOption() {
     var leftRakedBefore = $('.left_raked-panel .fencing-panel-item-size').length;
     var rightRakedBefore = $('.right_raked-panel .fencing-panel-item-size').length;
 
-    if (_this.attr('data-key') && _this.attr('data-key') !== undefined) {
+    if (_this.attr('data-key') && _this.attr('data-key') !== "undefined") {
         modal_key = _this.attr('data-key');
     }
 

@@ -24,7 +24,7 @@ $fences['barr'] = [
 		[
 			'slug' => 'important_note',
 			'title' => 'Fence Height',
-			'description' => '<span class="mb-1 d-block">To meet pool compliance your fence height MUST BE above 1200H</span>',
+			'description' => '<span class="mb-1 d-block">To meet pool compliance your fence height MUST BE 1200H or more</span>',
 			'target' => '.step-2_notes',
 			'type' => 'important-note',
 		]

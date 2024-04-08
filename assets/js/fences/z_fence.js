@@ -999,6 +999,7 @@ FENCE = {
             var right_panel_class = ".post-right";
         }
 
+
         if (post_options_filtered_data.length) {
             //Get the value of Post Option
             var post_options_setting = post_options_filtered_data[0].settings.find(function(item) {
@@ -1024,7 +1025,7 @@ FENCE = {
                 panel_spacing_number.addClass(post_options_setting?.val);
 
             }
-
+            
         } else {
 
             // Get default post options
