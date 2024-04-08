@@ -103,7 +103,7 @@ ProjectPlan = {
         }
 
         // Left Raked + Gate Only
-        if( $('#pp-' + tab + ' [data-cart-key="left_raked_panel"]').length && $('#pp-' + tab + ' .fencing-panel-gate').length ) {
+        if( $('#pp-' + tab + ' [data-cart-key="left_raked_panel"]').length && $('#pp-' + tab + ' .fencing-panel-gate').length && $('#pp-' + tab + ' .panel-item').length == 1 ) {
             var gate = `<div class="fc-center-point">
                 <span class="fc-div-c-p"></span>
                 ${gate_size}<br>

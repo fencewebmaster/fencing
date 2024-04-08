@@ -683,17 +683,19 @@ function fencingBtnModal(event) {
     HELPER.set_field_value(filtered_data);
 
     // Default load of STD gate
-    if (!$('[name="width"]').val() || $('[name="use_std"]').is(':checked')) {
-        
-        var gateWidth = data?.settings?.gate?.size.width;
+    if( $(this).attr('id') == 'btn-gate' ) {
+        if (!$('[name="width"]').val() || $('[name="use_std"]').is(':checked')) {
+            
+            var gateWidth = data?.settings?.gate?.size.width;
 
-        $('[name="use_std"]').prop('checked', true);
-        $('[name="width"]').val(gateWidth);
+            $('[name="use_std"]').prop('checked', true);
+            $('[name="width"]').val(gateWidth);
 
-        FENCE.call('disabledCustomGate');
-        FENCE.call('calculateCustomGate');
+            FENCE.call('disabledCustomGate');
+            FENCE.call('calculateCustomGate');
 
-        // calculateCustomGate();
+            // calculateCustomGate();
+        }        
     }
 
 }
@@ -1018,11 +1020,16 @@ _doc.on('click', '[name="use_std"]', use_std);
 
 function use_std(e) {
 
-    $('[name="width"]').removeAttr('readonly').removeClass('disabled text-muted').val('').focus();
-    $('.fencing-qty-btn').removeClass('disabled');
-    $('.custom-gate button').removeAttr('disabled').removeClass('disabled btn-light').addClass('btn-dark');
+    $('[name="width"]').removeAttr('readonly')
+        .removeClass('disabled text-muted')
+        .val('')
+        .focus();
 
-    // 975 default gate width
+    $('.fencing-qty-btn').removeClass('disabled');
+    
+    $('.custom-gate button').removeAttr('disabled')
+        .removeClass('disabled btn-light')
+        .addClass('btn-dark');
 
     if ($('[name="use_std"]').is(':checked')) {
     
@@ -1032,6 +1039,8 @@ function use_std(e) {
         FENCE.call('disabledCustomGate');
 
         FCModal.close();
+
+        btnCalculate();
     }
 
 }

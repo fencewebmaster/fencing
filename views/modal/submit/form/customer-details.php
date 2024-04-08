@@ -1,12 +1,12 @@
-<div class="form-group fc-mb-1">
-    <div class="fc-row-container">
-        <div class="fc-col-half">
+<div class="form-group fc-mb-2">
+    <div class="row">
+        <div class="col">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">Name <span class="fc-text-danger">*</span></label>
                 <input type="text" name="name" id="name" class="form-control p-3 p-3" placeholder="Your Name" required>                  
             </div>
         </div>
-        <div class="fc-col-half">
+        <div class="col">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">Mobile <span class="fc-text-danger">*</span></label>
                 <input type="text" name="mobile" id="mobile" class="form-control p-3" placeholder="Your phone number" required>                          
