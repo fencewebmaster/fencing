@@ -688,12 +688,21 @@ function fencingBtnModal(event) {
             
             var gateWidth = data?.settings?.gate?.size.width;
 
+            /*
+                // Is custom gate
+                var gate_data = info.filter(function(item) {
+                    return item.control_key == 'gate';
+                });
+
+                isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
+            */
+
             $('[name="use_std"]').prop('checked', true);
             $('[name="width"]').val(gateWidth);
 
             FENCE.call('disabledCustomGate');
             FENCE.call('calculateCustomGate');
-
+            
             // calculateCustomGate();
         }        
     }

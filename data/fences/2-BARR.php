@@ -43,7 +43,7 @@ $fences['barr'] = [
 				[
 					'title' => 'Edit Left Side',
 					'marker' => 'A',
-					'class' => 'd-none',
+					'class' => '',
 					'slug' => 'left_option',
 					'type' => 'range_option',
 					'label' => '',
@@ -88,7 +88,7 @@ $fences['barr'] = [
 				],
 				[
 					'title' => 'Post Options',
-					'marker' => 'A',
+					'marker' => 'B',
 					'slug' => 'post_option',
 					'type' => 'image_option',
 					'key' => 'left_side',
@@ -307,7 +307,7 @@ $fences['barr'] = [
 				[
 					'title' => 'Edit Right Side',
 					'marker' => 'A',
-					'class' => 'd-none',
+					'class' => '',
 					'slug' => 'right_option',
 					'type' => 'range_option',
 					'label' => '',
@@ -323,12 +323,32 @@ $fences['barr'] = [
 							'size' => [
 								'width' => 0,
 							]
-						]
-					]
+						],
+						[
+							'slug' => 'no-post',
+							'type' => 'range_option',
+							'key' => 'right_side',
+							'image' => 'assets/img/webp/no-post-1.webp',
+							'title' => '',
+							'size' => [
+								'width' => -50,
+							]
+						],
+						[
+							'slug' => 'no-post-swivel-bracket',
+							'type' => 'range_option',
+							'key' => 'right_side',
+							'image' => 'assets/img/webp/no-post-2.webp',
+							'title' => '',
+							'size' => [
+								'width' => -50,
+							]
+						],
+					],
 				],
 				[
 					'title' => 'Post Options',
-					'marker' => 'A',
+					'marker' => 'B',
 					'slug' => 'post_option',
 					'type' => 'image_option',
 					'key' => 'left_side',

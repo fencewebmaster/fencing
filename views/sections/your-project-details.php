@@ -5,8 +5,8 @@
 
 	<div id="update_details-section">
 
-		<div class="fc-row-container">
-			<div class="fc-col-half">
+		<div class="row">
+			<div class="col-md">
 				<div class="fc-table-rounded-border fc-mb-2 fc-position-relative">
 				
 					<table class="fc-table fc-table-customer">
@@ -112,7 +112,7 @@
 
 			</div>
 
-			<div class="fc-col-half">
+			<div class="col-md">
 				<div class="fc-card fc-mb-2">
 
 					<div class="fc-card-header fc-bg-dark fc-border-top">

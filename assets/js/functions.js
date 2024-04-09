@@ -898,7 +898,7 @@ function updateOverAllLength(data) {
     }
     
     if( hasGate ) {
-        gate = FENCE.get('item', 'gate');
+        gate = FENCE.get(slug, 'gate');
     }
 
 
@@ -913,19 +913,17 @@ function updateOverAllLength(data) {
 
     fence_gate_posts_gaps = FENCE.get(slug, 'gate_posts_gaps');
 
-    gate_posts_gaps = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;
+    if( isCustomGate ) {
+        gate = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;
+    }
 
-/*
-    Use Custom Gate or change Overall Width to 1110mm
-    Use Custom Gate or change Overall Width to 2360mm
-    Minimum Overall Width for a gate is 600mm
-*/
+    gate_posts_gaps = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;
 
     if(gateOnly && !raked ||         
        gateOnly && !isCustomGate && !raked ||
-       isCustomGate && !raked) {
+       mbn < gate_posts_gaps && isCustomGate && !raked) {
 
-        var overall =  parseInt(gate_data[0]?.settings?.size) + fence_gate_posts_gaps;
+        var overall =  gate_posts_gaps;
 
         var msg = FENCE.settings.message.min_gate
             .replace(/{{overall}}/gi, overall);

@@ -635,7 +635,7 @@ ProjectPlan = {
                 clearInterval(x);
                 localStorage.removeItem('countdown-date');
                 document.getElementById(cont).innerHTML = '<div class="fc-loader-gif"></div>';
-                this.countDownTimer();
+                ProjectPlan.countDownTimer();
             }
 
         }, 1000);

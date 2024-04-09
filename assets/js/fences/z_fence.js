@@ -11,9 +11,9 @@ FENCE = {
         },
         item: {
             raked: 1300,
-            gate: 1060,                             
         },
         flat_top: {
+            gate: 970 + 50 + 20 + 20,                             
             post: 50,
             minOnGate: 1110,
             maxOnGate: 1160,
@@ -22,6 +22,7 @@ FENCE = {
             gate_posts_gaps: 50 + 20 + 20 + 50,
         },
         barr: {
+            gate: 975 + 25 + 20 + 20,                              
             post: 25,
             minOnGate: 1115,
             maxOnGate: 1165,
@@ -149,8 +150,6 @@ FENCE = {
         if($('.single-panel, #panel-item-0').length == 0 && $('.panel-item:not(.fencing-raked-panel)').length == 0 ) {
             $(FENCES.el.fencingPanelContainer+' .panel-post').after('<div id="panel-item-x" class="single-panel"></div>'); 
         }
-
-
 
 
         if (calc.short_panel.count) {
@@ -634,6 +633,11 @@ FENCE = {
 
         }).get();
 
+    
+        if( settings.fields.length == 0 && info[0]?.settings?.fields ) {
+            settings.fields = info[0].settings.fields;
+        }
+
         var filtered_data = info.filter(function(item) {
             return item.control_key != modal_key;
         });
@@ -647,6 +651,7 @@ FENCE = {
             });
 
         }
+
 
         localStorage.setItem('custom_fence-' + tab + '-' + i, JSON.stringify(filtered_data));
 
