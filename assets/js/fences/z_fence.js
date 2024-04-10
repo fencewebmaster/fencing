@@ -572,7 +572,7 @@ FENCE = {
                 gate.next().remove();
             } else {
                 gate.prev().prev().remove();
-                gate.prev().remove();
+                gate.prev().remove();setT
             }
 
             gate.remove();
@@ -620,24 +620,30 @@ FENCE = {
             'unit': FENCES.defaultValues.unit
         }
 
-        settings.fields = $('.fc-form-field:visible').map(function() {
+        if( $('.fc-form-field:visible').length ) {
 
-            var _this = $(this),
-                key = _this.attr('name'),
-                val = $.inArray(_this.attr('type'), ['radio', 'checkbox']) !== -1 ? ($('[name="use_std"]').is(':checked')) : _this.val(),
-                type = _this.attr('type'),
-                tag = _this.get(0).tagName.toLowerCase(),
-                obj = { key: key, val: val, tag: tag, type: type };
+            settings.fields = $('.fc-form-field:visible').map(function() {
 
-            return obj;
+                var _this = $(this),
+                    key = _this.attr('name'),
+                    val = $.inArray(_this.attr('type'), ['radio', 'checkbox']) !== -1 ? ($('[name="use_std"]').is(':checked')) : _this.val(),
+                    type = _this.attr('type'),
+                    tag = _this.get(0).tagName.toLowerCase(),
+                    obj = { key: key, val: val, tag: tag, type: type };
 
-        }).get();
+                return obj;
 
-    
-        if( settings.fields.length == 0 && info[0]?.settings?.fields ) {
-            settings.fields = info[0].settings.fields;
+            }).get();
+            
+        } else {
+
+            var gate_data = info.filter(function(item) {
+                return item.control_key == 'gate';
+            });
+
+            settings.fields = gate_data[0]?.settings?.fields || [];            
         }
-
+        
         var filtered_data = info.filter(function(item) {
             return item.control_key != modal_key;
         });
@@ -650,8 +656,7 @@ FENCE = {
                 settings: settings
             });
 
-        }
-
+        }   
 
         localStorage.setItem('custom_fence-' + tab + '-' + i, JSON.stringify(filtered_data));
 

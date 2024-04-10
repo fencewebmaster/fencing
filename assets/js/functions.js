@@ -1084,7 +1084,6 @@ $.fn.scrollTo = function(speed, offset) {
         scrollTop: $(this).offset().top - offset
     },  speed == undefined ? 100 : speed);
 
-
 }
 
 //----------------------------------------------------------------------------------

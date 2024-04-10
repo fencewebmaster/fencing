@@ -2466,7 +2466,7 @@ thead.fc-border th:last-child {
 
 #submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img span {
     background-color: #F5F5F5;
-    padding: 5px 0;
+    padding: 2px;
     position: relative;
     z-index: 2;
 }

@@ -11,6 +11,7 @@ ProjectPlan = {
 
         for (let i = 0; i < items; i++) {
 
+
             var section = `<div class="border p-3 rounded mb-4 mx-2">
                 <div class="row align-items-center mb-3">
                     <div class="col fw-bold">
@@ -24,7 +25,7 @@ ProjectPlan = {
                     </div>
                 </div>
                 <div class="plan-item">
-                    <div id="pp-${i}" class="dl-row"><div class="fc-result"><div class="fencing-panel-container"></div></div></div>
+                    <div id="pp-${i}" class="dl-row"><div class="fc-result"><div class="fencing-panel-container"><div class="fc-loader-gif"></div></div></div></div>
                 </div>
             </div> `;
 
@@ -34,9 +35,10 @@ ProjectPlan = {
                 $('#fc-fence-list').append(`<div style="dl-page-separator"></div>`);
             }
 
-            this.reload_load_fencing_items(i);
-
-            this.load_center_point(i);
+            setTimeout(function() {
+              ProjectPlan.reload_load_fencing_items(i);
+              ProjectPlan.load_center_point(i);
+            });
 
             if ($('#pp-' + i + ' .panel-post').hasClass('raked-panel-post')) {
                 $('#pp-' + i).addClass('has-raked');
@@ -197,6 +199,16 @@ ProjectPlan = {
             $('#pp-' + tab + ' .panel-item').first()
                 .find('.fc-div-c-p')
                 .after(first_point);
+        }
+
+        // Remove excess start center point
+        if( $('#pp-' + tab + ' .fc-center-point .fc-start-c-p').length > 1 ) {
+            $('#pp-' + tab + ' .fc-center-point .fc-start-c-p').last().remove();
+        }
+
+        // Remove excess end center point
+        if( $('#pp-' + tab + ' .fc-center-point .fc-end-c-p').length > 1 ) {
+            $('#pp-' + tab + ' .fc-center-point .fc-end-c-p').last().remove();
         }
 
     },
@@ -564,7 +576,7 @@ ProjectPlan = {
         var right_panel_post = $('#pp-' + tab + ' .right-panel-post.no-post span').text().replace('(', '').replace(')', '');
         $('#pp-' + tab + ' .right-panel-post.no-post span').text('(' + right_panel_post + ')');
 
-        $('.no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');
+        $('#pp-' + tab + ' .no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');
 
         FENCE.call('load_post_options_all', custom_fence, info, tab, calc);
 

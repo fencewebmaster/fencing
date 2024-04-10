@@ -685,27 +685,37 @@ function fencingBtnModal(event) {
     // Default load of STD gate
     if( $(this).attr('id') == 'btn-gate' ) {
         if (!$('[name="width"]').val() || $('[name="use_std"]').is(':checked')) {
-            
-            var gateWidth = data?.settings?.gate?.size.width;
 
-            /*
+            var gateWidth = data?.settings?.gate?.size.width,
+                use_std = true;
+
                 // Is custom gate
                 var gate_data = info.filter(function(item) {
                     return item.control_key == 'gate';
                 });
 
                 isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
-            */
 
-            $('[name="use_std"]').prop('checked', true);
-            $('[name="width"]').val(gateWidth);
 
-            FENCE.call('disabledCustomGate');
-            FENCE.call('calculateCustomGate');
+            if( isCustomGate ) {
+                gateWidth = gate_data[0]?.settings?.size;
+                use_std = false;
+            }
+
+
+                $('[name="use_std"]').prop('checked', use_std);
+                $('[name="width"]').val(gateWidth);
+
+                FENCE.call('disabledCustomGate');
+                FENCE.call('calculateCustomGate');
+
             
-            // calculateCustomGate();
-        }        
+            btnCalculate();
+
+        }       
+
     }
+
 
 }
 
