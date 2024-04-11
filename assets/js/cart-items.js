@@ -251,20 +251,32 @@ FENCES.cartItems = {
                         // Converter
                         FENCES.cartItems.item.gateKit2.slug = `${FENCES.cartItems.item.gateKit2.slug}+${fenceHeight}`;
                         array.push(FENCES.cartItems.item.gateKit2);
+                        
+                        // Remove Gate
+                        var gateCustomHeight = ['gate', fenceHeight].filter(Boolean).join('+');
+                        array = array.filter(function(item) {
+                            return !item.slug.includes(gateCustomHeight);
+                        });
 
-                        /*
-                        array.push(FENCES.cartItems.item.gateKit3);
-                        array.push(FENCES.cartItems.item.gateKit4);
-                        */
                     }
 
                 } else {
-                    // Converter
 
-                    var converterSlug = [FENCES.cartItems.item.gateKit2.slug, fenceHeight].filter(Boolean).join('+');
+                    if( !isSTDGate ) {
+    
+                        // Converter
+                        var converterSlug = [FENCES.cartItems.item.gateKit2.slug, fenceHeight].filter(Boolean).join('+');
 
-                    FENCES.cartItems.item.gateKit2.slug = converterSlug;
-                    array.push(FENCES.cartItems.item.gateKit2);
+                        FENCES.cartItems.item.gateKit2.slug = converterSlug;
+                        array.push(FENCES.cartItems.item.gateKit2);
+
+                        // Remove Gate
+                        array = array.filter(function(item) {
+                            return item.slug != 'gate';
+                        });
+
+                    }
+
                 }
 
             }

@@ -1039,6 +1039,16 @@ thead.fc-border th:last-child {
     border-right: 0;
 }
 
+.table-striped>tbody>tr>* {
+    border: 0;
+}
+.table-cart .fencing-qty-btn {
+    height: 30px;
+}
+.table-cart .fencing-mb-input {
+    max-width: 130px;
+}
+
 /* Forms fields */
 .fc-table-items .fc-form-control {
     display: none;
@@ -4794,9 +4804,10 @@ thead.fc-border th:last-child {
 
 .product-image {
     background-size: contain !important;
-    background-position: center !important;
     background-repeat: no-repeat !important;
-    width: 10% !important;
+    background-position: top !important;
+    padding-top: 20px !important;
+    width:100px;
 }
 
 .dl-row {

@@ -252,16 +252,16 @@ function fcResetItem(e) {
 
         var _this = $(this);
 
-        if (_this.find('.fc-form-control').length) {
-            var val = _this.find('.fc-item-value').data('original');
-            _this.find('.fc-form-control').val(val)
+        if (_this.find('.fc-form-field').length) {
+            var val = _this.closest('tr').data('original');
+            _this.find('.fc-form-field').val(val)
         }
     });
 
-    $(".fc-table-items .fc-form-control").css({ 'color': '#f67925' });
+    $(".fc-table-items .fc-form-field").css({ 'color': '#f67925' });
 
     setTimeout(function() {
-        $(".fc-table-items .fc-form-control").css({ 'color': '' });
+        $(".fc-table-items .fc-form-field").css({ 'color': '' });
     }, 500);
 
 }
@@ -360,13 +360,13 @@ $("#paymentFrm").validate({
                             $(".fc-table-items .fc-form-control").css({ 'color': '' });
                             HELPER.removeSectionOverlay();
                             $('.fc-item-value').show();
-                            $('.fc-table-items input, .fc-reset-item').hide();
+                            // $('.fc-table-items input, .fc-reset-item').hide();
 
                             window.onbeforeunload = function() {}
 
                         }, 500);
 
-                        $('.js-fc-edit-item span').html('Edit');
+                        // $('.js-fc-edit-item span').html('Edit');
 
                     } catch (err) {
                         console.log('err: ', response);
