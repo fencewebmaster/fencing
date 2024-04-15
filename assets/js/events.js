@@ -171,7 +171,7 @@ function btnGate() {
     var _this = $(this),
         data = {};
 
-    if (_this.text().toLowerCase().indexOf('edit') > -1) {
+    if (_this.hasClass('edit-gate')) {
         return;
     }
 
@@ -684,17 +684,20 @@ function fencingBtnModal(event) {
 
     // Default load of STD gate
     if( $(this).attr('id') == 'btn-gate' ) {
+
+        checkGateOnly();
+
         if (!$('[name="width"]').val() || $('[name="use_std"]').is(':checked')) {
 
             var gateWidth = data?.settings?.gate?.size.width,
                 use_std = true;
 
-                // Is custom gate
-                var gate_data = info.filter(function(item) {
-                    return item.control_key == 'gate';
-                });
+            // Is custom gate
+            var gate_data = info.filter(function(item) {
+                return item.control_key == 'gate';
+            });
 
-                isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
+            isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
 
 
             if( isCustomGate ) {
@@ -702,14 +705,12 @@ function fencingBtnModal(event) {
                 use_std = false;
             }
 
+            $('[name="use_std"]').prop('checked', use_std);
+            $('[name="width"]').val(gateWidth);
 
-                $('[name="use_std"]').prop('checked', use_std);
-                $('[name="width"]').val(gateWidth);
-
-                FENCE.call('disabledCustomGate');
-                FENCE.call('calculateCustomGate');
-
-            
+            FENCE.call('disabledCustomGate');
+            FENCE.call('calculateCustomGate');
+        
             btnCalculate();
 
         }       

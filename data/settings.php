@@ -10,7 +10,7 @@ $fences_data = array();
 foreach($fences as $fik => $fence_info ) {
 	$fences_data[$fik] = $fence_info;
 
-	if( !$fence_info['live'] && !in_array('dev', $uri_segments) && !in_array($_SERVER['HTTP_HOST'], ['localhost', '192.168.1.12', '192.168.1.24']) ) {
+	if( !$fence_info['live'] && !in_array('dev', $uri_segments) && !in_array($_SERVER['HTTP_HOST'], ['localhost', '192.168.1.8']) ) {
 		unset($fences_data[$fik]);
 	} 
 }

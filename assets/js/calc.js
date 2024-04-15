@@ -101,8 +101,9 @@ function calculate_fences(data) {
 
     gate_post_gaps = FENCE.get(i, 'gate_post_gaps');
     post_panel = FENCE.get(i, 'post');
-    no_post = -post_panel;
 
+    no_post = -post_panel;
+    
     fence_height = '';
     if (info?.form) {
         fence_height = parseInt($('[name="fence_height"]').val());
@@ -121,7 +122,6 @@ function calculate_fences(data) {
     C3 = parseInt($('.measurement-box-number').val()); // overall width
     C3 = C3 ? C3 : custom_fence_tab[0]?.calculateValue;
 
-    C4 = $('.left-panel-post.no-post').length ? no_post : 0; // edit left side
 
     panel_options_data = get_field_options(custom_fence, info, 'panel_options');
 
@@ -157,8 +157,6 @@ function calculate_fences(data) {
     }
 
     C6 = 0; // post options
-
-    C7 = $('.right-panel-post.no-post').length ? no_post : 0; // edit right side
 
     var gate_data = custom_fence.filter(function(item) {
         return item.control_key == 'gate';
@@ -305,6 +303,46 @@ function calculate_fences(data) {
         console.log('gate', gate_count, gate_width);
     */
 
+    _post = 0;
+
+    var left_side = custom_fence.filter(function(item) {
+        return item.control_key == 'left_side';
+    });
+
+    if(left_side.length) {
+        var left_side = left_side[0]?.settings?.filter(function(item) {
+            return item.key == 'left_option';
+        });
+
+
+        if(left_side[0]?.val == 'no-post') {
+            _post += post_panel;
+        }        
+    }
+
+    var right_side = custom_fence.filter(function(item) {
+        return item.control_key == 'right_side';
+    });
+
+    if(right_side.length) {
+        var right_side = right_side[0]?.settings?.filter(function(item) {
+            return item.key == 'right_option';
+        });
+
+        if(right_side[0]?.val == 'no-post') {
+            _post += post_panel;
+        }        
+    }
+
+    if( _post ) {
+        divided_post = _post/(long_panel_count + short_panel_count);
+
+        full_panel_length = full_panel_length + divided_post;
+        even_panel_length = even_panel_length + divided_post;
+        long_panel_length = long_panel_length + divided_post;
+        short_panel_length = short_panel_length + divided_post;        
+    }
+
     data = {
         'fence_size': {
             'width': '',
@@ -353,6 +391,7 @@ function calculate_fences(data) {
             'panel_option': panel_options_data?.slug
         }
     }
+
 
     return data;
 }

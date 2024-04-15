@@ -10,9 +10,11 @@ $edited = FALSE;
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
     <div class="fc-table-rounded-border mb-3">
         
+
         <table class="table-cart table table-hover fc-table-bordered table-striped">
             <thead class="table-dark">
                 <tr>
+                    <th class="d-none d-md-table-cell">QTY</th>
                     <th colspan="2">Description</th>
                     <th class="text-center d-md-table-cell d-none">In-stock</th>
                 </tr>
@@ -25,6 +27,25 @@ $edited = FALSE;
                 <input name="cart[original_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['original_qty']; ?>" class="fc-form-control" min="1" required>
 
                 <tr class="fc-position-relative" data-original="<?php echo $cart_item['original_qty']; ?>">
+
+                    <td class="d-none d-md-table-cell">
+
+
+                        <input type="hidden" name="cart[qty][<?php echo $ci; ?>]" class="fc-form-field input-qty" value="<?php echo @$cart_item['qty']; ?>">
+
+                        <div class="fencing-mb-input bg-white mt-3">
+                            <div class="d-flex align-items-center">
+                                <div class="fencing-qty-minus fencing-qty-btn px-2"> 
+                                    <i class="fa fa-minus"></i>
+                                </div>        
+                                <input type="text" class="numeric fc-form-field text-center no-enter" input-type="number" data-min="0" maxlength="6" data-max="999999" value="<?php echo @$cart_item['qty']; ?>"> 
+                                <div class="fencing-qty-plus fencing-qty-btn px-2">
+                                    <i class="fa fa-plus"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </td>
 
                     <?php $featured_image = add_filepath_last(@$cart_item['image']); ?>
                     <td style="background:url(<?php echo @$featured_image; ?>);" class="product-image">
@@ -49,8 +70,19 @@ $edited = FALSE;
                         <small class="fc-text-success d-nonex"><?php echo @$cart_item['slug']; ?></small>
                         <?php endif; ?>
 
-
-
+                        <div class="d-md-none d-table-cell">
+                            <div class="fencing-mb-input bg-white mt-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="fencing-qty-minus fencing-qty-btn px-2"> 
+                                        <i class="fa fa-minus"></i>
+                                    </div>        
+                                    <input type="text" class="numeric fc-form-field text-center no-enter" input-type="number" data-min="0" maxlength="6" data-max="999999" value="<?php echo @$cart_item['qty']; ?>"> 
+                                    <div class="fencing-qty-plus fencing-qty-btn px-2">
+                                        <i class="fa fa-plus"></i>
+                                    </div>
+                                </div>
+                            </div>                    
+                        </div>
 
                         <?php if( @$cart_item['qty'] != @$cart_item['original_qty'] ): ?>
                         <div class="qty-edited" data-toggle="toggle" title="Edited">
@@ -58,18 +90,6 @@ $edited = FALSE;
                         </div>
                         <?php $edited = TRUE; ?>
                         <?php endif; ?>
-
-                        <div class="fencing-mb-input bg-white mt-3">
-                            <div class="d-flex align-items-center">
-                                <div class="fencing-qty-minus fencing-qty-btn px-2"> 
-                                    <i class="fa fa-minus"></i>
-                                </div>        
-                                <input name="cart[qty][<?php echo $ci; ?>]" type="text" class="numeric fc-form-field text-center no-enter" input-type="number" data-min="0" maxlength="6" data-max="999999" value="<?php echo @$cart_item['qty']; ?>"> 
-                                <div class="fencing-qty-plus fencing-qty-btn px-2">
-                                    <i class="fa fa-plus"></i>
-                                </div>
-                            </div>
-                        </div>
 
 
                     </td>

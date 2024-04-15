@@ -67,13 +67,6 @@
             <!-- [START] PANEL CONTROLS -->   
             <span class="fencing-section__cmp fencing-panel-controls"></span>
 
-            <span class="mb-2">
-                <label>
-                    <input type="checkbox" name="gate_only">
-                    Gate Only
-                </label>                
-            </span>
-
 
             <!-- [END] PANEL CONTROLS -->
         </div>

@@ -51,6 +51,7 @@
 .cp_no-post--right .fc-div-c-p:nth-child(2),
 .cp_no-post--right .fc-end-c-p {
     color: #f70000;
+    z-index: 1;
 }
 
 .panel-post {}

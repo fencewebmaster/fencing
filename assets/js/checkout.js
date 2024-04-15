@@ -277,6 +277,17 @@ function btnSubmit(e) {
     $('form').submit();
 }
 
+
+
+_doc.on('click', '.fencing-qty-btn', inputQty);
+_doc.on('keyup', '.table-cart [input-type="number"]', inputQty);
+
+function inputQty(e) {
+    var _this = $(this);
+    var val = _this.closest('.fencing-mb-input').find('input').val();
+    _this.closest('tr').find('.fc-form-field').val(val);
+}
+
 /* ----------------------------------------------------------------
     [END] CLICK EVENT
     ---------------------------------------------------------------- */

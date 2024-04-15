@@ -13,7 +13,7 @@
 </div>
 
 <?php if( in_uri_segment(demo_stages()) ): ?>
-<span class="badge bg-danger text-white text-uppercase p-1 is-demo">Demo<br> Version</span>
+<span class="badge bg-danger text-white text-uppercase p-1 is-demo">Test<br> Version</span>
 <?php endif; ?>
 
 

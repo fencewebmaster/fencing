@@ -1,4 +1,11 @@
 <div class="mb-2">
+    <label>
+        <input type="checkbox" name="gate_only">
+        Gate Only
+    </label>                
+</div>
+
+<div class="mb-2">
 	<input type="checkbox" name="use_std" id="use_std" class="fc-form-field" value="yes">
 	<label for="use_std">Use STD Gate Width</label>				
 </div>
@@ -15,7 +22,7 @@
 	                <i class="fa fa-minus"></i>
 	            </div>
 	            
-	   	        <input name="width" type="text" class="numeric fc-form-field text-center py-1" input-type="number" data-min="300" maxlength="{{maxLength}}" data-max="{{maxWidth}}"> 
+	   	        <input name="width" type="number" class="numeric fc-form-field text-center py-1" input-type="number" data-min="300" maxlength="{{maxLength}}" data-max="{{maxWidth}}"> 
 	        
 	            <span class="me-2">mm</span>   
 

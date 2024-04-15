@@ -911,7 +911,11 @@ function updateOverAllLength(data) {
 
     gateOnly = fd.tabInfo[0]?.gateOnly;
 
-    fence_gate_posts_gaps = FENCE.get(slug, 'gate_posts_gaps');
+    if( gateOnly ) {
+        fence_gate_posts_gaps = FENCE.get(slug, 'gate_posts_gaps');
+    } else {
+        fence_gate_posts_gaps = FENCE.get(slug, 'gate_post_gaps');        
+    }
 
     if( isCustomGate ) {
         gate = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;

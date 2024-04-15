@@ -51,171 +51,64 @@ ProjectPlan = {
 
     load_center_point: function(tab) {
 
-        var defaultCenterPoint = 25;
-        var defaultRakedWidth = 1200;
-        var gateGap = 20 + 20;
 
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
             custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
 
-        var i = custom_fence_tab[0]?.style;
-
-        var custom_fence = localStorage.getItem('custom_fence-' + tab + '-' + i),
-            custom_fence = custom_fence ? JSON.parse(custom_fence) : [];
-
-
         var overall = `<div class="fc-overall">${(custom_fence_tab[0]?.calculateValue).toLocaleString()} Overall</div>`;
-
-        var first_point = `<span class="fc-start-c-p">${defaultCenterPoint}</span>`;
-
-        gate_size = 970 + FENCE.get(i, 'post') + gateGap;
-
-
-        // Check if the gate is on the first order
-        if ($('#pp-' + tab + ' .fencing-panel-gate').prev().prev().index() == 1) {
-            var gate = `<div class="fc-center-point">
-                <span class="fc-div-c-p"></span>
-                ${gate_size}<br>
-                Centers
-            </div>`;
-        } else {
-            var gate = `<div class="fc-center-point fc-last-c-p">
-                <span class="fc-div-c-p"></span>
-                <span class="fc-div-c-p"></span>
-                ${gate_size}<br>
-                Centers
-            </div>`;
-        }
-
-        // No other panel & Gate only
-        if( $('#pp-' + tab + ' .fencing-panel-item').length == 1 && $('#pp-' + tab + ' .fencing-panel-gate').length || 
-            $('#pp-' + tab + ' [data-cart-key="right_raked_panel"]').length && $('#pp-' + tab + ' .fencing-panel-gate').length) {
-            var gate = `<div class="fc-center-point">
-                <span class="fc-div-c-p"></span>
-                <span class="fc-start-c-p">25</span>
-                ${gate_size}<br>
-                Centers
-            </div>`;
-
-            var last_point = `<div class="fc-center-point fc-last-c-p">
-                <span class="fc-div-c-p"></span>
-            </div>`;
-
-            $('#pp-' + tab + ' .fencing-panel-gate').prepend(last_point);
-        }
-
-        // Left Raked + Gate Only
-        if( $('#pp-' + tab + ' [data-cart-key="left_raked_panel"]').length && $('#pp-' + tab + ' .fencing-panel-gate').length && $('#pp-' + tab + ' .panel-item').length == 1 ) {
-            var gate = `<div class="fc-center-point">
-                <span class="fc-div-c-p"></span>
-                ${gate_size}<br>
-                Centers
-            </div>`;
-
-            var last_point = `<div class="fc-center-point fc-last-c-p">
-                <span class="fc-div-c-p"></span>
-            </div>`;
-
-            $('#pp-' + tab + ' .fencing-panel-gate').prepend(last_point);
-        }
-
-        var last_point = `<span class="fc-div-c-p"></span>
-            <span class="fc-div-c-p"></span>
-            <span class="fc-end-c-p">${defaultCenterPoint}</span><br>Centers`;
-
-        // No right raked panel & no post on the right & no gate
-        if (!$('#pp-' + tab + ' .right_raked-panel .fencing-raked-panel').length && $('#pp-' + tab + ' .post-right.panel-no-post').prev().prev().attr('data-key') != 'gate') {
-
-            if (!$('#pp-' + tab + ' .panel-item').last().next().next().next().hasClass('fencing-panel-gate')) {
-                $('#pp-' + tab + ' .panel-item').last()
-                    .find('.fc-center-point')
-                    .addClass('fc-last-c-p');
-            }
-
-            if ($('#pp-' + tab + ' .right-panel-post.no-post').length) {
-                $('#pp-' + tab + ' .fc-last-c-p').addClass('cp_no-post--right');
-            }
-
-            $('#pp-' + tab + ' .fc-last-c-p').prepend(`<span class="fc-end-c-p">${defaultCenterPoint}</span><span class="fc-div-c-p"></span>`);
-
-        }
 
         $('#pp-' + tab + ' .fc-result').append(overall);
 
-        $('#pp-' + tab + ' .fencing-panel-gate').append(gate);
+        // FIRST PANEL
+        $('#pp-' + tab + ' .fencing-panel-container .fencing-panel-item')
+            .first()
+            .addClass('first-item');
 
-
-        // If the gate is in the last order
-        if ($('#pp-' + tab + ' .panel-item').last().next().next().next().hasClass('fencing-panel-gate')) {
-            $('#pp-' + tab + ' .fc-last-c-p').append(`<span class="fc-end-c-p">${defaultCenterPoint}</span>`);
-        }
-
-        // No post on the left
-        if ($('#pp-' + tab + ' .post-left.panel-no-post').length) {
-
-            $('#pp-' + tab + ' .panel-item').first().find('.fc-center-point').addClass('fc-first-c-p');
-
-            // If there is no post and the next item is gate
-            if ($('#pp-' + tab + ' .post-left.panel-no-post').next().attr('data-key') == 'gate') {
-                $('#pp-' + tab + ' .fencing-panel-gate').find('.fc-center-point').addClass('cp_no-post--left');
-                $('#pp-' + tab + ' .cp_no-post--left').append(`<span class="fc-start-c-p">${defaultCenterPoint}</span><span class="fc-div-c-p"></span>`);
-            } else {
-                $('#pp-' + tab + ' .fc-first-c-p').addClass('cp_no-post--left');
-            }
-
-        }
-
-        // No post on the right
-        if ($('#pp-' + tab + ' .post-right.panel-no-post').length) {
-
-            // If there is no post and the previous item is gate
-            if ($('#pp-' + tab + ' .post-right.panel-no-post').prev().prev().attr('data-key') == 'gate') {
-
-                $('#pp-' + tab + ' .fencing-panel-gate').find('.fc-center-point').addClass('fc-last-c-p cp_no-post--right');
-                $('#pp-' + tab + ' .cp_no-post--right').prepend(`<span class="fc-end-c-p">${defaultCenterPoint}</span><span class="fc-div-c-p"></span>`);
-
-            } else {
-                $('#pp-' + tab + ' .fc-last-c-p').addClass('cp_no-post--right');
-            }
-
-        }
+        // LAST PANEL
+        $('#pp-' + tab + ' .fencing-panel-container .fencing-panel-item')
+            .last()
+            .addClass('last-item');
         
-        if ($('#pp-' + tab + ' .fencing-panel-gate').length && !$('#pp-' + tab + ' .left_raked-panel .fencing-raked-panel').length) {
+        // 1 RAKED 
+        if( $('#pp-' + tab + ' .fencing-panel-container .raked-panel .raked-panel-container').length == 1 ) {
+            $('#pp-' + tab + ' .fencing-panel-container .raked-panel').addClass('first-item last-item');
+        } else {
+            $('#pp-' + tab + ' .fencing-panel-container .left_raked-panel')
+                .first()
+                .addClass('first-item');
 
-            // If there is a gate and no step up & gate is not in the first order
-            if ($('#pp-' + tab + ' .fencing-panel-gate .fc-center-point .fc-start-c-p').length == 0 && $('#pp-' + tab + ' .panel-item').first().prev().prev().prev().hasClass('fencing-panel-gate')) {
-                $('#pp-' + tab + ' .fencing-panel-gate').find('.fc-div-c-p')
-                    .after(first_point);
-            }
-
+            $('#pp-' + tab + ' .fencing-panel-container .right_raked-panel')
+                .first()
+                .addClass('last-item');            
         }
 
-        if (!$('#pp-' + tab + ' .left_raked-panel .fencing-raked-panel').length) {
-            // If there is no step up
+        // NO POST ON LEFT
+        if( $('#pp-' + tab + ' .fencing-panel-container .left-panel-post.no-post').length ) {
+            $('#pp-' + tab + ' .fencing-panel-container .fc-center-point')
+                .first()
+                .addClass('cp_no-post--left');
         }
 
-        // If gate is not in the first order
-        if (!$('#pp-' + tab + ' .panel-item').first().prev().prev().prev().hasClass('fencing-panel-gate')) {
-            $('#pp-' + tab + ' .panel-item').first()
-                .find('.fc-div-c-p')
-                .after(first_point);
+        // NO POST ON RIGHT
+        if( $('#pp-' + tab + ' .fencing-panel-container .right-panel-post.no-post').length ) {
+            $('#pp-' + tab + ' .fencing-panel-container .fc-center-point')
+                .last()
+                .addClass('cp_no-post--right');
         }
 
-        // Remove excess start center point
-        if( $('#pp-' + tab + ' .fc-center-point .fc-start-c-p').length > 1 ) {
-            $('#pp-' + tab + ' .fc-center-point .fc-start-c-p').last().remove();
-        }
+        // remove Last center point in the middle panels
+        $('#pp-' + tab + ' .fencing-panel-container .fencing-panel-item .fc-last-c-p')
+            .not(":first")
+            .not(":last").remove();
 
-        // Remove excess end center point
-        if( $('#pp-' + tab + ' .fc-center-point .fc-end-c-p').length > 1 ) {
-            $('#pp-' + tab + ' .fc-center-point .fc-end-c-p').last().remove();
-        }
 
     },
 
     //----------------------------------------------------------------------------------
 
     reload_load_fencing_items: function(tab) {
+        
+        var center_post = FENCE.settings.item.center_point;
 
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
             custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
@@ -270,6 +163,7 @@ ProjectPlan = {
             var tpl = $('script[data-type="panel_item-' + info.panel_group + '"]').text()
                 .replace(/{{data_key}}/gi, center_point)
                 .replace(/{{center_point}}/gi, center_point)
+                .replace(/{{center_post}}/gi, center_post)
                 .replace(/{{panel_value}}/gi, panel_option_value)
                 .replace(/{{panel_size}}/gi, panel_size + 'W')
                 .replace(/{{panel_size_center}}/gi, (panel_size + center_point) + 'W')
@@ -315,6 +209,7 @@ ProjectPlan = {
 
                 var tpl = $('script[data-type="short_panel_item-' + info.panel_group + '"]').text()
                     .replace(/{{center_point}}/gi, center_point)
+                    .replace(/{{center_post}}/gi, center_post)
                     .replace(/{{panel_size}}/gi, panel_size + 'W')
                     .replace(/{{panel_value}}/gi, panel_option_value)
                     .replace(/{{panel_size_center}}/gi, (panel_size + center_point) + 'W')
@@ -393,6 +288,8 @@ ProjectPlan = {
 
     re_update_gate: function(action, tab) {
 
+        var center_post = FENCE.settings.item.center_point;
+
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
             custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
 
@@ -422,8 +319,60 @@ ProjectPlan = {
 
         var panel_size = calc.gate.length,
             panel_unit = 'mm',
-            gate_size = calc.gate.width;
+            gate_size = calc.gate.width
+            panel_size_center = gate_size + 20 + 20 + center_point;
 
+
+
+        if (action == 'add' || action == 'edit') {
+
+            if (placement == -1 ) {
+ 
+                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
+                    .replace(/{{center_point}}/gi, center_point)
+                    .replace(/{{panel_size}}/gi, gate_size)
+                    .replace(/{{panel_size_center}}/gi, panel_size_center)
+                    .replace(/{{center_post}}/gi, center_post)
+                    .replace(/{{panel_unit}}/gi, panel_unit);
+
+                $('#pp-' + tab + ' #panel-item-0, #pp-' + tab + ' #panel-item-x').before(tpl);
+
+            } else if (find_gate.length && placement >= 0) {
+
+                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
+                    .replace(/{{center_point}}/gi, center_point)
+                    .replace(/{{panel_size}}/gi, gate_size)
+                    .replace(/{{panel_size_center}}/gi, panel_size_center)
+                    .replace(/{{center_post}}/gi, center_post)
+                    .replace(/{{panel_unit}}/gi, panel_unit);
+
+                $('#pp-' + tab + ' #panel-item-' + placement).after(tpl);
+
+
+            } else if (action == 'add' && placement == 0) {
+
+                temp = $('script[data-type="panel_gate-' + info.panel_group + '-l"]');
+
+                if($('.fencing-panel-items [data-key="panel_options"]').length) {
+                    temp = $('script[data-type="panel_gate-' + info.panel_group + '-r"]')
+                }
+
+                var tpl = temp.text()
+                    .replace(/{{center_point}}/gi, center_point)
+                    .replace(/{{panel_size}}/gi, gate_size)
+                    .replace(/{{panel_size_center}}/gi, panel_size_center)
+                    .replace(/{{center_post}}/gi, center_post)
+                    .replace(/{{panel_unit}}/gi, panel_unit);
+
+                var panelID = $('[data-cart-key="panel_options"].fencing-panel-item').attr('id');
+
+                $('#pp-' + tab + ' #'+panelID+', .fencing-panel-items .raked-panel-container').after(tpl);
+
+            }
+
+        }
+
+/*
         if (action == 'add' || action == 'edit') {
 
             if (placement == -1 || $('#pp-' + tab + ' #panel-item-x').length ) {
@@ -431,11 +380,10 @@ ProjectPlan = {
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)
+                    .replace(/{{panel_size_center}}/gi, panel_size_center)
                     .replace(/{{panel_unit}}/gi, panel_unit);
 
                 $('#pp-' + tab + ' #panel-item-0, #pp-' + tab + ' #panel-item-x').before(tpl);
-
-                $('#pp-' + tab + ' #btn-gate').html('Edit Gate');
 
             }
 
@@ -445,14 +393,14 @@ ProjectPlan = {
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)
+                    .replace(/{{panel_size_center}}/gi, panel_size_center)
                     .replace(/{{panel_unit}}/gi, panel_unit);
 
                 $('#pp-' + tab + ' #panel-item-' + placement).after(tpl);
 
-                $('#pp-' + tab + ' #btn-gate').html('Edit Gate');
             }
 
-        }
+        }*/
 
         $('#pp-' + tab + ' .fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
             .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
@@ -464,6 +412,8 @@ ProjectPlan = {
     //----------------------------------------------------------------------------------
 
     re_update_raked_panels: function(side, tab) {
+
+        var center_post = FENCE.settings.item.center_point;
 
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
             custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
@@ -483,7 +433,7 @@ ProjectPlan = {
         var cf_data = { item: i, tab: tab },
             calc = calculate_fences(cf_data);
 
-        var defaultCenterPoint = 25;
+        var center_post = FENCE.settings.item.center_point;
 
         $(side).each(function(k, v) {
 
@@ -533,9 +483,9 @@ ProjectPlan = {
                         .replace(/{{center_point}}/gi, center_point)
                         .replace(/{{panel_size}}/gi, panel_h)
                         .replace(/{{panel_unit}}/gi, panel_w)
-                        .replace(/{{panel_unit_center}}/gi, panel_w + center_point)
+                        .replace(/{{panel_size_center}}/gi, panel_w + center_point)
                         .replace(/{{post}}/gi, has_post)
-                        .replace(/{{center_post}}/gi, defaultCenterPoint);
+                        .replace(/{{center_post}}/gi, center_post);
 
                     if (typeof panel_h !== "undefined") {
                         $('#pp-' + tab + ' .' + v + '-panel').html(tpl);
