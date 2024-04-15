@@ -51,9 +51,13 @@ ProjectPlan = {
 
     load_center_point: function(tab) {
 
-
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
             custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
+
+        var panel_count = $('#pp-' + tab + ' .fencing-panel-container .fencing-panel-item').length,
+            left_raked_count = $('#pp-' + tab + ' .fencing-panel-container .left_raked-panel .raked-panel-container').length,
+            right_raked_count = $('#pp-' + tab + ' .fencing-panel-container .right_raked-panel .raked-panel-container').length 
+
 
         var overall = `<div class="fc-overall">${(custom_fence_tab[0]?.calculateValue).toLocaleString()} Overall</div>`;
 
@@ -98,9 +102,19 @@ ProjectPlan = {
 
         // remove Last center point in the middle panels
         $('#pp-' + tab + ' .fencing-panel-container .fencing-panel-item .fc-last-c-p')
-            .not(":first")
             .not(":last").remove();
 
+
+        // LEFT RAKED 
+        if( left_raked_count && panel_count > 1 ) {
+            $('#pp-' + tab + ' .fencing-panel-container .left_raked-panel .fc-last-c-p').remove();
+        } 
+
+        // RIGHT RAKED 
+        if( right_raked_count && panel_count > 1 ) {
+            $('#pp-' + tab + ' .fencing-panel-container .right_raked-panel .fc-first-c-p').remove();
+        } 
+   
 
     },
 
