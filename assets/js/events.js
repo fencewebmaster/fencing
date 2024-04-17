@@ -147,8 +147,8 @@ function fencingStyleItem() {
         if ($('.fencing-panel-item:visible').length > 0) {
             $('.fc-btn-next-step').removeAttr('disabled');
         }
-
         checkGateOnly();
+
     }, 100);
 
 }

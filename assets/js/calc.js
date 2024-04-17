@@ -337,10 +337,10 @@ function calculate_fences(data) {
     if( _post ) {
         divided_post = _post/(long_panel_count + short_panel_count);
 
-        full_panel_length = full_panel_length + divided_post;
-        even_panel_length = even_panel_length + divided_post;
-        long_panel_length = long_panel_length + divided_post;
-        short_panel_length = short_panel_length + divided_post;        
+        full_panel_length = Math.round(full_panel_length + divided_post);
+        even_panel_length = Math.round(even_panel_length + divided_post);
+        long_panel_length = Math.round(long_panel_length + divided_post);
+        short_panel_length = Math.round(short_panel_length + divided_post);        
     }
 
     data = {

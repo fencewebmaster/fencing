@@ -16,7 +16,7 @@ FENCE = {
         flat_top: {
             gate: 970 + 50 + 20 + 20,                             
             post: 50,
-            minOnGate: 1110,
+            minOnGate: 970 + 50 + 20 + 20 + 50, // 1110
             maxOnGate: 1160,
             minPanelWidthOnGate: 86,
             gate_post_gaps: 50 + 20 + 20,
@@ -25,7 +25,7 @@ FENCE = {
         barr: {
             gate: 975 + 25 + 20 + 20,                              
             post: 25,
-            minOnGate: 1115,
+            minOnGate: 975 + 25 + 20 + 20 + 25, // 1065
             maxOnGate: 1165,
             minPanelWidthOnGate: 86,
             gate_post_gaps: 25 + 20 + 20,
@@ -617,6 +617,7 @@ FENCE = {
 
         var settings = {
             'placement': placement,
+            'gateOnly': $('[name="gate_only"]:visible').is(':checked'),
             'index': $(FENCES.el.fencingPanelGate).index(),
             'size': size || default_width,
             'unit': FENCES.defaultValues.unit
