@@ -207,6 +207,8 @@ FENCES.cartItems = {
         var tabInfo = window.tabInfo,
             fenceInfo = window.fenceInfo;
 
+        // if(!tabInfo) return;
+
         if ($.inArray(tabInfo[0]?.fence, ['barr', 'flat_top']) !== -1) {
 
             /*

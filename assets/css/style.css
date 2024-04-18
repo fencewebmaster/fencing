@@ -685,13 +685,6 @@ a.fc-tab-active {
     align-items: center;
 }
 
-
-.first-item .fc-center-point .fc-start-c-p,
-.last-item .fc-center-point .fc-end-c-p {
-    display: block;
-}
-
-
 .fencing-panel-items .fencing-panel-container {
     margin: 0 auto;
 }
@@ -727,6 +720,11 @@ a.fc-tab-active {
     display: none;    
 }
 
+
+.first-item .fc-center-point .fc-start-c-p,
+.last-item .fc-center-point .fc-end-c-p {
+    display: block;
+}
 
 .fc-center-point:before {
     display: inline-block;

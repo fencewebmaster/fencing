@@ -16,7 +16,7 @@
 		<span class="fencing-panel-pinfix"></span>
 		<span class="fencing-panel-pinfix"></span>						
 	</div>
-</div>
+</div>xxxx
 
 <div class="fencing-panel-spacing-number">
 	<span>{{center_point}}</span>					

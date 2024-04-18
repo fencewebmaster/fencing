@@ -158,6 +158,20 @@ function fencingStyleItem() {
 _doc.on('click', '.fencing-style-item', fencingStyleItem_2);
 
 function fencingStyleItem_2() {
+
+
+    var fd = getSelectedFenceData();
+
+    var gate_data = fd.info.filter(function(item) {
+        return item.control_key == 'gate';
+    });
+
+    gateOnly = gate_data[0]?.settings?.gateOnly;
+
+    if(gateOnly) {
+        updateOverAllLength();
+    }
+
     FENCE.call('update_custom_fence_style_item');
     FENCE.call('set_cutom_fence_data');
 }

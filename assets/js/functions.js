@@ -450,21 +450,7 @@ function refreshLocalStorage(activeSectionIndex, target) {
 
 function submit_fence_planner(status = '') {
 
-    // window.onbeforeunload = function() {}
-
-    // Removed unwanted cart
-    removeItemStorageWith('cart_items-');
-
-    //Set some delay to make sure the local storage and the html markup are loaded
-    var items = localStorage.getItem('custom_fence-section') ?? 1;
-    for (let i = 0; i < items; i++) {
-        FENCES.cartItems.init(i);
-    }
-
     var set_fc_data = [];
-    var project_plans = JSON.parse(localStorage.getItem('project-plans'));
-    var cart_items = getCartItemStorage();
-
     var incompleteSection = 0;
 
     $(".fencing-tab").each(function() {
@@ -507,6 +493,20 @@ function submit_fence_planner(status = '') {
 
         return false;
     }
+
+    // window.onbeforeunload = function() {}
+
+    // Removed unwanted cart
+    removeItemStorageWith('cart_items-');
+
+    //Set some delay to make sure the local storage and the html markup are loaded
+    var items = localStorage.getItem('custom_fence-section') ?? 1;
+    for (let i = 0; i < items; i++) {
+        FENCES.cartItems.init(i);
+    }
+
+    var project_plans = JSON.parse(localStorage.getItem('project-plans'));
+    var cart_items = getCartItemStorage();
 
     var form = $('form')[0];
     var formData = new FormData(form);

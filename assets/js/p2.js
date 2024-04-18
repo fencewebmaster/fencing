@@ -101,8 +101,8 @@ ProjectPlan = {
         }
 
         // remove Last center point in the middle panels
-        $('#pp-' + tab + ' .fencing-panel-container .fencing-panel-item .fc-last-c-p')
-            .not(":last").remove();
+        $('#pp-' + tab + ' .fencing-panel-container .fencing-panel-item')
+            .not(":last").find('.fc-last-c-p').remove();
 
 
         // LEFT RAKED 
@@ -255,6 +255,7 @@ ProjectPlan = {
 
         this.re_update_raked_panels(['left_raked', 'right_raked'], tab);
 
+
         // Panel off-cut
         if (calc.offcut_panel.count && calc.offcut_panel.length) {
             var tpl = $('script[data-type="offcut"]').text()
@@ -284,8 +285,10 @@ ProjectPlan = {
         }
 
         // Remove offcut - On Gate
-        if( custom_fence_tab[0].mbn <= FENCE.get(info?.slug, 'minOnGate') ) {
-             $('.fencing-offcut').remove();
+        if( parseInt(custom_fence_tab[0].mbn) <= FENCE.get(i, 'maxOnGate') ) {
+            // $('.panel-offcut').remove();
+        } else if( parseInt(custom_fence_tab[0].mbn) <= FENCE.get(i, 'minOnGate') ) {
+            $('.fencing-offcut').remove();
         }
 
 

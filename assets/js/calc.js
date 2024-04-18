@@ -314,8 +314,7 @@ function calculate_fences(data) {
             return item.key == 'left_option';
         });
 
-
-        if(left_side[0]?.val == 'no-post') {
+        if(left_side[0]?.val.includes('no-post')) {
             _post += post_panel;
         }        
     }
@@ -329,10 +328,12 @@ function calculate_fences(data) {
             return item.key == 'right_option';
         });
 
-        if(right_side[0]?.val == 'no-post') {
+
+        if(right_side[0]?.val.includes('no-post')) {
             _post += post_panel;
         }        
     }
+
 
     if( _post ) {
         divided_post = _post/(long_panel_count + short_panel_count);
@@ -341,6 +342,7 @@ function calculate_fences(data) {
         even_panel_length = Math.round(even_panel_length + divided_post);
         long_panel_length = Math.round(long_panel_length + divided_post);
         short_panel_length = Math.round(short_panel_length + divided_post);        
+        offcut_panel_length = Math.round(offcut_panel_length - _post);
     }
 
     data = {
