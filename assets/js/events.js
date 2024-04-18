@@ -149,7 +149,7 @@ function fencingStyleItem() {
         }
         checkGateOnly();
 
-    }, 100);
+    }, 100);    
 
 }
 

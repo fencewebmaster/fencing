@@ -956,7 +956,7 @@ function updateOverAllLength(data) {
             .replace(/{{hasRaked}}/gi, hasRaked);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[2.1] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[3] "+FENCE.settings.message.oal_changed, msg);
 
     } else if(mbn < raked && hasRaked) {
         
@@ -967,7 +967,7 @@ function updateOverAllLength(data) {
             .replace(/{{hasRaked}}/gi, hasRaked);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[3] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[4] "+FENCE.settings.message.oal_changed, msg);
 
     } else if(mbn < FENCE.get(fd.slug, 'minOnGate') || 
               mbn < FENCE.get(fd.slug, 'minOnGate') && !isCustomGate) {
@@ -978,7 +978,7 @@ function updateOverAllLength(data) {
             .replace(/{{overall}}/gi, overall);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[4] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[5] "+FENCE.settings.message.oal_changed, msg);
 
     } else if(gateOnly) {
         
@@ -988,7 +988,7 @@ function updateOverAllLength(data) {
             .replace(/{{overall}}/gi, overall);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[5] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[6] "+FENCE.settings.message.oal_changed, msg);
 
     }
 
@@ -1017,12 +1017,14 @@ function checkGateOnly() {
 
     var fd = getSelectedFenceData(),
         slug = fd.slug,
-        tab = fd.tab,
-        keyb = `custom_fence-${tab}-${slug}`;
+        tab = fd.tab;
 
-    cfb = JSON.parse(localStorage.getItem(keyb));
+    var gate_data = fd.info.filter(function(item) {
+        return item.control_key == 'gate';
+    });
 
-    var value = cfb[0]?.settings?.gateOnly
+
+    var value = gate_data[0]?.settings?.gateOnly
 
     $('[name="gate_only"]').prop('checked', value);
 
