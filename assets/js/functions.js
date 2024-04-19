@@ -911,11 +911,12 @@ function updateOverAllLength(data) {
 
     gateOnly = gate_data[0]?.settings?.gateOnly;
 
+    var minusPosts = FENCE.minus_posts(fd.info);
 
     if( gateOnly ) {
-        fence_gate_posts_gaps = FENCE.get(slug, 'gate_posts_gaps');
+        fence_gate_posts_gaps = parseInt(FENCE.get(slug, 'gate_posts_gaps'));
     } else {
-        fence_gate_posts_gaps = FENCE.get(slug, 'gate_post_gaps');        
+        fence_gate_posts_gaps = parseInt(FENCE.get(slug, 'gate_post_gaps'));        
     }
 
     if( isCustomGate ) {
@@ -936,6 +937,16 @@ function updateOverAllLength(data) {
         if(overall != _mbn.val() && !isNaN(overall)) 
             popupToast("[1] "+FENCE.settings.message.oal_changed, msg);
 
+    } else if(!isCustomGate && mbn < FENCE.get(fd.slug, 'minOnGate')) {
+
+        var overall = FENCE.get(fd.slug, 'minOnGate') - minusPosts;
+
+        var msg = FENCE.settings.message.min_gate_custom
+            .replace(/{{overall}}/gi, overall);
+
+        if(overall != _mbn.val() && !isNaN(overall)) 
+            popupToast("[2] Alert", msg);
+
     } else if(mbn < (raked + gate) && hasRaked && hasGate) {
         
         var overall = raked + gate;
@@ -945,7 +956,7 @@ function updateOverAllLength(data) {
             .replace(/{{hasRaked}}/gi, hasRaked);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[2] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[3] "+FENCE.settings.message.oal_changed, msg);
 
     } else if(mbn < (raked + gate_posts_gaps) && hasRaked && isCustomGate) {
         
@@ -956,7 +967,7 @@ function updateOverAllLength(data) {
             .replace(/{{hasRaked}}/gi, hasRaked);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[3] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[4] "+FENCE.settings.message.oal_changed, msg);
 
     } else if(mbn < raked && hasRaked) {
         
@@ -967,18 +978,17 @@ function updateOverAllLength(data) {
             .replace(/{{hasRaked}}/gi, hasRaked);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[4] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[5] "+FENCE.settings.message.oal_changed, msg);
 
-    } else if(mbn < FENCE.get(fd.slug, 'minOnGate') || 
-              mbn < FENCE.get(fd.slug, 'minOnGate') && !isCustomGate) {
+    } else if(mbn < FENCE.get(fd.slug, 'minOnGate') && !isCustomGate) {
         
-        var overall = FENCE.get(fd.slug, 'minOnGate');
+        var overall = FENCE.get(fd.slug, 'minOnGate') - minusPosts;
         
         var msg = FENCE.settings.message.min_gate
             .replace(/{{overall}}/gi, overall);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[5] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[6] "+FENCE.settings.message.oal_changed, msg);
 
     } else if(gateOnly) {
         
@@ -988,7 +998,7 @@ function updateOverAllLength(data) {
             .replace(/{{overall}}/gi, overall);
 
         if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[6] "+FENCE.settings.message.oal_changed, msg);
+            popupToast("[7] "+FENCE.settings.message.oal_changed, msg);
 
     }
 

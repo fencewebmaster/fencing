@@ -211,7 +211,6 @@ function calculate_fences(data) {
     right_raked_panel_height = step_up_panels?.size?.height;
     right_raked_panel_width = isNaN(C10 - post_panel) ? 0 : C10 - post_panel;
 
-
     // C13 = 50*(C24+C22+C23);
     C14 = C3 - C8 - C9 - C10 - post_panel;
 
@@ -280,7 +279,6 @@ function calculate_fences(data) {
     }
 
 
-
     offcut_panel_count = C20;
     offcut_panel_length = isNaN(D20) ? 0 : Math.round(D20);
 
@@ -303,97 +301,66 @@ function calculate_fences(data) {
         console.log('gate', gate_count, gate_width);
     */
 
-    _post = 0;
-
-    var left_side = custom_fence.filter(function(item) {
-        return item.control_key == 'left_side';
-    });
-
-    if(left_side.length) {
-        var left_side = left_side[0]?.settings?.filter(function(item) {
-            return item.key == 'left_option';
-        });
-
-        if(left_side[0]?.val.includes('no-post')) {
-            _post += post_panel;
-        }        
-    }
-
-    var right_side = custom_fence.filter(function(item) {
-        return item.control_key == 'right_side';
-    });
-
-    if(right_side.length) {
-        var right_side = right_side[0]?.settings?.filter(function(item) {
-            return item.key == 'right_option';
-        });
-
-
-        if(right_side[0]?.val.includes('no-post')) {
-            _post += post_panel;
-        }        
-    }
-
+    var _post = FENCE.minus_posts(custom_fence);
 
     if( _post ) {
         divided_post = _post/(long_panel_count + short_panel_count);
 
         full_panel_length = Math.round(full_panel_length + divided_post);
         even_panel_length = Math.round(even_panel_length + divided_post);
-        long_panel_length = Math.round(long_panel_length + divided_post);
-        short_panel_length = Math.round(short_panel_length + divided_post);        
+        long_panel_length = Math.round(long_panel_length + divided_post);    
+        short_panel_length = Math.round(short_panel_length + divided_post);      
         offcut_panel_length = Math.round(offcut_panel_length - _post);
     }
 
     data = {
         'fence_size': {
             'width': '',
-            'height': fence_height,
+            'height': HELPER.isNaNtoZero(fence_height),
         },
         'full_panel': {
-            'count': full_panel_count,
-            'length': full_panel_length
+            'count': HELPER.isNaNtoZero(full_panel_count),
+            'length': HELPER.isNaNtoZero(full_panel_length)
         },
         'even_panel': {
-            'count': even_panel_count,
-            'length': even_panel_length
+            'count': HELPER.isNaNtoZero(even_panel_count),
+            'length': HELPER.isNaNtoZero(even_panel_length)
         },
         'long_panel': {
-            'count': long_panel_count,
-            'length': HELPER.isNumber(long_panel_length) ? long_panel_length : 0
+            'count': HELPER.isNaNtoZero(long_panel_count),
+            'length': HELPER.isNaNtoZero(long_panel_length)
         },
         'short_panel': {
-            'count': short_panel_count,
-            'length': short_panel_length
+            'count': HELPER.isNaNtoZero(short_panel_count),
+            'length': HELPER.isNaNtoZero(short_panel_length)
         },
         'offcut_panel': {
-            'count': offcut_panel_count,
-            'length': offcut_panel_length
+            'count': HELPER.isNaNtoZero(offcut_panel_count),
+            'length': HELPER.isNaNtoZero(offcut_panel_length)
         },
         'offcut_gate_panel': {
-            'count': offcut_gate_panel_count,
-            'length': offcut_gate_panel_length
+            'count': HELPER.isNaNtoZero(offcut_gate_panel_count),
+            'length': HELPER.isNaNtoZero(offcut_gate_panel_length)
         },
         'gate': {
-            'count': gate_count,
-            'width': gate_width,
-            'length': gate_length
+            'count': HELPER.isNaNtoZero(gate_count),
+            'width': HELPER.isNaNtoZero(gate_width),
+            'length': HELPER.isNaNtoZero(gate_length)
         },
         'left_raked': {
-            'count': gate_count,
-            'height': left_raked_panel_height,
-            'width': left_raked_panel_width,
+            'height': HELPER.isNaNtoZero(left_raked_panel_height),
+            'width': HELPER.isNaNtoZero(left_raked_panel_width),
         },
         'right_raked': {
-            'count': gate_count,
-            'height': right_raked_panel_height,
-            'width': right_raked_panel_width,
+            'height': HELPER.isNaNtoZero(right_raked_panel_height),
+            'width': HELPER.isNaNtoZero(right_raked_panel_width),
         },
         'selected_values': {
             'panel_option': panel_options_data?.slug
         }
     }
 
+    console.log(data);
 
     return data;
 }

@@ -6,6 +6,7 @@ FENCE = {
         message: {
             oal_changed: "Overall Length has changed!",
             min_gate: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm",
+            min_gate_custom: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b>",
             min_gate_raked: "Minimum <b>Overall Length</b> for a <b>GATE & {{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_raked: "Minimum <b>Overall Length</b> for <b>{{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm"
         },
@@ -1168,9 +1169,45 @@ FENCE = {
         FENCE.call('load_fencing_items');
 
         $(".fencing-display-result").scrollCenter(".fencing-panel-gate", 300);
-    }
+    },
 
     //----------------------------------------------------------------
 
+    minus_posts: function(custom_fence) {
+        _post = 0;
+
+        var left_side = custom_fence.filter(function(item) {
+            return item.control_key == 'left_side';
+        });
+
+        if(left_side.length) {
+            var left_side = left_side[0]?.settings?.filter(function(item) {
+                return item.key == 'left_option';
+            });
+
+            if(left_side[0]?.val.includes('no-post')) {
+                _post += post_panel;
+            }        
+        }
+
+        var right_side = custom_fence.filter(function(item) {
+            return item.control_key == 'right_side';
+        });
+
+        if(right_side.length) {
+            var right_side = right_side[0]?.settings?.filter(function(item) {
+                return item.key == 'right_option';
+            });
+
+
+            if(right_side[0]?.val.includes('no-post')) {
+                _post += post_panel;
+            }        
+        }
+        
+        return _post;
+    }
+
+    //----------------------------------------------------------------
 
 }

@@ -527,6 +527,16 @@ HELPER = {
 
     //----------------------------------------------------------------------------------
 
+    isNaNtoZero: function(number) {
+
+        number = Math.round(number);
+        number = isNaN(number) || number == Infinity || number <= 0 ? 0 : number;
+
+        return number;
+    },
+
+    //----------------------------------------------------------------------------------
+
     call_fence_func: function(_this, func, a, b, c, d, e, f) {
         try {
             _this[func](a, b, c, d, e, f);
