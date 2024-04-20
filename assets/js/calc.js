@@ -313,6 +313,7 @@ function calculate_fences(data) {
         offcut_panel_length = Math.round(offcut_panel_length - _post);
     }
 
+
     data = {
         'fence_size': {
             'width': '',

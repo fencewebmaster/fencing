@@ -886,7 +886,7 @@ FENCE = {
             .replace('(', '')
             .replace(')', '');
 
-        $('.left-panel-post.no-post span').text('(-' + left_panel_post + ')');
+        $('.left-panel-post.no-post span').text('(0)');
 
         // Right Panel Post
         var right_panel_post = $('.right-panel-post.no-post span').text()
@@ -894,7 +894,7 @@ FENCE = {
             .replace('(', '')
             .replace(')', '');
 
-        $('.right-panel-post.no-post span').text('(-' + right_panel_post + ')');
+        $('.right-panel-post.no-post span').text('(0)');
 
         $('.no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');
 

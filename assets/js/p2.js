@@ -537,11 +537,14 @@ ProjectPlan = {
             .replace('(', '')
             .replace(')', '');
 
-        $('#pp-' + tab + ' .left-panel-post.no-post span').text('(-' + left_panel_post + ')');
+        $('#pp-' + tab + ' .left-panel-post.no-post span').text('(0)');
 
         // Right Panel Post
-        var right_panel_post = $('#pp-' + tab + ' .right-panel-post.no-post span').text().replace('(', '').replace(')', '');
-        $('#pp-' + tab + ' .right-panel-post.no-post span').text('(-' + right_panel_post + ')');
+        var right_panel_post = $('#pp-' + tab + ' .right-panel-post.no-post span').text()
+            .replace('(', '')
+            .replace(')', '');
+
+        $('#pp-' + tab + ' .right-panel-post.no-post span').text('(0)');
 
         $('#pp-' + tab + ' .no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');
 
