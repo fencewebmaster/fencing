@@ -85,44 +85,6 @@ function removePanelItem() {
 
 //----------------------------------------------------------------------------------
 
-_doc.on('click', '[name="gate_only"]', gateOnly);
-
-function gateOnly() {
-    var _this = $('[name="gate_only"]'),
-        data = {};
-
-    var fd = getSelectedFenceData(),
-        slug = fd.slug,
-        tab = fd.tab,
-        mbn = fd.mbn;
-
-    // Save custom fields changes
-    if( _this.is(':checked') ) {
-
-        updateGateOnly(true);
-        removeStepPanels();
-        updateOverAllLength();
-
-        FENCE.call('update_gate', 'add');
-        FENCE.call('update_custom_fence_gate');
-
-        btnCalculate();
-        
-    } else {
-
-        updateGateOnly(false);
-
-        FENCE.call('move_the_gate', 'delete');
-
-        $('[name="width"]').val('');
-    }
-
-    btnCalculate();
-
-}
-
-//----------------------------------------------------------------------------------
-
 _doc.on('click', '.fencing-style-item', fencingStyleItem);
 
 function fencingStyleItem() {
@@ -381,6 +343,109 @@ _doc.on('click', '.fencing-modal .fc-select', fencingModalFcSelect);
 function fencingModalFcSelect() {
     FCModal.close();
     $('.fc-btn-active').removeClass('fc-btn-active');
+}
+
+//----------------------------------------------------------------------------------
+
+_doc.on('click', '.fc-select-2', fcSelect2);
+
+function fcSelect2() {
+    var _this = $(this),
+        _checkbox = _this.find('[type="checkbox"]'),
+        _radio = _this.find('[type="radio"]');
+
+    if( _checkbox.length ) {
+        var val = _checkbox.is(':checked') ? false : true;
+
+        _this.toggleClass('fc-selected');
+        _checkbox.prop('checked', val);
+
+    } else if( _radio.length ) {
+
+        var val = _radio.is(':checked') ? false : true;
+
+        _this.closest('.fc-form-field').find('.fc-selected').removeClass('fc-selected');    
+        _this.addClass('fc-selected');
+        _radio.prop('checked', val);
+    }
+}
+
+
+//----------------------------------------------------------------------------------
+
+_doc.on('click', '.select-gate_only', gateOnly);
+
+function gateOnly() {
+    var _this = $('[name="gate_only"]:visible'),
+        data = {};
+
+    var fd = getSelectedFenceData(),
+        slug = fd.slug,
+        tab = fd.tab,
+        mbn = fd.mbn;
+
+    // Save custom fields changes
+    if( _this.is(':checked') ) {
+
+        updateGateOnly(true);
+        removeStepPanels();
+        updateOverAllLength();
+
+        FENCE.call('update_gate', 'add');
+        FENCE.call('update_custom_fence_gate');
+
+        btnCalculate();
+        
+    } else {
+
+        updateGateOnly(false);
+
+        FENCE.call('move_the_gate', 'delete');
+
+        $('[name="width"]').val('');
+    }
+
+    btnCalculate();
+
+}
+
+//----------------------------------------------------------------------------------
+
+_doc.on('click', '.select-use_std', use_std);
+
+function use_std(e) {
+    var _this = $(this),
+        val = _this.attr('data-val');
+
+    $('[name="use_std"]').prop('checked', val=='std'?true:false);    
+
+    _this.closest('.fc-form-field').find('.fc-selected').removeClass('fc-selected');    
+    _this.addClass('fc-selected');
+
+    $('[name="width"]').removeAttr('readonly')
+        .removeClass('disabled text-muted')
+        .val('')
+        .focus();
+
+    $('.fencing-qty-btn').removeClass('disabled');
+    
+    $('.custom-gate button').removeAttr('disabled')
+        .removeClass('disabled btn-light')
+        .addClass('btn-dark');
+   
+
+    if($('[name="use_std"]').is(':checked')) {
+    
+        updateOverAllLength();
+
+        FENCE.call('calculateCustomGate');
+        FENCE.call('disabledCustomGate');
+
+        FCModal.close();
+
+        btnCalculate();
+    }
+
 }
 
 //----------------------------------------------------------------------------------
@@ -701,26 +766,9 @@ function fencingBtnModal(event) {
 
         checkGateOnly();
 
+        checkGateWidthType();
+
         if (!$('[name="width"]').val() || $('[name="use_std"]').is(':checked')) {
-
-            var gateWidth = data?.settings?.gate?.size.width,
-                use_std = true;
-
-            // Is custom gate
-            var gate_data = info.filter(function(item) {
-                return item.control_key == 'gate';
-            });
-
-            isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
-
-
-            if( isCustomGate ) {
-                gateWidth = gate_data[0]?.settings?.size;
-                use_std = false;
-            }
-
-            $('[name="use_std"]').prop('checked', use_std);
-            $('[name="width"]').val(gateWidth);
 
             FENCE.call('disabledCustomGate');
             FENCE.call('calculateCustomGate');
@@ -1049,35 +1097,6 @@ function fcBtnCreatePlan() {
 }
 
 //----------------------------------------------------------------------------------
-
-_doc.on('click', '[name="use_std"]', use_std);
-
-function use_std(e) {
-
-    $('[name="width"]').removeAttr('readonly')
-        .removeClass('disabled text-muted')
-        .val('')
-        .focus();
-
-    $('.fencing-qty-btn').removeClass('disabled');
-    
-    $('.custom-gate button').removeAttr('disabled')
-        .removeClass('disabled btn-light')
-        .addClass('btn-dark');
-
-    if ($('[name="use_std"]').is(':checked')) {
-    
-        updateOverAllLength();
-
-        FENCE.call('calculateCustomGate');
-        FENCE.call('disabledCustomGate');
-
-        FCModal.close();
-
-        btnCalculate();
-    }
-
-}
 
 /* ----------------------------------------------------------------
     [END] CLICK EVENT

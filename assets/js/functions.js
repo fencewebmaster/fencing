@@ -1038,6 +1038,47 @@ function checkGateOnly() {
 
     $('[name="gate_only"]').prop('checked', value);
 
+    if(value) {
+        $('[name="gate_only"]').closest('.fc-select-2').addClass('fc-selected');
+    }
+
+}
+
+//----------------------------------------------------------------------------------
+
+function checkGateWidthType() {
+
+    var fd = getSelectedFenceData(),
+        slug = fd.slug,
+        tab = fd.tab,
+        info = fd.info,
+        data = fd.data;
+
+        var gateWidth = data?.settings?.gate?.size.width,
+            use_std = true;
+
+        // Is custom gate
+        var gate_data = info.filter(function(item) {
+            return item.control_key == 'gate';
+        });
+
+        isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
+
+        if( isCustomGate ) {
+            gateWidth = gate_data[0]?.settings?.size;
+            use_std = false;
+        }
+
+        $('[name="use_std"]').prop('checked', use_std);
+
+        if( use_std ) {
+            $('.select-use_std[data-val="std"]').addClass('fc-selected');
+        } else {
+            $('.select-use_std[data-val="custom"]').addClass('fc-selected');
+        }
+
+        $('[name="width"]').val(gateWidth);
+
 }
 
 //----------------------------------------------------------------------------------

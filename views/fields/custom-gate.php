@@ -1,13 +1,27 @@
-<div class="mb-2">
-    <label>
-        <input type="checkbox" name="gate_only">
-        Gate Only
-    </label>                
+<div class="row fc-form-field px-2">
+    <div class="col-sm-6 col-12 mb-2 px-1">
+        <div class="fc-select-2 fc-select-left select-gate_only">    
+			<input type="checkbox" name="gate_only" style="width: 0;position: absolute;">
+            <p>Gate <strong>ONLY</strong></p>
+        </div>
+    </div>
 </div>
 
-<div class="mb-2">
-	<input type="checkbox" name="use_std" id="use_std" class="fc-form-field" value="yes">
-	<label for="use_std">Use STD Gate Width</label>				
+<div class="fc-form-field">
+	<input type="checkbox" name="use_std" class="fc-form-field" style="width: 0;position: absolute;">
+	<div class="row px-2">
+	    <div class="col-sm-6 col-12 mb-2 px-1">
+	        <div class="fc-select-2 fc-select-left select-use_std" data-val="std">    
+	            <p><strong>STD</strong> Gate Width</p>
+	        </div>
+	    </div>
+	    <div class="col-sm-6 col-12 mb-2 px-1">
+	        <div class="fc-select-2 fc-select-left select-use_std" data-val="custom">    
+	            <p><strong>CUSTOM</strong> Gate (300-{{maxWidth}}mm)</p>
+	        </div>
+	    </div>
+	</div>
+	
 </div>
 
 <div class="fc-input-container">

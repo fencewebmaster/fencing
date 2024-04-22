@@ -580,7 +580,7 @@ FENCE = {
 
             gate.remove();
 
-            $('[name="gate_only"]:checked').trigger('click');
+            $('.select-gate_only.fc-selected').trigger('click');
 
             setTimeout(function() {
                 btnCalculate();

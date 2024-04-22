@@ -285,7 +285,7 @@ FENCES.cartItems = {
 
         }
 
-        console.log(array);
+
         return array;
 
     },

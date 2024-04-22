@@ -361,8 +361,6 @@ function calculate_fences(data) {
         }
     }
 
-    console.log(data);
-
     return data;
 }
 
