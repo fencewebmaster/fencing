@@ -145,6 +145,7 @@ function calculate_fences(data) {
         C5 = panel_options_data.size?.width;
     }
 
+    var default_panel_width = panel_options_data?.size?.default;
 
     if (panel_options_data.size?.width_based_height) {
         /*
@@ -306,11 +307,31 @@ function calculate_fences(data) {
     if( _post ) {
         divided_post = _post/(long_panel_count + short_panel_count);
 
-        full_panel_length = Math.round(full_panel_length + divided_post);
-        even_panel_length = Math.round(even_panel_length + divided_post);
-        long_panel_length = Math.round(long_panel_length + divided_post);    
-        short_panel_length = Math.round(short_panel_length + divided_post);      
-        offcut_panel_length = Math.round(offcut_panel_length - _post);
+        _full_panel_length = HELPER.isNaNtoZero(Math.round(full_panel_length + divided_post));
+        _even_panel_length = HELPER.isNaNtoZero(Math.round(even_panel_length + divided_post));
+        _long_panel_length = HELPER.isNaNtoZero(Math.round(long_panel_length + divided_post));    
+        _short_panel_length = HELPER.isNaNtoZero(Math.round(short_panel_length + divided_post));                  
+        _offcut_panel_length = HELPER.isNaNtoZero(Math.round(offcut_panel_length - _post));
+
+        // Recalculate if any post is removed
+        if(_long_panel_length > default_panel_width) {
+            _long_panel_length = Math.round(default_panel_width);    
+        } 
+
+        if(_short_panel_length > default_panel_width) {
+            _short_panel_length = Math.round(default_panel_width);                  
+        } else {
+            if(_short_panel_length > 0) {
+                divided_post = _post/short_panel_count;
+                _short_panel_length = Math.round(short_panel_length + divided_post);                                 
+            }
+        }
+
+
+    }
+
+    if(_short_panel_length==0) {
+        short_panel_count = 0;
     }
 
 
@@ -321,23 +342,23 @@ function calculate_fences(data) {
         },
         'full_panel': {
             'count': HELPER.isNaNtoZero(full_panel_count),
-            'length': HELPER.isNaNtoZero(full_panel_length)
+            'length': _full_panel_length
         },
         'even_panel': {
             'count': HELPER.isNaNtoZero(even_panel_count),
-            'length': HELPER.isNaNtoZero(even_panel_length)
+            'length': _even_panel_length
         },
         'long_panel': {
             'count': HELPER.isNaNtoZero(long_panel_count),
-            'length': HELPER.isNaNtoZero(long_panel_length)
+            'length': _long_panel_length
         },
         'short_panel': {
             'count': HELPER.isNaNtoZero(short_panel_count),
-            'length': HELPER.isNaNtoZero(short_panel_length)
+            'length': _short_panel_length
         },
         'offcut_panel': {
             'count': HELPER.isNaNtoZero(offcut_panel_count),
-            'length': HELPER.isNaNtoZero(offcut_panel_length)
+            'length': _offcut_panel_length
         },
         'offcut_gate_panel': {
             'count': HELPER.isNaNtoZero(offcut_gate_panel_count),

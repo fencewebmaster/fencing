@@ -212,6 +212,7 @@ $fences['flat_top'] = [
 							'default' => TRUE,
 							'size' => [
 								'width' => 2400 + 50,
+								'default' => 2400,
 							]
 						],
 						[
@@ -220,6 +221,7 @@ $fences['flat_top'] = [
 							'title' => 'Full Size Panels 2400W',
 							'size' => [
 								'width' => 2400 + 50,
+								'default' => 2400,
 							]
 						],
 						[
@@ -229,6 +231,7 @@ $fences['flat_top'] = [
 							'desc' => 'ONLY Available In BLACK',
 							'size' => [
 								'width' => 3000 + 50,
+								'default' => 3000,
 							]
 						]
 					],
