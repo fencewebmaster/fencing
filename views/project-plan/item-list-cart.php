@@ -17,7 +17,7 @@
 				        	<div class="col-sm col-auto text-end">
 					        		
 					        	<a href="" class="btn btn-orange fc-update-item text-uppercase js-fc-edit-item fw-bold">
-					            	<i class="fa-regular fa-pen-to-square me-1"></i> <span>Save</span>
+					            	<i class="fa-regular fa-pen-to-square me-1"></i> <span>Edit</span>
 					            </a>
 
 					            <a href="" class="btn btn-secondary fc-reset-item fw-bold text-uppercase" style="display: none;">

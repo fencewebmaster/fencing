@@ -232,8 +232,8 @@ function jsFcEditItem(e) {
     $('[name="action"]').val('update_cart');
 
     if (_this.find('span').text() === 'Edit') {
-        $('.fc-table-items input, .fc-reset-item').show();
-        $('.fc-item-value').hide();
+        $('.fc-table-items .md-qty, .fc-reset-item').show();
+        $('.fc-item-value').addClass('d-none');
         _this.find('span').html('Save');
     } else {
         $('form').submit();
@@ -370,14 +370,14 @@ $("#paymentFrm").validate({
                         setTimeout(function() {
                             $(".fc-table-items .fc-form-control").css({ 'color': '' });
                             HELPER.removeSectionOverlay();
-                            $('.fc-item-value').show();
-                            // $('.fc-table-items input, .fc-reset-item').hide();
+                            $('.fc-item-value').removeClass('d-none');
+                            $('.fc-table-items .md-qty, .fc-reset-item').hide();
 
                             window.onbeforeunload = function() {}
 
                         }, 500);
 
-                        // $('.js-fc-edit-item span').html('Edit');
+                        $('.js-fc-edit-item span').html('Edit');
 
                     } catch (err) {
                         console.log('err: ', response);

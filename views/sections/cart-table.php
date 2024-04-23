@@ -16,7 +16,7 @@ $edited = FALSE;
                 <tr>
                     <th class="d-none d-md-table-cell">QTY</th>
                     <th colspan="2">Description</th>
-                    <th class="text-center d-md-table-cell d-none">In-stock</th>
+                    <th class="text-center d-md-table-cell d-none">Stock</th>
                 </tr>
             </thead>
             <tbody>
@@ -28,12 +28,13 @@ $edited = FALSE;
 
                 <tr class="fc-position-relative" data-original="<?php echo $cart_item['original_qty']; ?>">
 
-                    <td class="d-none d-md-table-cell">
-
+                    <td class="d-none d-md-table-cell align-middle text-center">
 
                         <input type="hidden" name="cart[qty][<?php echo $ci; ?>]" class="fc-form-field input-qty" value="<?php echo @$cart_item['qty']; ?>">
 
-                        <div class="fencing-mb-input bg-white mt-3">
+                        <div class="fc-item-value fw-bold"><?php echo @$cart_item['qty']; ?></div>
+
+                        <div class="fencing-mb-input md-qty bg-white mt-3" style="display: none;">
                             <div class="d-flex align-items-center">
                                 <div class="fencing-qty-minus fencing-qty-btn px-2"> 
                                     <i class="fa fa-minus"></i>
@@ -59,29 +60,35 @@ $edited = FALSE;
                         <div class="d-block d-md-none">
                             <div class="fw-bold d-flex align-items-center">
                             <?php if(@$cart_item['stock'] == 'yes'): ?>
-                                 <i class="fa-solid fa-circle-check text-success me-2 fs-6"></i> In-stock: Yes
+                                 <i class="fa-solid fa-circle-check text-success me-2 fs-6"></i> In-Stock
                             <?php else: ?>
-                            <i class="fa-solid fa-circle-exclamation text-orange fs-6 me-2"></i> In-stock: Low
+                            <i class="fa-solid fa-circle-exclamation text-orange fs-6 me-2"></i> Low-Stock
                             <?php endif; ?>
                             </div>
-                        </div>
+                        </div>                            
 
                         <?php if( in_uri_segment(demo_stages()) ):?>
                         <small class="fc-text-success d-nonex"><?php echo @$cart_item['slug']; ?></small>
                         <?php endif; ?>
 
-                        <div class="d-md-none d-table-cell">
-                            <div class="fencing-mb-input bg-white mt-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="fencing-qty-minus fencing-qty-btn px-2"> 
-                                        <i class="fa fa-minus"></i>
-                                    </div>        
-                                    <input type="text" class="numeric fc-form-field text-center no-enter" input-type="number" data-min="0" maxlength="6" data-max="999999" value="<?php echo @$cart_item['qty']; ?>"> 
-                                    <div class="fencing-qty-plus fencing-qty-btn px-2">
-                                        <i class="fa fa-plus"></i>
+                        <div class="fc-item-value d-md-none d-block fw-bold border rounded bg-light text-center p-1" style="max-width: 128px;">
+                            <?php echo @$cart_item['qty']; ?>
+                        </div>
+
+                        <div class="md-qty" style="display: none;">
+                            <div class="d-md-none d-table-cell">
+                                <div class="fencing-mb-input bg-white mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fencing-qty-minus fencing-qty-btn px-2"> 
+                                            <i class="fa fa-minus"></i>
+                                        </div>        
+                                        <input type="text" class="numeric fc-form-field text-center no-enter" input-type="number" data-min="0" maxlength="6" data-max="999999" value="<?php echo @$cart_item['qty']; ?>"> 
+                                        <div class="fencing-qty-plus fencing-qty-btn px-2">
+                                            <i class="fa fa-plus"></i>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>                    
+                                </div>                    
+                            </div>
                         </div>
 
                         <?php if( @$cart_item['qty'] != @$cart_item['original_qty'] ): ?>
@@ -93,13 +100,13 @@ $edited = FALSE;
 
 
                     </td>
-                    <td width="90" class="px-1 align-middle text-center text-center d-md-table-cell d-none">
+                    <td width="120" class="px-1 align-middle d-md-table-cell d-none">
 
-                        <div class="fw-bold d-flex align-items-center justify-content-center">
+                        <div class="fw-boldx d-flex align-items-center">
                         <?php if(@$cart_item['stock'] == 'yes'): ?>
-                             <i class="fa-solid fa-circle-check text-success me-2 fs-4"></i> Yes
+                             <i class="fa-solid fa-circle-check text-success me-2 fs-4"></i> In-Stock
                         <?php else: ?>
-                        <i class="fa-solid fa-circle-exclamation text-orange fs-4 me-2"></i> Low
+                        <i class="fa-solid fa-circle-exclamation text-orange fs-4 me-2"></i> Low-Stock
                         <?php endif; ?>                            
                         </div>
 
@@ -107,14 +114,6 @@ $edited = FALSE;
                 </tr>
                 <?php $ci++; ?>
                 <?php endforeach; ?>
-
-                <?php if($edited): ?>
-                <style type="text/css">
-                .fc-reset-item {
-                    display: inline-block !important;
-                }
-                </style>
-                <?php endif; ?>
 
             </tbody>
         </table>
