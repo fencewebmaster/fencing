@@ -96,6 +96,7 @@ function calculate_fences(data) {
         right_raked_panel_width = 0,
         short_panel_count = 0,
         short_panel_length = 0,
+        _short_panel_length = 0,
         offcut_gate_panel_length = 0,
         offcut_gate_panel_count = 0;
 
@@ -277,11 +278,13 @@ function calculate_fences(data) {
 
         short_panel_count = isNaN(C19) ? 0 : C19;
         short_panel_length = isNaN(E19) ? 0 : Math.round(E19);
+        _short_panel_length = short_panel_length;
     }
 
 
     offcut_panel_count = C20;
     offcut_panel_length = isNaN(D20) ? 0 : Math.round(D20);
+    _offcut_panel_length = offcut_panel_length;
 
     gate_count = isNaN(C21) ? 0 : C21;
     gate_length = isNaN(D21) ? 0 : parseInt(D21) - gate_post_gaps;
@@ -307,33 +310,35 @@ function calculate_fences(data) {
     if( _post ) {
         divided_post = _post/(long_panel_count + short_panel_count);
 
-        _full_panel_length = HELPER.isNaNtoZero(Math.round(full_panel_length + divided_post));
-        _even_panel_length = HELPER.isNaNtoZero(Math.round(even_panel_length + divided_post));
-        _long_panel_length = HELPER.isNaNtoZero(Math.round(long_panel_length + divided_post));    
-        _short_panel_length = HELPER.isNaNtoZero(Math.round(short_panel_length + divided_post));                  
-        _offcut_panel_length = HELPER.isNaNtoZero(Math.round(offcut_panel_length - _post));
+
+        full_panel_length = HELPER.isNaNtoZero(Math.round(full_panel_length + divided_post));
+        even_panel_length = HELPER.isNaNtoZero(Math.round(even_panel_length + divided_post));
+        long_panel_length = HELPER.isNaNtoZero(Math.round(long_panel_length + divided_post));    
+        short_panel_length = HELPER.isNaNtoZero(Math.round(short_panel_length + divided_post));                  
+        offcut_panel_length = HELPER.isNaNtoZero(Math.round(offcut_panel_length - divided_post));
+
 
         // Recalculate if any post is removed
-        if(_long_panel_length > default_panel_width) {
-            _long_panel_length = Math.round(default_panel_width);    
+        if(long_panel_length > default_panel_width) {
+            long_panel_length = Math.round(default_panel_width);    
         } 
 
-        if(_short_panel_length > default_panel_width) {
-            _short_panel_length = Math.round(default_panel_width);                  
+        if(short_panel_length > default_panel_width) {
+            short_panel_length = Math.round(default_panel_width);                  
         } else {
-            if(_short_panel_length > 0) {
+            if(short_panel_length > 0) {
                 divided_post = _post/short_panel_count;
-                _short_panel_length = Math.round(short_panel_length + divided_post);                                 
+                short_panel_length = Math.round(_short_panel_length + divided_post);                             
+                offcut_panel_length = HELPER.isNaNtoZero(Math.round(_offcut_panel_length - _post));
             }
+        }
+
+        if(short_panel_length==0) {
+            short_panel_count = 0;
         }
 
 
     }
-
-    if(_short_panel_length==0) {
-        short_panel_count = 0;
-    }
-
 
     data = {
         'fence_size': {
@@ -342,23 +347,23 @@ function calculate_fences(data) {
         },
         'full_panel': {
             'count': HELPER.isNaNtoZero(full_panel_count),
-            'length': _full_panel_length
+            'length': full_panel_length
         },
         'even_panel': {
             'count': HELPER.isNaNtoZero(even_panel_count),
-            'length': _even_panel_length
+            'length': even_panel_length
         },
         'long_panel': {
             'count': HELPER.isNaNtoZero(long_panel_count),
-            'length': _long_panel_length
+            'length': long_panel_length
         },
         'short_panel': {
             'count': HELPER.isNaNtoZero(short_panel_count),
-            'length': _short_panel_length
+            'length': short_panel_length
         },
         'offcut_panel': {
             'count': HELPER.isNaNtoZero(offcut_panel_count),
-            'length': _offcut_panel_length
+            'length': offcut_panel_length
         },
         'offcut_gate_panel': {
             'count': HELPER.isNaNtoZero(offcut_gate_panel_count),
