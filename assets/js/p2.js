@@ -184,9 +184,10 @@ ProjectPlan = {
                 .replace(/{{panel_unit}}/gi, '<br>PANEL')
                 .replace(/{{panel_number}}/gi, panel_number);
 
-            if( panel_size > FENCE.get(info?.slug, 'minPanelWidthOnGate') ) {                         
+            // if( panel_size > FENCE.get(info?.slug, 'minPanelWidthOnGate') ) { } 
+            if(panel_size > 0) {
                 $(`#pp-${tab} .fencing-panel-container`).append(tpl);
-            } 
+            }
 
             $('#pp-' + tab + ' .fencing-panel-item').css({ 'width': panel_size * 0.10 });
         }

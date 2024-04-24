@@ -859,10 +859,10 @@ a.fc-tab-active {
     right: 0;
 }
 
-.short-panel-item {
+/*.short-panel-item {
     min-width: 60px;
 }
-
+*/
 /* Project Plan */
 .fc-card-header {
     background: #F5F5F5;

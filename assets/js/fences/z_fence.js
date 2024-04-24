@@ -127,9 +127,10 @@ FENCE = {
                 .replace(/{{panel_unit}}/gi, '<br>PANEL')
                 .replace(/{{panel_number}}/gi, panel_number);
 
-            if( panel_size > FENCE.get(slug, 'minPanelWidthOnGate') ) {                
+            // if( panel_size > FENCE.get(slug, 'minPanelWidthOnGate') ) { } 
+            if(panel_size > 0) {
                 $(FENCES.el.fencingPanelContainer).append(tpl);
-            } 
+            }
 
             $(FENCES.el.fencingPanelItem).css({ 'width': panel_size * 0.10 });
         }

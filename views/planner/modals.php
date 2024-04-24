@@ -112,9 +112,9 @@
 </div>
 
 <div class="toast-container position-fixed top-0 end-0 p-2" style="z-index: 11">
-    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-bs-config='{"delay":5000}'>
+    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-bs-config='{"delay":7000}'>
         <div class="toast-header text-bg-dark">
-            <strong class="me-auto toast-title"></strong>
+            <div class="me-auto toast-title"></div>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body"></div>
