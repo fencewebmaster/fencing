@@ -700,7 +700,7 @@ FENCE = {
         if (action == 'add' || action == 'edit') {
 
             if (placement == -1 ) {
- 
+                console.log(1);
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)
@@ -718,6 +718,11 @@ FENCE = {
                     .replace(/{{panel_unit}}/gi, panel_unit);
 
                 $('#panel-item-' + placement).after(tpl);
+
+                // if panel placement doesn't exist
+                if($('#panel-item-' + placement).length == 0) {
+                    $('#panel-item-0').after(tpl);
+                } 
 
                 $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
 
@@ -739,6 +744,7 @@ FENCE = {
                 $('#'+panelID+', .fencing-panel-items .raked-panel-container').after(tpl);
 
                 $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
+
             }
 
         }

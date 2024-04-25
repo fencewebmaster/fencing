@@ -927,8 +927,6 @@ function updateOverAllLength(data) {
 
     gate_posts_gaps = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;
 
-
-
     if(gateOnly && !isCustomGate && !raked && _mbn.val() > lastMbn && panelItemXGate == 0) {
 
         updateGateOnly(false);
