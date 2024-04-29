@@ -881,28 +881,35 @@ function loadClearForm() {
 
 function updateOverAllLength(data) {
 
-    var _mbn = $('.measurement-box-number')
-        lastMbn = parseInt(_mbn.attr('data-last'));
+    var _mbn = $('.measurement-box-number'),
+        mbn = parseInt(_mbn.val()),
+        lastMbn = parseInt(_mbn.attr('data-last')),
+        lastMbn = HELPER.isNaNtoZero(lastMbn) == 0 ? mbn : lastMbn;
 
     var fd = getSelectedFenceData(),
-        slug = fd.slug,
-        mbn = parseInt(_mbn.val());
+        slug = fd.slug;
 
     var hasGate = data?.gate ? data.gate : $('.fencing-panel-gate').length,
         hasRaked = data?.raked ? data.raked : $('.raked-panel-container').length,
-        panelItemXGate = $('.panel-item:not(.fencing-panel-gate)').length;
+        panel_item = $('.panel-item:not(.fencing-panel-gate,.fencing-raked-panel)').length;
+
 
     var raked = gate = overall = 0;
 
+    var minusPosts = FENCE.minus_posts(fd.info),
+        post_panel = FENCE.get(slug, 'post');
+
     // With raked and gate
-    if( hasRaked ) {
-        raked = hasRaked * FENCE.get('item', 'raked');
+    if( hasRaked == 1 ) {
+        raked = hasRaked * FENCE.get('item', 'raked');        
+    } else {
+        raked = (hasRaked * FENCE.get('item', 'raked_post')) + post_panel;                
     }
-    
+
+
     if( hasGate ) {
         gate = FENCE.get(slug, 'gate');
     }
-
 
     // Is custom gate
     var gate_data = fd.info.filter(function(item) {
@@ -913,121 +920,120 @@ function updateOverAllLength(data) {
 
     gateOnly = gate_data[0]?.settings?.gateOnly;
 
-    var minusPosts = FENCE.minus_posts(fd.info);
 
-    if( gateOnly ) {
+    if( gateOnly || panel_item == 0 && !hasRaked || hasGate && !hasRaked) {
         fence_gate_posts_gaps = parseInt(FENCE.get(slug, 'gate_posts_gaps'));
     } else {
         fence_gate_posts_gaps = parseInt(FENCE.get(slug, 'gate_post_gaps'));        
     }
+
 
     if( isCustomGate ) {
         gate = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;
     }
 
     gate_posts_gaps = parseInt(gate_data[0]?.settings.size) + fence_gate_posts_gaps;
+        
+     // GATE ONLY + STD | ON POST CHANGED
+    if(gateOnly && !isCustomGate ||
+        gateOnly && !isCustomGate && data?.removePost) {
 
-    if(gateOnly && !isCustomGate && !raked && _mbn.val() > lastMbn && panelItemXGate == 0) {
+        if(mbn > lastMbn) {
+            updateGateOnly(false);
+        } else {
+            var overall =  gate_posts_gaps - minusPosts;
 
-        updateGateOnly(false);
- 
+            var msg = FENCE.settings.message.min_gate_only
+                .replace(/{{overall}}/gi, overall);
+
+            if(overall != mbn && !isNaN(overall))
+                popupToast("Important", msg, 'STD');
+        }
+    }      
+
+    // GATE ONLY + CUSTOM GATE | ON POST CHANGED
+    if(gateOnly && isCustomGate ||
+        gateOnly && isCustomGate && data?.removePost) {
+
+        if(mbn > lastMbn) {
+            updateGateOnly(false);
+        } else {
+            var overall =  gate_posts_gaps - minusPosts;
+
+            var msg = FENCE.settings.message.min_gate_only
+                .replace(/{{overall}}/gi, overall);
+
+            if(overall != mbn && !isNaN(overall))
+                popupToast("Important", msg, 'CG');
+        }
+
+    } 
+
+    // STD GATE + PANEL ITEM | ON POST CHANGED
+    if(!isCustomGate && panel_item > 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
+        !isCustomGate && panel_item == 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
+        !isCustomGate && data?.removePost) {
+
+        var overall = gate_posts_gaps - minusPosts;
+
         var msg = FENCE.settings.message.min_gate_custom
-            .replace(/{{overall}}/gi, gate_posts_gaps);
-
-        if(overall != _mbn.val() && !isNaN(overall))
-            popupToast("[1] Important", msg);
-
-    } else if(gateOnly && !raked ||         
-       gateOnly && !isCustomGate && !raked ||
-       mbn < gate_posts_gaps && isCustomGate && !raked) {
-
-        var overall =  gate_posts_gaps;
-
-        var msg = FENCE.settings.message.min_gate
             .replace(/{{overall}}/gi, overall);
 
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[2] "+FENCE.settings.message.oal_changed, msg);
+        if(overall != mbn && !isNaN(overall))
+            popupToast("Important", msg, 'STD+P');
 
-    } else if(mbn < (raked + gate) && hasRaked && hasGate) {
-        
-        var overall = raked + gate;
+    } 
 
-        var msg = FENCE.settings.message.min_gate_raked
-            .replace(/{{overall}}/gi, overall)
-            .replace(/{{hasRaked}}/gi, hasRaked);
+    // CUSTOM GATE + PANEL ITEM | ON POST CHANGED
+    if(isCustomGate && panel_item > 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
+        isCustomGate && panel_item == 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
+        isCustomGate && data?.removePost) {
 
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[3] "+FENCE.settings.message.oal_changed, msg);
-
-    } else if(!isCustomGate && mbn < FENCE.get(fd.slug, 'minOnGate')) {
-
-        var overall = FENCE.get(fd.slug, 'minOnGate') - minusPosts;
+        var overall = gate_posts_gaps - minusPosts;
 
         var msg = FENCE.settings.message.min_gate_custom
             .replace(/{{overall}}/gi, overall);
 
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[4] Important", msg);
+        if(overall != mbn && !isNaN(overall))
+            popupToast("Important", msg, 'CG+P');
 
-    }  else if(mbn < (raked + gate_posts_gaps) && hasRaked && isCustomGate) {
+    } 
+
+
+    // RAKED + PANEL ITEM
+    if(hasRaked && panel_item > 0 && mbn < (raked - minusPosts) || 
+        hasRaked && panel_item == 0 && mbn < (raked - minusPosts) || 
+        hasRaked && panel_item == 0 && data?.removePost) {
         
-        var overall = raked + gate_posts_gaps;
-
-        var msg = FENCE.settings.message.min_gate_raked
-            .replace(/{{overall}}/gi, overall)
-            .replace(/{{hasRaked}}/gi, hasRaked);
-
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[5] "+FENCE.settings.message.oal_changed, msg);
-
-    } else if(mbn < raked && hasRaked) {
-        
-        var overall = raked;
+        var overall = raked - minusPosts;
 
         var msg = FENCE.settings.message.min_raked
             .replace(/{{overall}}/gi, overall)
             .replace(/{{hasRaked}}/gi, hasRaked);
 
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[6] "+FENCE.settings.message.oal_changed, msg);
+        if(overall != mbn && !isNaN(overall)) 
+            popupToast(FENCE.settings.message.oal_changed, msg, 'SU');
 
-    } else if(mbn < FENCE.get(fd.slug, 'minOnGate') && !isCustomGate) {
+    } 
+
+    // RAKED + GATE
+    if(hasGate && hasRaked && panel_item > 0 && mbn < (raked + gate - minusPosts) ||
+        hasGate && hasRaked && panel_item == 0 && mbn < (raked + gate - minusPosts) || 
+        data?.removePost && hasRaked && gateOnly ) {
         
-        var overall = FENCE.get(fd.slug, 'minOnGate') - minusPosts;
-        
-        var msg = FENCE.settings.message.min_gate
-            .replace(/{{overall}}/gi, overall);
+        var overall = (raked + gate) - minusPosts;
 
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[7] "+FENCE.settings.message.oal_changed, msg);
+        var msg = FENCE.settings.message.min_gate_raked
+            .replace(/{{overall}}/gi, overall)
+            .replace(/{{hasRaked}}/gi, hasRaked);
 
-    } else if(gateOnly) {
-        
-        var overall = FENCE.get(fd.slug, 'minOnGate');
-        
-        var msg = FENCE.settings.message.min_gate
-            .replace(/{{overall}}/gi, overall);
+        if(overall != mbn && !isNaN(overall)) 
+            popupToast(FENCE.settings.message.oal_changed, msg, 'R+G');
 
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[8] "+FENCE.settings.message.oal_changed, msg);
+    } 
 
-    }
 
-/*    else if(mbn > FENCE.get(fd.slug, 'minOnGate') && 
-              mbn <= FENCE.get(fd.slug, 'maxOnGate') ) {
-
-        var overall = FENCE.get(fd.slug, 'maxOnGate');
-
-        var msg = FENCE.settings.message.min_gate
-            .replace(/{{overall}}/gi, overall);
-
-        if(overall != _mbn.val() && !isNaN(overall)) 
-            popupToast("[4] "+FENCE.settings.message.oal_changed, msg);
-
-    }
-*/
-    if(overall && !isNaN(overall) && overall != _mbn.val() ) {
+    if(overall && !isNaN(overall) && overall != mbn ) {
        _mbn.val(overall);
     } 
 

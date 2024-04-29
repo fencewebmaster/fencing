@@ -117,6 +117,9 @@
             <div class="me-auto toast-title"></div>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-        <div class="toast-body"></div>
+        <div class="toast-body py-1"></div>
+        <div class="px-2 pb-2">
+            <code class="toast-code small text-muted border px-1 rounded"></code>        
+        </div>
     </div>
 </div>

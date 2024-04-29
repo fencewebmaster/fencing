@@ -98,7 +98,12 @@ function calculate_fences(data) {
         short_panel_length = 0,
         _short_panel_length = 0,
         offcut_gate_panel_length = 0,
-        offcut_gate_panel_count = 0;
+        offcut_gate_panel_count = 0
+        left_raked_count = 0,
+        right_raked_count = 0;
+
+    
+    
 
     gate_post_gaps = FENCE.get(i, 'gate_post_gaps');
     post_panel = FENCE.get(i, 'post');
@@ -237,6 +242,7 @@ function calculate_fences(data) {
 
     D19 = (D16 - C18) * D18; // E19
 
+
     D21 = C8;
     D22 = C9 > 0 ? 1 : 0;
     D23 = C10 > 0 ? 1 : 0;
@@ -255,10 +261,8 @@ function calculate_fences(data) {
     // C20 = C19;
     C20 = (panel_options_data?.slug.includes('even') || panel_options_data?.slug == undefined) ? C17 : C19;
 
-    D20 = D19 < post_panel ? 0 : E18 - E19;
-
-    D20 = panel_options_data?.slug.includes('even') ? E18 - E17 : (D19 < post_panel ? 0 : E18 - E19);
-
+    // D20 = D19 < post_panel ? 0 : E18 - E19;
+    D20 = panel_options_data?.slug.includes('even') ? (E17 ? E18 - E17 : 0) : (D19 < post_panel ? 0 : E18 - E19);
 
 
     // Outputs
@@ -268,11 +272,12 @@ function calculate_fences(data) {
     even_panel_count = isNaN(C17) ? 0 : C17;
     even_panel_length = isNaN(E17) ? 0 : E17;
 
+
     if (panel_options_data?.slug.includes('even') || panel_options_data?.slug == undefined) {
 
         long_panel_count = even_panel_count;
         long_panel_length = Math.round(even_panel_length);
-  
+
     } else {
 
         long_panel_count = full_panel_count;
@@ -312,13 +317,11 @@ function calculate_fences(data) {
     if( _post ) {
         divided_post = _post/(long_panel_count + short_panel_count);
 
-
         full_panel_length = HELPER.isNaNtoZero(Math.round(full_panel_length + divided_post));
         even_panel_length = HELPER.isNaNtoZero(Math.round(even_panel_length + divided_post));
         long_panel_length = HELPER.isNaNtoZero(Math.round(long_panel_length + divided_post));    
         short_panel_length = HELPER.isNaNtoZero(Math.round(short_panel_length + divided_post));                  
         offcut_panel_length = HELPER.isNaNtoZero(Math.round(offcut_panel_length - divided_post));
-
 
         // Recalculate if any post is removed
         if(long_panel_length > default_panel_width) {
@@ -326,11 +329,11 @@ function calculate_fences(data) {
         } 
 
         if(short_panel_length > default_panel_width) {
-            short_panel_length = Math.round(default_panel_width);                  
+            short_panel_length = HELPER.isNaNtoZero(Math.round(default_panel_width));                  
         } else {
             if(short_panel_length > 0) {
                 divided_post = _post/short_panel_count;
-                short_panel_length = Math.round(_short_panel_length + divided_post);                             
+                short_panel_length = HELPER.isNaNtoZero(Math.round(_short_panel_length + divided_post));                             
                 offcut_panel_length = HELPER.isNaNtoZero(Math.round(_offcut_panel_length - _post));
             }
         }
@@ -339,8 +342,18 @@ function calculate_fences(data) {
             short_panel_count = 0;
         }
 
-
     }
+
+    left_raked_count = HELPER.isNaNtoZero(left_raked_panel_width) ? 1 : 0;
+    right_raked_count = HELPER.isNaNtoZero(right_raked_panel_width) ? 1 : 0;
+
+    var countPosts = (((long_panel_count + short_panel_count + gate_count + left_raked_count + right_raked_count) * post_panel) + post_panel) - _post,
+        longPanelLength = long_panel_length * long_panel_count,
+        shortPanelLength = short_panel_length * short_panel_count,
+        gateWidth = gate_count ? C8 : 0,
+        leftRakedLength = HELPER.isNaNtoZero(left_raked_panel_width),
+        rightRakedLength = HELPER.isNaNtoZero(right_raked_panel_width),
+        oaw = longPanelLength + shortPanelLength + gateWidth + leftRakedLength + rightRakedLength + countPosts;
 
     data = {
         'fence_size': {
@@ -385,9 +398,13 @@ function calculate_fences(data) {
             'width': HELPER.isNaNtoZero(right_raked_panel_width),
         },
         'selected_values': {
-            'panel_option': panel_options_data?.slug
+            'panel_option': panel_options_data?.slug,
+            'oaw': oaw,
+            'posts': countPosts
         }
     }
+
+    // console.log(data);
 
     return data;
 }

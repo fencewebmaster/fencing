@@ -52,7 +52,7 @@ function popupAlert(title, message) {
 
 _doc.on('click', '.popup-toast', popupToast);
 
-function popupToast(title, message) {
+function popupToast(title, message, code) {
     const _lt = $('#liveToast');
     const toastBootstrap = bootstrap.Toast.getOrCreateInstance(_lt);
 
@@ -63,6 +63,7 @@ function popupToast(title, message) {
     toastBootstrap.show();
     _lt.find('.toast-title').html(title);
     _lt.find('.toast-body').html(message);
+    _lt.find('.toast-code').html(code);
 }
 
 //----------------------------------------------------------------------------------
@@ -400,7 +401,7 @@ function gateOnly() {
 
         updateGateOnly(false);
 
-        FENCE.call('move_the_gate', 'delete');
+        // FENCE.call('move_the_gate', 'delete');
 
         $('[name="width"]').val('');
     }
@@ -933,6 +934,13 @@ function fcSelectPost() {
 
     FENCE.call('update_custom_fence', modal_key);
     FENCE.call('updateOverallPosts');
+
+    // Recalculate AOW on post change
+    var data = {}
+    data.removePost=1;
+    updateOverAllLength(data);
+
+    btnCalculate();
 
     $('[data-section="3"]').scrollTo(100, 57);
 

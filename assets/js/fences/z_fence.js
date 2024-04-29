@@ -7,11 +7,13 @@ FENCE = {
             oal_changed: "Overall Length has changed!",
             min_gate: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm",
             min_gate_custom: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b>",
+            min_gate_only: "<b>GATE ONLY:</b> Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b>",
             min_gate_raked: "Minimum <b>Overall Length</b> for a <b>GATE & {{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_raked: "Minimum <b>Overall Length</b> for <b>{{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm"
         },
         item: {
-            raked: 1300,
+            raked: 50 + 1200 + 50,
+            raked_post: 1200 + 50,
             center_point: 25,
         },
         flat_top: {
@@ -700,7 +702,7 @@ FENCE = {
         if (action == 'add' || action == 'edit') {
 
             if (placement == -1 ) {
-                console.log(1);
+
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)

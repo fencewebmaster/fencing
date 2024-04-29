@@ -505,7 +505,7 @@ ProjectPlan = {
                         .replace(/{{post}}/gi, has_post)
                         .replace(/{{center_post}}/gi, center_post);
 
-                    if (typeof panel_h !== "undefined") {
+                    if(panel_h) {
                         $('#pp-' + tab + ' .' + v + '-panel').html(tpl);
                     }
 
