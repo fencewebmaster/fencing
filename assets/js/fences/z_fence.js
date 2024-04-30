@@ -498,34 +498,71 @@ FENCE = {
 
     move_the_gate: function(move) {
 
-        var gate = $(FENCES.el.fencingPanelGate);
+        var gate = $(FENCES.el.fencingPanelGate),
+            panel_count = $('.panel-item:not(.fencing-panel-gate,.fencing-raked-panel)').length;
 
         if (move == 'left') {
 
-            closest_id = gate.prev().prev().prev().attr('id');
+            if(panel_count == 1) {
 
-            if ($(FENCES.el.fencingPanelGate).index() == 1 || closest_id == undefined) {
-                return;
+                closest_id = gate.prev().prev().prev().attr('id');
+                
+                if (closest_id == undefined) {
+                    return;
+                }
+
+                move_gate = gate.prop("outerHTML") + gate.prev().prev().prop("outerHTML") + gate.prev().prop("outerHTML");
+
+                gate.prev().prev().remove();
+                gate.prev().remove();
+
+                $('#panel-item-0, #panel-item-x').before(move_gate);
+
+                gate.remove();
+
+            } else {
+                closest_id = gate.prev().prev().prev().attr('id');
+
+                if ($(FENCES.el.fencingPanelGate).index() == 1 || closest_id == undefined) {
+                    return;
+                }
+
+                $(gate).swapWith($('#' + closest_id));
+
+                gate.remove();
             }
-
-            $(gate).swapWith($('#' + closest_id));
-
-            gate.remove();
 
         } else if (move == 'right') {
+      
+            if(panel_count == 1) {
 
-            closest_id = gate.next().next().next().attr('id');
+                closest_id = gate.next().next().next().attr('id');
+                
+                if (closest_id == undefined) {
+                    return;
+                }
 
-            if (closest_id == undefined) {
-                return;
+                move_gate = gate.next().prop("outerHTML") + gate.next().next().prop("outerHTML") + gate.prop("outerHTML");
+
+                gate.next().next().remove();
+                gate.next().remove();
+
+                $('#panel-item-1').after(move_gate);
+
+                gate.remove();
+
+            } else {
+                closest_id = gate.next().next().next().attr('id');
+
+                if (closest_id == undefined) {
+                    return;
+                }
+
+                $(gate).swapWith($('#' + closest_id));
+
+                gate.remove();
             }
-
-            $(gate).swapWith($('#' + closest_id));
-
-            gate.remove();
-
-        }
-        if (move == 'first') {
+        } else if (move == 'first') {
 
             var index = $('#panel-item-0, #panel-item-x').index() / 3;
 
@@ -714,6 +751,7 @@ FENCE = {
 
             } else if (find_gate.length && placement >= 0) {
 
+                console.log(info.panel_group);
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_size)

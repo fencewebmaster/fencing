@@ -972,7 +972,7 @@ function updateOverAllLength(data) {
     // STD GATE + PANEL ITEM | ON POST CHANGED
     if(!isCustomGate && panel_item > 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
         !isCustomGate && panel_item == 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
-        !isCustomGate && data?.removePost) {
+        !isCustomGate && panel_item == 0 && data?.removePost) {
 
         var overall = gate_posts_gaps - minusPosts;
 
@@ -987,7 +987,7 @@ function updateOverAllLength(data) {
     // CUSTOM GATE + PANEL ITEM | ON POST CHANGED
     if(isCustomGate && panel_item > 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
         isCustomGate && panel_item == 0 &&  mbn < (gate_posts_gaps - minusPosts) ||
-        isCustomGate && data?.removePost) {
+        isCustomGate && panel_item == 0 && data?.removePost) {
 
         var overall = gate_posts_gaps - minusPosts;
 

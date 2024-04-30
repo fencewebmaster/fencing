@@ -720,8 +720,12 @@ function fencingBtnModal(event) {
 
 
         // Disable gate controls
-        if( $('.fencing-panel-item:not(.fencing-raked-panel)').length == 1 ) {
+        if($('.fencing-panel-item:not(.fencing-raked-panel)').length == 1) {
             $('.fc-move-post:not([data-move="delete"])').addClass('disabled');
+        }
+
+        if($('.panel-item:not(.fencing-panel-gate,.fencing-raked-panel)').length == 1) {
+            $('.fc-move-post[data-move="first"], .fc-move-post[data-move="last"]').addClass('disabled');
         }
 
         // Custom gate
@@ -936,11 +940,12 @@ function fcSelectPost() {
     FENCE.call('updateOverallPosts');
 
     // Recalculate AOW on post change
-    var data = {}
-    data.removePost=1;
-    updateOverAllLength(data);
-
-    btnCalculate();
+    if(_this.attr('data-slug').includes('post')) {
+        var data = {}
+        data.removePost=1;
+        updateOverAllLength(data);        
+        btnCalculate();
+    }
 
     $('[data-section="3"]').scrollTo(100, 57);
 
