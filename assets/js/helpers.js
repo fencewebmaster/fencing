@@ -5,51 +5,6 @@ var step = 1;
 
 HELPER = {
 
-    /*
-    getSelectedCheckboxes: function(name) {
-        // Get a NodeList of all checkboxes with the name "fruits"
-        var checkboxes = document.getElementsByName(name);
-
-        // Initialize an array to store the selected values
-        var selectedValues = [];
-
-        // Loop through the checkboxes to find the selected ones
-        for (var i = 0; i < checkboxes.length; i++) {
-            if (checkboxes[i].checked) {
-                selectedValues.push(checkboxes[i].value);
-            }
-        }
-
-        if (selectedValues.length == 0) {
-            return false;
-        }
-
-        return selectedValues.join(',');
-    },
-    */
-
-    //----------------------------------------------------------------------------------
-
-    /*
-    getSelectedRadioValue: function(name) {
-        // Get a NodeList of all radio buttons with the name "gender"
-        var radios = document.getElementsByName(name);
-
-        // Initialize a variable to store the selected value
-        var selectedValue = '';
-
-        // Loop through the radio buttons to find the selected one
-        for (var i = 0; i < radios.length; i++) {
-            if (radios[i].checked) {
-                selectedValue = radios[i].value;
-                break; // Exit the loop since we found the selected radio button
-            }
-        }
-
-        return selectedValue
-    },
-    */
-
     //----------------------------------------------------------------------------------
 
     countLocalStorageFenceKeys: function(target) {
@@ -536,6 +491,21 @@ HELPER = {
     },
 
     //----------------------------------------------------------------------------------
+
+    number_format: function(nStr) {
+        nStr += '';
+        x = nStr.split('.');
+        x1 = x[0];
+        x2 = x.length > 1 ? '.' + x[1] : '';
+        var rgx = /(\d+)(\d{3})/;
+        while (rgx.test(x1)) {
+            x1 = x1.replace(rgx, '$1' + ',' + '$2');
+        }
+        return x1 + x2;
+    },
+
+    //----------------------------------------------------------------------------------
+
 
     call_fence_func: function(_this, func, a, b, c, d, e, f) {
         try {

@@ -403,7 +403,7 @@ function gateOnly() {
 
         // FENCE.call('move_the_gate', 'delete');
 
-        $('[name="width"]').val('');
+        // $('[name="width"]').val('');
     }
 
     btnCalculate();
@@ -812,6 +812,7 @@ function btnCalculate() {
             .find('.fc-input-msg')
             .addClass('fcim-show')
             .html('Please enter the amount');
+
         return;
     }
 
@@ -1146,10 +1147,12 @@ _doc.on('keypress', '.measurement-box-number', measurementBoxNumber_kp);
 
 function measurementBoxNumber_kp(e) {
     if (event.which == 13) {
-        btnCalculate();
         e?.preventDefault();
-
-        $('[data-section="3"]:visible').scrollTo(100, 57);
+        
+        if(!$('.btn-fc-calculate').attr('disabled')) {
+            btnCalculate();
+            $('[data-section="3"]:visible').scrollTo(100, 57);
+        }
     }
 }
 
@@ -1317,11 +1320,11 @@ function inputType_number() {
     if (_this.val() < min || _this.val() > max) {
 
         if (_this.val() < min) {
-            var alert = ' Invalid ' + min + 'mm Min';
+            var alert = ' Invalid ' + HELPER.number_format(min) + 'mm min';
         }
 
         if (_this.val() > max) {
-            var alert = ' Invalid ' + max + 'mm max';
+            var alert = ' Invalid ' + HELPER.number_format(max) + 'mm max';
         }
 
         if (_this.val() == '') {
@@ -1363,36 +1366,27 @@ function measurementBoxNumber() {
     if (_this.val() < min || _this.val() > max) {
 
         if (_this.val() < min) {
-            var alert = ' Invalid ' + min + 'mm Min';
+            var alert = ' Invalid ' + HELPER.number_format(min) + 'mm min';
         }
 
         if (_this.val() > max) {
-            var alert = ' Invalid ' + max + 'mm max';
+            var alert = ' Invalid ' + HELPER.number_format(max) + 'mm max';
         }
 
         if (_this.val() == '') {
             var alert = 'Please enter the amount';
         }
 
-        _this.closest('.fc-input-container').find('.fc-input-msg').addClass('fcim-show').html(alert);
+        _this.closest('.fc-input-container')
+            .find('.fc-input-msg')
+            .addClass('fcim-show').html(alert);
 
-        $('.btn-fc-calculate').attr('disabled', 'disabled').removeClass('btn-dark').addClass('btn-light disabled');
-        // 2nd validation
-        /*
-        var alert = [];
-
-        if ($('.fencing-panel-gate:visible').length) {
-            alert.push('gate');
-        }
-        if ($('.fencing-raked-panel').length) {
-            alert.push('step up');
-        }
-
-        var alert_msg = 'Invalid, remove ' + alert.join(' or ') + ' first';
-        */
+        $('.btn-fc-calculate').attr('disabled', 'disabled')
+            .removeClass('btn-dark')
+            .addClass('btn-light disabled');
 
         if (alert.length) {
-            $('.measurement-box-number').closest('.fc-input-container')
+            _this.closest('.fc-input-container')
                 .find('.fc-input-msg')
                 .addClass('fcim-show')
                 .html(alert);
