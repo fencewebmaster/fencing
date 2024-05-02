@@ -16,8 +16,6 @@
 <span class="badge bg-danger text-white text-uppercase p-1 is-demo">Test<br> Version</span>
 <?php endif; ?>
 
-
-
 <div class="modal fade" id="clear-all-data" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -37,8 +35,6 @@
         </div>
     </div>
 </div>
-
-
 
 <!-- Required Libraries -->
 <script type="text/javascript" src="<?php echo load_file('assets/js/jquery-3.3.1.min.js'); ?>"></script>

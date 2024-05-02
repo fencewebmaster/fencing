@@ -98,6 +98,7 @@ function fc_extra_needed($val ='') {
 	}
 
 	$paramParts = explode(',', $val);
+
     $paramParts = array_map('trim', $paramParts);
     $textValues = [];
 
@@ -106,6 +107,8 @@ function fc_extra_needed($val ='') {
             $textValues[] = $data[$part];
         }
     }
+
+
 
     if (!empty($textValues)) {
         return implode(', ', $textValues);

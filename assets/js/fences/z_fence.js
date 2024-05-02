@@ -143,14 +143,6 @@ FENCE = {
 
         $(FENCES.el.fencingPanelContainer).append(tpl);     
 
-        // Check if panel is less than 1 - On Gate
-/*       if( calc.long_panel.count <= 1 && fd.mbn <= FENCES.overall.maxOnGate || calc.long_panel.length <= FENCES.overall.minPanelWidthOnGate ) {
-            if( calc.long_panel.length <= FENCES.overall.minPanelWidthOnGate ) {  
-
-          
-            }     
-        }*/
-
         // No panel item 
         if($('.single-panel, #panel-item-0').length == 0 && $('.panel-item:not(.fencing-raked-panel)').length == 0 ) {
             $(FENCES.el.fencingPanelContainer+' .panel-post').after('<div id="panel-item-x" class="single-panel"></div>'); 

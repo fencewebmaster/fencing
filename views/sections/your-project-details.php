@@ -95,7 +95,8 @@
 							<td>Other Items Needed</td>
 							<td>
 								<?php  
-								$extra = convert_inputs(@$info['extra']);
+								$extra = is_array(@$info['extra']) ? $info['extra'] : convert_inputs(@$info['extra']);
+
 								if( $extra ): ?>
 									<?php 
 									echo get_items('fc_extra_needed', $extra); ?>
@@ -128,7 +129,7 @@
 									<td width="100" class="valign-top">Colour</td>
 									<td>
 
-									<?php $colors = convert_inputs($info['color']); ?>
+									<?php $colors = is_array(@$info['color']) ? $info['color'] : convert_inputs($info['color']); ?>
 
 									<div class="row">
 									<?php foreach( $colors as $cd_k => $color_data ):
