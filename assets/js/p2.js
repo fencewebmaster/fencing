@@ -249,8 +249,6 @@ ProjectPlan = {
 
         this.re_update_gate('edit', tab);
 
-        // $('.fpsn-b:not(:first-child):not(:last-child)').remove();
-
         $(`#pp-${tab} .fencing-panel-container`).prepend('<div class="left_raked-panel raked-panel"></div>');
         $(`#pp-${tab} .fencing-panel-container`).append('<div class="right_raked-panel raked-panel"></div>');
 
@@ -389,36 +387,6 @@ ProjectPlan = {
             }
 
         }
-
-/*
-        if (action == 'add' || action == 'edit') {
-
-            if (placement == -1 || $('#pp-' + tab + ' #panel-item-x').length ) {
-
-                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
-                    .replace(/{{center_point}}/gi, center_point)
-                    .replace(/{{panel_size}}/gi, gate_size)
-                    .replace(/{{panel_size_center}}/gi, panel_size_center)
-                    .replace(/{{panel_unit}}/gi, panel_unit);
-
-                $('#pp-' + tab + ' #panel-item-0, #pp-' + tab + ' #panel-item-x').before(tpl);
-
-            }
-
-
-            if (find_gate.length && placement >= 0 || action == 'add' && placement == 0) {
-
-                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
-                    .replace(/{{center_point}}/gi, center_point)
-                    .replace(/{{panel_size}}/gi, gate_size)
-                    .replace(/{{panel_size_center}}/gi, panel_size_center)
-                    .replace(/{{panel_unit}}/gi, panel_unit);
-
-                $('#pp-' + tab + ' #panel-item-' + placement).after(tpl);
-
-            }
-
-        }*/
 
         $('#pp-' + tab + ' .fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
             .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')

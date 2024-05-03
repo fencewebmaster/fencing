@@ -297,21 +297,6 @@ function calculate_fences(data) {
     gate_length = isNaN(D21) ? 0 : parseInt(D21) - gate_post_gaps;
     gate_width = parseInt(gate_length);
 
-
-    /*    
-        console.log('C', C3, C14, C5, C15, C16, C17, C19, C18, C21);
-        console.log('D', D16, D17, D18, Math.round(D19), D21, D22, D23, D24);
-        console.log('E', E17, E18, Math.round(E19), E21, E22, E23, E24);
-
-        console.log('========================================================');
-
-        console.log('full_panel', full_panel_count, full_panel_length);
-        console.log('even_panel', even_panel_count, even_panel_length);
-        console.log('short_panel', short_panel_count, short_panel_length);
-        console.log('offcut_panel', offcut_panel_count, offcut_panel_length);
-        console.log('gate', gate_count, gate_width);
-    */
-
     var _post = FENCE.minus_posts(custom_fence);
 
     if( _post ) {

@@ -36,7 +36,7 @@
 	                <i class="fa fa-minus"></i>
 	            </div>
 	            
-	   	        <input name="width" type="number" class="numeric fc-form-field text-center py-1" input-type="number" data-min="300" maxlength="{{maxLength}}" data-max="{{maxWidth}}"> 
+	   	        <input name="width" type="number" class="numeric fc-form-field text-center py-1" input-type="number" data-min="<?php echo config()->overall->min; ?>" maxlength="<?php echo config()->overall->length; ?>" data-max="{{maxWidth}}"> 
 	        
 	            <span class="me-2">mm</span>   
 

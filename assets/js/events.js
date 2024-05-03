@@ -378,15 +378,21 @@ _doc.on('click', '.select-gate_only', gateOnly);
 
 function gateOnly() {
     var _this = $('[name="gate_only"]:visible'),
+        _width = $('[name="width"]'),
         data = {};
 
     var fd = getSelectedFenceData(),
         slug = fd.slug,
         tab = fd.tab,
-        mbn = fd.mbn;
+        mbn = fd.mbn,
+        default_width = fd?.data?.settings?.gate?.size?.width;
 
     // Save custom fields changes
     if( _this.is(':checked') ) {
+
+        if(!_width.val()) {
+            _width.val(default_width);
+        }
 
         updateGateOnly(true);
         removeStepPanels();
@@ -402,8 +408,6 @@ function gateOnly() {
         updateGateOnly(false);
 
         // FENCE.call('move_the_gate', 'delete');
-
-        // $('[name="width"]').val('');
     }
 
     btnCalculate();

@@ -9,6 +9,7 @@
     --fc-gray: #e9e9e9;
     --fc-princeton-orange: #F67925;
     --fc-white: #fff;
+    --fc-black: #000;
     --fc-brand-primary: #D4112F;
     --fc-bright-gray: #EEEEEE;
     --fc-granite-gray: #666666;
@@ -20,11 +21,15 @@
     --fc-pale-pink: #DAFCFC;
     --fc-chinese-white: #DCEEDF;
     --fc-texas-green: #0B9321;
+    --fc-alizarin: #e91e1e;
+    --fc-red: #f70000;
+    --fc-lavender-blush: #ffeded;
+    --fc-fruit-salad: #4CAF50;
 }
 
 html {
   scroll-behavior: smooth;
-}    min-height: 140px;
+}   
 
 .fc-row-container {
     display: flex;
@@ -71,7 +76,7 @@ html {
  * Basic typography style for copy text
  */
 .fencing-container {
-    color: #000000;
+    color: var(--fc-black);
     font-family: "Poppins", sans-serif !important;
 }
 
@@ -98,7 +103,7 @@ html {
 
 body {
     background: #fbfbfb;
-  font-family: "Poppins", sans-serif;
+    font-family: "Poppins", sans-serif;
 }
 
 /**
@@ -128,9 +133,9 @@ a div {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #F5F5F5;
+    background: var(--fc-cultured);
     border-radius: 8px;
-    color: #000;
+    color: var(--fc-black);
 }
 
 .fc-color-options p {
@@ -152,7 +157,7 @@ a div {
 }
 
 .fencing-content {
-    background-color: #fff;
+    background-color: var(--fc-white);
 }
 
 .fencing-content-title {
@@ -227,7 +232,7 @@ a div {
 }
 
 .fc-modal-divider {
-    border-bottom: 1px solid #EEE;
+    border-bottom: 1px solid var(--fc-bright-gray);
     margin: 0 25px 0;
 }
 
@@ -243,11 +248,6 @@ a div {
 .fencing-modal-content {
     background-color: #fefefe;
     position: relative;
-    /*
-     position: absolute;
-     left: 50%;
-     transform: translate(-50%, -50%);
-  */
     width: 90%;
     max-width: 688px;
     border-radius: 20px;
@@ -302,8 +302,8 @@ a div {
 
 .fc-form-check-img {
     position: relative;
-    border: 2px solid #e9e9e9;
-    color: #000;
+    border: 2px solid var(--fc-gray);
+    color: var(--fc-black);
     transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
@@ -336,7 +336,7 @@ a div {
 .fc-form-check-img:hover {
     border: 2px solid var(--fc-princeton-orange) !important;
     background: var(--fc-princeton-orange);
-    color: #fff;
+    color: var(--fc-white);
 }
 
 .fc-form-check-img p {
@@ -352,7 +352,7 @@ a div {
 }
 
 .fc-form-control {
-    border: 1px solid #DDDDDD;
+    border: 1px solid var(--fc-gainsboro);
     width: -webkit-fill-available;
     font-size: 16px;
     padding: 15px;
@@ -378,17 +378,17 @@ a div {
 }
 
 .fc-form-control.error {
-    border-color: #e91e1e;
+    border-color: var(--fc-alizarin);
 }
 
 label.error {
-    color: #e91e1e;
+    color: var(--fc-alizarin);
 }
 
 label.error {
-    background: #e91e1e;
+    background: var(--fc-alizarin);
     z-index: 999;
-    color: #fff;
+    color: var(--fc-white);
     padding: 3px 5px;
     border-radius: 5px;
     font-size: 12px;
@@ -409,7 +409,7 @@ h2.fc-header-title {
     font-weight: 400;
     line-height: 45px;
     text-transform: uppercase;
-    color: #000000;
+    color: var(--fc-black);
     margin-bottom: 7px;
 }
 
@@ -437,7 +437,7 @@ h2.fc-header-title+p {
     max-width: 200px;
     background-size: cover;
     border-radius: 8px;
-    color: #fff;
+    color: var(--fc-white);
     padding: 10px 20px;
     cursor: pointer;
 }
@@ -460,7 +460,7 @@ h2.fc-header-title+p {
 }
 
 .fc-header-tab a {
-    background: #fff;
+    background: var(--fc-white);
     border: 2px solid var(--fc-gray);
     border-right: 0;
     border-bottom: 0;
@@ -481,22 +481,22 @@ h2.fc-header-title+p {
 }
 
 a.tab-selected {
-    color: #000;
+    color: var(--fc-black);
 }
 
 a.fc-tab-active {
     background: var(--fc-princeton-orange);
-    color: #fff;
+    color: var(--fc-white);
     border-color: var(--fc-princeton-orange) !important;
     border-radius: 16px 16px 0 0;
-    background-color: #fff;
-    color: #000;
+    background-color: var(--fc-white);
+    color: var(--fc-black);
 }
 
 /* The Close Button */
 .fencing-modal-close {
     font-family: "Inter", sans-serif;
-    color: #666666;
+    color: var(--fc-bright-gray);;
     border: 2px solid;
     position: absolute;
     right: 55px;
@@ -515,9 +515,9 @@ a.fc-tab-active {
 
 .fencing-modal-close:hover,
 .fencing-modal-close:focus {
-    background: #666666;
-    border: 2px solid #666666;
-    color: #fff;
+    background: var(--fc-bright-gray);;
+    border: 2px solid var(--fc-bright-gray);;
+    color: var(--fc-white);
     text-decoration: none;
     cursor: pointer;
 }
@@ -620,7 +620,7 @@ a.fc-tab-active {
 .fmh-gradient {
     background: #0a6593;
     background: linear-gradient(90deg, #0a6593 30%, #143052 100%);
-    color: #fff;
+    color: var(--fc-white);
 }
 
 /* Form Input range */
@@ -647,7 +647,7 @@ a.fc-tab-active {
 
 .fencing-input-range .fi-btn:hover {
     background: var(--fc-princeton-orange);
-    color: #fff;
+    color: var(--fc-white);
 }
 
 .fir-input-group {
@@ -804,7 +804,7 @@ a.fc-tab-active {
 
 .offcut-body {
     padding: 0 5px;
-    background: #ffeded;
+    background: var(--fc-lavender-blush);
     height: 135px;
     border: 1px solid var(--fc-brand-primary);
     position: relative;
@@ -823,32 +823,33 @@ a.fc-tab-active {
     font-size: 10px;
     line-height: 12px;
     min-width: 60px;
-    background: #fff;
+    background: var(--fc-white);
 }
 .gate-offcut .offcut-body>div {
-    background: #f67925;
-    color: #fff;
-    border-color: #f67925;
+    background: var(--fc-princeton-orange);
+    color: var(--fc-white);
+    border-color: var(--fc-princeton-orange);
 }
 
 .fencing-panel-gate {
     max-width: 95px;
     margin: 0 5px;
     border-top: 2px solid;
-    border-right-color: #000 !important;
-    border-left-color: #000 !important;
+    border-right-color: var(--fc-black) !important;
+    border-left-color: var(--fc-black) !important;
 }
 
 .fencing-panel-gate .fencing-panel-item-size {
-    background: #f67925;
-    color: #fff;
-    border: 1px solid #f67925;
+    background: var(--fc-princeton-orange);
+    color: var(--fc-white);
+    border: 1px solid var(--fc-princeton-orange);
 }
 
 .fc-gate-spacing {
     position: absolute;
     top: -22px;
     font-size: 12px;
+    color: var(--fc-black);
 }
 
 .fc-gate-left-spacing {
@@ -865,9 +866,9 @@ a.fc-tab-active {
 */
 /* Project Plan */
 .fc-card-header {
-    background: #F5F5F5;
+    background: var(--fc-cultured);
     padding: 10px 15px;
-    border: 1px solid #DDDDDD;
+    border: 1px solid var(--fc-gainsboro);
     border-bottom: 0;
     font-size: 16px;
     font-weight: 400;
@@ -875,7 +876,7 @@ a.fc-tab-active {
 
 .fc-card-body {
     padding: 10px 15px;
-    border: 1px solid #DDDDDD;
+    border: 1px solid var(--fc-gainsboro);
 }
 
 .fc-card-body .fc-p-1 {
@@ -883,10 +884,10 @@ a.fc-tab-active {
 }
 
 .fc-bg-dark {
-    background: #333333;
-    color: #fff;
+    background: var(--fc-dark-charcoal);
+    color: var(--fc-white);
     border-radius: 10px 10px 0 0;
-    border-color: #333333;
+    border-color: var(--fc-dark-charcoal);
 }
 
 .fc-border {
@@ -989,12 +990,12 @@ thead.fc-border th:last-child {
 
 .fc-table-bordered td,
 .fc-table-bordered th {
-    border: 1px solid #DDDDDD;
+    border: 1px solid var(--fc-gainsboro);
     padding: 10px 15px;
 }
 
 .fc-table-rounded-border {
-    border: 1px solid #DDDDDD;
+    border: 1px solid var(--fc-gainsboro);
 }
 
 .fc-table-rounded-border th {
@@ -1006,7 +1007,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-table-rounded-border table td {
-    border: 1px solid #DDDDDD;
+    border: 1px solid var(--fc-gainsboro);
     padding: 10px 15px;
     font-size: 14px;
     box-sizing: border-box;
@@ -1079,7 +1080,7 @@ thead.fc-border th:last-child {
 
 .fc-items-action a {
     font-size: 14px;
-    color: #000;
+    color: var(--fc-black);
     border: 1px solid;
     border-radius: 8px;
     padding: 4px 10px;
@@ -1087,19 +1088,19 @@ thead.fc-border th:last-child {
 }
 
 .fc-items-action a:hover {
-    background: #000;
-    color: #fff;
+    background: var(--fc-black);
+    color: var(--fc-white);
 }
 
 /* tabs */
 .fc-tabs {
-    border-bottom: 2px solid #DDDDDD;
+    border-bottom: 2px solid var(--fc-gainsboro);
     display: inline-block;
 }
 
 .fc-tabs a {
     text-decoration: none;
-    color: #666666;
+    color: var(--fc-bright-gray);;
     display: inline-block;
     padding: 5px 15px;
     font-weight: 600;
@@ -1107,13 +1108,13 @@ thead.fc-border th:last-child {
 }
 
 .fc-tabs .fc-active {
-    color: #000;
+    color: var(--fc-black);
 }
 
 .fc-tabs .fc-active:after {
     content: "";
     display: inline-block;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid var(--fc-black);
     width: 100%;
     position: absolute;
     bottom: -2px;
@@ -1122,8 +1123,8 @@ thead.fc-border th:last-child {
 
 /* Product list & cart */
 .fc-editing-icon {
-    background: #4CAF50;
-    color: #fff;
+    background: var(--fc-fruit-salad);
+    color: var(--fc-white);
     position: absolute;
     top: -15px;
     right: 10px;
@@ -1494,7 +1495,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-text-success {
-    color: #4caf50;
+    color: var(--fc-fruit-salad);
 }
 
 .fc-float-r {
@@ -1657,7 +1658,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-text-danger {
-    color: #d4112f;
+    color: var(--fc-brand-primary);
 }
 
 .fc-d-none {
@@ -1684,7 +1685,7 @@ thead.fc-border th:last-child {
 .fencing-container {
     max-width: 1200px;
     margin: 0 auto;
-    color: #000;
+    color: var(--fc-black);
 }
 
 .fencing-container__header .fc-col-half {
@@ -1726,8 +1727,8 @@ thead.fc-border th:last-child {
 }
 
 .fc-label-badge {
-    color: #666666;
-    background: #EEEEEE;
+    color: var(--fc-bright-gray);;
+    background: var(--fc-bright-gray);
     border-radius: 24px;
     padding: 5px 10px;
     font-size: 12px;
@@ -1745,7 +1746,7 @@ thead.fc-border th:last-child {
 .fc-label-group .fc-form-label {
     top: -11px;
     padding: 0 5px;
-    background: #fff;
+    background: var(--fc-white);
     display: inline-block !important;
     margin-left: 10px;
     position: absolute;
@@ -1762,7 +1763,7 @@ thead.fc-border th:last-child {
 .fc-input-msg {
     margin: 5px 0;
     background: #dc3545;
-    color: #fff;
+    color: var(--fc-white);
     padding: 2px 5px;
     border-radius: 5px;
     font-size: 12px;
@@ -1875,7 +1876,7 @@ thead.fc-border th:last-child {
 .disabled *, .disabled {
     cursor: not-allowed;
     pointer-events: none !important; 
-    color: #dddddd;
+    color: var(--fc-gainsboro);
 }
 
 .fc-form-plan .fc-col-half {
@@ -1936,7 +1937,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-modal--v2 .fencing-modal-area--panel-options .fencing-modal-notes:not(.fc-alert-gray) {
-    background-color: #fff;
+    background-color: var(--fc-white);
     padding: 0;
 }
 
@@ -2262,7 +2263,7 @@ thead.fc-border th:last-child {
 .fencing-modal-close {
     top: 3px;
     right: 0;
-    background-color: #fff;
+    background-color: var(--fc-white);
     border-color: var(--fc-granite-gray);
 }
 
@@ -2274,7 +2275,7 @@ thead.fc-border th:last-child {
 
 @media (min-width: 1024px) {
     .fencing-modal-close:hover {
-        background-color: #fff;
+        background-color: var(--fc-white);
     }
 }
 
@@ -2482,7 +2483,7 @@ thead.fc-border th:last-child {
     content: "";
     width: 2px;
     height: 150%;
-    background-color: #AAAAAA;
+    background-color: var(--fc-dark-gray);
     position: absolute;
     transform: rotate(45deg);
 }
@@ -2491,13 +2492,13 @@ thead.fc-border th:last-child {
     content: "";
     width: 2px;
     height: 150%;
-    background-color: #AAAAAA;
+    background-color: var(--fc-dark-gray);
     position: absolute;
     transform: rotate(-45deg);
 }
 
 #submit-modal.fencing-modal--v2 .fc-form-check-img .fc-empty-img span {
-    background-color: #F5F5F5;
+    background-color: var(--fc-cultured);
     padding: 2px;
     position: relative;
     z-index: 2;
@@ -2584,13 +2585,13 @@ thead.fc-border th:last-child {
     .btn-fc:hover {
         background: #525252;
         cursor: pointer;
-        color: #fff;
+        color: var(--fc-white);
     }
 }
 
 .btn-fc-default {
     background: #333;
-    color: #fff;
+    color: var(--fc-white);
     border: 0;
     border-radius: 8px;
     text-transform: uppercase;
@@ -2600,14 +2601,14 @@ thead.fc-border th:last-child {
 
 @media (min-width: 1024px) {
     .btn-fc-default:hover {
-        background: #000;
-        color: #fff;
+        background: var(--fc-black);
+        color: var(--fc-white);
     }
 }
 
 .btn-fc-black {
     background: #111;
-    color: #fff;
+    color: var(--fc-white);
     border: 0;
     border-radius: 8px;
     text-transform: uppercase;
@@ -2617,8 +2618,8 @@ thead.fc-border th:last-child {
 
 @media (min-width: 1024px) {
     .btn-fc-black:hover {
-        background: #000;
-        color: #fff;
+        background: var(--fc-black);
+        color: var(--fc-white);
     }
 }
 
@@ -2634,7 +2635,7 @@ thead.fc-border th:last-child {
 @media (min-width: 768px) {
     .btn-fc-outline-default:hover {
         background-color: var(--fc-dark-charcoal);
-        color: #fff;
+        color: var(--fc-white);
     }
 }
 
@@ -2646,13 +2647,13 @@ thead.fc-border th:last-child {
 @media (min-width: 1024px) {
     .btn-fc-outline-default--dark-gray:hover {
         background-color: var(--fc-dark-gray);
-        color: #fff;
+        color: var(--fc-white);
     }
 }
 
 .btn-fc-outline-light {
     border: 1px solid #DDD;
-    color: #666666;
+    color: var(--fc-bright-gray);;
     border-radius: 8px;
     font-size: 14px;
     padding: 10px 20px;
@@ -2661,13 +2662,13 @@ thead.fc-border th:last-child {
 
 @media (min-width: 1024px) {
     .btn-fc-outline-light:hover {
-        color: #fff;
+        color: var(--fc-white);
     }
 }
 
 .btn-fc-danger {
     border: 1px solid #9E9E9E;
-    color: #fff;
+    color: var(--fc-white);
     border-radius: 10px;
     font-weight: 400;
     text-transform: uppercase;
@@ -2693,7 +2694,7 @@ thead.fc-border th:last-child {
 
 .btn-fc-orange {
     background: var(--fc-princeton-orange);
-    color: #fff;
+    color: var(--fc-white);
     border: 0;
     border-radius: 8px;
     text-transform: uppercase;
@@ -2713,8 +2714,8 @@ thead.fc-border th:last-child {
 }
 
 .btn-fc-outline-danger {
-    color: #D4112F;
-    border: 1px solid #D4112F;
+    color: var(--fc-brand-primary);
+    border: 1px solid var(--fc-brand-primary);
     border-radius: 8px;
     font-weight: 400;
     text-transform: uppercase;
@@ -2724,14 +2725,14 @@ thead.fc-border th:last-child {
 
 @media (min-width: 1024px) {
     .btn-fc-outline-danger:hover {
-        background: #D4112F;
-        color: #fff;
+        background: var(--fc-brand-primary);
+        color: var(--fc-white);
     }
 }
 
 .fc-btn-active {
     background: var(--fc-princeton-orange);
-    color: #fff;
+    color: var(--fc-white);
 }
 
 .fc-btn-md {
@@ -2756,7 +2757,7 @@ thead.fc-border th:last-child {
 
 .fencing-qty-btn:hover {
     cursor: pointer;
-    background: #dddddd;
+    background: var(--fc-gainsboro);
 }
 
 .fencing-qty-plus {
@@ -2887,8 +2888,8 @@ thead.fc-border th:last-child {
 }
 
 .fencing-tab {
-    background: #fff;
-    border: 2px solid #fff;
+    background: var(--fc-white);
+    border: 2px solid var(--fc-white);
     border-bottom: 0 !important;
     padding: 0;
     cursor: pointer;
@@ -2924,7 +2925,7 @@ thead.fc-border th:last-child {
 
 .fencing-tab:first-child {
     border-top-left-radius: 16px;
-    border-left: 2px solid #eee;
+    border-left: 2px solid var(--fc-bright-gray);
 }
 
 @media (min-width: 768px) {
@@ -2958,16 +2959,16 @@ thead.fc-border th:last-child {
 }
 
 .fencing-tab.fencing-tab-selected {
-    background: #fff;
+    background: var(--fc-white);
     border-color: var(--fc-princeton-orange) !important;
     border-bottom: 0 !important;
     border-radius: 16px 16px 0 0;
-    border-right-color: #fff;
+    border-right-color: var(--fc-white);
 }
 
 .fencing-tab.fencing-tab-selected .fencing-tab-number,
 .fencing-tab.fencing-tab-selected .fencing-tab-name {
-    color: #000;
+    color: var(--fc-black);
 }
 
 @media (min-width: 768px) {
@@ -3016,7 +3017,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-tab-add.btn-fc {
-    background-color: #fff;
+    background-color: var(--fc-white);
 }
 
 @media (min-width: 992px) {
@@ -3057,7 +3058,7 @@ thead.fc-border th:last-child {
 /* Handle */
 .fencing-tabs-container.enable-scroll .fencing-tab-container::-webkit-scrollbar-thumb,
 .fencing-display-result::-webkit-scrollbar-thumb {
-    background: #333333;
+    background: var(--fc-dark-charcoal);
 }
 
 /* Handle on hover */
@@ -3105,7 +3106,7 @@ thead.fc-border th:last-child {
 
 .fc-content-tab-title {
     background: var(--fc-princeton-orange);
-    color: #fff;
+    color: var(--fc-white);
     padding: 15px 24px;
     font-weight: 400;
     font-size: 18px;
@@ -3209,7 +3210,7 @@ thead.fc-border th:last-child {
     -webkit-clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
     clip-path: polygon(37% 0, 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
     padding-top: 2px;
-    background: #000;
+    background: var(--fc-black);
 }
 
 
@@ -3231,7 +3232,7 @@ thead.fc-border th:last-child {
     -webkit-clip-path: polygon(36.5% 0, 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
     clip-path: polygon(36.5% 0, 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
     padding-top: 2px;
-    background: #000;
+    background: var(--fc-black);
 
     -moz-transform: scaleX(-1);
     -o-transform: scaleX(-1);
@@ -3270,13 +3271,13 @@ thead.fc-border th:last-child {
 }
 
 .downloading-pdf .dl-page-separator {
-    border: 1px solid #fff;
+    border: 1px solid var(--fc-white);
     height: 99px;
 }
 
 .dl-row {
     height: 310px;
-    border: 1px solid #fff;
+    border: 1px solid var(--fc-white);
 }
 
 
@@ -3289,13 +3290,13 @@ thead.fc-border th:last-child {
 }
 
 .panel-no-post {
-    border: 2px dashed #f70000 !important;
+    border: 2px dashed var(--fc-red) !important;
     background: #fff !important;
     min-width: 0 !important;
 }
 
 .fencing-panel-spacing-number.no-post {
-    color: #f70000;
+    color: var(--fc-red);
     font-weight: 400;
 }
 
@@ -3318,7 +3319,7 @@ thead.fc-border th:last-child {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
+    color: var(--fc-white);
 }
 
 /* Max Panel */
@@ -3354,19 +3355,19 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-controls .btn-fc.fc-btn-active {
-    color: #fff;
+    color: var(--fc-white);
     border-color: var(--fc-princeton-orange);
 }
 
 .fencing-panel-controls .btn-fc.fc-btn-active span {
-    color: #fff;
+    color: var(--fc-white);
 }
 
 @media (min-width: 1024px) {
     .fencing-panel-controls .btn-fc:hover {
         border-color: var(--fc-princeton-orange);
         background-color: var(--fc-princeton-orange);
-        color: #fff;
+        color: var(--fc-white);
     }
 
     .fencing-panel-controls .btn-fc:hover span {
@@ -3618,7 +3619,7 @@ thead.fc-border th:last-child {
 .fencing-style-item {
     cursor: pointer;
     float: left;
-    background: #fff;
+    background: var(--fc-white);
     position: relative;
     transition: all 0.2s ease;
 }
@@ -3698,7 +3699,7 @@ thead.fc-border th:last-child {
     position: absolute;
     top: 8px;
     right: 20px;
-    color: #fff;
+    color: var(--fc-white);
     outline: none;
     border-radius: 6px;
     cursor: pointer;
@@ -3728,7 +3729,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-style-item.fsi-selected .fencing-style-title {
-    color: #fff;
+    color: var(--fc-white);
     background: var(--fc-princeton-orange);
     font-weight: 400;
     border-radius: 0 0 10px 10px;
@@ -3817,7 +3818,7 @@ thead.fc-border th:last-child {
     max-width: 100%;
     border: 0;
     outline: none;
-    color: #000;
+    color: var(--fc-black);
 }
 
 @media (max-width: 992px) {
@@ -3881,9 +3882,9 @@ thead.fc-border th:last-child {
     background-image: url(../img/webp/ally-thin.webp?v=1);
     background-repeat: repeat;
     background-color: initial;
-    border-color: #000;
+    border-color: var(--fc-black);
     background-size: 9px;
-    background-color: #fff;
+    background-color: var(--fc-white);
 }
 
 .fencing-panel-item:not(.fencing-panel-gate) {
@@ -3896,7 +3897,7 @@ thead.fc-border th:last-child {
     background-repeat: repeat;
     background-color: initial;
     background-size: 9px;
-    background-color: #ffeded;
+    background-color: var(--fc-lavender-blush);
 }
 
 .custom-height .ally,
@@ -3911,7 +3912,7 @@ thead.fc-border th:last-child {
     background-image: url(../img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
-    background-color: #fff;
+    background-color: var(--fc-white);
     position: absolute;
     top: -6px;
     width: 100%;
@@ -3924,7 +3925,7 @@ thead.fc-border th:last-child {
     background-image: url(../img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
-    background-color: #fff;
+    background-color: var(--fc-white);
     position: absolute;
     bottom: -6px;
     width: 100%;
@@ -4013,7 +4014,7 @@ thead.fc-border th:last-child {
 @media (min-width: 1024px) {
     .fencing-panel-item:hover {
         border: 2px solid var(--fc-princeton-orange);
-        background-color: #ffeded;
+        background-color: var(--fc-lavender-blush);
     }
 }
 
@@ -4067,9 +4068,9 @@ thead.fc-border th:last-child {
     font-size: 12px;
     margin: 15px 5px;
     height: fit-content;
-    background: #fff;
+    background: var(--fc-white);
     padding: 5px 4px;
-    color: #000;
+    color: var(--fc-black);
     text-align: -webkit-center;
     border: 1px solid #9e9e9e;
     border-radius: 5px;
@@ -4180,7 +4181,7 @@ thead.fc-border th:last-child {
 
 .fc-cart-items p strong {
     font-weight: 500;
-    color: #000;
+    color: var(--fc-black);
     text-transform: initial;
     font-size: 14px;
 }
@@ -4269,7 +4270,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-cart-items-btns .btn-fc--live-support {
-    color: #fff;
+    color: var(--fc-white);
 }
 
 .fc-cart-items-btns .btn-fc-outline-light {
@@ -4280,7 +4281,7 @@ thead.fc-border th:last-child {
 @media (min-width: 1024px) {
     .fc-cart-items-btns .btn-fc-outline-light:hover {
         background-color: var(--fc-dark-charcoal);
-        color: #fff;
+        color: var(--fc-white);
     }
 }
 
@@ -4288,16 +4289,16 @@ thead.fc-border th:last-child {
     margin-bottom: 15px;
     font-size: 18px;
     line-height: 25px;
-    color: #666666;
+    color: var(--fc-granite-gray);
     text-transform: initial;
 }
 
 .fc-cart-stock-area p span:not(.fc-stock-status) {
-    background-color: #EEEEEE;
+    background-color: var(--fc-bright-gray);
     border-radius: 8px;
     display: inline-block;
     padding: 4px 8px;
-    color: #000;
+    color: var(--fc-black);
 }
 
 .fc-cart-stock-area p~p {
@@ -4558,7 +4559,7 @@ thead.fc-border th:last-child {
     display: inline-block;
     height: 24px;
     width: 24px;
-    border: 1px solid #e9e9e9;
+    border: 1px solid var(--fc-gray);
     border-radius: 100%;
     position: absolute;
     top: 10px;
@@ -4581,7 +4582,7 @@ thead.fc-border th:last-child {
 .fc-select-2.fc-selected:after {
     border-color: var(--fc-princeton-orange);
     background: var(--fc-princeton-orange);
-    box-shadow: inset 0 0 0 3px #fff;
+    box-shadow: inset 0 0 0 3px var(--fc-white);
 }
 
 .fc-select img {
@@ -4622,8 +4623,8 @@ thead.fc-border th:last-child {
 }
 
 .qic-head {
-    background: #000;
-    color: #fff;
+    background: var(--fc-black);
+    color: var(--fc-white);
     padding: 5px;
     border-radius: 6px 6px 0 0;
 }
@@ -4664,7 +4665,7 @@ thead.fc-border th:last-child {
     text-align: center;
     font-size: 12px;
     font-weight: bold;
-    color: #fff;
+    color: var(--fc-white);
     line-height: 20px;
     font-family: auto;
 }
@@ -4745,13 +4746,13 @@ thead.fc-border th:last-child {
 }
 
 .downloading-pdf .qic-head {
-    color: #000;
-    background: #fff;
+    color: var(--fc-black);
+    background: var(--fc-white);
 }
 
 .downloading-pdf .fc-bg-dark {
-    background: #fff;
-    color: #333333;
+    background: var(--fc-white);
+    color: var(--fc-dark-charcoal);
 }
 
 .downloading-pdf .fc-table-rounded-border,
@@ -4789,7 +4790,7 @@ thead.fc-border th:last-child {
 
 .fencing-tabs {
     justify-content: space-between;
-    background: #fff;
+    background: var(--fc-white);
 }
 
 .sticky-roll .fencing-tabs {
@@ -4799,7 +4800,7 @@ thead.fc-border th:last-child {
 .no-post-swivel-bracket .sw {
     position: absolute;
     bottom: 10px !important;
-    background: #fff;
+    background: var(--fc-white);
     border: 1px solid #d4d4d4;
     height: 15px;
     width: 20px;
@@ -4863,7 +4864,7 @@ thead.fc-border th:last-child {
     pointer-events: auto;
     cursor: pointer;
     position: absolute;
-    background: #fff;
+    background: var(--fc-white);
     color: #6c757d;
 }
 
@@ -4900,7 +4901,7 @@ thead.fc-border th:last-child {
     text-align: center;
 }
 .or-divider strong {
-    background: #fff;
+    background: var(--fc-white);
     width: 60px;
     display: inline-block;
 }

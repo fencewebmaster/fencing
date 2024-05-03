@@ -98,7 +98,6 @@ function fc_extra_needed($val ='') {
 	}
 
 	$paramParts = explode(',', $val);
-
     $paramParts = array_map('trim', $paramParts);
     $textValues = [];
 
@@ -107,8 +106,6 @@ function fc_extra_needed($val ='') {
             $textValues[] = $data[$part];
         }
     }
-
-
 
     if (!empty($textValues)) {
         return implode(', ', $textValues);
@@ -119,101 +116,16 @@ function fc_extra_needed($val ='') {
 } 
 
 
+function config($val = '') {
 
-$products = [
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel - 1200H x 2400W',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel - 1200H x 3000W',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel Raked - 1300H x 1200W',	
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel Raked - 1400H x 1200W',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel Raked - 1500H x 1200W',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel Raked - 1600H x 1200W',	
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel Raked - 1700H x 1200W',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Panel Raked - 1800H x 1200W',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Gate - 1200H x 970W',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Gate Converter - 1200H',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Post - 1300L - Base Plated',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Post - 1800L - Cemented In',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Post - 2100L - Base Plated',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Post - 2400L - Cemented In',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Post Covers',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Brackets Set x4',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Flexi Bracket x1',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Hinge & Latch Kit',
-	],
-	[
-		'sku' => '',
-		'price' => '',
-		'name' => 'Fixing Kit - Dynabolts',
-	]
-];
+	$data = [
+		'overall' => [
+			'length' => 5,
+			'min' => 300,
+			'max' => 40000
+		]
+	];
+
+	return json_decode(json_encode($data));
+}
+

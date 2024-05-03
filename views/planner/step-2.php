@@ -27,7 +27,7 @@
                                 <i class="fa fa-minus"></i>
                             </div>
                             
-                            <input type="number" class="measurement-box-number numeric text-center py-1" data-min="300" data-max="40000" maxlength="5" value=""> 
+                            <input type="number" class="measurement-box-number numeric text-center py-1" data-min="<?php echo config()->overall->min; ?>" data-max="<?php echo config()->overall->max; ?>" maxlength="<?php echo config()->overall->length; ?>" value=""> 
                             
                             <span>mm</span>   
 
