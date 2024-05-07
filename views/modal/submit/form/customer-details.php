@@ -9,7 +9,7 @@
         <div class="col-12 col-md mb-3">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">Mobile <span class="fc-text-danger">*</span></label>
-                <input type="number" name="mobile" id="mobile" class="form-control p-3" placeholder="Your phone number" required>                          
+                <input type="text" inputmode="numeric" name="mobile" id="mobile" class="form-control p-3" placeholder="Your phone number" required>                          
             </div>
         </div>
     </div>

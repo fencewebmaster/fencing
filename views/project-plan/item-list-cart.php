@@ -60,7 +60,9 @@
 							<div class="fc-cart-stock-area">
 							    <p>Approx Delivery Run: <span>2-3 Days</span></p>
 
-							    <p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline fc-stock-status--yes">Yes</span></p>
+							    <p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline">
+							    	<i class="fa-solid fa-circle-check text-success me-2 fs-4"></i> Yes</span>
+							    </p>
 
 							    <div class="alert alert-danger fc-step-2-alert fc-alert-gray--low-stock">
 							        <h3 class="fc-mb-1"><i class="fa fa-exclamation-circle"></i> Low Stock Warning</h3>

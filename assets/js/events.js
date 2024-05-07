@@ -873,6 +873,8 @@ function btnCalculate() {
 
     localStorage.setItem('custom_fence-' + tab, JSON.stringify(custom_fence_tab));
 
+    $('.d-oaw').html(HELPER.number_format(length));
+
 }
 
 //----------------------------------------------------------------------------------

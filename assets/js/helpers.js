@@ -452,11 +452,6 @@ HELPER = {
         }
 
         if (step == 1) {
-
-            if ($('.raked-panel .fencing-raked-panel').length) {
-
-            }
-
             $('.fencing-display-result').css({ 'margin-top': raked_panel_mt });
             $('.fencing-panel-items').removeAttr('style');
         }

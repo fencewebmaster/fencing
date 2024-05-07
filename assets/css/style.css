@@ -3518,7 +3518,6 @@ thead.fc-border th:last-child {
 }
 
 .fencing-section__cmp {
-    margin-bottom: 24px;
     position: relative;
 }
 
@@ -4194,40 +4193,16 @@ thead.fc-border th:last-child {
     font-family: "Poppins", sans-serif !important;
 }
 
-.fc-stock-status:before {
-    content: "";
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    margin-right: 8px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
 .fc-stock-status--inline {
-    padding: 4px 8px;
+    padding: 5px 8px;
     background-color: var(--fc-chinese-white);
     border-radius: 8px;
-    display: inline-block;
+    display: inline-flex;
     color: var(--fc-texas-green);
     font-size: 18px;
 }
 
-.fc-stock-status--inline:before {
-    width: 20px;
-    height: 20px;
-    background-size: 10px !important;
-    position: relative;
-    top: -1px;
-}
 
-.fc-stock-status--yes:before {
-    background: var(--fc-slimy-green) url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAANCAYAAABPeYUaAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABgSURBVHgBzdDBCYAwEETRKWVLsRQ7sATtJCVYUkoZF5yDqAg7ufghlzC8wwIDkZwwUgKNZzOcLkDPF6j2cyA/lnyrDWiwa9AsQKPQ4AGVbvAG0TniDepl4AMKOAnaKsABcRXndOafGPsAAAAASUVORK5CYII=) no-repeat center;
-}
-
-.fc-stock-status--low:before {
-    background: var(--fc-princeton-orange) url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAPCAYAAADDNm69AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABbSURBVHgBhY8LDYAwDESvUzAJk4IkHGABaUiYhDk42uYICwnwkkua699IVgAhmFmHGytFmMU1MFHwYDbGr4HXod9bEr+phbJCweZaruzOmxYzDnX2fE5VVV/jBOmYNZAni3MUAAAAAElFTkSuQmCC) no-repeat center;
-}
 
 .fc-cart-items-btns {
     display: flex;

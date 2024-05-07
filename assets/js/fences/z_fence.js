@@ -488,6 +488,201 @@ FENCE = {
 
     //----------------------------------------------------------------
 
+    update_custom_fence_gate: function() {
+
+        var fd = getSelectedFenceData();
+
+        var _this = $(this),
+            i = fd.slug,
+            tab = fd.tab,
+            info = fd.info,
+            data = fd.data,
+            tabInfo = fd.tabInfo;
+
+        var modal_key = 'gate';
+
+        placement = $(FENCES.el.fencingPanelGate).prev().prev().prev().attr('data-id');
+        placement = placement == undefined ? -1 : placement;
+
+        var size = $('[name="width"]').val(),
+            default_width = fd?.data?.settings?.gate?.size?.width,
+            gateOnly = fd?.tabInfo[0]?.gateOnly;
+
+        var settings = {
+            'placement': placement,
+            'gateOnly': $('[name="gate_only"]:visible').is(':checked'),
+            'index': $(FENCES.el.fencingPanelGate).index(),
+            'size': size || default_width,
+            'unit': FENCES.defaultValues.unit
+        }
+
+        if( $('.fc-form-field:visible').length ) {
+
+            settings.fields = $('.fc-form-field:visible').map(function() {
+
+                var _this = $(this),
+                    key = _this.attr('name'),
+                    val = $.inArray(_this.attr('type'), ['radio', 'checkbox']) !== -1 ? ($('[name="use_std"]').is(':checked')) : _this.val(),
+                    type = _this.attr('type'),
+                    tag = _this.get(0).tagName.toLowerCase(),
+                    obj = { key: key, val: val, tag: tag, type: type };
+
+                return obj;
+
+            }).get();
+            
+        } else {
+
+            var gate_data = info.filter(function(item) {
+                return item.control_key == 'gate';
+            });
+
+            settings.fields = gate_data[0]?.settings?.fields || [];            
+        }
+        
+        var filtered_data = info.filter(function(item) {
+            return item.control_key != modal_key;
+        });
+
+        if ($(FENCES.el.fencingPanelGate).length) {
+
+            filtered_data.push({
+                id: i,
+                control_key: modal_key,
+                settings: settings
+            });
+
+        }   
+
+        localStorage.setItem('custom_fence-' + tab + '-' + i, JSON.stringify(filtered_data));
+
+    },
+
+    //----------------------------------------------------------------
+
+    update_gate: function(action) {
+
+        var fd = getSelectedFenceData();
+
+        var i = fd.slug,
+            tab = fd.tab,
+            custom_fence = fd.info,
+            info = fd.data;
+
+        var panel_count = $('.panel-item:not(.fencing-panel-gate,.fencing-raked-panel)').length;
+
+        var find_gate = custom_fence.filter(function(item) {
+            return item.control_key == 'gate';
+        });
+
+        if (find_gate.length) {
+            placement = find_gate[0]?.settings?.placement;
+        } else {
+            placement = 0;
+        }
+
+        var center_point = FENCE.get(i, 'post'),
+            mesurement = $(FENCES.el.measurementBoxNumber).val();
+
+        var calc = calculate_fences();
+
+        var panel_size = calc.gate.length,
+            panel_unit = FENCES.defaultValues.unit,
+            gate_size = calc.gate.width;
+
+        if (action == 'add' || action == 'edit') {
+
+            if (placement == -1 ) {
+
+                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
+                    .replace(/{{center_point}}/gi, center_point)
+                    .replace(/{{panel_size}}/gi, gate_size)
+                    .replace(/{{panel_unit}}/gi, panel_unit);
+
+                $('#panel-item-0, #panel-item-x').before(tpl);
+
+               $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
+
+            } else if (find_gate.length && placement >= 0) {
+
+                // if panel placement doesn't exist
+                if($('#panel-item-' + placement).length == 0) {
+
+                    panel_gate_side = (panel_count <= 1) ? 'r' : 'l';
+            
+                    var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-' + panel_gate_side +'"]').text()
+                        .replace(/{{center_point}}/gi, center_point)
+                        .replace(/{{panel_size}}/gi, gate_size)
+                        .replace(/{{panel_unit}}/gi, panel_unit);
+
+                    $('#panel-item-0, #panel-item-x').after(tpl);
+
+                } else {
+
+                    var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
+                        .replace(/{{center_point}}/gi, center_point)
+                        .replace(/{{panel_size}}/gi, gate_size)
+                        .replace(/{{panel_unit}}/gi, panel_unit);
+
+                    $('#panel-item-' + placement).after(tpl);
+                }
+
+                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
+
+            } else if (action == 'add' && placement == 0) {
+
+                temp = $('script[data-type="panel_gate-' + info.panel_group + '-l"]');
+
+                if($('.fencing-panel-items [data-key="panel_options"]').length) {
+                    temp = $('script[data-type="panel_gate-' + info.panel_group + '-r"]')
+                }
+
+                var tpl = temp.text()
+                    .replace(/{{center_point}}/gi, center_point)
+                    .replace(/{{panel_size}}/gi, gate_size)
+                    .replace(/{{panel_unit}}/gi, panel_unit);
+
+                var panelID = $('[data-cart-key="panel_options"].fencing-panel-item').attr('id');
+
+                $('#'+panelID+', .fencing-panel-items .raked-panel-container').after(tpl);
+
+                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
+
+            }
+
+        }
+
+        // fence Height
+        gateValue = '';
+
+        if (calc.fence_size.height) {
+            gateValue = calc.fence_size.height;
+        }
+
+        $(FENCES.el.fencingPanelGate).prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
+            .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
+            .attr('data-cart-value', gateValue);
+
+
+        // Is custom gate
+        var gate_data = custom_fence.filter(function(item) {
+            return item.control_key == 'gate';
+        });
+
+        isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
+
+        if (isCustomGate) {
+            $(FENCES.el.fencingPanelGate).css({ 'max-width': calc.gate.width * 0.1 });
+        }
+
+        if (action == 'add') {
+            FENCE.call('calculateCustomGate');
+        }
+
+    },
+
+    //----------------------------------------------------------------
+
     move_the_gate: function(move) {
 
         var gate = $(FENCES.el.fencingPanelGate),
@@ -539,7 +734,11 @@ FENCE = {
                 gate.next().next().remove();
                 gate.next().remove();
 
-                $('#panel-item-1').after(move_gate);
+                if( $('#panel-item-0').length == 0 ) {
+                    $('#panel-item-1').after(move_gate);
+                } else {
+                    $('#panel-item-0, #panel-item-x').after(move_gate);
+                }
 
                 gate.remove();
 
@@ -623,190 +822,6 @@ FENCE = {
         FENCE.call('update_custom_fence_gate');
 
         $(FENCES.el.fencingDisplayResult).scrollCenter(".fencing-panel-gate", 100);
-
-    },
-
-    //----------------------------------------------------------------
-
-    update_custom_fence_gate: function() {
-
-        var fd = getSelectedFenceData();
-
-        var _this = $(this),
-            i = fd.slug,
-            tab = fd.tab,
-            info = fd.info,
-            data = fd.data,
-            tabInfo = fd.tabInfo;
-
-        var modal_key = 'gate';
-
-        placement = $(FENCES.el.fencingPanelGate).prev().prev().prev().attr('data-id');
-        placement = placement == undefined ? -1 : placement;
-
-        var size = $('[name="width"]').val(),
-            default_width = fd?.data?.settings?.gate?.size?.width,
-            gateOnly = fd?.tabInfo[0]?.gateOnly;
-
-        var settings = {
-            'placement': placement,
-            'gateOnly': $('[name="gate_only"]:visible').is(':checked'),
-            'index': $(FENCES.el.fencingPanelGate).index(),
-            'size': size || default_width,
-            'unit': FENCES.defaultValues.unit
-        }
-
-        if( $('.fc-form-field:visible').length ) {
-
-            settings.fields = $('.fc-form-field:visible').map(function() {
-
-                var _this = $(this),
-                    key = _this.attr('name'),
-                    val = $.inArray(_this.attr('type'), ['radio', 'checkbox']) !== -1 ? ($('[name="use_std"]').is(':checked')) : _this.val(),
-                    type = _this.attr('type'),
-                    tag = _this.get(0).tagName.toLowerCase(),
-                    obj = { key: key, val: val, tag: tag, type: type };
-
-                return obj;
-
-            }).get();
-            
-        } else {
-
-            var gate_data = info.filter(function(item) {
-                return item.control_key == 'gate';
-            });
-
-            settings.fields = gate_data[0]?.settings?.fields || [];            
-        }
-        
-        var filtered_data = info.filter(function(item) {
-            return item.control_key != modal_key;
-        });
-
-        if ($(FENCES.el.fencingPanelGate).length) {
-
-            filtered_data.push({
-                id: i,
-                control_key: modal_key,
-                settings: settings
-            });
-
-        }   
-
-        localStorage.setItem('custom_fence-' + tab + '-' + i, JSON.stringify(filtered_data));
-
-    },
-
-    //----------------------------------------------------------------
-
-    update_gate: function(action) {
-
-        var fd = getSelectedFenceData();
-
-        var i = fd.slug,
-            tab = fd.tab,
-            custom_fence = fd.info,
-            info = fd.data;
-
-        var find_gate = custom_fence.filter(function(item) {
-            return item.control_key == 'gate';
-        });
-
-        if (find_gate.length) {
-            placement = find_gate[0]?.settings?.placement;
-        } else {
-            placement = 0;
-        }
-
-        var center_point = FENCE.get(i, 'post'),
-            mesurement = $(FENCES.el.measurementBoxNumber).val();
-
-        var calc = calculate_fences();
-
-        var panel_size = calc.gate.length,
-            panel_unit = FENCES.defaultValues.unit,
-            gate_size = calc.gate.width;
-
-        if (action == 'add' || action == 'edit') {
-
-            if (placement == -1 ) {
-
-                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
-                    .replace(/{{center_point}}/gi, center_point)
-                    .replace(/{{panel_size}}/gi, gate_size)
-                    .replace(/{{panel_unit}}/gi, panel_unit);
-
-                $('#panel-item-0, #panel-item-x').before(tpl);
-
-               $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
-
-            } else if (find_gate.length && placement >= 0) {
-
-                console.log(info.panel_group);
-                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
-                    .replace(/{{center_point}}/gi, center_point)
-                    .replace(/{{panel_size}}/gi, gate_size)
-                    .replace(/{{panel_unit}}/gi, panel_unit);
-
-                $('#panel-item-' + placement).after(tpl);
-
-                // if panel placement doesn't exist
-                if($('#panel-item-' + placement).length == 0) {
-                    $('#panel-item-0').after(tpl);
-                } 
-
-                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
-
-            } else if (action == 'add' && placement == 0) {
-
-                temp = $('script[data-type="panel_gate-' + info.panel_group + '-l"]');
-
-                if($('.fencing-panel-items [data-key="panel_options"]').length) {
-                    temp = $('script[data-type="panel_gate-' + info.panel_group + '-r"]')
-                }
-
-                var tpl = temp.text()
-                    .replace(/{{center_point}}/gi, center_point)
-                    .replace(/{{panel_size}}/gi, gate_size)
-                    .replace(/{{panel_unit}}/gi, panel_unit);
-
-                var panelID = $('[data-cart-key="panel_options"].fencing-panel-item').attr('id');
-
-                $('#'+panelID+', .fencing-panel-items .raked-panel-container').after(tpl);
-
-                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
-
-            }
-
-        }
-
-        // fence Height
-        gateValue = '';
-
-        if (calc.fence_size.height) {
-            gateValue = calc.fence_size.height;
-        }
-
-        $(FENCES.el.fencingPanelGate).prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
-            .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
-            .attr('data-cart-value', gateValue);
-
-
-        // Is custom gate
-        var gate_data = custom_fence.filter(function(item) {
-            return item.control_key == 'gate';
-        });
-
-        isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
-
-        if (isCustomGate) {
-            $(FENCES.el.fencingPanelGate).css({ 'max-width': calc.gate.width * 0.1 });
-        }
-
-        if (action == 'add') {
-            FENCE.call('calculateCustomGate');
-        }
 
     },
 

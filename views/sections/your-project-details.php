@@ -25,7 +25,7 @@
 								<td>
 									<span><?php echo @$info['mobile']; ?></span>
 									<div class="fc-form-group has-clear">
-										<input type="number" name="mobile" value="<?php echo @$info['mobile']; ?>" class="form-control">
+										<input type="text" inputmode="numeric" name="mobile" value="<?php echo @$info['mobile']; ?>" class="form-control">
 									</div>
 								</td>
 							</tr>

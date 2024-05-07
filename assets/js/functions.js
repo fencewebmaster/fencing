@@ -1176,6 +1176,7 @@ $.fn.swapWith = function(to) {
         var _this = $(this),
             copy_to = $(to).clone(true),
             copy_from = _this.clone(true);
+            
         $(to).replaceWith(copy_from);
         _this.replaceWith(copy_to);
     });
@@ -1196,7 +1197,8 @@ $.fn.scrollCenter = function(elem, speed) {
     var posLeft = active.position().left; //get left position of active li + center position
     var elW = active.width(); //get div width
 
-    pos = (posLeft + (elW/2)) - (activeWidth/2); // for center position if you want adjust then change this
+    // for center position if you want adjust then change this
+    pos = (posLeft + (elW/2)) - (activeWidth/2); 
 
     _this.animate({
         scrollLeft: pos

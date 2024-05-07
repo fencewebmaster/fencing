@@ -59,10 +59,13 @@
                     <div class="fencing-panel-rail fencing-btn-modal" 
                         data-key="rail_options" 
                         data-target="#fc-control-modal" style="display:none;"></div>
+
                     <div id="pp-0" class="fencing-panel-container"></div>
+
                 </div>
 
             </div>
+            <div class="fc-overall pt-2 pb-4"><span class="d-oaw"></span> Overall</div>
 
             <!-- [START] PANEL CONTROLS -->   
             <span class="fencing-section__cmp fencing-panel-controls"></span>
