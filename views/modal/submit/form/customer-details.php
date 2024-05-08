@@ -40,7 +40,7 @@
         <div class="col-12 col-md">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">State <span class="fc-text-danger">*</span></label>
-                <select name="state" class="form-control p-3" required>
+                <select name="state" id="state" class="form-control p-3" required>
                     <option value="">Select an option…</option>
                     <?php foreach( fc_state() as $state_k => $state_v ): ?>
                     <option value="<?php echo $state_k; ?>"><?php echo $state_v; ?></option>

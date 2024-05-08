@@ -1206,3 +1206,70 @@ $.fn.scrollCenter = function(elem, speed) {
 
     return this;
 }
+
+
+    
+// Google map integration
+let autocomplete;
+let address1Field;
+
+function initAutocompleteAddress() {
+    autocomplete = document.querySelector("#address");
+
+    // Create the autocomplete object, restricting the search predictions to
+    // addresses in the US and Canada.
+    autocomplete = new google.maps.places.Autocomplete(autocomplete, {
+        componentRestrictions: {
+            country: ["au"]
+        },
+        fields: ["address_components", "geometry"],
+        types: ["address"],
+    });
+
+    // When the user selects an address from the drop-down, populate the
+    // address fields in the form.
+    autocomplete.addListener("place_changed", fillInAddress);
+}
+
+function fillInAddress() {
+    // Get the place details from the autocomplete object.
+    const place = autocomplete.getPlace();
+    let address1 = [];
+
+    for (const component of place.address_components) {
+        // @ts-ignore remove once typings fixed
+        const componentType = component.types[0];
+
+        switch (componentType) {
+            case "street_number": 
+                address1.push(component.long_name);
+                break;
+            case "route":
+                address1.push(component.long_name);
+                break;
+            case "postal_code":
+                document.querySelector("#postcode").value = component.long_name;
+                break;
+            case "postal_code_suffix":
+                postcode = component.long_name;
+                break;
+            case "locality":
+                 address1.push(component.long_name);
+                break;
+            case "administrative_area_level_1":
+                document.querySelector("#state").value = component.short_name;
+                break;
+            case "country":
+                component.long_name;
+                break;
+        }
+
+    }
+
+    document.querySelector("#address").value = address1.join(' ');
+
+}
+
+$(function() {
+    initAutocompleteAddress();
+});

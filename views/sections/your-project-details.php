@@ -12,7 +12,7 @@
 					<table class="fc-table fc-table-customer">
 						<tbody>
 							<tr>
-								<td width="100">Name</td>
+								<td width="180">Name</td>
 								<td>
 									<span><?php echo @$info['name']; ?></span>
 									<div class="fc-form-group has-clear">
@@ -39,11 +39,20 @@
 								</td>
 							</tr>
 							<tr>
+								<td>Address</td>
+								<td>
+									<span><?php echo @$info['address']; ?></span>
+									<div class="fc-form-group has-clear">
+										<input type="text" id="address" name="address" value="<?php echo @$info['address']; ?>" class="form-control">
+									</div>
+								</td>
+							</tr>
+							<tr>
 								<td>State</td>
 								<td>
 									<span><?php echo @$info['state'] ? fc_state(@$info['state']) : ''; ?></span>
 									<div class="fc-form-group has-clear">
-										<select name="state" class="form-control" required>
+										<select id="state" name="state" class="form-control" required>
 											<option value="">Select an option…</option>
 											<?php foreach( fc_state() as $state_k => $state_v ): ?>
 											<option value="<?php echo $state_k; ?>" <?php echo @$info['state']==$state_k ? 'selected': ''; ?>><?php echo $state_v; ?></option>
@@ -58,15 +67,6 @@
 									<span><?php echo @$info['postcode']; ?></span>
 									<div class="fc-form-group has-clear">
 										<input type="text" name="postcode" value="<?php echo @$info['postcode']; ?>" class="form-control">
-									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>Address</td>
-								<td>
-									<span><?php echo @$info['address']; ?></span>
-									<div class="fc-form-group has-clear">
-										<input type="text" name="address" value="<?php echo @$info['address']; ?>" class="form-control">
 									</div>
 								</td>
 							</tr>

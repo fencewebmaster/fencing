@@ -41,7 +41,12 @@
 <script type="text/javascript" src="<?php echo load_file('assets/js/jquery.validate.min.js'); ?>"></script>
 <script type="text/javascript" src="<?php echo load_file('assets/js/jquery-scrollspy.min.js'); ?>"></script>
 
+<!-- Plugins -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxgem2QSm1hi0A1bPJR1Ce1Oq1C0baVKM&libraries=places&loading=async"
+    async defer></script>
+    
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+
 
 <!-- Scripts -->
 <script type="text/javascript" src="<?php echo load_file('assets/js/main.js'); ?>"></script>
@@ -50,7 +55,6 @@
 <script type="text/javascript" src="<?php echo load_file('assets/js/functions.js'); ?>"></script>
 <script type="text/javascript" src="<?php echo load_file('assets/js/events.js'); ?>"></script>
 <script type="text/javascript" src="<?php echo load_file('assets/js/calc.js'); ?>"></script>
-
 
 <?php include 'assets/js/fences/fences.php'; ?>
 
