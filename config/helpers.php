@@ -95,7 +95,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'supplier' => "JG",
             'logo'     => "https://fencesperth.com/wp-content/uploads/2022/02/FENCING-SUPPLIERS-Australia-5-e1702790075927.png",
             'name'     => "Perth's Fencing Outlet",
-            'gtagID'   => 'AW-10902861992',
+            'gtagID'   => config()->gtag_id->fencesperth,
         ],
         [
             'id'       => 2,
@@ -104,7 +104,7 @@ function sites($key = '', $value = 'id', $search = false) {
             'supplier' => "JG",
             'logo'     => "https://fencesbrisbane.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
             'name'     => "Brisbane's Fencing Outlet",
-            'gtagID'   => 'AW-11027308949',
+            'gtagID'   => config()->gtag_id->fencesbrisbane,
         ],
         [
             'id'       => 3,
@@ -542,18 +542,6 @@ function add_filepath_last($filename, $add ='') {
 
 }
 
-//----------------------------------------------------------------
-
-/*
-    [major].[minor].[patch]-[build/beta/rc]
-    X.Y.Z
-*/
-function get_version() {
-    $json = file_get_contents('package.json');
-    $info = convert_inputs($json);
-
-    return $info['version'];
-}
 
 //----------------------------------------------------------------
 

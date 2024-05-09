@@ -66,7 +66,7 @@
 								<td>
 									<span><?php echo @$info['postcode']; ?></span>
 									<div class="fc-form-group has-clear">
-										<input type="text" name="postcode" value="<?php echo @$info['postcode']; ?>" class="form-control">
+										<input type="text" id="postcode" name="postcode" value="<?php echo @$info['postcode']; ?>" class="form-control">
 									</div>
 								</td>
 							</tr>

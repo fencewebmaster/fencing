@@ -2,7 +2,7 @@
 	<div class="row row align-items-middle">
 		<div class="col">
 			<div class="mb-5 pb-5 text-secondary small">
-				Fencing Calculator <span class="app-version">v<?php echo get_version(); ?></span>
+				Fencing Calculator <span class="app-version">v<?php echo config()->app->version; ?></span>
 			</div>			
 		</div>
 		<div class="col">
@@ -11,6 +11,7 @@
 		</div>
 	</div>
 </div>
+
 
 <?php if( in_uri_segment(demo_stages()) ): ?>
 <span class="badge bg-danger text-white text-uppercase p-1 is-demo">Test<br> Version</span>
@@ -42,9 +43,10 @@
 <script type="text/javascript" src="<?php echo load_file('assets/js/jquery-scrollspy.min.js'); ?>"></script>
 
 <!-- Plugins -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxgem2QSm1hi0A1bPJR1Ce1Oq1C0baVKM&libraries=places&loading=async"
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo config()->apikey->google_map; ?>&libraries=places&loading=async"
     async defer></script>
     
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 
 
@@ -62,7 +64,7 @@
 <!-- Chatra {literal} -->
 <script>
 (function(d, w, c) {
-    w.ChatraID = 'zyiAwfgBp6aaDnXK2';
+    w.ChatraID = '<?php echo config()->apikey->chatra; ?>';
     var s = d.createElement('script');
     w[c] = w[c] || function() {
         (w[c].q = w[c].q || []).push(arguments);

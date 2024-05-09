@@ -1266,7 +1266,7 @@ function fillInAddress() {
 
     }
 
-    document.querySelector("#address").value = address1.join(' ');
+    document.querySelector("#address").value = address1.join(', ');
 
 }
 

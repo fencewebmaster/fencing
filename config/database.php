@@ -6,32 +6,34 @@ class Database {
     public $color;
 
     public function __construct()
-    {
+    {   
+        $config = config();
+        $mysql = $config->mysql;
 
     	if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == '127.0.0.1') {
 	
 	        $this->host     = "localhost";
-	        $this->username = "root";
-	        $this->password = "";
-	        $this->database = "fencing_calculator";
-	        $this->prefix   = 'wp_';
+            $this->database = $mysql->localhost->database;
+	        $this->username = $mysql->localhost->username;
+	        $this->password = $mysql->localhost->password;
+	        $this->prefix   = $mysql->localhost->prefix;
 
 	    } elseif( $_SERVER['HTTP_HOST'] == 'fencingwarehouse.au' ) {
 
             $this->host     = "localhost";
-            $this->username = "u643294075_3MkJ3";
-            $this->password = "lxOCJYvEvB";
-            $this->database = "u643294075_zZTA7";
-            $this->prefix   = 'wp_';
+            $this->database = $mysql->fencingwarehouse->database;
+            $this->username = $mysql->fencingwarehouse->username;
+            $this->password = $mysql->fencingwarehouse->password;
+            $this->prefix   = $mysql->fencingwarehouse->prefix;
 
         } else {
             
             // fencesperth.com
 	        $this->host     = "localhost";
-	        $this->username = "u643294075_aMvzg";
-	        $this->password = "mW5LMKeLEf";
-	        $this->database = "u643294075_H57MF";
-	        $this->prefix   = 'wp_';
+            $this->database = $mysql->default->database;
+            $this->username = $mysql->default->username;
+            $this->password = $mysql->default->password;
+            $this->prefix   = $mysql->default->prefix;
 
 	    }
 

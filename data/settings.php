@@ -116,16 +116,12 @@ function fc_extra_needed($val ='') {
 } 
 
 
+
 function config($val = '') {
 
-	$data = [
-		'overall' => [
-			'length' => 5,
-			'min' => 300,
-			'max' => 40000
-		]
-	];
+    $json = file_get_contents('config.json');
+    $info = json_decode(json_encode(json_decode($json)));
 
-	return json_decode(json_encode($data));
+	return $info;
 }
 
