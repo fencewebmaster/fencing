@@ -11,10 +11,11 @@
 	date_default_timezone_set('Asia/Manila');
 
 	include 'data/settings.php';
-	include 'views/fields.php';
 	include 'config/helpers.php';
+	include 'views/fields.php';
 
 	$site_info = sites($_SESSION['site']['id'], 'id', true);
+
 ?>
 
 <!DOCTYPE html>
