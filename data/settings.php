@@ -114,14 +114,3 @@ function fc_extra_needed($val ='') {
     }
 
 } 
-
-
-
-function config($val = '') {
-
-    $json = file_get_contents('config.json');
-    $info = json_decode(json_encode(json_decode($json)));
-
-	return $info;
-}
-

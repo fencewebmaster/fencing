@@ -42,6 +42,7 @@ include 'config/database.php';
 
 $res = array();
 if( $qid = @$_GET['qid'] ) {
+
     $db = new Database();    
     $res = $db->select_where('planners', '`planner_id`="'.$qid.'"');   
 

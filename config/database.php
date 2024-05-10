@@ -7,6 +7,7 @@ class Database {
 
     public function __construct()
     {   
+
         $config = config();
         $mysql = $config->mysql;
 
