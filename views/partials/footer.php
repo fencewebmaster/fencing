@@ -43,7 +43,7 @@
 <script type="text/javascript" src="<?php echo load_file('assets/js/jquery-scrollspy.min.js'); ?>"></script>
 
 <!-- Plugins -->
-<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo config()->apikey->google_map; ?>&libraries=places&loading=async"
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo config()->apikey->google_map; ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
     async defer></script>
     
 

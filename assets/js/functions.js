@@ -1269,7 +1269,3 @@ function fillInAddress() {
     document.querySelector("#address").value = address1.join(', ');
 
 }
-
-$(function() {
-    initAutocompleteAddress();
-});
