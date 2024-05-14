@@ -1,5 +1,4 @@
 function get_field_multi_option_value(custom_fence, info, control_key, slug) {
-
     var custom_fence_data = custom_fence.filter(function(item) {
         return item.control_key == control_key;
     });
@@ -14,7 +13,6 @@ function get_field_multi_option_value(custom_fence, info, control_key, slug) {
 //----------------------------------------------------------------------------------
 
 function get_field_options(custom_fence, info, control_key) {
-
     var custom_fence_data = custom_fence.filter(function(item) {
         return item.control_key == control_key;
     });
@@ -33,7 +31,6 @@ function get_field_options(custom_fence, info, control_key) {
 //----------------------------------------------------------------------------------
 
 function get_field_multi_options(custom_fence, info, control_key) {
-
     var custom_fence_data = custom_fence.filter(function(item) {
         return item.control_key == control_key;
     });
@@ -47,8 +44,6 @@ function get_field_multi_options(custom_fence, info, control_key) {
 //----------------------------------------------------------------------------------
 
 function get_field_by_slug(custom_fence, slug) {
-
-
     var custom_fence_data = custom_fence.filter(function(item) {
 
         if(item.slug.includes('+')) {

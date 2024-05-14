@@ -40,7 +40,7 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
                     </td>
 
-                    <?php $featured_image = add_filepath_last(@$cart_item['image']); ?>
+                    <?php $featured_image = add_filepath_last(@$cart_item['image'], '-150x150'); ?>
                     <td style="background:url(<?php echo @$featured_image; ?>);" class="product-image p-1 d-sm-table-cell d-none">
 
                     </td>

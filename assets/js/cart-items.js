@@ -31,7 +31,6 @@ FENCES.cartItems = {
     //----------------------------------------------------------------------------------
 
     init: function(i) {
-
         var tabInfo = JSON.parse(localStorage.getItem('custom_fence-' + i));
         window.tabInfo = tabInfo;
 
@@ -40,8 +39,6 @@ FENCES.cartItems = {
             var fenceInfo = JSON.parse(localStorage.getItem('custom_fence-' + i + '-' + slug));
             window.fenceInfo = fenceInfo;
         }
-
-
 
         var i = i + 1;
 
@@ -70,7 +67,6 @@ FENCES.cartItems = {
             // Handle errors
             //console.error('Error occurred while getting cart_items:', error);
         }
-
     },
 
     //----------------------------------------------------------------------------------
@@ -181,7 +177,6 @@ FENCES.cartItems = {
     //----------------------------------------------------------------------------------
 
     apply_conditions: function(newCartItems) {
-
         //Apply condition for panel_options+even
         newCartItems = FENCES.cartItems.apply_panel_options_even(newCartItems);
 
@@ -197,13 +192,11 @@ FENCES.cartItems = {
         newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
 
         return newCartItems;
-
     },
 
     //----------------------------------------------------------------------------------
 
     cart_conditions: function(array) {
-
         var tabInfo = window.tabInfo,
             fenceInfo = window.fenceInfo;
 
@@ -287,7 +280,6 @@ FENCES.cartItems = {
 
 
         return array;
-
     },
 
     //----------------------------------------------------------------------------------
@@ -298,7 +290,6 @@ FENCES.cartItems = {
      * @returns 
      */
     apply_panel_post: function(array) {
-
         const foundGate = array.find(obj => obj['slug'] === "gate");
 
         array.forEach(function(v, k) {
@@ -321,7 +312,6 @@ FENCES.cartItems = {
      * @returns 
      */
     apply_panel_options_even: function(array) {
-
         //Get offcut size
         let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
         let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
@@ -336,7 +326,6 @@ FENCES.cartItems = {
         }
 
         return array;
-
     },
 
     //----------------------------------------------------------------------------------
@@ -347,7 +336,6 @@ FENCES.cartItems = {
      * @returns 
      */
     apply_panel_options_full: function(array) {
-
         //Get all short panel item
         let noOfShortPanel = document.querySelectorAll('.short-panel-item').length;
         let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
@@ -364,7 +352,6 @@ FENCES.cartItems = {
         }
 
         return array;
-
     },
 
     //----------------------------------------------------------------------------------
@@ -376,7 +363,6 @@ FENCES.cartItems = {
      * @returns 
      */
     apply_panel_options_bracket: function(array, total) {
-
         let slug = "panel_options+bracket";
 
         //Find if the slug already exists
@@ -396,7 +382,6 @@ FENCES.cartItems = {
             });
 
         }
-
     },
 
     //----------------------------------------------------------------------------------
@@ -409,7 +394,6 @@ FENCES.cartItems = {
      * @returns 
      */
     apply_raked_panel_post_opt1: function(array) {
-
         //Find the two objects with slug `panel_post+opt-1` and `raked_post+opt-1` in the array
         //If it exists means user selected it
         const foundPanelPostOpt1 = array.find(obj => obj['slug'] === "panel_post+opt-1");
@@ -431,7 +415,6 @@ FENCES.cartItems = {
         });
 
         return array;
-
     },
 
     //----------------------------------------------------------------------------------
@@ -444,7 +427,6 @@ FENCES.cartItems = {
      * @returns 
      */
     apply_raked_panel_post_opt2: function(array) {
-
         const foundRakedPostOpt2 = array.find(obj => obj['slug'] === "raked_post+opt-2");
 
         //If any of the slug returns undefined, do nothing
@@ -462,7 +444,6 @@ FENCES.cartItems = {
         }
 
         return array;
-
     },
 
     //----------------------------------------------------------------------------------
@@ -475,7 +456,6 @@ FENCES.cartItems = {
      * @returns 
      */
     apply_post_options_opt1: function(array) {
-
         var total = 0;
 
         //Find the two objects with slug `panel_post+opt-1` and `raked_post+opt-1` in the array
@@ -514,7 +494,6 @@ FENCES.cartItems = {
     //----------------------------------------------------------------------------------
 
     remove_item: function(array, slug) {
-
         //To removed
         const foundPostOptionsOpt2 = array.find(obj => obj['slug'] === slug);
         if (typeof foundPostOptionsOpt2 !== "undefined") {

@@ -35,7 +35,6 @@ class Database {
             $this->username = $mysql->default->username;
             $this->password = $mysql->default->password;
             $this->prefix   = $mysql->default->prefix;
-
 	    }
 
         $this->is_demo = '';

@@ -2,7 +2,7 @@
 	<div class="row row align-items-middle">
 		<div class="col">
 			<div class="mb-5 pb-5 text-secondary small">
-				Fencing Calculator <span class="app-version">v<?php echo config()->app->version; ?></span>
+				<?php echo config()->app->name; ?> <span class="app-version"><?php echo config()->app->version; ?></span>
 			</div>			
 		</div>
 		<div class="col">

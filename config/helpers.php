@@ -40,11 +40,10 @@ function in_uri_segment($keys) {
 //----------------------------------------------------------------
 
 function query_vars($query ='') {
+    $qs = $_SERVER['QUERY_STRING'];
+    $vars = array();
 
-  $qs = $_SERVER['QUERY_STRING'];
-  $vars = array();
-
-  if($query == '') return $qs;
+    if($query == '') return $qs;
 
     parse_str($_SERVER['QUERY_STRING'], $qs);
     
@@ -74,7 +73,6 @@ function demo_stages() {
 //----------------------------------------------------------------
 
 function sites($key = '', $value = 'id', $search = false) {
-
     $data = [
         [
             'id'       => 999999,
@@ -167,18 +165,16 @@ function sites($key = '', $value = 'id', $search = false) {
     }
 
     return $data;
-
 }
 
 //----------------------------------------------------------------
 
 function selected_fences($fences, $column = 'slug') {
-    
     $info = $_SESSION['fc_data'];
 
     $fence_data = array();
 
-    foreach ( convert_inputs($info['fences']) as $fence) {
+    foreach (convert_inputs($info['fences']) as $fence) {
         $slug = $fence['form'][0]['fence'];
         $fence_data[$slug] = $fences[$slug][$column];
     }   
@@ -189,7 +185,6 @@ function selected_fences($fences, $column = 'slug') {
 //----------------------------------------------------------------
 
 function get_items($key, $items, $list = false) {  
-
     if( !is_array($items) ) {
       return call_user_func_array($key, [$items]);
     }
@@ -207,25 +202,22 @@ function get_items($key, $items, $list = false) {
     }
 
     return implode(', ', $data);    
-
 }
 
 //----------------------------------------------------------------
 
 function array_to_json($val='') {
-
-  if( is_array($val) ) {
+    if( is_array($val) ) {
       return json_encode($val);    
-  }
+    }
 
-  return $val;
+    return $val;
 }
 
 //----------------------------------------------------------------
 
 
 function convert_inputs($val='') {
-
     if( is_array($val) ) {
         return json_encode($val);
     }
@@ -285,7 +277,6 @@ function fc_deliver_options() {
 //----------------------------------------------------------------
 
 function load_csv($file = '') {
-
     if( ! file_exists($file) ) {
         return FALSE;
     }
@@ -320,17 +311,13 @@ function load_csv($file = '') {
 function get_product_skus($data = array()) {
 
 	$products = $skus = array();
-
  	$the_products = load_csv('data/products.csv');
-
 
     foreach ($data as $d) {
 
+        $column = 'slug';
      	$items = $d['items'];
-
-     	$column = 'slug';
-     	$color  = $d['color'];
-
+     	$color = $d['color'];
         $supplier = $_SESSION['site']['supplier'];
 
     	foreach ($items as $item) {
@@ -361,7 +348,6 @@ function get_product_skus($data = array()) {
 
     }
 
-
 	$_SESSION['custom_fence_products'] = $products;
 
 	return $products;
@@ -370,11 +356,8 @@ function get_product_skus($data = array()) {
 //----------------------------------------------------------------
 
 function post_product_skus($cart_items = array()) {
-
     $supplier = strtoupper($_SESSION['site']['supplier']);
-
 	$items = $carts = array();
-
     $skus = get_product_skus($cart_items);
 
     foreach ($skus as $sku) {
@@ -437,7 +420,6 @@ function post_product_skus($cart_items = array()) {
 
     curl_close($curl);*/
 
-
     $count = count($items);
     $rand  = rand(2, $count);
 
@@ -474,9 +456,7 @@ function post_product_skus($cart_items = array()) {
         return $element['sku'];
     }, $cart), SORT_ASC, $cart);
 
-
     $_SESSION['fc_cart']['items'] = $cart;
-
 }
 
 //----------------------------------------------------------------
@@ -517,14 +497,12 @@ function array_sort_by_column(&$arr, $col, $dir = SORT_ASC) {
     foreach ($arr as $key => $row) {
         $sort_col[$key] = $row[$col];
     }
-
     array_multisort($sort_col, $dir, $arr);
 }
 
 //----------------------------------------------------------------
 
 function add_filepath_last($filename, $add ='') {
-
     $arr = pathinfo($filename);
 
     if( !$arr['filename'] ) return;
@@ -539,14 +517,11 @@ function add_filepath_last($filename, $add ='') {
     $url = implode('', array_filter($file));
 
     return $url;
-
 }
-
 
 //----------------------------------------------------------------
 
 function clear_planner_sessions() {
-
     $sessions = [
         'fc_data',
         'custom_fence_products',
@@ -563,15 +538,12 @@ function clear_planner_sessions() {
 //----------------------------------------------------------------
 
 function load_file($file) {
-
     return base_url($file).'?v='.filemtime(realpath($file));
-
 }
 
 //----------------------------------------------------------------
 
 function minifiy_css($file ='') {
-
     if( !file_exists($file) ) return FALSE;
 
     $css = file_get_contents( $file );
@@ -589,7 +561,6 @@ function minifiy_css($file ='') {
 //----------------------------------------------------------------
 
 function config($val = '') {
-
     $json = file_get_contents('config.json');
     $info = json_decode(json_encode(json_decode($json)));
 

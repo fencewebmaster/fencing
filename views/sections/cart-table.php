@@ -48,7 +48,7 @@ $edited = FALSE;
                         
                     </td>
 
-                    <?php $featured_image = add_filepath_last(@$cart_item['image']); ?>
+                    <?php $featured_image = add_filepath_last(@$cart_item['image'], '-150x150'); ?>
                     <td style="background:url(<?php echo @$featured_image; ?>);" class="product-image">
 
                     </td>
