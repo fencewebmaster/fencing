@@ -1,7 +1,7 @@
 <?php
 $fences['barr'] = [
 	'title' => 'Barr',
-	'live' => FALSE,
+	'live' => TRUE,
 	'name' => 'BARR',
 	'slug' => 'barr',
 	'panel_group' => 'b',
