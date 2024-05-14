@@ -2,7 +2,7 @@
 $fences['barr'] = [
 	'title' => 'Barr',
 	'live' => TRUE,
-	'name' => 'BARR',
+	'name' => 'BARR', 
 	'slug' => 'barr',
 	'panel_group' => 'b',
 	'image' => 'assets/img/fences/webp/barr.webp',
