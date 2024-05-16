@@ -245,9 +245,7 @@ function btnCopyLink() {
     }, 500);
 }
 
-
 //----------------------------------------------------------------------------------
-
 
 _doc.on('click', '.fc-select-post, .fc-select-item', fcSelectPostItem);
 
@@ -381,10 +379,7 @@ function gateOnly() {
         btnCalculate();
         
     } else {
-
         updateGateOnly(false);
-
-        // FENCE.call('move_the_gate', 'delete');
     }
 
     btnCalculate();
@@ -474,7 +469,6 @@ function fcFenceResetAll(e) {
 
         $('.js-fc-form-step').fadeOut('fast');
         $('.fc-fence-reset-all').hide();
-
     });
 }
 
@@ -1073,17 +1067,13 @@ _doc.on('keypress', '.numeric', numeric);
 
 function numeric(event) {
     var _this = $(this);
-
     if (event.which != 13 && event.which != 8) {
-
         if (event.which < 46 || event.which >= 58 || event.which == 47) {
             event.preventDefault();
         }
-
         if (event.which == 46 && _this.val().indexOf('.') != -1) {
             event.preventDefault();
         }
-
     }
 }
 
@@ -1094,7 +1084,6 @@ _doc.on('keypress', '.measurement-box-number', measurementBoxNumber_kp);
 function measurementBoxNumber_kp(e) {
     if (event.which == 13) {
         e?.preventDefault();
-        
         if(!$('.btn-fc-calculate').attr('disabled')) {
             btnCalculate();
             $('[data-section="3"]:visible').scrollTo(100, 57);
@@ -1234,9 +1223,7 @@ _doc.on('keyup', '.has-clear .form-control', hasClear_formControl);
 function hasClear_formControl() {
     var _this = $(this),
         clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`;
-
     _this.siblings('.form-control-clear').remove();
-
     if (_this.val()) _this.after(clear);
 }
 
@@ -1281,7 +1268,6 @@ function inputType_number() {
                 .addClass('fcim-show')
                 .html(alert);
         }
-
     }
 }
 
@@ -1429,7 +1415,6 @@ _doc.on('mouseup touchend', '.fencing-display-result', mu_fencingDisplayResult);
 function mu_fencingDisplayResult(e) {
     var _this = $(this);
     _this.removeClass('grabbing');
-
     setTimeout(function() {
         _this.removeClass('grabbing is-grabbing');
     }, 200);
@@ -1443,7 +1428,6 @@ _doc.on('mousedown touchstart', '.fencing-display-result', md_fencingDisplayResu
 function md_fencingDisplayResult() {
     var _this = $(this);
     _this.addClass('is-grabbing');
-
     setTimeout(function() {
         if (!$('.fencing-modal').is(':visible')) {
             _this.addClass('grabbing').removeClass('is-grabbing');
@@ -1467,7 +1451,6 @@ setTimeout(function() {
 //----------------------------------------------------------------------------------
 
 
-
 /* ----------------------------------------------------------------
     [START] VALIDATE
     ---------------------------------------------------------------- */
@@ -1485,24 +1468,17 @@ $("#fc-planning-form").validate({
         installer: "Please select an option.",
     },
     submitHandler: function(form) {
-
         var tab = $('.fc-form-plan:visible').attr('data-formtab'),
             move = $('.fc-form-plan:visible').find('.fc-btn-next').attr('data-move');
-
         history.pushState({}, '', `?tab=${HELPER.getSearchParams('tab')}&form=${move}`);
-
         if (tab == 4) {
-
             FCModal.close('#submit-modal');
             $('.fc-loader-overlay').show();
-
             res = submit_fence_planner('new');
-
         } else {
             $('.fc-form-plan').hide();
             $('[data-formtab="' + move + '"]').show();
         }
-
     }
 });
 

@@ -1,16 +1,16 @@
-ProjectPlan = {
+let ProjectPlan = {
 
     init: function() {
         this.reload_fence_items();
         this.countDownTimer();
     },
 
-    reload_fence_items: function() {
+    //----------------------------------------------------------------------------------
 
+    reload_fence_items: function() {
         var items = localStorage.getItem('custom_fence-section');
 
         for (let i = 0; i < items; i++) {
-
 
             var section = `<div class="border p-3 rounded mb-4 mx-2">
                 <div class="row align-items-center mb-3">
@@ -44,13 +44,11 @@ ProjectPlan = {
                 $('#pp-' + i).addClass('has-raked');
             }
         }
-
     },
 
     //----------------------------------------------------------------------------------
 
     load_center_point: function(tab) {
-
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
             custom_fence_tab = custom_fence_tab ? JSON.parse(custom_fence_tab) : [];
 
@@ -80,7 +78,6 @@ ProjectPlan = {
             $('#pp-' + tab + ' .fencing-panel-container .left_raked-panel')
                 .first()
                 .addClass('first-item');
-
             $('#pp-' + tab + ' .fencing-panel-container .right_raked-panel')
                 .first()
                 .addClass('last-item');            
@@ -114,14 +111,11 @@ ProjectPlan = {
         if( right_raked_count && panel_count > 1 ) {
             $('#pp-' + tab + ' .fencing-panel-container .right_raked-panel .fc-first-c-p').remove();
         } 
-   
-
     },
 
     //----------------------------------------------------------------------------------
 
     reload_load_fencing_items: function(tab) {
-        
         var center_post = FENCE.settings.item.center_point;
 
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
@@ -203,7 +197,6 @@ ProjectPlan = {
             $(`#pp-${tab} .panel-post`).after('<div id="panel-item-x" class="single-panel"></div>'); 
         }
 
-
         if (calc.short_panel.count) {
 
             for (let i = 0; i < 1; i++) {
@@ -254,7 +247,6 @@ ProjectPlan = {
 
         this.re_update_raked_panels(['left_raked', 'right_raked'], tab);
 
-
         // Panel off-cut
         if (calc.offcut_panel.count && calc.offcut_panel.length) {
             var tpl = $('script[data-type="offcut"]').text()
@@ -297,13 +289,11 @@ ProjectPlan = {
             $('#pp-' + tab + ' .panel-post.opt-1').css({ 'height': (calc.fence_size.height * 0.10) + 25 });
             $('#pp-' + tab + ' .panel-post.opt-2').css({ 'height': (calc.fence_size.height * 0.10) + 35 });
         }
-
     },
 
     //----------------------------------------------------------------------------------
 
     re_update_gate: function(action, tab) {
-
         var center_post = FENCE.settings.item.center_point;
 
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
@@ -398,7 +388,6 @@ ProjectPlan = {
     //----------------------------------------------------------------------------------
 
     re_update_raked_panels: function(side, tab) {
-
         var center_post = FENCE.settings.item.center_point;
 
         var custom_fence_tab = localStorage.getItem('custom_fence-' + tab),
@@ -530,13 +519,11 @@ ProjectPlan = {
         }
 
         $('#pp-' + tab + ' .raked-panel .fencing-panel-item').css({ 'width': 1200 * 0.10 });
-
     },
 
     //----------------------------------------------------------------------------------
 
     countDownTimer: function() {
-
         var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
         // 10800000 ms = 3 hours
@@ -555,10 +542,8 @@ ProjectPlan = {
         if (!getcountDownDate) {
             // Set the date we're counting down to
             localStorage.setItem('countdown-date', setcountDownDate);
-
             var getcountDownDate = localStorage.getItem('countdown-date');
         }
-
 
         var countDownDateFormat = new Date(getcountDownDate).getTime(),
             cont = 'fc-countdown-timer';
@@ -590,7 +575,6 @@ ProjectPlan = {
             }
 
         }, 1000);
-
     }
 
     //----------------------------------------------------------------------------------

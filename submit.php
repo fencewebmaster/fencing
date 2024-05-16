@@ -5,32 +5,22 @@ include 'config/helpers.php';
 include 'data/settings.php';
 include 'config/database.php'; 
 
-
 if( $_POST ) {
     $_SESSION["fc_data"] = $data = $_POST;
 }
 
-
 $colors = convert_inputs($_SESSION["fc_data"]['color']);
-
 $cart_items_grouped = json_decode($_SESSION["fc_data"]['cart_items'], true);
-
 $cart_items_regrouped = $cart_items_formatted = $cart_items_data = [];
 
 // Regrouped the cart items
 foreach($cart_items_grouped as $cart_item) {
-
     foreach ($cart_item as $cart_item_key => $ci_items) {
-
-      foreach ($ci_items as $ci_v) {
-
-      $color_key = array_search($cart_item_key, array_column($colors, 'fence'));
-      $cart_item_id =  $cart_item_key.'+'.$colors[$color_key]['color'];
-
-      $cart_items_regrouped[$cart_item_id][$ci_v['slug']][] = $ci_v['qty']; 
-
-      }
-
+        foreach ($ci_items as $ci_v) {
+            $color_key = array_search($cart_item_key, array_column($colors, 'fence'));
+            $cart_item_id = $cart_item_key.'+'.$colors[$color_key]['color'];
+            $cart_items_regrouped[$cart_item_id][$ci_v['slug']][] = $ci_v['qty']; 
+        }
     }
 }
 
@@ -40,13 +30,10 @@ foreach($cart_items_regrouped as $cir_k => $cir_items) {
     $cart_items_formatted = [];
 
     foreach ($cir_items as $ciri_k => $ciri_v) {
-
-      $cart_items_formatted[] = [
-          'slug' => $ciri_k,
-          'qty' => array_sum($ciri_v),
-      ];
-
-
+        $cart_items_formatted[] = [
+            'slug' => $ciri_k,
+            'qty' => array_sum($ciri_v),
+        ];
     }
 
     $c = explode('+', $cir_k);
@@ -66,9 +53,7 @@ post_product_skus($cart_items_data);
 // Save or update planner
 $info = $_SESSION;
 
-$planner_id  = isset($info['planner_id']) ? $info['planner_id'] : get_uid(6);
-
-$_SESSION['planner_id'] = $planner_id;
+$_SESSION['planner_id'] = $planner_id = isset($info['planner_id']) ? $info['planner_id'] : get_uid(6);
 
 $data = json_encode($info);
 

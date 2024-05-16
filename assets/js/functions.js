@@ -6,7 +6,6 @@
  */
 function addObjectByKey(objectArray, obj) {
     const existingIndex = objectArray.findIndex(item => item.control_key === obj.control_key);
-
     if (existingIndex !== -1) {
         objectArray[existingIndex] = obj;
     } else {
@@ -15,6 +14,8 @@ function addObjectByKey(objectArray, obj) {
 
     return objectArray;
 }
+
+//----------------------------------------------------------------------------------
 
 /**
  * Find Object by property value
@@ -31,6 +32,7 @@ function findObjectByKey(array, keyToFind) {
     return null;
 }
 
+//----------------------------------------------------------------------------------
 
 /**
  * Get values from setting array
@@ -40,26 +42,25 @@ function findObjectByKey(array, keyToFind) {
  */
 function updateElements(setting, key, props) {
     let entry = findObjectByKey(setting, key);
-
     for (let i = 0; i < props.length; i++) {
         updateElement(entry.key, props[i], entry[props[i]]);
     }
 }
 
+//----------------------------------------------------------------------------------
 
 /**
  * Get global setting from localStorage
  */
 function loadGlobalSetting() {
-
     let getGlobalSetting = localStorage.getItem('custom_fence-global-setting');
     let globalSettingObj = getGlobalSetting ? JSON.parse(getGlobalSetting)[0] : [];
     let globalSetting = globalSettingObj['settings'];
     let globalControlKey = globalSettingObj['control_key'];
-
     updateElements(globalSetting, "color_options", ["title", "subtitle", "color_code"]);
-
 }
+
+//----------------------------------------------------------------------------------
 
 function clearFencingData() {
     // Add clear fence planner local storage here
@@ -80,9 +81,7 @@ function removeItemStorageWith(startsWith) {
 //----------------------------------------------------------------------------------
 
 function getCartItemStorage() {
-
     var values = [];
-
     Object.entries(localStorage).forEach(([key, value]) => {
         if (key.startsWith("cart_items")) {
             var cartData = JSON.parse(localStorage.getItem(key)),
@@ -93,43 +92,30 @@ function getCartItemStorage() {
             });
         }
     });
-
     return values;
 }
 
 //----------------------------------------------------------------------------------
 
 function mergeSettings(data, settings, key, modal_key) {
-
     //Check first if a control_key already exists and get it
     const find_existing_data = data.find(obj => obj[key] === modal_key);
-
     if (typeof find_existing_data !== "undefined") {
-
         let merge_settings = [];
-
         find_existing_data.settings?.forEach(obj => {
             merge_settings.push(obj);
         });
-
         settings.forEach(obj => {
-
             const indexToRemove = merge_settings.findIndex(item => item.key === obj.key);
-
             // Check if the object with the given ID was found
             if (indexToRemove !== -1) {
                 // Remove the object from the array using splice
                 merge_settings.splice(indexToRemove, 1);
             }
-
             merge_settings.push(obj);
-
         });
-
         settings = merge_settings;
-
     }
-
     return settings;
 }
 
@@ -142,13 +128,10 @@ function updateOrCreateObjectInLocalStorage(key, newData) {
         const existingData = JSON.parse(localStorage.getItem(key));
         const updatedData = { ...existingData, ...newData };
         // Save the updated object back to localStorage
-
         //convert array to string
         if (updatedData['extra'] && Array.isArray(updatedData['extra'])) {
             updatedData['extra'] = updatedData['extra'].join(', ');
         }
-
-
         localStorage.setItem(key, JSON.stringify(updatedData));
     } else {
         // If the key doesn't exist, create a new object and save it to localStorage
@@ -161,28 +144,22 @@ function updateOrCreateObjectInLocalStorage(key, newData) {
 function getActiveFencing() {
     let sectionCount = localStorage.getItem('custom_fence-section'),
         fenceStyle = [];
-
     for (let i = 0; i < sectionCount; i++) {
         var cf = JSON.parse(localStorage.getItem('custom_fence-' + i));
-
         if (cf) {
             style = cf[0].style;
             fenceStyle.push(style);
         }
     }
-
     return fenceStyle.filter((v, p) => fenceStyle.indexOf(v) == p);
 }
 
 //----------------------------------------------------------------------------------
 
 function savePlanner() {
-
     // var form = $('form')[0]; 
     var formData = new FormData();
-
     formData.set("action", 'save_planner');
-
     $.ajax({
         url: 'checkout.php',
         type: "POST",
@@ -204,16 +181,13 @@ function savePlanner() {
             }
         }
     });
-
 }
 
 //----------------------------------------------------------------------------------
 
-
 const submitModal = document.getElementById("submit-modal");
 const formDownload = document.getElementById("fc-planning-form");
 const projectPlanKey = "project-plans";
-
 
 /**
  * Save form data to local storage whenever a field changes
@@ -260,6 +234,7 @@ function saveFormData() {
     updateOrCreateObjectInLocalStorage(projectPlanKey, formData);
 }
 
+//----------------------------------------------------------------------------------
 
 // Add event listeners TO form elements inside the submit-modal div
 if (submitModal) {
@@ -269,7 +244,6 @@ if (submitModal) {
 
 //----------------------------------------------------------------------------------
 
-
 /**
  * Restore data from local storage when the page loads
  */
@@ -277,7 +251,6 @@ function restoreFormData() {
     const formData = JSON.parse(localStorage.getItem(projectPlanKey)) || {};
     for (const key in formData) {
         const input = document.querySelector(`[name="${key}"]`);
-
         if (input) {
             if (input.type === "checkbox") {
                 let selectedValues = formData[key];
@@ -293,7 +266,6 @@ function restoreFormData() {
                     var checkBox = document.querySelector('input[type=checkbox][name="' + key + '"][value="' + formData[key] + '"]');
                     checkBox.checked = true;
                 }
-
             } else if (input.type === "radio") {
                 var radioBtn = document.querySelector('input[type=radio][name="' + key + '"][value="' + formData[key] + '"]');
                 if (radioBtn) radioBtn.checked = true;
@@ -306,30 +278,29 @@ function restoreFormData() {
     }
 }
 
+//----------------------------------------------------------------------------------
+
 /**
  * Remove deleted section entry in local storage
  */
 function deleteLocalStorageEntry() {
-
     //Get selected tab
     let getActiveTab = $(FENCES.el.fencingTabSelected);
-
     //Get selected tab index
     let getActiveTabIndex = getActiveTab.index();
-
-
     //Find and delete all instance of it in local storage
     deleteAllEntriesBySubstring("custom_fence-" + getActiveTabIndex);
     localStorage.removeItem("cart_items-" + getActiveTabIndex + 1);
 
 }
 
+//----------------------------------------------------------------------------------
+
 /**
  * Delete custom_fence-{idx} and custom_fence-{idx}-{styleIdx} instances in localStorage
  * @param {string} substring 
  */
 function deleteAllEntriesBySubstring(substring) {
-
     // Use a while loop to delete all matching entries
     while (true) {
         // Find the index of the first matching key
@@ -339,19 +310,15 @@ function deleteAllEntriesBySubstring(substring) {
         if (index === -1) {
             break;
         }
-
         // Get the matching key and delete the entry
         const matchingKey = Object.keys(localStorage)[index];
         localStorage.removeItem(matchingKey);
-
     }
-
 }
 
 //----------------------------------------------------------------------------------
 
 function getSelectedFenceData() {
-
     var slug = $('.fencing-style-item.fsi-selected').attr('data-slug'),
         itab = $('.fencing-tab.fencing-tab-selected').index(),
         info = localStorage.getItem('custom_fence-' + itab + '-' + slug),
@@ -373,7 +340,6 @@ function getSelectedFenceData() {
         modalKey: modalKey,
         tabInfo: tabInfo
     }
-
 }
 
 //----------------------------------------------------------------------------------
@@ -386,70 +352,50 @@ function getSelectedFenceData() {
  * `custom_fence-{idx}` and `custom_fence-{idx}-{styleIdx}`
  */
 function refreshLocalStorage(activeSectionIndex, target) {
-
     //Only get storage entries related to custom fence
     const totalEntries = HELPER.countLocalStorageFenceKeys(target);
-
     //Iterate each entries
     for (let i = activeSectionIndex; i <= totalEntries; i++) {
-
         let newIndex = i - 1;
-
         //If -1, set value to 0
         if (newIndex == -1) {
             newIndex = 0;
         }
-
         //Retrieve to the old key
         const oldKey = `${target}-${i}`;
-
         //Prepare the new key string format
         const newKey = `${target}-${newIndex}`;
-
         // Check if the oldKey exists in localStorage and update it
         if (localStorage.getItem(oldKey)) {
-
             //Grab the old key value
             const value = JSON.parse(localStorage.getItem(oldKey));
-
             //Remove old key entry from local storage
             localStorage.removeItem(oldKey);
-
             //Update the tab value with new Index
             value[0].tab = newIndex;
-
             //Set the new key entry
             localStorage.setItem(newKey, JSON.stringify(value));
-
             //For Styles
             //Grab the old style key value
             const oldStyleKey = `${target}-${i}-${value[0].style}`;
-
             //Prepare new key string format
             const newStyleKey = `${target}-${newIndex}-${value[0].style}`;
-
             // Check if the old style Key exists in localStorage
             if (localStorage.getItem(oldStyleKey)) {
-
                 //Get the value
                 const value = JSON.parse(localStorage.getItem(oldStyleKey));
-
                 //Remove the old style key
                 localStorage.removeItem(oldStyleKey);
-
                 //Set the new style key entry
                 localStorage.setItem(newStyleKey, JSON.stringify(value));
             }
         }
-
     }
-
 }
 
 //----------------------------------------------------------------------------------
 
 function submit_fence_planner(status = '') {
-
     var set_fc_data = [];
     var incompleteSection = 0;
 
@@ -588,17 +534,14 @@ function submit_fence_planner(status = '') {
             }
         }
     });
-
 }
 
 //----------------------------------------------------------------------------------
 
 function loadColorOptions() {
-
     const project = JSON.parse(localStorage.getItem('project-plans'));
 
     var colorOption = $('[data-load="color-options"]');
-
     var items = getActiveFencing();
 
     colorOption.html('');
@@ -649,61 +592,43 @@ loadColorOptions();
  * @param {string} value 
  */
 function updateElement(control_key, property, value) {
-
     if (typeof document.querySelector('.js-' + control_key + '-' + property) === undefined) {
         return;
     }
-
     let getEl = document.querySelector('.js-' + control_key + '-' + property);
-
     if (property === "color_code") {
         getEl.style.backgroundColor = value;
 
         if (getEl.querySelector('strong').textContent.toLowerCase().includes('white')) {
             getEl.querySelector('strong').style.color = "#000";
         }
-
     } else {
         getEl.textContent = value;
     }
-
 }
 
 //----------------------------------------------------------------------------------
 
-
 function restore_items(remove_index) {
-
     var last_tid = $('.fencing-tab:last-child').index();
-
     $(".fencing-tab").each(function() {
-
         var tid = $(this).index();
-
         if (remove_index <= tid) {
-
             var next_index = tid + 1;
-
             form = JSON.parse(localStorage.getItem('custom_fence-' + next_index));
             settings = localStorage.getItem('custom_fence-' + next_index + '-' + form[0].style);
-
             // Update items
             localStorage.setItem('custom_fence-' + tid, JSON.stringify(form));
-
             if (settings) {
                 localStorage.setItem('custom_fence-' + tid + '-' + form[0].style, settings);
             }
-
         }
-
     });
-
 }
 
 //----------------------------------------------------------------------------------
 
 function extra_fields() {
-
     var fd = getSelectedFenceData();
 
     var i = fd.slug,
@@ -749,16 +674,13 @@ function extra_fields() {
         }
     });
     // [END] FORM FIELDS ON STEP 3
-
 }
 
 
 //----------------------------------------------------------------------------------
 
 function update_color_options() {
-
     colorData = color_data = [];
-
     $(FENCES.el.fcColorOptions).each(function(k, v) {
         var color = $(this).find('.fc-selected').attr('data-slug');
 
@@ -772,21 +694,16 @@ function update_color_options() {
         }
 
     });
-
     var colorData = { color: color_data }
-
     updateOrCreateObjectInLocalStorage('project-plans', colorData);
-
 }
 
 //----------------------------------------------------------------------------------
 
 // raked panel
 function computeOverallraked(value, side, leftRakedBefore, rightRakedBefore) {
-
-    var rakedCount = $('.' + side + '-panel .fencing-panel-item-size').length;
-
-    rakedBefore = (side == 'left_raked') ? leftRakedBefore : rightRakedBefore;
+    var rakedCount = $('.' + side + '-panel .fencing-panel-item-size').length,
+        rakedBefore = (side == 'left_raked') ? leftRakedBefore : rightRakedBefore;
 
     var fd = getSelectedFenceData();
 
@@ -808,7 +725,6 @@ function computeOverallraked(value, side, leftRakedBefore, rightRakedBefore) {
 
     // $('.btn-fc-calculate').trigger('click');
     btnCalculate();
-
 }
 
 //----------------------------------------------------------------------------------
@@ -826,36 +742,27 @@ function removeDuplicateCloseBtn() {
  * Add Notes or Info if value exists in array
  */
 function addNotesOrInfo(el, v) {
-
-    var details = v.info;
-    var notes = v.notes;
+    var details = v.info,
+        notes = v.notes;
 
     if (details || notes) {
-
         if (details) {
             const Item = ({ title, description }) => `<div class="fc-selection-details">
-                    <label>${title}</label>
-                    <p>${description}</p>
-                </div>`;
-
+                <label>${title}</label>
+                <p>${description}</p>
+            </div>`;
             el.append(details.map(Item).join(''));
         }
-
         if (notes) {
-
             notes_html = `<div class="row align-items-center">`;
-
             if (notes.image) {
                 notes_html += `<div class="col-sm-3 note-img"><img src="${notes.image}" class="border rounded p-2 mb-3"></div>`;
             }
-
             notes_html += `<div class="col-sm"><div class="fc-alert-gray field-note">
                 <label class="mb-2 fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> ${notes.title}</label>
                 <p class="fc-text-gray">${notes.description}</p>
             </div></div>`;
-
             notes_html += `</div>`;
-
             el.append(notes_html);
         }
     }
@@ -865,22 +772,18 @@ function addNotesOrInfo(el, v) {
 
 function loadClearForm() {
     $('.has-clear .form-control').each(function() {
-
         var _this = $(this);
-
         if (_this.val()) {
             var clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`;
             _this.siblings('.form-control-clear').remove();
             if (_this.val()) _this.after(clear);
         }
-
     });
 }
 
 //----------------------------------------------------------------------------------
 
 function updateOverAllLength(data) {
-
     var _mbn = $('.measurement-box-number'),
         mbn = parseInt(_mbn.val()),
         lastMbn = parseInt(_mbn.attr('data-last')),
@@ -892,7 +795,6 @@ function updateOverAllLength(data) {
     var hasGate = data?.gate ? data.gate : $('.fencing-panel-gate').length,
         hasRaked = data?.raked ? data.raked : $('.raked-panel-container').length,
         panel_item = $('.panel-item:not(.fencing-panel-gate,.fencing-raked-panel)').length;
-
 
     var raked = gate = overall = 0;
 
@@ -1032,17 +934,14 @@ function updateOverAllLength(data) {
 
     } 
 
-
     if(overall && !isNaN(overall) && overall != mbn ) {
        _mbn.val(overall);
     } 
-
 }
 
 //----------------------------------------------------------------------------------
 
 function checkGateOnly() {
-
     var fd = getSelectedFenceData(),
         slug = fd.slug,
         tab = fd.tab;
@@ -1050,7 +949,6 @@ function checkGateOnly() {
     var gate_data = fd.info.filter(function(item) {
         return item.control_key == 'gate';
     });
-
 
     var value = gate_data[0]?.settings?.gateOnly
 
@@ -1065,53 +963,48 @@ function checkGateOnly() {
 //----------------------------------------------------------------------------------
 
 function checkGateWidthType() {
-
     var fd = getSelectedFenceData(),
         slug = fd.slug,
         tab = fd.tab,
         info = fd.info,
         data = fd.data;
 
-        var gateWidth = data?.settings?.gate?.size.width,
-            use_std = true;
+    var gateWidth = data?.settings?.gate?.size.width,
+        use_std = true;
 
-        // Is custom gate
-        var gate_data = info.filter(function(item) {
-            return item.control_key == 'gate';
-        });
+    // Is custom gate
+    var gate_data = info.filter(function(item) {
+        return item.control_key == 'gate';
+    });
 
-        isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
+    isCustomGate = gate_data[0]?.settings?.fields?.find(obj => obj['key'] === "use_std" && obj['val'] === false );
 
-        if( isCustomGate ) {
-            gateWidth = gate_data[0]?.settings?.size;
-            use_std = false;
-        }
+    if( isCustomGate ) {
+        gateWidth = gate_data[0]?.settings?.size;
+        use_std = false;
+    }
 
-        $('[name="use_std"]').prop('checked', use_std);
+    $('[name="use_std"]').prop('checked', use_std);
 
-        if( use_std ) {
-            $('.select-use_std[data-val="std"]').addClass('fc-selected');
-        } else {
-            $('.select-use_std[data-val="custom"]').addClass('fc-selected');
-        }
+    if( use_std ) {
+        $('.select-use_std[data-val="std"]').addClass('fc-selected');
+    } else {
+        $('.select-use_std[data-val="custom"]').addClass('fc-selected');
+    }
 
-        $('[name="width"]').val(gateWidth);
-
+    $('[name="width"]').val(gateWidth);
 }
 
 //----------------------------------------------------------------------------------
 
 function removeStepPanels(cf) {
-
     var fd = getSelectedFenceData(),
         slug = fd.slug,
         tab = fd.tab,
-        key = `custom_fence-${tab}-${slug}`;
-
+        key = `custom_fence-${tab}-${slug}`,
         cf = JSON.parse(localStorage.getItem(key));
 
     if( cf ) {
-
         for(let i = 0; i < cf.length; i++) {
             if($.inArray(cf[i].control_key, ['left_side', 'right_side', 'add_step_up_panels']) !== -1) {
                 var left = cf[i].settings.filter(function(item) {
@@ -1120,37 +1013,29 @@ function removeStepPanels(cf) {
                 cf[i].settings = left;
             }
         }            
-
         // Remove step up panel
         localStorage.setItem(key, JSON.stringify(cf));
-
     }
 }
 
 //----------------------------------------------------------------------------------
 
 function updateGateOnly(val) {
-
     var fd = getSelectedFenceData(),
         tab = fd.tab,
         slug = fd.slug,
         key = `custom_fence-${tab}-${slug}`,
-        width = fd?.data?.settings?.gate?.size?.width;
-
-    cf = JSON.parse(localStorage.getItem(key));
+        width = fd?.data?.settings?.gate?.size?.width,
+        cf = JSON.parse(localStorage.getItem(key));
 
     if( cf ) {
         for(let i = 0; i < cf.length; i++) {
-
             if($.inArray(cf[i].control_key, ['gate']) !== -1) {
-
                 cf[i].settings.gateOnly = val;
             }
         }    
-
         localStorage.setItem(key, JSON.stringify(cf));
     }
-
 }
 
 //----------------------------------------------------------------------------------
@@ -1166,7 +1051,6 @@ $.fn.scrollTo = function(speed, offset) {
     $('html, body').animate({
         scrollTop: $(this).offset().top - offset
     },  speed == undefined ? 100 : speed);
-
 }
 
 //----------------------------------------------------------------------------------
@@ -1176,7 +1060,6 @@ $.fn.swapWith = function(to) {
         var _this = $(this),
             copy_to = $(to).clone(true),
             copy_from = _this.clone(true);
-            
         $(to).replaceWith(copy_from);
         _this.replaceWith(copy_to);
     });
@@ -1185,37 +1068,30 @@ $.fn.swapWith = function(to) {
 //----------------------------------------------------------------------------------
 
 $.fn.scrollCenter = function(elem, speed) {
-
     var _this = $(this),
         active = _this.find(elem); // find the active element
-
     if (active.length == 0) {
         return;
     }
-
     var activeWidth = _this.width(); // get active width center
     var posLeft = active.position().left; //get left position of active li + center position
     var elW = active.width(); //get div width
-
     // for center position if you want adjust then change this
     pos = (posLeft + (elW/2)) - (activeWidth/2); 
-
     _this.animate({
         scrollLeft: pos
     }, speed == undefined ? 1000 : speed);
-
     return this;
 }
 
+//----------------------------------------------------------------------------------
 
-    
 // Google map integration
 let autocomplete;
 let address1Field;
 
 function initAutocompleteAddress() {
     autocomplete = document.querySelector("#address");
-
     // Create the autocomplete object, restricting the search predictions to
     // addresses in the US and Canada.
     autocomplete = new google.maps.places.Autocomplete(autocomplete, {
@@ -1225,21 +1101,20 @@ function initAutocompleteAddress() {
         fields: ["address_components", "geometry"],
         types: ["address"],
     });
-
     // When the user selects an address from the drop-down, populate the
     // address fields in the form.
     autocomplete.addListener("place_changed", fillInAddress);
 }
 
+//----------------------------------------------------------------------------------
+
 function fillInAddress() {
     // Get the place details from the autocomplete object.
     const place = autocomplete.getPlace();
     let address1 = [];
-
     for (const component of place.address_components) {
         // @ts-ignore remove once typings fixed
         const componentType = component.types[0];
-
         switch (componentType) {
             case "street_number": 
                 address1.push(component.long_name);
@@ -1263,9 +1138,6 @@ function fillInAddress() {
                 component.long_name;
                 break;
         }
-
     }
-
     document.querySelector("#address").value = address1.join(', ');
-
 }

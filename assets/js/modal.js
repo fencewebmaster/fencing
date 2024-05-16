@@ -7,7 +7,8 @@ let FCModal = {
         FCModal.closeBtn();
     },
 
-    //Open Modal
+    //----------------------------------------------------------------------------------
+    
     open: function(target = false) {
 
         let el = target || FCModal.el;
@@ -15,15 +16,15 @@ let FCModal = {
 
     },
 
-    //Close Modal
-    close: function(target = false) {
+    //----------------------------------------------------------------------------------
 
+    close: function(target = false) {
         let el = target || FCModal.el;
         $(el).fadeOut('fast');
-
         $(".fencing-btn-modal.fc-btn-active").removeClass('fc-btn-active');
-
     },
+    
+    //----------------------------------------------------------------------------------
 
     closeBtn: function() {
         $(document).on('click', FCModal.closeBtnEl, function() {
@@ -32,6 +33,7 @@ let FCModal = {
         });
     }
 
+    //----------------------------------------------------------------------------------
 };
 
 FCModal.init();

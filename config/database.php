@@ -5,9 +5,7 @@ class Database {
     public $name;
     public $color;
 
-    public function __construct()
-    {   
-
+    public function __construct() {   
         $config = config();
         $mysql = $config->mysql;
 
@@ -41,11 +39,11 @@ class Database {
         if( in_uri_segment(demo_stages()) ) {
             $this->is_demo = 'demo';
         }
-
     }
 
-    function connect() {
+    //----------------------------------------------------------------------------------
 
+    function connect() {
         // Create connection
         $conn = new mysqli($this->host, $this->username, $this->password, $this->database);
 
@@ -55,11 +53,11 @@ class Database {
         }
 
         return $conn;
-
     }
 
-    function insert($table, $data) {
+    //----------------------------------------------------------------------------------
 
+    function insert($table, $data) {
         $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
 
         $new_data = array();
@@ -90,8 +88,9 @@ class Database {
         $conn->close();
     }
 
-    function update($table = '', $data  = array(), $where  = array()) {
+    //----------------------------------------------------------------------------------
 
+    function update($table = '', $data  = array(), $where  = array()) {
         $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
 
         $new_data = $where_data = array();
@@ -126,11 +125,11 @@ class Database {
         }
 
         $conn->close();
-        
     }
+    
+    //----------------------------------------------------------------------------------
 
     function updateOrCreate($table, $data, $where) {
-
         $where_data = array();
         
         foreach ($where as $key => $value) {
@@ -148,11 +147,11 @@ class Database {
         }
 
         return $q;
-
     }
 
-    function select_where($table, $where, $select = '*') {
+    //----------------------------------------------------------------------------------
 
+    function select_where($table, $where, $select = '*') {
         $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
 
         $sql = "SELECT $select FROM ".$table." WHERE ".$where .' ORDER BY id DESC';
@@ -169,6 +168,8 @@ class Database {
 
         return $data->fetch_object();
     }
+
+    //----------------------------------------------------------------------------------
 
 }
 

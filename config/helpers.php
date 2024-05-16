@@ -9,7 +9,7 @@ function base_url($param ='') {
 	);
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function toURL($url){
     if( isset($_SERVER['HTTPS'])){
@@ -20,13 +20,13 @@ function toURL($url){
     return $protocol . "://" . $url;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function get_uid($l=10) {
     return strtoupper(substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyz"), 0, $l));
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function in_uri_segment($keys) {
     $uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
@@ -37,7 +37,7 @@ function in_uri_segment($keys) {
     }
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function query_vars($query ='') {
     $qs = $_SERVER['QUERY_STRING'];
@@ -58,7 +58,7 @@ function query_vars($query ='') {
     return $vars;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function demo_stages() {
     return [
@@ -70,7 +70,7 @@ function demo_stages() {
     ];
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function sites($key = '', $value = 'id', $search = false) {
     $data = [
@@ -167,7 +167,7 @@ function sites($key = '', $value = 'id', $search = false) {
     return $data;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function selected_fences($fences, $column = 'slug') {
     $info = $_SESSION['fc_data'];
@@ -182,7 +182,7 @@ function selected_fences($fences, $column = 'slug') {
     return $fence_data; 
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function get_items($key, $items, $list = false) {  
     if( !is_array($items) ) {
@@ -204,7 +204,7 @@ function get_items($key, $items, $list = false) {
     return implode(', ', $data);    
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function array_to_json($val='') {
     if( is_array($val) ) {
@@ -214,7 +214,7 @@ function array_to_json($val='') {
     return $val;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 
 function convert_inputs($val='') {
@@ -239,7 +239,7 @@ function convert_inputs($val='') {
     return $val;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function dd($data ='') {
     echo '<pre>';
@@ -247,7 +247,7 @@ function dd($data ='') {
     exit;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function fc_deliver_options() {
     $data = [
@@ -274,7 +274,7 @@ function fc_deliver_options() {
     return $data;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function load_csv($file = '') {
     if( ! file_exists($file) ) {
@@ -306,7 +306,7 @@ function load_csv($file = '') {
     return $rows;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function get_product_skus($data = array()) {
 
@@ -353,7 +353,7 @@ function get_product_skus($data = array()) {
 	return $products;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function post_product_skus($cart_items = array()) {
     $supplier = strtoupper($_SESSION['site']['supplier']);
@@ -385,40 +385,6 @@ function post_product_skus($cart_items = array()) {
         ];
 
     }
-
-    // [START] - GET PRODUCTS FROM THE STORE
-	/*    
-	$curl = curl_init();
-
-    // An array of cURL options
-    $options = array(
-      CURLOPT_URL => 'https://fencesperth.com?fc_action=get_products',
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_ENCODING => '',
-      CURLOPT_MAXREDIRS => 10,
-      CURLOPT_TIMEOUT => 0,
-      CURLOPT_FOLLOWLOCATION => true,
-      CURLOPT_SSL_VERIFYPEER => false,
-      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-      CURLOPT_CUSTOMREQUEST => 'POST',
-      CURLOPT_POSTFIELDS => json_encode($post_query),
-      CURLOPT_HTTPHEADER => array(
-        'Content-Type: application/json'
-      ),
-    );
-
-    // Check if running on localhost
-    if ($_SERVER['HTTP_HOST'] === 'localhost') {
-      // Disable SSL certificate verification for localhost
-      // Error happens when request is coming from a non https source
-      $options[CURLOPT_SSL_VERIFYPEER] = false;
-    }
-
-    curl_setopt_array($curl, $options);
-
-    $response = curl_exec($curl);
-
-    curl_close($curl);*/
 
     $count = count($items);
     $rand  = rand(2, $count);
@@ -459,7 +425,7 @@ function post_product_skus($cart_items = array()) {
     $_SESSION['fc_cart']['items'] = $cart;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function unique_multidim_array($array, $key, $addedKeys) { 
     $temp_array = [];
@@ -484,13 +450,13 @@ function unique_multidim_array($array, $key, $addedKeys) {
     return $temp_array; 
 } 
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function is_localhost($whitelist = ['127.0.0.1', '::1']) {
     return in_array($_SERVER['REMOTE_ADDR'], $whitelist);
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function array_sort_by_column(&$arr, $col, $dir = SORT_ASC) {
     $sort_col = array();
@@ -500,7 +466,7 @@ function array_sort_by_column(&$arr, $col, $dir = SORT_ASC) {
     array_multisort($sort_col, $dir, $arr);
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function add_filepath_last($filename, $add ='') {
     $arr = pathinfo($filename);
@@ -519,7 +485,7 @@ function add_filepath_last($filename, $add ='') {
     return $url;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function clear_planner_sessions() {
     $sessions = [
@@ -535,13 +501,13 @@ function clear_planner_sessions() {
     }
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function load_file($file) {
     return base_url($file).'?v='.filemtime(realpath($file));
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function minifiy_css($file ='') {
     if( !file_exists($file) ) return FALSE;
@@ -558,7 +524,7 @@ function minifiy_css($file ='') {
     file_put_contents($min_file, $css);
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 function config($val = '') {
     $json = file_get_contents('config.json');
@@ -567,4 +533,4 @@ function config($val = '') {
     return $info;
 }
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------------------------

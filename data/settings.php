@@ -17,8 +17,9 @@ foreach($fences as $fik => $fence_info ) {
 
 $fences = $fences_data;
 
+//----------------------------------------------------------------------------------
+
 function fc_color($val ='') {
- 
 	$data = [
 		'black' => [
 			'title' => 'Black',
@@ -39,12 +40,12 @@ function fc_color($val ='') {
 			'text_color' => '#fff',
 		],
 	];
-
 	return ($val) ? $data[$val] : $data;
 } 
 
+//----------------------------------------------------------------------------------
+
 function fc_state($val ='') {
- 
 	$data = [
 		"ACT" => "Australian Capital Territory",
 		"NSW" => "New South Wales",
@@ -55,34 +56,34 @@ function fc_state($val ='') {
 		"VIC" => "Victoria",
 		"WA"  => "Western Australia",
 	];
-
 	return ($val) ? $data[$val] : $data;
 } 
 
+//----------------------------------------------------------------------------------
+
 function fc_timeframe($val ='') {
- 
 	$data = [
 		'asap'    => 'ASAP - Within 24hrs',
 		'soon'    => 'SOON - This Week',
 		'later'   => 'LATER - This Month',
 		'looking' => 'NIL - Just Looking',
 	];
-
 	return ($val) ? $data[$val] : $data;
 } 
 
+//----------------------------------------------------------------------------------
+
 function fc_installer($val ='') {
- 
 	$data = [
 		'diy' => 'DIY - I install myself <span class="badge bg-secondary py-1">cheaper</span>',
 		'install' => 'NO - I need an installer',
 	];
-
 	return ($val) ? $data[$val] : $data;
 } 
 
-function fc_extra_needed($val ='') {
+//----------------------------------------------------------------------------------
 
+function fc_extra_needed($val ='') {
 	$data = [
 		'pool-covers' 		=> 'Pool Covers',
 		'pump-enclosure' 	=> 'Pump Enclosure',
@@ -112,5 +113,4 @@ function fc_extra_needed($val ='') {
     } else {
         return 'Nothing Extra, Just Fencing';
     }
-
 } 

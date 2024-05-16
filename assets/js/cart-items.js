@@ -108,11 +108,8 @@ FENCES.cartItems = {
             let found = false;
             let qty = 1;
 
-
             //additional condition for some cart items
             if (cartKey === "gate") {
-                //   modifiedCartKey = cartKey;
-
                 //Since `gate_kit` shares the same value with `gate`
                 //create the entry for `gate_kit` manually
                 newCartItems.push(FENCES.cartItems.item.gateKit1);
@@ -146,7 +143,6 @@ FENCES.cartItems = {
             //Update the object `slug` and `qty` property before pushing to the array
             entry.slug = modifiedCartKey;
             entry.qty = qty;
-
 
             //Iterate though existing cart items array
             //This condition will handle the check if the cart item slug already exists in the array
@@ -188,7 +184,6 @@ FENCES.cartItems = {
 
         //Apply condition for panel_post
         newCartItems = FENCES.cartItems.apply_panel_post(newCartItems);
-
         newCartItems = FENCES.cartItems.cart_conditions(newCartItems);
 
         return newCartItems;
@@ -278,7 +273,6 @@ FENCES.cartItems = {
 
         }
 
-
         return array;
     },
 
@@ -291,16 +285,12 @@ FENCES.cartItems = {
      */
     apply_panel_post: function(array) {
         const foundGate = array.find(obj => obj['slug'] === "gate");
-
         array.forEach(function(v, k) {
-
             if (foundGate && v.slug.includes('panel_post')) {
                 v.qty = v.qty; //  - 1
                 array[k] = v;
             }
-
         });
-
         return array;
     },
 
@@ -315,16 +305,12 @@ FENCES.cartItems = {
         //Get offcut size
         let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
         let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
-
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+even");
-
         let qty = getPanelItems;
-
         if (qty) {
             FENCES.cartItems.apply_panel_options_bracket(array, qty);
         }
-
         return array;
     },
 
@@ -340,17 +326,12 @@ FENCES.cartItems = {
         let noOfShortPanel = document.querySelectorAll('.short-panel-item').length;
         let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
         let getRakedPanelItems = document.querySelectorAll('.panel-item.fencing-raked-panel').length;
-
         //Find the existing object
         const foundObject = array.find(obj => obj['slug'] === "panel_options+full");
-
-
         var qty = getPanelItems + getRakedPanelItems;
-
         if (qty) {
             FENCES.cartItems.apply_panel_options_bracket(array, qty);
         }
-
         return array;
     },
 
@@ -364,15 +345,12 @@ FENCES.cartItems = {
      */
     apply_panel_options_bracket: function(array, total) {
         let slug = "panel_options+bracket";
-
         //Find if the slug already exists
         const foundObject = array.find(obj => obj['slug'] === slug);
-
         //Exists
         if (foundObject) {
             //then update the qty value
             foundObject['qty'] = total;
-
             //Doesnt exists
         } else {
             //add new object for the slug
@@ -398,22 +376,17 @@ FENCES.cartItems = {
         //If it exists means user selected it
         const foundPanelPostOpt1 = array.find(obj => obj['slug'] === "panel_post+opt-1");
         const foundRakedPostOpt1 = array.find(obj => obj['slug'] === "raked_post+opt-1");
-
         //If any of the slug returns undefined, do nothing
         if (typeof foundPanelPostOpt1 === "undefined" || typeof foundRakedPostOpt1 === "undefined") {
             return array;
         }
-
         //Remove `post_options+opt-2` from array
         array = FENCES.cartItems.remove_post_options_opt2(array);
-
         let total = foundPanelPostOpt1.qty + foundRakedPostOpt1.qty;
-
         array.push({
             "slug": "raked_panel_post+opt-1",
             "qty": total,
         });
-
         return array;
     },
 
@@ -428,12 +401,10 @@ FENCES.cartItems = {
      */
     apply_raked_panel_post_opt2: function(array) {
         const foundRakedPostOpt2 = array.find(obj => obj['slug'] === "raked_post+opt-2");
-
         //If any of the slug returns undefined, do nothing
         if (typeof foundRakedPostOpt2 === "undefined") {
             return array;
         }
-
         //Find the two objects with slug `panel_post+opt-2` and `raked_post+opt-2` in the array
         //If it exists means user selected it
         for (var i = 0; i < array.length; i++) {
@@ -442,7 +413,6 @@ FENCES.cartItems = {
                 break;
             }
         }
-
         return array;
     },
 
@@ -457,37 +427,29 @@ FENCES.cartItems = {
      */
     apply_post_options_opt1: function(array) {
         var total = 0;
-
         //Find the two objects with slug `panel_post+opt-1` and `raked_post+opt-1` in the array
         //If it exists means user selected it
         const foundPanelPostOpt1 = array.find(obj => obj['slug'].includes("panel_post+opt-1"));
         const foundRakedPostOpt1 = array.find(obj => obj['slug'].includes("raked_post+opt-1"));
         const foundGate = array.find(obj => obj['slug'] === "gate");
-
         //If any of the slug returns undefined, do nothing
         if (typeof foundPanelPostOpt1 !== "undefined") {
             total += foundPanelPostOpt1.qty;
         }
-
         if (typeof foundRakedPostOpt1 !== "undefined") {
             total += foundRakedPostOpt1.qty;
         }
-
         if (total) {
-
             array.push({
                 "slug": "base_plate+dynabolts",
                 "qty": total,
             });
-
             array.push({
                 "slug": "base_plate+post_cover",
                 "qty": total,
             });
-
             return array;
         }
-
         return array;
     },
 
@@ -511,7 +473,6 @@ FENCES.cartItems = {
         if (typeof foundPostOptionsOpt2 !== "undefined") {
             array = array.filter(obj => obj.slug !== slug);
         }
-
         return array;
     }
 

@@ -8,6 +8,9 @@ FENCES = {
         unit: 'mm',
     },
     activeSetting: '',
+
+    //----------------------------------------------------------------------------------
+    
     el: {
         'tabContainer': '.js-fencing-tab-container',
         'tabArea': '.js-fencing-tab-container-area',
@@ -36,16 +39,24 @@ FENCES = {
         'fencingDisplayResult': '.fencing-display-result',
         'btnGate': '#btn-gate',
     },
+
+    //----------------------------------------------------------------------------------
+
     init: function() {
         FENCES.hideElementsOnLoad();
         HELPER.setMeasurementDefaultValue();
         FENCES.setActiveSetting('');
-
     },
+    
+    //----------------------------------------------------------------------------------
+
     hideElementsOnLoad: function() {
         HELPER.hideZoomResetButton();
         HELPER.hideDeleteSectionBtn();
     },
+
+    //----------------------------------------------------------------------------------
+
     setActiveSetting: function(val) {
         let fencingContainer = document.querySelector(FENCES.el.container);
         if (fencingContainer) {
@@ -53,9 +64,10 @@ FENCES = {
             fencingContainer.setAttribute('data-key', val);
         }
     }
+
+    //----------------------------------------------------------------------------------
+
 };
-
-
 
 $(function() {
     FENCES.init();

@@ -113,7 +113,7 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
                             &#43; <span>Add Section</span>      
                             </a>
 
-                    </div>
+                        </div>
                     </div>
                 </div>
                 <!-- [END] TABS -->
@@ -159,8 +159,6 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
             </form>
 
         </div>
-
-
 
         <?php include 'views/planner/modals.php'; ?>
 

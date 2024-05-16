@@ -1,21 +1,20 @@
 <?php
-	session_start();
-	$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
-    $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
+session_start();
+$info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
+$cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
-	if( empty($info) ) {
-		header("Location: ./");
-		die();
-	}
+if( empty($info) ) {
+	header("Location: ./");
+	die();
+}
 
-	date_default_timezone_set('Asia/Manila');
+date_default_timezone_set('Asia/Manila');
 
-	include 'data/settings.php';
-	include 'config/helpers.php';
-	include 'views/fields.php';
+include 'data/settings.php';
+include 'config/helpers.php';
+include 'views/fields.php';
 
-	$site_info = sites($_SESSION['site']['id'], 'id', true);
-
+$site_info = sites($_SESSION['site']['id'], 'id', true);
 ?>
 
 <!DOCTYPE html>

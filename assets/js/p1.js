@@ -1,4 +1,4 @@
-Planner = {
+let Planner = {
     init: function() {
         this.reload_fence_items();
     },
@@ -6,7 +6,6 @@ Planner = {
     //----------------------------------------------------------------------------------
 
     reload_fence_items: function() {
-
         if (HELPER.getSearchParams('action') == 'clear-all') {
             clearFencingData();
             location.href = location.origin + location.pathname;
@@ -22,7 +21,6 @@ Planner = {
         for (let i = 1; i <= items; i++) {
 
             var index = i - 1;
-
             var sectionTab = `<div class="fencing-tab fencing-tab-selected fc-d-none fc-section-${i}">
                     <div class="fencing-tab-name">
                         <span class="ftm-title">SECTION</span> <span class="fencing-tab-number">${i}</span>
@@ -31,9 +29,7 @@ Planner = {
                 </div>`;
 
             $('.fencing-tab-container-area').append(sectionTab);
-
             $('.fencing-tab').removeClass('fencing-tab-selected');
-
             $('.fencing-tab:last-child').addClass('fencing-tab-selected');
 
             var custom_fence_tabs = localStorage.getItem('custom_fence-' + index);
@@ -56,9 +52,7 @@ Planner = {
                 $('.fencing-tab-selected').removeClass('fencing-tab-selected');
                 $('.fc-section-' + section).addClass('fencing-tab-selected');
             }
-
             $('.fencing-tab.fencing-tab-selected:visible').click();
-
         }, 100);
 
         if (tab == 2 && form) {
@@ -75,7 +69,6 @@ Planner = {
 
         // Initiate tab container scroll
         HELPER.tabContainerScroll();
-
 
         // Restore form data when the page loads
         restoreFormData();
@@ -95,29 +88,24 @@ Planner = {
             var fence = HELPER.getSearchParams('fence');
             $('.fencing-style-item[data-slug="' + fence + '"]').trigger('click');
         }
-
     },
 
     //----------------------------------------------------------------------------------
 
     planCart: function() {
-
         FCModal.close('#submit-modal');
         $('.fc-loader-overlay').show();
-
         if (HELPER.getSearchParams('qid')) {
             $('.li-create small').html('Reloading your plan...');
         } else {
             $('.li-create small').html('Updating your plan...');
         }
-
-        res = submit_fence_planner('update');
+        submit_fence_planner('update');
     },
 
     //----------------------------------------------------------------------------------
 
     reloadFencingData: function() {
-
         if (HELPER.getSearchParams('qid') && !fc_fence_info.fence_data) {
             clearFencingData();
             location.href = location.origin + location.pathname;
@@ -142,16 +130,13 @@ Planner = {
         });
 
         var cart_items = JSON.parse(fc_fence_info.cart_items_data);
+        
         $(cart_items).each(function(k, v) {
-
             localStorage.setItem('cart_items-' + k, JSON.stringify(v));
         });
 
         localStorage.setItem('custom_fence-section', fc_fence_info.section_count);
-
         localStorage.setItem('project-plans', fc_fence_info.project_plans_data);
-
-
     }
 
     //----------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 //Global Variable
 var HELPER = HELPER || {};
-
 var step = 1;
 
 HELPER = {
@@ -8,7 +7,6 @@ HELPER = {
     //----------------------------------------------------------------------------------
 
     countLocalStorageFenceKeys: function(target) {
-
         let count = 0;
 
         for (let i = 0; i < localStorage.length; i++) {
@@ -63,7 +61,6 @@ HELPER = {
      * Draggable elements
      */
     draggable: function(_parent, _content) {
-
         if (this.isMobileDevice()) {
             return;
         }
@@ -101,7 +98,6 @@ HELPER = {
         draggableElement.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
-
     },
 
     //----------------------------------------------------------------------------------
@@ -131,7 +127,6 @@ HELPER = {
      * 
      */
     set_field_value: function(filtered_data) {
-
         if (filtered_data) {
             $(filtered_data).each(function(i, item) {
                 $(item.settings).each(function(i, item) {
@@ -144,7 +139,6 @@ HELPER = {
                 });
             });
         }
-
     },
 
     //----------------------------------------------------------------------------------
@@ -156,7 +150,6 @@ HELPER = {
      * @param {string} val 
      */
     get_field_value: function(tag, key, val) {
-
         if (!val) return;
 
         if (tag == 'input') {
@@ -241,15 +234,11 @@ HELPER = {
      * 
      */
     hideDeleteSectionBtn: function() {
-
         let _remaining_tabs = $(FENCES.el.tabArea).children().length;
         let _delete_btn = $(FENCES.el.jsBtnDeleteFence);
-
-
         if (_remaining_tabs == 1) {
             _delete_btn.hide();
         }
-
         _delete_btn.removeAttr('disabled');
 
     },
@@ -261,9 +250,7 @@ HELPER = {
      * @returns boolean
      */
     stopSectionDeletion: function() {
-
         let _remaining_tabs = $(FENCES.el.tabArea).children().length;
-
         if (_remaining_tabs == 1) {
             return false;
         }
@@ -293,7 +280,6 @@ HELPER = {
     //----------------------------------------------------------------------------------
 
     deleteSectionTab: function() {
-
         let getActiveTab = $(FENCES.el.fencingTabSelected);
         let getActiveTabIndex = getActiveTab.index();
         let getPrevBtn = getActiveTab.prev();
@@ -313,7 +299,6 @@ HELPER = {
 
         // Store section count
         localStorage.setItem('custom_fence-section', $(FENCES.el.fencingTab).length);
-
     },
 
     //----------------------------------------------------------------------------------
@@ -330,10 +315,8 @@ HELPER = {
     //----------------------------------------------------------------------------------
 
     resetSectionsBlocks: function() {
-
         $('.fencing-style-item').removeClass('fsi-selected');
         $(FENCES.el.jsFcFormStep).removeAttr('style');
-
     },
 
     //----------------------------------------------------------------------------------
@@ -343,16 +326,14 @@ HELPER = {
      * @param {string} target 
      */
     loadSectionOverlay: function(target) {
-
         let tpl = `<div class="fc-section-loader-overlay">
-                    <div class="fc-loader-container">
-                        <div class="fc-loader"><div class="fc-loader-gif"></div></div>
-                    </div>
-                </div>`;
+            <div class="fc-loader-container">
+                <div class="fc-loader"><div class="fc-loader-gif"></div></div>
+            </div>
+        </div>`;
 
         target = document.getElementById(target);
         target.insertAdjacentHTML('afterbegin', tpl);
-
     },
 
     //----------------------------------------------------------------------------------
@@ -371,7 +352,6 @@ HELPER = {
      * @param {obj} _this 
      */
     tabContainerScroll: function() {
-
         let _tab_parent_class = FENCES?.el?.tabContainer;
         let _tab_content_class = '.js-fencing-tab-container-area';
         let _main_parent = $('.js-fencing-tabs-container');
@@ -415,7 +395,6 @@ HELPER = {
     //----------------------------------------------------------------------------------
 
     zooming: function(zoom) {
-
         var raked_panel_mt = '20px';
 
         if ($('.raked-panel .fencing-raked-panel').length) {
@@ -457,7 +436,6 @@ HELPER = {
         }
 
         HELPER.toggleZoomResetButton(step);
-
     },
 
     //----------------------------------------------------------------------------------
@@ -465,7 +443,6 @@ HELPER = {
     setSectionURLParam: function() {
         var index = $(FENCES.el.fencingTabSelected).index(),
             tab = index + 1;
-
         history.pushState({}, '', '?section=' + tab);
     },
 
@@ -478,10 +455,8 @@ HELPER = {
     //----------------------------------------------------------------------------------
 
     isNaNtoZero: function(number) {
-
         number = Math.round(number);
         number = isNaN(number) || number == Infinity || number <= 0 ? 0 : number;
-
         return number;
     },
 
@@ -500,7 +475,6 @@ HELPER = {
     },
 
     //----------------------------------------------------------------------------------
-
 
     call_fence_func: function(_this, func, a, b, c, d, e, f) {
         try {

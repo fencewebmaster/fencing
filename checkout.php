@@ -54,7 +54,6 @@ if( @$_POST['action'] == 'push_order' ) {
         return;
     }
 
-
     // push to WP
     $curl = curl_init();
 
