@@ -21,7 +21,6 @@
                 <div class="fc-form-plan" data-formtab="1">
 
 
-
                     <!-- [START] FORM MODAL PROGRESS BAR - STEP 1 -->                            
                     <div class="fc-progress-container fc-float-r">
                         <div class="fc-progress-tabs">

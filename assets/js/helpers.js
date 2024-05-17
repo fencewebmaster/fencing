@@ -8,16 +8,13 @@ HELPER = {
 
     countLocalStorageFenceKeys: function(target) {
         let count = 0;
-
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-
             // Check if the key contains the substring "custom_fence"
             if (key.includes(target)) {
                 count++;
             }
         }
-
         return count;
     },
 
@@ -107,13 +104,11 @@ HELPER = {
         var step = parseInt(slider.attr('step'), 10);
         var currentSliderValue = parseInt(slider.val(), 10);
         var newStepValue = currentSliderValue + step;
-
         if (direction === "out") {
             newStepValue = currentSliderValue - step;
         } else {
             newStepValue = currentSliderValue + step;
         }
-
         slider.val(newStepValue).change();
     },
 
@@ -130,11 +125,9 @@ HELPER = {
         if (filtered_data) {
             $(filtered_data).each(function(i, item) {
                 $(item.settings).each(function(i, item) {
-
                     $(item.fields).each(function(i, item) {
                         HELPER.get_field_value(item.tag, item.key, item.val);
                     });
-
                     HELPER.get_field_value(item.tag, item.key, item.val);
                 });
             });
@@ -151,29 +144,22 @@ HELPER = {
      */
     get_field_value: function(tag, key, val) {
         if (!val) return;
-
         if (tag == 'input') {
-
             $('[name=' + key + ']').val(val);
             $('[name=' + key + ']').closest('.fencing-form-group').find('.fir-info span').text(val);
             $('[name=' + key + ']').prop('checked', true);
-
         } else if (tag == 'select') {
             $('[name=' + key + ']').val(val);
             $('[name=' + key + ']').attr('value', val);
-
         } else if (tag == 'div') {
             let getElement = $('[name=' + key + ']'),
                 getSelectedEl = getElement.find('.fc-selected');
-
             // Reset value
             if (getSelectedEl.length) {
                 getSelectedEl.removeClass('fc-selected');
             }
-
             getElement.attr('value', val);
             getElement.find('[data-slug="' + val + '"]').addClass('fc-selected');
-
             // Set preselected value for right and left raked inside modal
             if (key === "left_raked" || key === "right_raked") {
                 if (typeof val !== "undefined" && val) {
@@ -182,7 +168,6 @@ HELPER = {
                     $('[name=' + key + '] select').val("none");
                 }
             }
-
         }
     },
 
@@ -286,7 +271,6 @@ HELPER = {
         let getNextBtn = getActiveTab.next();
 
         getActiveTab.addClass('is-deleting');
-
         if (getActiveTab.is(':last-child')) {
             getPrevBtn.trigger('click');
         } else {
@@ -308,7 +292,6 @@ HELPER = {
             var _this = $(this);
             _this.find('.fencing-tab-number').html(index + 1);
         });
-
         HELPER.setSectionURLParam();
     },
 
@@ -331,7 +314,6 @@ HELPER = {
                 <div class="fc-loader"><div class="fc-loader-gif"></div></div>
             </div>
         </div>`;
-
         target = document.getElementById(target);
         target.insertAdjacentHTML('afterbegin', tpl);
     },

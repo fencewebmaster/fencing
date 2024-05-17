@@ -31,12 +31,14 @@
 
 <div class="form-group">
     <div class="row">
+
         <div class="col-12 col-md mb-3">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">Post Code <span class="fc-text-danger">*</span></label>
                 <input type="text" name="postcode" id="postcode" class="form-control p-3" placeholder="Post Code" required>                  
             </div>
         </div>
+
         <div class="col-12 col-md">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">State <span class="fc-text-danger">*</span></label>

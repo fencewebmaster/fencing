@@ -7,6 +7,7 @@
 
 	<div class="fencing-modal-body fc-font-1">
 		<div class="fc-control-move fencing-form-group">
+			
 			<h2 class="body-title">{{title}}</h2>
 
 			<div class="custom-gate"></div>
@@ -49,5 +50,7 @@
 			</div>    		
 		</div>
 	</div>
+	
 	<div class="fencing-modal-notes"></div>
+
 </div>

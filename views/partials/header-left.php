@@ -1,4 +1,4 @@
-<h2 class="fc-header-title">Fencing Calculator</h2>
+<h2 class="fc-header-title"><?php echo config()->app->name; ?></h2>
 
 <p class="mb-2">Calculate your fence cost and the materials needed.</p>
 

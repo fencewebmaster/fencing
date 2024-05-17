@@ -1,4 +1,5 @@
 <div class="fencing-modal-area" data-field="range_option">
+	
 	<div class="fencing-modal-header">
 		<div class="fencing-modal-title fc-font-2">{{marker}}{{field_title}}</div>
 		<button type="button" class="fencing-modal-close js-fencing-modal-close">&nbsp;</button>
@@ -14,5 +15,5 @@
 	</div>
 
 	<div class="fencing-modal-notes"></div>
-	
+
 </div>

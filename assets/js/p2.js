@@ -25,7 +25,13 @@ let ProjectPlan = {
                     </div>
                 </div>
                 <div class="plan-item">
-                    <div id="pp-${i}" class="dl-row"><div class="fc-result"><div class="fencing-panel-container"><div class="fc-loader-gif"></div></div></div></div>
+                    <div id="pp-${i}" class="dl-row">
+                        <div class="fc-result">
+                            <div class="fencing-panel-container">
+                                <div class="fc-loader-gif"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div> `;
 
@@ -284,7 +290,8 @@ let ProjectPlan = {
 
 
         if (calc.fence_size.height) {
-            $('#pp-' + tab + ' .fencing-panel-item, #pp-' + tab + ' .short-panel-item, #pp-' + tab + ' .fencing-offcut .offcut-body').css({ 'height': calc.fence_size.height * 0.10 });
+            $('#pp-' + tab + ' .fencing-panel-item, #pp-' + tab + ' .short-panel-item, #pp-' + tab + ' .fencing-offcut .offcut-body')
+                .css({ 'height': calc.fence_size.height * 0.10 });
 
             $('#pp-' + tab + ' .panel-post.opt-1').css({ 'height': (calc.fence_size.height * 0.10) + 25 });
             $('#pp-' + tab + ' .panel-post.opt-2').css({ 'height': (calc.fence_size.height * 0.10) + 35 });
@@ -378,7 +385,8 @@ let ProjectPlan = {
 
         }
 
-        $('#pp-' + tab + ' .fencing-panel-gate').prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
+        $('#pp-' + tab + ' .fencing-panel-gate')
+            .prepend('<span class="fc-gate-spacing fc-gate-left-spacing">20</span>')
             .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>')
             .attr('data-cart-value', 1)
             .css({ 'max-width': calc.gate.length * 0.1 });
@@ -504,7 +512,8 @@ let ProjectPlan = {
 
         $('#pp-' + tab + ' .right-panel-post.no-post span').text('(0)');
 
-        $('#pp-' + tab + ' .no-post-swivel-bracket span').after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');
+        $('#pp-' + tab + ' .no-post-swivel-bracket span')
+            .after('<span class="sw sw-top">SW</span><span class="sw sw-bot">SW</span>');
 
         FENCE.call('load_post_options_all', custom_fence, info, tab, calc);
 

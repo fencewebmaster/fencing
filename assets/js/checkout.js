@@ -177,7 +177,6 @@ function fcBtnReset(e) {
             } else {
                 _this.find('.form-control').val(val)
             }
-
         }
     });
     $(".fc-table-customer .fc-form-control").css({ 'color': '#f67925' });
