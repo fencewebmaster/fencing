@@ -1,13 +1,13 @@
 <title>Fencing Calculator</title>
 
-<?php if( $info['site']['id'] == 1 ): ?>
-<!-- fencesperth.com | Google Tag Manager -->
+<?php if( $info['site']['id'] == 2 ): ?>
+<!-- fencesbrisbane.au | Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-MNZ475L');</script>
-<!-- fencesperth.com | End Google Tag Manager -->
+<!-- fencesbrisbane.au | End Google Tag Manager -->
 <?php endif; ?>
 
 <link rel="icon" type="image/x-icon" href="<?php echo load_file('assets/img/fav.ico'); ?>">
