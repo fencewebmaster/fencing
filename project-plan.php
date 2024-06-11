@@ -24,6 +24,8 @@ $site_info = sites($_SESSION['site']['id'], 'id', true);
 	</head>
 	<body>
 
+		<?php include 'views/partials/body-before.php'; ?>
+
 		<!-- [START] FENCING CONTAINER -->
 		<div id="place_order-section" class="fencing-container container-lg fc-project-plan fc-position-relative mt-5" data-tab="1">
 

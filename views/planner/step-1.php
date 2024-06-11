@@ -4,13 +4,13 @@
     <div class="fencing-section__cmp fencing-section-step fencing-section--step1">
 
         <div class="row align-items-center">
-            <div class="col-sm mb-sm-0 mb-3">
+            <div class="col-sm mb-sm-0">
                 <div class="step-label" data-action="scroll" data-target="[data-section=1]" data-offset="46">Step <span>01</span></div>
                 <h4 class="fencing-content-title mb-3">Choose Your Fencing Style</h4>                                    
             </div>
             <div class="col-sm">
 
-                <div class="btn-delete-fence text-end">
+                <div class="btn-delete-fence text-end mb-2">
 
                     <button type="button" 
                         class="btn btn-danger btn-sm js-btn-delete-fence px-2 fw-bold text-uppercase" 
@@ -43,7 +43,7 @@
                         <img src="<?php echo base_url().$fence['image']; ?>">               
                     </div>
 
-                    <div class="fencing-style-title fw-bold fs-6">
+                    <div class="fencing-style-title fw-bold">
                         <?php echo $fence['title']; ?>
                     </div>
 
@@ -67,7 +67,7 @@
                         </div>
                     </div>
 
-                    <div class="fencing-style-title fw-bold fs-6">
+                    <div class="fencing-style-title fw-bold">
                         Load Quote
                     </div>
 

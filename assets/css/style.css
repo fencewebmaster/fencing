@@ -2364,7 +2364,8 @@ thead.fc-border th:last-child {
 }
 
 @media (max-width: 768px) {
-    #submit-modal.fencing-modal--v2 .fc-color-options p strong {
+    #submit-modal.fencing-modal--v2 .fc-color-options p strong,
+    .fc-color-options p strong {
         font-size: 14px;
     }
 }
@@ -2897,7 +2898,6 @@ thead.fc-border th:last-child {
     justify-content: center;
     padding-left: 15px;
     padding-right: 15px;
-    min-width: 134px;
     align-items: center;
     height: 100%;
     box-sizing: border-box;
@@ -2910,7 +2910,6 @@ thead.fc-border th:last-child {
     .fencing-tab {
         padding-left: 10px;
         padding-right: 10px;
-        min-width: 119px;
     }
 }
 
@@ -2947,13 +2946,14 @@ thead.fc-border th:last-child {
     line-height: 22px;
     position: relative;
     top: 2px;
+    padding: 10px;
 }
 
 @media (max-width: 992px) {
     .fencing-tab-name {
         width: 100%;
         font-size: 18px;
-        line-height: 24px;
+        line-height: 18px;
         top: 0;
     }
 }
@@ -3659,7 +3659,7 @@ thead.fc-border th:last-child {
 .load-quote .fencing-style-title,
 .fencing-style-item .fencing-style-title {
     text-align: center;
-    font-size: 14px;
+    font-size: 15px;
     border: 2px solid #f0f0f0;
     border-top: 0;
     background: #FAFAFA;
@@ -3669,10 +3669,9 @@ thead.fc-border th:last-child {
 }
 
 @media (max-width: 768px) {
-
     .load-quote .fencing-style-title,
     .fencing-style-item .fencing-style-title {
-        font-size: 12px;
+        font-size: 14px;
     }
 }
 
@@ -4404,6 +4403,12 @@ thead.fc-border th:last-child {
     line-height: 22px;
     color: var(--fc-granite-gray);
 }
+@media (max-width: 768px) {
+    .fencing-container p {
+        font-size: 13px;
+    }
+}
+
 
 .fc-alert-gray--low-stock {
     background-color: #FCDADA;

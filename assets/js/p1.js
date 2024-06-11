@@ -11,6 +11,7 @@ let Planner = {
             location.href = location.origin + location.pathname;
         }
 
+
         this.reloadFencingData();
 
         var items = localStorage.getItem('custom_fence-section') ?? 1;
@@ -82,7 +83,6 @@ let Planner = {
                 .removeClass('disabled')
                 .removeAttr('disabled');
         }
-
         if (fence = HELPER.getSearchParams('fence')) {
             clearFencingData();
             var fence = HELPER.getSearchParams('fence');

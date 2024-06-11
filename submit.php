@@ -26,9 +26,7 @@ foreach($cart_items_grouped as $cart_item) {
 
 // Reformat the cart items
 foreach($cart_items_regrouped as $cir_k => $cir_items) {
-
     $cart_items_formatted = [];
-
     foreach ($cir_items as $ciri_k => $ciri_v) {
         $cart_items_formatted[] = [
             'slug' => $ciri_k,
@@ -43,7 +41,6 @@ foreach($cart_items_regrouped as $cir_k => $cir_items) {
       'color' => $c[1],
       'items' => $cart_items_formatted,
     ];
-
 }
 
 post_product_skus($cart_items_data);
@@ -75,6 +72,7 @@ $data_inputs = [
   'mobile'             => @$fc_data['mobile'],
   'email'              => @$fc_data['email'],
   'address'            => @$fc_data['address'],
+  'postcode'           => @$fc_data['postcode'],
   'fence_type'         => selected_fences($fences, 'slug'),
   'timeframe'          => @$fc_data['timeframe'],
   'installer'          => @$fc_data['installer'],

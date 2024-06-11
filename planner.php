@@ -72,6 +72,8 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
     </head>
     <body>
 
+        <?php include 'views/partials/body-before.php'; ?>
+
         <div class="fencing-container container-lg w-side-section mt-5" data-tab="1">
             <form method="POST" id="fc-planning-form" action="project-plan.php">
 
