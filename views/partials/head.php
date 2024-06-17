@@ -1,5 +1,7 @@
 <title>Fencing Calculator</title>
 
+<?php $info = $_SESSION; ?>
+
 <?php if( $info['site']['id'] == 2 ): ?>
 <!-- fencesbrisbane.au | Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

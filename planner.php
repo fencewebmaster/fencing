@@ -47,7 +47,6 @@ if( $qid = @$_GET['qid'] ) {
     $res = $db->select_where('planners', '`planner_id`="'.$qid.'"');   
 
     if( $res ) {
-
         // Clear fence session data
         clear_planner_sessions();
 
@@ -55,12 +54,12 @@ if( $qid = @$_GET['qid'] ) {
 
         $_SESSION['planner_id'] = $qid;
 
-        $site = sites($parse_url['host'], 'domain', true);    
+        $site = sites($_SERVER['HTTP_HOST'], 'domain', true);
         $_SESSION["site"] = $site;
     }
 }
 
-$site_info = sites($_SESSION['site']['id'], 'id', true);
+$site_info = sites($_SERVER['HTTP_HOST'], 'domain', true);    
 
 $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
 ?>
