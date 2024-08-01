@@ -32,10 +32,12 @@
 					    </div>
 
 						<div class="d-grid gap-2">
-					        <button type="submit" class="btn btn-lg btn-submit btn-orange text-uppercase w-100 text fw-bold">
-					            <i class="fa-solid fa-cart-shopping me-1"></i>
-					            Order Items Now!
-					        </button>
+							<div class="animate__animated" animation-type="animate__bounce">
+						        <button type="submit" class="btn btn-lg btn-submit btn-green text-uppercase w-100 text fw-bold animate__animated  animate__delay-1s" animation-type="animate__shakeX">
+						            <i class="fa-solid fa-cart-shopping me-1"></i>
+						            View Total Cost!
+						        </button>								
+							</div>
 				    	</div>
 
 					    <div class="row d-none">

@@ -1373,8 +1373,26 @@ _win.on('scroll resize', function() {
             spy.addClass('sticky-roll').css({ 'width': width, 'top': offset });
         }
     }
+
 });
 
+_win.on('scroll', setAnimation);
+function setAnimation() {
+
+    $('[animation-type]').each(function(i, el) {
+
+        var h = $(window).outerHeight(),
+            target = $(el).offset().top,
+            st = $(window).scrollTop() + h,
+            type = $(el).attr('animation-type');
+
+            if( target <= st ) {
+                $(el).addClass(type);
+            }
+
+    });
+
+}
 
 /* ----------------------------------------------------------------
     [END] RESIZE EVENT

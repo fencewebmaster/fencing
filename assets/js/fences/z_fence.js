@@ -588,7 +588,7 @@ FENCE = {
 
                 $('#panel-item-0, #panel-item-x').before(tpl);
 
-               $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
+               $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate').html('<span>Gate</span> Options');
 
             } else if(find_gate.length && placement >= 0) {
 
@@ -614,7 +614,7 @@ FENCE = {
                     $('#panel-item-' + placement).after(tpl);
                 }
 
-                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
+                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate').html('<span>Add</span> Gate');
 
             } else if(action == 'add' && placement == 0) {
 
@@ -633,7 +633,7 @@ FENCE = {
 
                 $('#'+panelID+', .fencing-panel-items .raked-panel-container').after(tpl);
 
-                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate');
+                $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate').html('<span>Add</span> Gate');
 
             }
 
@@ -779,7 +779,7 @@ FENCE = {
 
             var index = $('#panel-item-0, #panel-item-x').index() / 3;
 
-            $(FENCES.el.btnGate).addClass('add-gate').removeClass('edit-gate');
+            $(FENCES.el.btnGate).addClass('add-gate').removeClass('edit-gate').html('<span>Add</span> Gate');
 
             $(FENCES.el.fencingPanelGate).removeAttr('data-cart-value');
             FCModal.close();

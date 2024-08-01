@@ -1,7 +1,8 @@
 <?php 
-error_reporting(0);
+if (!session_id()) {
+    session_start();
+}
 
-session_start();
 $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
 include 'config/helpers.php';

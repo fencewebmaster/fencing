@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (!session_id()) {
+    session_start();
+}
 
 include 'config/helpers.php';
 include 'data/settings.php';
@@ -73,6 +75,7 @@ $data_inputs = [
   'email'              => @$fc_data['email'],
   'address'            => @$fc_data['address'],
   'postcode'           => @$fc_data['postcode'],
+  'state'              => @$fc_data['state'],
   'fence_type'         => selected_fences($fences, 'slug'),
   'timeframe'          => @$fc_data['timeframe'],
   'installer'          => @$fc_data['installer'],

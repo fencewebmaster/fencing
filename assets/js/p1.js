@@ -6,18 +6,24 @@ let Planner = {
     //----------------------------------------------------------------------------------
 
     reload_fence_items: function() {
-        if (HELPER.getSearchParams('action') == 'clear-all') {
+
+        var items = localStorage.getItem('custom_fence-section') ?? 1,
+            section = HELPER.getSearchParams('section'),
+            tab = HELPER.getSearchParams('tab'),
+            form = HELPER.getSearchParams('form'),
+            fence = HELPER.getSearchParams('fence'),
+            qid = HELPER.getSearchParams('qid'),
+            action = HELPER.getSearchParams('action');
+
+        if( action || qid || fence)  {
             clearFencingData();
+        }
+
+        if (action == 'clear-all') {
             location.href = location.origin + location.pathname;
         }
 
-
         this.reloadFencingData();
-
-        var items = localStorage.getItem('custom_fence-section') ?? 1;
-        var section = HELPER.getSearchParams('section');
-        var tab = HELPER.getSearchParams('tab');
-        var form = HELPER.getSearchParams('form');
 
         for (let i = 1; i <= items; i++) {
 
@@ -74,7 +80,7 @@ let Planner = {
         // Restore form data when the page loads
         restoreFormData();
 
-        if (HELPER.getSearchParams('qid')) {
+        if (qid) {
             this.planCart();
         }
 
@@ -83,9 +89,8 @@ let Planner = {
                 .removeClass('disabled')
                 .removeAttr('disabled');
         }
-        if (fence = HELPER.getSearchParams('fence')) {
-            clearFencingData();
-            var fence = HELPER.getSearchParams('fence');
+
+        if (fence) {
             $('.fencing-style-item[data-slug="' + fence + '"]').trigger('click');
         }
     },

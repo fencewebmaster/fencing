@@ -7,6 +7,7 @@
 
 :root {
     --fc-gray: #e9e9e9;
+    --fc-green: #04a725;
     --fc-princeton-orange: #F67925;
     --fc-white: #fff;
     --fc-black: #000;
@@ -2691,6 +2692,16 @@ thead.fc-border th:last-child {
 
 .btn-orange:hover {
     background: #ff6b08 !important;
+}
+
+.btn-green {
+    background: var(--fc-green) !important;
+    border-bottom: 4px solid #016b16 !important;
+    color: #fff !important;
+}
+
+.btn-green:hover {
+    background: #008019 !important;
 }
 
 .btn-fc-orange {

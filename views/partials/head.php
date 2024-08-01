@@ -1,5 +1,11 @@
 <title>Fencing Calculator</title>
 
+<?php 
+if( !config()->app->debug ):
+	error_reporting(0);	
+endif;
+?>
+
 <?php $info = $_SESSION; ?>
 
 <?php if( $info['site']['id'] == 2 ): ?>
@@ -21,6 +27,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="stylesheet" type="text/css" href="<?php echo load_file('assets/fonts/fa/css/all.min.css'); ?>">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <?php if( $gtagID = @$site_info['gtagID'] ): ?>
 <!-- Google tag (gtag.js) -->
