@@ -2,7 +2,7 @@
 $fences['glass_pool'] = [
 	'title' => 'Glass Pool',
 	'live' => TRUE,
-	'name' => 'GLASS POOL',
+	'name' => 'Glass Pool',
 	'slug' => 'glass_pool',
 	'panel_group' => 'a',
 	'image' => 'assets/img/fences/webp/glass-pool.webp',
@@ -111,7 +111,7 @@ $fences['glass_pool'] = [
 							'slug' => '1300x300',
 							'title' => '1300H - 300 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1300,
 							]
 						],
@@ -119,23 +119,23 @@ $fences['glass_pool'] = [
 							'slug' => '1400x400',
 							'title' => '1400H - 400 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1400,
 							]
 						],
 						[
-							'slug' => '1800x800',
-							'title' => '1800H - 800 Step-Up',
+							'slug' => '1500x500',
+							'title' => '1500H - 500 Step-Up',
 							'size' => [
-								'width' => 1280,
-								'height' => 1800,
+								'width' => 1250,
+								'height' => 1500,
 							]
 						],
 						[
 							'slug' => '1600x600',
 							'title' => '1600H - 600 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1600,
 							]
 						],
@@ -143,7 +143,7 @@ $fences['glass_pool'] = [
 							'slug' => '1700x700',
 							'title' => '1700H - 700 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1700,
 							]
 						],
@@ -151,7 +151,7 @@ $fences['glass_pool'] = [
 							'slug' => '1800x600',
 							'title' => '1800H - 600 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1800,
 							]
 						],
@@ -170,7 +170,7 @@ $fences['glass_pool'] = [
 			'action' => ['default'],
 			'custom' => TRUE,
 			'size' => [
-				'width' => 970 // + 80 + 20 + 20
+				'width' => 970 // + 50 + 20 + 20
 			],
 			'fields' => [
 				[
@@ -268,6 +268,7 @@ $fences['glass_pool'] = [
 							'title' => 'Bolt Down',
 							'image' => 'assets/img/webp/bolt-down.png',
 							'extra' => '',
+							'key' => 'post_options',
 							'default' => TRUE,
 						],
 						[
@@ -275,6 +276,7 @@ $fences['glass_pool'] = [
 							'title' => 'Core Drill',
 							'image' => 'assets/img/webp/core-drill.png',
 							'extra' => '',
+							'key' => 'post_options',
 						],
 					]
 				]									
@@ -381,7 +383,7 @@ $fences['glass_pool'] = [
 							'slug' => '1300x300',
 							'title' => '1300H - 300 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1300,
 							]
 						],
@@ -389,23 +391,23 @@ $fences['glass_pool'] = [
 							'slug' => '1400x400',
 							'title' => '1400H - 400 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1400,
 							]
 						],
 						[
-							'slug' => '1800x800',
-							'title' => '1800H - 800 Step-Up',
+							'slug' => '1500x500',
+							'title' => '1500H - 500 Step-Up',
 							'size' => [
-								'width' => 1280,
-								'height' => 1800,
+								'width' => 1250,
+								'height' => 1500,
 							]
 						],
 						[
 							'slug' => '1600x600',
 							'title' => '1600H - 600 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1600,
 							]
 						],
@@ -413,7 +415,7 @@ $fences['glass_pool'] = [
 							'slug' => '1700x700',
 							'title' => '1700H - 700 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1700,
 							]
 						],
@@ -421,7 +423,7 @@ $fences['glass_pool'] = [
 							'slug' => '1800x600',
 							'title' => '1800H - 600 Step-Up',
 							'size' => [
-								'width' => 1280,
+								'width' => 1250,
 								'height' => 1800,
 							]
 						],
