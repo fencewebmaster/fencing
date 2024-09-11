@@ -25,6 +25,15 @@ FENCE = {
             gate_post_gaps: 50 + 20 + 20,
             gate_posts_gaps: 50 + 20 + 20 + 50,
         },
+        glass_pool: {
+            gate: 970 + 80 + 20 + 20,                             
+            post: 80,
+            minOnGate: 970 + 80 + 20 + 20 + 80, // 1110
+            maxOnGate: 1160,
+            minPanelWidthOnGate: 86,
+            gate_post_gaps: 80 + 20 + 20,
+            gate_posts_gaps: 80 + 20 + 20 + 80,
+        },
         barr: {
             gate: 975 + 25 + 20 + 20,                              
             post: 25,
@@ -50,6 +59,10 @@ FENCE = {
 
             case 'flat_top':
                 return FlatTop.init(func, a, b, c, d, e, f)
+                break;
+
+            case 'glass_pool':
+                return GlassPool.init(func, a, b, c, d, e, f)
                 break;
 
             default:
@@ -81,7 +94,11 @@ FENCE = {
             custom_fence = fd.info,
             info = fd.data;
 
-        $(FENCES.el.fencingPanelContainer).html('').attr('data-type', info?.slug).removeClass('custom-height');
+        $(FENCES.el.fencingPanelContainer)
+            .html('')
+            .attr('data-type', info?.slug)
+            .attr('data-group', info?.panel_group)
+            .removeClass('custom-height');
 
         var fence_height_filtered_data = info?.form?.filter(function(item) {
             return item.slug == 'fence_height';

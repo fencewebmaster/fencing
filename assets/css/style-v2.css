@@ -54,13 +54,12 @@
     z-index: 1;
 }
 
-.panel-post {}
 
 .fencing-panel-spacing-number.opt-2 span {
     bottom: -5px;
 }
 
-.panel-post:not(.panel-no-post).opt-2 {
+[data-group="b"] .panel-post:not(.panel-no-post).opt-2 {
     margin-bottom: 15px;
 }
 

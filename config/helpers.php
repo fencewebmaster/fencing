@@ -105,6 +105,15 @@ function sites($key = '', $value = 'id', $search = false) {
             'gtagID'   => config()->gtag_id->fencesbrisbane,
         ],
         [
+            'id'       => 2.1,
+            'domain'   => "staging.fencesbrisbane.au",
+            'url'      => toURL('staging.fencesbrisbane.au'),
+            'supplier' => "JG",
+            'logo'     => "https://fencesbrisbane.au/wp-content/uploads/2022/02/FENCING-SUPPLIERS-AUSTRALIA-130.png",
+            'name'     => "Brisbane's Fencing Outlet",
+            'gtagID'   => config()->gtag_id->fencesbrisbane,
+        ],
+        [
             'id'       => 3,
             'domain'   => "fencingwarehouse.au",
             'url'      => toURL('fencingwarehouse.au'),

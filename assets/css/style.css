@@ -3941,13 +3941,17 @@ thead.fc-border th:last-child {
     height: 4px;
 }
 
+.offcut-a .offcut-body {
+    background: #e1ecf1;
+}
+
 .custom-height .fencing-panel-item:not(.fencing-panel-gate) {
     margin-left: -4px;
     margin-right: -4px;
 }
 
 
-.panel-post {
+[data-group="b"] .panel-post {
     background: rgb(37, 37, 37);
     background: linear-gradient(90deg, rgb(37, 37, 37) 0%, rgb(78, 78, 78) 48%, rgb(0, 0, 0) 100%);
     min-width: 8px;
@@ -3960,26 +3964,26 @@ thead.fc-border th:last-child {
 
 }
 
-.panel-post:not(.panel-no-post).opt-2 {
+[data-group="b"] .panel-post:not(.panel-no-post).opt-2 {
     min-height: 155px;
 }
 
-.panel-post.opt-1 {
+[data-group="b"] .panel-post.opt-1 {
     min-height: 140px;
 }
 
-.custom-height .panel-post {
+[data-group="b"].custom-height .panel-post {
     min-height: 125px !important;
 }
 
 
 @media (min-width: 1024px) {
-    .panel-post:hover {
+    [data-group="b"] .panel-post:hover {
         border: 1px solid var(--fc-princeton-orange);
     }
 }
 
-.panel-post:not(.panel-no-post).opt-1:after {
+[data-group="b"] .panel-post:not(.panel-no-post).opt-1:after {
     content: "";
     display: inline-block;
     width: 25px;
@@ -3989,7 +3993,7 @@ thead.fc-border th:last-child {
     left: -9px;
 }
 
-.panel-post:not(.panel-no-post).opt-2:after {
+[data-group="b"] .panel-post:not(.panel-no-post).opt-2:after {
     content: "";
     display: inline-block;
     width: 25px;
@@ -3999,7 +4003,7 @@ thead.fc-border th:last-child {
     left: -9px;
 }
 
-.panel-post:not(.panel-no-post).opt-2 {
+[data-group="b"] .panel-post:not(.panel-no-post).opt-2 {
     margin-bottom: 0;
 }
 
@@ -4007,11 +4011,11 @@ thead.fc-border th:last-child {
     bottom: -20px;
 }
 
-.panel-post:not(.panel-no-post).opt-2:after {
+[data-group="b"] .panel-post:not(.panel-no-post).opt-2:after {
     bottom: 14px;
 }
 
-.custom-height .panel-post:not(.panel-no-post).opt-2:after {
+[data-group="b"].custom-height .panel-post:not(.panel-no-post).opt-2:after {
     bottom: 10px;
 }
 
@@ -4046,7 +4050,12 @@ thead.fc-border th:last-child {
 }
 
 .fc-empty-spacing {
-    min-width: 10px;
+    background: none;
+    border: 0 !important;
+    min-width: 5px;
+}
+.fc-empty-spacing:after {
+    border: 0 !important;
 }
 
 .fpsn-b {
@@ -4087,6 +4096,14 @@ thead.fc-border th:last-child {
     z-index: 2;
 }
 
+[data-group="a"] .panel-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
 
 .fencing-panel-rail {
     height: 9px;
@@ -4109,18 +4126,40 @@ thead.fc-border th:last-child {
 .fencing-panel-spigots {
     display: flex;
     align-items: flex-end;
-    justify-content: space-around;
+    justify-content: space-between;
     position: absolute;
     width: 100%;
-    bottom: -15px;
+    bottom: -22px;
+}
+.fencing-panel-spigots.panel-post {
+    background: none;
+    border: 0;
+}
+.fencing-panel-spigots.panel-post:after {
+    border: 0 !important;
+}
+
+.opt-1 .fencing-panel-spigot {
+    background-image: url(../img/webp/bolt-down.png);
+    height: 40px;
+    width: 35px;
+}
+.opt-2 .fencing-panel-spigot {
+    background-image: url(../img/webp/core-drill.png);
+    height: 40px;
+    width: 40px;
+}
+
+.fc-empty-spacing {
+    min-width: 5px;
+    min-height: 155px;
 }
 
 .fencing-panel-spigot {
-    background-image: url(../img/webp/spigot-round.webp);
     background-size: contain;
     background-repeat: no-repeat;
-    height: 30px;
-    width: 20px;
+    height: 40px;
+    width: 40px;
     cursor: pointer;
     border: 2px solid transparent;
 }
@@ -4142,7 +4181,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-pinfix {
-    background-image: url(../img/webp/pinfix.webp);
+    background-image: url(../img/webp/pinfix.png);
     background-size: contain;
     background-repeat: no-repeat;
     height: 15px;

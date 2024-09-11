@@ -541,8 +541,8 @@ function fencingBtnModal(event) {
     };
 
     //Button Data Information
-    var target = _this.data('target'),
-        key = _this.data('key');
+    var target = _this.attr('data-target'),
+        key = _this.attr('data-key');
 
     var fd = getSelectedFenceData();
 
