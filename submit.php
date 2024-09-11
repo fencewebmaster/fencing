@@ -2,7 +2,7 @@
 if (!session_id()) {
     session_start();
 }
-
+ 
 include 'config/helpers.php';
 include 'data/settings.php';
 include 'config/database.php'; 
