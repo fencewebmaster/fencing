@@ -135,7 +135,10 @@ let ProjectPlan = {
 
         var fencingPanelContainer = '#pp-' + tab + ' .fencing-panel-container';
 
-        $(fencingPanelContainer).html('').attr('data-type', info?.slug);
+        $(fencingPanelContainer)
+            .html('')
+            .attr('data-group', info?.panel_group)
+            .attr('data-type', info?.slug);
 
         var fence_height_filtered_data = info?.form?.filter(function(item) {
             return item.slug == 'fence_height';

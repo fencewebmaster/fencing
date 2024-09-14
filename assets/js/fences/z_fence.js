@@ -595,7 +595,7 @@ FENCE = {
             gate_size = calc.gate.width;
 
         if(action == 'add' || action == 'edit') {
-
+            
             if(placement == -1 ) {
 
                 var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-r"]').text()
@@ -604,8 +604,6 @@ FENCE = {
                     .replace(/{{panel_unit}}/gi, panel_unit);
 
                 $('#panel-item-0, #panel-item-x').before(tpl);
-
-               $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate').html('<span>Gate</span> Options');
 
             } else if(find_gate.length && placement >= 0) {
 
@@ -654,6 +652,10 @@ FENCE = {
 
             }
 
+        }
+
+        if( find_gate.length ) {                
+           $(FENCES.el.btnGate).addClass('edit-gate').removeClass('add-gate').html('<span>Gate</span> Options');
         }
 
         // fence Height
@@ -864,6 +866,7 @@ FENCE = {
                         }
                     }).get().join("");
                 }
+
 
                 if(has_post != 'yes-post' && has_post) {
                     var has_post = 'no-post ' + side_part + '-panel-post ' + has_post;

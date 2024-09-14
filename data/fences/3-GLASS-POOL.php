@@ -8,6 +8,10 @@ $fences['glass_pool'] = [
 	'image' => 'assets/img/fences/webp/glass-pool.webp',
 	'panel_count' => 4,
 	'color' => ['black', 'white'],
+	'offcut' => [
+		'panel' => FALSE,
+		'gate' => FALSE,
+	],
 	'settings' => [
 		'rail_options' => [],
 		'left_side'	=> [
@@ -28,32 +32,32 @@ $fences['glass_pool'] = [
 					'close_btn' => true,
 					'options' => [
 						[
-							'slug' => 'yes-post',
+							'slug' => 'side-gap',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'assets/img/webp/yes-post.webp',
+							'image' => 'assets/img/gap-img.png',
 							'default' => TRUE,
-							'title' => '',
+							'title' => 'Gap',
 							'size' => [
 								'width' => 0,
 							]
 						],
 						[
-							'slug' => 'no-post',
+							'slug' => 'side-clamp',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'assets/img/webp/no-post-1.webp',
-							'title' => '',
+							'image' => 'assets/img/clamp-round.png',
+							'title' => 'Clamp',
 							'size' => [
-								'width' => -80,
+								'width' => 0,
 							]
 						],
 						[
-							'slug' => 'no-post-swivel-bracket',
+							'slug' => 'side-none',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'assets/img/webp/no-post-2.webp',
-							'title' => '',
+							'image' => 'assets/img/none-round.png',
+							'title' => 'None',
 							'size' => [
 								'width' => -80,
 							]
@@ -76,7 +80,7 @@ $fences['glass_pool'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => 'Bolt Down',
-							'image' => 'assets/img/webp/bolt-down.png',
+							'image' => 'assets/img/webp/bolt-down-w.png',
 							'extra' => '',
 							'key' => 'post_options',
 							'default' => TRUE,
@@ -84,7 +88,7 @@ $fences['glass_pool'] = [
 						[
 							'slug'  => 'opt-2',
 							'title' => 'Core Drill',
-							'image' => 'assets/img/webp/core-drill.png',
+							'image' => 'assets/img/webp/core-drill-w.png',
 							'extra' => '',
 							'key' => 'post_options',
 						],
@@ -266,7 +270,7 @@ $fences['glass_pool'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => 'Bolt Down',
-							'image' => 'assets/img/webp/bolt-down.png',
+							'image' => 'assets/img/webp/bolt-down-w.png',
 							'extra' => '',
 							'key' => 'post_options',
 							'default' => TRUE,
@@ -274,7 +278,7 @@ $fences['glass_pool'] = [
 						[
 							'slug'  => 'opt-2',
 							'title' => 'Core Drill',
-							'image' => 'assets/img/webp/core-drill.png',
+							'image' => 'assets/img/webp/core-drill-w.png',
 							'extra' => '',
 							'key' => 'post_options',
 						],
@@ -300,32 +304,32 @@ $fences['glass_pool'] = [
 					'close_btn' => true,
 					'options' => [
 						[
-							'slug' => 'yes-post',
+							'slug' => 'side-gap',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'assets/img/webp/yes-post.webp',
+							'image' => 'assets/img/gap-img.png',
 							'default' => TRUE,
-							'title' => '',
+							'title' => 'Gap',
 							'size' => [
 								'width' => 0,
 							]
 						],
 						[
-							'slug' => 'no-post',
+							'slug' => 'side-clamp',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'assets/img/webp/no-post-1.webp',
-							'title' => '',
+							'image' => 'assets/img/clamp-round.png',
+							'title' => 'Clamp',
 							'size' => [
-								'width' => -80,
+								'width' => 0,
 							]
 						],
 						[
-							'slug' => 'no-post-swivel-bracket',
+							'slug' => 'side-none',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'assets/img/webp/no-post-2.webp',
-							'title' => '',
+							'image' => 'assets/img/none-round.png',
+							'title' => 'None',
 							'size' => [
 								'width' => -80,
 							]
@@ -348,7 +352,7 @@ $fences['glass_pool'] = [
 						[
 							'slug'  => 'opt-1',
 							'title' => 'Bolt Down',
-							'image' => 'assets/img/webp/bolt-down.png',
+							'image' => 'assets/img/webp/bolt-down-w.png',
 							'extra' => '',
 							'key' => 'post_options',
 							'default' => TRUE,
@@ -356,7 +360,7 @@ $fences['glass_pool'] = [
 						[
 							'slug'  => 'opt-2',
 							'title' => 'Core Drill',
-							'image' => 'assets/img/webp/core-drill.png',
+							'image' => 'assets/img/webp/core-drill-w.png',
 							'extra' => '',
 							'key' => 'post_options',
 						],

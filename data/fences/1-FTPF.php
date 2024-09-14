@@ -8,6 +8,10 @@ $fences['flat_top'] = [
 	'image' => 'assets/img/fences/webp/ftp.webp',
 	'panel_count' => 4,
 	'color' => ['black', 'white', 'monument'],
+	'offcut' => [
+		'panel' => TRUE,
+		'gate' => TRUE,
+	],
 	'settings' => [
 		'rail_options' => [],
 		'left_side'	=> [

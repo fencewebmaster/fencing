@@ -8,6 +8,10 @@ $fences['barr'] = [
 	'image' => 'assets/img/fences/webp/barr.webp',
 	'panel_count' => 4,
 	'color' => ['black', 'white'],
+	'offcut' => [
+		'panel' => TRUE,
+		'gate' => TRUE,
+	],
 	'form' => [
 		[
 			'slug' => 'fence_height',

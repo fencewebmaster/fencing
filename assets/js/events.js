@@ -532,6 +532,7 @@ _doc.on('click', '.fencing-btn-modal', fencingBtnModal);
 function fencingBtnModal(event) {
     var _this = $(this);
 
+
     if (!_this.hasClass('fencing-btn-modal'))
         return false;
 

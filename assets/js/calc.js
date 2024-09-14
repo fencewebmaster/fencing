@@ -298,6 +298,16 @@ function calculate_fences(data) {
         rightRakedLength = HELPER.isNaNtoZero(right_raked_panel_width),
         oaw = longPanelLength + shortPanelLength + gateWidth + leftRakedLength + rightRakedLength + countPosts;
 
+    // OFFCUT PANEL
+    if( info.offcut.panel == false ) {
+        offcut_panel_count = 0;
+    }
+
+    // OFFCUT GATE
+    if( info.offcut.gate == false ) {
+        gate_count = 0;
+    }
+
     data = {
         'fence_size': {
             'width': '',

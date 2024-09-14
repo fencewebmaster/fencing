@@ -712,6 +712,10 @@ a.fc-tab-active {
     line-height: 14px;
 }
 
+[data-group="a"] .fc-center-point {
+    left: 0;
+}
+
 #fc-planning-form .fc-center-point {
     display: none;
 }
@@ -753,6 +757,10 @@ a.fc-tab-active {
 
 .raked-panel-container .fc-center-point {
     bottom: -78px;
+}
+
+[data-group="a"] .raked-panel-container .fc-center-point {
+    bottom: -76px;
 }
 
 .fc-overall {
@@ -835,10 +843,12 @@ a.fc-tab-active {
 .fencing-panel-gate {
     max-width: 95px;
     margin: 0 5px;
-    border-top: 2px solid;
-    border-right-color: var(--fc-black) !important;
-    border-left-color: var(--fc-black) !important;
 }
+
+[data-group="a"] .fencing-panel-gate {
+    margin: 0;
+}
+
 
 .fencing-panel-gate .fencing-panel-item-size {
     background: var(--fc-princeton-orange);
@@ -4011,6 +4021,10 @@ thead.fc-border th:last-child {
     bottom: -20px;
 }
 
+[data-group="a"] .fencing-panel-spacing-number span {
+    bottom: 0;
+}
+
 [data-group="b"] .panel-post:not(.panel-no-post).opt-2:after {
     bottom: 14px;
 }
@@ -4035,8 +4049,12 @@ thead.fc-border th:last-child {
     width: 100%;
     position: relative;
     max-width: 5px;
-    /*  min-height: 177px;*/
 }
+
+[data-group="a"] .fencing-panel-spacing-number {
+    min-height: 165px;
+}
+
 
 .fencing-panel-spacing-number.fpsn-b {
     width: auto;
@@ -4102,8 +4120,16 @@ thead.fc-border th:last-child {
     align-items: center;
     width: 100%;
     height: 100%;
+    height: 120px;
 }
 
+.panel-item .fencing-btn-modal {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 .fencing-panel-rail {
     height: 9px;
@@ -4129,7 +4155,7 @@ thead.fc-border th:last-child {
     justify-content: space-between;
     position: absolute;
     width: 100%;
-    bottom: -22px;
+    bottom: -25px;
 }
 .fencing-panel-spigots.panel-post {
     background: none;
@@ -4139,13 +4165,17 @@ thead.fc-border th:last-child {
     border: 0 !important;
 }
 
+.raked-panel .fencing-panel-spigots  {
+    bottom: -19px;
+}
+
 .opt-1 .fencing-panel-spigot {
-    background-image: url(../img/webp/bolt-down.png);
+    background-image: url(../img/webp/bolt-down-w.png);
     height: 40px;
     width: 35px;
 }
 .opt-2 .fencing-panel-spigot {
-    background-image: url(../img/webp/core-drill.png);
+    background-image: url(../img/webp/core-drill-w.png);
     height: 40px;
     width: 40px;
 }
@@ -4615,9 +4645,11 @@ thead.fc-border th:last-child {
     box-shadow: inset 0 0 0 3px var(--fc-white);
 }
 
+/*
 .fc-select img {
     width: 100%;
 }
+*/
 
 .fc-step-4 .fc-select:after {
     top: auto;
