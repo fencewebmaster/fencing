@@ -594,6 +594,9 @@ function fencingBtnModal(event) {
                 .replace(/{{type}}/gi, v.type)
                 .replace(/{{sub_default}}/gi, v?.weight?.default)
                 .replace(/{{sub_unit}}/gi, v?.weight?.unit)
+                .replace(/{{min}}/gi, v?.min)
+                .replace(/{{max}}/gi, v?.max)
+                .replace(/{{step}}/gi, v?.step)
                 .split(/\$\{(.+?)\}/g);
 
             modal.content.append(tpl);
@@ -608,6 +611,7 @@ function fencingBtnModal(event) {
 
             }
 
+
             if (v.type == 'range_option') {
 
                 const Item = ({ image, title, slug, key }) => `
@@ -615,7 +619,7 @@ function fencingBtnModal(event) {
                     <div class="fc-select-post fc-select" data-key="${key}" data-slug="${slug}">    
                         <img src="${image}">
                     </div>
-                    <p>${title}</p>
+                    <p>${title}</p>                
                 </div>`;
 
                 modal.el.find('[data-field="range_option"] .row').html(v.options.map(Item).join(''));
@@ -900,6 +904,22 @@ function fcSelectPost() {
 }
 
 //----------------------------------------------------------------------------------
+
+_doc.on('change', '.fencing-input-range [type="range"]', fcSelectPanelRange);
+
+function fcSelectPanelRange() {
+    var _this = $(this),
+        modal_key = $('.fencing-container').attr('data-key');
+
+    FENCE.call('update_custom_fence', modal_key);
+    FENCE.call('updateOverallPosts');
+
+
+    $('[data-section="3"]').scrollTo(100, 57);
+}
+
+//----------------------------------------------------------------------------------
+
 
 _doc.on('click', '.fc-select-color', fcSelectColor);
 
@@ -1326,12 +1346,12 @@ function measurementBoxNumber() {
     [START] CHANGE EVENT
     ---------------------------------------------------------------- */
 
-_doc.on('input change', '.fencing-input-range input', fencingInputRange_input);
+_doc.on('change', '.fencing-input-range input', fencingInputRange_input);
 
 function fencingInputRange_input() {
     var _this = $(this);
-    _this.closest('.fencing-input-range').find('.fir-info span').text($(event.currentTarget).val());
-    _this.closest('.fencing-input-range').find('.fir-info-sub span').text(72 + 1.8);
+    _this.closest('.fencing-input-range').find('.fir-info span').text( _this.val() );
+//  _this.closest('.fencing-input-range').find('.fir-info-sub span').text(72 + 1.8);
 }
 
 //----------------------------------------------------------------------------------

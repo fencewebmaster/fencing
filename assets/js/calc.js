@@ -140,6 +140,14 @@ function calculate_fences(data) {
         C5 = panel_opts[fence_height];
     }
 
+    var panel_options_custom = custom_fence.filter(function(item) {
+        return item.control_key == 'panel_options_custom';
+    });
+
+    if(panel_options_custom.length) {
+        C5 = panel_options_custom[0]?.settings?.[0].val;
+    }
+
     C6 = 0; // post options
 
     var gate_data = custom_fence.filter(function(item) {

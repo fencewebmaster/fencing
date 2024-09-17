@@ -59,7 +59,7 @@ $fences['glass_pool'] = [
 							'image' => 'assets/img/none-round.png',
 							'title' => 'None',
 							'size' => [
-								'width' => -80,
+								'width' => -50,
 							]
 						],
 					],
@@ -184,10 +184,52 @@ $fences['glass_pool'] = [
 				],			
 			]
 		],
+		'edit_spacing'	=> [
+			'title' => 'Centre-to-Centre',
+			'label' => 'Edit Spacing',
+			'action' => ['default'],
+			'fields' => [
+				[
+					'title' => 'Centre-to-Centre',
+					'image' => 'assets/img/center-gap.png',
+					'slug' => 'panel_option',
+					'type' => 'range_icon',
+					'label' => '',
+					'unit' => 'mm',
+					'min' => 0,
+					'max' => 100,
+					'step' => 10,
+					'default' => 50
+				]
+			]
+		],
+		'panel_options_custom'	=> [
+			'title' => 'Panel Options',
+			'label' => 'Panel Options',
+			'action' => ['default'],
+			'fields' => [
+				[
+					'title' => 'Maximum Panel Size',
+					'slug' => 'panel_option',
+					'type' => 'range_sub',
+					'label' => '',
+					'unit' => 'mm',
+					'min' => 1000,
+					'max' => 2000,
+					'step' => 50,
+					'default' => 2000,
+					'weight' => [
+						'default' => 72,
+						'unit' => 'kg',
+					]
+				]
+			]
+		],
 		'panel_options'	=> [
 			'title' => 'Panel Options',
 			'label' => 'Panel Options',
 			'action' => ['default'],
+			'class' => 'd-nonex',
 			'notes' => [
 				'title' => 'Panel Off-Cuts',
 				'description' => 'The off-cut can be used for another fence section (where applicable). If the off-cut is used ensure you manually update the panel quantities to account for this as this planner does NOT use Off-Cuts.',
@@ -210,32 +252,14 @@ $fences['glass_pool'] = [
 					'label' => '',
 					'options' => [
 						[
-							'slug' => 'even+2400',
-							'type' => 'text_option',
-							'title' => 'Even Size Panels 2400W',
-							'default' => TRUE,
-							'size' => [
-								'width' => 2400 + 80,
-								'default' => 2400,
-							]
-						],
-						[
-							'slug' => 'full+2400',
-							'type' => 'text_option',
-							'title' => 'Full Size Panels 2400W',
-							'size' => [
-								'width' => 2400 + 80,
-								'default' => 2400,
-							]
-						],
-						[
 							'slug' => 'full+3000',
 							'type' => 'text_option',
 							'title' => 'Full Size Panels 3000W',
 							'desc' => 'ONLY Available In BLACK',
+							'default' => TRUE,
 							'size' => [
-								'width' => 3000 + 80,
-								'default' => 3000,
+								'width' => 2000 + 50,
+								'default' => 2000,
 							]
 						]
 					],
@@ -331,7 +355,7 @@ $fences['glass_pool'] = [
 							'image' => 'assets/img/none-round.png',
 							'title' => 'None',
 							'size' => [
-								'width' => -80,
+								'width' => -50,
 							]
 						],
 					],

@@ -361,7 +361,7 @@ FENCE = {
                     'id': 'btn-' + k,
                     'data-key': k,
                     'data-target': "#fc-control-modal",
-                    'class': 'btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1'
+                    'class': 'btn-fc btn-fc-outline-default fencing-btn-modal fc-mb-1 '+v.class
                 }).appendTo(FENCES.el.fencingPanelControls);
 
                 setTimeout(function() {
