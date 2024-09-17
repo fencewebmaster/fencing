@@ -15,7 +15,7 @@
 	class="fencing-panel-item long-panel-item panel-item">
 
 	<div class="fencing-btn-modal" 
-		data-key="panel_options" 
+		data-key="panel_options_custom" 
 		data-target="#fc-control-modal">
 
 		<div class="fencing-panel-item-size">{{panel_size}} {{panel_unit}}</div>
@@ -47,5 +47,4 @@
 	</div>
 
 </div>	
-
 
