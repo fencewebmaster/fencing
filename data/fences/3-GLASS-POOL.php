@@ -186,12 +186,12 @@ $fences['glass_pool'] = [
 			]
 		],
 		'edit_spacing'	=> [
-			'title' => 'Centre-to-Centre',
+			'title' => 'Max Panel Spacing',
 			'label' => 'Edit Spacing',
 			'action' => ['default'],
 			'fields' => [
 				[
-					'title' => 'Centre-to-Centre',
+					'title' => 'Max Panel Spacing',
 					'image' => 'assets/img/center-gap.png',
 					'slug' => 'panel_option',
 					'type' => 'range_icon',
@@ -283,11 +283,11 @@ $fences['glass_pool'] = [
 		],
 		'post_options' => [
 			'title' => 'Post Options',
-			'label' => 'Post Options',
+			'label' => 'Spigot Options',
 			'action' => ['default'],
 			'fields' => [
 				[
-					'title' => 'Post Options',
+					'title' => 'Spigot Options',
 					'slug' => 'post_option',
 					'type' => 'image_option',
 					'label' => '',
@@ -303,6 +303,13 @@ $fences['glass_pool'] = [
 						[
 							'slug'  => 'opt-2',
 							'title' => 'Core Drill',
+							'image' => 'assets/img/webp/core-drill-w.png',
+							'extra' => '',
+							'key' => 'post_options',
+						],
+						[
+							'slug'  => 'opt-3',
+							'title' => 'Core-Drill Extended',
 							'image' => 'assets/img/webp/core-drill-w.png',
 							'extra' => '',
 							'key' => 'post_options',
