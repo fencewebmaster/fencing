@@ -369,6 +369,8 @@ function post_product_skus($cart_items = array()) {
 	$items = $carts = array();
     $skus = get_product_skus($cart_items);
 
+    $post_query = array();
+
     foreach ($skus as $sku) {
         $post_query[] = $sku;
     }
@@ -535,11 +537,9 @@ function minifiy_css($file ='') {
 
 //----------------------------------------------------------------------------------
 
-function config($val = '') {
-    $json = file_get_contents('config.json');
-    $info = json_decode(json_encode(json_decode($json)));
-
-    return $info;
+function config($val = '') {    
+    include 'config.php';
+    return json_decode(json_encode($config));
 }
 
 //----------------------------------------------------------------------------------

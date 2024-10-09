@@ -7,33 +7,29 @@ class Database {
 
     public function __construct() {   
         $config = config();
-        $mysql = $config->mysql;
+        $mysql  = (array)$config->mysql;
+        $host   = $_SERVER['HTTP_HOST'];
 
-    	if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == '127.0.0.1') {
-	
-	        $this->host     = "localhost";
-            $this->database = $mysql->localhost->database;
-	        $this->username = $mysql->localhost->username;
-	        $this->password = $mysql->localhost->password;
-	        $this->prefix   = $mysql->localhost->prefix;
-
-	    } elseif( $_SERVER['HTTP_HOST'] == 'fencingwarehouse.au' ) {
-
+        if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == '127.0.0.1') {
+    
             $this->host     = "localhost";
-            $this->database = $mysql->fencingwarehouse->database;
-            $this->username = $mysql->fencingwarehouse->username;
-            $this->password = $mysql->fencingwarehouse->password;
-            $this->prefix   = $mysql->fencingwarehouse->prefix;
+            $this->database = $mysql['localhost']->database;
+            $this->username = $mysql['localhost']->username;
+            $this->password = $mysql['localhost']->password;
+            $this->prefix   = $mysql['localhost']->prefix;
 
         } else {
-            
-            // fencesperth.com
-	        $this->host     = "localhost";
-            $this->database = $mysql->default->database;
-            $this->username = $mysql->default->username;
-            $this->password = $mysql->default->password;
-            $this->prefix   = $mysql->default->prefix;
-	    }
+
+            $pathinfo = pathinfo($host);
+            $app = $mysql[$pathinfo['filename']];
+
+            $this->host     = "localhost";
+            $this->database = $app->database;
+            $this->username = $app->username;
+            $this->password = $app->password;
+            $this->prefix   = $app->prefix;
+
+        }
 
         $this->is_demo = '';
         if( in_uri_segment(demo_stages()) ) {

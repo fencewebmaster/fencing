@@ -234,6 +234,7 @@ if( @$_POST['action'] == 'push_order' ) {
     /* [START] UPDATE item list & cart */
     $color = $_SESSION["fc_data"]['color'];
 
+    $custom_fence_data = array();
 
     if( $_POST['color'] ) {
           

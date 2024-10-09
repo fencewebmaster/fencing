@@ -24,8 +24,8 @@
 								<td>Contact</td>
 								<td>
 									<span><?php echo @$info['mobile']; ?></span>
-									<div class="fc-form-group has-clear">
-										<input type="tel" name="mobile" value="<?php echo @$info['mobile']; ?>" class="form-control no-space">
+									<div class="fc-form-group has-clear fc-mobile-group">
+										<input type="tel" name="mobile" value="<?php echo @$info['mobile']; ?>" class="form-control no-space numeric-only" autocomplete="off" minlength="7" required>
 									</div>
 								</td>
 							</tr>

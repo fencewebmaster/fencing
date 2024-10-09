@@ -433,6 +433,7 @@ $("#paymentFrm").validate({
                     if (!response) {
                         return;
                     }
+
                     var info = JSON.parse(response);
                     if (!info.error) {
                         window.onbeforeunload = function() {}

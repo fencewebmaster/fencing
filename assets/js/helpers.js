@@ -145,7 +145,7 @@ HELPER = {
     get_field_value: function(tag, key, val) {
         if (!val) return;
         if (tag == 'input') {
-            $('[name=' + key + ']').val(val);
+            $('[name=' + key + ']').val(val).trigger('change');
             $('[name=' + key + ']').closest('.fencing-form-group').find('.fir-info span').text(val);
             $('[name=' + key + ']').prop('checked', true);
         } else if (tag == 'select') {

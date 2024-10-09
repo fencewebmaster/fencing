@@ -1134,6 +1134,27 @@ function noEnter(e) {
     }
 }
 
+
+//----------------------------------------------------------------------------------
+
+_doc.on('keypress', '.text-only', textOnly);
+
+function textOnly(e) {
+    var chr = String.fromCharCode(e.which);
+    if ("qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM- ".indexOf(chr) < 0)
+    return false;
+}
+
+//----------------------------------------------------------------------------------
+
+_doc.on('keypress', '.numeric-only', numericOnly);
+
+function numericOnly(e) {
+    var chr = String.fromCharCode(e.which);
+    if ("1234567890".indexOf(chr) < 0)
+    return false;
+}
+
 //----------------------------------------------------------------------------------
 
 _doc.on('keypress', '.no-space', noSpace);
@@ -1349,9 +1370,40 @@ function measurementBoxNumber() {
 _doc.on('change', '.fencing-input-range input', fencingInputRange_input);
 
 function fencingInputRange_input() {
-    var _this = $(this);
-    _this.closest('.fencing-input-range').find('.fir-info span').text( _this.val() );
-//  _this.closest('.fencing-input-range').find('.fir-info-sub span').text(72 + 1.8);
+    var _this = $(this),
+        val = _this.val(),
+        modal_key = $('.fencing-container').attr('data-key');
+
+    var fd = getSelectedFenceData();
+
+    _this.closest('.fencing-input-range').find('.fir-info span').text( val );
+
+    if( modal_key == 'panel_options_custom' ) {
+
+        var data = {
+            'action': 'get-size',
+            'name': fd.slug,
+            'key': 'width',
+            'value': val
+        }
+
+        $.ajax({
+            url: 'ajax',
+            type: "POST",
+            data: data,
+            headers: {},
+            success: function(response) {
+                try {
+                    var info = JSON.parse(response);
+                     _this.closest('.fencing-input-range').find('.fir-info-sub span').text(info.weight);
+                } catch (err) {
+
+                }
+            }
+        });
+
+    }
+
 }
 
 //----------------------------------------------------------------------------------

@@ -570,14 +570,21 @@ function loadColorOptions() {
 
     if (project?.color) {
         $.each(project.color, function(k, v) {
-            $('.fc-color-options[data-slug="' + v.fence + '"] .fc-select-item[data-slug="' + v.color + '"]').addClass('fc-selected');
+            $('#fc-planning-form .fc-color-options[data-slug="' + v.fence + '"] .fc-select-item[data-slug="' + v.color + '"]').addClass('fc-selected');
         });
 
         if ($('.fc-color-options .fc-selected').length == items.length) {
             $('.fc-btn-create-plan').removeAttr('disabled');
         }
 
-    }
+    }   
+
+    // Remove empty color option column
+    $('.col-colors').each(function() {
+        const $this = $(this);
+        if($this.html().replace(/\s|&nbsp;/g, '').length === 0)
+            $this.remove();
+    });
 
     //  setActiveColor();
 }
@@ -680,6 +687,7 @@ function extra_fields() {
 //----------------------------------------------------------------------------------
 
 function update_color_options() {
+
     colorData = color_data = [];
     $(FENCES.el.fcColorOptions).each(function(k, v) {
         var color = $(this).find('.fc-selected').attr('data-slug');

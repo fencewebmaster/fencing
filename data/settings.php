@@ -39,6 +39,25 @@ function fc_color($val ='') {
 			'background_color' => '#635F5D',
 			'text_color' => '#fff',
 		],
+		'matt_black' => [
+			'title' => 'Black',
+			'sub_title' => 'Matt',
+			'background_color' => '#000',
+			'text_color' => '#fff',
+		],
+		'polished_stainless_steel' => [
+			'title' => 'Stainless Steel',
+			'sub_title' => 'Polished',
+			'background_color' => 'linear-gradient(90deg, rgba(168,168,168,1) 0%, rgba(251,251,251,1) 36%, rgba(255,255,255,1) 60%, rgba(168,168,168,1) 100%);',
+			'text_color' => '#000',
+		],
+		'satin_stainless_steel' => [
+			'title' => 'Stainless Steel',
+			'sub_title' => 'Satin',
+			'background_color' => 'url(https://www.rigidized.com/wp-content/uploads/4Satin-01.jpg);',
+			'text_color' => '#000',
+		]
+
 	];
 	return ($val) ? $data[$val] : $data;
 } 

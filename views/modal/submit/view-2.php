@@ -14,7 +14,7 @@
                     
                     <div class="text-uppercase mb-2 fw-bold">Color Options</div>
 
-                    <?php $colors =  convert_inputs($info['color']); ?>
+                    <?php $colors =  convert_inputs($info['color']);  ?>
                     <?php foreach( $colors as $color_data ): ?>
                     <div class="fencing-form-group fc-mb-0">
                         
@@ -32,7 +32,7 @@
                                 <?php if( in_array($co_k, $fences[$color_data['fence']]['color']) ): ?>
                                 <div class="fc-col-3">
 
-                                    <div class="fc-select-item fc-select fc-mb-0" 
+                                    <div class="fc-select-item fc-select fc-mb-0 <?php echo $color_data['color']==$co_k?'fc-selected':''; ?>" 
                                         data-color-title="<?php echo $co_v['title']; ?>" 
                                         data-color-code="<?php echo $co_v['background_color']; ?>" 
                                         data-color-subtitle="<?php echo $co_v['sub_title']; ?>" 

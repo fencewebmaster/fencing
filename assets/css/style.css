@@ -1746,12 +1746,9 @@ thead.fc-border th:last-child {
     font-weight: 600;
 }
 
-.fc-label-group .fc-form-control {
-    border: 0;
-    padding: 20px 15px 15px;
+.fc-label-group .form-control {
+    padding: 15px 15px 10px !important;
     font-size: 14px;
-    height: 59px;
-    box-sizing: border-box;
 }
 
 .fc-label-group .fc-form-label {
@@ -3822,6 +3819,7 @@ thead.fc-border th:last-child {
     margin-right: 15px;
     width: 100%;
 }
+
 
 @media (max-width: 480px) {
     .fencing-mb-input {

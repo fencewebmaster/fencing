@@ -3,13 +3,14 @@
         <div class="col-12 col-md mb-3">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">Name <span class="fc-text-danger">*</span></label>
-                <input type="text" name="name" id="name" class="form-control p-3 p-3" placeholder="Your Name" required>                  
+                <input type="text" name="name" id="name" class="form-control text-only p-3 p-3" placeholder="Your Name" minlength="2" autocomplete="off" required>                  
             </div>
         </div>
         <div class="col-12 col-md mb-3">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">Mobile <span class="fc-text-danger">*</span></label>
-                <input type="tel" name="mobile" id="mobile" class="form-control p-3 no-space" placeholder="Your phone number" required>                          
+                <input type="tel" name="mobile" id="mobile" class="form-control p-3 no-space numeric-only" minlength="7" placeholder="Your phone number" autocomplete="off" required>       
+      
             </div>
         </div>
     </div>
