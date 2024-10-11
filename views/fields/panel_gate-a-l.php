@@ -34,7 +34,7 @@
 		<span class="fencing-panel-spigot fencing-btn-modal" data-key="post_options" data-target="#fc-control-modal"></span>
 		<span class="fencing-panel-spigot fencing-btn-modal" data-key="post_options" data-target="#fc-control-modal"></span>		
 	</div>
-left
+
 	<div class="fencing-panel-pinfixes" style="display: none;">
 		<span class="fencing-panel-pinfix"></span>
 		<span class="fencing-panel-pinfix"></span>
