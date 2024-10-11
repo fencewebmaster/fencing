@@ -538,7 +538,7 @@ function minifiy_css($file ='') {
 //----------------------------------------------------------------------------------
 
 function config($val = '') {    
-    include 'config.php';
+    include dirname(__FILE__, 2).'/config.php';
     return json_decode(json_encode($config));
 }
 

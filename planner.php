@@ -33,6 +33,8 @@ if( @$_GET['site'] || @$_GET['sid'] ) {
     exit;      
 } 
 
+
+
 if( ! @$_SESSION["site"] ) {
     $site = sites($_SERVER['HTTP_HOST'], 'domain', true);    
     $_SESSION["site"] = $site;  

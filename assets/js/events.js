@@ -1378,6 +1378,11 @@ function fencingInputRange_input() {
 
     _this.closest('.fencing-input-range').find('.fir-info span').text( val );
 
+    if( modal_key == 'edit_spacing' ) {
+        var width = val/10;
+        $('.fencing-panel-spacing-number').css({'width': width});
+    }
+
     if( modal_key == 'panel_options_custom' ) {
 
         var data = {

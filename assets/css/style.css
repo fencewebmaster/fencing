@@ -668,7 +668,6 @@ a.fc-tab-active {
 /* Panel Items */
 .fencing-panel-items {
     position: relative;
-    width: -webkit-fill-available;
     height: 240px;
     display: flex;
     align-items: flex-end;
@@ -3107,7 +3106,7 @@ thead.fc-border th:last-child {
 
 /* STYLES */
 .fencing-display-result {
-    display: flex;
+    /* display: flex; */
     align-items: center;
     justify-content: center;
     min-height: 250px;
@@ -4044,9 +4043,8 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-spacing-number {
-    width: 100%;
     position: relative;
-    max-width: 5px;
+    width: 10px;
 }
 
 [data-group="a"] .fencing-panel-spacing-number {

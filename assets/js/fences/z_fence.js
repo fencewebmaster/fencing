@@ -1055,6 +1055,9 @@ FENCE = {
             return item.control_key === 'right_side';
         });
 
+        var edit_spacing_data = custom_fence.filter(function(item) {
+            return item.control_key === 'edit_spacing';
+        });
 
         var left_planel_class = right_planel_class = "";
 
@@ -1112,7 +1115,14 @@ FENCE = {
                 .attr('data-cart-value', postValue)
                 .addClass(post_options_default?.slug);
 
-            panel_spacing_number.addClass(post_options_default?.slug);
+            // Update post spacing
+            panel_spacing_number_width = 10;
+            if( typeof edit_spacing_data[0]?.settings[0]?.val !== "undefined" ) {
+                panel_spacing_number_width = edit_spacing_data[0]?.settings[0]?.val/10;
+            } 
+
+            panel_spacing_number.addClass(post_options_default?.slug).css({'width': panel_spacing_number_width});
+            panel_spacing_number.find('span').html( edit_spacing_data[0]?.settings[0]?.val );
 
         }
     },
