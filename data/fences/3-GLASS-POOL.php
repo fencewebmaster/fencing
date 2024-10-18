@@ -18,7 +18,7 @@ $fences['glass_pool'] = [
 			'title' => 'Edit Left Side',
 			'label' => 'Left Side',
 			'action' => ['edit'],
-			'class' => 'd-none',
+			'class' => '',
 			'notes' => [
 				'title' => 'When To Use Swivel Brackets',
 				'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
@@ -44,29 +44,39 @@ $fences['glass_pool'] = [
 							]
 						],
 						[
-							'slug' => 'side-clamp',
+							'slug' => 'side-90deg-panel-clamp',
 							'type' => 'range_option',
 							'key' => 'left_side',
 							'image' => 'assets/img/clamp-round.png',
-							'title' => 'Clamp',
+							'title' => '90deg Panel to Panel Clamp',
 							'size' => [
 								'width' => 0,
 							]
 						],
 						[
-							'slug' => 'side-none',
+							'slug' => 'side-angled-panel-clamp',
 							'type' => 'range_option',
 							'key' => 'left_side',
-							'image' => 'assets/img/none-round.png',
-							'title' => 'None',
+							'image' => 'assets/img/clamp-round.png',
+							'title' => 'Angled Panel to Panel Clamp',
 							'size' => [
-								'width' => -50,
+								'width' => 0,
+							]
+						],
+						[
+							'slug' => 'side-panel-wall-clamp',
+							'type' => 'range_option',
+							'key' => 'left_side',
+							'image' => 'assets/img/clamp-round.png',
+							'title' => 'Panel to wall clamp',
+							'size' => [
+								'width' => 0,
 							]
 						],
 					],
 					'notes' => [
-						'title' => 'When To Use Swivel Brackets',
-						'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
+						'title' => '',
+						'description' => '',
 					],
 				],
 				[
@@ -76,6 +86,7 @@ $fences['glass_pool'] = [
 					'type' => 'image_option',
 					'key' => 'left_side',
 					'label' => '',
+					'class' => 'd-none',
 					'close_btn' => false,
 					'options' => [
 						[
@@ -98,7 +109,7 @@ $fences['glass_pool'] = [
 				[
 					'title' => 'Add Step-Up Panel',
 					'slug' => 'left_raked',
-					'marker' => 'C',
+					'marker' => 'B',
 					'type' => 'dropdown_option',
 					'key' => 'add_step_up_panels',
 					'label' => 'Left Hand Step-Up Panel',
@@ -197,9 +208,9 @@ $fences['glass_pool'] = [
 					'type' => 'range_icon',
 					'label' => '',
 					'unit' => 'mm',
-					'min' => 0,
+					'min' => 5,
 					'max' => 100,
-					'step' => 10,
+					'step' => 5,
 					'default' => 50
 				]
 			]
@@ -322,7 +333,6 @@ $fences['glass_pool'] = [
 			'title' => 'Edit Right Side',
 			'label' => 'Right Side',
 			'action' => ['edit'],
-			'class' => 'd-none',
 			'notes' => [
 				'title' => 'When To Use Swivel Brackets',
 				'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
@@ -348,29 +358,39 @@ $fences['glass_pool'] = [
 							]
 						],
 						[
-							'slug' => 'side-clamp',
+							'slug' => 'side-90deg-panel-clamp',
 							'type' => 'range_option',
 							'key' => 'right_side',
 							'image' => 'assets/img/clamp-round.png',
-							'title' => 'Clamp',
+							'title' => '90deg Panel to Panel Clamp',
 							'size' => [
 								'width' => 0,
 							]
 						],
 						[
-							'slug' => 'side-none',
+							'slug' => 'side-angled-panel-clamp',
 							'type' => 'range_option',
 							'key' => 'right_side',
-							'image' => 'assets/img/none-round.png',
-							'title' => 'None',
+							'image' => 'assets/img/clamp-round.png',
+							'title' => 'Angled Panel to Panel Clamp',
 							'size' => [
-								'width' => -50,
+								'width' => 0,
+							]
+						],
+						[
+							'slug' => 'side-panel-wall-clamp',
+							'type' => 'range_option',
+							'key' => 'right_side',
+							'image' => 'assets/img/clamp-round.png',
+							'title' => 'Panel to wall clamp',
+							'size' => [
+								'width' => 0,
 							]
 						],
 					],
 					'notes' => [
-						'title' => 'When To Use Swivel Brackets',
-						'description' => 'Swivel brackets are used instead of the standards straight brackets. This allow you to connect this fence section at an angle. e.g. 45degs to the connecting fence section',
+						'title' => '',
+						'description' => '',
 					],
 				],
 				[
@@ -380,6 +400,7 @@ $fences['glass_pool'] = [
 					'type' => 'image_option',
 					'key' => 'left_side',
 					'label' => '',
+					'class' => 'd-none',
 					'close_btn' => false,
 					'options' => [
 						[
@@ -401,7 +422,7 @@ $fences['glass_pool'] = [
 				],
 				[
 					'title' => 'Add Step-Up Panel',
-					'marker' => 'C',
+					'marker' => 'B',
 					'slug' => 'right_raked',
 					'type' => 'dropdown_option',
 					'key' => 'add_step_up_panels',

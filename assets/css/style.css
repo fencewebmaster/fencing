@@ -3306,13 +3306,14 @@ thead.fc-border th:last-child {
     display: flex;
 }
 
-.panel-no-post {
+[data-group="b"] .panel-no-post {
     border: 2px dashed var(--fc-red) !important;
     background: #fff !important;
     min-width: 0 !important;
 }
 
-.fencing-panel-spacing-number.no-post {
+
+[data-group="b"] .fencing-panel-spacing-number.no-post {
     color: var(--fc-red);
     font-weight: 400;
 }

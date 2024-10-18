@@ -766,10 +766,21 @@ function addNotesOrInfo(el, v) {
             if (notes.image) {
                 notes_html += `<div class="col-sm-3 note-img"><img src="${notes.image}" class="border rounded p-2 mb-3"></div>`;
             }
-            notes_html += `<div class="col-sm"><div class="fc-alert-gray field-note">
-                <label class="mb-2 fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> ${notes.title}</label>
-                <p class="fc-text-gray">${notes.description}</p>
-            </div></div>`;
+
+            notes_html += `<div class="col-sm">
+                <div class="fc-alert-gray field-note">`;
+            
+            if( notes.title ) {
+                notes_html += `<label class="mb-2 fw-bold">
+                    <i class="fa-solid fa-circle-exclamation me-1"></i>
+                        ${notes.title}
+                    </label>`;                
+            }
+
+             notes_html += `<p class="fc-text-gray">${notes.description}</p>
+                </div>
+            </div>`;
+
             notes_html += `</div>`;
             el.append(notes_html);
         }
