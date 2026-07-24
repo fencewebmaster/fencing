@@ -1,0 +1,77 @@
+/**
+ * FC Admin — planner-matching button styles (scoped to .fc-admin-page).
+ */
+.fc-admin-page .btn:not(.btn-close):not(.fencing-modal-close) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.fc-admin-page .btn:not(.btn-close):not(.fencing-modal-close):not(:disabled):not(.disabled) {
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease,
+        border-color 0.12s ease, background-color 0.12s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    padding: 0.35rem 0.75rem;
+    text-transform: none;
+}
+
+.fc-admin-page .btn-sm:not(.btn-close):not(.fencing-modal-close) {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.75rem;
+}
+
+.fc-admin-page .btn:not(.btn-close):not(.fencing-modal-close):not(:disabled):not(.disabled):active {
+    transform: scale(0.98);
+}
+
+.fc-admin-page .btn-orange {
+    background: var(--fc-princeton-orange) !important;
+    color: var(--fc-white) !important;
+    border-bottom: 2px solid var(--fc-fiery-orange) !important;
+}
+
+.fc-admin-page .btn-orange:hover:not(:disabled):not(.disabled) {
+    background: var(--fc-pumpkin) !important;
+    color: var(--fc-white) !important;
+}
+
+.fc-admin-page .btn-orange-outline {
+    background: transparent !important;
+    color: var(--fc-princeton-orange) !important;
+    border: 1px solid var(--fc-princeton-orange) !important;
+    border-bottom: 2px solid var(--fc-fiery-orange) !important;
+}
+
+.fc-admin-page .btn-orange-outline:hover:not(:disabled):not(.disabled) {
+    background: var(--fc-princeton-orange) !important;
+    color: var(--fc-white) !important;
+    border-color: var(--fc-princeton-orange) !important;
+}
+
+.fc-admin-page .btn-orange-outline:focus-visible {
+    box-shadow: 0 0 0 0.2rem var(--fc-a-orange-25);
+}
+
+.fc-admin-page .btn-dark {
+    border-bottom: 2px solid var(--fc-black) !important;
+}
+
+.fc-admin-page .btn-outline-secondary {
+    border-bottom: 3px solid var(--fc-trout, #495057) !important;
+}
+
+.fc-admin-page .btn:disabled,
+.fc-admin-page .btn.disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.fc-theme-preset--selected {
+    border-color: var(--fc-princeton-orange) !important;
+    background: var(--fc-a-orange-3, rgba(246, 121, 37, 0.08)) !important;
+    box-shadow: 0 0 0 2px var(--fc-a-orange-22, rgba(246, 121, 37, 0.22));
+}

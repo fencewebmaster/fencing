@@ -1,0 +1,10 @@
+RewriteEngine on
+
+# Product Lookup quick view: /lookup/view/{slug}
+RewriteRule ^lookup/view/([^/]+)/?$ lookup.php?view=$1 [QSA,L,NC]
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [NC,L]
+
+RewriteRule ^(config.json|data) - [F,L,NC]

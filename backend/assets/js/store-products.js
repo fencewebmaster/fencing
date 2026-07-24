@@ -1,0 +1,1498 @@
+/**
+ * FC Admin — Store Products page (products.csv via api.php).
+ * Drag rows to reorder; order is saved back to products.csv.
+ */
+(function (global) {
+    'use strict';
+
+    var API_LOAD = fcApiUrl('products', 'action=store-products');
+    var API_REORDER = fcApiUrl('products', 'action=reorder-store-products');
+    var API_UPDATE = fcApiUrl('products', 'action=update-store-product');
+
+    var PRIMARY_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
+    var DETAILS_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
+
+    var editModalEl = null;
+    var editFormEl = null;
+    var editRowIndex = null;
+    var editFormDirty = false;
+    var dragJustEnded = false;
+    var editModalCloseTimer = null;
+    var MODAL_TRANSITION_MS = 280;
+
+    var TOAST_CSV_REORDER = 'fc-csv-reorder';
+    var TOAST_CSV_UPDATE = 'fc-csv-update';
+    var FILTER_URL_KEYS = {
+        supplier: 'supplier',
+        style: 'style',
+        q: 'q'
+    };
+
+    function readFiltersFromUrl() {
+        var params = new URLSearchParams(window.location.search);
+
+        return {
+            supplier: params.get(FILTER_URL_KEYS.supplier) || '',
+            style: params.get(FILTER_URL_KEYS.style) || '',
+            q: params.get(FILTER_URL_KEYS.q) || ''
+        };
+    }
+
+    function syncFiltersToUrl(supplier, style, q) {
+        var params = new URLSearchParams();
+        if (supplier) {
+            params.set(FILTER_URL_KEYS.supplier, supplier);
+        }
+        if (style) {
+            params.set(FILTER_URL_KEYS.style, style);
+        }
+        if (q) {
+            params.set(FILTER_URL_KEYS.q, q);
+        }
+
+        var search = params.toString();
+        var nextUrl = window.location.pathname + (search ? '?' + search : '');
+        var currentUrl = window.location.pathname + window.location.search;
+        if (nextUrl === currentUrl) {
+            return;
+        }
+
+        var state =
+            window.history.state && typeof window.history.state === 'object'
+                ? window.history.state
+                : {};
+        window.history.replaceState(state, '', nextUrl);
+    }
+
+    function getDetailsColumns(allColumns) {
+        return DETAILS_COLUMNS.filter(function (col) {
+            return allColumns.indexOf(col) !== -1;
+        });
+    }
+
+    function getSkuColumns(allColumns) {
+        return allColumns
+            .filter(function (col) {
+                return DETAILS_COLUMNS.indexOf(col) === -1;
+            })
+            .sort(function (a, b) {
+                return formatHeader(a).localeCompare(formatHeader(b), undefined, { sensitivity: 'base' });
+            });
+    }
+
+    function filterSkuColumnsByStyle(skuColumns, styleKey, styleColorsMap) {
+        if (!styleColorsMap || !styleKey) {
+            return skuColumns;
+        }
+
+        var allowed = styleColorsMap[String(styleKey).trim()];
+        if (!Array.isArray(allowed) || !allowed.length) {
+            return skuColumns;
+        }
+
+        var allowedSet = {};
+        allowed.forEach(function (col) {
+            allowedSet[String(col).toUpperCase()] = true;
+        });
+
+        var filtered = skuColumns.filter(function (col) {
+            return !!allowedSet[String(col).toUpperCase()];
+        });
+
+        return filtered.length ? filtered : skuColumns;
+    }
+
+    function setEditFormDirty(isDirty) {
+        editFormDirty = !!isDirty;
+        var statusEl = document.getElementById('fc-sp-edit-status');
+        if (!statusEl) {
+            return;
+        }
+        if (editFormDirty) {
+            statusEl.innerHTML =
+                '<span class="inline-flex items-center gap-1.5 text-amber-600">' +
+                '<i class="fa-solid fa-circle text-[6px]" aria-hidden="true"></i>' +
+                '<span>Unsaved changes</span></span>';
+            return;
+        }
+        statusEl.textContent = 'Press Esc to cancel';
+    }
+
+    function setSubmitLoading(isLoading) {
+        var submitBtn = document.getElementById('fc-sp-edit-submit');
+        if (!submitBtn) {
+            return;
+        }
+        submitBtn.disabled = !!isLoading;
+        if (isLoading) {
+            submitBtn.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Saving…</span>';
+            return;
+        }
+        submitBtn.innerHTML =
+            '<i class="fa-solid fa-check" aria-hidden="true"></i><span>Save Changes</span>';
+    }
+
+    function csvToast(kind, message, toastId) {
+        var T = global.FcAdminToast;
+        if (!T) {
+            return;
+        }
+        if (kind === 'saving') {
+            T.loading(message, toastId);
+            return;
+        }
+        if (toastId) {
+            T.dismiss(toastId);
+        }
+        if (kind === 'ok') {
+            T.success(message);
+        } else if (kind === 'error') {
+            T.error(message);
+        }
+    }
+
+    function escapeHtml(text) {
+        return String(text == null ? '' : text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function buildFieldCopyButton(fieldId, label, options) {
+        options = options || {};
+        var compactClass = options.compact ? ' fc-sp-field-copy--compact' : '';
+
+        return (
+            '<button type="button" class="fc-sp-field-copy' +
+            compactClass +
+            '" data-fc-sp-copy-for="' +
+            escapeHtml(fieldId) +
+            '" aria-label="Copy ' +
+            escapeHtml(label) +
+            '" title="Copy to clipboard">' +
+            '<i class="fa-regular fa-copy" aria-hidden="true"></i></button>'
+        );
+    }
+
+    function showCopyFeedback(btn) {
+        if (!btn) {
+            return;
+        }
+        var icon = btn.querySelector('i');
+        if (!icon) {
+            return;
+        }
+        icon.className = 'fa-solid fa-check text-sm text-emerald-600';
+        btn.classList.add('fc-sp-field-copy--copied');
+        window.setTimeout(function () {
+            icon.className = 'fa-regular fa-copy text-sm';
+            btn.classList.remove('fc-sp-field-copy--copied');
+        }, 1500);
+    }
+
+    function copyFieldToClipboard(control, btn) {
+        if (!control) {
+            return;
+        }
+
+        var text = String(control.value != null ? control.value : '');
+
+        function onCopied() {
+            showCopyFeedback(btn);
+            var T = global.FcAdminToast;
+            if (T && text.trim()) {
+                T.success('Copied to clipboard');
+            }
+        }
+
+        function fallbackCopy() {
+            try {
+                var isTextarea = control.tagName === 'TEXTAREA';
+                if (isTextarea) {
+                    control.focus();
+                    control.select();
+                } else {
+                    control.focus();
+                    control.select();
+                    control.setSelectionRange(0, text.length);
+                }
+                if (document.execCommand('copy')) {
+                    onCopied();
+                    return;
+                }
+            } catch (err) {
+                /* fall through */
+            }
+            var T = global.FcAdminToast;
+            if (T) {
+                T.error('Could not copy to clipboard');
+            }
+        }
+
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(text).then(onCopied).catch(fallbackCopy);
+            return;
+        }
+
+        fallbackCopy();
+    }
+
+    function formatHeader(label) {
+        return String(label || '')
+            .replace(/_/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, function (c) {
+                return c.toUpperCase();
+            });
+    }
+
+    function renderLoading() {
+        return (
+            '<div class="flex flex-col items-center justify-center gap-3 p-12 text-slate-500">' +
+            '<i class="fa-solid fa-spinner fa-spin text-2xl text-indigo-500" aria-hidden="true"></i>' +
+            '<p class="text-sm">Loading system products…</p>' +
+            '</div>'
+        );
+    }
+
+    function renderError(message) {
+        return (
+            '<div class="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">' +
+            '<p class="font-semibold">Could not load system products</p>' +
+            '<p class="mt-1 text-sm">' +
+            escapeHtml(message) +
+            '</p>' +
+            '</div>'
+        );
+    }
+
+    function applyRowFilters(rows, options) {
+        options = options || {};
+        var query = options.query || '';
+        var supplier = options.supplier || '';
+        var style = options.style || '';
+        var result = rows;
+
+        if (supplier) {
+            result = result.filter(function (row) {
+                return String(row.SUPPLIER != null ? row.SUPPLIER : '').trim() === supplier;
+            });
+        }
+
+        if (style) {
+            result = result.filter(function (row) {
+                return String(row.STYLE != null ? row.STYLE : '').trim() === style;
+            });
+        }
+
+        if (query) {
+            var q = query.toLowerCase();
+            result = result.filter(function (row) {
+                return Object.keys(row).some(function (key) {
+                    return String(row[key] || '')
+                        .toLowerCase()
+                        .indexOf(q) !== -1;
+                });
+            });
+        }
+
+        return result;
+    }
+
+    function uniqueColumnValues(rows, column) {
+        var seen = {};
+        var values = [];
+        var columnKey = String(column || '').trim().toUpperCase();
+        rows.forEach(function (row) {
+            var val = String(row[column] != null ? row[column] : '').trim();
+            if (!val || seen[val] || val.toUpperCase() === columnKey) {
+                return;
+            }
+            seen[val] = true;
+            values.push(val);
+        });
+        return values.sort(function (a, b) {
+            return a.localeCompare(b, undefined, { sensitivity: 'base' });
+        });
+    }
+
+    function buildFilterSelectOptions(values, allLabel, selected) {
+        var html =
+            '<option value="">' +
+            escapeHtml(allLabel) +
+            '</option>' +
+            values
+                .map(function (val) {
+                    return (
+                        '<option value="' +
+                        escapeHtml(val) +
+                        '"' +
+                        (val === selected ? ' selected' : '') +
+                        '>' +
+                        escapeHtml(val) +
+                        '</option>'
+                    );
+                })
+                .join('');
+        return html;
+    }
+
+    function getRowIndex(row) {
+        var idx = row._rowIndex;
+        return typeof idx === 'number' ? idx : parseInt(idx, 10);
+    }
+
+    function moveItem(array, fromIndex, toIndex) {
+        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) {
+            return array;
+        }
+        var next = array.slice();
+        var item = next.splice(fromIndex, 1)[0];
+        next.splice(toIndex, 0, item);
+        return next;
+    }
+
+    function buildTable(columns, rows, options) {
+        options = options || {};
+        var draggable = !!options.draggable;
+
+        var colgroup =
+            (draggable ? '<col class="w-10" />' : '') +
+            columns
+                .map(function (col) {
+                    var isPrimary = PRIMARY_COLUMNS.indexOf(col) !== -1;
+                    return (
+                        '<col' +
+                        (isPrimary ? ' class="min-w-[8rem]"' : ' class="min-w-[6rem]"') +
+                        ' />'
+                    );
+                })
+                .join('');
+
+        var thead =
+            '<thead class="fc-sp-table-head text-left">' +
+            '<tr>' +
+            (draggable
+                ? '<th scope="col" class="fc-sp-sticky fc-sp-sticky-grip px-2 py-2 w-10" aria-label="Reorder"></th>'
+                : '') +
+            columns
+                .map(function (col, colIndex) {
+                    var sticky =
+                        colIndex === 0
+                            ? ' fc-sp-sticky fc-sp-sticky-col relative'
+                            : '';
+                    return (
+                        '<th scope="col" class="whitespace-nowrap px-3 py-2' + sticky + '">' +
+                        escapeHtml(formatHeader(col)) +
+                        '</th>'
+                    );
+                })
+                .join('') +
+            '</tr></thead>';
+
+        var tbody =
+            '<tbody id="fc-store-products-tbody" class="divide-y divide-slate-100 text-sm text-slate-700">' +
+            rows
+                .map(function (row, rowIdx) {
+                    var dataRowIndex = getRowIndex(row);
+                    var stripeBg = rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+                    return (
+                        '<tr' +
+                        ' data-row-index="' +
+                        String(dataRowIndex) +
+                        '"' +
+                        ' class="fc-store-products-row fc-store-products-row--clickable ' +
+                        stripeBg +
+                        '/50 hover:bg-indigo-50/40"' +
+                        '>' +
+                        (draggable
+                            ? '<td class="fc-sp-sticky fc-sp-sticky-grip cursor-grab border-b border-slate-100 px-2 py-2 text-center text-slate-400 active:cursor-grabbing ' +
+                              stripeBg +
+                              '" title="Drag to reorder">' +
+                              '<i class="fa-solid fa-grip-vertical pointer-events-none" aria-hidden="true"></i>' +
+                              '</td>'
+                            : '') +
+                        columns
+                            .map(function (col, colIndex) {
+                                var val = row[col] != null ? row[col] : '';
+                                var empty = val === '';
+                                var sticky =
+                                    colIndex === 0
+                                        ? ' fc-sp-sticky fc-sp-sticky-col relative ' + stripeBg
+                                        : '';
+                                return (
+                                    '<td class="whitespace-nowrap border-b border-slate-100 px-3 py-2' +
+                                    sticky +
+                                    (empty ? ' text-slate-300' : '') +
+                                    '">' +
+                                    (empty ? '—' : escapeHtml(val)) +
+                                    '</td>'
+                                );
+                            })
+                            .join('') +
+                        '</tr>'
+                    );
+                })
+                .join('') +
+            '</tbody>';
+
+        return (
+            '<div class="fc-sp-table-layout flex min-h-0 flex-1 flex-col">' +
+            '<div class="fc-store-products-scroll fc-sp-table-body fc-sp-hide-x-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto' +
+            (draggable ? ' fc-sp-has-grip' : '') +
+            '">' +
+            '<table class="w-full min-w-max border-collapse text-left">' +
+            '<colgroup>' +
+            colgroup +
+            '</colgroup>' +
+            thead +
+            tbody +
+            '</table></div>' +
+            '<div class="fc-sp-bottom-scrollbar" aria-label="Scroll table horizontally">' +
+            '<div class="fc-sp-bottom-scrollbar-spacer h-px"></div>' +
+            '</div></div>'
+        );
+    }
+
+    function renderPage(data) {
+        var columns = data.columns || [];
+        var styleColorsMap = data.styleColors || {};
+        var allRows = (data.rows || []).slice();
+        var phpMode = !!data.phpMode;
+        var onPersistReload =
+            typeof data.onPersistReload === 'function' ? data.onPersistReload : null;
+        var urlFilters = readFiltersFromUrl();
+        var searchQuery = phpMode
+            ? String((data.filters && data.filters.q) || urlFilters.q || '')
+            : urlFilters.q;
+        var supplierFilter = phpMode
+            ? String((data.filters && data.filters.supplier) || urlFilters.supplier || '')
+            : urlFilters.supplier;
+        var styleFilter = phpMode
+            ? String((data.filters && data.filters.style) || urlFilters.style || '')
+            : urlFilters.style;
+        var saveTimer = null;
+        var filterUrlSyncTimer = null;
+        var isSaving = false;
+        var bottomScrollSync = null;
+
+        var shell =
+            '<div class="flex h-full min-h-0 flex-col">' +
+            '<div class="fc-entries-page__toolbar fc-sp-toolbar fc-admin-sticky-header sticky top-0 z-20">' +
+            '<div class="fc-entries-page__toolbar-row">' +
+            '<label class="fc-entries-page__search-wrap">' +
+            '<i class="fa-solid fa-magnifying-glass fc-entries-page__search-icon" aria-hidden="true"></i>' +
+            '<input type="search" id="fc-store-products-search" class="fc-entries-page__search" placeholder="Search products…" aria-label="Search products" autocomplete="off">' +
+            '</label>' +
+            '<select id="fc-store-products-filter-supplier" aria-label="Supplier" class="fc-entries-page__filter">' +
+            buildFilterSelectOptions(uniqueColumnValues(allRows, 'SUPPLIER'), 'All suppliers', '') +
+            '</select>' +
+            '<select id="fc-store-products-filter-style" aria-label="Style" class="fc-entries-page__filter">' +
+            buildFilterSelectOptions(uniqueColumnValues(allRows, 'STYLE'), 'All styles', '') +
+            '</select>' +
+            '<button type="button" id="fc-store-products-clear-filters" class="fc-sp-toolbar__clear hidden">Clear filters</button>' +
+            '</div>' +
+            '<div class="fc-entries-page__count">' +
+            '<span id="fc-store-products-count">' +
+            allRows.length +
+            '</span> Items' +
+            '</div>' +
+            '</div>' +
+            '<div id="fc-store-products-table-wrap" class="flex min-h-0 flex-1 flex-col overflow-hidden"></div>' +
+            '</div>';
+
+        function getVisibleRows() {
+            return applyRowFilters(allRows, {
+                query: searchQuery,
+                supplier: supplierFilter,
+                style: styleFilter
+            });
+        }
+
+        function hasActiveFilters() {
+            return searchQuery.length > 0 || supplierFilter.length > 0 || styleFilter.length > 0;
+        }
+
+        function scheduleFilterUrlSync(immediate) {
+            if (filterUrlSyncTimer) {
+                window.clearTimeout(filterUrlSyncTimer);
+                filterUrlSyncTimer = null;
+            }
+            if (immediate) {
+                syncFiltersToUrl(supplierFilter, styleFilter, searchQuery);
+                return;
+            }
+            filterUrlSyncTimer = window.setTimeout(function () {
+                filterUrlSyncTimer = null;
+                syncFiltersToUrl(supplierFilter, styleFilter, searchQuery);
+            }, 300);
+        }
+
+        function refreshFilterControls() {
+            var supplierSelect = document.getElementById('fc-store-products-filter-supplier');
+            var styleSelect = document.getElementById('fc-store-products-filter-style');
+            var clearBtn = document.getElementById('fc-store-products-clear-filters');
+
+            if (supplierSelect) {
+                supplierSelect.innerHTML = buildFilterSelectOptions(
+                    uniqueColumnValues(allRows, 'SUPPLIER'),
+                    'All suppliers',
+                    supplierFilter
+                );
+            }
+            if (styleSelect) {
+                styleSelect.innerHTML = buildFilterSelectOptions(
+                    uniqueColumnValues(allRows, 'STYLE'),
+                    'All styles',
+                    styleFilter
+                );
+            }
+            if (clearBtn) {
+                clearBtn.classList.toggle('hidden', !hasActiveFilters());
+            }
+        }
+
+        function resetFilters() {
+            searchQuery = '';
+            supplierFilter = '';
+            styleFilter = '';
+            var input = document.getElementById('fc-store-products-search');
+            if (input) {
+                input.value = '';
+            }
+            refreshFilterControls();
+            scheduleFilterUrlSync(true);
+        }
+
+        function refreshTable(options) {
+            options = options || {};
+            refreshFilterControls();
+            paintTable(getVisibleRows());
+            if (options.syncUrl !== false) {
+                scheduleFilterUrlSync(options.immediateUrlSync);
+            }
+        }
+
+        function orderFromRows(rows) {
+            return rows.map(getRowIndex);
+        }
+
+        function saveOrder(rows) {
+            if (isSaving) {
+                return Promise.resolve();
+            }
+            isSaving = true;
+            csvToast('saving', 'Saving row order to products.csv…', TOAST_CSV_REORDER);
+
+            return fetch(API_REORDER, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ order: orderFromRows(rows) })
+            })
+                .then(function (res) {
+                    return res.json().then(function (body) {
+                        if (!res.ok || !body.ok) {
+                            throw new Error((body && body.error) || 'Save failed');
+                        }
+                        return body;
+                    });
+                })
+                .then(function () {
+                    csvToast('ok', 'products.csv updated — row order saved.', TOAST_CSV_REORDER);
+                    if (phpMode && onPersistReload) {
+                        onPersistReload();
+                        return null;
+                    }
+                    return fetch(API_LOAD, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' },
+                        credentials: 'same-origin'
+                    }).then(function (res) {
+                        return res.json();
+                    });
+                })
+                .then(function (body) {
+                    if (!body) {
+                        return;
+                    }
+                    if (body && body.ok && body.rows) {
+                        allRows = body.rows.slice();
+                        refreshTable();
+                    }
+                })
+                .catch(function (err) {
+                    csvToast(
+                        'error',
+                        (err.message || 'Could not save row order.') + ' Table reloaded.',
+                        TOAST_CSV_REORDER
+                    );
+                    if (phpMode && onPersistReload) {
+                        onPersistReload();
+                        return null;
+                    }
+                    return fetch(API_LOAD, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' },
+                        credentials: 'same-origin'
+                    })
+                        .then(function (res) {
+                            return res.json();
+                        })
+                        .then(function (body) {
+                            if (body.ok && body.rows) {
+                                allRows = body.rows.slice();
+                                resetFilters();
+                                refreshTable();
+                            }
+                        });
+                })
+                .finally(function () {
+                    isSaving = false;
+                });
+        }
+
+        function findRowByIndex(rowIndex) {
+            for (var i = 0; i < allRows.length; i++) {
+                if (getRowIndex(allRows[i]) === rowIndex) {
+                    return allRows[i];
+                }
+            }
+            return null;
+        }
+
+        function ensureEditModal() {
+            if (editModalEl) {
+                return;
+            }
+
+            var btn = global.FcAdminBtn || {};
+            var btnSecondary = btn.secondary || 'btn btn-sm btn-dark fw-semibold';
+            var btnPrimary = btn.primary || 'btn btn-sm btn-orange fw-semibold';
+
+            var modalHtml =
+                '<div id="fc-sp-edit-modal" class="fixed inset-0 z-[100] items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="fc-sp-edit-modal-title" aria-hidden="true">' +
+                '<div class="fc-sp-edit-backdrop absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" data-fc-sp-modal-close aria-hidden="true"></div>' +
+                '<div class="fc-sp-edit-panel relative flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl">' +
+                '<button type="button" class="fencing-modal-close" data-fc-sp-modal-close aria-label="Close"></button>' +
+                '<div class="shrink-0 border-b border-slate-200 px-6 py-4 pr-12">' +
+                '<div class="min-w-0">' +
+                '<h2 id="fc-sp-edit-modal-title" class="text-base font-semibold leading-tight text-slate-900">Edit product</h2>' +
+                '</div></div>' +
+                '<form id="fc-sp-edit-form" class="flex min-h-0 flex-1 flex-col">' +
+                '<div class="fc-sp-edit-panels min-h-0 flex-1 overflow-y-auto bg-white">' +
+                '<div id="fc-sp-edit-panel-details" class="fc-sp-field-grid px-6 py-4"></div>' +
+                '<div id="fc-sp-edit-panel-sku" class="px-6 pb-4">' +
+                '<div class="fc-sp-edit-section-title">SKU</div>' +
+                '<p class="fc-sp-field__intro">Color variant SKUs used by the planner. Leave blank when a finish is not available for this product.</p>' +
+                '<div class="fc-sp-field-grid fc-sp-field-grid--sku"></div></div>' +
+                '</div>' +
+                '<div class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">' +
+                '<p id="fc-sp-edit-status" class="text-xs text-slate-400">Press Esc to cancel</p>' +
+                '<div class="flex flex-wrap justify-end gap-2">' +
+                '<button type="button" class="' +
+                btnSecondary +
+                '" data-fc-sp-modal-close>' +
+                'Cancel</button>' +
+                '<button type="submit" id="fc-sp-edit-submit" class="' +
+                btnPrimary +
+                '">' +
+                '<i class="fa-solid fa-check" aria-hidden="true"></i><span>Save Changes</span></button>' +
+                '</div></div>' +
+                '</form>' +
+                '</div>' +
+                '</div>';
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            editModalEl = document.getElementById('fc-sp-edit-modal');
+            editFormEl = document.getElementById('fc-sp-edit-form');
+
+            editModalEl.querySelectorAll('[data-fc-sp-modal-close]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    closeEditModal(false);
+                });
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (
+                    e.key === 'Escape' &&
+                    editModalEl &&
+                    editModalEl.classList.contains('fc-sp-edit-modal--visible')
+                ) {
+                    closeEditModal(false);
+                }
+            });
+
+            editFormEl.addEventListener('submit', function (e) {
+                e.preventDefault();
+                saveEditProduct();
+            });
+
+            editFormEl.addEventListener('input', function (e) {
+                setEditFormDirty(true);
+                syncFieldFilledState(e.target);
+            });
+
+            editFormEl.addEventListener('click', function (e) {
+                var copyBtn = e.target.closest('[data-fc-sp-copy-for]');
+                if (!copyBtn) {
+                    return;
+                }
+                e.preventDefault();
+                var fieldId = copyBtn.getAttribute('data-fc-sp-copy-for');
+                if (!fieldId) {
+                    return;
+                }
+                var control = document.getElementById(fieldId);
+                copyFieldToClipboard(control, copyBtn);
+            });
+        }
+
+        function syncFieldFilledState(el) {
+            if (!el || !el.classList || !el.classList.contains('fc-sp-field-control')) {
+                return;
+            }
+            var hasValue = String(el.value || '').trim() !== '';
+            if (el.classList.contains('fc-sp-field-control--sku')) {
+                el.classList.toggle('fc-sp-field-control--empty', !hasValue);
+            }
+        }
+
+        function buildFieldControl(col, val) {
+            var id = 'fc-sp-field-' + col.replace(/[^a-zA-Z0-9_-]/g, '_');
+            var isSlug = col === 'SLUG';
+            var isDescription = col === 'DESCRIPTION';
+            var isSku = DETAILS_COLUMNS.indexOf(col) === -1;
+            var isEmpty = String(val).trim() === '';
+            var fieldClass = 'fc-sp-field-control';
+
+            if (isSlug) {
+                fieldClass += ' fc-sp-field-control--readonly';
+            } else if (isSku) {
+                fieldClass += ' fc-sp-field-control--sku';
+                if (isEmpty) {
+                    fieldClass += ' fc-sp-field-control--empty';
+                }
+            }
+
+            if (isDescription) {
+                fieldClass += ' fc-sp-field-control--textarea';
+                return (
+                    '<div class="fc-sp-field-input-wrap fc-sp-field-input-wrap--textarea">' +
+                    '<textarea id="' +
+                    escapeHtml(id) +
+                    '" name="' +
+                    escapeHtml(col) +
+                    '" rows="4" class="' +
+                    fieldClass +
+                    '" autocomplete="off" placeholder="Product description shown in quotes and plans">' +
+                    escapeHtml(val) +
+                    '</textarea>' +
+                    buildFieldCopyButton(id, formatHeader(col), { compact: true }) +
+                    '</div>'
+                );
+            }
+
+            var placeholder = '';
+            if (isSlug) {
+                placeholder = '';
+            } else if (isSku) {
+                placeholder = 'No SKU';
+            } else if (col === 'PRODUCT') {
+                placeholder = 'e.g. Panel - STD';
+            } else if (col === 'SUPPLIER') {
+                placeholder = 'e.g. JG';
+            } else if (col === 'STYLE') {
+                placeholder = 'e.g. flat_top';
+            }
+
+            return (
+                '<div class="fc-sp-field-input-wrap">' +
+                '<input type="text" id="' +
+                escapeHtml(id) +
+                '" name="' +
+                escapeHtml(col) +
+                '" value="' +
+                escapeHtml(val) +
+                '" class="' +
+                fieldClass +
+                '" autocomplete="off"' +
+                (placeholder ? ' placeholder="' + escapeHtml(placeholder) + '"' : '') +
+                (isSlug ? ' readonly tabindex="-1" aria-readonly="true"' : '') +
+                '>' +
+                buildFieldCopyButton(id, formatHeader(col)) +
+                '</div>'
+            );
+        }
+
+        function buildEditFormFields(row, fieldColumns) {
+            return fieldColumns
+                .map(function (col) {
+                    var val = row[col] != null ? row[col] : '';
+                    var id = 'fc-sp-field-' + col.replace(/[^a-zA-Z0-9_-]/g, '_');
+                    var isSlug = col === 'SLUG';
+                    var isDescription = col === 'DESCRIPTION';
+                    var fieldHtml = buildFieldControl(col, val);
+
+                    return (
+                        '<div class="fc-sp-field' +
+                        (isDescription ? ' fc-sp-field--wide' : '') +
+                        '">' +
+                        '<label class="fc-sp-field__label" for="' +
+                        escapeHtml(id) +
+                        '">' +
+                        (isSlug
+                            ? '<i class="fa-solid fa-lock fc-sp-field__lock" aria-hidden="true"></i>'
+                            : '') +
+                        '<span>' +
+                        escapeHtml(formatHeader(col)) +
+                        '</span></label>' +
+                        fieldHtml +
+                        (isSlug
+                            ? '<p class="fc-sp-field__help">Unique identifier — cannot be changed after creation.</p>'
+                            : '') +
+                        '</div>'
+                    );
+                })
+                .join('');
+        }
+
+        function openEditModal(rowIndex) {
+            ensureEditModal();
+            var row = findRowByIndex(rowIndex);
+            if (!row) {
+                return;
+            }
+
+            editRowIndex = rowIndex;
+            var detailsPanel = document.getElementById('fc-sp-edit-panel-details');
+            var skuPanel = document.getElementById('fc-sp-edit-panel-sku');
+            var titleEl = document.getElementById('fc-sp-edit-modal-title');
+            var allSkuColumns = getSkuColumns(columns);
+            var visibleSkuColumns = filterSkuColumnsByStyle(allSkuColumns, row.STYLE, styleColorsMap);
+            if (detailsPanel) {
+                detailsPanel.innerHTML = buildEditFormFields(row, getDetailsColumns(columns));
+            }
+            if (skuPanel) {
+                var skuGrid = skuPanel.querySelector('.fc-sp-field-grid--sku');
+                if (skuGrid) {
+                    skuGrid.innerHTML = buildEditFormFields(row, visibleSkuColumns);
+                }
+            }
+            setEditFormDirty(false);
+            setSubmitLoading(false);
+            if (titleEl) {
+                titleEl.textContent = 'Edit product';
+            }
+
+            var submitBtn = document.getElementById('fc-sp-edit-submit');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+
+            if (editModalCloseTimer) {
+                window.clearTimeout(editModalCloseTimer);
+                editModalCloseTimer = null;
+            }
+
+            editModalEl.classList.remove('fc-sp-edit-modal--closing');
+            editModalEl.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('overflow-hidden');
+
+            requestAnimationFrame(function () {
+                editModalEl.classList.add('fc-sp-edit-modal--visible');
+            });
+
+            var firstInput =
+                editFormEl &&
+                editFormEl.querySelector('#fc-sp-edit-panel-details input:not([readonly])');
+            if (firstInput) {
+                window.setTimeout(function () {
+                    firstInput.focus();
+                }, MODAL_TRANSITION_MS);
+            }
+        }
+
+        function closeEditModal(force) {
+            if (!editModalEl) {
+                return;
+            }
+            if (
+                !editModalEl.classList.contains('fc-sp-edit-modal--visible') ||
+                editModalEl.classList.contains('fc-sp-edit-modal--closing')
+            ) {
+                return;
+            }
+            if (!force && editFormDirty) {
+                var Modal = global.FcAdminModal;
+                if (Modal && typeof Modal.confirm === 'function') {
+                    Modal.confirm({
+                        title: 'Discard changes?',
+                        message: 'You have unsaved changes. Discard them?',
+                        confirmLabel: 'Discard',
+                        cancelLabel: 'Keep Editing',
+                        variant: 'warning'
+                    }).then(function (ok) {
+                        if (ok) {
+                            closeEditModal(true);
+                        }
+                    });
+                    return;
+                }
+                if (!window.confirm('Discard unsaved changes?')) {
+                    return;
+                }
+            }
+
+            editModalEl.classList.remove('fc-sp-edit-modal--visible');
+            editModalEl.classList.add('fc-sp-edit-modal--closing');
+            editModalEl.setAttribute('aria-hidden', 'true');
+
+            if (editModalCloseTimer) {
+                window.clearTimeout(editModalCloseTimer);
+            }
+            editModalCloseTimer = window.setTimeout(function () {
+                editModalEl.classList.remove('fc-sp-edit-modal--closing');
+                document.body.classList.remove('overflow-hidden');
+                editRowIndex = null;
+                editFormDirty = false;
+                editModalCloseTimer = null;
+            }, MODAL_TRANSITION_MS);
+        }
+
+        function saveEditProduct() {
+            if (editRowIndex == null || !editFormEl || isSaving) {
+                return;
+            }
+
+            var fields = {};
+            var rowForSave = findRowByIndex(editRowIndex);
+            columns.forEach(function (col) {
+                if (col === 'SLUG' && rowForSave) {
+                    fields[col] = rowForSave.SLUG != null ? String(rowForSave.SLUG) : '';
+                    return;
+                }
+                var fieldEl = editFormEl.querySelector(
+                    '[name="' + col.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]'
+                );
+                fields[col] = fieldEl ? fieldEl.value : rowForSave && rowForSave[col] != null ? rowForSave[col] : '';
+            });
+
+            var submitBtn = document.getElementById('fc-sp-edit-submit');
+            setSubmitLoading(true);
+            csvToast('saving', 'Saving product to products.csv…', TOAST_CSV_UPDATE);
+
+            fetch(API_UPDATE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    rowIndex: editRowIndex,
+                    fields: fields
+                })
+            })
+                .then(function (res) {
+                    return res.json().then(function (body) {
+                        if (!res.ok || !body.ok) {
+                            throw new Error((body && body.error) || 'Update failed');
+                        }
+                        return body;
+                    });
+                })
+                .then(function () {
+                    csvToast('ok', 'products.csv updated — product saved.', TOAST_CSV_UPDATE);
+                    setEditFormDirty(false);
+                    closeEditModal(true);
+                    if (phpMode && onPersistReload) {
+                        onPersistReload();
+                        return null;
+                    }
+                    return fetch(API_LOAD, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' },
+                        credentials: 'same-origin'
+                    }).then(function (res) {
+                        return res.json();
+                    });
+                })
+                .then(function (body) {
+                    if (!body) {
+                        return;
+                    }
+                    if (body && body.ok && body.rows) {
+                        allRows = body.rows.slice();
+                        refreshTable();
+                    }
+                })
+                .catch(function (err) {
+                    csvToast('error', err.message || 'Could not save product.', TOAST_CSV_UPDATE);
+                    setSubmitLoading(false);
+                });
+        }
+
+        function initRowClick(tbody) {
+            tbody.addEventListener('click', function (e) {
+                if (dragJustEnded) {
+                    dragJustEnded = false;
+                    return;
+                }
+                if (e.target.closest('.fc-sp-sticky-grip')) {
+                    return;
+                }
+                var tr = e.target.closest('tr[data-row-index]');
+                if (!tr || tr.getAttribute('data-fc-sp-editable') !== '1') {
+                    return;
+                }
+                var rowIndex = parseInt(tr.getAttribute('data-row-index'), 10);
+                if (!Number.isFinite(rowIndex)) {
+                    return;
+                }
+                openEditModal(rowIndex);
+            });
+        }
+
+        function initRowDragDrop(tbody) {
+            var dragRow = null;
+
+            tbody.addEventListener('mousedown', function (e) {
+                if (hasActiveFilters()) {
+                    return;
+                }
+                var grip = e.target.closest('.fc-sp-sticky-grip');
+                if (!grip) {
+                    return;
+                }
+                var tr = grip.closest('tr.fc-store-products-row');
+                if (tr) {
+                    tr.draggable = true;
+                }
+            });
+
+            tbody.addEventListener('mouseup', function () {
+                tbody.querySelectorAll('tr.fc-store-products-row').forEach(function (tr) {
+                    tr.draggable = false;
+                });
+            });
+
+            tbody.addEventListener('dragstart', function (e) {
+                var tr = e.target.closest('tr.fc-store-products-row');
+                if (!tr || hasActiveFilters() || !tr.draggable) {
+                    e.preventDefault();
+                    return;
+                }
+                dragRow = tr;
+                tr.classList.add('opacity-50', 'ring-2', 'ring-indigo-400');
+                if (e.dataTransfer) {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', tr.getAttribute('data-row-index') || '');
+                }
+            });
+
+            tbody.addEventListener('dragend', function () {
+                dragJustEnded = true;
+                window.setTimeout(function () {
+                    dragJustEnded = false;
+                }, 100);
+                if (dragRow) {
+                    dragRow.classList.remove('opacity-50', 'ring-2', 'ring-indigo-400');
+                    dragRow.draggable = false;
+                }
+                dragRow = null;
+                tbody.querySelectorAll('.fc-store-products-row--drag-over').forEach(function (row) {
+                    row.classList.remove('fc-store-products-row--drag-over');
+                });
+            });
+
+            tbody.addEventListener('dragover', function (e) {
+                if (!dragRow || hasActiveFilters()) {
+                    return;
+                }
+                e.preventDefault();
+                var tr = e.target.closest('tr.fc-store-products-row');
+                if (!tr || tr === dragRow) {
+                    return;
+                }
+                if (e.dataTransfer) {
+                    e.dataTransfer.dropEffect = 'move';
+                }
+                tbody.querySelectorAll('.fc-store-products-row--drag-over').forEach(function (row) {
+                    row.classList.remove('fc-store-products-row--drag-over');
+                });
+                tr.classList.add('fc-store-products-row--drag-over', 'bg-indigo-100/60');
+            });
+
+            tbody.addEventListener('dragleave', function (e) {
+                var tr = e.target.closest('tr.fc-store-products-row');
+                if (tr) {
+                    tr.classList.remove('fc-store-products-row--drag-over', 'bg-indigo-100/60');
+                }
+            });
+
+            tbody.addEventListener('drop', function (e) {
+                e.preventDefault();
+                if (!dragRow || hasActiveFilters()) {
+                    return;
+                }
+                var target = e.target.closest('tr.fc-store-products-row');
+                if (!target || target === dragRow) {
+                    return;
+                }
+
+                var domRows = Array.prototype.slice.call(
+                    tbody.querySelectorAll('tr.fc-store-products-row')
+                );
+                var fromIndex = domRows.indexOf(dragRow);
+                var toIndex = domRows.indexOf(target);
+
+                if (fromIndex < 0 || toIndex < 0) {
+                    return;
+                }
+
+                allRows = moveItem(allRows, fromIndex, toIndex);
+                refreshTable();
+
+                if (saveTimer) {
+                    window.clearTimeout(saveTimer);
+                }
+                saveTimer = window.setTimeout(function () {
+                    saveOrder(allRows);
+                }, 400);
+            });
+        }
+
+        function destroyBottomHorizontalScroll() {
+            if (!bottomScrollSync) {
+                return;
+            }
+            window.removeEventListener('resize', bottomScrollSync.onResize);
+            if (bottomScrollSync.scrollEl) {
+                bottomScrollSync.scrollEl.removeEventListener('scroll', bottomScrollSync.onScrollMain);
+            }
+            if (bottomScrollSync.barEl) {
+                bottomScrollSync.barEl.removeEventListener('scroll', bottomScrollSync.onScrollBar);
+            }
+            bottomScrollSync = null;
+        }
+
+        function initBottomHorizontalScroll(wrap) {
+            destroyBottomHorizontalScroll();
+
+            var scrollEl = wrap.querySelector('.fc-store-products-scroll');
+            var barEl = wrap.querySelector('.fc-sp-bottom-scrollbar');
+            var spacer = wrap.querySelector('.fc-sp-bottom-scrollbar-spacer');
+            if (!scrollEl || !barEl || !spacer) {
+                return;
+            }
+
+            var syncing = false;
+
+            function updateSpacer() {
+                spacer.style.width = scrollEl.scrollWidth + 'px';
+                if (!syncing) {
+                    syncing = true;
+                    barEl.scrollLeft = scrollEl.scrollLeft;
+                    syncing = false;
+                }
+            }
+
+            function onScrollMain() {
+                if (syncing) {
+                    return;
+                }
+                syncing = true;
+                barEl.scrollLeft = scrollEl.scrollLeft;
+                syncing = false;
+            }
+
+            function onScrollBar() {
+                if (syncing) {
+                    return;
+                }
+                syncing = true;
+                scrollEl.scrollLeft = barEl.scrollLeft;
+                syncing = false;
+            }
+
+            function onResize() {
+                updateSpacer();
+            }
+
+            scrollEl.addEventListener('scroll', onScrollMain, { passive: true });
+            barEl.addEventListener('scroll', onScrollBar, { passive: true });
+            window.addEventListener('resize', onResize);
+
+            updateSpacer();
+            window.requestAnimationFrame(updateSpacer);
+            window.setTimeout(updateSpacer, 150);
+
+            bottomScrollSync = {
+                scrollEl: scrollEl,
+                barEl: barEl,
+                onScrollMain: onScrollMain,
+                onScrollBar: onScrollBar,
+                onResize: onResize
+            };
+        }
+
+        function paintTable(rows) {
+            var wrap = document.getElementById('fc-store-products-table-wrap');
+            var countEl = document.getElementById('fc-store-products-count');
+            if (!wrap) {
+                return;
+            }
+
+            destroyBottomHorizontalScroll();
+
+            var filtered = hasActiveFilters();
+
+            if (!rows.length) {
+                wrap.innerHTML =
+                    '<p class="p-8 text-center text-sm text-slate-500">No system products match your filters.</p>';
+            } else {
+                wrap.innerHTML = buildTable(columns, rows, { draggable: !filtered });
+                var tbody = document.getElementById('fc-store-products-tbody');
+                if (tbody) {
+                    initRowClick(tbody);
+                    if (!filtered) {
+                        initRowDragDrop(tbody);
+                    }
+                }
+                initBottomHorizontalScroll(wrap);
+            }
+
+            if (countEl) {
+                countEl.textContent =
+                    rows.length === allRows.length
+                        ? String(allRows.length)
+                        : rows.length + ' of ' + allRows.length;
+            }
+
+        }
+
+        function bindFilters() {
+            var supplierSelect = document.getElementById('fc-store-products-filter-supplier');
+            var styleSelect = document.getElementById('fc-store-products-filter-style');
+            var clearBtn = document.getElementById('fc-store-products-clear-filters');
+            var searchInput = document.getElementById('fc-store-products-search');
+
+            if (searchInput) {
+                searchInput.value = searchQuery;
+            }
+
+            if (supplierSelect) {
+                supplierSelect.addEventListener('change', function () {
+                    supplierFilter = supplierSelect.value;
+                    refreshTable({ immediateUrlSync: true });
+                });
+            }
+
+            if (styleSelect) {
+                styleSelect.addEventListener('change', function () {
+                    styleFilter = styleSelect.value;
+                    refreshTable({ immediateUrlSync: true });
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    searchQuery = searchInput.value.trim();
+                    refreshTable({ immediateUrlSync: false });
+                });
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    resetFilters();
+                    refreshTable({ syncUrl: false });
+                });
+            }
+        }
+
+        return {
+            html: shell,
+            init: function () {
+                ensureEditModal();
+                refreshTable({ syncUrl: false });
+                bindFilters();
+            },
+            bindPhpShell: function (options) {
+                options = options || {};
+                if (options.canEdit !== false) {
+                    ensureEditModal();
+                }
+                var wrap = document.getElementById('fc-store-products-table-wrap');
+                var tbody = options.tbody || document.getElementById('fc-store-products-tbody');
+                if (wrap) {
+                    initBottomHorizontalScroll(wrap);
+                }
+                if (tbody && options.canEdit !== false) {
+                    initRowClick(tbody);
+                    if (options.canReorder) {
+                        initRowDragDrop(tbody);
+                    }
+                }
+            },
+            destroy: function () {
+                if (filterUrlSyncTimer) {
+                    window.clearTimeout(filterUrlSyncTimer);
+                    filterUrlSyncTimer = null;
+                }
+                destroyBottomHorizontalScroll();
+                closeEditModal(true);
+            }
+        };
+    }
+
+    function loadStoreProducts(container) {
+        if (!container) {
+            return Promise.resolve();
+        }
+
+        if (container.querySelector('[data-fc-store-products-server]')) {
+            return hydrateFromServer(container);
+        }
+
+        if (typeof global.fcAdminUrl === 'function') {
+            global.location.href = global.fcAdminUrl('products/store-products');
+            return Promise.resolve();
+        }
+
+        container.innerHTML = renderLoading();
+
+        return fetch(API_LOAD, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        })
+            .then(function (res) {
+                return res.json().then(function (data) {
+                    if (!res.ok) {
+                        throw new Error((data && data.error) || 'Request failed');
+                    }
+                    return data;
+                });
+            })
+            .then(function (data) {
+                if (!data.ok) {
+                    throw new Error(data.error || 'Failed to load system products');
+                }
+                var page = renderPage(data);
+                container.innerHTML = page.html;
+                container._fcSpDestroy = page.destroy;
+                page.init();
+                window.requestAnimationFrame(function () {
+                    window.dispatchEvent(new Event('resize'));
+                });
+            })
+            .catch(function (err) {
+                container.innerHTML = renderError(err.message || 'Unknown error');
+            });
+    }
+
+    function readBootstrapData() {
+        var el = document.getElementById('fc-store-products-bootstrap');
+        if (!el) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(el.textContent || '');
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function hydrateFromServer(container) {
+        if (!container || !container.querySelector('[data-fc-store-products-server]')) {
+            return Promise.resolve(false);
+        }
+
+        var bootstrap = readBootstrapData() || {};
+        if (bootstrap.phpRendered || bootstrap.deferLoad === false) {
+            var page = renderPage({
+                columns: bootstrap.columns || [],
+                rows: bootstrap.rows || [],
+                styleColors: bootstrap.styleColors || {},
+                filters: bootstrap.filters || {},
+                total: bootstrap.total || 0,
+                file: bootstrap.file || 'products.csv',
+                phpMode: true,
+                onPersistReload: function () {
+                    window.location.reload();
+                }
+            });
+            container._fcSpDestroy = page.destroy;
+            if (typeof page.bindPhpShell === 'function') {
+                page.bindPhpShell({
+                    tbody: document.getElementById('fc-store-products-tbody'),
+                    canReorder: !!bootstrap.canReorder,
+                    canEdit: bootstrap.canEdit !== false
+                });
+            }
+            container.removeAttribute('aria-busy');
+            window.requestAnimationFrame(function () {
+                window.dispatchEvent(new Event('resize'));
+            });
+            return Promise.resolve(true);
+        }
+
+        var wrap = document.getElementById('fc-store-products-table-wrap');
+        if (wrap) {
+            wrap.innerHTML = renderLoading();
+        }
+
+        return fetch(API_LOAD, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        })
+            .then(function (res) {
+                return res.json().then(function (body) {
+                    if (!res.ok) {
+                        throw new Error((body && body.error) || 'Request failed');
+                    }
+                    return body;
+                });
+            })
+            .then(function (body) {
+                if (!body.ok) {
+                    throw new Error(body.error || 'Failed to load system products');
+                }
+
+                if (bootstrap.filters && typeof bootstrap.filters === 'object') {
+                    body.filters = bootstrap.filters;
+                }
+
+                var page = renderPage(body);
+                container.innerHTML = page.html;
+                container._fcSpDestroy = page.destroy;
+                page.init();
+                container.removeAttribute('aria-busy');
+                window.requestAnimationFrame(function () {
+                    window.dispatchEvent(new Event('resize'));
+                });
+                return true;
+            })
+            .catch(function (err) {
+                if (wrap) {
+                    wrap.innerHTML = renderError(err.message || 'Unknown error');
+                } else if (container) {
+                    container.innerHTML = renderError(err.message || 'Unknown error');
+                }
+                return false;
+            });
+    }
+
+    global.FcAdminStoreProducts = {
+        load: loadStoreProducts,
+        hydrateFromServer: hydrateFromServer
+    };
+})(window);

@@ -1,0 +1,50 @@
+{
+    "role": "editor",
+    "permissions": {
+        "dashboard": {
+            "kpis": false,
+            "planner_submissions": false,
+            "entries_by_state": false,
+            "performance": false,
+            "popular_fence_styles": false,
+            "product_selections": false,
+            "latest_entries": false,
+            "customer_analytics": false
+        },
+        "products": {
+            "system_products": {
+                "view": false,
+                "edit": false
+            },
+            "store_products": {
+                "view": false,
+                "download": false
+            },
+            "fence_styles": {
+                "view_list": false,
+                "view": false,
+                "edit": false
+            }
+        },
+        "media_library": {
+            "view_list": false,
+            "upload": false,
+            "delete": false
+        },
+        "planner_entries": {
+            "view_list": false,
+            "view": false,
+            "import_export": false,
+            "trash_delete_restore": false
+        },
+        "users": {
+            "view_list": false,
+            "login_as": false,
+            "group_permissions": false
+        },
+        "settings": {
+            "settings": false
+        }
+    },
+    "updatedAt": "2026-07-22T10:02:16+00:00"
+}

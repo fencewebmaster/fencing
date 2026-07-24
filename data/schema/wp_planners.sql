@@ -1,0 +1,41 @@
+-- Fencing Calculator planner rows (used by fc/checkout.php, fc/submit.php, fc/planner.php?qid=…).
+-- Run on staging DB if `wp_planners` is missing (e.g. phpMyAdmin → Import, or mysql CLI).
+-- If production already has this table, prefer exporting structure+data from production instead.
+
+CREATE TABLE IF NOT EXISTS `wp_planners` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `planner_id` varchar(64) NOT NULL,
+  `site_id` varchar(32) DEFAULT NULL,
+  `site_url` varchar(512) DEFAULT NULL,
+  `order_id` bigint unsigned NOT NULL DEFAULT 0,
+  `status` varchar(64) NOT NULL DEFAULT 'planning',
+  `status_updated_at` datetime DEFAULT NULL,
+  `section_count` int unsigned NOT NULL DEFAULT 0,
+  `notes` longtext,
+  `name` varchar(255) DEFAULT NULL,
+  `mobile` varchar(64) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `address` varchar(512) DEFAULT NULL,
+  `postcode` varchar(32) DEFAULT NULL,
+  `state` varchar(64) DEFAULT NULL,
+  `fence_type` varchar(255) DEFAULT NULL,
+  `timeframe` varchar(128) DEFAULT NULL,
+  `extra` longtext,
+  `color_data` longtext,
+  `products_data` longtext,
+  `fence_data` longtext,
+  `cart_data` longtext,
+  `cart_items_data` longtext,
+  `project_plans_data` longtext,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `device` varchar(32) DEFAULT NULL,
+  `user_agent` varchar(512) DEFAULT NULL,
+  `quote_load_count` int unsigned NOT NULL DEFAULT 0,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `trashed_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `planner_id` (`planner_id`),
+  KEY `status` (`status`),
+  KEY `trashed_at` (`trashed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,14 @@
+.cursor
+config.php
+config.php.lock
+config.php.bak.php
+config.php.tmp.*.php
+data/wc-products-*-downloading.csv
+data/wc-products-*.csv.backup
+data/.wc-products-*-job.json
+data/.wc-products-*.lock
+
+# Generated storage (keep directory placeholders)
+data/storage/cache/**/*.json
+data/storage/sessions/sess_*
+!data/storage/**/.gitkeep
