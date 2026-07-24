@@ -25,82 +25,31 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-page {
     }
 }
 
-.fc-dashboard-page__sticky {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-    padding-bottom: 0.35rem;
-}
-
-/* Hero */
-.fc-dashboard-hero {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem 1.25rem;
-    padding: 1.15rem 1.25rem;
-    border: 1px solid var(--fc-dash-section-border, #c3c4c7);
-    border-radius: 0;
-    background: var(--fc-admin-surface);
-    box-shadow: none;
-}
-
-.fc-dashboard-hero__main {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.fc-dashboard-hero__eyebrow {
-    margin: 0 0 0.35rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--fc-admin-text-subtle);
-}
-
-.fc-dashboard-hero__title {
-    margin: 0;
-    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    color: var(--fc-admin-text-heading);
-}
-
-.fc-dashboard-hero__subtitle {
-    margin: 0.45rem 0 0;
-    font-size: 0.8125rem;
-    color: var(--fc-admin-text-muted);
-    line-height: 1.5;
-}
-
-.fc-dashboard-hero__health.is-healthy {
-    color: #10b981;
-    font-weight: 600;
-}
-
-.fc-dashboard-hero__health.is-degraded {
-    color: #f59e0b;
-    font-weight: 600;
-}
-
-.fc-dashboard-hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    flex: 0 0 auto;
-    margin-left: auto;
-    gap: 0.5rem;
-}
-
+/* Date filter in topbar (dashboard only) */
 .fc-dashboard-date-dropdown {
     flex: 0 1 auto;
     width: min(100%, 15rem);
     min-width: 11rem;
     max-width: 15rem;
+}
+
+.fc-admin-topbar__actions .fc-dashboard-date-dropdown {
+    width: min(100%, 13.5rem);
+    min-width: 10.5rem;
+    max-width: 13.5rem;
+}
+
+.fc-admin-topbar__actions .fc-dashboard-date-dropdown .fc-entries-date-dropdown__toggle {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 10.5rem;
+    height: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0 0.75rem;
+    border-radius: 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
 }
 
 .fc-dashboard-date-dropdown .fc-entries-date-dropdown__panel {

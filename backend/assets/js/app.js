@@ -670,12 +670,44 @@
     function closeSiteSwitcherMenu(root) {
         var toggle = root.querySelector('.fc-sidebar-site__toggle');
         var menu = root.querySelector('.fc-sidebar-site__menu');
+        var search = root.querySelector('.fc-sidebar-site__search');
         root.classList.remove('is-open');
         if (toggle) {
             toggle.setAttribute('aria-expanded', 'false');
         }
         if (menu) {
             menu.hidden = true;
+        }
+        if (search && search.value) {
+            search.value = '';
+            filterSiteSwitcher(root, '');
+        }
+    }
+
+    function filterSiteSwitcher(root, query) {
+        var q = String(query || '').trim().toLowerCase();
+        var otherSection = root.querySelector('[data-fc-site-section="other"]');
+        var items = otherSection
+            ? otherSection.querySelectorAll('.fc-sidebar-site__item')
+            : [];
+        var visibleCount = 0;
+
+        items.forEach(function (item) {
+            var haystack = item.getAttribute('data-fc-site-search') || item.textContent || '';
+            var match = !q || haystack.indexOf(q) !== -1;
+            item.classList.toggle('is-filtered-out', !match);
+            if (match) {
+                visibleCount += 1;
+            }
+        });
+
+        if (otherSection) {
+            otherSection.classList.toggle('is-filtered-out', q !== '' && visibleCount === 0);
+        }
+
+        var empty = root.querySelector('.fc-sidebar-site__empty');
+        if (empty) {
+            empty.hidden = !q || visibleCount > 0;
         }
     }
 
@@ -686,7 +718,9 @@
         }
 
         function getOptions(root) {
-            return Array.prototype.slice.call(root.querySelectorAll('.fc-sidebar-site__item'));
+            return Array.prototype.slice.call(
+                root.querySelectorAll('.fc-sidebar-site__item:not(.is-filtered-out)')
+            );
         }
 
         function focusOption(options, index) {
@@ -716,6 +750,7 @@
             });
             var toggle = root.querySelector('.fc-sidebar-site__toggle');
             var menu = root.querySelector('.fc-sidebar-site__menu');
+            var search = root.querySelector('.fc-sidebar-site__search');
             if (menu) {
                 menu.hidden = false;
                 // Allow CSS open transition after [hidden] is cleared.
@@ -724,9 +759,14 @@
                     if (toggle) {
                         toggle.setAttribute('aria-expanded', 'true');
                     }
-                    var active = menu.querySelector('.fc-sidebar-site__item.is-active');
-                    if (active && typeof active.scrollIntoView === 'function') {
-                        active.scrollIntoView({ block: 'nearest' });
+                    if (search) {
+                        search.focus();
+                        search.select();
+                    } else {
+                        var active = menu.querySelector('.fc-sidebar-site__item.is-active');
+                        if (active && typeof active.scrollIntoView === 'function') {
+                            active.scrollIntoView({ block: 'nearest' });
+                        }
                     }
                 });
                 return;
@@ -748,6 +788,7 @@
         roots.forEach(function (root) {
             var toggle = root.querySelector('.fc-sidebar-site__toggle');
             var menu = root.querySelector('.fc-sidebar-site__menu');
+            var search = root.querySelector('.fc-sidebar-site__search');
             if (!toggle) {
                 return;
             }
@@ -762,6 +803,10 @@
                     if (!root.classList.contains('is-open')) {
                         openMenu(root);
                     }
+                    if (search) {
+                        search.focus();
+                        return;
+                    }
                     var options = getOptions(root);
                     var activeIndex = options.findIndex(function (el) {
                         return el.classList.contains('is-active');
@@ -769,8 +814,40 @@
                     focusOption(options, activeIndex >= 0 ? activeIndex : 0);
                 }
             });
+            if (search) {
+                search.addEventListener('input', function () {
+                    filterSiteSwitcher(root, search.value);
+                });
+                search.addEventListener('keydown', function (e) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        focusOption(getOptions(root), 0);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        if (search.value) {
+                            search.value = '';
+                            filterSiteSwitcher(root, '');
+                            return;
+                        }
+                        closeSiteSwitcherMenu(root);
+                        toggle.focus();
+                    } else if (e.key === 'Enter') {
+                        var options = getOptions(root);
+                        if (options.length === 1) {
+                            e.preventDefault();
+                            options[0].click();
+                        }
+                    }
+                });
+                search.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            }
             if (menu) {
                 menu.addEventListener('keydown', function (e) {
+                    if (e.target === search) {
+                        return;
+                    }
                     var options = getOptions(root);
                     if (!options.length) {
                         return;
@@ -782,6 +859,10 @@
                         focusOption(options, index < 0 ? 0 : index + 1);
                     } else if (e.key === 'ArrowUp') {
                         e.preventDefault();
+                        if (index <= 0 && search) {
+                            search.focus();
+                            return;
+                        }
                         focusOption(options, index < 0 ? options.length - 1 : index - 1);
                     } else if (e.key === 'Home') {
                         e.preventDefault();

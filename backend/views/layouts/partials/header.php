@@ -13,6 +13,18 @@
                     <?php echo htmlspecialchars($pageTitle); ?>
                 </h1>
                 <div class="fc-admin-topbar__actions shrink-0">
+                    <?php if (!empty($fcAdminIsDashboard) && is_array($fcDashboardPage ?? null)) : ?>
+                    <?php
+                    if (!function_exists('fc_dashboard_admin_h')) {
+                        require_once FC_ROOT . '/config/dashboard_admin.php';
+                    }
+                    $h = 'fc_dashboard_admin_h';
+                    $page = $fcDashboardPage;
+                    $datePeriodOptions = is_array($page['date_period_options'] ?? null) ? $page['date_period_options'] : [];
+                    $fcDashboardDateDropdownContext = 'topbar';
+                    require __DIR__ . '/../../partials/dashboard-date-dropdown.php';
+                    ?>
+                    <?php endif; ?>
                     <div class="fc-admin-theme-switcher shrink-0" role="group" aria-label="Appearance">
                         <button
                             type="button"

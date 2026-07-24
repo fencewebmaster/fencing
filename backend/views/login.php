@@ -136,12 +136,11 @@ $appBase = (string) ($page['app_base'] ?? '..');
                             <p class="fc-login-field__error hidden" data-error="password"></p>
                         </div>
 
-                        <div class="flex items-center justify-between mb-6">
-                            <label class="form-checkbox">
-                                <input type="checkbox" name="remember">
-                                <span>Remember me</span>
+                        <div class="mb-6">
+                            <label class="form-checkbox" for="remember">
+                                <input type="checkbox" id="remember" name="remember">
+                                <span class="form-checkbox__label">Remember me</span>
                             </label>
-                            <a href="#" class="link-primary" onclick="return false;" title="Reset via WordPress">Forgot password?</a>
                         </div>
 
                         <button type="submit" id="login-btn" class="w-full btn-primary btn-lg">

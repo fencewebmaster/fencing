@@ -132,8 +132,23 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                 <?php endif; ?>
             </div>
 
+            <?php if ($fcSiteHomeKey !== '' || $fcSiteCount > 0) : ?>
+            <div class="fc-sidebar-site__search-wrap">
+                <i class="fa-solid fa-magnifying-glass fc-sidebar-site__search-icon" aria-hidden="true"></i>
+                <input
+                    type="search"
+                    class="fc-sidebar-site__search"
+                    id="fc-sidebar-site-search"
+                    placeholder="Search sites…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search sites"
+                >
+            </div>
+            <?php endif; ?>
+
             <?php if ($fcSiteHomeKey !== '' && $fcHomeSwitchHref !== '') : ?>
-            <div class="fc-sidebar-site__quick">
+            <div class="fc-sidebar-site__quick" data-fc-site-section="home">
                 <span class="fc-sidebar-site__quick-label">Main site</span>
                 <a
                     href="<?php echo htmlspecialchars($fcHomeSwitchHref, ENT_QUOTES, 'UTF-8'); ?>"
@@ -141,6 +156,7 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                     role="option"
                     aria-selected="<?php echo $fcHomeIsCurrent ? 'true' : 'false'; ?>"
                     title="<?php echo htmlspecialchars(trim($fcHomeName . ($fcHomeUrl !== '' ? ' — ' . $fcHomeUrl : '')), ENT_QUOTES, 'UTF-8'); ?>"
+                    data-fc-site-search="<?php echo htmlspecialchars(strtolower(trim($fcHomeName . ' ' . $fcHomeHost . ' ' . $fcHomeDomain)), ENT_QUOTES, 'UTF-8'); ?>"
                     data-nav-full="1"
                     <?php echo $fcHomeIsCurrent ? ' tabindex="-1"' : ''; ?>
                 >
@@ -167,7 +183,7 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
             <?php endif; ?>
 
             <?php if ($fcSiteCount > 0) : ?>
-            <div class="fc-sidebar-site__menu-list">
+            <div class="fc-sidebar-site__menu-list" data-fc-site-section="other">
                 <span class="fc-sidebar-site__list-label">Other sites</span>
                 <?php foreach ($fcAdminSites as $site) : ?>
                 <?php
@@ -186,6 +202,7 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                     '_token' => $fcSiteSwitchToken,
                     'redirect' => $fcSiteRedirectPath,
                 ]);
+                $siteSearch = strtolower(trim($siteName . ' ' . $siteHost . ' ' . $siteDomain . ' ' . $siteKey));
                 ?>
                 <a
                     href="<?php echo htmlspecialchars($switchHref, ENT_QUOTES, 'UTF-8'); ?>"
@@ -193,6 +210,7 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                     role="option"
                     aria-selected="<?php echo $isCurrent ? 'true' : 'false'; ?>"
                     title="<?php echo htmlspecialchars(trim($siteName . ($siteUrl !== '' ? ' — ' . $siteUrl : '')), ENT_QUOTES, 'UTF-8'); ?>"
+                    data-fc-site-search="<?php echo htmlspecialchars($siteSearch, ENT_QUOTES, 'UTF-8'); ?>"
                     data-nav-full="1"
                     <?php echo $isCurrent ? ' tabindex="-1"' : ''; ?>
                 >
@@ -217,6 +235,10 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                 </a>
                 <?php endforeach; ?>
             </div>
+            <?php endif; ?>
+
+            <?php if ($fcSiteHomeKey !== '' || $fcSiteCount > 0) : ?>
+            <p class="fc-sidebar-site__empty" hidden>No other sites match</p>
             <?php endif; ?>
         </div>
     </div>

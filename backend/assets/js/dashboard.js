@@ -1440,8 +1440,18 @@
             && String(a.to || '') === String(b.to || '');
     }
 
+    function getDateDropdown(root) {
+        if (root) {
+            var nested = root.querySelector('[data-fc-dashboard-date-dropdown]');
+            if (nested) {
+                return nested;
+            }
+        }
+        return document.querySelector('[data-fc-dashboard-date-dropdown]');
+    }
+
     function syncDateFilterUi(root, filter) {
-        var dropdown = root.querySelector('[data-fc-dashboard-date-dropdown]');
+        var dropdown = getDateDropdown(root);
         if (dropdown) {
             writeDateFilterToDom(dropdown, filter);
             if (window.FcEntriesDateFilter && typeof window.FcEntriesDateFilter.syncUi === 'function') {
@@ -1470,7 +1480,7 @@
     }
 
     function ensureDateDropdown(root) {
-        var dropdown = root.querySelector('[data-fc-dashboard-date-dropdown]');
+        var dropdown = getDateDropdown(root);
         if (!dropdown) {
             return null;
         }
@@ -1485,7 +1495,7 @@
         if (fromUrl) {
             return fromUrl;
         }
-        var dropdown = root.querySelector('[data-fc-dashboard-date-dropdown]');
+        var dropdown = getDateDropdown(root);
         return readDateFilterFromDom(dropdown);
     }
 
@@ -1502,20 +1512,24 @@
     }
 
     function bindDateDropdown(root) {
-        if (root.getAttribute('data-fc-dashboard-date-bound') === '1') {
+        if (document.documentElement.getAttribute('data-fc-dashboard-date-bound') === '1') {
             return;
         }
-        root.setAttribute('data-fc-dashboard-date-bound', '1');
+        document.documentElement.setAttribute('data-fc-dashboard-date-bound', '1');
 
-        root.addEventListener('fc-entries-date-change', function (e) {
+        document.addEventListener('fc-entries-date-change', function (e) {
             var dropdown = e.target && e.target.closest
                 ? e.target.closest('[data-fc-dashboard-date-dropdown]')
                 : null;
-            if (!dropdown || !root.contains(dropdown)) {
+            if (!dropdown) {
+                return;
+            }
+            var activeRoot = getRoot(root) || root;
+            if (!activeRoot) {
                 return;
             }
             var detail = e.detail || {};
-            applyDateFilter(root, {
+            applyDateFilter(activeRoot, {
                 period: detail.period || '',
                 from: detail.from || '',
                 to: detail.to || '',

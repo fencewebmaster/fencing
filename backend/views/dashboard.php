@@ -17,15 +17,6 @@ $summary = is_array($page['summary'] ?? null) ? $page['summary'] : [];
 $links = is_array($page['links'] ?? null) ? $page['links'] : [];
 $auStates = is_array($page['au_states'] ?? null) ? $page['au_states'] : [];
 $entriesBase = (string) ($links['entries'] ?? '');
-$datePeriodOptions = is_array($page['date_period_options'] ?? null) ? $page['date_period_options'] : [];
-$displayName = '';
-if (!empty($fcAuthUser['display_name'])) {
-    $displayName = (string) $fcAuthUser['display_name'];
-} elseif (!empty($fcAuthUser['login'])) {
-    $displayName = (string) $fcAuthUser['login'];
-}
-$greetingName = $displayName !== '' ? explode(' ', trim($displayName))[0] : 'there';
-$todayLabel = (new DateTime('now'))->format('l, j M Y');
 $widgets = is_array($page['widgets_visible'] ?? null) ? $page['widgets_visible'] : [];
 $showWidget = static function (string $id) use ($widgets): bool {
     return !array_key_exists($id, $widgets) || !empty($widgets[$id]);
@@ -37,110 +28,6 @@ $showWidget = static function (string $id) use ($widgets): bool {
     data-fc-dashboard-api="<?php echo $h((string) ($page['api_url'] ?? 'api.php?module=dashboard')); ?>"
     data-fc-dashboard-entries="<?php echo $h($entriesBase); ?>"
 >
-    <div class="fc-dashboard-page__sticky">
-        <header class="fc-dashboard-hero">
-            <div class="fc-dashboard-hero__main">
-                <p class="fc-dashboard-hero__eyebrow"><?php echo $h($todayLabel); ?></p>
-                <h2 class="fc-dashboard-hero__title">Good <?php echo (int) date('G') < 12 ? 'morning' : ((int) date('G') < 17 ? 'afternoon' : 'evening'); ?>, <?php echo $h($greetingName); ?></h2>
-            </div>
-            <div class="fc-dashboard-hero__actions">
-                <div
-                    class="fc-entries-date-dropdown fc-dashboard-date-dropdown<?php echo ($page['date_period'] ?? '') !== '' ? ' is-active' : ''; ?><?php echo ($page['date_period'] ?? '') === 'custom' ? ' is-custom' : ''; ?>"
-                    data-fc-entries-date-dropdown
-                    data-fc-dashboard-date-dropdown
-                >
-                    <input type="hidden" value="<?php echo $h((string) ($page['date_period'] ?? '')); ?>" data-fc-entries-date-period>
-                    <input type="hidden" value="<?php echo $h((string) ($page['date_from'] ?? '')); ?>" data-fc-entries-date-from>
-                    <input type="hidden" value="<?php echo $h((string) ($page['date_to'] ?? '')); ?>" data-fc-entries-date-to>
-                    <button
-                        type="button"
-                        class="fc-dashboard-toolbar-btn fc-entries-date-dropdown__toggle"
-                        id="fc-dashboard-date-toggle"
-                        aria-haspopup="listbox"
-                        aria-expanded="false"
-                        aria-controls="fc-dashboard-date-panel"
-                        aria-label="Filter charts by date"
-                    >
-                        <i class="fa-regular fa-calendar-days fc-entries-date-dropdown__icon" aria-hidden="true"></i>
-                        <span class="fc-entries-date-dropdown__label" data-fc-entries-date-label><?php echo $h((string) ($page['date_filter_label'] ?? 'All dates')); ?></span>
-                        <i class="fa-solid fa-chevron-down fc-entries-date-dropdown__caret" aria-hidden="true"></i>
-                    </button>
-                    <div
-                        class="fc-entries-date-dropdown__panel"
-                        id="fc-dashboard-date-panel"
-                        role="listbox"
-                        aria-labelledby="fc-dashboard-date-toggle"
-                        hidden
-                    >
-                        <div class="fc-entries-date-dropdown__presets">
-                            <?php foreach ($datePeriodOptions as $periodKey => $periodLabel) : ?>
-                            <?php if ($periodKey === 'custom') {
-                                continue;
-                            } ?>
-                            <button
-                                type="button"
-                                class="fc-entries-date-dropdown__option<?php echo ($page['date_period'] ?? '') === $periodKey ? ' is-selected' : ''; ?>"
-                                data-fc-entries-date-preset="<?php echo $h((string) $periodKey); ?>"
-                                role="option"
-                                aria-selected="<?php echo ($page['date_period'] ?? '') === $periodKey ? 'true' : 'false'; ?>"
-                            >
-                                <span><?php echo $h((string) $periodLabel); ?></span>
-                                <i class="fa-solid fa-check fc-entries-date-dropdown__check" aria-hidden="true"></i>
-                            </button>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="fc-entries-date-dropdown__custom-wrap">
-                            <button
-                                type="button"
-                                class="fc-entries-date-dropdown__option fc-entries-date-dropdown__option--custom<?php echo ($page['date_period'] ?? '') === 'custom' ? ' is-selected' : ''; ?>"
-                                data-fc-entries-date-preset="custom"
-                                role="option"
-                                aria-selected="<?php echo ($page['date_period'] ?? '') === 'custom' ? 'true' : 'false'; ?>"
-                            >
-                                <span><?php echo $h((string) ($datePeriodOptions['custom'] ?? 'Custom')); ?></span>
-                                <i class="fa-solid fa-check fc-entries-date-dropdown__check" aria-hidden="true"></i>
-                            </button>
-                            <div
-                                class="fc-entries-date-dropdown__custom"
-                                data-fc-entries-date-custom
-                                <?php echo ($page['date_period'] ?? '') === 'custom' ? '' : 'hidden'; ?>
-                            >
-                                <div class="fc-entries-date-dropdown__custom-fields">
-                                    <label class="fc-entries-date-dropdown__field">
-                                        <span class="fc-entries-date-dropdown__field-label">From</span>
-                                        <input
-                                            type="date"
-                                            class="fc-entries-date-dropdown__input"
-                                            data-fc-entries-date-custom-from
-                                            value="<?php echo $h((string) ($page['date_from'] ?? '')); ?>"
-                                        >
-                                    </label>
-                                    <label class="fc-entries-date-dropdown__field">
-                                        <span class="fc-entries-date-dropdown__field-label">To</span>
-                                        <input
-                                            type="date"
-                                            class="fc-entries-date-dropdown__input"
-                                            data-fc-entries-date-custom-to
-                                            value="<?php echo $h((string) ($page['date_to'] ?? '')); ?>"
-                                        >
-                                    </label>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-orange fw-semibold fc-entries-date-dropdown__apply-custom" data-fc-entries-date-apply-custom>
-                                    Apply range
-                                </button>
-                            </div>
-                        </div>
-                        <div class="fc-entries-date-dropdown__footer">
-                            <button type="button" class="fc-entries-date-dropdown__clear" data-fc-entries-date-clear>
-                                Clear dates
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-    </div>
-
     <?php if ($showWidget('kpis')) : ?>
     <?php
     $fcKpiCards = [
@@ -229,18 +116,14 @@ $showWidget = static function (string $id) use ($widgets): bool {
                             <p class="fc-dashboard-card__desc">Daily submission volume over the selected period</p>
                         </div>
                     </div>
+                    <?php if ($entriesBase !== '') : ?>
                     <div class="fc-dashboard-card__head-aside">
-                        <span class="fc-dashboard-period-badge" data-fc-dashboard-trend-period>
-                            <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
-                            <span data-fc-dashboard-trend-period-label><?php echo $h((string) ($page['date_filter_label'] ?? 'All dates')); ?></span>
-                        </span>
-                        <?php if ($entriesBase !== '') : ?>
                         <a class="fc-dashboard-card__link fc-dashboard-card__link--btn" href="<?php echo $h($entriesBase); ?>" data-nav-full="1" data-fc-dashboard-entries-all-link data-route="planner-entries">
                             View entries
                             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
-                        <?php endif; ?>
                     </div>
+                    <?php endif; ?>
                 </div>
                 <div class="fc-dashboard-viz-summary fc-dashboard-viz-summary--header" data-fc-dashboard-trend-summary hidden></div>
             </header>
