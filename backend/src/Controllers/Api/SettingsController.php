@@ -307,6 +307,12 @@ final class SettingsController
             return;
         }
 
+        if (trim((string) ($payload['confirm'] ?? '')) !== 'CONFIRM') {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Type CONFIRM to pull updates.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         $root = defined('FC_ROOT') ? (string) FC_ROOT : '';
         if ($root === '' || !is_dir($root)) {
             http_response_code(500);

@@ -1904,12 +1904,14 @@
                           'This will run git pull on the server and may update application files. Continue?',
                       confirmLabel: 'Pull updates',
                       cancelLabel: 'Cancel',
-                      variant: 'warning'
+                      variant: 'warning',
+                      confirmText: 'CONFIRM',
+                      confirmPrompt: 'Type {confirm} to continue.'
                   })
                 : Promise.resolve(
-                      window.confirm(
-                          'This will run git pull on the server and may update application files. Continue?'
-                      )
+                      window.prompt(
+                          'This will run git pull on the server and may update application files.\n\nType CONFIRM to continue:'
+                      ) === 'CONFIRM'
                   );
 
         ask.then(function (ok) {
@@ -1928,7 +1930,7 @@
                     Accept: 'application/json'
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({ csrf: state.csrf || '' })
+                body: JSON.stringify({ csrf: state.csrf || '', confirm: 'CONFIRM' })
             })
                 .then(function (res) {
                     return res.json().then(function (body) {

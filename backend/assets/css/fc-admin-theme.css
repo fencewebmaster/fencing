@@ -908,3 +908,29 @@ html[data-fc-admin-theme='dark'] .fc-fs-gui-callout--gate {
     border-color: rgba(251, 146, 60, 0.35);
     color: #fdba74;
 }
+
+.fc-admin-modal-confirm-field .fc-settings-field {
+    width: 100%;
+}
+
+.fc-admin-modal-confirm-token {
+    color: var(--fc-princeton-orange, #f67925);
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.04em;
+}
+
+[data-fc-admin-modal-confirm].is-disabled,
+[data-fc-admin-modal-confirm]:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: grayscale(0.15);
+}
+
+html[data-fc-admin-theme='dark'] .fc-admin-modal-confirm-token {
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+html[data-fc-admin-theme='dark'] .fc-admin-modal-confirm-field label {
+    color: var(--fc-admin-text, #e2e8f0);
+}

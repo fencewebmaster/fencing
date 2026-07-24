@@ -152,6 +152,16 @@
 
         el.querySelectorAll('[data-fc-admin-modal-confirm]').forEach(function (btn) {
             btn.addEventListener('click', function () {
+                if (btn.disabled) {
+                    return;
+                }
+                var required = el.getAttribute('data-fc-admin-modal-confirm-text') || '';
+                if (required) {
+                    var input = el.querySelector('[data-fc-admin-modal-confirm-input]');
+                    if (!input || String(input.value || '') !== required) {
+                        return;
+                    }
+                }
                 finish(true);
             });
         });
@@ -176,6 +186,32 @@
         });
     }
 
+    function bindConfirmTextGate(el, requiredText) {
+        var input = el.querySelector('[data-fc-admin-modal-confirm-input]');
+        var confirmBtn = el.querySelector('[data-fc-admin-modal-confirm]');
+        if (!input || !confirmBtn || !requiredText) {
+            return;
+        }
+
+        function sync() {
+            var matched = String(input.value || '') === requiredText;
+            confirmBtn.disabled = !matched;
+            confirmBtn.setAttribute('aria-disabled', matched ? 'false' : 'true');
+            confirmBtn.classList.toggle('is-disabled', !matched);
+        }
+
+        input.addEventListener('input', sync);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!confirmBtn.disabled) {
+                    confirmBtn.click();
+                }
+            }
+        });
+        sync();
+    }
+
     function btnClasses() {
         var B = global.FcAdminBtn || {};
         return {
@@ -193,6 +229,10 @@
         var confirmLabel = opts.confirmLabel || 'Confirm';
         var cancelLabel = opts.cancelLabel || 'Cancel';
         var okLabel = opts.okLabel || 'OK';
+        var confirmText = String(opts.confirmText || '');
+        var confirmPrompt =
+            opts.confirmPrompt ||
+            (confirmText ? 'Type {confirm} to confirm.' : '');
         var dismissible = opts.dismissible !== false && mode !== 'loading';
         var buttonsHtml = '';
         var btn = btnClasses();
@@ -206,7 +246,10 @@
                 '</button>' +
                 '<button type="button" data-fc-admin-modal-confirm class="' +
                 btn.primary +
-                '">' +
+                (confirmText ? ' is-disabled' : '') +
+                '"' +
+                (confirmText ? ' disabled aria-disabled="true"' : '') +
+                '>' +
                 escapeHtml(confirmLabel) +
                 '</button>';
         } else if (mode !== 'loading') {
@@ -245,6 +288,28 @@
             ? '<p class="text-base leading-relaxed text-slate-600">' + escapeHtml(message) + '</p>'
             : '<p class="text-base leading-relaxed text-slate-500">&nbsp;</p>';
 
+        if (mode === 'confirm' && confirmText) {
+            var promptHtml = escapeHtml(confirmPrompt).replace(
+                /\{confirm\}/g,
+                '<span class="fc-admin-modal-confirm-token">' + escapeHtml(confirmText) + '</span>'
+            );
+            if (promptHtml.indexOf('fc-admin-modal-confirm-token') === -1) {
+                promptHtml = escapeHtml(confirmPrompt).replace(
+                    new RegExp(escapeHtml(confirmText).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+                    '<span class="fc-admin-modal-confirm-token">' + escapeHtml(confirmText) + '</span>'
+                );
+            }
+            bodyHtml +=
+                '<div class="fc-admin-modal-confirm-field mt-4">' +
+                '<label class="mb-1.5 block text-sm font-medium text-slate-700" for="fc-admin-modal-confirm-input">' +
+                promptHtml +
+                '</label>' +
+                '<input type="text" id="fc-admin-modal-confirm-input" data-fc-admin-modal-confirm-input class="fc-settings-field" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="' +
+                escapeHtml(confirmText) +
+                '" aria-required="true">' +
+                '</div>';
+        }
+
         var footerHtml = buttonsHtml
             ? '<footer data-fc-admin-modal-footer class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50/80 px-6 py-4">' +
               buttonsHtml +
@@ -256,7 +321,11 @@
             escapeHtml(mode) +
             '" data-fc-admin-modal-dismissible="' +
             (dismissible ? 'true' : 'false') +
-            '">' +
+            '"' +
+            (confirmText
+                ? ' data-fc-admin-modal-confirm-text="' + escapeHtml(confirmText) + '"'
+                : '') +
+            '>' +
             '<div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" data-fc-admin-modal-backdrop aria-hidden="true"></div>' +
             '<div class="relative w-full max-w-md scale-95 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-slate-200 transition-transform duration-200" data-fc-admin-modal-panel>' +
             closeBtnHtml +
@@ -283,6 +352,7 @@
         opts = normalizeOpts(opts);
         var id = opts.id || '';
         var mode = opts.mode || 'alert';
+        var confirmText = String(opts.confirmText || '');
 
         if (id && modalsById[id]) {
             dismiss(id);
@@ -306,12 +376,20 @@
 
         return new Promise(function (resolve) {
             bindDismiss(el, id, resolve, mode === 'confirm' ? true : undefined);
+            if (mode === 'confirm' && confirmText) {
+                bindConfirmTextGate(el, confirmText);
+            }
 
             requestAnimationFrame(function () {
                 el.classList.remove('opacity-0');
                 var panel = el.querySelector('[data-fc-admin-modal-panel]');
                 if (panel) {
                     panel.classList.remove('scale-95');
+                }
+                var confirmInput = el.querySelector('[data-fc-admin-modal-confirm-input]');
+                if (confirmInput) {
+                    confirmInput.focus();
+                    return;
                 }
                 var primary =
                     el.querySelector('[data-fc-admin-modal-confirm]') ||
