@@ -8,6 +8,7 @@ data/wc-products-*.csv.backup
 data/.wc-products-*-job.json
 data/.wc-products-*.lock
 
+
 # Generated storage (keep directory placeholders)
 data/storage/cache/**/*.json
 data/storage/sessions/sess_*
