@@ -54,6 +54,11 @@ final class SettingsController
             return;
         }
 
+        if ($action === 'git-pull') {
+            self::handleGitPull($method);
+            return;
+        }
+
         http_response_code($action === '' ? 400 : 405);
         echo json_encode([
             'ok' => false,
@@ -279,6 +284,108 @@ final class SettingsController
 
         http_response_code(405);
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    private static function handleGitPull(string $method): void
+    {
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $payload = self::jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (!function_exists('fc_auth_verify_csrf') || !fc_auth_verify_csrf(
+            isset($payload['csrf']) ? (string) $payload['csrf'] : null
+        )) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $root = defined('FC_ROOT') ? (string) FC_ROOT : '';
+        if ($root === '' || !is_dir($root)) {
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'error' => 'Project root is not available.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!is_dir($root . DIRECTORY_SEPARATOR . '.git')) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'This install is not a git repository.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $result = self::runGitPull($root);
+        if (empty($result['ok'])) {
+            http_response_code(500);
+        }
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * @return array{ok:bool,output:string,message?:string,error?:string,exitCode?:int}
+     */
+    private static function runGitPull(string $root): array
+    {
+        $descriptor = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $process = null;
+        $pipes = [];
+
+        // Prefer argv form so the shell is not required for argument parsing.
+        if (PHP_VERSION_ID >= 70400) {
+            $process = @proc_open(['git', 'pull'], $descriptor, $pipes, $root);
+        }
+
+        if (!is_resource($process)) {
+            $process = @proc_open('git pull', $descriptor, $pipes, $root);
+        }
+
+        if (!is_resource($process)) {
+            return [
+                'ok' => false,
+                'error' => 'Could not start git pull.',
+                'output' => '',
+            ];
+        }
+
+        fclose($pipes[0]);
+        stream_set_blocking($pipes[1], true);
+        stream_set_blocking($pipes[2], true);
+        $stdout = stream_get_contents($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $exitCode = proc_close($process);
+
+        $stdout = is_string($stdout) ? trim($stdout) : '';
+        $stderr = is_string($stderr) ? trim($stderr) : '';
+        $output = trim(implode("\n", array_filter([$stdout, $stderr], static fn(string $chunk): bool => $chunk !== '')));
+
+        if ($exitCode !== 0) {
+            return [
+                'ok' => false,
+                'error' => 'git pull failed.',
+                'output' => $output !== '' ? $output : 'git pull exited with code ' . $exitCode . '.',
+                'exitCode' => $exitCode,
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'Updates pulled successfully.',
+            'output' => $output !== '' ? $output : 'Already up to date.',
+            'exitCode' => $exitCode,
+        ];
     }
 
     /** @return mixed */

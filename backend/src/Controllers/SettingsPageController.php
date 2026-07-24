@@ -9,7 +9,7 @@ use Fc\Admin\Services\AdminContext;
 
 final class SettingsPageController extends Controller
 {
-    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration'];
+    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'dev-mode'];
 
     public function index(AdminContext $context): void
     {
@@ -54,6 +54,9 @@ final class SettingsPageController extends Controller
         }
         if ($tab === 'integrations') {
             $tab = 'integration';
+        }
+        if ($tab === 'devmode' || $tab === 'dev') {
+            $tab = 'dev-mode';
         }
 
         return in_array($tab, self::TABS, true) ? $tab : 'theme';

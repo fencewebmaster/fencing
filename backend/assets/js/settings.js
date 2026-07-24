@@ -10,14 +10,24 @@
     var API_CATALOG = fcApiUrl('settings', 'action=catalog');
     var API_SYSTEM = fcApiUrl('settings', 'action=system');
     var API_INTEGRATIONS = fcApiUrl('settings', 'action=integrations');
+    var API_GIT_PULL = fcApiUrl('settings', 'action=git-pull');
     var TOAST_THEME = 'fc-theme-save';
     var TOAST_BRANDING = 'fc-branding-save';
     var TOAST_FENCE_COLORS = 'fc-fence-colors-save';
     var TOAST_CATALOG = 'fc-catalog-save';
     var TOAST_SYSTEM = 'fc-system-save';
     var TOAST_INTEGRATIONS = 'fc-integrations-save';
+    var TOAST_DEV_MODE = 'fc-dev-mode';
 
-    var SETTINGS_TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration'];
+    var SETTINGS_TABS = [
+        'theme',
+        'branding',
+        'fence-colors',
+        'catalog',
+        'system',
+        'integration',
+        'dev-mode'
+    ];
     var SETTINGS_DEFAULT_TAB = 'theme';
     var SETTINGS_URL_TAB_KEY = 'tab';
 
@@ -92,6 +102,9 @@
         }
         if (normalized === 'integrations') {
             normalized = 'integration';
+        }
+        if (normalized === 'devmode' || normalized === 'dev') {
+            normalized = 'dev-mode';
         }
         return SETTINGS_TABS.indexOf(normalized) !== -1 ? normalized : SETTINGS_DEFAULT_TAB;
     }
@@ -331,7 +344,8 @@
             { id: 'fence-colors', label: 'Fence colors' },
             { id: 'catalog', label: 'Catalog' },
             { id: 'system', label: 'System' },
-            { id: 'integration', label: 'Integration' }
+            { id: 'integration', label: 'Integration' },
+            { id: 'dev-mode', label: 'Dev Mode' }
         ];
 
         return (
@@ -445,7 +459,10 @@
             '<button type="button" id="fc-integration-save" class="' +
             btnPrimary +
             '">Save Integrations</button>' +
-            '</div></div>'
+            '</div>' +
+            '<div id="fc-settings-header-actions-dev-mode" class="' +
+            (state.activeTab === 'dev-mode' ? 'flex' : 'hidden') +
+            ' flex-wrap gap-2"></div></div>'
         );
     }
 
@@ -456,6 +473,7 @@
         var catalogActions = document.getElementById('fc-settings-header-actions-catalog');
         var systemActions = document.getElementById('fc-settings-header-actions-system');
         var integrationActions = document.getElementById('fc-settings-header-actions-integration');
+        var devModeActions = document.getElementById('fc-settings-header-actions-dev-mode');
         var themeDirty = document.getElementById('fc-settings-theme-dirty');
         var brandingDirty = document.getElementById('fc-settings-branding-dirty');
         var fenceColorsDirty = document.getElementById('fc-settings-fence-colors-dirty');
@@ -486,6 +504,10 @@
         if (integrationActions) {
             integrationActions.classList.toggle('hidden', state.activeTab !== 'integration');
             integrationActions.classList.toggle('flex', state.activeTab === 'integration');
+        }
+        if (devModeActions) {
+            devModeActions.classList.toggle('hidden', state.activeTab !== 'dev-mode');
+            devModeActions.classList.toggle('flex', state.activeTab === 'dev-mode');
         }
         if (themeDirty) {
             themeDirty.classList.toggle('hidden', state.activeTab !== 'theme' || !state.themeDirty);
@@ -1312,6 +1334,7 @@
         var catalogPanel = document.getElementById('fc-settings-panel-catalog');
         var systemPanel = document.getElementById('fc-settings-panel-system');
         var integrationPanel = document.getElementById('fc-settings-panel-integration');
+        var devModePanel = document.getElementById('fc-settings-panel-dev-mode');
         var preview = document.getElementById('fc-settings-preview');
         var layout = document.getElementById('fc-settings-layout');
         var showPreview = tabId === 'theme' || tabId === 'branding';
@@ -1333,6 +1356,9 @@
         }
         if (integrationPanel) {
             integrationPanel.classList.toggle('hidden', tabId !== 'integration');
+        }
+        if (devModePanel) {
+            devModePanel.classList.toggle('hidden', tabId !== 'dev-mode');
         }
         if (layout) {
             layout.classList.toggle('lg:grid-cols-2', showPreview);
@@ -1832,6 +1858,116 @@
                 switchTab(btn.getAttribute('data-fc-settings-tab'));
             });
         });
+    }
+
+    function setDevModePullBusy(busy) {
+        var btn = document.getElementById('fc-dev-mode-pull');
+        var status = document.getElementById('fc-dev-mode-pull-status');
+        if (btn) {
+            btn.disabled = !!busy;
+            btn.classList.toggle('is-busy', !!busy);
+        }
+        if (status) {
+            if (busy) {
+                status.hidden = false;
+                status.textContent = 'Pulling updates…';
+            } else if (!status.textContent) {
+                status.hidden = true;
+            }
+        }
+    }
+
+    function showDevModePullOutput(text, isError) {
+        var output = document.getElementById('fc-dev-mode-pull-output');
+        if (!output) {
+            return;
+        }
+        var value = String(text || '').trim();
+        if (!value) {
+            output.classList.add('hidden');
+            output.textContent = '';
+            output.classList.remove('is-error');
+            return;
+        }
+        output.classList.remove('hidden');
+        output.classList.toggle('is-error', !!isError);
+        output.textContent = value;
+    }
+
+    function pullUpdates() {
+        var Modal = global.FcAdminModal;
+        var ask =
+            Modal && typeof Modal.confirm === 'function'
+                ? Modal.confirm({
+                      title: 'Pull updates?',
+                      message:
+                          'This will run git pull on the server and may update application files. Continue?',
+                      confirmLabel: 'Pull updates',
+                      cancelLabel: 'Cancel',
+                      variant: 'warning'
+                  })
+                : Promise.resolve(
+                      window.confirm(
+                          'This will run git pull on the server and may update application files. Continue?'
+                      )
+                  );
+
+        ask.then(function (ok) {
+            if (!ok) {
+                return;
+            }
+
+            setDevModePullBusy(true);
+            showDevModePullOutput('');
+            toast('saving', 'Pulling updates…', TOAST_DEV_MODE);
+
+            fetch(API_GIT_PULL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ csrf: state.csrf || '' })
+            })
+                .then(function (res) {
+                    return res.json().then(function (body) {
+                        return { res: res, body: body || {} };
+                    });
+                })
+                .then(function (result) {
+                    var body = result.body;
+                    var output = body.output || body.error || '';
+                    if (!result.res.ok || !body.ok) {
+                        showDevModePullOutput(output || body.error || 'git pull failed.', true);
+                        toast('error', body.error || 'Could not pull updates.', TOAST_DEV_MODE);
+                        return;
+                    }
+                    showDevModePullOutput(output || body.message || 'Already up to date.', false);
+                    toast('ok', body.message || 'Updates pulled successfully.', TOAST_DEV_MODE);
+                    var status = document.getElementById('fc-dev-mode-pull-status');
+                    if (status) {
+                        status.hidden = false;
+                        status.textContent = 'Last pull completed.';
+                    }
+                })
+                .catch(function (err) {
+                    showDevModePullOutput(err && err.message ? err.message : 'Could not pull updates.', true);
+                    toast('error', (err && err.message) || 'Could not pull updates.', TOAST_DEV_MODE);
+                })
+                .finally(function () {
+                    setDevModePullBusy(false);
+                });
+        });
+    }
+
+    function bindDevModeForm() {
+        var pullBtn = document.getElementById('fc-dev-mode-pull');
+        if (!pullBtn || pullBtn.getAttribute('data-fc-dev-mode-bound') === '1') {
+            return;
+        }
+        pullBtn.setAttribute('data-fc-dev-mode-bound', '1');
+        pullBtn.addEventListener('click', pullUpdates);
     }
 
     function paintThemeForm() {
@@ -2687,6 +2823,7 @@
         bindCatalogForm();
         bindSystemForm();
         bindIntegrationForm();
+        bindDevModeForm();
         updatePresetCards();
         applyLiveTheme();
         updateBrandingPreview();

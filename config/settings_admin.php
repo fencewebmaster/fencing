@@ -186,6 +186,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'catalog'      => 'Catalog',
             'system'       => 'System',
             'integration'  => 'Integration',
+            'dev-mode'     => 'Dev Mode',
         ],
         'btn_secondary'    => 'btn btn-sm btn-dark fw-semibold',
         'btn_primary'      => 'btn btn-sm btn-orange fw-semibold',
@@ -216,6 +217,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'catalog'      => $initialTab === 'catalog' ? '' : 'hidden ',
             'system'       => $initialTab === 'system' ? '' : 'hidden ',
             'integration'  => $initialTab === 'integration' ? '' : 'hidden ',
+            'dev_mode'     => $initialTab === 'dev-mode' ? '' : 'hidden ',
         ],
         'header_actions_class' => [
             'theme'        => $initialTab === 'theme' ? 'flex' : 'hidden',
@@ -224,6 +226,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'catalog'      => $initialTab === 'catalog' ? 'flex' : 'hidden',
             'system'       => $initialTab === 'system' ? 'flex' : 'hidden',
             'integration'  => $initialTab === 'integration' ? 'flex' : 'hidden',
+            'dev_mode'     => $initialTab === 'dev-mode' ? 'flex' : 'hidden',
         ],
         'bootstrap'        => $bootstrap,
     ];

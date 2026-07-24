@@ -67,6 +67,7 @@ $tab = $fcSettingsPage;
                     <button type="button" id="fc-integration-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Discard Changes</button>
                     <button type="button" id="fc-integration-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Integrations</button>
                 </div>
+                <div id="fc-settings-header-actions-dev-mode" class="<?php echo $h((string) $tab['header_actions_class']['dev_mode']); ?> flex-wrap gap-2"></div>
             </div>
 
             <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
@@ -549,6 +550,28 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
 
+                        </div>
+
+                        <div id="fc-settings-panel-dev-mode" class="<?php echo $h((string) $tab['panel_class']['dev_mode']); ?>space-y-5">
+                            <div>
+                                <h2 class="text-lg font-semibold text-slate-900">Dev Mode</h2>
+                                <p class="mt-1 text-sm text-slate-500">Development tools for deploying updates on this environment.</p>
+                            </div>
+
+                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-slate-800">Git updates</h3>
+                                    <p class="mt-1 text-xs text-slate-500">Pull the latest changes from the remote repository into this install (<code>git pull</code>).</p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <button type="button" id="fc-dev-mode-pull" class="<?php echo $h((string) $tab['btn_primary']); ?>">
+                                        <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
+                                        Pull updates
+                                    </button>
+                                    <span id="fc-dev-mode-pull-status" class="text-xs text-slate-500" hidden></span>
+                                </div>
+                                <pre id="fc-dev-mode-pull-output" class="fc-dev-mode-pull-output hidden" aria-live="polite"></pre>
+                            </section>
                         </div>
                     </div>
 

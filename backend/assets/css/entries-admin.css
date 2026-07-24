@@ -701,6 +701,51 @@ html[data-fc-admin-theme='dark'] .fc-catalog-check-meta {
     box-shadow: 0 0 0 1px #2271b1;
 }
 
+.fc-dev-mode-pull-output {
+    margin: 0;
+    max-height: 16rem;
+    overflow: auto;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.fc-dev-mode-pull-output.is-error {
+    border-color: #fecaca;
+    background: #450a0a;
+    color: #fecaca;
+}
+
+#fc-dev-mode-pull {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+#fc-dev-mode-pull:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+html[data-fc-admin-theme='dark'] .fc-dev-mode-pull-output {
+    border-color: #334155;
+    background: #020617;
+    color: #e2e8f0;
+}
+
+html[data-fc-admin-theme='dark'] .fc-dev-mode-pull-output.is-error {
+    border-color: rgba(248, 113, 113, 0.45);
+    background: rgba(127, 29, 29, 0.45);
+    color: #fecaca;
+}
+
 .fc-settings-page .fc-fs-field-group,
 .fc-settings-page .fc-fs-field-group--outer {
     border-radius: 0;
