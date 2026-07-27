@@ -177,7 +177,7 @@ function fc_db_connect_mysqli(array $cfg): array
 
 function fc_db_connect_error_message(string $technicalError = ''): string
 {
-    $hint = 'Start MySQL from the XAMPP Control Panel';
+    $hint = 'Start MySQL from the Server';
     $lower = strtolower($technicalError);
 
     if ($technicalError === '' || str_contains($lower, 'actively refused') || str_contains($lower, 'connection refused')) {
