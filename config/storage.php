@@ -126,12 +126,18 @@ function fc_storage_cache_stats(): array
     $totalFiles = 0;
     $totalBytes = 0;
 
+    if (!function_exists('fc_cloudflare_cache_stats')) {
+        require_once __DIR__ . '/cloudflare.php';
+    }
+
     foreach (fc_storage_cache_buckets() as $name) {
         $stat = fc_storage_cache_bucket_stats($name);
         $buckets[$name] = $stat;
         $totalFiles += $stat['files'];
         $totalBytes += $stat['bytes'];
     }
+
+    $buckets['cloudflare'] = fc_cloudflare_cache_stats();
 
     $noun = $totalFiles === 1 ? 'item' : 'items';
 

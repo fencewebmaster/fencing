@@ -482,12 +482,13 @@ $tab = $fcSettingsPage;
                                 <p class="mt-1 text-sm text-slate-500">Manage third-party API keys, webhooks, and analytics IDs stored securely in <code>config.php</code>.</p>
                             </div>
 
+                            <div class="grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-stretch">
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
                                 <div class="mb-4">
                                     <h3 class="text-sm font-semibold text-slate-800">API keys</h3>
-                                    <p class="mt-1 text-xs text-slate-500">Keys used by the planner for maps and customer chat.</p>
+                                    <p class="mt-1 text-xs text-slate-500">Keys used by the planner for maps, chat, and Cloudflare cache purge.</p>
                                 </div>
-                                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                <div class="grid grid-cols-1 gap-4">
                                     <label class="flex min-w-0 flex-col gap-1" for="fc-integration-googleMapsApiKey">
                                         <span class="text-sm font-medium text-slate-700">Google Maps API key</span>
                                         <span class="fc-settings-field-input-wrap">
@@ -502,6 +503,22 @@ $tab = $fcSettingsPage;
                                             <input type="password" id="fc-integration-chatraApiKey" data-fc-integration-field="chatraApiKey" value="<?php echo $h((string) ($integrations['chatraApiKey'] ?? '')); ?>" class="fc-settings-field font-mono" autocomplete="off" spellcheck="false" />
                                             <button type="button" class="fc-settings-field-copy" data-fc-integration-reveal="fc-integration-chatraApiKey" aria-label="Show Chatra API key" title="Show or hide"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
                                             <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-chatraApiKey" aria-label="Copy Chatra API key" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                    </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-cloudflareZoneId">
+                                        <span class="text-sm font-medium text-slate-700">Cloudflare Zone ID</span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="password" id="fc-integration-cloudflareZoneId" data-fc-integration-field="cloudflareZoneId" value="<?php echo $h((string) ($integrations['cloudflareZoneId'] ?? '')); ?>" class="fc-settings-field font-mono" autocomplete="off" spellcheck="false" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-reveal="fc-integration-cloudflareZoneId" aria-label="Show Cloudflare Zone ID" title="Show or hide"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-cloudflareZoneId" aria-label="Copy Cloudflare Zone ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                    </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-cloudflareApiToken">
+                                        <span class="text-sm font-medium text-slate-700">Cloudflare API token</span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="password" id="fc-integration-cloudflareApiToken" data-fc-integration-field="cloudflareApiToken" value="<?php echo $h((string) ($integrations['cloudflareApiToken'] ?? '')); ?>" class="fc-settings-field font-mono" autocomplete="off" spellcheck="false" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-reveal="fc-integration-cloudflareApiToken" aria-label="Show Cloudflare API token" title="Show or hide"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-cloudflareApiToken" aria-label="Copy Cloudflare API token" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
                                         </span>
                                     </label>
                                 </div>
@@ -520,6 +537,7 @@ $tab = $fcSettingsPage;
                                     </span>
                                 </label>
                             </section>
+                            </div>
 
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
                                 <div class="mb-4">

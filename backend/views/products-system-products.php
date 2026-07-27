@@ -20,14 +20,8 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden" data-fc-system-products-server="1" data-fc-system-products-php="1">
     <script type="application/json" id="fc-system-products-bootstrap"><?php echo $page['bootstrap_json']; ?></script>
 
-    <?php if (($page['error'] ?? '') !== '') : ?>
-    <div class="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-        <p class="font-semibold">Could not load store products</p>
-        <p class="mt-1 text-sm"><?php echo $h((string) $page['error']); ?></p>
-    </div>
-    <?php else : ?>
     <nav class="fc-gallery-page__tabs fc-system-products-tabs" role="tablist" aria-label="Store product source">
-        <?php foreach ($page['tabs'] as $tab) : ?>
+        <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
         <a
             role="tab"
             href="<?php echo $h((string) ($tab['href'] ?? '#')); ?>"
@@ -151,6 +145,7 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
             </footer>
         </section>
     </div>
+    <?php if (($page['error'] ?? '') === '') : ?>
     <div class="fc-entries-page__content fc-system-products-body min-h-0 flex-1 overflow-auto">
         <div id="fc-system-products-table-wrap" class="flex flex-col">
             <?php echo $page['table_html'] ?? ''; ?>
@@ -173,7 +168,7 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                 <?php endif; ?>
                 <span class="fc-entries-page__per-page-label">Display per page</span>
                 <select class="fc-entries-page__per-page-select" name="per_page" aria-label="Display per page" onchange="this.form.submit()">
-                    <?php foreach ($page['per_page_options'] as $option) : ?>
+                    <?php foreach (($page['per_page_options'] ?? []) as $option) : ?>
                     <option value="<?php echo (int) $option; ?>"<?php echo empty($page['is_all']) && (int) ($page['per_page'] ?? 0) === (int) $option ? ' selected' : ''; ?>><?php echo (int) $option; ?></option>
                     <?php endforeach; ?>
                     <option value="all"<?php echo !empty($page['is_all']) ? ' selected' : ''; ?>>All</option>
@@ -192,7 +187,7 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                     <?php elseif (($paginationLink['type'] ?? '') === 'current') : ?>
                 <span class="fc-entries-pagination__btn fc-entries-pagination__btn--active" aria-current="page"><?php echo $h((string) ($paginationLink['label'] ?? '')); ?></span>
                     <?php else : ?>
-                <a class="fc-entries-pagination__btn" href="<?php echo $h((string) ($paginationLink['url'] ?? '')); ?>"><?php echo $h((string) ($paginationLink['label'] ?? '')); ?></a>
+                <a class="fc-entries-pagination__btn" href="<?php echo $h((string) ($paginationLink['url'] ?? '#')); ?>"><?php echo $h((string) ($paginationLink['label'] ?? '')); ?></a>
                     <?php endif; ?>
                 <?php endforeach; ?>
 

@@ -9,6 +9,7 @@
         all: 'all caches',
         lookup: 'Lookup cache',
         products: 'Products cache',
+        cloudflare: 'Cloudflare cache',
     };
 
     function toast(kind, message) {
@@ -111,6 +112,12 @@
                 meta.textContent = String(entry.label);
             }
 
+            if (target === 'cloudflare') {
+                // Always allow click; API returns a clear error when credentials are missing.
+                setOptionEmpty(btn, 1);
+                return;
+            }
+
             setOptionEmpty(btn, entry && typeof entry.files === 'number' ? entry.files : 0);
         });
     }
@@ -211,9 +218,14 @@
                 }
 
                 var count = typeof data.deleted === 'number' ? data.deleted : 0;
-                var msg = count === 1
-                    ? 'Purged 1 cache file (' + label + ').'
-                    : 'Purged ' + count + ' cache files (' + label + ').';
+                var msg;
+                if (target === 'cloudflare') {
+                    msg = data.message || 'Purged Cloudflare CDN cache.';
+                } else if (count === 1) {
+                    msg = 'Purged 1 cache file (' + label + ').';
+                } else {
+                    msg = 'Purged ' + count + ' cache files (' + label + ').';
+                }
                 toast('success', msg);
             })
             .catch(function (err) {
@@ -297,6 +309,11 @@
 
         // Apply initial empty states from server-rendered meta when possible.
         root.querySelectorAll('[data-fc-cache-purge]').forEach(function (btn) {
+            var target = btn.getAttribute('data-fc-cache-purge') || '';
+            if (target === 'cloudflare') {
+                setOptionEmpty(btn, 1);
+                return;
+            }
             var meta = btn.querySelector('[data-fc-cache-meta]');
             var text = meta ? String(meta.textContent || '') : '';
             var match = text.match(/^([\d,]+)\s+items?/i);
