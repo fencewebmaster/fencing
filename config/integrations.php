@@ -79,6 +79,8 @@ function fc_integrations_get(): array
     return [
         'googleMapsApiKey' => (string) ($api['google_map'] ?? ''),
         'chatraApiKey' => (string) ($api['chatra'] ?? ''),
+        'cloudflareZoneId' => (string) ($api['cloudflare_zone_id'] ?? ''),
+        'cloudflareApiToken' => (string) ($api['cloudflare_api_token'] ?? ''),
         'webhookUrl' => (string) ($webhooks['zap'] ?? ''),
         'sites' => $sites,
     ];
@@ -124,6 +126,8 @@ function fc_integrations_normalize(array $input): array
 {
     $google = fc_integrations_clean_value($input['googleMapsApiKey'] ?? '', 200);
     $chatra = fc_integrations_clean_value($input['chatraApiKey'] ?? '', 200);
+    $cfZone = fc_integrations_clean_value($input['cloudflareZoneId'] ?? '', 64);
+    $cfToken = fc_integrations_clean_value($input['cloudflareApiToken'] ?? '', 200);
     $webhook = fc_integrations_clean_value($input['webhookUrl'] ?? '', 1000);
 
     if ($google === null || ($google !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $google))) {
@@ -131,6 +135,12 @@ function fc_integrations_normalize(array $input): array
     }
     if ($chatra === null || ($chatra !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $chatra))) {
         return ['ok' => false, 'error' => 'Chatra API key contains invalid characters.'];
+    }
+    if ($cfZone === null || ($cfZone !== '' && !preg_match('/^[a-f0-9]{32}$/i', $cfZone))) {
+        return ['ok' => false, 'error' => 'Cloudflare Zone ID must be a 32-character hex string.'];
+    }
+    if ($cfToken === null || ($cfToken !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $cfToken))) {
+        return ['ok' => false, 'error' => 'Cloudflare API token contains invalid characters.'];
     }
     if ($webhook === null || ($webhook !== '' && !preg_match('#^(?:https?://)?[A-Za-z0-9.-]+(?::\d+)?(?:/[^\\s]*)?$#', $webhook))) {
         return ['ok' => false, 'error' => 'Webhook URL is invalid.'];
@@ -175,6 +185,8 @@ function fc_integrations_normalize(array $input): array
         'integrations' => [
             'googleMapsApiKey' => $google,
             'chatraApiKey' => $chatra,
+            'cloudflareZoneId' => strtolower((string) $cfZone),
+            'cloudflareApiToken' => (string) $cfToken,
             'webhookUrl' => $webhook,
             'sites' => $sites,
         ],
@@ -224,6 +236,9 @@ function fc_integrations_save(array $input, string $expectedRevision = ''): arra
 
         $config['apikey']['google_map'] = (string) $next['googleMapsApiKey'];
         $config['apikey']['chatra'] = (string) $next['chatraApiKey'];
+        $config['apikey']['cloudflare_zone_id'] = (string) $next['cloudflareZoneId'];
+        $config['apikey']['cloudflare_api_token'] = (string) $next['cloudflareApiToken'];
+        unset($config['apikey']['cloudflare_account_id']);
         $config['webhook_url']['zap'] = (string) $next['webhookUrl'];
         foreach ($next['sites'] as $site) {
             $key = (string) $site['key'];

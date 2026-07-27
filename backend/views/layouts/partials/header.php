@@ -55,6 +55,7 @@
                     $fcCacheAllLabel = (string) ($fcCacheStats['all']['label'] ?? '0 items (0B)');
                     $fcCacheLookupLabel = (string) (($fcCacheStats['buckets']['lookup']['label'] ?? null) ?: '0 items (0B)');
                     $fcCacheProductsLabel = (string) (($fcCacheStats['buckets']['products']['label'] ?? null) ?: '0 items (0B)');
+                    $fcCacheCloudflareLabel = (string) (($fcCacheStats['buckets']['cloudflare']['label'] ?? null) ?: 'Not configured');
                     ?>
                     <div
                         class="fc-entries-date-dropdown fc-admin-cache-dropdown shrink-0"
@@ -103,6 +104,15 @@
                                     <span class="fc-admin-cache-dropdown__option-text">
                                         <span class="fc-admin-cache-dropdown__option-label">Products</span>
                                         <span class="fc-admin-cache-dropdown__option-meta" data-fc-cache-meta><?php echo htmlspecialchars($fcCacheProductsLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                                    </span>
+                                </button>
+                                <button type="button" class="fc-entries-date-dropdown__option fc-admin-cache-dropdown__option" role="menuitem" data-fc-cache-purge="cloudflare">
+                                    <span class="fc-admin-cache-dropdown__option-icon" aria-hidden="true">
+                                        <i class="fa-solid fa-cloud"></i>
+                                    </span>
+                                    <span class="fc-admin-cache-dropdown__option-text">
+                                        <span class="fc-admin-cache-dropdown__option-label">Cloudflare</span>
+                                        <span class="fc-admin-cache-dropdown__option-meta" data-fc-cache-meta><?php echo htmlspecialchars($fcCacheCloudflareLabel, ENT_QUOTES, 'UTF-8'); ?></span>
                                     </span>
                                 </button>
                             </div>

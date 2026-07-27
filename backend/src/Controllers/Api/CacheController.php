@@ -68,7 +68,15 @@ final class CacheController
         }
 
         $target = isset($payload['target']) ? (string) $payload['target'] : 'all';
-        $result = fc_storage_purge_cache($target);
+
+        if (strtolower(trim($target)) === 'cloudflare') {
+            if (!function_exists('fc_cloudflare_purge_cache')) {
+                require_once FC_ROOT . '/config/cloudflare.php';
+            }
+            $result = fc_cloudflare_purge_cache();
+        } else {
+            $result = fc_storage_purge_cache($target);
+        }
 
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not purge cache.'), 400);
