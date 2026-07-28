@@ -1,6 +1,6 @@
 <?php
 /**
- * Cached SKU indexes for wc-products-{GO|JG}.csv (store catalogue).
+ * Cached SKU / product indexes for wc-products-{GO|JG}.csv (store catalogue).
  */
 
 declare(strict_types=1);
@@ -48,11 +48,79 @@ function fc_wc_products_sku_index_invalidate(string $source = ''): void
 }
 
 /**
- * Build / load mtime-cached SKU set for one WC catalogue source.
- *
- * @return list<string>
+ * First image URL from a WC Images CSV cell (comma-separated URLs).
  */
-function fc_wc_products_sku_list_for_source(string $source): array
+function fc_wc_products_first_image_url(string $images): string
+{
+    $parts = preg_split('/\s*,\s*/', trim($images));
+    if (!is_array($parts)) {
+        return '';
+    }
+    foreach ($parts as $part) {
+        $url = trim((string) $part);
+        if ($url !== '' && preg_match('#^https?://#i', $url) === 1) {
+            return $url;
+        }
+    }
+
+    return '';
+}
+
+/**
+ * @param array<string, mixed> $cached
+ */
+function fc_wc_products_sku_index_cache_is_valid(array $cached, int $mtime): bool
+{
+    if ((int) ($cached['mtime'] ?? 0) !== $mtime) {
+        return false;
+    }
+    if ((int) ($cached['version'] ?? 0) < 3) {
+        return false;
+    }
+    if (!is_array($cached['products'] ?? null)) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @param list<array{sku:string,name:string,image:string}> $products
+ * @return list<array{sku:string,name:string,image:string}>
+ */
+function fc_wc_products_normalize_product_entries(array $products): array
+{
+    $out = [];
+    $seen = [];
+    foreach ($products as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $sku = trim((string) ($row['sku'] ?? ''));
+        if ($sku === '' || isset($seen[$sku])) {
+            continue;
+        }
+        $seen[$sku] = true;
+        $out[] = [
+            'sku' => $sku,
+            'name' => html_entity_decode(
+                trim((string) ($row['name'] ?? '')),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            ),
+            'image' => trim((string) ($row['image'] ?? '')),
+        ];
+    }
+
+    return $out;
+}
+
+/**
+ * Build / load mtime-cached catalogue entries for one WC source.
+ *
+ * @return list<array{sku:string,name:string,image:string}>
+ */
+function fc_wc_products_entries_for_source(string $source): array
 {
     $source = strtoupper(trim($source));
     if (!in_array($source, fc_wc_products_sku_sources(), true)) {
@@ -68,23 +136,8 @@ function fc_wc_products_sku_list_for_source(string $source): array
     $cachePath = fc_wc_products_sku_index_cache_path($source);
     if (is_readable($cachePath)) {
         $cached = json_decode((string) file_get_contents($cachePath), true);
-        if (
-            is_array($cached)
-            && (int) ($cached['mtime'] ?? 0) === $mtime
-            && is_array($cached['skus'] ?? null)
-        ) {
-            $skus = [];
-            foreach ($cached['skus'] as $sku) {
-                if (!is_scalar($sku)) {
-                    continue;
-                }
-                $sku = trim((string) $sku);
-                if ($sku !== '') {
-                    $skus[] = $sku;
-                }
-            }
-
-            return array_values(array_unique($skus));
+        if (is_array($cached) && fc_wc_products_sku_index_cache_is_valid($cached, $mtime)) {
+            return fc_wc_products_normalize_product_entries($cached['products']);
         }
     }
 
@@ -95,33 +148,50 @@ function fc_wc_products_sku_list_for_source(string $source): array
 
     $header = fgetcsv($handle);
     $skuIndex = 1;
+    $nameIndex = 2;
+    $imagesIndex = 3;
     if (is_array($header)) {
         foreach ($header as $i => $col) {
-            if (strtoupper(trim((string) $col)) === 'SKU') {
+            $key = strtoupper(trim((string) $col));
+            if ($key === 'SKU') {
                 $skuIndex = (int) $i;
-                break;
+            } elseif ($key === 'NAME') {
+                $nameIndex = (int) $i;
+            } elseif ($key === 'IMAGES') {
+                $imagesIndex = (int) $i;
             }
         }
     }
 
     $seen = [];
+    $products = [];
     while (($row = fgetcsv($handle)) !== false) {
         if (!is_array($row)) {
             continue;
         }
         $sku = trim((string) ($row[$skuIndex] ?? ''));
-        if ($sku === '') {
+        if ($sku === '' || isset($seen[$sku])) {
             continue;
         }
         $seen[$sku] = true;
+        $products[] = [
+            'sku' => $sku,
+            'name' => html_entity_decode(
+                trim((string) ($row[$nameIndex] ?? '')),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            ),
+            'image' => fc_wc_products_first_image_url((string) ($row[$imagesIndex] ?? '')),
+        ];
     }
     fclose($handle);
 
-    $skus = array_keys($seen);
     $payload = json_encode(
         [
+            'version' => 3,
             'mtime' => $mtime,
-            'skus' => $skus,
+            'products' => $products,
+            'skus' => array_column($products, 'sku'),
         ],
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
     );
@@ -133,7 +203,40 @@ function fc_wc_products_sku_list_for_source(string $source): array
         @file_put_contents($cachePath, $payload, LOCK_EX);
     }
 
-    return $skus;
+    return $products;
+}
+
+/**
+ * Build / load mtime-cached SKU set for one WC catalogue source.
+ *
+ * @return list<string>
+ */
+function fc_wc_products_sku_list_for_source(string $source): array
+{
+    return array_column(fc_wc_products_entries_for_source($source), 'sku');
+}
+
+/**
+ * Union of catalogue entries across GO + JG (first SKU wins).
+ *
+ * @return list<array{sku:string,name:string,image:string}>
+ */
+function fc_wc_products_catalogue_union(): array
+{
+    $seen = [];
+    $products = [];
+    foreach (fc_wc_products_sku_sources() as $source) {
+        foreach (fc_wc_products_entries_for_source($source) as $row) {
+            $sku = $row['sku'];
+            if ($sku === '' || isset($seen[$sku])) {
+                continue;
+            }
+            $seen[$sku] = true;
+            $products[] = $row;
+        }
+    }
+
+    return $products;
 }
 
 /**
@@ -143,23 +246,19 @@ function fc_wc_products_sku_list_for_source(string $source): array
  */
 function fc_wc_products_sku_union(): array
 {
-    $seen = [];
-    foreach (fc_wc_products_sku_sources() as $source) {
-        foreach (fc_wc_products_sku_list_for_source($source) as $sku) {
-            $seen[$sku] = true;
-        }
-    }
-
-    return array_keys($seen);
+    return array_column(fc_wc_products_catalogue_union(), 'sku');
 }
 
 /**
- * @return array{ok:bool,skus:list<string>}
+ * @return array{ok:bool,skus:list<string>,products:list<array{sku:string,name:string,image:string}>}
  */
 function fc_wc_products_sku_index_payload(): array
 {
+    $products = fc_wc_products_catalogue_union();
+
     return [
         'ok' => true,
-        'skus' => fc_wc_products_sku_union(),
+        'skus' => array_column($products, 'sku'),
+        'products' => $products,
     ];
 }

@@ -933,6 +933,7 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
             ]),
             'canReorder'  => $canReorder,
             'canEdit'     => $canEdit,
+            'csrf'        => function_exists('fc_auth_csrf_token') ? fc_auth_csrf_token() : '',
         ]),
     ];
 }

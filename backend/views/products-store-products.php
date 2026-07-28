@@ -118,6 +118,59 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                     class="fc-sp-toolbar__clear"
                 >Clear filters</a>
                 <?php endif; ?>
+                <?php if (!empty($page['can_edit'])) : ?>
+                <?php
+                $fcStoreCsvReady = ($page['error'] ?? '') === '';
+                ?>
+                <div class="fc-products-download-dropdown" data-fc-store-products-download-dropdown>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-orange fw-semibold fc-products-download-trigger"
+                        data-fc-store-products-download-toggle
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="fc-store-products-download-menu"
+                        id="fc-store-products-download-toggle"
+                    >
+                        <span>Download</span>
+                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                    </button>
+                    <div
+                        class="fc-products-download-dropdown__panel"
+                        id="fc-store-products-download-menu"
+                        role="menu"
+                        aria-labelledby="fc-store-products-download-toggle"
+                        hidden
+                    >
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option<?php echo $fcStoreCsvReady ? '' : ' is-disabled'; ?>"
+                            role="menuitem"
+                            data-fc-store-products-download-csv
+                            data-fc-store-products-csv-name="products.csv"
+                            <?php echo $fcStoreCsvReady ? '' : ' disabled aria-disabled="true"'; ?>
+                        >
+                            <span>Export CSV</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option"
+                            role="menuitem"
+                            data-fc-store-products-import-csv
+                        >
+                            <span>Import CSV</span>
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        class="sr-only"
+                        accept=".csv,text/csv"
+                        data-fc-store-products-import-input
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
+                <?php endif; ?>
                 <button type="submit" class="sr-only">Search</button>
             </div>
         </form>
