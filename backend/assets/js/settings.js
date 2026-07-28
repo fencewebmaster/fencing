@@ -2138,7 +2138,7 @@
         });
 
         document.querySelectorAll('[data-fc-integration-site]').forEach(function (input) {
-            input.addEventListener('input', function () {
+            function syncSiteField() {
                 var siteKey = input.getAttribute('data-fc-integration-site');
                 var field = input.getAttribute('data-fc-integration-site-field');
                 var sites = Array.isArray(state.integrations.sites) ? state.integrations.sites : [];
@@ -2149,7 +2149,9 @@
                     site[field] = input.value;
                     setIntegrationDirty(true);
                 }
-            });
+            }
+            input.addEventListener('input', syncSiteField);
+            input.addEventListener('change', syncSiteField);
         });
 
         document.querySelectorAll('[data-fc-integration-reveal]').forEach(function (btn) {

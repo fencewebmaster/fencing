@@ -286,6 +286,59 @@
         #fc-store-products-table-wrap .fc-sys-product-colors-col {
             min-width: 10rem;
         }
+        #fc-store-products-table-wrap .fc-sys-product-skus-col {
+            min-width: 4.5rem;
+        }
+        #fc-store-products-table-wrap .fc-sp-skus-summary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8125rem;
+            font-variant-numeric: tabular-nums;
+            color: #475569;
+            line-height: 1;
+        }
+        #fc-store-products-table-wrap .fc-sp-skus-summary--incomplete {
+            color: #64748b;
+        }
+        #fc-store-products-table-wrap .fc-sp-skus-summary--complete {
+            color: #334155;
+        }
+        #fc-store-products-table-wrap .fc-sp-sku-status,
+        #fc-sp-edit-modal .fc-sp-sku-status {
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            flex-shrink: 0;
+            border-radius: 9999px;
+            background: #94a3b8;
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+        }
+        #fc-store-products-table-wrap .fc-sp-sku-status--missing,
+        #fc-sp-edit-modal .fc-sp-sku-status--missing {
+            background: #94a3b8;
+        }
+        #fc-store-products-table-wrap .fc-sp-sku-status--found,
+        #fc-sp-edit-modal .fc-sp-sku-status--found {
+            background: #22c55e;
+            box-shadow: inset 0 0 0 1px rgba(21, 128, 61, 0.2);
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-skus-summary {
+            color: #cbd5e1;
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-skus-summary--incomplete {
+            color: #94a3b8;
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-sku-status--missing,
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--missing {
+            background: #64748b;
+            box-shadow: none;
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-sku-status--found,
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--found {
+            background: #22c55e;
+            box-shadow: none;
+        }
         .fc-sp-toolbar {
             justify-content: space-between;
         }
@@ -523,6 +576,7 @@
             white-space: normal;
             word-break: break-word;
             overflow-wrap: anywhere;
+            vertical-align: middle;
         }
         [data-fc-system-products-php] #fc-system-products-table-wrap .fc-sp-bottom-scrollbar {
             display: none;

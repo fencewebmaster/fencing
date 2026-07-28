@@ -65,7 +65,7 @@ function fc_admin_mysql_key_from_domain(string $domain): string
  * Sites available in the admin switcher (sites() ∩ mysql credentials).
  * Skips staging-style ids (e.g. 1.1) unless they are the only match for a mysql key.
  *
- * @return list<array{key:string,name:string,logo:string,domain:string,id:int|float}>
+ * @return list<array{key:string,name:string,logo:string,domain:string,id:int|float,supplier:string}>
  */
 function fc_admin_sites_list(): array
 {
@@ -115,6 +115,7 @@ function fc_admin_sites_list(): array
             'logo' => (string) ($row['logo'] ?? ''),
             'domain' => $domain,
             'id' => $id,
+            'supplier' => strtoupper(trim((string) ($row['supplier'] ?? ''))),
         ];
     }
 
@@ -129,6 +130,7 @@ function fc_admin_sites_list(): array
             'logo' => 'assets/img/logo/fencesperth.webp',
             'domain' => $key === 'localhost' ? 'localhost' : $key,
             'id' => 0,
+            'supplier' => '',
         ];
     }
 
@@ -237,7 +239,7 @@ function fc_admin_home_site_key(): string
 }
 
 /**
- * @return array{key:string,name:string,logo:string,domain:string,id:int|float}|null
+ * @return array{key:string,name:string,logo:string,domain:string,id:int|float,supplier:string}|null
  */
 function fc_admin_home_site(): ?array
 {
@@ -258,6 +260,7 @@ function fc_admin_home_site(): ?array
         'logo' => 'assets/img/logo/fencesperth.webp',
         'domain' => $key === 'localhost' ? 'localhost' : $key,
         'id' => 0,
+        'supplier' => '',
     ];
 }
 
@@ -318,7 +321,7 @@ function fc_admin_site_switched_api_allowed(string $module): bool
 }
 
 /**
- * @return array{key:string,name:string,logo:string,domain:string,id:int|float}|null
+ * @return array{key:string,name:string,logo:string,domain:string,id:int|float,supplier:string}|null
  */
 function fc_admin_current_site(): ?array
 {
@@ -342,5 +345,6 @@ function fc_admin_current_site(): ?array
         'logo' => 'assets/img/logo/fencesperth.webp',
         'domain' => $key !== '' ? $key : 'localhost',
         'id' => 0,
+        'supplier' => '',
     ];
 }

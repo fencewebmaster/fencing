@@ -1242,6 +1242,11 @@ final class ProductsController
         $action = isset($_GET['action']) ? (string) $_GET['action'] : '';
 
         if ($method === 'POST') {
+            if ($action === 'import-products-csv') {
+                self::importProductsCsv();
+                return;
+            }
+
             $raw = file_get_contents('php://input');
             $payload = is_string($raw) ? json_decode($raw, true) : null;
 
@@ -1363,6 +1368,17 @@ final class ProductsController
                 }
                 echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 break;
+            case 'download-products-csv':
+                self::downloadProductsCsv(
+                    isset($_GET['source']) ? (string) $_GET['source'] : ''
+                );
+                break;
+            case 'wc-sku-index':
+                if (!function_exists('fc_wc_products_sku_index_payload')) {
+                    require_once FC_ROOT . '/config/wc_products_sku_index.php';
+                }
+                echo json_encode(fc_wc_products_sku_index_payload(), JSON_UNESCAPED_UNICODE);
+                break;
             default:
                 http_response_code(400);
                 echo json_encode([
@@ -1371,6 +1387,266 @@ final class ProductsController
                 ], JSON_UNESCAPED_UNICODE);
         }
     }
+
+    private static function downloadProductsCsv(string $source): void
+    {
+        $source = strtoupper(trim($source));
+        if (!in_array($source, ['GO', 'JG'], true)) {
+            http_response_code(400);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Invalid source. Use GO or JG.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $filename = 'wc-products-' . $source . '.csv';
+        $path = FC_ROOT . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . $filename;
+        if (!is_readable($path) || !is_file($path)) {
+            http_response_code(404);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'ok' => false,
+                'error' => $filename . ' not found or not readable.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $size = @filesize($path);
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        if (is_int($size) && $size >= 0) {
+            header('Content-Length: ' . $size);
+        }
+
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Unable to open ' . $filename . '.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        fpassthru($handle);
+        fclose($handle);
+        exit;
+    }
+
+    private static function importProductsCsv(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $csrf = isset($_POST['csrf']) ? (string) $_POST['csrf'] : '';
+        if (!function_exists('fc_auth_verify_csrf') || !fc_auth_verify_csrf($csrf)) {
+            http_response_code(403);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Invalid security token. Refresh and try again.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $source = strtoupper(trim((string) ($_POST['source'] ?? '')));
+        if (!in_array($source, ['GO', 'JG'], true)) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Invalid source. Use GO or JG.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (empty($_FILES['file']) || !is_array($_FILES['file'])) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Choose a CSV file to import.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $file = $_FILES['file'];
+        $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($error !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Upload failed. Please try again.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        $originalName = (string) ($file['name'] ?? 'upload.csv');
+        $size = (int) ($file['size'] ?? 0);
+        if ($tmp === '' || !is_uploaded_file($tmp) || !is_readable($tmp)) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Uploaded file is not readable.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        if ($size <= 0 || $size > 50 * 1024 * 1024) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'CSV must be between 1 byte and 50MB.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $extension = strtolower((string) pathinfo($originalName, PATHINFO_EXTENSION));
+        if ($extension !== 'csv') {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Only .csv files can be imported.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $handle = fopen($tmp, 'rb');
+        if ($handle === false) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Unable to read the uploaded CSV.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $header = fgetcsv($handle);
+        $rowCount = 0;
+        $hasValidId = false;
+        if (is_array($header)) {
+            while (($row = fgetcsv($handle)) !== false) {
+                if (!is_array($row) || $row === [null]) {
+                    continue;
+                }
+                $first = trim((string) ($row[0] ?? ''));
+                if ($first === '') {
+                    continue;
+                }
+                $rowCount++;
+                if (ctype_digit($first)) {
+                    $hasValidId = true;
+                }
+            }
+        }
+        fclose($handle);
+
+        $normalizedHeader = is_array($header)
+            ? array_map(static fn($col): string => trim((string) $col), $header)
+            : [];
+        // Strip UTF-8 BOM from first column when present.
+        if ($normalizedHeader !== [] && isset($normalizedHeader[0])) {
+            $normalizedHeader[0] = preg_replace('/^\xEF\xBB\xBF/', '', $normalizedHeader[0]) ?? $normalizedHeader[0];
+        }
+
+        $required = ['ID', 'SKU', 'Name', 'Images'];
+        $missing = [];
+        foreach ($required as $column) {
+            if (!in_array($column, $normalizedHeader, true)) {
+                $missing[] = $column;
+            }
+        }
+        if ($missing !== []) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'CSV header must include: ' . implode(', ', $required) . '.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        if ($rowCount < 1 || !$hasValidId) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'CSV must contain at least one product row with a numeric ID.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $filename = 'wc-products-' . $source . '.csv';
+        $dataDir = FC_ROOT . DIRECTORY_SEPARATOR . 'data';
+        if (!is_dir($dataDir) && !@mkdir($dataDir, 0755, true) && !is_dir($dataDir)) {
+            http_response_code(500);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Unable to access the data directory.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $final = $dataDir . DIRECTORY_SEPARATOR . $filename;
+        $tmpDest = $dataDir . DIRECTORY_SEPARATOR . '.wc-products-' . $source . '-import-' . getmypid() . '-' . bin2hex(random_bytes(4)) . '.csv';
+        if (!@move_uploaded_file($tmp, $tmpDest)) {
+            // Fallback for environments where move_uploaded_file is restricted after validation reads.
+            if (!@copy($tmp, $tmpDest)) {
+                http_response_code(500);
+                echo json_encode([
+                    'ok' => false,
+                    'error' => 'Unable to store the uploaded CSV.',
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+            @unlink($tmp);
+        }
+
+        $backup = $final . '.backup';
+        @unlink($backup);
+        $hadFinal = is_file($final);
+        if ($hadFinal && !@rename($final, $backup)) {
+            @unlink($tmpDest);
+            http_response_code(500);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Unable to prepare the existing products CSV for replacement.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        if (!@rename($tmpDest, $final)) {
+            if ($hadFinal && is_file($backup)) {
+                @rename($backup, $final);
+            }
+            @unlink($tmpDest);
+            http_response_code(500);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Unable to replace the products CSV file.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        @unlink($backup);
+
+        if (!function_exists('fc_storage_cache_dir')) {
+            require_once FC_ROOT . '/config/storage.php';
+        }
+        @unlink(
+            fc_storage_cache_dir('products')
+            . DIRECTORY_SEPARATOR . 'wc-products-' . $source . '-count.json'
+        );
+        if (!function_exists('fc_wc_products_sku_index_invalidate')) {
+            require_once FC_ROOT . '/config/wc_products_sku_index.php';
+        }
+        fc_wc_products_sku_index_invalidate($source);
+
+        echo json_encode([
+            'ok' => true,
+            'message' => 'Imported ' . number_format($rowCount) . ' products into ' . $filename . '.',
+            'source' => $source,
+            'file' => $filename,
+            'total' => $rowCount,
+        ], JSON_UNESCAPED_UNICODE);
+    }
+
     public static function dispatch(): void
     {
         self::handleApiRequest();

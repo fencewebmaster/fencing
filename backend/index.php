@@ -314,6 +314,59 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
         #fc-store-products-table-wrap .fc-sys-product-colors-col {
             min-width: 10rem;
         }
+        #fc-store-products-table-wrap .fc-sys-product-skus-col {
+            min-width: 4.5rem;
+        }
+        #fc-store-products-table-wrap .fc-sp-skus-summary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8125rem;
+            font-variant-numeric: tabular-nums;
+            color: #475569;
+            line-height: 1;
+        }
+        #fc-store-products-table-wrap .fc-sp-skus-summary--incomplete {
+            color: #64748b;
+        }
+        #fc-store-products-table-wrap .fc-sp-skus-summary--complete {
+            color: #334155;
+        }
+        #fc-store-products-table-wrap .fc-sp-sku-status,
+        #fc-sp-edit-modal .fc-sp-sku-status {
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            flex-shrink: 0;
+            border-radius: 9999px;
+            background: #94a3b8;
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+        }
+        #fc-store-products-table-wrap .fc-sp-sku-status--missing,
+        #fc-sp-edit-modal .fc-sp-sku-status--missing {
+            background: #94a3b8;
+        }
+        #fc-store-products-table-wrap .fc-sp-sku-status--found,
+        #fc-sp-edit-modal .fc-sp-sku-status--found {
+            background: #22c55e;
+            box-shadow: inset 0 0 0 1px rgba(21, 128, 61, 0.2);
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-skus-summary {
+            color: #cbd5e1;
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-skus-summary--incomplete {
+            color: #94a3b8;
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-sku-status--missing,
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--missing {
+            background: #64748b;
+            box-shadow: none;
+        }
+        html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-sku-status--found,
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--found {
+            background: #22c55e;
+            box-shadow: none;
+        }
         .fc-sp-toolbar {
             justify-content: space-between;
         }
@@ -551,6 +604,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             white-space: normal;
             word-break: break-word;
             overflow-wrap: anywhere;
+            vertical-align: middle;
         }
         [data-fc-system-products-php] #fc-system-products-table-wrap .fc-sp-bottom-scrollbar {
             display: none;
@@ -2409,7 +2463,8 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
                     $fcCacheAllLabel = (string) ($fcCacheStats['all']['label'] ?? '0 items (0B)');
                     $fcCacheLookupLabel = (string) (($fcCacheStats['buckets']['lookup']['label'] ?? null) ?: '0 items (0B)');
                     $fcCacheProductsLabel = (string) (($fcCacheStats['buckets']['products']['label'] ?? null) ?: '0 items (0B)');
-                    $fcCacheCloudflareLabel = (string) (($fcCacheStats['buckets']['cloudflare']['label'] ?? null) ?: 'Not configured');
+                    $fcCacheCloudflareLabel = (string) (($fcCacheStats['buckets']['cloudflare']['label'] ?? null) ?: 'CDN not ready');
+                    $fcCacheCloudflareReady = !empty($fcCacheStats['buckets']['cloudflare']['configured']);
                     ?>
                     <div
                         class="fc-entries-date-dropdown fc-admin-cache-dropdown shrink-0"
@@ -2460,7 +2515,14 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
                                         <span class="fc-admin-cache-dropdown__option-meta" data-fc-cache-meta><?php echo htmlspecialchars($fcCacheProductsLabel, ENT_QUOTES, 'UTF-8'); ?></span>
                                     </span>
                                 </button>
-                                <button type="button" class="fc-entries-date-dropdown__option fc-admin-cache-dropdown__option" role="menuitem" data-fc-cache-purge="cloudflare">
+                                <button
+                                    type="button"
+                                    class="fc-entries-date-dropdown__option fc-admin-cache-dropdown__option<?php echo $fcCacheCloudflareReady ? '' : ' is-empty'; ?>"
+                                    role="menuitem"
+                                    data-fc-cache-purge="cloudflare"
+                                    data-fc-cache-configured="<?php echo $fcCacheCloudflareReady ? '1' : '0'; ?>"
+                                    <?php echo $fcCacheCloudflareReady ? '' : ' disabled aria-disabled="true"'; ?>
+                                >
                                     <span class="fc-admin-cache-dropdown__option-icon" aria-hidden="true">
                                         <i class="fa-solid fa-cloud"></i>
                                     </span>

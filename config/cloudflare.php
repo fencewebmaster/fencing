@@ -6,24 +6,62 @@
 declare(strict_types=1);
 
 /**
- * @return array{zoneId:string,apiToken:string,configured:bool,label:string}
+ * Site key used when resolving the per-site Cloudflare Zone ID.
  */
-function fc_cloudflare_credentials(): array
+function fc_cloudflare_site_key(): string
+{
+    if (defined('FC_ADMIN_ROOT') && function_exists('fc_admin_site_key')) {
+        $adminKey = fc_admin_site_key();
+        if ($adminKey !== '' && $adminKey !== 'localhost') {
+            return $adminKey;
+        }
+    }
+
+    if (!function_exists('fc_db_host_mysql_key')) {
+        require_once __DIR__ . '/db_config.php';
+    }
+
+    $hostKey = fc_db_host_mysql_key();
+    return $hostKey !== '' ? $hostKey : 'localhost';
+}
+
+/**
+ * @return array{siteKey:string,zoneId:string,apiToken:string,configured:bool,label:string}
+ */
+function fc_cloudflare_credentials(?string $siteKey = null): array
 {
     if (!function_exists('fc_integrations_get')) {
         require_once __DIR__ . '/integrations.php';
     }
 
     $integrations = fc_integrations_get();
-    $zoneId = trim((string) ($integrations['cloudflareZoneId'] ?? ''));
+    $key = trim((string) ($siteKey ?? ''));
+    if ($key === '') {
+        $key = fc_cloudflare_site_key();
+    }
+
+    $zoneId = '';
+    foreach (is_array($integrations['sites'] ?? null) ? $integrations['sites'] : [] as $site) {
+        if (!is_array($site)) {
+            continue;
+        }
+        if ((string) ($site['key'] ?? '') === $key) {
+            $zoneId = trim((string) ($site['cloudflareZoneId'] ?? ''));
+            break;
+        }
+    }
+
     $apiToken = trim((string) ($integrations['cloudflareApiToken'] ?? ''));
     $configured = $zoneId !== '' && $apiToken !== '';
 
+    $label = ($zoneId !== '' && $apiToken !== '') ? 'CDN ready' : 'CDN not ready';
+
     return [
+        'siteKey' => $key,
         'zoneId' => $zoneId,
         'apiToken' => $apiToken,
         'configured' => $configured,
-        'label' => $configured ? 'CDN ready' : 'Not configured',
+        'label' => $label,
     ];
 }
 
@@ -35,30 +73,32 @@ function fc_cloudflare_credentials(): array
 function fc_cloudflare_cache_stats(): array
 {
     $creds = fc_cloudflare_credentials();
+    $ready = !empty($creds['configured']);
 
     return [
-        // Keep the option clickable even when empty; purge returns a clear error.
-        'files' => $creds['configured'] ? 1 : 1,
+        // files drives enable/disable in the Clear cache dropdown (0 = disabled).
+        'files' => $ready ? 1 : 0,
         'bytes' => 0,
         'label' => $creds['label'],
-        'configured' => $creds['configured'],
+        'configured' => $ready,
     ];
 }
 
 /**
- * Purge everything for the configured Cloudflare zone.
+ * Purge everything for the configured Cloudflare zone of the current site.
  *
  * @return array{ok:bool,deleted:int,targets:list<string>,error?:string,message?:string}
  */
-function fc_cloudflare_purge_cache(): array
+function fc_cloudflare_purge_cache(?string $siteKey = null): array
 {
-    $creds = fc_cloudflare_credentials();
+    $creds = fc_cloudflare_credentials($siteKey);
     if ($creds['zoneId'] === '') {
+        $siteLabel = $creds['siteKey'] !== '' ? $creds['siteKey'] : 'this site';
         return [
             'ok' => false,
             'deleted' => 0,
             'targets' => [],
-            'error' => 'Cloudflare Zone ID is not configured. Add it under Settings → Integration.',
+            'error' => 'Cloudflare Zone ID is not configured for ' . $siteLabel . '. Add it under Settings → Integration.',
         ];
     }
     if ($creds['apiToken'] === '') {
@@ -176,6 +216,6 @@ function fc_cloudflare_purge_cache(): array
         'ok' => true,
         'deleted' => 1,
         'targets' => ['cloudflare'],
-        'message' => 'Purged Cloudflare CDN cache.',
+        'message' => 'Purged Cloudflare CDN cache' . ($creds['siteKey'] !== '' ? ' (' . $creds['siteKey'] . ').' : '.'),
     ];
 }

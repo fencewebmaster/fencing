@@ -162,13 +162,112 @@ function demo_stages() {
 
 //----------------------------------------------------------------------------------
 
+/**
+ * Config site key derived from a domain (matches admin mysql key rules).
+ * Staging hosts (staging.example.com) resolve to the production key (example).
+ */
+function fc_site_key_from_domain(string $domain): string
+{
+    $host = parse_url('//' . trim($domain), PHP_URL_HOST);
+    if (!$host) {
+        $host = trim($domain);
+    }
+    $host = strtolower((string) $host);
+    if ($host === 'localhost' || $host === '127.0.0.1' || $host === '') {
+        return 'localhost';
+    }
+
+    $pathinfo = pathinfo($host);
+    $key = (string) ($pathinfo['filename'] ?? '');
+    if (str_starts_with($key, 'staging.')) {
+        $key = substr($key, strlen('staging.'));
+    }
+
+    return $key;
+}
+
+/**
+ * Site-keyed map from config.php (e.g. supplier, gtag_id, gtm_id).
+ *
+ * @return array<string, string>
+ */
+function fc_config_site_map(string $section): array
+{
+    static $cache = [];
+    $section = trim($section);
+    if ($section === '') {
+        return [];
+    }
+    if (array_key_exists($section, $cache)) {
+        return $cache[$section];
+    }
+
+    $map = [];
+    $cfg = config();
+    $sectionValue = $cfg->{$section} ?? null;
+    if (is_object($sectionValue) || is_array($sectionValue)) {
+        foreach ((array) $sectionValue as $key => $value) {
+            if (!is_scalar($value) && $value !== null) {
+                continue;
+            }
+            $normalized = trim((string) $value);
+            if ($normalized === '') {
+                continue;
+            }
+            $map[(string) $key] = $normalized;
+        }
+    }
+
+    $cache[$section] = $map;
+
+    return $map;
+}
+
+/**
+ * Read one site value from a config.php site map.
+ */
+function fc_config_site_value(string $section, string $siteKey, string $fallback = ''): string
+{
+    $siteKey = trim($siteKey);
+    if ($siteKey === '') {
+        return trim($fallback);
+    }
+
+    $map = fc_config_site_map($section);
+    if (isset($map[$siteKey]) && $map[$siteKey] !== '') {
+        return $map[$siteKey];
+    }
+
+    return trim($fallback);
+}
+
+/**
+ * Supplier code for a site key (or domain) from config.php `supplier`.
+ */
+function fc_site_supplier(string $siteKeyOrDomain, string $fallback = ''): string
+{
+    $input = trim($siteKeyOrDomain);
+    if ($input === '') {
+        return strtoupper(trim($fallback));
+    }
+
+    $siteKey = $input;
+    if (str_contains($input, '.') || strcasecmp($input, 'localhost') === 0) {
+        // Domain-like input → resolve config key dynamically.
+        $siteKey = fc_site_key_from_domain($input);
+    }
+
+    $value = fc_config_site_value('supplier', $siteKey, $fallback);
+
+    return strtoupper(trim($value));
+}
+
 function sites($key = '', $value = 'id', $search = false) {
     $data = [
         [
             'id'       => 999999,
             'domain'   => "localhost",
             'url'      => '',
-            'supplier' => "JG",
             'logo'     => "assets/img/logo/fencesperth.webp",
             'name'     => "Localhost Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencesperth,
@@ -182,7 +281,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 1,
             'domain'   => "fencesperth.com",
             'url'      => toURL('fencesperth.com'),
-            'supplier' => "JG",
             'logo'     => "assets/img/logo/fencesperth.webp",
             'name'     => "Perth's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencesperth,
@@ -192,7 +290,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 1.1,
             'domain'   => "staging.fencesperth.com",
             'url'      => toURL('staging.fencesperth.com'),
-            'supplier' => "JG",
             'logo'     => "assets/img/logo/fencesperth.webp",
             'name'     => "Perth's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencesperth,
@@ -202,7 +299,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 2,
             'domain'   => "fencesbrisbane.au",
             'url'      => toURL('fencesbrisbane.au'),
-            'supplier' => "JG",
             'logo'     => "assets/img/logo/fencesbrisbane.webp",
             'name'     => "Brisbane's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencesbrisbane,
@@ -212,7 +308,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 2.1,
             'domain'   => "staging.fencesbrisbane.au",
             'url'      => toURL('staging.fencesbrisbane.au'),
-            'supplier' => "JG",
             'logo'     => "assets/img/logo/fencesbrisbane.webp",
             'name'     => "Brisbane's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencesbrisbane,
@@ -222,7 +317,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 3,
             'domain'   => "fencingwarehouse.au",
             'url'      => toURL('fencingwarehouse.au'),
-            'supplier' => "JG",
             'logo'     => "assets/img/logo/fencesperth.webp",
             'name'     => "Fencing Warehouse"
         ],
@@ -230,7 +324,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 4,
             'domain'   => "fencinggoldcoast.au",
             'url'      => toURL('fencinggoldcoast.au'),
-            'supplier' => "GO",
             'logo'     => "assets/img/logo/fencinggoldcoast.webp",
             'name'     => "Gold Coast's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencinggoldcoast,
@@ -240,7 +333,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 5,
             'domain'   => "fencesadelaide.au",
             'url'      => toURL('fencesadelaide.au'),
-            'supplier' => "GO",
             'logo'     => "assets/img/logo/fencesadelaide.webp",
             'name'     => "Adelaide's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencesadelaide,
@@ -250,7 +342,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 6,
             'domain'   => "fencessydney.au",
             'url'      => toURL('fencessydney.au'),
-            'supplier' => "GO",
             'logo'     => "assets/img/logo/fencessydney.webp",
             'name'     => "Sydney's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencessydney,
@@ -260,7 +351,6 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 7,
             'domain'   => "fencesmelbourne.au",
             'url'      => toURL('fencesmelbourne.au'),
-            'supplier' => "GO",
             'logo'     => "assets/img/logo/fencesmelbourne.webp",
             'name'     => "Melbourne's Fencing Outlet",
             'gtagID'   => config()->gtag_id->fencesmelbourne,
@@ -270,13 +360,18 @@ function sites($key = '', $value = 'id', $search = false) {
             'id'       => 8,
             'domain'   => "fencesnewcastle.au",
             'url'      => toURL('fencesnewcastle.au'),
-            'supplier' => "GO",
             'logo'     => "assets/img/logo/fencesnewcastle.webp",
             'name'     => "",
             'gtagID'   => config()->gtag_id->fencesnewcastle,
             'gtmID'   => config()->gtm_id->fencesnewcastle,
         ]
     ];
+
+    foreach ($data as &$row) {
+        $row['supplier'] = fc_site_supplier((string) ($row['domain'] ?? ''), 'JG');
+    }
+
+    unset($row);
 
     if( $search ) {
         if( $value === 'domain' ) {

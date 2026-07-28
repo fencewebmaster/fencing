@@ -724,6 +724,10 @@ final class WooCommerceProductExportService
             fc_storage_cache_dir('products')
             . DIRECTORY_SEPARATOR . 'wc-products-' . $source . '-count.json'
         );
+        if (!function_exists('fc_wc_products_sku_index_invalidate')) {
+            require_once FC_ROOT . '/config/wc_products_sku_index.php';
+        }
+        fc_wc_products_sku_index_invalidate($source);
 
         return ['ok' => true];
     }

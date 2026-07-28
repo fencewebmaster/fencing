@@ -113,8 +113,8 @@
             }
 
             if (target === 'cloudflare') {
-                // Always allow click; API returns a clear error when credentials are missing.
-                setOptionEmpty(btn, 1);
+                var cfReady = !!(entry && (entry.configured === true || (typeof entry.files === 'number' && entry.files > 0)));
+                setOptionEmpty(btn, cfReady ? 1 : 0);
                 return;
             }
 
@@ -311,7 +311,14 @@
         root.querySelectorAll('[data-fc-cache-purge]').forEach(function (btn) {
             var target = btn.getAttribute('data-fc-cache-purge') || '';
             if (target === 'cloudflare') {
-                setOptionEmpty(btn, 1);
+                var cfConfigured = btn.getAttribute('data-fc-cache-configured');
+                if (cfConfigured === '1' || cfConfigured === '0') {
+                    setOptionEmpty(btn, cfConfigured === '1' ? 1 : 0);
+                    return;
+                }
+                var cfMeta = btn.querySelector('[data-fc-cache-meta]');
+                var cfText = cfMeta ? String(cfMeta.textContent || '').trim().toLowerCase() : '';
+                setOptionEmpty(btn, cfText === 'cdn ready' ? 1 : 0);
                 return;
             }
             var meta = btn.querySelector('[data-fc-cache-meta]');

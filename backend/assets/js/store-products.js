@@ -8,9 +8,11 @@
     var API_LOAD = fcApiUrl('products', 'action=store-products');
     var API_REORDER = fcApiUrl('products', 'action=reorder-store-products');
     var API_UPDATE = fcApiUrl('products', 'action=update-store-product');
+    var API_WC_SKU_INDEX = fcApiUrl('products', 'action=wc-sku-index');
 
-    var PRIMARY_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
+    var PRIMARY_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE'];
     var DETAILS_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
+    var LIST_DISPLAY_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE', 'Colors'];
 
     var editModalEl = null;
     var editFormEl = null;
@@ -19,6 +21,9 @@
     var dragJustEnded = false;
     var editModalCloseTimer = null;
     var MODAL_TRANSITION_MS = 280;
+    var wcSkuSet = null;
+    var wcSkuSetPromise = null;
+    var skuStatusTimer = null;
 
     var TOAST_CSV_REORDER = 'fc-csv-reorder';
     var TOAST_CSV_UPDATE = 'fc-csv-update';
@@ -100,6 +105,176 @@
         });
 
         return filtered.length ? filtered : skuColumns;
+    }
+
+    function getListDisplayColumns(allColumns) {
+        return LIST_DISPLAY_COLUMNS.filter(function (col) {
+            if (col === 'SKUs' || col === 'Colors') {
+                return true;
+            }
+            return allColumns.indexOf(col) !== -1;
+        });
+    }
+
+    function insertSkusColumn(columns) {
+        var out = [];
+        var inserted = false;
+        (columns || []).forEach(function (col) {
+            if (col === 'SKUs') {
+                return;
+            }
+            out.push(col);
+            if (col === 'SUPPLIER') {
+                out.push('SKUs');
+                inserted = true;
+            }
+        });
+        if (!inserted) {
+            var styleIdx = out.indexOf('STYLE');
+            if (styleIdx >= 0) {
+                out.splice(styleIdx, 0, 'SKUs');
+            } else {
+                out.push('SKUs');
+            }
+        }
+        return out;
+    }
+
+    function normalizeSkuValue(value) {
+        return String(value || '').trim();
+    }
+
+    function isSkuMissingValue(value) {
+        var sku = normalizeSkuValue(value);
+        return sku === '' || sku.toUpperCase() === 'OFF';
+    }
+
+    function skuExistsInCatalogue(value) {
+        if (!wcSkuSet || isSkuMissingValue(value)) {
+            return false;
+        }
+        return wcSkuSet.has(normalizeSkuValue(value));
+    }
+
+    function ensureWcSkuIndex() {
+        if (wcSkuSet) {
+            return Promise.resolve(wcSkuSet);
+        }
+        if (wcSkuSetPromise) {
+            return wcSkuSetPromise;
+        }
+        wcSkuSetPromise = fetch(API_WC_SKU_INDEX, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' }
+        })
+            .then(function (response) {
+                return response.json().catch(function () {
+                    return { ok: false, skus: [] };
+                });
+            })
+            .then(function (body) {
+                var set = new Set();
+                if (body && body.ok && Array.isArray(body.skus)) {
+                    body.skus.forEach(function (sku) {
+                        var normalized = normalizeSkuValue(sku);
+                        if (normalized !== '') {
+                            set.add(normalized);
+                        }
+                    });
+                }
+                wcSkuSet = set;
+                return wcSkuSet;
+            })
+            .catch(function () {
+                wcSkuSet = new Set();
+                return wcSkuSet;
+            })
+            .then(function (set) {
+                wcSkuSetPromise = null;
+                return set;
+            });
+
+        return wcSkuSetPromise;
+    }
+
+    function getAllowedColorColumns(row, allColumns, styleColorsMap) {
+        var styleKey = String((row && row.STYLE) || '').trim();
+        if (styleColorsMap && Object.prototype.hasOwnProperty.call(styleColorsMap, styleKey)) {
+            var allowed = styleColorsMap[styleKey];
+            return Array.isArray(allowed) ? allowed.slice() : [];
+        }
+        return getSkuColumns(allColumns || []);
+    }
+
+    function skusSummaryForRow(row, allColumns, styleColorsMap) {
+        var allowed = getAllowedColorColumns(row, allColumns, styleColorsMap);
+        var total = allowed.length;
+        var found = 0;
+        allowed.forEach(function (column) {
+            var value = row && row[column] != null ? row[column] : '';
+            if (skuExistsInCatalogue(value)) {
+                found += 1;
+            }
+        });
+        return {
+            found: found,
+            total: total,
+            complete: total > 0 && found === total
+        };
+    }
+
+    function skusCellHtml(row, allColumns, styleColorsMap) {
+        var summary = skusSummaryForRow(row, allColumns, styleColorsMap);
+        if (summary.total === 0) {
+            return '<span class="text-slate-300">—</span>';
+        }
+        var complete = summary.complete;
+        var statusClass = complete ? 'fc-sp-sku-status--found' : 'fc-sp-sku-status--missing';
+        var wrapClass = complete
+            ? 'fc-sp-skus-summary--complete'
+            : 'fc-sp-skus-summary--incomplete';
+        var label = complete
+            ? 'All style SKUs found in store catalogue'
+            : 'Some style SKUs missing from store catalogue';
+        return (
+            '<span class="fc-sp-skus-summary ' +
+            wrapClass +
+            '" title="' +
+            escapeHtml(label) +
+            '">' +
+            '<span class="fc-sp-sku-status ' +
+            statusClass +
+            '" aria-hidden="true"></span>' +
+            '<span>' +
+            escapeHtml(String(summary.found) + '/' + String(summary.total)) +
+            '</span></span>'
+        );
+    }
+
+    function colorsCellHtml(row, allColumns, styleColorsMap) {
+        var allowed = getAllowedColorColumns(row, allColumns, styleColorsMap);
+        var items = [];
+        allowed.forEach(function (column) {
+            var sku = normalizeSkuValue(row && row[column] != null ? row[column] : '');
+            if (isSkuMissingValue(sku)) {
+                return;
+            }
+            var label = String(column).toUpperCase().replace(/-/g, '_');
+            items.push(
+                '<span class="fc-sys-product-color">' +
+                    '<span class="fc-sys-product-color__swatch" style="background:#cbd5e1;" title="' +
+                    escapeHtml(label) +
+                    '" aria-hidden="true"></span>' +
+                    '<span class="fc-sys-product-color__label">' +
+                    escapeHtml(label) +
+                    '</span></span>'
+            );
+        });
+        if (!items.length) {
+            return '<span class="text-slate-300">—</span>';
+        }
+        return '<div class="fc-sys-product-colors">' + items.join('') + '</div>';
     }
 
     function setEditFormDirty(isDirty) {
@@ -357,11 +532,23 @@
     function buildTable(columns, rows, options) {
         options = options || {};
         var draggable = !!options.draggable;
+        var allColumns = options.allColumns || columns;
+        var styleColorsMap = options.styleColorsMap || {};
+        var displayColumns = options.displayColumns || insertSkusColumn(columns);
 
         var colgroup =
             (draggable ? '<col class="w-10" />' : '') +
-            columns
+            displayColumns
                 .map(function (col) {
+                    if (col === 'Colors') {
+                        return '<col class="fc-sys-product-colors-col" />';
+                    }
+                    if (col === 'SKUs') {
+                        return '<col class="fc-sys-product-skus-col" />';
+                    }
+                    if (col === 'DESCRIPTION') {
+                        return '<col class="fc-sys-product-desc-col min-w-[8rem]" />';
+                    }
                     var isPrimary = PRIMARY_COLUMNS.indexOf(col) !== -1;
                     return (
                         '<col' +
@@ -377,15 +564,24 @@
             (draggable
                 ? '<th scope="col" class="fc-sp-sticky fc-sp-sticky-grip px-2 py-2 w-10" aria-label="Reorder"></th>'
                 : '') +
-            columns
+            displayColumns
                 .map(function (col, colIndex) {
                     var sticky =
                         colIndex === 0
                             ? ' fc-sp-sticky fc-sp-sticky-col relative'
                             : '';
+                    var header =
+                        col === 'Colors' || col === 'SKUs' ? col : formatHeader(col);
+                    var extra =
+                        (col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '') +
+                        (col === 'Colors' ? ' fc-sys-product-colors-cell' : '') +
+                        (col === 'SKUs' ? ' fc-sys-product-skus-cell' : '');
                     return (
-                        '<th scope="col" class="whitespace-nowrap px-3 py-2' + sticky + '">' +
-                        escapeHtml(formatHeader(col)) +
+                        '<th scope="col" class="whitespace-nowrap px-3 py-2' +
+                        sticky +
+                        extra +
+                        '">' +
+                        escapeHtml(header) +
                         '</th>'
                     );
                 })
@@ -414,14 +610,32 @@
                               '<i class="fa-solid fa-grip-vertical pointer-events-none" aria-hidden="true"></i>' +
                               '</td>'
                             : '') +
-                        columns
+                        displayColumns
                             .map(function (col, colIndex) {
-                                var val = row[col] != null ? row[col] : '';
-                                var empty = val === '';
                                 var sticky =
                                     colIndex === 0
                                         ? ' fc-sp-sticky fc-sp-sticky-col relative ' + stripeBg
                                         : '';
+                                if (col === 'SKUs') {
+                                    return (
+                                        '<td class="whitespace-nowrap border-b border-slate-100 px-3 py-2 fc-sys-product-skus-cell' +
+                                        sticky +
+                                        '">' +
+                                        skusCellHtml(row, allColumns, styleColorsMap) +
+                                        '</td>'
+                                    );
+                                }
+                                if (col === 'Colors') {
+                                    return (
+                                        '<td class="border-b border-slate-100 px-3 py-2 fc-sys-product-colors-cell' +
+                                        sticky +
+                                        '">' +
+                                        colorsCellHtml(row, allColumns, styleColorsMap) +
+                                        '</td>'
+                                    );
+                                }
+                                var val = row[col] != null ? row[col] : '';
+                                var empty = val === '';
                                 return (
                                     '<td class="whitespace-nowrap border-b border-slate-100 px-3 py-2' +
                                     sticky +
@@ -736,6 +950,9 @@
             editFormEl.addEventListener('input', function (e) {
                 setEditFormDirty(true);
                 syncFieldFilledState(e.target);
+                if (e.target && e.target.classList && e.target.classList.contains('fc-sp-field-control--sku')) {
+                    scheduleSkuStatusRefresh(e.target);
+                }
             });
 
             editFormEl.addEventListener('click', function (e) {
@@ -761,6 +978,48 @@
             if (el.classList.contains('fc-sp-field-control--sku')) {
                 el.classList.toggle('fc-sp-field-control--empty', !hasValue);
             }
+        }
+
+        function paintSkuStatus(statusEl, value) {
+            if (!statusEl) {
+                return;
+            }
+            var found = skuExistsInCatalogue(value);
+            statusEl.classList.toggle('fc-sp-sku-status--found', found);
+            statusEl.classList.toggle('fc-sp-sku-status--missing', !found);
+            statusEl.setAttribute(
+                'aria-label',
+                found ? 'SKU found in store catalogue' : 'SKU not in store catalogue'
+            );
+            statusEl.title = found ? 'Found in store catalogue' : 'Not in store catalogue';
+        }
+
+        function refreshSkuStatusForInput(input) {
+            if (!input) {
+                return;
+            }
+            var field = input.closest('.fc-sp-field');
+            var statusEl = field ? field.querySelector('[data-fc-sp-sku-status]') : null;
+            paintSkuStatus(statusEl, input.value);
+        }
+
+        function refreshAllSkuStatuses() {
+            if (!editFormEl) {
+                return;
+            }
+            editFormEl.querySelectorAll('.fc-sp-field-control--sku').forEach(function (input) {
+                refreshSkuStatusForInput(input);
+            });
+        }
+
+        function scheduleSkuStatusRefresh(input) {
+            if (skuStatusTimer) {
+                window.clearTimeout(skuStatusTimer);
+            }
+            skuStatusTimer = window.setTimeout(function () {
+                skuStatusTimer = null;
+                refreshSkuStatusForInput(input);
+            }, 150);
         }
 
         function buildFieldControl(col, val) {
@@ -837,7 +1096,13 @@
                     var id = 'fc-sp-field-' + col.replace(/[^a-zA-Z0-9_-]/g, '_');
                     var isSlug = col === 'SLUG';
                     var isDescription = col === 'DESCRIPTION';
+                    var isSku = DETAILS_COLUMNS.indexOf(col) === -1;
                     var fieldHtml = buildFieldControl(col, val);
+                    var labelPrefix = isSlug
+                        ? '<i class="fa-solid fa-lock fc-sp-field__lock" aria-hidden="true"></i>'
+                        : isSku
+                          ? '<span class="fc-sp-sku-status fc-sp-sku-status--missing" data-fc-sp-sku-status aria-hidden="false" aria-label="SKU not in store catalogue" title="Not in store catalogue"></span>'
+                          : '';
 
                     return (
                         '<div class="fc-sp-field' +
@@ -846,9 +1111,7 @@
                         '<label class="fc-sp-field__label" for="' +
                         escapeHtml(id) +
                         '">' +
-                        (isSlug
-                            ? '<i class="fa-solid fa-lock fc-sp-field__lock" aria-hidden="true"></i>'
-                            : '') +
+                        labelPrefix +
                         '<span>' +
                         escapeHtml(formatHeader(col)) +
                         '</span></label>' +
@@ -894,6 +1157,10 @@
             if (submitBtn) {
                 submitBtn.disabled = false;
             }
+
+            ensureWcSkuIndex().then(function () {
+                refreshAllSkuStatuses();
+            });
 
             if (editModalCloseTimer) {
                 window.clearTimeout(editModalCloseTimer);
@@ -1252,29 +1519,48 @@
             destroyBottomHorizontalScroll();
 
             var filtered = hasActiveFilters();
+            var displayColumns = getListDisplayColumns(columns);
 
-            if (!rows.length) {
-                wrap.innerHTML =
-                    '<p class="p-8 text-center text-sm text-slate-500">No system products match your filters.</p>';
-            } else {
-                wrap.innerHTML = buildTable(columns, rows, { draggable: !filtered });
-                var tbody = document.getElementById('fc-store-products-tbody');
-                if (tbody) {
-                    initRowClick(tbody);
-                    if (!filtered) {
-                        initRowDragDrop(tbody);
+            function renderRows(visibleRows) {
+                if (!visibleRows.length) {
+                    wrap.innerHTML =
+                        '<p class="p-8 text-center text-sm text-slate-500">No system products match your filters.</p>';
+                } else {
+                    wrap.innerHTML = buildTable(columns, visibleRows, {
+                        draggable: !filtered,
+                        allColumns: columns,
+                        styleColorsMap: styleColorsMap,
+                        displayColumns: displayColumns
+                    });
+                    var tbody = document.getElementById('fc-store-products-tbody');
+                    if (tbody) {
+                        initRowClick(tbody);
+                        if (!filtered) {
+                            initRowDragDrop(tbody);
+                        }
                     }
+                    initBottomHorizontalScroll(wrap);
                 }
-                initBottomHorizontalScroll(wrap);
+
+                if (countEl) {
+                    countEl.textContent =
+                        visibleRows.length === allRows.length
+                            ? String(allRows.length)
+                            : visibleRows.length + ' of ' + allRows.length;
+                }
             }
 
-            if (countEl) {
-                countEl.textContent =
-                    rows.length === allRows.length
-                        ? String(allRows.length)
-                        : rows.length + ' of ' + allRows.length;
-            }
+            renderRows(rows);
 
+            if (rows.length && !wcSkuSet) {
+                ensureWcSkuIndex().then(function () {
+                    var stillWrap = document.getElementById('fc-store-products-table-wrap');
+                    if (!stillWrap || stillWrap !== wrap) {
+                        return;
+                    }
+                    renderRows(getVisibleRows());
+                });
+            }
         }
 
         function bindFilters() {

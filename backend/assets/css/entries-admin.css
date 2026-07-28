@@ -1112,6 +1112,10 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
     line-height: 1;
 }
 
+.fc-system-products-tab__count[hidden] {
+    display: none !important;
+}
+
 .fc-system-products-tab.is-active .fc-system-products-tab__count {
     background: rgba(246, 121, 37, 0.14);
     color: #c2410c;
@@ -1174,6 +1178,103 @@ html[data-fc-admin-theme='dark'] .fc-system-products-tab.is-active .fc-system-pr
 .fc-products-download-trigger {
     gap: 0.45rem;
     white-space: nowrap;
+}
+
+.fc-products-download-dropdown {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    z-index: 5;
+}
+
+.fc-products-download-dropdown.is-open {
+    z-index: 90;
+}
+
+.fc-entries-page__toolbar:has(.fc-products-download-dropdown.is-open),
+.fc-sp-toolbar:has(.fc-products-download-dropdown.is-open) {
+    z-index: 80;
+    overflow: visible;
+}
+
+.fc-entries-page__toolbar-form:has(.fc-products-download-dropdown.is-open),
+.fc-entries-page__toolbar-row:has(.fc-products-download-dropdown.is-open) {
+    overflow: visible;
+}
+
+.fc-products-download-dropdown__caret {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    transition: transform 0.15s ease;
+}
+
+.fc-products-download-dropdown.is-open .fc-products-download-dropdown__caret {
+    transform: rotate(180deg);
+}
+
+.fc-products-download-dropdown__panel {
+    position: fixed;
+    z-index: 1200;
+    min-width: 12.5rem;
+    padding: 0.35rem;
+    border: 1px solid #dcdcde;
+    border-radius: 0.65rem;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+}
+
+.fc-products-download-dropdown__panel[hidden] {
+    display: none !important;
+}
+
+.fc-products-download-dropdown__option {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.7rem;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: #1d2327;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fc-products-download-dropdown__option i {
+    width: 1rem;
+    color: #646970;
+    text-align: center;
+}
+
+.fc-products-download-dropdown__option:hover:not(:disabled):not(.is-disabled) {
+    background: #f6f7f7;
+}
+
+.fc-products-download-dropdown__option:disabled,
+.fc-products-download-dropdown__option.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+html[data-fc-admin-theme='dark'] .fc-products-download-dropdown__panel {
+    border-color: #3c434a;
+    background: #1d2327;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+html[data-fc-admin-theme='dark'] .fc-products-download-dropdown__option {
+    color: #f0f0f1;
+}
+
+html[data-fc-admin-theme='dark'] .fc-products-download-dropdown__option i {
+    color: #a7aaad;
+}
+
+html[data-fc-admin-theme='dark'] .fc-products-download-dropdown__option:hover:not(:disabled):not(.is-disabled) {
+    background: #2c3338;
 }
 
 .fc-products-download-modal {

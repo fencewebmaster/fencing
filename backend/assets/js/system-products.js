@@ -439,7 +439,7 @@
         if (col === 'SKU') {
             return {
                 html:
-                    '<span class="fc-sys-sku-value block font-mono text-xs leading-relaxed text-slate-800">' +
+                    '<span class="fc-sys-sku-value block text-sm text-slate-800">' +
                     escapeHtml(val) +
                     '</span>',
                 empty: false
@@ -520,7 +520,7 @@
                                     sticky +
                                     (formatted.empty && col !== 'Images' ? ' text-slate-300' : '') +
                                     (col === 'Images' ? ' fc-sys-images-cell' : ' px-3 py-2') +
-                                    (col === 'SKU' ? ' fc-sys-sku-cell align-top' : '') +
+                                    (col === 'SKU' ? ' fc-sys-sku-cell' : '') +
                                     (col === 'Name' ? ' fc-sys-name-cell' : '') +
                                     (col === 'Name' || col === 'Images' || col === 'SKU'
                                         ? ''
@@ -569,6 +569,14 @@
             '<div class="fc-gallery-page__tabs fc-system-products-tabs" role="tablist" aria-label="Store product source">' +
             TABS.map(function (tab) {
                 var isActive = tab === activeTab;
+                var cached = tabCache[tab];
+                var countText = '…';
+                var countHidden = false;
+                if (cached) {
+                    var total = Number(cached.total || 0);
+                    countText = String(total);
+                    countHidden = !(total > 0);
+                }
                 return (
                     '<button type="button" role="tab" data-fc-sys-tab="' +
                     tab +
@@ -582,8 +590,10 @@
                     '</span>' +
                     '<span class="fc-system-products-tab__count" data-fc-sys-tab-count="' +
                     tab +
-                    '">' +
-                    (tabCache[tab] ? tabCache[tab].total || 0 : '…') +
+                    '"' +
+                    (countHidden ? ' hidden' : '') +
+                    '>' +
+                    countText +
                     '</span></button>'
                 );
             }).join('') +
@@ -656,11 +666,29 @@
             }
         }
 
+        function setTabCountBadge(el, total) {
+            if (!el) {
+                return;
+            }
+            var count = Number(total || 0);
+            if (!isFinite(count) || count < 0) {
+                count = 0;
+            }
+            el.textContent = String(count);
+            if (count > 0) {
+                el.hidden = false;
+                el.removeAttribute('hidden');
+            } else {
+                el.hidden = true;
+                el.setAttribute('hidden', '');
+            }
+        }
+
         function updateTabCounts() {
             TABS.forEach(function (tab) {
                 var el = document.querySelector('[data-fc-sys-tab-count="' + tab + '"]');
                 if (el && tabCache[tab]) {
-                    el.textContent = String(tabCache[tab].total || 0);
+                    setTabCountBadge(el, tabCache[tab].total || 0);
                 }
             });
         }
@@ -1022,9 +1050,9 @@
     }
 
     function bindProductDownload() {
-        var trigger = document.querySelector('[data-fc-products-download-open]');
+        var openTrigger = document.querySelector('[data-fc-products-download-open]');
         var modal = document.querySelector('[data-fc-products-download-modal]');
-        if (!trigger || !modal || modal.dataset.fcDownloadBound === '1') {
+        if (!openTrigger || !modal || modal.dataset.fcDownloadBound === '1') {
             return;
         }
         modal.dataset.fcDownloadBound = '1';
@@ -1032,6 +1060,12 @@
         var data = readBootstrapData() || {};
         var source = String(data.source || 'GO').toUpperCase();
         var csrf = String(data.csrf || '');
+        var dropdown = document.querySelector('[data-fc-products-download-dropdown]');
+        var toggle = dropdown ? dropdown.querySelector('[data-fc-products-download-toggle]') : null;
+        var panel = dropdown ? dropdown.querySelector('.fc-products-download-dropdown__panel') : null;
+        var csvTrigger = dropdown ? dropdown.querySelector('[data-fc-products-download-csv]') : null;
+        var importTrigger = dropdown ? dropdown.querySelector('[data-fc-products-import-csv]') : null;
+        var importInput = dropdown ? dropdown.querySelector('[data-fc-products-import-input]') : null;
         var dialog = modal.querySelector('.fc-products-download-modal__dialog');
         var startButton = modal.querySelector('[data-fc-products-download-start]');
         var startLabel = startButton ? startButton.querySelector('span') : null;
@@ -1057,6 +1091,197 @@
         var completedThisRun = false;
         var currentJob = null;
         var previousFocus = null;
+
+        function closeDownloadMenu() {
+            if (!dropdown || !toggle || !panel) {
+                return;
+            }
+            panel.hidden = true;
+            panel.style.top = '';
+            panel.style.left = '';
+            panel.style.right = '';
+            panel.style.minWidth = '';
+            toggle.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('is-open');
+        }
+
+        function positionDownloadMenu() {
+            if (!toggle || !panel || panel.hidden) {
+                return;
+            }
+            var rect = toggle.getBoundingClientRect();
+            var gap = 6;
+            var minWidth = Math.max(rect.width, 200);
+            panel.style.minWidth = minWidth + 'px';
+            panel.style.right = 'auto';
+            // Measure after showing so we can flip if needed.
+            panel.style.top = (rect.bottom + gap) + 'px';
+            panel.style.left = Math.max(8, rect.right - minWidth) + 'px';
+
+            var panelRect = panel.getBoundingClientRect();
+            var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+            var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+            if (panelRect.right > viewportWidth - 8) {
+                panel.style.left = Math.max(8, viewportWidth - panelRect.width - 8) + 'px';
+            }
+            if (panelRect.bottom > viewportHeight - 8) {
+                var aboveTop = rect.top - gap - panelRect.height;
+                if (aboveTop >= 8) {
+                    panel.style.top = aboveTop + 'px';
+                }
+            }
+        }
+
+        function openDownloadMenu() {
+            if (!dropdown || !toggle || !panel) {
+                return;
+            }
+            panel.hidden = false;
+            toggle.setAttribute('aria-expanded', 'true');
+            dropdown.classList.add('is-open');
+            positionDownloadMenu();
+        }
+
+        function csvDownloadUrl() {
+            return fcApiUrl(
+                'products',
+                'action=download-products-csv&source=' + encodeURIComponent(source)
+            );
+        }
+
+        function downloadCsvFile() {
+            if (csvTrigger && (csvTrigger.disabled || csvTrigger.getAttribute('aria-disabled') === 'true')) {
+                return;
+            }
+            closeDownloadMenu();
+            var link = document.createElement('a');
+            link.href = csvDownloadUrl();
+            link.download = csvTrigger
+                ? String(csvTrigger.getAttribute('data-fc-products-csv-name') || ('wc-products-' + source + '.csv'))
+                : ('wc-products-' + source + '.csv');
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        function toast(kind, message) {
+            var T = global.FcAdminToast;
+            if (!T) {
+                return;
+            }
+            if (kind === 'saving' && typeof T.loading === 'function') {
+                T.loading(message, 'fc-products-catalogue');
+                return;
+            }
+            if (kind === 'success' && typeof T.success === 'function') {
+                T.success(message, { id: 'fc-products-catalogue', duration: 4500 });
+                return;
+            }
+            if (kind === 'error' && typeof T.error === 'function') {
+                T.error(message, { id: 'fc-products-catalogue', duration: 5000 });
+            }
+        }
+
+        function importCsvFile(file) {
+            if (!file) {
+                return;
+            }
+            var name = String(file.name || '').toLowerCase();
+            if (!name.endsWith('.csv')) {
+                toast('error', 'Only .csv files can be imported.');
+                return;
+            }
+
+            closeDownloadMenu();
+            toast('saving', 'Importing CSV…');
+
+            var formData = new FormData();
+            formData.append('source', source);
+            formData.append('csrf', csrf);
+            formData.append('file', file);
+
+            fetch(fcApiUrl('products', 'action=import-products-csv'), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' },
+                body: formData
+            })
+                .then(function (response) {
+                    return response.json().catch(function () {
+                        return { ok: false, error: 'Invalid server response.' };
+                    }).then(function (body) {
+                        if (!response.ok || !body.ok) {
+                            throw new Error((body && body.error) || 'Could not import CSV.');
+                        }
+                        return body;
+                    });
+                })
+                .then(function (body) {
+                    toast('success', body.message || 'CSV imported successfully.');
+                    window.setTimeout(function () {
+                        window.location.reload();
+                    }, 600);
+                })
+                .catch(function (error) {
+                    toast('error', (error && error.message) || 'Could not import CSV.');
+                })
+                .then(function () {
+                    if (importInput) {
+                        importInput.value = '';
+                    }
+                });
+        }
+
+        if (toggle && panel) {
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (panel.hidden) {
+                    openDownloadMenu();
+                } else {
+                    closeDownloadMenu();
+                }
+            });
+            panel.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+            document.addEventListener('click', function () {
+                closeDownloadMenu();
+            });
+            window.addEventListener('resize', function () {
+                if (!panel.hidden) {
+                    positionDownloadMenu();
+                }
+            });
+            window.addEventListener('scroll', function () {
+                if (!panel.hidden) {
+                    positionDownloadMenu();
+                }
+            }, true);
+        }
+
+        if (csvTrigger) {
+            csvTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                downloadCsvFile();
+            });
+        }
+
+        if (importTrigger && importInput) {
+            importTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeDownloadMenu();
+                importInput.click();
+            });
+            importInput.addEventListener('change', function () {
+                var file = importInput.files && importInput.files[0] ? importInput.files[0] : null;
+                importCsvFile(file);
+            });
+        }
 
         function endpoint(action, query) {
             var suffix = 'action=' + encodeURIComponent(action);
@@ -1270,6 +1495,7 @@
         }
 
         function openModal() {
+            closeDownloadMenu();
             previousFocus = document.activeElement;
             modal.hidden = false;
             resetStartButton();
@@ -1301,7 +1527,11 @@
             }
         }
 
-        trigger.addEventListener('click', openModal);
+        openTrigger.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            openModal();
+        });
         closeButtons.forEach(function (button) {
             button.addEventListener('click', closeModal);
         });
@@ -1356,8 +1586,12 @@
             });
         }
         document.addEventListener('keydown', function (event) {
-            if (!modal.hidden && event.key === 'Escape') {
-                closeModal();
+            if (event.key === 'Escape') {
+                if (!modal.hidden) {
+                    closeModal();
+                    return;
+                }
+                closeDownloadMenu();
             }
         });
         window.addEventListener('beforeunload', function (event) {
@@ -1538,7 +1772,15 @@
                     TABS.forEach(function (tab) {
                         var el = document.querySelector('[data-fc-sys-tab-count="' + tab + '"]');
                         if (el && typeof data.tabTotals[tab] === 'number') {
-                            el.textContent = String(data.tabTotals[tab]);
+                            var count = Number(data.tabTotals[tab] || 0);
+                            el.textContent = String(count);
+                            if (count > 0) {
+                                el.hidden = false;
+                                el.removeAttribute('hidden');
+                            } else {
+                                el.hidden = true;
+                                el.setAttribute('hidden', '');
+                            }
                         }
                     });
                 }
