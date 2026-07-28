@@ -17,16 +17,15 @@ $page = $fcStoreProductsPage;
 $filters = is_array($page['filters'] ?? null) ? $page['filters'] : [];
 $pagination = is_array($page['pagination'] ?? null) ? $page['pagination'] : [];
 $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['pagination_links'] : [];
+$supplierOptions = is_array($page['supplier_options'] ?? null) ? $page['supplier_options'] : [];
+$styleOptions = is_array($page['style_options'] ?? null) ? $page['style_options'] : [];
+$colorOptions = is_array($page['color_options'] ?? null) ? $page['color_options'] : [];
+$perPageOptions = is_array($page['per_page_options'] ?? null) ? $page['per_page_options'] : [];
+$fcStoreCsvReady = ($page['error'] ?? '') === '';
 ?>
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden" data-fc-store-products-server="1" data-fc-store-products-php="1">
     <script type="application/json" id="fc-store-products-bootstrap"><?php echo $page['bootstrap_json']; ?></script>
 
-    <?php if (($page['error'] ?? '') !== '') : ?>
-    <div class="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-        <p class="font-semibold">Could not load system products</p>
-        <p class="mt-1 text-sm"><?php echo $h((string) $page['error']); ?></p>
-    </div>
-    <?php else : ?>
     <div class="fc-entries-page__toolbar fc-sp-toolbar fc-admin-sticky-header sticky top-0 z-20 shrink-0">
         <form class="fc-entries-page__toolbar-form" method="get" action="<?php echo $h((string) ($page['form_action'] ?? '')); ?>">
             <div class="fc-entries-page__toolbar-row">
@@ -44,14 +43,14 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                     >
                 </label>
                 <select id="fc-store-products-filter-supplier" name="supplier" aria-label="Supplier" class="fc-entries-page__filter" onchange="this.form.submit()">
-                    <?php foreach ($page['supplier_options'] as $option) : ?>
+                    <?php foreach ($supplierOptions as $option) : ?>
                     <option value="<?php echo $h((string) ($option['value'] ?? '')); ?>"<?php echo !empty($option['is_selected']) ? ' selected' : ''; ?>>
                         <?php echo $h((string) ($option['label'] ?? '')); ?>
                     </option>
                     <?php endforeach; ?>
                 </select>
                 <select id="fc-store-products-filter-style" name="style" aria-label="Style" class="fc-entries-page__filter" onchange="this.form.submit()">
-                    <?php foreach ($page['style_options'] as $option) : ?>
+                    <?php foreach ($styleOptions as $option) : ?>
                     <option value="<?php echo $h((string) ($option['value'] ?? '')); ?>"<?php echo !empty($option['is_selected']) ? ' selected' : ''; ?>>
                         <?php echo $h((string) ($option['label'] ?? '')); ?>
                     </option>
@@ -82,7 +81,7 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                         hidden
                     >
                         <div class="fc-entries-fence-dropdown__options">
-                            <?php foreach ($page['color_options'] as $colorOption) : ?>
+                            <?php foreach ($colorOptions as $colorOption) : ?>
                             <label class="fc-entries-fence-dropdown__option fc-store-products-color-option" role="option" aria-selected="<?php echo !empty($colorOption['is_checked']) ? 'true' : 'false'; ?>">
                                 <input
                                     type="checkbox"
@@ -118,13 +117,76 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                     class="fc-sp-toolbar__clear"
                 >Clear filters</a>
                 <?php endif; ?>
+                <?php if (!empty($page['can_edit'])) : ?>
+                <div class="fc-products-download-dropdown" data-fc-store-products-download-dropdown>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-orange fw-semibold fc-products-download-trigger"
+                        data-fc-store-products-download-toggle
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="fc-store-products-download-menu"
+                        id="fc-store-products-download-toggle"
+                    >
+                        <span>Download</span>
+                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                    </button>
+                    <div
+                        class="fc-products-download-dropdown__panel"
+                        id="fc-store-products-download-menu"
+                        role="menu"
+                        aria-labelledby="fc-store-products-download-toggle"
+                        hidden
+                    >
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option<?php echo $fcStoreCsvReady ? '' : ' is-disabled'; ?>"
+                            role="menuitem"
+                            data-fc-store-products-download-csv
+                            data-fc-store-products-csv-name="products.csv"
+                            <?php echo $fcStoreCsvReady ? '' : ' disabled aria-disabled="true"'; ?>
+                        >
+                            <span>Export CSV</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option"
+                            role="menuitem"
+                            data-fc-store-products-import-csv
+                        >
+                            <span>Import CSV</span>
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        class="sr-only"
+                        accept=".csv,text/csv"
+                        data-fc-store-products-import-input
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
+                <?php endif; ?>
                 <button type="submit" class="sr-only">Search</button>
             </div>
         </form>
-        <div class="fc-entries-page__count">
-            <span id="fc-store-products-count"><?php echo $h((string) ($page['count_label'] ?? '0')); ?></span> Items
+        <div class="fc-entries-page__count fc-sys-toolbar-meta">
+            <span><span id="fc-store-products-count"><?php echo $h((string) ($page['count_label'] ?? '0')); ?></span> Items</span>
+            <span id="fc-store-products-file" class="fc-sys-toolbar-meta__file"><?php echo $h((string) ($page['file_label'] ?? 'products.csv')); ?></span>
         </div>
     </div>
+
+    <?php if (($page['error'] ?? '') !== '') : ?>
+    <div class="fc-entries-page__content fc-store-products-body min-h-0 flex-1 overflow-auto">
+        <div class="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+            <p class="font-semibold">Could not load system products</p>
+            <p class="mt-1 text-sm"><?php echo $h((string) $page['error']); ?></p>
+            <?php if (!empty($page['can_edit'])) : ?>
+            <p class="mt-2 text-sm">Use <strong>Download → Import CSV</strong> to upload a products.csv file.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php else : ?>
     <div class="fc-entries-page__content fc-store-products-body min-h-0 flex-1 overflow-auto">
         <div id="fc-store-products-table-wrap" class="flex flex-col">
             <?php echo $page['table_html'] ?? ''; ?>
@@ -155,7 +217,7 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                 <?php endif; ?>
                 <span class="fc-entries-page__per-page-label">Display per page</span>
                 <select class="fc-entries-page__per-page-select" name="per_page" aria-label="Display per page" onchange="this.form.submit()">
-                    <?php foreach ($page['per_page_options'] as $option) : ?>
+                    <?php foreach ($perPageOptions as $option) : ?>
                     <option value="<?php echo (int) $option; ?>"<?php echo empty($page['is_all']) && (int) ($page['per_page'] ?? 0) === (int) $option ? ' selected' : ''; ?>><?php echo (int) $option; ?></option>
                     <?php endforeach; ?>
                     <option value="all"<?php echo !empty($page['is_all']) ? ' selected' : ''; ?>>All</option>

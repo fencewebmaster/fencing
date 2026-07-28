@@ -22,8 +22,15 @@
     var editModalCloseTimer = null;
     var MODAL_TRANSITION_MS = 280;
     var wcSkuSet = null;
+    var wcSkuList = null;
+    var wcSkuMetaBySku = null;
     var wcSkuSetPromise = null;
     var skuStatusTimer = null;
+    var activeSkuSuggestWrap = null;
+    var activeSkuSuggestMenu = null;
+    var activeSkuSuggestMatches = null;
+    var skuSuggestRepositionBound = null;
+    var SKU_SUGGEST_LIMIT = 24;
 
     var TOAST_CSV_REORDER = 'fc-csv-reorder';
     var TOAST_CSV_UPDATE = 'fc-csv-update';
@@ -156,8 +163,27 @@
         return wcSkuSet.has(normalizeSkuValue(value));
     }
 
+    function rememberWcSkuMeta(sku, name, image) {
+        if (!wcSkuMetaBySku) {
+            wcSkuMetaBySku = Object.create(null);
+        }
+        wcSkuMetaBySku[sku] = {
+            sku: sku,
+            name: String(name || '').trim(),
+            image: String(image || '').trim()
+        };
+    }
+
+    function metaForSku(sku) {
+        var key = normalizeSkuValue(sku);
+        if (wcSkuMetaBySku && wcSkuMetaBySku[key]) {
+            return wcSkuMetaBySku[key];
+        }
+        return { sku: key, name: '', image: '' };
+    }
+
     function ensureWcSkuIndex() {
-        if (wcSkuSet) {
+        if (wcSkuSet && Array.isArray(wcSkuList)) {
             return Promise.resolve(wcSkuSet);
         }
         if (wcSkuSetPromise) {
@@ -170,24 +196,44 @@
         })
             .then(function (response) {
                 return response.json().catch(function () {
-                    return { ok: false, skus: [] };
+                    return { ok: false, skus: [], products: [] };
                 });
             })
             .then(function (body) {
                 var set = new Set();
-                if (body && body.ok && Array.isArray(body.skus)) {
+                var list = [];
+                wcSkuMetaBySku = Object.create(null);
+                if (body && body.ok && Array.isArray(body.products) && body.products.length) {
+                    body.products.forEach(function (row) {
+                        if (!row || typeof row !== 'object') {
+                            return;
+                        }
+                        var normalized = normalizeSkuValue(row.sku);
+                        if (normalized === '' || set.has(normalized)) {
+                            return;
+                        }
+                        set.add(normalized);
+                        list.push(normalized);
+                        rememberWcSkuMeta(normalized, formatProductName(row.name), row.image);
+                    });
+                } else if (body && body.ok && Array.isArray(body.skus)) {
                     body.skus.forEach(function (sku) {
                         var normalized = normalizeSkuValue(sku);
-                        if (normalized !== '') {
+                        if (normalized !== '' && !set.has(normalized)) {
                             set.add(normalized);
+                            list.push(normalized);
+                            rememberWcSkuMeta(normalized, '', '');
                         }
                     });
                 }
                 wcSkuSet = set;
+                wcSkuList = list;
                 return wcSkuSet;
             })
             .catch(function () {
                 wcSkuSet = new Set();
+                wcSkuList = [];
+                wcSkuMetaBySku = Object.create(null);
                 return wcSkuSet;
             })
             .then(function (set) {
@@ -196,6 +242,66 @@
             });
 
         return wcSkuSetPromise;
+    }
+
+    function commonPrefixLength(a, b) {
+        var n = Math.min(a.length, b.length);
+        var i = 0;
+        while (i < n && a.charAt(i) === b.charAt(i)) {
+            i += 1;
+        }
+        return i;
+    }
+
+    function suggestSkusFor(query, limit) {
+        limit = limit || SKU_SUGGEST_LIMIT;
+        var q = normalizeSkuValue(query);
+        if (!q || q.toUpperCase() === 'OFF' || !Array.isArray(wcSkuList) || !wcSkuList.length) {
+            return [];
+        }
+
+        var qLower = q.toLowerCase();
+        var minPrefix = qLower.length >= 3 ? 3 : 1;
+        var scored = [];
+
+        for (var i = 0; i < wcSkuList.length; i++) {
+            var sku = normalizeSkuValue(wcSkuList[i]);
+            if (!sku) {
+                continue;
+            }
+            var sLower = sku.toLowerCase();
+            if (sLower === qLower) {
+                continue;
+            }
+            var prefix = commonPrefixLength(qLower, sLower);
+            var contains = sLower.indexOf(qLower) !== -1 || qLower.indexOf(sLower) !== -1;
+            if (prefix < minPrefix && !contains) {
+                continue;
+            }
+            scored.push({
+                sku: sku,
+                prefix: prefix,
+                contains: contains ? 1 : 0,
+                lenDiff: Math.abs(sku.length - q.length)
+            });
+        }
+
+        scored.sort(function (a, b) {
+            if (b.prefix !== a.prefix) {
+                return b.prefix - a.prefix;
+            }
+            if (b.contains !== a.contains) {
+                return b.contains - a.contains;
+            }
+            if (a.lenDiff !== b.lenDiff) {
+                return a.lenDiff - b.lenDiff;
+            }
+            return a.sku.localeCompare(b.sku, undefined, { sensitivity: 'base' });
+        });
+
+        return scored.slice(0, limit).map(function (row) {
+            return metaForSku(row.sku);
+        });
     }
 
     function getAllowedColorColumns(row, allColumns, styleColorsMap) {
@@ -333,6 +439,20 @@
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
+    }
+
+    function decodeHtmlEntities(text) {
+        var raw = String(text == null ? '' : text);
+        if (raw.indexOf('&') === -1) {
+            return raw;
+        }
+        var textarea = document.createElement('textarea');
+        textarea.innerHTML = raw;
+        return textarea.value;
+    }
+
+    function formatProductName(name) {
+        return decodeHtmlEntities(String(name || '').trim());
     }
 
     function buildFieldCopyButton(fieldId, label, options) {
@@ -933,8 +1053,20 @@
             });
 
             document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') {
+                    return;
+                }
+                if (closeSkuSuggestPreview()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                if (closeSkuSuggest()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
                 if (
-                    e.key === 'Escape' &&
                     editModalEl &&
                     editModalEl.classList.contains('fc-sp-edit-modal--visible')
                 ) {
@@ -952,10 +1084,29 @@
                 syncFieldFilledState(e.target);
                 if (e.target && e.target.classList && e.target.classList.contains('fc-sp-field-control--sku')) {
                     scheduleSkuStatusRefresh(e.target);
+                    if (activeSkuSuggestWrap && activeSkuSuggestWrap.contains(e.target)) {
+                        refreshOpenSkuSuggest(e.target);
+                    }
                 }
             });
 
             editFormEl.addEventListener('click', function (e) {
+                var checkBtn = e.target.closest('[data-fc-sp-sku-check]');
+                if (checkBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var wrap = checkBtn.closest('.fc-sp-field-input-wrap--sku');
+                    if (!wrap) {
+                        return;
+                    }
+                    if (activeSkuSuggestWrap === wrap) {
+                        closeSkuSuggest();
+                        return;
+                    }
+                    openSkuSuggest(wrap);
+                    return;
+                }
+
                 var copyBtn = e.target.closest('[data-fc-sp-copy-for]');
                 if (!copyBtn) {
                     return;
@@ -967,6 +1118,47 @@
                 }
                 var control = document.getElementById(fieldId);
                 copyFieldToClipboard(control, copyBtn);
+            });
+
+            editModalEl.addEventListener('click', function (e) {
+                var previewOpenBtn = e.target.closest('[data-fc-sp-sku-preview-open]');
+                if (previewOpenBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSkuSuggestPreview(
+                        previewOpenBtn.getAttribute('data-fc-sp-sku-preview-open') || ''
+                    );
+                    return;
+                }
+
+                var previewCloseBtn = e.target.closest('[data-fc-sp-sku-preview-close]');
+                if (previewCloseBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeSkuSuggestPreview();
+                    return;
+                }
+
+                var useBtn = e.target.closest('[data-fc-sp-sku-use]');
+                if (!useBtn) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                applySuggestedSku(useBtn.getAttribute('data-fc-sp-sku-use') || '', useBtn);
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!activeSkuSuggestWrap) {
+                    return;
+                }
+                if (activeSkuSuggestWrap.contains(e.target)) {
+                    return;
+                }
+                if (activeSkuSuggestMenu && activeSkuSuggestMenu.contains(e.target)) {
+                    return;
+                }
+                closeSkuSuggest();
             });
         }
 
@@ -980,27 +1172,56 @@
             }
         }
 
-        function paintSkuStatus(statusEl, value) {
-            if (!statusEl) {
+        function paintSkuStatus(checkBtn, value) {
+            if (!checkBtn) {
                 return;
             }
-            var found = skuExistsInCatalogue(value);
-            statusEl.classList.toggle('fc-sp-sku-status--found', found);
-            statusEl.classList.toggle('fc-sp-sku-status--missing', !found);
-            statusEl.setAttribute(
-                'aria-label',
-                found ? 'SKU found in store catalogue' : 'SKU not in store catalogue'
-            );
-            statusEl.title = found ? 'Found in store catalogue' : 'Not in store catalogue';
+            var empty = isSkuMissingValue(value);
+            var found = !empty && skuExistsInCatalogue(value);
+            var missing = !empty && !found;
+            checkBtn.classList.toggle('fc-sp-sku-check--empty', empty);
+            checkBtn.classList.toggle('fc-sp-sku-check--found', found);
+            checkBtn.classList.toggle('fc-sp-sku-check--missing', missing);
+
+            var icon = checkBtn.querySelector('i');
+            if (icon) {
+                if (found) {
+                    icon.className = 'fa-solid fa-check';
+                } else if (empty) {
+                    icon.className = 'fa-solid fa-exclamation';
+                } else {
+                    icon.className = 'fa-solid fa-xmark';
+                }
+            }
+
+            if (found) {
+                checkBtn.setAttribute(
+                    'aria-label',
+                    'SKU found in store catalogue. Open similar SKUs.'
+                );
+                checkBtn.title = 'Found in store catalogue — click for similar SKUs';
+            } else if (empty) {
+                checkBtn.setAttribute(
+                    'aria-label',
+                    'SKU is empty. Open similar catalogue SKUs.'
+                );
+                checkBtn.title = 'No SKU — click for similar catalogue SKUs';
+            } else {
+                checkBtn.setAttribute(
+                    'aria-label',
+                    'SKU not in store catalogue. Open similar SKUs.'
+                );
+                checkBtn.title = 'Not in store catalogue — click for similar SKUs';
+            }
         }
 
         function refreshSkuStatusForInput(input) {
             if (!input) {
                 return;
             }
-            var field = input.closest('.fc-sp-field');
-            var statusEl = field ? field.querySelector('[data-fc-sp-sku-status]') : null;
-            paintSkuStatus(statusEl, input.value);
+            var wrap = input.closest('.fc-sp-field-input-wrap--sku');
+            var checkBtn = wrap ? wrap.querySelector('[data-fc-sp-sku-check]') : null;
+            paintSkuStatus(checkBtn, input.value);
         }
 
         function refreshAllSkuStatuses() {
@@ -1020,6 +1241,460 @@
                 skuStatusTimer = null;
                 refreshSkuStatusForInput(input);
             }, 150);
+        }
+
+        function clearSkuSuggestInlinePosition(menu) {
+            if (!menu || !menu.style) {
+                return;
+            }
+            menu.style.position = '';
+            menu.style.left = '';
+            menu.style.top = '';
+            menu.style.width = '';
+            menu.style.right = '';
+            menu.style.zIndex = '';
+            menu.style.maxHeight = '';
+            menu.style.height = '';
+        }
+
+        function positionSkuSuggestMenu(wrap, menu) {
+            if (!wrap || !menu) {
+                return;
+            }
+            var rect = wrap.getBoundingClientRect();
+            var gap = 4;
+            var maxH = Math.min(520, Math.max(280, window.innerHeight - 24));
+            var spaceBelow = window.innerHeight - rect.bottom - 8;
+            var spaceAbove = rect.top - 8;
+            // Prefer opening above the field; only drop below if there is not enough room.
+            var openUp = spaceAbove >= 180 || spaceAbove >= spaceBelow;
+            var height = Math.min(maxH, openUp ? spaceAbove - gap : spaceBelow - gap);
+            if (height < 200) {
+                height = Math.min(maxH, Math.max(spaceBelow, spaceAbove) - gap);
+                openUp = spaceAbove >= spaceBelow;
+            }
+            height = Math.max(220, height);
+            // Keep a locked height while open so filtering does not resize the panel.
+            var lockedHeight = parseInt(menu.style.height, 10);
+            if (lockedHeight > 0) {
+                height = lockedHeight;
+            }
+            var width = Math.min(
+                Math.max(rect.width, 420),
+                Math.max(280, window.innerWidth - 16)
+            );
+            var left = Math.min(
+                Math.max(8, rect.left),
+                Math.max(8, window.innerWidth - width - 8)
+            );
+            var top = openUp
+                ? Math.max(8, rect.top - gap - height)
+                : Math.min(window.innerHeight - height - 8, rect.bottom + gap);
+            menu.style.position = 'fixed';
+            menu.style.left = Math.round(left) + 'px';
+            menu.style.top = Math.round(top) + 'px';
+            menu.style.width = Math.round(width) + 'px';
+            menu.style.right = 'auto';
+            menu.style.zIndex = '130';
+            menu.style.height = Math.round(height) + 'px';
+            menu.style.maxHeight = Math.round(height) + 'px';
+        }
+
+        function bindSkuSuggestReposition() {
+            unbindSkuSuggestReposition();
+            skuSuggestRepositionBound = function () {
+                if (!activeSkuSuggestWrap || !activeSkuSuggestMenu) {
+                    return;
+                }
+                positionSkuSuggestMenu(activeSkuSuggestWrap, activeSkuSuggestMenu);
+            };
+            window.addEventListener('resize', skuSuggestRepositionBound);
+            if (editModalEl) {
+                var panels = editModalEl.querySelector('.fc-sp-edit-panels');
+                if (panels) {
+                    panels.addEventListener('scroll', skuSuggestRepositionBound, { passive: true });
+                }
+            }
+        }
+
+        function unbindSkuSuggestReposition() {
+            if (!skuSuggestRepositionBound) {
+                return;
+            }
+            window.removeEventListener('resize', skuSuggestRepositionBound);
+            if (editModalEl) {
+                var panels = editModalEl.querySelector('.fc-sp-edit-panels');
+                if (panels) {
+                    panels.removeEventListener('scroll', skuSuggestRepositionBound);
+                }
+            }
+            skuSuggestRepositionBound = null;
+        }
+
+        function mountSkuSuggestMenu(wrap, menu) {
+            if (!wrap || !menu || !editModalEl) {
+                return;
+            }
+            if (menu.parentElement !== editModalEl) {
+                editModalEl.appendChild(menu);
+            }
+            menu.classList.add('fc-sp-sku-suggest--floating');
+            positionSkuSuggestMenu(wrap, menu);
+            bindSkuSuggestReposition();
+        }
+
+        function unmountSkuSuggestMenu(wrap, menu) {
+            unbindSkuSuggestReposition();
+            if (!menu) {
+                return;
+            }
+            menu.classList.remove('fc-sp-sku-suggest--floating');
+            clearSkuSuggestInlinePosition(menu);
+            if (wrap && menu.parentElement !== wrap) {
+                wrap.appendChild(menu);
+            }
+        }
+
+        function closeSkuSuggest() {
+            if (!activeSkuSuggestWrap) {
+                return false;
+            }
+            var wrap = activeSkuSuggestWrap;
+            var menu = activeSkuSuggestMenu || wrap.querySelector('[data-fc-sp-sku-suggest]');
+            var checkBtn = wrap.querySelector('[data-fc-sp-sku-check]');
+            if (menu) {
+                menu.hidden = true;
+                menu.classList.remove('is-preview-open');
+                menu.innerHTML = '';
+                unmountSkuSuggestMenu(wrap, menu);
+            }
+            if (checkBtn) {
+                checkBtn.setAttribute('aria-expanded', 'false');
+            }
+            wrap.classList.remove('is-suggest-open');
+            activeSkuSuggestWrap = null;
+            activeSkuSuggestMenu = null;
+            activeSkuSuggestMatches = null;
+            return true;
+        }
+
+        function filterSkuSuggestMatches(matches, filterQuery) {
+            var filter = String(filterQuery || '')
+                .trim()
+                .toLowerCase();
+            if (!filter || !Array.isArray(matches) || !matches.length) {
+                return Array.isArray(matches) ? matches.slice() : [];
+            }
+            return matches.filter(function (item) {
+                var sku =
+                    typeof item === 'string'
+                        ? normalizeSkuValue(item)
+                        : normalizeSkuValue(item && item.sku);
+                var meta = typeof item === 'object' && item ? item : metaForSku(sku);
+                var name = formatProductName(meta.name).toLowerCase();
+                return (
+                    sku.toLowerCase().indexOf(filter) !== -1 || name.indexOf(filter) !== -1
+                );
+            });
+        }
+
+        function renderSkuSuggestRows(matches) {
+            return matches
+                .map(function (item) {
+                    var sku =
+                        typeof item === 'string'
+                            ? normalizeSkuValue(item)
+                            : normalizeSkuValue(item && item.sku);
+                    var meta = typeof item === 'object' && item ? item : metaForSku(sku);
+                    var name = formatProductName(meta.name) || 'Untitled product';
+                    var image = String(meta.image || '').trim();
+                    var thumbInner = image
+                        ? '<img class="fc-sp-sku-suggest__thumb" src="' +
+                          escapeHtml(image) +
+                          '" alt="" loading="lazy" decoding="async">'
+                        : '<span class="fc-sp-sku-suggest__thumb fc-sp-sku-suggest__thumb--empty" aria-hidden="true"></span>';
+                    return (
+                        '<div class="fc-sp-sku-suggest__row" role="option">' +
+                        '<button type="button" class="fc-sp-sku-suggest__thumb-btn" data-fc-sp-sku-preview-open="' +
+                        escapeHtml(sku) +
+                        '" aria-label="View larger image for ' +
+                        escapeHtml(name) +
+                        '" title="View larger image">' +
+                        thumbInner +
+                        '</button>' +
+                        '<div class="fc-sp-sku-suggest__meta">' +
+                        '<div class="fc-sp-sku-suggest__name">' +
+                        escapeHtml(name) +
+                        '</div>' +
+                        '<code class="fc-sp-sku-suggest__sku">' +
+                        escapeHtml(sku) +
+                        '</code>' +
+                        '</div>' +
+                        '<button type="button" class="btn btn-sm btn-orange fw-semibold fc-sp-sku-suggest__use" data-fc-sp-sku-use="' +
+                        escapeHtml(sku) +
+                        '">Use</button>' +
+                        '</div>'
+                    );
+                })
+                .join('');
+        }
+
+        function renderSkuSuggestPreview(sku) {
+            var meta = metaForSku(sku);
+            var name = formatProductName(meta.name) || 'Untitled product';
+            var image = String(meta.image || '').trim();
+            var normalized = normalizeSkuValue(sku);
+            var btn = global.FcAdminBtn || {};
+            var btnSecondary = btn.secondary || 'btn btn-sm btn-dark fw-semibold';
+            var btnPrimary = btn.primary || 'btn btn-sm btn-orange fw-semibold';
+            var media = image
+                ? '<img class="fc-sp-sku-suggest__preview-image" src="' +
+                  escapeHtml(image) +
+                  '" alt="' +
+                  escapeHtml(name) +
+                  '" loading="lazy" decoding="async">'
+                : '<div class="fc-sp-sku-suggest__preview-image fc-sp-sku-suggest__preview-image--empty" aria-hidden="true"></div>';
+
+            return (
+                '<div class="fc-sp-sku-suggest__preview" data-fc-sp-sku-preview>' +
+                '<div class="fc-sp-sku-suggest__preview-body">' +
+                '<div class="fc-sp-sku-suggest__preview-media">' +
+                media +
+                '</div>' +
+                '<div class="fc-sp-sku-suggest__preview-name">' +
+                escapeHtml(name) +
+                '</div>' +
+                '<code class="fc-sp-sku-suggest__preview-sku">' +
+                escapeHtml(normalized) +
+                '</code>' +
+                '</div>' +
+                '<div class="fc-sp-sku-suggest__preview-footer">' +
+                '<button type="button" class="' +
+                btnSecondary +
+                '" data-fc-sp-sku-preview-close>Close</button>' +
+                '<button type="button" class="' +
+                btnPrimary +
+                '" data-fc-sp-sku-use="' +
+                escapeHtml(normalized) +
+                '">Use</button>' +
+                '</div>' +
+                '</div>'
+            );
+        }
+
+        function openSkuSuggestPreview(sku) {
+            if (!activeSkuSuggestMenu || !normalizeSkuValue(sku)) {
+                return;
+            }
+            closeSkuSuggestPreview();
+            var menu = activeSkuSuggestMenu;
+            var list = menu.querySelector('[data-fc-sp-sku-suggest-list]');
+            var toolbar = menu.querySelector('.fc-sp-sku-suggest__toolbar');
+            menu.insertAdjacentHTML('beforeend', renderSkuSuggestPreview(sku));
+            menu.classList.add('is-preview-open');
+            if (list) {
+                list.hidden = true;
+            }
+            if (toolbar) {
+                toolbar.hidden = true;
+            }
+        }
+
+        function closeSkuSuggestPreview() {
+            if (!activeSkuSuggestMenu || !activeSkuSuggestMenu.classList.contains('is-preview-open')) {
+                return false;
+            }
+            var menu = activeSkuSuggestMenu;
+            var preview = menu.querySelector('[data-fc-sp-sku-preview]');
+            var list = menu.querySelector('[data-fc-sp-sku-suggest-list]');
+            var toolbar = menu.querySelector('.fc-sp-sku-suggest__toolbar');
+            if (preview) {
+                preview.remove();
+            }
+            menu.classList.remove('is-preview-open');
+            if (list) {
+                list.hidden = false;
+            }
+            if (toolbar) {
+                toolbar.hidden = false;
+            }
+            return true;
+        }
+
+        function renderSkuSuggestListBody(matches, query, filterQuery) {
+            var q = normalizeSkuValue(query);
+            if (!q || q.toUpperCase() === 'OFF') {
+                return (
+                    '<div class="fc-sp-sku-suggest__empty">Enter a SKU to find similar catalogue matches.</div>'
+                );
+            }
+            if (!Array.isArray(matches) || !matches.length) {
+                return '<div class="fc-sp-sku-suggest__empty">No similar SKUs found.</div>';
+            }
+            var filtered = filterSkuSuggestMatches(matches, filterQuery);
+            if (!filtered.length) {
+                return '<div class="fc-sp-sku-suggest__empty">No products match this filter.</div>';
+            }
+            return renderSkuSuggestRows(filtered);
+        }
+
+        function renderSkuSuggestList(matches, query, filterQuery) {
+            filterQuery = filterQuery == null ? '' : String(filterQuery);
+            return (
+                '<div class="fc-sp-sku-suggest__list" data-fc-sp-sku-suggest-list role="listbox" aria-label="Similar catalogue SKUs">' +
+                renderSkuSuggestListBody(matches, query, filterQuery) +
+                '</div>' +
+                '<div class="fc-sp-sku-suggest__toolbar">' +
+                '<label class="fc-sp-sku-suggest__filter-label" for="fc-sp-sku-suggest-filter">Filter</label>' +
+                '<input type="search" id="fc-sp-sku-suggest-filter" class="fc-sp-sku-suggest__filter" data-fc-sp-sku-suggest-filter placeholder="Filter by name or SKU…" value="' +
+                escapeHtml(filterQuery) +
+                '" autocomplete="off" spellcheck="false">' +
+                '</div>'
+            );
+        }
+
+        function getSkuSuggestFilterValue(menu) {
+            var filterInput = menu
+                ? menu.querySelector('[data-fc-sp-sku-suggest-filter]')
+                : null;
+            return filterInput ? String(filterInput.value || '') : '';
+        }
+
+        function applySkuSuggestFilter() {
+            if (!activeSkuSuggestWrap || !activeSkuSuggestMenu) {
+                return;
+            }
+            closeSkuSuggestPreview();
+            var input = activeSkuSuggestWrap.querySelector('.fc-sp-field-control--sku');
+            var list = activeSkuSuggestMenu.querySelector('[data-fc-sp-sku-suggest-list]');
+            if (!input || !list) {
+                return;
+            }
+            list.innerHTML = renderSkuSuggestListBody(
+                activeSkuSuggestMatches || [],
+                input.value,
+                getSkuSuggestFilterValue(activeSkuSuggestMenu)
+            );
+        }
+
+        function bindSkuSuggestFilter(menu) {
+            if (!menu) {
+                return;
+            }
+            var filterInput = menu.querySelector('[data-fc-sp-sku-suggest-filter]');
+            if (!filterInput || filterInput.getAttribute('data-fc-bound') === '1') {
+                return;
+            }
+            filterInput.setAttribute('data-fc-bound', '1');
+            filterInput.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+            filterInput.addEventListener('keydown', function (e) {
+                e.stopPropagation();
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (closeSkuSuggestPreview()) {
+                        return;
+                    }
+                    if (String(filterInput.value || '') !== '') {
+                        filterInput.value = '';
+                        applySkuSuggestFilter();
+                        return;
+                    }
+                    closeSkuSuggest();
+                }
+            });
+            filterInput.addEventListener('input', function (e) {
+                e.stopPropagation();
+                applySkuSuggestFilter();
+            });
+        }
+
+        function openSkuSuggest(wrap) {
+            if (!wrap) {
+                return;
+            }
+            closeSkuSuggest();
+            var input = wrap.querySelector('.fc-sp-field-control--sku');
+            var menu = wrap.querySelector('[data-fc-sp-sku-suggest]');
+            var checkBtn = wrap.querySelector('[data-fc-sp-sku-check]');
+            if (!input || !menu || !checkBtn) {
+                return;
+            }
+
+            function showMenu() {
+                var matches = suggestSkusFor(input.value, SKU_SUGGEST_LIMIT);
+                activeSkuSuggestMatches = matches;
+                menu.innerHTML = renderSkuSuggestList(matches, input.value, '');
+                menu.hidden = false;
+                menu.style.height = '';
+                menu.style.maxHeight = '';
+                checkBtn.setAttribute('aria-expanded', 'true');
+                wrap.classList.add('is-suggest-open');
+                activeSkuSuggestWrap = wrap;
+                activeSkuSuggestMenu = menu;
+                mountSkuSuggestMenu(wrap, menu);
+                bindSkuSuggestFilter(menu);
+                var filterInput = menu.querySelector('[data-fc-sp-sku-suggest-filter]');
+                if (filterInput) {
+                    filterInput.focus();
+                }
+            }
+
+            if (!Array.isArray(wcSkuList)) {
+                menu.innerHTML =
+                    '<div class="fc-sp-sku-suggest__empty">Loading catalogue…</div>';
+                menu.hidden = false;
+                checkBtn.setAttribute('aria-expanded', 'true');
+                wrap.classList.add('is-suggest-open');
+                activeSkuSuggestWrap = wrap;
+                activeSkuSuggestMenu = menu;
+                activeSkuSuggestMatches = [];
+                mountSkuSuggestMenu(wrap, menu);
+                ensureWcSkuIndex().then(function () {
+                    if (activeSkuSuggestWrap === wrap) {
+                        showMenu();
+                    }
+                });
+                return;
+            }
+
+            showMenu();
+        }
+
+        function refreshOpenSkuSuggest(input) {
+            if (!activeSkuSuggestWrap || !input || !activeSkuSuggestMenu) {
+                return;
+            }
+            var menu = activeSkuSuggestMenu;
+            if (menu.hidden) {
+                return;
+            }
+            var filterValue = getSkuSuggestFilterValue(menu);
+            var matches = suggestSkusFor(input.value, SKU_SUGGEST_LIMIT);
+            activeSkuSuggestMatches = matches;
+            menu.classList.remove('is-preview-open');
+            menu.innerHTML = renderSkuSuggestList(matches, input.value, filterValue);
+            bindSkuSuggestFilter(menu);
+            positionSkuSuggestMenu(activeSkuSuggestWrap, menu);
+        }
+
+        function applySuggestedSku(sku, fromEl) {
+            var wrap =
+                (fromEl && fromEl.closest('.fc-sp-field-input-wrap--sku')) || activeSkuSuggestWrap;
+            if (!wrap) {
+                return;
+            }
+            var input = wrap.querySelector('.fc-sp-field-control--sku');
+            if (!input) {
+                return;
+            }
+            input.value = normalizeSkuValue(sku);
+            syncFieldFilledState(input);
+            setEditFormDirty(true);
+            refreshSkuStatusForInput(input);
+            closeSkuSuggest();
+            input.focus();
         }
 
         function buildFieldControl(col, val) {
@@ -1070,6 +1745,29 @@
                 placeholder = 'e.g. flat_top';
             }
 
+            if (isSku) {
+                return (
+                    '<div class="fc-sp-field-input-wrap fc-sp-field-input-wrap--sku">' +
+                    '<button type="button" class="fc-sp-sku-check fc-sp-sku-check--empty" data-fc-sp-sku-check aria-expanded="false" aria-haspopup="listbox" aria-label="SKU is empty. Open similar catalogue SKUs." title="No SKU — click for similar catalogue SKUs">' +
+                    '<i class="fa-solid fa-exclamation" aria-hidden="true"></i>' +
+                    '</button>' +
+                    '<input type="text" id="' +
+                    escapeHtml(id) +
+                    '" name="' +
+                    escapeHtml(col) +
+                    '" value="' +
+                    escapeHtml(val) +
+                    '" class="' +
+                    fieldClass +
+                    '" autocomplete="off" placeholder="' +
+                    escapeHtml(placeholder) +
+                    '">' +
+                    buildFieldCopyButton(id, formatHeader(col)) +
+                    '<div class="fc-sp-sku-suggest" data-fc-sp-sku-suggest hidden></div>' +
+                    '</div>'
+                );
+            }
+
             return (
                 '<div class="fc-sp-field-input-wrap">' +
                 '<input type="text" id="' +
@@ -1096,13 +1794,10 @@
                     var id = 'fc-sp-field-' + col.replace(/[^a-zA-Z0-9_-]/g, '_');
                     var isSlug = col === 'SLUG';
                     var isDescription = col === 'DESCRIPTION';
-                    var isSku = DETAILS_COLUMNS.indexOf(col) === -1;
                     var fieldHtml = buildFieldControl(col, val);
                     var labelPrefix = isSlug
                         ? '<i class="fa-solid fa-lock fc-sp-field__lock" aria-hidden="true"></i>'
-                        : isSku
-                          ? '<span class="fc-sp-sku-status fc-sp-sku-status--missing" data-fc-sp-sku-status aria-hidden="false" aria-label="SKU not in store catalogue" title="Not in store catalogue"></span>'
-                          : '';
+                        : '';
 
                     return (
                         '<div class="fc-sp-field' +
@@ -1147,6 +1842,7 @@
                     skuGrid.innerHTML = buildEditFormFields(row, visibleSkuColumns);
                 }
             }
+            closeSkuSuggest();
             setEditFormDirty(false);
             setSubmitLoading(false);
             if (titleEl) {
@@ -1216,6 +1912,7 @@
                 }
             }
 
+            closeSkuSuggest();
             editModalEl.classList.remove('fc-sp-edit-modal--visible');
             editModalEl.classList.add('fc-sp-edit-modal--closing');
             editModalEl.setAttribute('aria-hidden', 'true');
@@ -1696,6 +2393,218 @@
         }
     }
 
+    function bindStoreProductsCsvActions(bootstrap) {
+        var dropdown = document.querySelector('[data-fc-store-products-download-dropdown]');
+        if (!dropdown || dropdown.dataset.fcBound === '1') {
+            return;
+        }
+        dropdown.dataset.fcBound = '1';
+
+        var toggle = dropdown.querySelector('[data-fc-store-products-download-toggle]');
+        var panel = dropdown.querySelector('.fc-products-download-dropdown__panel');
+        var csvTrigger = dropdown.querySelector('[data-fc-store-products-download-csv]');
+        var importTrigger = dropdown.querySelector('[data-fc-store-products-import-csv]');
+        var importInput = dropdown.querySelector('[data-fc-store-products-import-input]');
+        var csrf = String((bootstrap && bootstrap.csrf) || '');
+
+        function toast(kind, message) {
+            var T = global.FcAdminToast;
+            if (!T) {
+                return;
+            }
+            if (kind === 'saving' && typeof T.loading === 'function') {
+                T.loading(message, 'fc-products-catalogue');
+                return;
+            }
+            if (kind === 'success' && typeof T.success === 'function') {
+                T.success(message, { id: 'fc-products-catalogue', duration: 4500 });
+                return;
+            }
+            if (kind === 'error' && typeof T.error === 'function') {
+                T.error(message, { id: 'fc-products-catalogue', duration: 5000 });
+            }
+        }
+
+        function closeMenu() {
+            if (!panel || !toggle) {
+                return;
+            }
+            panel.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('is-open');
+            panel.style.left = '';
+            panel.style.top = '';
+            panel.style.position = '';
+            panel.style.right = '';
+            panel.style.zIndex = '';
+        }
+
+        function positionMenu() {
+            if (!toggle || !panel || panel.hidden) {
+                return;
+            }
+            var rect = toggle.getBoundingClientRect();
+            var gap = 6;
+            panel.style.position = 'fixed';
+            panel.style.zIndex = '80';
+            panel.style.left = Math.round(rect.left) + 'px';
+            panel.style.top = Math.round(rect.bottom + gap) + 'px';
+            panel.style.right = 'auto';
+
+            var panelRect = panel.getBoundingClientRect();
+            var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+            var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+            if (panelRect.right > viewportWidth - 8) {
+                panel.style.left = Math.max(8, viewportWidth - panelRect.width - 8) + 'px';
+            }
+            if (panelRect.bottom > viewportHeight - 8) {
+                var aboveTop = rect.top - gap - panelRect.height;
+                if (aboveTop >= 8) {
+                    panel.style.top = aboveTop + 'px';
+                }
+            }
+        }
+
+        function openMenu() {
+            if (!panel || !toggle) {
+                return;
+            }
+            panel.hidden = false;
+            toggle.setAttribute('aria-expanded', 'true');
+            dropdown.classList.add('is-open');
+            positionMenu();
+        }
+
+        function downloadCsvFile() {
+            if (
+                csvTrigger &&
+                (csvTrigger.disabled || csvTrigger.getAttribute('aria-disabled') === 'true')
+            ) {
+                return;
+            }
+            closeMenu();
+            var link = document.createElement('a');
+            link.href = fcApiUrl('products', 'action=download-store-products-csv');
+            link.download =
+                (csvTrigger && csvTrigger.getAttribute('data-fc-store-products-csv-name')) ||
+                'products.csv';
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        function importCsvFile(file) {
+            if (!file) {
+                return;
+            }
+            var name = String(file.name || '').toLowerCase();
+            if (!name.endsWith('.csv')) {
+                toast('error', 'Only .csv files can be imported.');
+                return;
+            }
+            if (!csrf) {
+                toast('error', 'Missing security token. Refresh and try again.');
+                return;
+            }
+
+            closeMenu();
+            toast('saving', 'Importing CSV…');
+
+            var formData = new FormData();
+            formData.append('csrf', csrf);
+            formData.append('file', file);
+
+            fetch(fcApiUrl('products', 'action=import-store-products-csv'), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' },
+                body: formData
+            })
+                .then(function (response) {
+                    return response
+                        .json()
+                        .catch(function () {
+                            return { ok: false, error: 'Invalid server response.' };
+                        })
+                        .then(function (body) {
+                            if (!response.ok || !body.ok) {
+                                throw new Error((body && body.error) || 'Could not import CSV.');
+                            }
+                            return body;
+                        });
+                })
+                .then(function (body) {
+                    toast('success', body.message || 'CSV imported successfully.');
+                    window.setTimeout(function () {
+                        window.location.reload();
+                    }, 600);
+                })
+                .catch(function (error) {
+                    toast('error', (error && error.message) || 'Could not import CSV.');
+                })
+                .then(function () {
+                    if (importInput) {
+                        importInput.value = '';
+                    }
+                });
+        }
+
+        if (toggle && panel) {
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (panel.hidden) {
+                    openMenu();
+                } else {
+                    closeMenu();
+                }
+            });
+            panel.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+            document.addEventListener('click', function () {
+                closeMenu();
+            });
+            window.addEventListener('resize', function () {
+                if (!panel.hidden) {
+                    positionMenu();
+                }
+            });
+            window.addEventListener(
+                'scroll',
+                function () {
+                    if (!panel.hidden) {
+                        positionMenu();
+                    }
+                },
+                true
+            );
+        }
+
+        if (csvTrigger) {
+            csvTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                downloadCsvFile();
+            });
+        }
+
+        if (importTrigger && importInput) {
+            importTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeMenu();
+                importInput.click();
+            });
+            importInput.addEventListener('change', function () {
+                var file = importInput.files && importInput.files[0] ? importInput.files[0] : null;
+                importCsvFile(file);
+            });
+        }
+    }
+
     function hydrateFromServer(container) {
         if (!container || !container.querySelector('[data-fc-store-products-server]')) {
             return Promise.resolve(false);
@@ -1722,6 +2631,9 @@
                     canReorder: !!bootstrap.canReorder,
                     canEdit: bootstrap.canEdit !== false
                 });
+            }
+            if (bootstrap.canEdit !== false) {
+                bindStoreProductsCsvActions(bootstrap);
             }
             container.removeAttribute('aria-busy');
             window.requestAnimationFrame(function () {

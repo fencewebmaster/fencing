@@ -587,17 +587,26 @@ $tab = $fcSettingsPage;
 
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
-                                    <h3 class="text-sm font-semibold text-slate-800">Git updates</h3>
-                                    <p class="mt-1 text-xs text-slate-500">Pull the latest changes from the remote repository into this install (<code>git pull</code>).</p>
+                                    <h3 class="text-sm font-semibold text-slate-800">Console</h3>
+                                    <p class="mt-1 text-xs text-slate-500">Type <code>git …</code> commands in the project root, or <code>help</code> / <code>clear</code> / <code>pwd</code>. Mutating git commands require confirmation.</p>
                                 </div>
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <button type="button" id="fc-dev-mode-pull" class="<?php echo $h((string) $tab['btn_primary']); ?>">
-                                        <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
-                                        Pull updates
-                                    </button>
-                                    <span id="fc-dev-mode-pull-status" class="text-xs text-slate-500" hidden></span>
+                                <div class="fc-dev-console" id="fc-dev-console" data-fc-dev-console>
+                                    <div class="fc-dev-console__output" id="fc-dev-console-output" role="log" aria-live="polite" aria-relevant="additions"></div>
+                                    <form class="fc-dev-console__prompt" id="fc-dev-console-form" autocomplete="off">
+                                        <label class="sr-only" for="fc-dev-console-input">Console command</label>
+                                        <span class="fc-dev-console__prefix" aria-hidden="true">$</span>
+                                        <input
+                                            type="text"
+                                            id="fc-dev-console-input"
+                                            class="fc-dev-console__input"
+                                            placeholder="Type a command…"
+                                            spellcheck="false"
+                                            autocomplete="off"
+                                            autocapitalize="off"
+                                            enterkeyhint="enter"
+                                        />
+                                    </form>
                                 </div>
-                                <pre id="fc-dev-mode-pull-output" class="fc-dev-mode-pull-output hidden" aria-live="polite"></pre>
                             </section>
                         </div>
                     </div>

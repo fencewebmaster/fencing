@@ -751,6 +751,384 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             gap: 0.5rem;
             min-width: 0;
         }
+        #fc-sp-edit-modal .fc-sp-field-input-wrap--sku {
+            position: relative;
+            align-items: stretch;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check {
+            position: absolute;
+            left: 0.3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.12s ease;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check:hover,
+        #fc-sp-edit-modal .fc-sp-sku-check:focus-visible {
+            background: transparent;
+            outline: none;
+            color: #64748b;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check:focus-visible {
+            color: #2271b1;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check--empty {
+            color: #94a3b8;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check--empty:hover,
+        #fc-sp-edit-modal .fc-sp-sku-check--empty:focus-visible {
+            color: #64748b;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check--missing {
+            color: #dc2626;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check--missing:hover,
+        #fc-sp-edit-modal .fc-sp-sku-check--missing:focus-visible {
+            color: #b91c1c;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check--found {
+            color: #16a34a;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check--found:hover,
+        #fc-sp-edit-modal .fc-sp-sku-check--found:focus-visible {
+            color: #15803d;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-check i {
+            font-size: 0.75rem;
+            line-height: 1;
+        }
+        #fc-sp-edit-modal .fc-sp-field-input-wrap--sku .fc-sp-field-control--sku {
+            padding-left: 2rem;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest {
+            position: absolute;
+            top: calc(100% + 0.25rem);
+            left: 0;
+            right: 0;
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            max-height: 32.5rem;
+            overflow: hidden;
+            padding: 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 0;
+            background: #fff;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest--floating {
+            position: fixed;
+            top: auto;
+            left: auto;
+            right: auto;
+            z-index: 130;
+            min-width: 26rem;
+            box-shadow: 0 14px 36px rgba(15, 23, 42, 0.2);
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__toolbar {
+            flex: 0 0 auto;
+            order: 2;
+            padding: 0.55rem 0.6rem;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__list {
+            flex: 1 1 auto;
+            order: 1;
+            min-height: 0;
+            overflow: auto;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__filter-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__filter {
+            width: 100%;
+            border: 1px solid #8c8f94;
+            border-radius: 0;
+            padding: 0.4rem 0.65rem;
+            font-size: 0.8125rem;
+            line-height: 1.35;
+            color: #2c3338;
+            background: #fff;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__filter:focus {
+            outline: none;
+            border-color: #2271b1;
+            box-shadow: 0 0 0 1px #2271b1;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__empty {
+            padding: 0.85rem 0.75rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.55rem 0.65rem;
+            border-radius: 0;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__row:nth-child(odd) {
+            background: #fff;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__row:nth-child(even) {
+            background: #f1f5f9;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__row:hover {
+            background: #e2e8f0;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__thumb {
+            flex-shrink: 0;
+            width: 3.75rem;
+            height: 3.75rem;
+            margin-top: 0;
+            border-radius: 0;
+            object-fit: cover;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            display: block;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__thumb-btn {
+            flex-shrink: 0;
+            margin: 0.1rem 0 0;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            cursor: zoom-in;
+            line-height: 0;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__thumb-btn:focus-visible {
+            outline: 2px solid #2271b1;
+            outline-offset: 1px;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__thumb--empty {
+            display: inline-block;
+            background:
+                linear-gradient(135deg, #f8fafc 25%, transparent 25%) -0.5rem 0 / 1rem 1rem,
+                linear-gradient(225deg, #f8fafc 25%, transparent 25%) -0.5rem 0 / 1rem 1rem,
+                linear-gradient(315deg, #f8fafc 25%, transparent 25%) 0 0 / 1rem 1rem,
+                linear-gradient(45deg, #f8fafc 25%, #e2e8f0 25%) 0 0 / 1rem 1rem;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest.is-preview-open .fc-sp-sku-suggest__list,
+        #fc-sp-edit-modal .fc-sp-sku-suggest.is-preview-open .fc-sp-sku-suggest__toolbar {
+            display: none;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview {
+            flex: 1 1 auto;
+            order: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            background: #fff;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            padding: 0.75rem;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview-media {
+            flex: 1 1 auto;
+            min-height: 10rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview-image {
+            display: block;
+            width: 100%;
+            height: 100%;
+            max-height: 18rem;
+            object-fit: contain;
+            background: #fff;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview-image--empty {
+            min-height: 10rem;
+            background:
+                linear-gradient(135deg, #f8fafc 25%, transparent 25%) -0.5rem 0 / 1rem 1rem,
+                linear-gradient(225deg, #f8fafc 25%, transparent 25%) -0.5rem 0 / 1rem 1rem,
+                linear-gradient(315deg, #f8fafc 25%, transparent 25%) 0 0 / 1rem 1rem,
+                linear-gradient(45deg, #f8fafc 25%, #e2e8f0 25%) 0 0 / 1rem 1rem;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview-name {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.35;
+            color: #0f172a;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview-sku {
+            display: block;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 1rem;
+            line-height: 1.25;
+            color: var(--fc-princeton-orange);
+            background: transparent;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__preview-footer {
+            flex: 0 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 0.55rem 0.75rem;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__meta {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__name {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.35;
+            color: #0f172a;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            white-space: normal;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__sku {
+            display: block;
+            min-width: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 1rem;
+            line-height: 1.25;
+            color: var(--fc-princeton-orange);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            background: transparent;
+        }
+        #fc-sp-edit-modal .fc-sp-sku-suggest__use {
+            flex-shrink: 0;
+            align-self: center;
+            margin-top: 0.15rem;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check {
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+            color: #94a3b8;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check:hover,
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check:focus-visible {
+            background: transparent;
+            color: #cbd5e1;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--empty {
+            color: #94a3b8;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--missing {
+            color: #f87171;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--missing:hover,
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--missing:focus-visible {
+            color: #fca5a5;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--found {
+            color: #4ade80;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--found:hover,
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--found:focus-visible {
+            color: #86efac;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest {
+            border-color: #334155;
+            background: #0f172a;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__toolbar {
+            border-top-color: #334155;
+            background: #0f172a;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__filter {
+            border-color: var(--fc-admin-border);
+            background: var(--fc-admin-surface-muted);
+            color: var(--fc-admin-text-heading);
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__empty {
+            color: #94a3b8;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__row:nth-child(odd) {
+            background: #0f172a;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__row:nth-child(even) {
+            background: #1e293b;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__row:hover {
+            background: rgba(148, 163, 184, 0.18);
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__thumb {
+            border-color: #334155;
+            background: #1e293b;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__preview {
+            background: #0f172a;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__preview-media {
+            border-color: #334155;
+            background: #1e293b;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__preview-image {
+            background: #0f172a;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__preview-name {
+            color: #f1f5f9;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__preview-sku {
+            color: var(--fc-princeton-orange);
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__preview-footer {
+            border-top-color: #334155;
+            background: #1e293b;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__name {
+            color: #f1f5f9;
+        }
+        html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__sku {
+            color: var(--fc-princeton-orange);
+        }
         #fc-sp-edit-modal .fc-sp-field-input-wrap--textarea,
         #fc-gallery-attach-modal .fc-sp-field-input-wrap--textarea {
             position: relative;

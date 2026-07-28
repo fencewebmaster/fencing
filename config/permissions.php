@@ -684,7 +684,10 @@ function fc_permissions_keys_for_api(string $module, string $action = ''): array
     return match ($module) {
         'dashboard', 'dashboardController' => fc_permissions_dashboard_keys(),
         'products', 'productsController' => match ($action) {
-            'update-store-product', 'reorder-store-products' => ['products.system_products.edit'],
+            'update-store-product',
+            'reorder-store-products',
+            'download-store-products-csv',
+            'import-store-products-csv' => ['products.system_products.edit'],
             'download-products-start',
             'download-products-step',
             'download-products-cancel',

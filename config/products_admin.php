@@ -897,6 +897,7 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
         'selected_colors'    => $selectedColors,
         'color_filter_label' => fc_store_products_admin_color_filter_label($colorOptions, $selectedColors),
         'count_label'        => $countLabel,
+        'file_label'         => (string) ($payload['file'] ?? 'products.csv'),
         'table_html'         => $tableHtml,
         'form_action'        => $formAction,
         'clear_url'          => $clearUrl,
@@ -933,6 +934,7 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
             ]),
             'canReorder'  => $canReorder,
             'canEdit'     => $canEdit,
+            'csrf'        => function_exists('fc_auth_csrf_token') ? fc_auth_csrf_token() : '',
         ]),
     ];
 }
