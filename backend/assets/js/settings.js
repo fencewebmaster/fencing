@@ -10,14 +10,13 @@
     var API_CATALOG = fcApiUrl('settings', 'action=catalog');
     var API_SYSTEM = fcApiUrl('settings', 'action=system');
     var API_INTEGRATIONS = fcApiUrl('settings', 'action=integrations');
-    var API_GIT_PULL = fcApiUrl('settings', 'action=git-pull');
+    var API_DEV_CONSOLE = fcApiUrl('settings', 'action=dev-console');
     var TOAST_THEME = 'fc-theme-save';
     var TOAST_BRANDING = 'fc-branding-save';
     var TOAST_FENCE_COLORS = 'fc-fence-colors-save';
     var TOAST_CATALOG = 'fc-catalog-save';
     var TOAST_SYSTEM = 'fc-system-save';
     var TOAST_INTEGRATIONS = 'fc-integrations-save';
-    var TOAST_DEV_MODE = 'fc-dev-mode';
 
     var SETTINGS_TABS = [
         'theme',
@@ -1860,116 +1859,312 @@
         });
     }
 
-    function setDevModePullBusy(busy) {
-        var btn = document.getElementById('fc-dev-mode-pull');
-        var status = document.getElementById('fc-dev-mode-pull-status');
-        if (btn) {
-            btn.disabled = !!busy;
-            btn.classList.toggle('is-busy', !!busy);
+    function bindDevModeForm() {
+        bindDevConsole();
+    }
+
+    function bindDevConsole() {
+        var form = document.getElementById('fc-dev-console-form');
+        var input = document.getElementById('fc-dev-console-input');
+        var output = document.getElementById('fc-dev-console-output');
+        if (!form || !input || !output || form.getAttribute('data-fc-dev-console-bound') === '1') {
+            return;
         }
-        if (status) {
-            if (busy) {
-                status.hidden = false;
-                status.textContent = 'Pulling updates…';
-            } else if (!status.textContent) {
-                status.hidden = true;
+        form.setAttribute('data-fc-dev-console-bound', '1');
+
+        var history = [];
+        var historyIndex = -1;
+        var busy = false;
+
+        function appendLine(text, kind) {
+            var line = document.createElement('div');
+            line.className = 'fc-dev-console__line' + (kind ? ' fc-dev-console__line--' + kind : '');
+            line.textContent = text;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+
+        function runLocal(command) {
+            var normalized = String(command || '')
+                .trim()
+                .replace(/\s+/g, ' ')
+                .toLowerCase();
+            if (normalized === 'clear') {
+                clearOutput();
+                return true;
             }
+            if (normalized === 'help' || normalized === '?') {
+                appendLine('$ ' + command, 'cmd');
+                appendLine(
+                    [
+                        'Commands:',
+                        '  help                 Show this help',
+                        '  clear                Clear the console',
+                        '  pwd                  Show project root',
+                        '  git <args>           Any git command in the project root',
+                        '',
+                        'Mutating git commands (pull, push, merge, reset, …) require CONFIRM.',
+                        'Shell operators and -C / --git-dir overrides are blocked.'
+                    ].join('\n'),
+                    'out'
+                );
+                return true;
+            }
+            return false;
         }
-    }
 
-    function showDevModePullOutput(text, isError) {
-        var output = document.getElementById('fc-dev-mode-pull-output');
-        if (!output) {
-            return;
+        function tokenizeCommand(command) {
+            var raw = String(command || '');
+            if (/[;|&`$(){}<>\\]/.test(raw)) {
+                return null;
+            }
+            var tokens = [];
+            var current = '';
+            var quote = '';
+            for (var i = 0; i < raw.length; i++) {
+                var ch = raw.charAt(i);
+                if (quote) {
+                    if (ch === quote) {
+                        quote = '';
+                    } else {
+                        current += ch;
+                    }
+                    continue;
+                }
+                if (ch === '"' || ch === "'") {
+                    quote = ch;
+                    continue;
+                }
+                if (ch === ' ' || ch === '\t') {
+                    if (current) {
+                        tokens.push(current);
+                        current = '';
+                    }
+                    continue;
+                }
+                current += ch;
+            }
+            if (quote) {
+                return null;
+            }
+            if (current) {
+                tokens.push(current);
+            }
+            return tokens;
         }
-        var value = String(text || '').trim();
-        if (!value) {
-            output.classList.add('hidden');
-            output.textContent = '';
-            output.classList.remove('is-error');
-            return;
+
+        function gitNeedsConfirm(command) {
+            var argv = tokenizeCommand(command);
+            if (!argv || !argv.length || String(argv[0]).toLowerCase() !== 'git') {
+                return false;
+            }
+            var i = 1;
+            while (i < argv.length && String(argv[i]).charAt(0) === '-') {
+                if (argv[i] === '-c') {
+                    i += 2;
+                    continue;
+                }
+                i += 1;
+            }
+            var sub = String(argv[i] || '').toLowerCase();
+            var always = {
+                pull: 1,
+                push: 1,
+                fetch: 1,
+                merge: 1,
+                rebase: 1,
+                reset: 1,
+                clean: 1,
+                commit: 1,
+                checkout: 1,
+                switch: 1,
+                am: 1,
+                'cherry-pick': 1,
+                revert: 1,
+                gc: 1,
+                prune: 1,
+                'filter-branch': 1,
+                replace: 1,
+                submodule: 1,
+                worktree: 1
+            };
+            if (always[sub]) {
+                return true;
+            }
+            var rest = argv.slice(i + 1);
+            if (sub === 'stash') {
+                var stashAction = String(rest[0] || 'push').toLowerCase();
+                return stashAction !== 'list' && stashAction !== 'show';
+            }
+            if (sub === 'branch') {
+                return rest.some(function (arg) {
+                    return (
+                        arg === '-d' ||
+                        arg === '-D' ||
+                        arg === '--delete' ||
+                        arg === '-m' ||
+                        arg === '-M' ||
+                        arg === '--move' ||
+                        arg === '-c' ||
+                        arg === '-C' ||
+                        arg === '--copy'
+                    );
+                });
+            }
+            if (sub === 'tag') {
+                if (
+                    rest.some(function (arg) {
+                        return arg === '-d' || arg === '--delete' || arg === '-f' || arg === '--force';
+                    })
+                ) {
+                    return true;
+                }
+                return rest.length > 0 && String(rest[0]).charAt(0) !== '-';
+            }
+            if (sub === 'remote') {
+                var remoteAction = String(rest[0] || '').toLowerCase();
+                return (
+                    remoteAction === 'add' ||
+                    remoteAction === 'remove' ||
+                    remoteAction === 'rm' ||
+                    remoteAction === 'rename' ||
+                    remoteAction === 'set-url' ||
+                    remoteAction === 'prune'
+                );
+            }
+            return false;
         }
-        output.classList.remove('hidden');
-        output.classList.toggle('is-error', !!isError);
-        output.textContent = value;
-    }
 
-    function pullUpdates() {
-        var Modal = global.FcAdminModal;
-        var ask =
-            Modal && typeof Modal.confirm === 'function'
-                ? Modal.confirm({
-                      title: 'Pull updates?',
-                      message:
-                          'This will run git pull on the server and may update application files. Continue?',
-                      confirmLabel: 'Pull updates',
-                      cancelLabel: 'Cancel',
-                      variant: 'warning',
-                      confirmText: 'CONFIRM',
-                      confirmPrompt: 'Type {confirm} to continue.'
-                  })
-                : Promise.resolve(
-                      window.prompt(
-                          'This will run git pull on the server and may update application files.\n\nType CONFIRM to continue:'
-                      ) === 'CONFIRM'
-                  );
+        function confirmGitCommand(command) {
+            var Modal = global.FcAdminModal;
+            var label = String(command || 'git').trim();
+            if (Modal && typeof Modal.confirm === 'function') {
+                return Modal.confirm({
+                    title: 'Run git command?',
+                    message: 'This will run "' + label + '" on the server in the project root. Continue?',
+                    confirmLabel: 'Run command',
+                    cancelLabel: 'Cancel',
+                    variant: 'warning',
+                    confirmText: 'CONFIRM',
+                    confirmPrompt: 'Type {confirm} to continue.'
+                });
+            }
+            return Promise.resolve(
+                window.prompt(
+                    'This will run "' +
+                        label +
+                        '" on the server in the project root.\n\nType CONFIRM to continue:'
+                ) === 'CONFIRM'
+            );
+        }
 
-        ask.then(function (ok) {
-            if (!ok) {
+        function executeCommand(command) {
+            var trimmed = String(command || '').trim();
+            if (!trimmed || busy) {
                 return;
             }
 
-            setDevModePullBusy(true);
-            showDevModePullOutput('');
-            toast('saving', 'Pulling updates…', TOAST_DEV_MODE);
+            history.push(trimmed);
+            historyIndex = history.length;
 
-            fetch(API_GIT_PULL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ csrf: state.csrf || '', confirm: 'CONFIRM' })
-            })
-                .then(function (res) {
-                    return res.json().then(function (body) {
-                        return { res: res, body: body || {} };
+            if (runLocal(trimmed)) {
+                return;
+            }
+
+            var needsConfirm = gitNeedsConfirm(trimmed);
+            var confirmPromise = needsConfirm ? confirmGitCommand(trimmed) : Promise.resolve(true);
+
+            confirmPromise.then(function (ok) {
+                if (!ok) {
+                    appendLine('$ ' + trimmed, 'cmd');
+                    appendLine('Cancelled.', 'muted');
+                    return;
+                }
+
+                busy = true;
+                input.disabled = true;
+                appendLine('$ ' + trimmed, 'cmd');
+
+                var body = {
+                    csrf: state.csrf || '',
+                    command: trimmed
+                };
+                if (needsConfirm) {
+                    body.confirm = 'CONFIRM';
+                }
+
+                fetch(API_DEV_CONSOLE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(body)
+                })
+                    .then(function (res) {
+                        return res.json().then(function (payload) {
+                            return { res: res, body: payload || {} };
+                        });
+                    })
+                    .then(function (result) {
+                        var payload = result.body;
+                        if (payload.clear) {
+                            clearOutput();
+                            return;
+                        }
+                        var text = String(payload.output || payload.error || '').trim();
+                        if (!result.res.ok || !payload.ok) {
+                            appendLine(text || payload.error || 'Command failed.', 'err');
+                            return;
+                        }
+                        appendLine(text || '(no output)', 'out');
+                    })
+                    .catch(function (err) {
+                        appendLine((err && err.message) || 'Could not run command.', 'err');
+                    })
+                    .finally(function () {
+                        busy = false;
+                        input.disabled = false;
+                        input.focus();
                     });
-                })
-                .then(function (result) {
-                    var body = result.body;
-                    var output = body.output || body.error || '';
-                    if (!result.res.ok || !body.ok) {
-                        showDevModePullOutput(output || body.error || 'git pull failed.', true);
-                        toast('error', body.error || 'Could not pull updates.', TOAST_DEV_MODE);
-                        return;
-                    }
-                    showDevModePullOutput(output || body.message || 'Already up to date.', false);
-                    toast('ok', body.message || 'Updates pulled successfully.', TOAST_DEV_MODE);
-                    var status = document.getElementById('fc-dev-mode-pull-status');
-                    if (status) {
-                        status.hidden = false;
-                        status.textContent = 'Last pull completed.';
-                    }
-                })
-                .catch(function (err) {
-                    showDevModePullOutput(err && err.message ? err.message : 'Could not pull updates.', true);
-                    toast('error', (err && err.message) || 'Could not pull updates.', TOAST_DEV_MODE);
-                })
-                .finally(function () {
-                    setDevModePullBusy(false);
-                });
-        });
-    }
-
-    function bindDevModeForm() {
-        var pullBtn = document.getElementById('fc-dev-mode-pull');
-        if (!pullBtn || pullBtn.getAttribute('data-fc-dev-mode-bound') === '1') {
-            return;
+            });
         }
-        pullBtn.setAttribute('data-fc-dev-mode-bound', '1');
-        pullBtn.addEventListener('click', pullUpdates);
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var value = input.value;
+            input.value = '';
+            executeCommand(value);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!history.length) {
+                    return;
+                }
+                historyIndex = Math.max(0, historyIndex - 1);
+                input.value = history[historyIndex] || '';
+                input.setSelectionRange(input.value.length, input.value.length);
+                return;
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!history.length) {
+                    return;
+                }
+                historyIndex = Math.min(history.length, historyIndex + 1);
+                input.value = historyIndex >= history.length ? '' : history[historyIndex] || '';
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+        });
+
+        appendLine('FC Dev Console — type "help" for commands.', 'muted');
     }
 
     function paintThemeForm() {
