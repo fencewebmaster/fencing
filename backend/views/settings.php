@@ -505,14 +505,6 @@ $tab = $fcSettingsPage;
                                             <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-chatraApiKey" aria-label="Copy Chatra API key" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
                                         </span>
                                     </label>
-                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-cloudflareZoneId">
-                                        <span class="text-sm font-medium text-slate-700">Cloudflare Zone ID</span>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="password" id="fc-integration-cloudflareZoneId" data-fc-integration-field="cloudflareZoneId" value="<?php echo $h((string) ($integrations['cloudflareZoneId'] ?? '')); ?>" class="fc-settings-field font-mono" autocomplete="off" spellcheck="false" />
-                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-reveal="fc-integration-cloudflareZoneId" aria-label="Show Cloudflare Zone ID" title="Show or hide"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
-                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-cloudflareZoneId" aria-label="Copy Cloudflare Zone ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                        </span>
-                                    </label>
                                     <label class="flex min-w-0 flex-col gap-1" for="fc-integration-cloudflareApiToken">
                                         <span class="text-sm font-medium text-slate-700">Cloudflare API token</span>
                                         <span class="fc-settings-field-input-wrap">
@@ -539,22 +531,36 @@ $tab = $fcSettingsPage;
                             </section>
                             </div>
 
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
-                                <div class="mb-4">
-                                    <h3 class="text-sm font-semibold text-slate-800">Google tags by site</h3>
-                                    <p class="mt-1 text-xs text-slate-500">Google Ads tag and Google Tag Manager container loaded for each domain.</p>
-                                </div>
-                                <div class="overflow-x-auto border border-slate-200 bg-white">
-                                    <div class="grid min-w-[42rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                        <span>Site</span><span>Gtag ID</span><span>GTM ID</span>
+                            <div class="overflow-x-auto border border-slate-200 bg-white">
+                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                        <span>Site</span><span>Supplier</span><span>Gtag ID</span><span>GTM ID</span><span>Cloudflare Zone ID</span>
                                     </div>
                                     <?php foreach (($integrations['sites'] ?? []) as $site) : ?>
-                                    <?php $siteFieldId = preg_replace('/[^a-zA-Z0-9_-]+/', '-', (string) ($site['key'] ?? 'site')); ?>
-                                    <div class="grid min-w-[42rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0">
+                                    <?php
+                                    $siteFieldId = preg_replace('/[^a-zA-Z0-9_-]+/', '-', (string) ($site['key'] ?? 'site'));
+                                    $siteSupplier = strtoupper(trim((string) ($site['supplier'] ?? '')));
+                                    if ($siteSupplier !== 'GO' && $siteSupplier !== 'JG') {
+                                        $siteSupplier = '';
+                                    }
+                                    ?>
+                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0">
                                         <div class="min-w-0">
                                             <span class="block truncate text-sm font-semibold text-slate-800"><?php echo $h((string) ($site['label'] ?? $site['key'] ?? '')); ?></span>
                                             <code class="block truncate text-[11px] text-slate-400"><?php echo $h((string) ($site['key'] ?? '')); ?></code>
                                         </div>
+                                        <label class="min-w-0">
+                                            <span class="sr-only"><?php echo $h((string) ($site['label'] ?? 'Site')); ?> supplier</span>
+                                            <select
+                                                id="fc-integration-<?php echo $h((string) $siteFieldId); ?>-supplier"
+                                                data-fc-integration-site="<?php echo $h((string) ($site['key'] ?? '')); ?>"
+                                                data-fc-integration-site-field="supplier"
+                                                class="fc-settings-field"
+                                                aria-label="<?php echo $h((string) ($site['label'] ?? 'Site')); ?> supplier"
+                                            >
+                                                <option value="JG"<?php echo $siteSupplier === 'JG' ? ' selected' : ''; ?>>JG</option>
+                                                <option value="GO"<?php echo $siteSupplier === 'GO' ? ' selected' : ''; ?>>GO</option>
+                                            </select>
+                                        </label>
                                         <span class="fc-settings-field-input-wrap">
                                             <input type="text" id="fc-integration-<?php echo $h((string) $siteFieldId); ?>-gtag" data-fc-integration-site="<?php echo $h((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="gtagId" value="<?php echo $h((string) ($site['gtagId'] ?? '')); ?>" class="fc-settings-field font-mono uppercase" placeholder="AW-123456789" autocomplete="off" spellcheck="false" aria-label="<?php echo $h((string) ($site['label'] ?? 'Site')); ?> Gtag ID" />
                                             <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo $h((string) $siteFieldId); ?>-gtag" aria-label="Copy <?php echo $h((string) ($site['label'] ?? 'Site')); ?> Gtag ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
@@ -563,10 +569,13 @@ $tab = $fcSettingsPage;
                                             <input type="text" id="fc-integration-<?php echo $h((string) $siteFieldId); ?>-gtm" data-fc-integration-site="<?php echo $h((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="gtmId" value="<?php echo $h((string) ($site['gtmId'] ?? '')); ?>" class="fc-settings-field font-mono uppercase" placeholder="GTM-XXXXXXX" autocomplete="off" spellcheck="false" aria-label="<?php echo $h((string) ($site['label'] ?? 'Site')); ?> GTM ID" />
                                             <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo $h((string) $siteFieldId); ?>-gtm" aria-label="Copy <?php echo $h((string) ($site['label'] ?? 'Site')); ?> GTM ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
                                         </span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="text" id="fc-integration-<?php echo $h((string) $siteFieldId); ?>-cfzone" data-fc-integration-site="<?php echo $h((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="cloudflareZoneId" value="<?php echo $h((string) ($site['cloudflareZoneId'] ?? '')); ?>" class="fc-settings-field font-mono" placeholder="32-char zone id" autocomplete="off" spellcheck="false" aria-label="<?php echo $h((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo $h((string) $siteFieldId); ?>-cfzone" aria-label="Copy <?php echo $h((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
                                     </div>
                                     <?php endforeach; ?>
                                 </div>
-                            </section>
 
                         </div>
 

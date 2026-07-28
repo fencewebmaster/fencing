@@ -44,7 +44,7 @@ function fc_products_admin_format_header(string $label): string
  */
 function fc_store_products_admin_list_columns(): array
 {
-    return ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE', 'Colors'];
+    return ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE', 'Colors'];
 }
 
 function fc_store_products_admin_csv_style_for_fence(string $fenceSlug): string
@@ -258,19 +258,96 @@ function fc_store_products_admin_color_options(array $columns, array $selected):
 }
 
 /**
+ * Style-allowed color SKU columns for a product row (same rules as the edit modal).
+ *
+ * @param list<string> $allColumns
+ * @param array<string, list<string>> $styleColors
+ * @return list<string>
+ */
+function fc_store_products_admin_allowed_color_columns(array $row, array $allColumns, array $styleColors): array
+{
+    $detailColumns = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
+    $style = trim((string) ($row['STYLE'] ?? ''));
+    if (isset($styleColors[$style]) && is_array($styleColors[$style])) {
+        return array_values($styleColors[$style]);
+    }
+
+    return array_values(array_filter(
+        $allColumns,
+        static fn(string $col): bool => !in_array($col, $detailColumns, true)
+    ));
+}
+
+/**
+ * @param list<string> $allColumns
+ * @param array<string, list<string>> $styleColors
+ * @param array<string, true> $skuSetLookup Uppercased/exact trimmed SKU => true
+ * @return array{found:int,total:int,complete:bool}
+ */
+function fc_store_products_admin_skus_summary(
+    array $row,
+    array $allColumns,
+    array $styleColors,
+    array $skuSetLookup
+): array {
+    $allowed = fc_store_products_admin_allowed_color_columns($row, $allColumns, $styleColors);
+    $total = count($allowed);
+    $found = 0;
+
+    foreach ($allowed as $column) {
+        $sku = trim((string) ($row[$column] ?? ''));
+        if ($sku === '' || strtoupper($sku) === 'OFF') {
+            continue;
+        }
+        if (isset($skuSetLookup[$sku])) {
+            $found++;
+        }
+    }
+
+    return [
+        'found'    => $found,
+        'total'    => $total,
+        'complete' => $total > 0 && $found === $total,
+    ];
+}
+
+/**
+ * @param list<string> $allColumns
+ * @param array<string, list<string>> $styleColors
+ * @param array<string, true> $skuSetLookup
+ */
+function fc_store_products_admin_skus_cell_html(
+    array $row,
+    array $allColumns,
+    array $styleColors,
+    array $skuSetLookup
+): string {
+    $summary = fc_store_products_admin_skus_summary($row, $allColumns, $styleColors, $skuSetLookup);
+    if ($summary['total'] === 0) {
+        return '<span class="text-slate-300">—</span>';
+    }
+
+    $complete = $summary['complete'];
+    $statusClass = $complete ? 'fc-sp-sku-status--found' : 'fc-sp-sku-status--missing';
+    $wrapClass = $complete ? 'fc-sp-skus-summary--complete' : 'fc-sp-skus-summary--incomplete';
+    $ratio = $summary['found'] . '/' . $summary['total'];
+    $label = $complete
+        ? 'All style SKUs found in store catalogue'
+        : 'Some style SKUs missing from store catalogue';
+
+    return '<span class="fc-sp-skus-summary ' . $wrapClass . '" title="' . fc_products_admin_h($label) . '">'
+        . '<span class="fc-sp-sku-status ' . $statusClass . '" aria-hidden="true"></span>'
+        . '<span>' . fc_products_admin_h($ratio) . '</span>'
+        . '</span>';
+}
+
+/**
  * @param list<string> $allColumns
  * @param array<string, list<string>> $styleColors
  */
 function fc_store_products_admin_colors_cell_html(array $row, array $allColumns, array $styleColors): string
 {
-    $detailColumns = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
-    $style = trim((string) ($row['STYLE'] ?? ''));
-    $allowed = isset($styleColors[$style]) && is_array($styleColors[$style])
-        ? $styleColors[$style]
-        : array_values(array_filter(
-            $allColumns,
-            static fn(string $col): bool => !in_array($col, $detailColumns, true)
-        ));
+    $allowed = fc_store_products_admin_allowed_color_columns($row, $allColumns, $styleColors);
 
     $items = [];
     foreach ($allowed as $column) {
@@ -476,6 +553,7 @@ function fc_store_products_admin_filter_rows(array $rows, array $filters): array
  * @param list<string> $displayColumns
  * @param array<string, string> $styleLabels
  * @param array<string, list<string>> $styleColors
+ * @param list<string>|array<string, true> $skuSet
  */
 function fc_store_products_admin_table_html(
     array $allColumns,
@@ -485,18 +563,32 @@ function fc_store_products_admin_table_html(
     array $displayColumns = [],
     array $styleLabels = [],
     array $styleColors = [],
-    bool $canEdit = true
+    bool $canEdit = true,
+    array $skuSet = []
 ): string {
     if ($displayColumns === []) {
         $displayColumns = $allColumns;
     }
 
-    $primaryColumns = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE', 'Colors'];
+    $skuSetLookup = [];
+    foreach ($skuSet as $key => $value) {
+        if (is_string($key) && $value === true) {
+            $skuSetLookup[$key] = true;
+            continue;
+        }
+        $sku = trim((string) $value);
+        if ($sku !== '') {
+            $skuSetLookup[$sku] = true;
+        }
+    }
+
+    $primaryColumns = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE', 'Colors'];
     $colgroup = ($draggable ? '<col class="w-10" />' : '');
     foreach ($displayColumns as $col) {
         $widthClass = match ($col) {
             'Colors' => 'fc-sys-product-colors-col',
             'DESCRIPTION' => 'fc-sys-product-desc-col',
+            'SKUs' => 'fc-sys-product-skus-col',
             default => in_array($col, $primaryColumns, true) ? 'min-w-[8rem]' : 'min-w-[6rem]',
         };
         $colgroup .= '<col class="' . $widthClass . '" />';
@@ -508,10 +600,11 @@ function fc_store_products_admin_table_html(
     }
     foreach ($displayColumns as $colIndex => $col) {
         $sticky = $colIndex === 0 ? ' fc-sp-sticky fc-sp-sticky-col relative' : '';
-        $header = $col === 'Colors' ? 'Colors' : fc_products_admin_format_header($col);
+        $header = $col === 'Colors' || $col === 'SKUs' ? $col : fc_products_admin_format_header($col);
         $headClass = 'whitespace-nowrap px-3 py-2' . $sticky
             . ($col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '')
-            . ($col === 'Colors' ? ' fc-sys-product-colors-cell' : '');
+            . ($col === 'Colors' ? ' fc-sys-product-colors-cell' : '')
+            . ($col === 'SKUs' ? ' fc-sys-product-skus-cell' : '');
         $thead .= '<th scope="col" class="' . trim($headClass) . '">' . fc_products_admin_h($header) . '</th>';
     }
     $thead .= '</tr></thead>';
@@ -536,6 +629,12 @@ function fc_store_products_admin_table_html(
             if ($col === 'Colors') {
                 $cellHtml = fc_store_products_admin_colors_cell_html($row, $allColumns, $styleColors);
                 $tbody .= '<td class="border-b border-slate-100 px-3 py-2 fc-sys-product-colors-cell' . $sticky . '">'
+                    . $cellHtml . '</td>';
+                continue;
+            }
+            if ($col === 'SKUs') {
+                $cellHtml = fc_store_products_admin_skus_cell_html($row, $allColumns, $styleColors, $skuSetLookup);
+                $tbody .= '<td class="border-b border-slate-100 px-3 py-2 fc-sys-product-skus-cell whitespace-nowrap' . $sticky . '">'
                     . $cellHtml . '</td>';
                 continue;
             }
@@ -726,6 +825,14 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
         ? $total . ' match' . ($total === 1 ? '' : 'es')
         : (string) $total;
 
+    $skuSet = [];
+    if ($error === '' && $rows !== []) {
+        if (!function_exists('fc_wc_products_sku_union')) {
+            require_once FC_ROOT . '/config/wc_products_sku_index.php';
+        }
+        $skuSet = fc_wc_products_sku_union();
+    }
+
     $tableHtml = '';
     if ($error === '') {
         if ($rows === []) {
@@ -741,7 +848,8 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
                 $displayColumns,
                 $styleLabels,
                 $styleColors,
-                $canEdit
+                $canEdit,
+                $skuSet
             );
         }
     }
@@ -908,7 +1016,7 @@ function fc_system_products_admin_cell_html(string $col, string $val, array $row
 
     if ($col === 'SKU') {
         return [
-            'html' => '<span class="fc-sys-sku-value block font-mono text-xs leading-relaxed text-slate-800">'
+            'html' => '<span class="fc-sys-sku-value block text-sm text-slate-800">'
                 . fc_products_admin_h($val) . '</span>',
             'empty' => false,
         ];
@@ -956,7 +1064,7 @@ function fc_system_products_admin_table_html(array $columns, array $rows, bool $
             $class = 'border-b border-slate-100' . $sticky
                 . ($formatted['empty'] && $col !== 'Images' ? ' text-slate-300' : '')
                 . ($col === 'Images' ? ' fc-sys-images-cell' : ' px-3 py-2')
-                . ($col === 'SKU' ? ' fc-sys-sku-cell align-top' : '')
+                . ($col === 'SKU' ? ' fc-sys-sku-cell' : '')
                 . ($col === 'Name' ? ' fc-sys-name-cell' : '')
                 . (in_array($col, ['Name', 'Images', 'SKU'], true) ? '' : ' whitespace-nowrap');
             $tbody .= '<td class="' . trim($class) . '">' . $formatted['html'] . '</td>';

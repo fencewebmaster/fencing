@@ -79,6 +79,9 @@ $fcHomeName = is_array($fcAdminHomeSite) ? (string) ($fcAdminHomeSite['name'] ??
 $fcHomeDomain = is_array($fcAdminHomeSite) ? (string) ($fcAdminHomeSite['domain'] ?? '') : '';
 $fcHomeHost = $fcFormatSiteHost($fcHomeDomain);
 $fcHomeUrl = $fcFormatSiteUrl($fcHomeDomain);
+$fcHomeSupplier = is_array($fcAdminHomeSite)
+    ? strtoupper(trim((string) ($fcAdminHomeSite['supplier'] ?? '')))
+    : '';
 $fcHomeLogo = is_array($fcAdminHomeSite) ? (string) ($fcAdminHomeSite['logo'] ?? '') : '';
 $fcHomeLogoUrl = ($fcHomeLogo !== '' && isset($fcAppBase))
     ? rtrim((string) $fcAppBase, '/') . '/' . ltrim($fcHomeLogo, '/')
@@ -155,8 +158,8 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                     class="fc-sidebar-site__item fc-sidebar-site__item--home<?php echo $fcHomeIsCurrent ? ' is-active' : ''; ?>"
                     role="option"
                     aria-selected="<?php echo $fcHomeIsCurrent ? 'true' : 'false'; ?>"
-                    title="<?php echo htmlspecialchars(trim($fcHomeName . ($fcHomeUrl !== '' ? ' — ' . $fcHomeUrl : '')), ENT_QUOTES, 'UTF-8'); ?>"
-                    data-fc-site-search="<?php echo htmlspecialchars(strtolower(trim($fcHomeName . ' ' . $fcHomeHost . ' ' . $fcHomeDomain)), ENT_QUOTES, 'UTF-8'); ?>"
+                    title="<?php echo htmlspecialchars(trim($fcHomeName . ($fcHomeSupplier !== '' ? ' (' . $fcHomeSupplier . ')' : '') . ($fcHomeUrl !== '' ? ' — ' . $fcHomeUrl : '')), ENT_QUOTES, 'UTF-8'); ?>"
+                    data-fc-site-search="<?php echo htmlspecialchars(strtolower(trim($fcHomeName . ' ' . $fcHomeHost . ' ' . $fcHomeDomain . ' ' . $fcHomeSupplier)), ENT_QUOTES, 'UTF-8'); ?>"
                     data-nav-full="1"
                     <?php echo $fcHomeIsCurrent ? ' tabindex="-1"' : ''; ?>
                 >
@@ -173,18 +176,23 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                         <span class="fc-sidebar-site__item-domain"><?php echo htmlspecialchars($fcHomeHost, ENT_QUOTES, 'UTF-8'); ?></span>
                         <?php endif; ?>
                     </span>
-                    <?php if ($fcHomeIsCurrent) : ?>
-                    <span class="fc-sidebar-site__item-badge">Current</span>
-                    <?php else : ?>
-                    <span class="fc-sidebar-site__item-badge fc-sidebar-site__item-badge--quick">Main</span>
-                    <?php endif; ?>
+                    <span class="fc-sidebar-site__item-meta">
+                        <?php if ($fcHomeIsCurrent) : ?>
+                        <span class="fc-sidebar-site__item-badge">Current</span>
+                        <?php else : ?>
+                        <span class="fc-sidebar-site__item-badge fc-sidebar-site__item-badge--quick">Main</span>
+                        <?php endif; ?>
+                        <?php if ($fcHomeSupplier !== '') : ?>
+                        <span class="fc-sidebar-site__item-supplier"><?php echo htmlspecialchars($fcHomeSupplier, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <?php endif; ?>
+                    </span>
                 </a>
             </div>
             <?php endif; ?>
 
             <?php if ($fcSiteCount > 0) : ?>
             <div class="fc-sidebar-site__menu-list" data-fc-site-section="other">
-                <span class="fc-sidebar-site__list-label">Other sites</span>
+                <span class="fc-sidebar-site__list-label">Other sites (<?php echo (int) $fcSiteCount; ?>)</span>
                 <?php foreach ($fcAdminSites as $site) : ?>
                 <?php
                 $siteKey = (string) ($site['key'] ?? '');
@@ -192,6 +200,7 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                 $siteDomain = (string) ($site['domain'] ?? '');
                 $siteUrl = $fcFormatSiteUrl($siteDomain);
                 $siteHost = $fcFormatSiteHost($siteDomain);
+                $siteSupplier = strtoupper(trim((string) ($site['supplier'] ?? '')));
                 $siteLogo = (string) ($site['logo'] ?? '');
                 $siteLogoUrl = $siteLogo !== ''
                     ? rtrim((string) $fcAppBase, '/') . '/' . ltrim($siteLogo, '/')
@@ -202,14 +211,14 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                     '_token' => $fcSiteSwitchToken,
                     'redirect' => $fcSiteRedirectPath,
                 ]);
-                $siteSearch = strtolower(trim($siteName . ' ' . $siteHost . ' ' . $siteDomain . ' ' . $siteKey));
+                $siteSearch = strtolower(trim($siteName . ' ' . $siteHost . ' ' . $siteDomain . ' ' . $siteKey . ' ' . $siteSupplier));
                 ?>
                 <a
                     href="<?php echo htmlspecialchars($switchHref, ENT_QUOTES, 'UTF-8'); ?>"
                     class="fc-sidebar-site__item<?php echo $isCurrent ? ' is-active' : ''; ?>"
                     role="option"
                     aria-selected="<?php echo $isCurrent ? 'true' : 'false'; ?>"
-                    title="<?php echo htmlspecialchars(trim($siteName . ($siteUrl !== '' ? ' — ' . $siteUrl : '')), ENT_QUOTES, 'UTF-8'); ?>"
+                    title="<?php echo htmlspecialchars(trim($siteName . ($siteSupplier !== '' ? ' (' . $siteSupplier . ')' : '') . ($siteUrl !== '' ? ' — ' . $siteUrl : '')), ENT_QUOTES, 'UTF-8'); ?>"
                     data-fc-site-search="<?php echo htmlspecialchars($siteSearch, ENT_QUOTES, 'UTF-8'); ?>"
                     data-nav-full="1"
                     <?php echo $isCurrent ? ' tabindex="-1"' : ''; ?>
@@ -227,11 +236,17 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                         <span class="fc-sidebar-site__item-domain"><?php echo htmlspecialchars($siteHost, ENT_QUOTES, 'UTF-8'); ?></span>
                         <?php endif; ?>
                     </span>
-                    <?php if ($isCurrent) : ?>
-                    <span class="fc-sidebar-site__item-badge">Current</span>
-                    <?php else : ?>
-                    <i class="fa-solid fa-arrow-right fc-sidebar-site__item-go" aria-hidden="true"></i>
-                    <?php endif; ?>
+                    <span class="fc-sidebar-site__item-meta">
+                        <?php if ($isCurrent) : ?>
+                        <span class="fc-sidebar-site__item-badge">Current</span>
+                        <?php endif; ?>
+                        <?php if ($siteSupplier !== '') : ?>
+                        <span class="fc-sidebar-site__item-supplier"><?php echo htmlspecialchars($siteSupplier, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <?php endif; ?>
+                        <?php if (!$isCurrent) : ?>
+                        <i class="fa-solid fa-arrow-right fc-sidebar-site__item-go" aria-hidden="true"></i>
+                        <?php endif; ?>
+                    </span>
                 </a>
                 <?php endforeach; ?>
             </div>

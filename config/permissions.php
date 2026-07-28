@@ -688,7 +688,9 @@ function fc_permissions_keys_for_api(string $module, string $action = ''): array
             'download-products-start',
             'download-products-step',
             'download-products-cancel',
-            'download-products-status' => ['products.store_products.download'],
+            'download-products-status',
+            'download-products-csv',
+            'import-products-csv' => ['products.store_products.download'],
             default => ['products.system_products.view', 'products.store_products.view'],
         },
         'fenceStyles', 'fenceStylesController' => match ($action) {

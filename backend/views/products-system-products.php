@@ -30,10 +30,18 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
             class="fc-gallery-page__tab fc-system-products-tab<?php echo !empty($tab['is_active']) ? ' is-active' : ''; ?>"
         >
             <span><?php echo $h((string) ($tab['label'] ?? '')); ?></span>
+            <?php if ((int) ($tab['count'] ?? 0) > 0) : ?>
             <span
                 class="fc-system-products-tab__count"
                 data-fc-sys-tab-count="<?php echo $h((string) ($tab['id'] ?? '')); ?>"
             ><?php echo $h((string) ($tab['count_label'] ?? '0')); ?></span>
+            <?php else : ?>
+            <span
+                class="fc-system-products-tab__count"
+                data-fc-sys-tab-count="<?php echo $h((string) ($tab['id'] ?? '')); ?>"
+                hidden
+            >0</span>
+            <?php endif; ?>
         </a>
         <?php endforeach; ?>
     </nav>
@@ -54,14 +62,66 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                     >
                 </label>
                 <?php if (!empty($page['can_edit'])) : ?>
-                <button
-                    type="button"
-                    class="btn btn-sm btn-orange fw-semibold fc-products-download-trigger"
-                    data-fc-products-download-open
-                >
-                    <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
-                    <span>Download Products</span>
-                </button>
+                <?php
+                $fcDownloadCsvName = 'wc-products-' . (string) ($page['source'] ?? 'GO') . '.csv';
+                $fcDownloadCsvReady = ($page['error'] ?? '') === '' && is_string($page['file_label'] ?? null) && (string) ($page['file_label'] ?? '') !== '';
+                ?>
+                <div class="fc-products-download-dropdown" data-fc-products-download-dropdown>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-orange fw-semibold fc-products-download-trigger"
+                        data-fc-products-download-toggle
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="fc-products-download-menu"
+                        id="fc-products-download-toggle"
+                    >
+                        <span>Download</span>
+                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                    </button>
+                    <div
+                        class="fc-products-download-dropdown__panel"
+                        id="fc-products-download-menu"
+                        role="menu"
+                        aria-labelledby="fc-products-download-toggle"
+                        hidden
+                    >
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option"
+                            role="menuitem"
+                            data-fc-products-download-open
+                        >
+                            <span>Update Products</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option<?php echo $fcDownloadCsvReady ? '' : ' is-disabled'; ?>"
+                            role="menuitem"
+                            data-fc-products-download-csv
+                            data-fc-products-csv-name="<?php echo $h($fcDownloadCsvName); ?>"
+                            <?php echo $fcDownloadCsvReady ? '' : ' disabled aria-disabled="true"'; ?>
+                        >
+                            <span>Export CSV</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option"
+                            role="menuitem"
+                            data-fc-products-import-csv
+                        >
+                            <span>Import CSV</span>
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        class="sr-only"
+                        accept=".csv,text/csv"
+                        data-fc-products-import-input
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
                 <?php endif; ?>
                 <input type="hidden" name="source" value="<?php echo $h((string) ($page['source'] ?? 'GO')); ?>">
                 <input type="hidden" name="per_page" value="<?php echo !empty($page['is_all']) ? 'all' : (int) ($page['per_page'] ?? 50); ?>">
@@ -96,7 +156,7 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                 </span>
                 <div>
                     <h2 id="fc-products-download-title">Download <?php echo $h((string) ($page['source'] ?? 'GO')); ?> Products</h2>
-                    <p>Refresh the active store catalogue CSV safely.</p>
+                    <p>Refresh the active store products CSV safely.</p>
                 </div>
             </header>
             <div class="fc-products-download-modal__body">

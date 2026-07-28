@@ -37,8 +37,13 @@ function fc_integrations_site_keys(?array $config = null): array
 {
     $config = $config ?? fc_integrations_read_config();
     $keys = [];
-    foreach (['gtag_id', 'gtm_id'] as $section) {
-        foreach (array_keys(is_array($config[$section] ?? null) ? $config[$section] : []) as $key) {
+    foreach (['gtag_id', 'gtm_id', 'cloudflare_zone_id', 'supplier'] as $section) {
+        $sectionValue = $config[$section] ?? null;
+        // Legacy single Zone ID lived under apikey.cloudflare_zone_id (string) — skip that.
+        if ($section === 'cloudflare_zone_id' && !is_array($sectionValue)) {
+            continue;
+        }
+        foreach (array_keys(is_array($sectionValue) ? $sectionValue : []) as $key) {
             if (is_string($key) && preg_match('/^[a-z0-9.-]+$/', $key)) {
                 $keys[$key] = true;
             }
@@ -56,6 +61,55 @@ function fc_integrations_site_label(string $key): string
 }
 
 /**
+ * Default supplier codes (JG|GO), keyed by mysql/config site key.
+ *
+ * @return array<string, string>
+ */
+function fc_integrations_default_suppliers(): array
+{
+    return [
+        'localhost' => 'JG',
+        'fencesperth' => 'JG',
+        'fencesbrisbane' => 'JG',
+        'fencingwarehouse' => 'JG',
+        'fencinggoldcoast' => 'GO',
+        'fencesadelaide' => 'GO',
+        'fencessydney' => 'GO',
+        'fencesmelbourne' => 'GO',
+        'fencesnewcastle' => 'GO',
+    ];
+}
+
+function fc_integrations_normalize_supplier(string $value): string
+{
+    $value = strtoupper(trim($value));
+
+    return ($value === 'GO' || $value === 'JG') ? $value : '';
+}
+
+/**
+ * Resolve supplier for a site key (config override, then built-in default).
+ */
+function fc_integrations_supplier_for_key(string $key, ?array $config = null): string
+{
+    $key = trim($key);
+    if ($key === '') {
+        return '';
+    }
+
+    $config = $config ?? fc_integrations_read_config();
+    $stored = is_array($config['supplier'] ?? null) ? $config['supplier'] : [];
+    $fromConfig = fc_integrations_normalize_supplier((string) ($stored[$key] ?? ''));
+    if ($fromConfig !== '') {
+        return $fromConfig;
+    }
+
+    $defaults = fc_integrations_default_suppliers();
+
+    return fc_integrations_normalize_supplier((string) ($defaults[$key] ?? ''));
+}
+
+/**
  * @return array<string, mixed>
  */
 function fc_integrations_get(): array
@@ -65,21 +119,23 @@ function fc_integrations_get(): array
     $webhooks = is_array($config['webhook_url'] ?? null) ? $config['webhook_url'] : [];
     $gtag = is_array($config['gtag_id'] ?? null) ? $config['gtag_id'] : [];
     $gtm = is_array($config['gtm_id'] ?? null) ? $config['gtm_id'] : [];
+    $zones = is_array($config['cloudflare_zone_id'] ?? null) ? $config['cloudflare_zone_id'] : [];
     $sites = [];
 
     foreach (fc_integrations_site_keys($config) as $key) {
         $sites[] = [
             'key' => $key,
             'label' => fc_integrations_site_label($key),
+            'supplier' => fc_integrations_supplier_for_key($key, $config) ?: 'JG',
             'gtagId' => (string) ($gtag[$key] ?? ''),
             'gtmId' => (string) ($gtm[$key] ?? ''),
+            'cloudflareZoneId' => (string) ($zones[$key] ?? ''),
         ];
     }
 
     return [
         'googleMapsApiKey' => (string) ($api['google_map'] ?? ''),
         'chatraApiKey' => (string) ($api['chatra'] ?? ''),
-        'cloudflareZoneId' => (string) ($api['cloudflare_zone_id'] ?? ''),
         'cloudflareApiToken' => (string) ($api['cloudflare_api_token'] ?? ''),
         'webhookUrl' => (string) ($webhooks['zap'] ?? ''),
         'sites' => $sites,
@@ -126,7 +182,6 @@ function fc_integrations_normalize(array $input): array
 {
     $google = fc_integrations_clean_value($input['googleMapsApiKey'] ?? '', 200);
     $chatra = fc_integrations_clean_value($input['chatraApiKey'] ?? '', 200);
-    $cfZone = fc_integrations_clean_value($input['cloudflareZoneId'] ?? '', 64);
     $cfToken = fc_integrations_clean_value($input['cloudflareApiToken'] ?? '', 200);
     $webhook = fc_integrations_clean_value($input['webhookUrl'] ?? '', 1000);
 
@@ -135,9 +190,6 @@ function fc_integrations_normalize(array $input): array
     }
     if ($chatra === null || ($chatra !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $chatra))) {
         return ['ok' => false, 'error' => 'Chatra API key contains invalid characters.'];
-    }
-    if ($cfZone === null || ($cfZone !== '' && !preg_match('/^[a-f0-9]{32}$/i', $cfZone))) {
-        return ['ok' => false, 'error' => 'Cloudflare Zone ID must be a 32-character hex string.'];
     }
     if ($cfToken === null || ($cfToken !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $cfToken))) {
         return ['ok' => false, 'error' => 'Cloudflare API token contains invalid characters.'];
@@ -160,17 +212,30 @@ function fc_integrations_normalize(array $input): array
         }
         $gtag = fc_integrations_clean_value($site['gtagId'] ?? '', 50);
         $gtm = fc_integrations_clean_value($site['gtmId'] ?? '', 50);
+        $zone = fc_integrations_clean_value($site['cloudflareZoneId'] ?? '', 64);
+        $supplier = fc_integrations_normalize_supplier((string) ($site['supplier'] ?? ''));
+        if ($supplier === '') {
+            $supplier = fc_integrations_supplier_for_key($key);
+        }
         if ($gtag === null || ($gtag !== '' && !preg_match('/^(?:AW|G)-[A-Z0-9-]+$/i', $gtag))) {
             return ['ok' => false, 'error' => 'Invalid Google tag ID for ' . fc_integrations_site_label($key) . '.'];
         }
         if ($gtm === null || ($gtm !== '' && !preg_match('/^GTM-[A-Z0-9]+$/i', $gtm))) {
             return ['ok' => false, 'error' => 'Invalid GTM ID for ' . fc_integrations_site_label($key) . '.'];
         }
+        if ($zone === null || ($zone !== '' && !preg_match('/^[a-f0-9]{32}$/i', $zone))) {
+            return ['ok' => false, 'error' => 'Invalid Cloudflare Zone ID for ' . fc_integrations_site_label($key) . '.'];
+        }
+        if ($supplier === '') {
+            return ['ok' => false, 'error' => 'Supplier must be GO or JG for ' . fc_integrations_site_label($key) . '.'];
+        }
         $sitesByKey[$key] = [
             'key' => $key,
             'label' => fc_integrations_site_label($key),
+            'supplier' => $supplier,
             'gtagId' => strtoupper($gtag),
             'gtmId' => strtoupper($gtm),
+            'cloudflareZoneId' => strtolower((string) $zone),
         ];
     }
 
@@ -185,7 +250,6 @@ function fc_integrations_normalize(array $input): array
         'integrations' => [
             'googleMapsApiKey' => $google,
             'chatraApiKey' => $chatra,
-            'cloudflareZoneId' => strtolower((string) $cfZone),
             'cloudflareApiToken' => (string) $cfToken,
             'webhookUrl' => $webhook,
             'sites' => $sites,
@@ -233,17 +297,23 @@ function fc_integrations_save(array $input, string $expectedRevision = ''): arra
         $config['webhook_url'] = is_array($config['webhook_url'] ?? null) ? $config['webhook_url'] : [];
         $config['gtag_id'] = is_array($config['gtag_id'] ?? null) ? $config['gtag_id'] : [];
         $config['gtm_id'] = is_array($config['gtm_id'] ?? null) ? $config['gtm_id'] : [];
+        $config['cloudflare_zone_id'] = is_array($config['cloudflare_zone_id'] ?? null)
+            ? $config['cloudflare_zone_id']
+            : [];
+        $config['supplier'] = is_array($config['supplier'] ?? null) ? $config['supplier'] : [];
 
         $config['apikey']['google_map'] = (string) $next['googleMapsApiKey'];
         $config['apikey']['chatra'] = (string) $next['chatraApiKey'];
-        $config['apikey']['cloudflare_zone_id'] = (string) $next['cloudflareZoneId'];
         $config['apikey']['cloudflare_api_token'] = (string) $next['cloudflareApiToken'];
-        unset($config['apikey']['cloudflare_account_id']);
+        // Zone IDs are per-site; drop legacy global string under apikey.
+        unset($config['apikey']['cloudflare_zone_id'], $config['apikey']['cloudflare_account_id']);
         $config['webhook_url']['zap'] = (string) $next['webhookUrl'];
         foreach ($next['sites'] as $site) {
             $key = (string) $site['key'];
             $config['gtag_id'][$key] = (string) $site['gtagId'];
             $config['gtm_id'][$key] = (string) $site['gtmId'];
+            $config['cloudflare_zone_id'][$key] = (string) $site['cloudflareZoneId'];
+            $config['supplier'][$key] = (string) ($site['supplier'] ?? '');
         }
 
         $php = "<?php\n\n\$config = " . var_export($config, true) . ";\n";
