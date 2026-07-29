@@ -12,7 +12,10 @@ require_once __DIR__ . '/theme.php';
  *   dashboardDefaultDatePeriod:string,
  *   entriesDefaultDatePeriod:string,
  *   entriesDefaultDateField:string,
- *   dateFormat:string
+ *   dateFormat:string,
+ *   presenceUpdateIntervalSeconds:int,
+ *   presenceOnlineWindowMinutes:int,
+ *   activityRelativeHours:int
  * }
  */
 function fc_system_defaults(): array
@@ -22,6 +25,9 @@ function fc_system_defaults(): array
         'entriesDefaultDatePeriod' => 'today',
         'entriesDefaultDateField' => 'updated_at',
         'dateFormat' => 'M. j, Y h:i A',
+        'presenceUpdateIntervalSeconds' => 20,
+        'presenceOnlineWindowMinutes' => 3,
+        'activityRelativeHours' => 24,
     ];
 }
 
@@ -127,7 +133,10 @@ function fc_system_migrate_legacy_keys(array $saved): array
  *   dashboardDefaultDatePeriod:string,
  *   entriesDefaultDatePeriod:string,
  *   entriesDefaultDateField:string,
- *   dateFormat:string
+ *   dateFormat:string,
+ *   presenceUpdateIntervalSeconds:int,
+ *   presenceOnlineWindowMinutes:int,
+ *   activityRelativeHours:int
  * }
  */
 function fc_system_get(): array
@@ -146,7 +155,10 @@ function fc_system_get(): array
  *   dashboardDefaultDatePeriod:string,
  *   entriesDefaultDatePeriod:string,
  *   entriesDefaultDateField:string,
- *   dateFormat:string
+ *   dateFormat:string,
+ *   presenceUpdateIntervalSeconds:int,
+ *   presenceOnlineWindowMinutes:int,
+ *   activityRelativeHours:int
  * }
  */
 function fc_system_normalize(array $input): array
@@ -177,12 +189,69 @@ function fc_system_normalize(array $input): array
         $format = $defaults['dateFormat'];
     }
 
+    $updateSeconds = (int) ($input['presenceUpdateIntervalSeconds'] ?? $defaults['presenceUpdateIntervalSeconds']);
+    if ($updateSeconds < 5) {
+        $updateSeconds = (int) $defaults['presenceUpdateIntervalSeconds'];
+    }
+    if ($updateSeconds > 300) {
+        $updateSeconds = 300;
+    }
+
+    $onlineMinutes = (int) ($input['presenceOnlineWindowMinutes'] ?? $defaults['presenceOnlineWindowMinutes']);
+    if ($onlineMinutes < 1) {
+        $onlineMinutes = (int) $defaults['presenceOnlineWindowMinutes'];
+    }
+    if ($onlineMinutes > 60) {
+        $onlineMinutes = 60;
+    }
+
+    $relativeHours = (int) ($input['activityRelativeHours'] ?? $defaults['activityRelativeHours']);
+    if ($relativeHours < 1) {
+        $relativeHours = (int) $defaults['activityRelativeHours'];
+    }
+    if ($relativeHours > 168) {
+        $relativeHours = 168;
+    }
+
     return [
         'dashboardDefaultDatePeriod' => $dashboardPeriod,
         'entriesDefaultDatePeriod' => $entriesPeriod,
         'entriesDefaultDateField' => $field,
         'dateFormat' => $format,
+        'presenceUpdateIntervalSeconds' => $updateSeconds,
+        'presenceOnlineWindowMinutes' => $onlineMinutes,
+        'activityRelativeHours' => $relativeHours,
     ];
+}
+
+/**
+ * How often online activity is refreshed while a user uses the admin (seconds).
+ */
+function fc_system_presence_update_interval_seconds(): int
+{
+    $seconds = (int) (fc_system_get()['presenceUpdateIntervalSeconds'] ?? 20);
+
+    return max(5, min(300, $seconds));
+}
+
+/**
+ * Seconds a user stays "online" after last activity.
+ */
+function fc_system_presence_online_window_seconds(): int
+{
+    $minutes = (int) (fc_system_get()['presenceOnlineWindowMinutes'] ?? 3);
+
+    return max(30, $minutes * 60);
+}
+
+/**
+ * Seconds to show relative activity labels (just now / X ago) before switching to a timestamp.
+ */
+function fc_system_activity_relative_seconds(): int
+{
+    $hours = (int) (fc_system_get()['activityRelativeHours'] ?? 24);
+
+    return max(3600, $hours * 3600);
 }
 
 /**

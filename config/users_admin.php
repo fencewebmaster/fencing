@@ -88,6 +88,29 @@ function fc_users_admin_format_datetime($value): string
         return '';
     }
 
+    // Accept unix timestamps from presence / usermeta.
+    if (ctype_digit($value)) {
+        $ts = (int) $value;
+        if ($ts > 0) {
+            try {
+                $dt = new DateTime('@' . $ts);
+                $dt->setTimezone(new DateTimeZone(date_default_timezone_get()));
+            } catch (Exception $e) {
+                return '';
+            }
+
+            $format = 'M. j, Y h:i A';
+            if (!function_exists('fc_system_date_format_php')) {
+                require_once __DIR__ . '/system.php';
+            }
+            if (function_exists('fc_system_date_format_php')) {
+                $format = fc_system_date_format_php();
+            }
+
+            return $dt->format($format);
+        }
+    }
+
     try {
         $dt = new DateTime($value);
     } catch (Exception $e) {
@@ -103,6 +126,80 @@ function fc_users_admin_format_datetime($value): string
     }
 
     return $dt->format($format);
+}
+
+/**
+ * Show recent activity as elapsed time; use a timestamp after the configured window.
+ */
+function fc_users_admin_format_activity_datetime($value): string
+{
+    $value = trim((string) $value);
+    if ($value === '') {
+        return '';
+    }
+
+    try {
+        if (ctype_digit($value) && (int) $value > 0) {
+            $dt = new DateTime('@' . (int) $value);
+            $dt->setTimezone(new DateTimeZone(date_default_timezone_get()));
+        } else {
+            $dt = new DateTime($value);
+        }
+    } catch (Exception $e) {
+        return '';
+    }
+
+    $relativeSeconds = 86400;
+    if (function_exists('fc_system_activity_relative_seconds')) {
+        $relativeSeconds = fc_system_activity_relative_seconds();
+    }
+
+    $elapsed = time() - $dt->getTimestamp();
+    if ($elapsed >= 0 && $elapsed < $relativeSeconds) {
+        if ($elapsed < 60) {
+            return 'just now';
+        }
+        if ($elapsed < 3600) {
+            $amount = (int) floor($elapsed / 60);
+            $unit = 'minute';
+        } else {
+            $amount = (int) floor($elapsed / 3600);
+            $unit = 'hour';
+        }
+
+        return $amount . ' ' . $unit . ($amount === 1 ? '' : 's') . ' ago';
+    }
+
+    return $dt->format('Y/d/m h:i A');
+}
+
+/**
+ * Device + browser icons for Users list (same icons as planner entries).
+ *
+ * @return array{device:string,device_icon:string,browser:string,browser_icon:string,user_agent:string}
+ */
+function fc_users_admin_device_fields(string $device = '', string $userAgent = ''): array
+{
+    if (!function_exists('fc_entries_admin_device_icon')) {
+        require_once __DIR__ . '/entries_admin.php';
+    }
+
+    $device = trim($device);
+    if ($device === '') {
+        $device = 'Unknown';
+    }
+    $browser = fc_entries_admin_browser_name($userAgent);
+    if ($browser === '') {
+        $browser = 'Unknown';
+    }
+
+    return [
+        'device' => $device,
+        'device_icon' => fc_entries_admin_device_icon($device),
+        'browser' => $browser,
+        'browser_icon' => fc_entries_admin_browser_icon($browser),
+        'user_agent' => trim($userAgent),
+    ];
 }
 
 /**
@@ -141,6 +238,7 @@ function fc_users_admin_pagination_window(int $current, int $total): array
  * @return array{
  *   q:string,
  *   role:string,
+ *   online:bool,
  *   page:int,
  *   per_page:int|string,
  *   is_all:bool,
@@ -151,6 +249,8 @@ function fc_users_admin_parse_request(): array
 {
     $q = trim((string) ($_GET['q'] ?? ''));
     $role = strtolower(trim((string) ($_GET['role'] ?? '')));
+    $onlineRaw = strtolower(trim((string) ($_GET['online'] ?? '')));
+    $online = in_array($onlineRaw, ['1', 'true', 'yes', 'on'], true);
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $defaultPerPage = fc_users_admin_default_per_page();
     $perPageRaw = strtolower(trim((string) ($_GET['per_page'] ?? (string) $defaultPerPage)));
@@ -173,6 +273,7 @@ function fc_users_admin_parse_request(): array
     return [
         'q' => $q,
         'role' => $role,
+        'online' => $online,
         'page' => $page,
         'per_page' => $isAll ? 'all' : $perPage,
         'is_all' => $isAll,
@@ -332,6 +433,7 @@ function fc_users_admin_query_from_request(array $request): array
     $query = [];
     $q = trim((string) ($request['q'] ?? ''));
     $role = trim((string) ($request['role'] ?? ''));
+    $online = !empty($request['online']);
     $page = (int) ($request['page'] ?? 1);
     $perPage = $request['per_page'] ?? fc_users_admin_default_per_page();
 
@@ -340,6 +442,9 @@ function fc_users_admin_query_from_request(array $request): array
     }
     if ($role !== '') {
         $query['role'] = $role;
+    }
+    if ($online) {
+        $query['online'] = 1;
     }
     if ($page > 1) {
         $query['page'] = $page;
@@ -384,8 +489,8 @@ function fc_users_admin_url(string $adminBase, array $overrides = []): string
         $overrides
     );
 
-    foreach (['q', 'role', 'page', 'per_page'] as $key) {
-        if (array_key_exists($key, $overrides) && ($overrides[$key] === '' || $overrides[$key] === null)) {
+    foreach (['q', 'role', 'online', 'page', 'per_page'] as $key) {
+        if (array_key_exists($key, $overrides) && ($overrides[$key] === '' || $overrides[$key] === null || $overrides[$key] === false || $overrides[$key] === 0)) {
             unset($query[$key]);
         }
     }
@@ -409,6 +514,9 @@ function fc_users_admin_filter_hidden_html(array $req): string
     }
     if ($role !== '') {
         $html .= '<input type="hidden" name="role" value="' . fc_users_admin_h($role) . '">';
+    }
+    if (!empty($req['online'])) {
+        $html .= '<input type="hidden" name="online" value="1">';
     }
 
     return $html;
@@ -470,13 +578,33 @@ function fc_users_admin_role_label(array $roles): string
 }
 
 /**
+ * @param list<int> $userIds When non-empty, restrict results to these user IDs.
  * @return array{ok:bool,items:list<array<string,mixed>>,total:int,error:?string}
  */
-function fc_users_admin_list_users(string $q = '', string $role = '', int $limit = 30, int $offset = 0): array
-{
+function fc_users_admin_list_users(
+    string $q = '',
+    string $role = '',
+    int $limit = 30,
+    int $offset = 0,
+    array $userIds = []
+): array {
     $conn = fc_auth_db();
     if (!$conn instanceof mysqli) {
         return ['ok' => false, 'items' => [], 'total' => 0, 'error' => 'Could not connect to database.'];
+    }
+
+    $ids = [];
+    foreach ($userIds as $id) {
+        $id = (int) $id;
+        if ($id > 0) {
+            $ids[$id] = true;
+        }
+    }
+    $ids = array_keys($ids);
+    if ($userIds !== [] && $ids === []) {
+        $conn->close();
+
+        return ['ok' => true, 'items' => [], 'total' => 0, 'error' => null];
     }
 
     $usersTable = fc_auth_users_table();
@@ -503,6 +631,15 @@ function fc_users_admin_list_users(string $q = '', string $role = '', int $limit
         $where[] = 'um.meta_value LIKE ?';
         $types .= 's';
         $params[] = $roleNeedle;
+    }
+
+    if ($ids !== []) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $where[] = "u.ID IN ({$placeholders})";
+        $types .= str_repeat('i', count($ids));
+        foreach ($ids as $id) {
+            $params[] = $id;
+        }
     }
 
     $whereSql = implode(' AND ', $where);
@@ -594,12 +731,22 @@ function fc_users_admin_page_data(string $adminBase, string $appBase): array
     $request = fc_users_admin_parse_request();
     $limit = $request['is_all'] ? 0 : (int) $request['per_page'];
 
-    $list = fc_users_admin_list_users(
-        (string) $request['q'],
-        (string) $request['role'],
-        $limit,
-        (int) $request['offset']
-    );
+    if (!function_exists('fc_presence_online_map')) {
+        require_once __DIR__ . '/presence.php';
+    }
+    $onlineUserIds = array_keys(fc_presence_online_map());
+
+    if (!empty($request['online']) && $onlineUserIds === []) {
+        $list = ['ok' => true, 'items' => [], 'total' => 0, 'error' => null];
+    } else {
+        $list = fc_users_admin_list_users(
+            (string) $request['q'],
+            (string) $request['role'],
+            $limit,
+            (int) $request['offset'],
+            !empty($request['online']) ? $onlineUserIds : []
+        );
+    }
 
     $error = '';
     if (empty($list['ok'])) {
@@ -612,7 +759,7 @@ function fc_users_admin_page_data(string $adminBase, string $appBase): array
     $roleCounts = is_array($roleCountsPayload['roles'] ?? null) ? $roleCountsPayload['roles'] : [];
     if (!empty($roleCountsPayload['ok'])) {
         $allCount = (int) ($roleCountsPayload['total'] ?? $allCount);
-    } elseif (($request['q'] ?? '') !== '' || ($request['role'] ?? '') !== '') {
+    } elseif (($request['q'] ?? '') !== '' || ($request['role'] ?? '') !== '' || !empty($request['online'])) {
         $allList = fc_users_admin_list_users('', '', 1, 0);
         if (!empty($allList['ok'])) {
             $allCount = (int) ($allList['total'] ?? $allCount);
@@ -648,6 +795,7 @@ function fc_users_admin_page_data(string $adminBase, string $appBase): array
         'items' => $items,
         'total' => $total,
         'all_count' => $allCount,
+        'online_count' => count($onlineUserIds),
         'role_counts' => $roleCounts,
         'total_pages' => $totalPages,
         'count_label' => $countLabel,
@@ -674,7 +822,8 @@ function fc_users_admin_build_list_view(array $page): array
 
     $page['current_page'] = (int) ($req['page'] ?? 1);
     $page['is_all'] = !empty($req['is_all']);
-    $page['has_active_filters'] = ($req['q'] ?? '') !== '';
+    $page['online_only'] = !empty($req['online']);
+    $page['has_active_filters'] = ($req['q'] ?? '') !== '' || !empty($req['online']);
     $page['form_action'] = fc_users_admin_route_slug();
 
     $activeRole = trim((string) ($req['role'] ?? ''));
@@ -684,10 +833,19 @@ function fc_users_admin_build_list_view(array $page): array
             'key' => 'all',
             'label' => 'All',
             'count' => (int) ($page['all_count'] ?? $total),
-            'is_active' => $activeRole === '',
+            'is_active' => $activeRole === '' && empty($req['online']),
             'href' => is_callable($url)
-                ? (string) $url(['role' => '', 'page' => 1])
+                ? (string) $url(['role' => '', 'online' => 0, 'page' => 1])
                 : '?',
+        ],
+        [
+            'key' => 'online',
+            'label' => 'Online',
+            'count' => (int) ($page['online_count'] ?? 0),
+            'is_active' => !empty($req['online']),
+            'href' => is_callable($url)
+                ? (string) $url(['role' => '', 'online' => 1, 'page' => 1])
+                : '?online=1',
         ],
     ];
     foreach (fc_users_admin_build_role_tabs($roleCounts) as $roleTab) {
@@ -699,9 +857,9 @@ function fc_users_admin_build_list_view(array $page): array
             'key' => $slug,
             'label' => (string) ($roleTab['label'] ?? fc_users_admin_role_slug_label($slug)),
             'count' => (int) ($roleTab['count'] ?? 0),
-            'is_active' => $activeRole === $slug,
+            'is_active' => empty($req['online']) && $activeRole === $slug,
             'href' => is_callable($url)
-                ? (string) $url(['role' => $slug, 'page' => 1])
+                ? (string) $url(['role' => $slug, 'online' => 0, 'page' => 1])
                 : '?role=' . rawurlencode($slug),
         ];
     }
@@ -710,6 +868,7 @@ function fc_users_admin_build_list_view(array $page): array
     $page['clear_filters_url'] = is_callable($url)
         ? (string) $url([
             'q' => '',
+            'online' => 0,
             'page' => 1,
         ])
         : '';
@@ -758,6 +917,37 @@ function fc_users_admin_build_list_view(array $page): array
         $currentUserId = is_array($authUser) ? (int) ($authUser['id'] ?? 0) : 0;
     }
 
+    $userIds = [];
+    foreach ($items as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $uid = (int) ($item['id'] ?? 0);
+        if ($uid > 0) {
+            $userIds[] = $uid;
+        }
+    }
+
+    $onlineMap = [];
+    if (function_exists('fc_presence_online_map')) {
+        $onlineMap = fc_presence_online_map();
+    }
+    $lastLoginMap = function_exists('fc_presence_last_login_map')
+        ? fc_presence_last_login_map($userIds)
+        : [];
+    $lastActivityMap = function_exists('fc_presence_last_activity_map')
+        ? fc_presence_last_activity_map($userIds)
+        : [];
+    foreach ($onlineMap as $onlineUserId => $onlineActivityTs) {
+        $lastActivityMap[$onlineUserId] = max(
+            (int) ($lastActivityMap[$onlineUserId] ?? 0),
+            (int) $onlineActivityTs
+        );
+    }
+    $clientMap = function_exists('fc_presence_client_map_for_users')
+        ? fc_presence_client_map_for_users($userIds)
+        : [];
+
     foreach ($items as $item) {
         if (!is_array($item)) {
             continue;
@@ -790,12 +980,33 @@ function fc_users_admin_build_list_view(array $page): array
                 }
             }
         }
+        $isOnline = isset($onlineMap[$userId]);
+        $lastLoginTs = (int) ($lastLoginMap[$userId] ?? 0);
+        $lastActivityTs = (int) ($lastActivityMap[$userId] ?? 0);
+        $client = is_array($clientMap[$userId] ?? null) ? $clientMap[$userId] : [];
+        $deviceFields = fc_users_admin_device_fields(
+            (string) ($client['device'] ?? ''),
+            (string) ($client['user_agent'] ?? '')
+        );
         $tableRows[] = [
             'id' => $userId,
             'avatar_url' => fc_users_admin_avatar_url($email, 64),
             'user_login' => (string) ($item['user_login'] ?? ''),
             'display_name' => (string) ($item['display_name'] ?? ''),
             'user_email' => $email,
+            'is_online' => $isOnline,
+            'last_activity_at' => $lastActivityTs > 0
+                ? fc_users_admin_format_activity_datetime((string) $lastActivityTs)
+                : '',
+            'last_login_at' => $lastLoginTs > 0
+                ? fc_users_admin_format_activity_datetime((string) $lastLoginTs)
+                : '',
+            'last_login_ts' => $lastLoginTs,
+            'device' => $deviceFields['device'],
+            'device_icon' => $deviceFields['device_icon'],
+            'browser' => $deviceFields['browser'],
+            'browser_icon' => $deviceFields['browser_icon'],
+            'user_agent' => $deviceFields['user_agent'],
             'role_label' => (string) ($item['role_label'] ?? ''),
             'registered_at' => fc_users_admin_format_datetime($item['user_registered'] ?? ''),
             'can_login_as' => $canLoginAs,
@@ -810,6 +1021,9 @@ function fc_users_admin_build_list_view(array $page): array
     }
     $page['table_rows'] = $tableRows;
     $page['has_table_rows'] = $tableRows !== [];
+    $page['presence_api_url'] = $adminBase !== ''
+        ? rtrim($adminBase, '/') . '/api.php?module=users&action=presence'
+        : 'api.php?module=users&action=presence';
     $page['is_switched'] = function_exists('fc_auth_is_switched') && fc_auth_is_switched();
     $page['switch_back_url'] = $adminBase !== '' ? fc_users_admin_switch_back_url($adminBase) : '';
     $page['switch_from'] = function_exists('fc_auth_switch_from') ? fc_auth_switch_from() : null;

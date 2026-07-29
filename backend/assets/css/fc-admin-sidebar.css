@@ -151,7 +151,7 @@ html[data-fc-admin-theme='dark'] {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    width: 100%;
+    width: 95%;
     margin: 0;
     padding: 0.2rem 0.3rem 0.2rem 0.15rem;
     border: 0;
@@ -773,16 +773,17 @@ html:not([data-fc-admin-theme]) .fc-sidebar-brand__mark--image {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
     border-radius: 0.5rem;
-    background: var(--fc-sidebar-icon-bg);
+    background: transparent;
     color: var(--fc-sidebar-icon);
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .fc-sidebar-nav__icon i {
-    font-size: 0.8125rem;
+    font-size: 1.2rem;
     width: 1em;
     text-align: center;
 }
@@ -792,7 +793,7 @@ html:not([data-fc-admin-theme]) .fc-sidebar-brand__mark--image {
 }
 
 .fc-sidebar-nav__link.is-active .fc-sidebar-nav__icon {
-    background: var(--fc-sidebar-active-icon-bg);
+    background: transparent;
     color: var(--fc-sidebar-active-icon);
 }
 
@@ -846,7 +847,7 @@ html:not([data-fc-admin-theme]) .fc-sidebar-brand__mark--image {
 }
 
 .fc-sidebar-nav__group-toggle.has-active-child .fc-sidebar-nav__icon {
-    background: var(--fc-sidebar-active-icon-bg);
+    background: transparent;
     color: var(--fc-sidebar-active-icon);
 }
 
@@ -1144,7 +1145,309 @@ html:not(.fc-admin-nav-ready) .fc-sidebar-nav__submenu {
     color: var(--fc-sidebar-text);
 }
 
+/* Desktop compact sidebar */
+.fc-sidebar-collapse-toggle {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    :root {
+        --fc-sidebar-collapsed-width: 4.25rem;
+    }
+
+    #fc-admin-sidebar,
+    #fc-admin-shell > .fc-admin-main-column {
+        transition: width 0.28s ease, margin-left 0.28s ease;
+    }
+
+    .fc-sidebar-collapse-toggle {
+        position: absolute;
+        right: -0.75rem;
+        top: 50%;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0;
+        border: 1px solid var(--fc-sidebar-border);
+        border-radius: 999px;
+        background: var(--fc-sidebar-bg-elevated);
+        color: var(--fc-sidebar-text);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.24);
+        cursor: pointer;
+        transform: translateY(-50%);
+        transition: color 0.15s ease, background-color 0.15s ease, transform 0.28s ease;
+    }
+
+    .fc-sidebar-collapse-toggle:hover {
+        background: var(--fc-sidebar-hover-bg);
+        color: var(--fc-sidebar-text-heading);
+    }
+
+    .fc-sidebar-collapse-toggle i {
+        font-size: 0.625rem;
+    }
+
+    .fc-sidebar-collapse-toggle:focus-visible {
+        outline: 2px solid var(--fc-sidebar-accent);
+        outline-offset: 2px;
+    }
+
+    .fc-sidebar-brand__text,
+    .fc-sidebar-nav__label,
+    .fc-sidebar-nav__chevron,
+    .fc-sidebar-user__info,
+    .fc-sidebar-user__caret,
+    .fc-sidebar-footer__planner-text,
+    .fc-sidebar-footer__meta {
+        transition: opacity 0.18s ease, visibility 0.18s ease;
+    }
+
+    html.fc-admin-sidebar-collapsed #fc-admin-sidebar {
+        width: var(--fc-sidebar-collapsed-width);
+    }
+
+    html.fc-admin-sidebar-collapsed #fc-admin-shell > .fc-admin-main-column {
+        margin-left: var(--fc-sidebar-collapsed-width);
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-collapse-toggle {
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-brand {
+        justify-content: center;
+        padding-inline: 0.625rem;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-brand__text,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__label,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__chevron,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-user__info,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-user__caret,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer__planner-text,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer__meta {
+        width: 0;
+        min-width: 0;
+        max-width: 0;
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-site__toggle {
+        pointer-events: none;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__section-label {
+        display: none;
+        height: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+        color: transparent;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__list {
+        gap: 0.125rem;
+        padding-block: 0.25rem;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__list > li,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__group {
+        margin: 0;
+        padding: 0;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__link,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__group-toggle {
+        display: grid;
+        grid-template-columns: 2.25rem;
+        place-content: center;
+        gap: 0;
+        width: 100%;
+        height: 2.5rem;
+        min-height: 2.5rem;
+        padding: 0.125rem 0.625rem;
+        box-sizing: border-box;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav {
+        overflow: visible;
+        scrollbar-width: none;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__icon {
+        margin: 0;
+        justify-self: center;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__submenu,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__group.is-open .fc-sidebar-nav__submenu {
+        position: absolute;
+        top: 0;
+        left: calc(100% + 0.5rem);
+        z-index: 80;
+        width: 12rem;
+        max-height: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid transparent;
+        border-radius: 0.625rem;
+        background: var(--fc-sidebar-bg-elevated);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.3);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateX(-0.25rem);
+        transition:
+            opacity 0.16s ease,
+            transform 0.16s ease,
+            visibility 0.16s ease;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__group {
+        position: relative;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__group::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 100%;
+        width: 0.5rem;
+        height: 100%;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__group:hover .fc-sidebar-nav__submenu,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__group:focus-within .fc-sidebar-nav__submenu {
+        max-height: 20rem;
+        padding: 0.35rem;
+        overflow: visible;
+        border-color: var(--fc-sidebar-border);
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+
+    /* Bubble pointer: border layer + matching menu fill */
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__submenu::before,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__submenu::after {
+        content: '';
+        position: absolute;
+        top: 0.75rem;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__submenu::before {
+        left: -0.5rem;
+        border-top: 0.5rem solid transparent;
+        border-right: 0.5rem solid var(--fc-sidebar-border);
+        border-bottom: 0.5rem solid transparent;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__submenu::after {
+        left: -0.4rem;
+        top: 0.8125rem;
+        border-top: 0.4375rem solid transparent;
+        border-right: 0.4375rem solid var(--fc-sidebar-bg-elevated);
+        border-bottom: 0.4375rem solid transparent;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__sublink {
+        min-height: 2.25rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.4375rem;
+        white-space: nowrap;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-nav__sublink.is-active::before {
+        top: 0.35rem;
+        bottom: 0.35rem;
+        border-radius: 3px;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer {
+        padding: 0.25rem 0;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-user {
+        margin-bottom: 0;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-user__toggle,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer__planner {
+        display: grid;
+        grid-template-columns: 2rem;
+        place-content: center;
+        gap: 0;
+        width: 100%;
+        height: 2.5rem;
+        min-height: 2.5rem;
+        margin: 0;
+        padding: 0.25rem 0.625rem;
+        border-color: transparent;
+        border-radius: 0;
+        background: transparent;
+        box-sizing: border-box;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-user__toggle:hover,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-user.is-open .fc-sidebar-user__toggle,
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer__planner:hover {
+        background: var(--fc-sidebar-hover-bg);
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer__meta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        margin-top: 0.25rem;
+        overflow: visible;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer__meta > span:first-child {
+        display: none;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-footer__version {
+        padding: 0.125rem 0.3rem;
+        background: transparent;
+        font-size: 0.5625rem;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-sidebar-user__menu {
+        right: auto;
+        bottom: 0;
+        left: calc(100% + 0.6rem);
+        width: 12rem;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
+    #fc-admin-sidebar,
+    #fc-admin-shell > .fc-admin-main-column,
+    .fc-sidebar-collapse-toggle,
     .fc-sidebar-nav__link,
     .fc-sidebar-nav__sublink,
     .fc-sidebar-nav__group-toggle,

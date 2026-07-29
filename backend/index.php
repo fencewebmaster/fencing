@@ -26,7 +26,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
 <html lang="en" class="h-full" data-fc-admin-theme="light">
 <head>
     <script>
-    (function(){try{var t=localStorage.getItem('fc-admin-appearance');document.documentElement.setAttribute('data-fc-admin-theme',t==='dark'?'dark':'light');}catch(e){}})();
+    (function(){try{var t=localStorage.getItem('fc-admin-appearance');document.documentElement.setAttribute('data-fc-admin-theme',t==='dark'?'dark':'light');if(localStorage.getItem('fc-admin-sidebar-collapsed')==='1'){document.documentElement.classList.add('fc-admin-sidebar-collapsed');}}catch(e){}})();
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3036,6 +3036,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
     <?php endif; ?>
     <?php elseif (!empty($fcAdminIsUsers)) : ?>
     <script src="assets/js/app.js"></script>
+    <script src="assets/js/users-presence.js"></script>
     <?php elseif (!empty($fcAdminIsGroupPermissions)) : ?>
     <script src="assets/js/group-permissions.js"></script>
     <script src="assets/js/app.js"></script>

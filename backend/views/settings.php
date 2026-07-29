@@ -472,6 +472,54 @@ $tab = $fcSettingsPage;
                                     </select>
                                 </label>
                             </section>
+
+                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-slate-800">Online presence</h3>
+                                    <p class="mt-1 text-xs text-slate-500">How often activity is recorded and how online status is shown on the Users page.</p>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-system-presenceUpdateIntervalSeconds">
+                                        <span class="text-sm font-medium text-slate-700">Activity update interval (seconds)</span>
+                                        <input
+                                            type="number"
+                                            id="fc-system-presenceUpdateIntervalSeconds"
+                                            data-fc-system-field="presenceUpdateIntervalSeconds"
+                                            class="fc-settings-field"
+                                            min="5"
+                                            max="300"
+                                            step="1"
+                                        >
+                                        <span class="text-xs text-slate-500">How often the system refreshes a user’s online activity while they use the admin. Default: 20.</span>
+                                    </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-system-presenceOnlineWindowMinutes">
+                                        <span class="text-sm font-medium text-slate-700">Stay online for (minutes)</span>
+                                        <input
+                                            type="number"
+                                            id="fc-system-presenceOnlineWindowMinutes"
+                                            data-fc-system-field="presenceOnlineWindowMinutes"
+                                            class="fc-settings-field"
+                                            min="1"
+                                            max="60"
+                                            step="1"
+                                        >
+                                        <span class="text-xs text-slate-500">Mark a user offline after this much inactivity. Default: 3.</span>
+                                    </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-system-activityRelativeHours">
+                                        <span class="text-sm font-medium text-slate-700">Relative time for (hours)</span>
+                                        <input
+                                            type="number"
+                                            id="fc-system-activityRelativeHours"
+                                            data-fc-system-field="activityRelativeHours"
+                                            class="fc-settings-field"
+                                            min="1"
+                                            max="168"
+                                            step="1"
+                                        >
+                                        <span class="text-xs text-slate-500">Show “just now” / “X ago” on Last Activity for this long, then show a timestamp. Default: 24.</span>
+                                    </label>
+                                </div>
+                            </section>
                             </div>
                         </div>
 

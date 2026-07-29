@@ -826,7 +826,7 @@
             '<select id="fc-store-products-filter-style" aria-label="Style" class="fc-entries-page__filter">' +
             buildFilterSelectOptions(uniqueColumnValues(allRows, 'STYLE'), 'All styles', '') +
             '</select>' +
-            '<button type="button" id="fc-store-products-clear-filters" class="fc-sp-toolbar__clear hidden">Clear filters</button>' +
+            '<button type="button" id="fc-store-products-clear-filters" class="btn btn-sm btn-light fw-semibold fc-entries-clear-filters" disabled><span>Clear Filters</span></button>' +
             '</div>' +
             '<div class="fc-entries-page__count">' +
             '<span id="fc-store-products-count">' +
@@ -884,7 +884,10 @@
                 );
             }
             if (clearBtn) {
-                clearBtn.classList.toggle('hidden', !hasActiveFilters());
+                var filtersOn = hasActiveFilters();
+                clearBtn.disabled = !filtersOn;
+                clearBtn.classList.toggle('btn-dark', filtersOn);
+                clearBtn.classList.toggle('btn-light', !filtersOn);
             }
         }
 

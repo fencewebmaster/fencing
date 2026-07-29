@@ -17,7 +17,11 @@ $page = $fcUsersPage;
 $req = is_array($page['request'] ?? null) ? $page['request'] : [];
 $activeRole = trim((string) ($req['role'] ?? ''));
 ?>
-<div class="fc-entries-page" data-fc-users-list>
+<div
+    class="fc-entries-page"
+    data-fc-users-list
+    data-fc-users-presence-api="<?php echo $h((string) ($page['presence_api_url'] ?? 'api.php?module=users&action=presence')); ?>"
+>
     <nav class="fc-entries-page__tabs" aria-label="Users by role">
         <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
         <a
@@ -51,13 +55,16 @@ $activeRole = trim((string) ($req['role'] ?? ''));
                         class="btn btn-sm btn-dark fw-semibold fc-entries-clear-filters"
                         href="<?php echo $h((string) ($page['clear_filters_url'] ?? '')); ?>"
                     >
-                        <span>Clear search</span>
+                        <span>Clear filters</span>
                     </a>
                     <?php endif; ?>
                 </div>
 
                 <?php if ($activeRole !== '') : ?>
                 <input type="hidden" name="role" value="<?php echo $h($activeRole); ?>">
+                <?php endif; ?>
+                <?php if (!empty($page['online_only'])) : ?>
+                <input type="hidden" name="online" value="1">
                 <?php endif; ?>
                 <?php if (!empty($page['show_per_page_hidden'])) : ?>
                 <input type="hidden" name="per_page" value="<?php echo $h((string) ($req['per_page'] ?? '')); ?>">
@@ -99,17 +106,27 @@ $activeRole = trim((string) ($req['role'] ?? ''));
                         <th scope="col">Display name</th>
                         <th scope="col">Email</th>
                         <th scope="col">Role</th>
+                        <th scope="col">Last Activity</th>
+                        <th scope="col">Device</th>
                         <th scope="col">Registered</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($page['has_table_rows'])) : ?>
                     <tr>
-                        <td colspan="6" class="fc-entries-empty">No users found.</td>
+                        <td colspan="8" class="fc-entries-empty">No users found.</td>
                     </tr>
                     <?php else : ?>
                     <?php foreach ($page['table_rows'] as $row) : ?>
-                    <tr class="fc-entries-table__row fc-users-table__row">
+                    <?php
+                    $isOnline = !empty($row['is_online']);
+                    $onlineLabel = $isOnline ? 'Online' : 'Offline';
+                    $activityTitle = trim((string) ($row['last_activity_at'] ?? ''));
+                    $dotTitle = $activityTitle !== ''
+                        ? $onlineLabel . ' · Last activity ' . $activityTitle
+                        : $onlineLabel;
+                    ?>
+                    <tr class="fc-entries-table__row fc-users-table__row" data-user-id="<?php echo (int) ($row['id'] ?? 0); ?>">
                         <td class="fc-users-table__avatar-cell">
                             <img
                                 class="fc-users-table__avatar"
@@ -122,7 +139,15 @@ $activeRole = trim((string) ($req['role'] ?? ''));
                             >
                         </td>
                         <td class="fc-users-table__username">
-                            <div class="fc-users-table__username-main fc-entries-table__truncate"><?php echo $cell($row['user_login'] ?? ''); ?></div>
+                            <div class="fc-users-table__username-line">
+                                <span
+                                    class="fc-users-table__online-dot<?php echo $isOnline ? ' is-online' : ' is-offline'; ?>"
+                                    data-fc-users-online-dot
+                                    title="<?php echo $h($dotTitle); ?>"
+                                    aria-label="<?php echo $h($onlineLabel); ?>"
+                                ></span>
+                                <span class="fc-users-table__username-main fc-entries-table__truncate"><?php echo $cell($row['user_login'] ?? ''); ?></span>
+                            </div>
                             <div class="fc-users-table__row-actions">
                                 <?php if (!empty($row['needs_permissions']) && ($row['set_permissions_url'] ?? '') !== '') : ?>
                                 <a
@@ -141,14 +166,44 @@ $activeRole = trim((string) ($req['role'] ?? ''));
                         <td class="fc-entries-table__truncate fc-entries-table__truncate--wide">
                             <?php
                             $email = trim((string) ($row['user_email'] ?? ''));
-                            if ($email !== '') :
                             ?>
+                            <?php if ($email !== '') : ?>
                             <a class="fc-entries-row-link" href="mailto:<?php echo $h($email); ?>"><?php echo $cell($email); ?></a>
                             <?php else : ?>
                             <?php echo $cell(''); ?>
                             <?php endif; ?>
                         </td>
                         <td class="fc-entries-table__truncate"><?php echo $cell($row['role_label'] ?? ''); ?></td>
+                        <td class="fc-users-table__activity">
+                            <span class="fc-users-table__activity-item" data-fc-users-last-login title="Last login">
+                                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                                <span data-fc-users-last-login-value><?php echo $cell($row['last_login_at'] ?? ''); ?></span>
+                            </span>
+                            <span class="fc-users-table__activity-item" data-fc-users-last-activity title="Last activity">
+                                <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                <span data-fc-users-last-activity-value><?php echo $cell($row['last_activity_at'] ?? ''); ?></span>
+                            </span>
+                        </td>
+                        <td class="fc-entries-table__device-col" data-fc-users-device>
+                            <span
+                                class="fc-entries-row-link fc-entries-table__device-link"
+                                data-fc-users-device-link
+                                aria-label="<?php echo $h((string) ($row['device'] ?? 'Unknown') . ', ' . (string) ($row['browser'] ?? 'Unknown')); ?>"
+                            >
+                                <i
+                                    data-fc-users-device-icon
+                                    class="<?php echo $h((string) ($row['device_icon'] ?? 'fa-solid fa-circle-question')); ?><?php echo strtolower((string) ($row['device'] ?? 'unknown')) === 'unknown' ? ' is-muted' : ''; ?>"
+                                    title="<?php echo $h((string) ($row['device'] ?? 'Unknown')); ?>"
+                                    aria-hidden="true"
+                                ></i>
+                                <i
+                                    data-fc-users-browser-icon
+                                    class="<?php echo $h((string) ($row['browser_icon'] ?? 'fa-solid fa-globe')); ?><?php echo in_array(strtolower((string) ($row['browser'] ?? 'unknown')), ['unknown', 'other'], true) ? ' is-muted' : ''; ?>"
+                                    title="<?php echo $h((string) ($row['browser'] ?? 'Unknown')); ?>"
+                                    aria-hidden="true"
+                                ></i>
+                            </span>
+                        </td>
                         <td class="fc-entries-table__truncate"><?php echo $cell($row['registered_at'] ?? ''); ?></td>
                     </tr>
                     <?php endforeach; ?>

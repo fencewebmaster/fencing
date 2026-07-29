@@ -76,6 +76,11 @@ return static function (Router $router): void {
         (new ProductsPageController(new \Fc\Admin\Core\Request()))->fenceStyles($context);
     });
 
+    $router->get('products/fence-styles/edit/{slug}', static function (AdminContext $context, array $params): void {
+        $slug = isset($params['slug']) ? (string) $params['slug'] : '';
+        (new ProductsPageController(new \Fc\Admin\Core\Request()))->fenceStyleEdit($context, $slug);
+    });
+
     $router->get('products/store-products', static function (AdminContext $context): void {
         (new ProductsPageController(new \Fc\Admin\Core\Request()))->storeProducts($context);
     });

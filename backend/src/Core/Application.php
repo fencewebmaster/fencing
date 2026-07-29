@@ -55,7 +55,7 @@ final class Application
             $handler = $match['handler'];
             $params  = $match['params'];
 
-            if (isset($params['id'])) {
+            if (isset($params['id']) || isset($params['slug'])) {
                 $handler($context, $params);
             } else {
                 $handler($context);
@@ -64,13 +64,14 @@ final class Application
             return $context;
         }
 
-        // SPA routes — client-side app.js handles rendering.
-        $context->route = $tail !== '' ? $tail : 'dashboard';
-        if (preg_match('#^products/(?:fence-styles|system-products|store-products)#', $context->route) === 1) {
-            $context->isProductsPage = true;
+        // Unknown admin route.
+        if (function_exists('fc_abort_404')) {
+            fc_abort_404('admin');
         }
 
-        return $context;
+        http_response_code(404);
+        echo '404 Not Found';
+        exit;
     }
 
     public function dispatchApi(?string $module = null): void

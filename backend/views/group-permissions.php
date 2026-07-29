@@ -19,11 +19,16 @@ $page = $fcGroupPermissionsPage;
 $roles = is_array($page['roles'] ?? null) ? $page['roles'] : [];
 $tree = is_array($page['tree'] ?? null) ? $page['tree'] : [];
 $selected = (string) ($page['selected_role'] ?? '');
-$isAdminRole = !empty($page['is_administrator_role']);
+$isLocked = !empty($page['is_locked']);
+$lockNotice = (string) ($page['lock_notice'] ?? '');
 $bootstrap = [
     'roles' => $roles,
     'selectedRole' => $selected,
-    'isAdministratorRole' => $isAdminRole,
+    'isSuperAdminRole' => !empty($page['is_super_admin_role']),
+    'isAdministratorRole' => !empty($page['is_administrator_role']),
+    'isLocked' => $isLocked,
+    'canEdit' => !empty($page['can_edit']),
+    'lockNotice' => $lockNotice,
     'tree' => $tree,
     'permissions' => $page['permissions'] ?? [],
     'csrf' => (string) ($page['csrf'] ?? ''),
@@ -46,7 +51,61 @@ $bootstrap = [
         </div>
         <div class="fc-gp-page__header-actions">
             <span id="fc-gp-dirty" class="fc-gp-page__dirty hidden">Unsaved changes</span>
-            <button type="button" id="fc-gp-save" class="btn btn-sm btn-orange fw-semibold"<?php echo $isAdminRole ? ' disabled' : ''; ?>>
+            <div class="fc-products-download-dropdown" data-fc-gp-download-dropdown>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-dark fw-semibold fc-products-download-trigger"
+                    data-fc-gp-download-toggle
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    aria-controls="fc-gp-download-menu"
+                    id="fc-gp-download-toggle"
+                >
+                    <span>Download</span>
+                    <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                </button>
+                <div
+                    class="fc-products-download-dropdown__panel"
+                    id="fc-gp-download-menu"
+                    role="menu"
+                    aria-labelledby="fc-gp-download-toggle"
+                    hidden
+                >
+                    <button
+                        type="button"
+                        class="fc-products-download-dropdown__option"
+                        role="menuitem"
+                        data-fc-gp-export-json
+                    >
+                        <span>Export JSON</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="fc-products-download-dropdown__option"
+                        role="menuitem"
+                        data-fc-gp-export-all-json
+                    >
+                        <span>Export All JSON</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="fc-products-download-dropdown__option"
+                        role="menuitem"
+                        data-fc-gp-import-json
+                    >
+                        <span>Import JSON</span>
+                    </button>
+                </div>
+                <input
+                    type="file"
+                    class="sr-only"
+                    accept=".json,application/json"
+                    data-fc-gp-import-input
+                    tabindex="-1"
+                    aria-hidden="true"
+                >
+            </div>
+            <button type="button" id="fc-gp-save" class="btn btn-sm btn-orange fw-semibold"<?php echo $isLocked ? ' disabled' : ''; ?>>
                 Save Permissions
             </button>
         </div>
@@ -72,13 +131,17 @@ $bootstrap = [
                 $label = (string) ($role['label'] ?? $key);
                 $active = $key === $selected;
                 $hasPermissions = !empty($role['has_permissions']);
+                $isSuper = !empty($role['is_super_admin']);
+                $roleLocked = !empty($role['is_locked']);
                 ?>
                 <li>
                     <button
                         type="button"
                         class="fc-gp-page__role<?php echo $active ? ' is-active' : ''; ?>"
                         data-fc-gp-role="<?php echo $h($key); ?>"
+                        data-fc-gp-super="<?php echo $isSuper ? '1' : '0'; ?>"
                         data-fc-gp-admin="<?php echo !empty($role['is_administrator']) ? '1' : '0'; ?>"
+                        data-fc-gp-locked="<?php echo $roleLocked ? '1' : '0'; ?>"
                         data-fc-gp-has-perms="<?php echo $hasPermissions ? '1' : '0'; ?>"
                         role="option"
                         aria-selected="<?php echo $active ? 'true' : 'false'; ?>"
@@ -89,7 +152,7 @@ $bootstrap = [
                             aria-hidden="true"
                         ></span>
                         <span class="fc-gp-page__role-name"><?php echo $h($label); ?></span>
-                        <?php if (!empty($role['is_administrator'])) : ?>
+                        <?php if ($isSuper) : ?>
                         <span class="fc-gp-page__role-badge">Full access</span>
                         <?php endif; ?>
                     </button>
@@ -99,10 +162,10 @@ $bootstrap = [
         </aside>
 
         <section class="fc-gp-page__editor" aria-label="Permission tree">
-            <div id="fc-gp-admin-notice" class="fc-gp-page__notice<?php echo $isAdminRole ? '' : ' hidden'; ?>">
-                Administrator always has full system access.
+            <div id="fc-gp-admin-notice" class="fc-gp-page__notice<?php echo $isLocked && $lockNotice !== '' ? '' : ' hidden'; ?>">
+                <?php echo $h($lockNotice !== '' ? $lockNotice : 'This role cannot be edited.'); ?>
             </div>
-            <div id="fc-gp-tree" class="fc-gp-tree"<?php echo $isAdminRole ? ' data-locked="1"' : ''; ?>></div>
+            <div id="fc-gp-tree" class="fc-gp-tree"<?php echo $isLocked ? ' data-locked="1"' : ''; ?>></div>
         </section>
     </div>
 </div>

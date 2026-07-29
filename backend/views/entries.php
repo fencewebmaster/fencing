@@ -545,7 +545,14 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                     $rowCanOpen = !empty($row['can_open']);
                     $rowHref = (string) ($row['row_href'] ?? '');
                     ?>
-                    <tr class="fc-entries-table__row<?php echo $rowCanOpen ? '' : ' fc-entries-table__row--no-open'; ?>" data-fc-entries-row data-entry-id="<?php echo (int) ($row['id'] ?? 0); ?>">
+                    <tr
+                        class="fc-entries-table__row<?php echo $rowCanOpen ? '' : ' fc-entries-table__row--no-open'; ?>"
+                        data-fc-entries-row
+                        data-entry-id="<?php echo (int) ($row['id'] ?? 0); ?>"
+                        <?php if ($rowCanOpen && $rowHref !== '') : ?>
+                        data-fc-entries-row-href="<?php echo $h($rowHref); ?>"
+                        <?php endif; ?>
+                    >
                         <td class="fc-entries-table__check-col">
                             <label class="fc-entries-check">
                                 <input

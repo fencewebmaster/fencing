@@ -427,15 +427,15 @@ function fc_permissions_migrate_planner_entries_matrix(array $matrix): array
 }
 
 /**
- * Whether a WP role slug has FC admin access (Administrator always true).
+ * Whether a WP role slug has FC admin access.
  */
 function fc_group_permissions_role_has_access(string $role): bool
 {
     $slug = fc_group_permissions_sanitize_role($role);
-    if ($slug === '') {
+    if ($slug === '' || $slug === 'customer') {
         return false;
     }
-    if ($slug === 'administrator') {
+    if ($slug === 'super_admin') {
         return true;
     }
 
@@ -449,7 +449,20 @@ function fc_group_permissions_is_manageable_role(string $role): bool
 {
     $slug = fc_group_permissions_sanitize_role($role);
 
-    return $slug !== '' && $slug !== 'administrator' && $slug !== 'customer';
+    return $slug !== '' && $slug !== 'customer' && $slug !== 'super_admin';
+}
+
+/**
+ * Whether the current user may edit permissions for a role.
+ */
+function fc_group_permissions_can_edit_role(string $role): bool
+{
+    $slug = fc_group_permissions_sanitize_role($role);
+    if ($slug === '' || $slug === 'customer' || $slug === 'super_admin') {
+        return false;
+    }
+
+    return fc_group_permissions_is_manageable_role($slug);
 }
 
 function fc_group_permissions_dir(): string
@@ -484,23 +497,35 @@ function fc_group_permissions_path(string $role): string
 function fc_group_permissions_get(string $role): array
 {
     $slug = fc_group_permissions_sanitize_role($role);
-    if ($slug === '' || $slug === 'administrator') {
+    if ($slug === '' || $slug === 'customer') {
+        return fc_permissions_defaults_matrix(false);
+    }
+    if ($slug === 'super_admin') {
         return fc_permissions_defaults_matrix(true);
     }
 
     $path = fc_group_permissions_path($slug);
     if (!is_file($path)) {
+        // Migration: Administrator keeps full access until first explicit save.
+        if ($slug === 'administrator') {
+            return fc_permissions_defaults_matrix(true);
+        }
+
         return fc_permissions_defaults_matrix(false);
     }
 
     $raw = @file_get_contents($path);
     if ($raw === false || $raw === '') {
-        return fc_permissions_defaults_matrix(false);
+        return $slug === 'administrator'
+            ? fc_permissions_defaults_matrix(true)
+            : fc_permissions_defaults_matrix(false);
     }
 
     $data = json_decode($raw, true);
     if (!is_array($data)) {
-        return fc_permissions_defaults_matrix(false);
+        return $slug === 'administrator'
+            ? fc_permissions_defaults_matrix(true)
+            : fc_permissions_defaults_matrix(false);
     }
 
     // Allow either { permissions: {...} } or bare matrix.
@@ -526,11 +551,14 @@ function fc_group_permissions_save(string $role, array $matrix): array
     if ($slug === '') {
         return ['ok' => false, 'error' => 'Invalid role.'];
     }
-    if ($slug === 'administrator') {
-        return ['ok' => false, 'error' => 'Administrator always has full system access.'];
+    if ($slug === 'super_admin') {
+        return ['ok' => false, 'error' => 'Super Admin always has full system access.'];
     }
     if ($slug === 'customer') {
         return ['ok' => false, 'error' => 'Customer role cannot be managed here.'];
+    }
+    if (!fc_group_permissions_is_manageable_role($slug)) {
+        return ['ok' => false, 'error' => 'This role cannot be managed here.'];
     }
 
     $next = fc_permissions_normalize_matrix($matrix);
@@ -561,9 +589,153 @@ function fc_group_permissions_save(string $role, array $matrix): array
 }
 
 /**
- * Roles for the left panel: known WP roles + discovered + files on disk.
+ * Build an exportable envelope for one manageable role.
  *
- * @return list<array{key:string,label:string,is_administrator:bool,has_permissions:bool}>
+ * @return array{role:string,permissions:array<string,mixed>,updatedAt:string}|null
+ */
+function fc_group_permissions_export_role(string $role): ?array
+{
+    $slug = fc_group_permissions_sanitize_role($role);
+    if ($slug === '' || !fc_group_permissions_is_manageable_role($slug)) {
+        return null;
+    }
+
+    $updatedAt = gmdate('c');
+    $path = fc_group_permissions_path($slug);
+    if (is_readable($path)) {
+        $raw = @file_get_contents($path);
+        $decoded = is_string($raw) && $raw !== '' ? json_decode($raw, true) : null;
+        if (is_array($decoded) && !empty($decoded['updatedAt'])) {
+            $updatedAt = (string) $decoded['updatedAt'];
+        }
+    }
+
+    return [
+        'role' => $slug,
+        'permissions' => fc_group_permissions_get($slug),
+        'updatedAt' => $updatedAt,
+    ];
+}
+
+/**
+ * Export all manageable roles as a versioned bundle.
+ *
+ * @return array{fcGroupPermissionsExport:int,exportedAt:string,roles:array<string,array{permissions:array<string,mixed>,updatedAt:string}>}
+ */
+function fc_group_permissions_export_all(): array
+{
+    $roles = [];
+    foreach (fc_group_permissions_list_roles() as $item) {
+        $slug = (string) ($item['key'] ?? '');
+        if (!fc_group_permissions_is_manageable_role($slug)) {
+            continue;
+        }
+        $envelope = fc_group_permissions_export_role($slug);
+        if ($envelope === null) {
+            continue;
+        }
+        $roles[$slug] = [
+            'permissions' => $envelope['permissions'],
+            'updatedAt' => $envelope['updatedAt'],
+        ];
+    }
+
+    return [
+        'fcGroupPermissionsExport' => 1,
+        'exportedAt' => gmdate('c'),
+        'roles' => $roles,
+    ];
+}
+
+/**
+ * Import a single-role envelope or multi-role export bundle.
+ *
+ * @param array<string, mixed> $payload
+ * @return array{ok:bool,error?:string,imported?:list<string>,skipped?:list<string>,message?:string}
+ */
+function fc_group_permissions_import_payload(array $payload): array
+{
+    $imported = [];
+    $skipped = [];
+    $entries = [];
+
+    if (isset($payload['fcGroupPermissionsExport']) || isset($payload['roles'])) {
+        $roles = is_array($payload['roles'] ?? null) ? $payload['roles'] : [];
+        foreach ($roles as $slug => $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            $role = fc_group_permissions_sanitize_role(is_string($slug) ? $slug : (string) ($entry['role'] ?? ''));
+            $matrix = isset($entry['permissions']) && is_array($entry['permissions'])
+                ? $entry['permissions']
+                : $entry;
+            if ($role === '') {
+                continue;
+            }
+            $entries[] = ['role' => $role, 'permissions' => $matrix];
+        }
+    } elseif (isset($payload['role']) || isset($payload['permissions'])) {
+        $role = fc_group_permissions_sanitize_role((string) ($payload['role'] ?? ''));
+        $matrix = isset($payload['permissions']) && is_array($payload['permissions'])
+            ? $payload['permissions']
+            : [];
+        if ($role !== '') {
+            $entries[] = ['role' => $role, 'permissions' => $matrix];
+        }
+    } else {
+        // Bare matrix is not enough without a role slug.
+        return ['ok' => false, 'error' => 'Invalid import file. Expected a role permissions JSON export.'];
+    }
+
+    if ($entries === []) {
+        return ['ok' => false, 'error' => 'No role permissions found in the import file.'];
+    }
+
+    foreach ($entries as $entry) {
+        $role = (string) $entry['role'];
+        if (!fc_group_permissions_is_manageable_role($role)) {
+            $skipped[] = $role !== '' ? $role : '(empty)';
+            continue;
+        }
+        $result = fc_group_permissions_save($role, is_array($entry['permissions']) ? $entry['permissions'] : []);
+        if (empty($result['ok'])) {
+            return [
+                'ok' => false,
+                'error' => (string) ($result['error'] ?? ('Failed to import role: ' . $role)),
+                'imported' => $imported,
+                'skipped' => $skipped,
+            ];
+        }
+        $imported[] = $role;
+    }
+
+    if ($imported === []) {
+        return [
+            'ok' => false,
+            'error' => 'No manageable roles were imported.'
+                . ($skipped !== [] ? ' Skipped: ' . implode(', ', $skipped) . '.' : ''),
+            'imported' => $imported,
+            'skipped' => $skipped,
+        ];
+    }
+
+    $message = 'Imported ' . count($imported) . ' role' . (count($imported) === 1 ? '' : 's') . '.';
+    if ($skipped !== []) {
+        $message .= ' Skipped: ' . implode(', ', $skipped) . '.';
+    }
+
+    return [
+        'ok' => true,
+        'imported' => $imported,
+        'skipped' => $skipped,
+        'message' => $message,
+    ];
+}
+
+/**
+ * Roles for the left panel: Super Admin + known WP roles + discovered + files on disk.
+ *
+ * @return list<array{key:string,label:string,is_super_admin:bool,is_administrator:bool,is_locked:bool,can_edit:bool,has_permissions:bool}>
  */
 function fc_group_permissions_list_roles(): array
 {
@@ -590,14 +762,21 @@ function fc_group_permissions_list_roles(): array
             return;
         }
         $seen[$slug] = true;
+        $isSuper = $slug === 'super_admin';
+        $isAdmin = $slug === 'administrator';
+        $canEdit = fc_group_permissions_can_edit_role($slug);
         $roles[] = [
             'key' => $slug,
             'label' => $label,
-            'is_administrator' => $slug === 'administrator',
+            'is_super_admin' => $isSuper,
+            'is_administrator' => $isAdmin,
+            'is_locked' => !$canEdit,
+            'can_edit' => $canEdit,
             'has_permissions' => fc_group_permissions_role_has_access($slug),
         ];
     };
 
+    $push('super_admin', 'Super Admin');
     $push('administrator', 'Administrator');
     foreach ($options as $slug => $label) {
         $push((string) $slug, (string) $label);
@@ -713,6 +892,7 @@ function fc_permissions_keys_for_api(string $module, string $action = ''): array
         },
         'settings', 'settingsController' => ['settings.settings'],
         'groupPermissions', 'groupPermissionsController' => ['users.group_permissions'],
+        'users', 'usersController' => ['users.view_list'],
         default => [],
     };
 }
@@ -729,19 +909,25 @@ function fc_group_permissions_admin_view_data(string $adminBase): array
         $roleKeys[(string) ($role['key'] ?? '')] = true;
     }
     if ($selected === '' || $selected === 'customer' || !isset($roleKeys[$selected])) {
-        $selected = (string) ($roles[0]['key'] ?? 'administrator');
+        $selected = (string) ($roles[0]['key'] ?? 'super_admin');
     }
 
+    $isSuperAdminRole = $selected === 'super_admin';
     $isAdminRole = $selected === 'administrator';
-    $permissions = $isAdminRole
-        ? fc_permissions_defaults_matrix(true)
-        : fc_group_permissions_get($selected);
+    $canEdit = fc_group_permissions_can_edit_role($selected);
+    $isLocked = !$canEdit;
+    $permissions = fc_group_permissions_get($selected);
+    $lockNotice = $isSuperAdminRole ? 'Super Admin always has full system access.' : '';
 
     return [
         'admin_base' => rtrim($adminBase, '/'),
         'roles' => $roles,
         'selected_role' => $selected,
+        'is_super_admin_role' => $isSuperAdminRole,
         'is_administrator_role' => $isAdminRole,
+        'is_locked' => $isLocked,
+        'can_edit' => $canEdit,
+        'lock_notice' => $lockNotice,
         'tree' => fc_permissions_tree(),
         'permissions' => $permissions,
         'csrf' => function_exists('fc_auth_csrf_token') ? fc_auth_csrf_token() : '',
@@ -765,17 +951,22 @@ function fc_group_permissions_api_payload(?string $role = null): array
         $role = (string) ($roles[0]['key'] ?? '');
     }
 
+    $isSuperAdminRole = $role === 'super_admin';
     $isAdmin = $role === 'administrator';
+    $canEdit = fc_group_permissions_can_edit_role($role);
+    $lockNotice = $isSuperAdminRole ? 'Super Admin always has full system access.' : '';
 
     return [
         'ok' => true,
         'roles' => $roles,
         'role' => $role,
+        'isSuperAdminRole' => $isSuperAdminRole,
         'isAdministratorRole' => $isAdmin,
+        'isLocked' => !$canEdit,
+        'canEdit' => $canEdit,
+        'lockNotice' => $lockNotice,
         'tree' => fc_permissions_tree(),
-        'permissions' => $isAdmin
-            ? fc_permissions_defaults_matrix(true)
-            : fc_group_permissions_get($role),
+        'permissions' => fc_group_permissions_get($role),
         'csrf' => function_exists('fc_auth_csrf_token') ? fc_auth_csrf_token() : '',
     ];
 }

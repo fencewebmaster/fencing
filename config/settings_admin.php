@@ -74,6 +74,9 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
         'integrations'      => $integrationsPayload['integrations'] ?? [],
         'integrationsInitial' => $integrationsPayload['integrations'] ?? [],
         'integrationsRevision' => (string) ($integrationsPayload['revision'] ?? ''),
+        'superAdmin'        => is_array($integrationsPayload['superAdmin'] ?? null)
+            ? $integrationsPayload['superAdmin']
+            : [],
         'csrf'              => function_exists('fc_auth_csrf_token') ? fc_auth_csrf_token() : '',
     ];
 
@@ -210,6 +213,9 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
         'system_date_field_choices' => $systemPayload['dateFieldChoices'] ?? fc_system_date_field_choices(),
         'system_date_format_choices' => $systemPayload['dateFormatChoices'] ?? fc_system_date_format_choices(),
         'integrations'     => $integrationsPayload['integrations'] ?? [],
+        'super_admin'      => is_array($integrationsPayload['superAdmin'] ?? null)
+            ? $integrationsPayload['superAdmin']
+            : [],
         'panel_class'      => [
             'theme'        => $initialTab === 'theme' ? '' : 'hidden ',
             'branding'     => $initialTab === 'branding' ? '' : 'hidden ',

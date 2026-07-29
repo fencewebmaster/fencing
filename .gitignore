@@ -9,8 +9,15 @@ data/.wc-products-*-job.json
 data/.wc-products-*.lock
 data/wc-products-*
 data/products*
+data/groups-permissions/*.json
 
 # Generated storage (keep directory placeholders)
 data/storage/cache/**/*.json
 data/storage/sessions/sess_*
+data/storage/presence/*.json
 !data/storage/**/.gitkeep
+
+# User uploads (keep .htaccess)
+assets/uploads/**
+!assets/uploads/.htaccess
+!assets/uploads/.gitkeep

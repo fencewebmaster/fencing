@@ -481,7 +481,30 @@
             var checkLabel = e.target.closest('.fc-entries-check');
             if (checkLabel) {
                 e.stopPropagation();
+                return;
             }
+
+            // Whole-row open: padding/gaps outside per-cell links still navigate.
+            // Leave real links/buttons/inputs alone (checkbox, copy planner ID, etc.).
+            if (e.defaultPrevented || e.button !== 0) {
+                return;
+            }
+            if (e.target.closest('a, button, input, label, select, textarea')) {
+                return;
+            }
+            var row = e.target.closest('[data-fc-entries-row][data-fc-entries-row-href]');
+            if (!row || !root.contains(row)) {
+                return;
+            }
+            var href = row.getAttribute('data-fc-entries-row-href');
+            if (!href) {
+                return;
+            }
+            if (e.metaKey || e.ctrlKey) {
+                global.open(href, '_blank', 'noopener');
+                return;
+            }
+            global.location.href = href;
         });
 
         bindImport(root);

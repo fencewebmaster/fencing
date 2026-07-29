@@ -21,6 +21,23 @@ final class ProductsPageController extends Controller
         );
     }
 
+    public function fenceStyleEdit(AdminContext $context, string $slug): void
+    {
+        $slug = trim(rawurldecode($slug));
+        if ($slug === '' || str_contains($slug, '/') || str_contains($slug, '..')) {
+            if (function_exists('fc_abort_404')) {
+                fc_abort_404('admin', 'Fence style not found.');
+            }
+            http_response_code(404);
+            exit;
+        }
+
+        $this->bootProductsAdmin();
+        $context->pageTitle      = 'Edit Fence Style';
+        $context->route          = 'products/fence-styles/edit/' . rawurlencode($slug);
+        $context->isProductsPage = true;
+    }
+
     public function storeProducts(AdminContext $context): void
     {
         $this->bootProductsAdmin();

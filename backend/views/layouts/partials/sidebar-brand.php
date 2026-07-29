@@ -265,4 +265,15 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
     >
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
     </button>
+    <button
+        type="button"
+        id="fc-admin-sidebar-collapse"
+        class="fc-sidebar-collapse-toggle"
+        aria-label="Collapse sidebar"
+        aria-expanded="true"
+        aria-controls="fc-admin-sidebar"
+        title="Collapse sidebar"
+    >
+        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
 </div>

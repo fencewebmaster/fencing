@@ -114,8 +114,19 @@ $fcStoreCsvReady = ($page['error'] ?? '') === '';
                 <a
                     href="<?php echo $h((string) ($page['clear_url'] ?? '')); ?>"
                     id="fc-store-products-clear-filters"
-                    class="fc-sp-toolbar__clear"
-                >Clear filters</a>
+                    class="btn btn-sm btn-dark fw-semibold fc-entries-clear-filters"
+                >
+                    <span>Clear Filters</span>
+                </a>
+                <?php else : ?>
+                <button
+                    type="button"
+                    id="fc-store-products-clear-filters"
+                    class="btn btn-sm btn-light fw-semibold fc-entries-clear-filters"
+                    disabled
+                >
+                    <span>Clear Filters</span>
+                </button>
                 <?php endif; ?>
                 <?php if (!empty($page['can_edit'])) : ?>
                 <div class="fc-products-download-dropdown" data-fc-store-products-download-dropdown>

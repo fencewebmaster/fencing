@@ -129,8 +129,19 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
                 <a
                     href="<?php echo $h((string) ($page['clear_url'] ?? '')); ?>"
                     id="fc-system-products-clear-search"
-                    class="fc-sp-toolbar__clear"
-                >Clear search</a>
+                    class="btn btn-sm btn-dark fw-semibold fc-entries-clear-filters"
+                >
+                    <span>Clear Search</span>
+                </a>
+                <?php else : ?>
+                <button
+                    type="button"
+                    id="fc-system-products-clear-search"
+                    class="btn btn-sm btn-light fw-semibold fc-entries-clear-filters"
+                    disabled
+                >
+                    <span>Clear Search</span>
+                </button>
                 <?php endif; ?>
                 <button type="submit" class="sr-only">Search</button>
             </div>

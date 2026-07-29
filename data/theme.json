@@ -16,13 +16,19 @@
         "--fc-white": "#ffffff",
         "--fc-black": "#000000"
     },
+    "system": {
+        "dashboardDefaultDatePeriod": "this_week",
+        "entriesDefaultDatePeriod": "this_month",
+        "entriesDefaultDateField": "created_at",
+        "dateFormat": "Y\/d\/m h:i A"
+    },
+    "updatedAt": "2026-07-29T03:27:35+00:00",
     "branding": {
         "logo": "assets\/uploads\/cropped-Website-Logo-Color-Updated-3.png",
         "appName": "Fencing Calculator",
         "tagline": "Calculate your fence cost and the materials needed.",
         "version": "v13.0.0"
     },
-    "updatedAt": "2026-07-23T10:02:11+00:00",
     "fenceColors": [
         {
             "slug": "woodland_grey_matt",
@@ -263,11 +269,5 @@
         "columnsMobile": 1,
         "sidebarTitle": "Product Lookup",
         "sidebarSubtitle": "Search the live catalog"
-    },
-    "system": {
-        "dashboardDefaultDatePeriod": "this_week",
-        "entriesDefaultDatePeriod": "today",
-        "entriesDefaultDateField": "created_at",
-        "dateFormat": "Y\/d\/m h:i A"
     }
 }

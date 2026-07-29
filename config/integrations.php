@@ -150,15 +150,34 @@ function fc_integrations_revision(): string
 }
 
 /**
- * @return array{ok:bool,integrations:array<string,mixed>,revision:string}
+ * @return array{ok:bool,integrations:array<string,mixed>,revision:string,superAdmin?:array<string,mixed>}
  */
 function fc_integrations_api_payload(): array
 {
-    return [
+    $payload = [
         'ok' => true,
         'integrations' => fc_integrations_get(),
         'revision' => fc_integrations_revision(),
     ];
+
+    if (!function_exists('fc_auth_primary_admin_email')) {
+        require_once __DIR__ . '/auth.php';
+    }
+
+    $email = fc_auth_primary_admin_email();
+    $user = function_exists('fc_auth_super_admin_user') ? fc_auth_super_admin_user() : null;
+    $payload['superAdmin'] = [
+        'email' => $email,
+        'userId' => $user !== null ? (int) $user['ID'] : 0,
+        'userLogin' => $user !== null ? (string) $user['user_login'] : '',
+        'displayName' => $user !== null ? (string) $user['display_name'] : '',
+        'resolved' => $user !== null,
+        'label' => $user !== null
+            ? trim((string) $user['display_name'] . ' <' . (string) $user['user_email'] . '>')
+            : ($email !== '' ? $email . ' (not found)' : 'Not configured'),
+    ];
+
+    return $payload;
 }
 
 function fc_integrations_clean_value($value, int $maxLength): ?string

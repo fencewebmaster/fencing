@@ -50,6 +50,19 @@ function fc_storage_sessions_dir(): string
 }
 
 /**
+ * Absolute path to data/storage/presence.
+ */
+function fc_storage_presence_dir(): string
+{
+    $dir = fc_storage_root() . DIRECTORY_SEPARATOR . 'presence';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0775, true);
+    }
+
+    return $dir;
+}
+
+/**
  * Known file-cache buckets under data/storage/cache/.
  *
  * @return list<string>

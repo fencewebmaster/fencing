@@ -10,6 +10,10 @@
         roles: [],
         selectedRole: '',
         isAdministratorRole: false,
+        isSuperAdminRole: false,
+        isLocked: false,
+        canEdit: true,
+        lockNotice: '',
         tree: [],
         permissions: {},
         csrf: '',
@@ -154,7 +158,7 @@
             el.classList.toggle('hidden', !state.dirty);
         }
         var saveBtn = document.getElementById('fc-gp-save');
-        if (saveBtn && !state.isAdministratorRole) {
+        if (saveBtn && !state.isLocked) {
             saveBtn.disabled = !state.dirty;
         }
     }
@@ -197,7 +201,7 @@
     function renderTreeNode(node, prefix) {
         var path = prefix ? prefix + '.' + node.key : node.key;
         var stats = nodeLeafStats(node, path);
-        var locked = state.isAdministratorRole;
+        var locked = state.isLocked;
         var label = String(node.label || node.key || '');
         var hasChildren = !!(node.children && node.children.length);
 
@@ -223,7 +227,7 @@
     function renderSection(node) {
         var path = String(node.key || '');
         var stats = nodeLeafStats(node, path);
-        var locked = state.isAdministratorRole;
+        var locked = state.isLocked;
         var label = String(node.label || node.key || '');
         var hasChildren = !!(node.children && node.children.length);
         var countLabel = stats.checkedCount + ' / ' + stats.leaves.length;
@@ -280,7 +284,7 @@
         if (!btn) {
             return;
         }
-        var hasPerms = state.isAdministratorRole || permissionsHaveGrant(state.permissions);
+        var hasPerms = state.isSuperAdminRole || permissionsHaveGrant(state.permissions);
         btn.setAttribute('data-fc-gp-has-perms', hasPerms ? '1' : '0');
         var dot = btn.querySelector('[data-fc-gp-role-dot]');
         if (dot) {
@@ -305,7 +309,7 @@
             collectIndeterminate(node, '', indeterminate);
         });
         root.innerHTML = parts.join('');
-        root.setAttribute('data-locked', state.isAdministratorRole ? '1' : '0');
+        root.setAttribute('data-locked', state.isLocked ? '1' : '0');
 
         indeterminate.forEach(function (path) {
             var input = root.querySelector('[data-fc-gp-check="' + cssEscape(path) + '"]');
@@ -388,11 +392,14 @@
     function syncAdminNotice() {
         var notice = document.getElementById('fc-gp-admin-notice');
         if (notice) {
-            notice.classList.toggle('hidden', !state.isAdministratorRole);
+            if (state.lockNotice) {
+                notice.textContent = state.lockNotice;
+            }
+            notice.classList.toggle('hidden', !state.isLocked || !state.lockNotice);
         }
         var saveBtn = document.getElementById('fc-gp-save');
         if (saveBtn) {
-            saveBtn.disabled = state.isAdministratorRole || !state.dirty;
+            saveBtn.disabled = state.isLocked || !state.dirty;
         }
     }
 
@@ -412,7 +419,11 @@
                     throw new Error((data && data.error) || 'Could not load permissions.');
                 }
                 state.selectedRole = data.role || role;
+                state.isSuperAdminRole = !!data.isSuperAdminRole;
                 state.isAdministratorRole = !!data.isAdministratorRole;
+                state.isLocked = data.isLocked != null ? !!data.isLocked : !!data.isSuperAdminRole;
+                state.canEdit = data.canEdit != null ? !!data.canEdit : !state.isLocked;
+                state.lockNotice = data.lockNotice || '';
                 state.permissions = data.permissions || {};
                 state.csrf = data.csrf || state.csrf;
                 if (Array.isArray(data.tree) && data.tree.length) {
@@ -434,8 +445,8 @@
     }
 
     function savePermissions() {
-        if (state.isAdministratorRole) {
-            toast('error', 'Administrator always has full system access.');
+        if (state.isLocked) {
+            toast('error', state.lockNotice || 'This role cannot be edited.');
             return;
         }
         toast('loading', 'Saving permissions…');
@@ -495,7 +506,7 @@
 
         root.addEventListener('change', function (e) {
             var input = e.target.closest('[data-fc-gp-check]');
-            if (!input || !root.contains(input) || state.isAdministratorRole) {
+            if (!input || !root.contains(input) || state.isLocked) {
                 return;
             }
             var path = input.getAttribute('data-fc-gp-check') || '';
@@ -523,6 +534,8 @@
             });
         }
 
+        bindImportExport();
+
         window.addEventListener('beforeunload', function (e) {
             if (!state.dirty) {
                 return;
@@ -530,6 +543,215 @@
             e.preventDefault();
             e.returnValue = '';
         });
+    }
+
+    function bindImportExport() {
+        var dropdown = document.querySelector('[data-fc-gp-download-dropdown]');
+        if (!dropdown || dropdown.dataset.fcBound === '1') {
+            return;
+        }
+        dropdown.dataset.fcBound = '1';
+
+        var toggle = dropdown.querySelector('[data-fc-gp-download-toggle]');
+        var panel = dropdown.querySelector('.fc-products-download-dropdown__panel');
+        var exportBtn = dropdown.querySelector('[data-fc-gp-export-json]');
+        var exportAllBtn = dropdown.querySelector('[data-fc-gp-export-all-json]');
+        var importBtn = dropdown.querySelector('[data-fc-gp-import-json]');
+        var importInput = dropdown.querySelector('[data-fc-gp-import-input]');
+
+        function closeMenu() {
+            if (!panel || !toggle) {
+                return;
+            }
+            panel.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('is-open');
+            panel.style.left = '';
+            panel.style.top = '';
+            panel.style.position = '';
+            panel.style.right = '';
+            panel.style.zIndex = '';
+        }
+
+        function positionMenu() {
+            if (!toggle || !panel || panel.hidden) {
+                return;
+            }
+            var rect = toggle.getBoundingClientRect();
+            var gap = 6;
+            panel.style.position = 'fixed';
+            panel.style.zIndex = '80';
+            panel.style.left = Math.round(rect.left) + 'px';
+            panel.style.top = Math.round(rect.bottom + gap) + 'px';
+            panel.style.right = 'auto';
+
+            var panelRect = panel.getBoundingClientRect();
+            var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+            var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+            if (panelRect.right > viewportWidth - 8) {
+                panel.style.left = Math.max(8, viewportWidth - panelRect.width - 8) + 'px';
+            }
+            if (panelRect.bottom > viewportHeight - 8) {
+                var aboveTop = rect.top - gap - panelRect.height;
+                if (aboveTop >= 8) {
+                    panel.style.top = aboveTop + 'px';
+                }
+            }
+        }
+
+        function openMenu() {
+            if (!panel || !toggle) {
+                return;
+            }
+            panel.hidden = false;
+            toggle.setAttribute('aria-expanded', 'true');
+            dropdown.classList.add('is-open');
+            positionMenu();
+        }
+
+        function exportUrl(all) {
+            var base = state.apiUrl || 'api.php?module=groupPermissions';
+            var sep = base.indexOf('?') >= 0 ? '&' : '?';
+            if (all) {
+                return base + sep + 'action=export-all';
+            }
+            return base + sep + 'action=export&role=' + encodeURIComponent(state.selectedRole || '');
+        }
+
+        function downloadJson(all) {
+            closeMenu();
+            var link = document.createElement('a');
+            link.href = exportUrl(!!all);
+            link.download = all
+                ? 'group-permissions.json'
+                : 'group-permissions-' + (state.selectedRole || 'role') + '.json';
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        function importJsonFile(file) {
+            if (!file) {
+                return;
+            }
+            var name = String(file.name || '').toLowerCase();
+            if (!name.endsWith('.json')) {
+                toast('error', 'Only .json files can be imported.');
+                return;
+            }
+            if (!state.csrf) {
+                toast('error', 'Missing security token. Refresh and try again.');
+                return;
+            }
+            if (state.dirty && !window.confirm('You have unsaved changes. Import and discard them?')) {
+                if (importInput) {
+                    importInput.value = '';
+                }
+                return;
+            }
+
+            closeMenu();
+            toast('loading', 'Importing permissions…');
+
+            var formData = new FormData();
+            formData.append('csrf', state.csrf);
+            formData.append('file', file);
+
+            var url = (state.apiUrl || 'api.php?module=groupPermissions');
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'action=import';
+
+            fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' },
+                body: formData,
+            })
+                .then(function (response) {
+                    return response
+                        .json()
+                        .catch(function () {
+                            return { ok: false, error: 'Invalid server response.' };
+                        })
+                        .then(function (body) {
+                            if (!response.ok || !body.ok) {
+                                throw new Error((body && body.error) || 'Could not import permissions.');
+                            }
+                            return body;
+                        });
+                })
+                .then(function (body) {
+                    if (body.csrf) {
+                        state.csrf = body.csrf;
+                    }
+                    setFlash(body.message || 'Permissions imported.', 'success');
+                    window.setTimeout(function () {
+                        window.location.reload();
+                    }, 500);
+                })
+                .catch(function (err) {
+                    toast('error', (err && err.message) || 'Could not import permissions.');
+                })
+                .then(function () {
+                    if (importInput) {
+                        importInput.value = '';
+                    }
+                });
+        }
+
+        if (toggle && panel) {
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (panel.hidden) {
+                    openMenu();
+                } else {
+                    closeMenu();
+                }
+            });
+            panel.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+        }
+
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                downloadJson(false);
+            });
+        }
+        if (exportAllBtn) {
+            exportAllBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                downloadJson(true);
+            });
+        }
+        if (importBtn && importInput) {
+            importBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                closeMenu();
+                importInput.click();
+            });
+            importInput.addEventListener('change', function () {
+                var file = importInput.files && importInput.files[0] ? importInput.files[0] : null;
+                importJsonFile(file);
+            });
+        }
+
+        document.addEventListener('click', function () {
+            closeMenu();
+        });
+        window.addEventListener('resize', function () {
+            if (dropdown.classList.contains('is-open')) {
+                positionMenu();
+            }
+        });
+        window.addEventListener('scroll', function () {
+            if (dropdown.classList.contains('is-open')) {
+                positionMenu();
+            }
+        }, true);
     }
 
     function init() {
@@ -540,7 +762,11 @@
         var boot = readBootstrap() || {};
         state.roles = boot.roles || [];
         state.selectedRole = boot.selectedRole || '';
+        state.isSuperAdminRole = !!boot.isSuperAdminRole;
         state.isAdministratorRole = !!boot.isAdministratorRole;
+        state.isLocked = boot.isLocked != null ? !!boot.isLocked : !!boot.isSuperAdminRole;
+        state.canEdit = boot.canEdit != null ? !!boot.canEdit : !state.isLocked;
+        state.lockNotice = boot.lockNotice || '';
         state.tree = boot.tree || [];
         state.permissions = boot.permissions || {};
         state.csrf = boot.csrf || '';

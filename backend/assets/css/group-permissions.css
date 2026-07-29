@@ -17,7 +17,8 @@
 }
 .fc-gp-page__title { margin: 0; font-size: 1rem; font-weight: 700; color: #1d2327; }
 .fc-gp-page__subtitle { margin: .15rem 0 0; font-size: .75rem; color: #64748b; }
-.fc-gp-page__header-actions { display: flex; align-items: center; gap: .75rem; }
+.fc-gp-page__header-actions { display: flex; align-items: center; gap: .75rem; position: relative; z-index: 5; }
+.fc-gp-page__header-actions:has(.fc-products-download-dropdown.is-open) { z-index: 40; }
 .fc-gp-page__dirty { font-size: .75rem; font-weight: 600; color: #b45309; }
 .fc-gp-page__layout {
     display: grid;

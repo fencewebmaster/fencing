@@ -604,7 +604,7 @@
             '<i class="fa-solid fa-magnifying-glass fc-entries-page__search-icon" aria-hidden="true"></i>' +
             '<input type="search" id="fc-system-products-search" class="fc-entries-page__search" placeholder="Search products…" aria-label="Search products" autocomplete="off">' +
             '</label>' +
-            '<button type="button" id="fc-system-products-clear-search" class="fc-sp-toolbar__clear hidden">Clear search</button>' +
+            '<button type="button" id="fc-system-products-clear-search" class="btn btn-sm btn-light fw-semibold fc-entries-clear-filters" disabled><span>Clear Search</span></button>' +
             '</div>' +
             '<div class="fc-entries-page__count fc-sys-toolbar-meta">' +
             '<span><span id="fc-system-products-count">' +
@@ -629,7 +629,10 @@
         function refreshClearSearchButton() {
             var clearBtn = document.getElementById('fc-system-products-clear-search');
             if (clearBtn) {
-                clearBtn.classList.toggle('hidden', !hasActiveSearch());
+                var searchOn = hasActiveSearch();
+                clearBtn.disabled = !searchOn;
+                clearBtn.classList.toggle('btn-dark', searchOn);
+                clearBtn.classList.toggle('btn-light', !searchOn);
             }
         }
 

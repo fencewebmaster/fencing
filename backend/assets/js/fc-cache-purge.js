@@ -5,6 +5,7 @@
     'use strict';
 
     var TOAST_ID = 'fc-cache-purge';
+    var FLASH_KEY = 'fc-cache-purge-flash';
     var TARGET_LABELS = {
         all: 'all caches',
         lookup: 'Lookup cache',
@@ -28,6 +29,45 @@
         if (kind === 'error' && typeof T.error === 'function') {
             T.error(message, { id: TOAST_ID, duration: 4500 });
         }
+    }
+
+    function setFlash(message, type) {
+        try {
+            sessionStorage.setItem(
+                FLASH_KEY,
+                JSON.stringify({
+                    message: String(message || ''),
+                    type: type === 'error' ? 'error' : 'success',
+                })
+            );
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function consumeFlash() {
+        try {
+            var raw = sessionStorage.getItem(FLASH_KEY);
+            if (!raw) {
+                return null;
+            }
+            sessionStorage.removeItem(FLASH_KEY);
+            var data = JSON.parse(raw);
+            if (!data || !data.message) {
+                return null;
+            }
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function showPendingFlash() {
+        var flash = consumeFlash();
+        if (!flash || !flash.message) {
+            return;
+        }
+        toast(flash.type === 'error' ? 'error' : 'success', flash.message);
     }
 
     function closeDropdown(root) {
@@ -226,7 +266,8 @@
                 } else {
                     msg = 'Purged ' + count + ' cache files (' + label + ').';
                 }
-                toast('success', msg);
+                setFlash(msg, 'success');
+                window.location.reload();
             })
             .catch(function (err) {
                 toast('error', (err && err.message) || 'Could not purge cache.');
@@ -333,6 +374,7 @@
 
     function initAll() {
         document.querySelectorAll('[data-fc-cache-purge-dropdown]').forEach(init);
+        window.setTimeout(showPendingFlash, 0);
     }
 
     document.addEventListener('click', function () {

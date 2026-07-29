@@ -8,3 +8,9 @@ RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^(.*)$ $1.php [NC,L]
 
 RewriteRule ^(config.json|data) - [F,L,NC]
+
+# Unknown frontend paths → 404 (admin handled under /backend/)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !/backend(/|$)
+RewriteRule ^ 404.php [L]

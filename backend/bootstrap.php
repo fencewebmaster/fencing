@@ -19,6 +19,7 @@ require_once FC_ROOT . '/config/branding.php';
 require_once FC_ROOT . '/config/system.php';
 require_once FC_ROOT . '/config/permissions.php';
 require_once FC_ROOT . '/config/auth.php';
+require_once FC_ROOT . '/config/http_errors.php';
 require_once FC_ROOT . '/config/admin_sites.php';
 require_once FC_ADMIN_ROOT . '/src/Core/Autoloader.php';
 
@@ -33,5 +34,16 @@ if (function_exists('fc_auth_is_logged_in') && fc_auth_is_logged_in()) {
     }
     if (function_exists('fc_admin_site_key') && fc_admin_site_key() === '' && function_exists('fc_admin_set_site_key')) {
         fc_admin_set_site_key($hostKey);
+    }
+
+    // Heartbeat for near-realtime online presence.
+    if (function_exists('fc_presence_touch') && function_exists('fc_auth_user')) {
+        $presenceUser = fc_auth_user();
+        if (is_array($presenceUser)) {
+            if (isset($_SESSION['fc_admin_user']['logged_in_at'])) {
+                $presenceUser['logged_in_at'] = (int) $_SESSION['fc_admin_user']['logged_in_at'];
+            }
+            fc_presence_touch($presenceUser);
+        }
     }
 }

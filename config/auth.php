@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db_config.php';
 require_once __DIR__ . '/session.php';
+require_once __DIR__ . '/presence.php';
 
 const FC_AUTH_SESSION_KEY = 'fc_admin_user';
 const FC_AUTH_SWITCH_KEY = 'fc_admin_switch_from';
@@ -138,6 +139,9 @@ function fc_auth_enforce_session_ttl(): void
     $expiresAt = $loggedInAt + FC_AUTH_SESSION_TTL;
     if (time() >= $expiresAt) {
         // Absolute 24h expiry — clear without re-entering boot.
+        if (function_exists('fc_presence_forget')) {
+            fc_presence_forget();
+        }
         if (function_exists('fc_admin_clear_site_context')) {
             fc_admin_clear_site_context();
         }
@@ -380,6 +384,82 @@ function fc_auth_user_is_administrator(int $userId): bool
 }
 
 /**
+ * Fixed Super Admin email from config.php primary_admin.email.
+ */
+function fc_auth_primary_admin_email(): string
+{
+    $app = function_exists('fc_db_load_app_config') ? fc_db_load_app_config() : [];
+    $primary = is_array($app['primary_admin'] ?? null) ? $app['primary_admin'] : [];
+
+    return strtolower(trim((string) ($primary['email'] ?? '')));
+}
+
+/**
+ * Resolve the configured Super Admin WordPress user (by email).
+ *
+ * @return array{ID:int,user_login:string,user_email:string,display_name:string}|null
+ */
+function fc_auth_super_admin_user(): ?array
+{
+    static $resolved = false;
+    static $user = null;
+
+    if ($resolved) {
+        return $user;
+    }
+    $resolved = true;
+
+    $email = fc_auth_primary_admin_email();
+    if ($email === '') {
+        return null;
+    }
+
+    $found = fc_auth_find_user($email);
+    if ($found === null) {
+        return null;
+    }
+
+    if (strtolower(trim((string) ($found['user_email'] ?? ''))) !== $email) {
+        return null;
+    }
+
+    $user = [
+        'ID' => (int) $found['ID'],
+        'user_login' => (string) $found['user_login'],
+        'user_email' => (string) $found['user_email'],
+        'display_name' => (string) ($found['display_name'] ?? $found['user_login']),
+    ];
+
+    return $user;
+}
+
+/**
+ * Whether the given (or current session) user is the configured Super Admin.
+ */
+function fc_auth_user_is_super_admin(?int $userId = null): bool
+{
+    if ($userId === null) {
+        $session = fc_auth_user();
+        $userId = is_array($session) ? (int) ($session['id'] ?? 0) : 0;
+    }
+    if ($userId <= 0) {
+        return false;
+    }
+
+    $super = fc_auth_super_admin_user();
+
+    return $super !== null && (int) $super['ID'] === $userId;
+}
+
+/**
+ * Only Super Admin may edit Administrator role permissions.
+ */
+function fc_auth_can_manage_administrator_permissions(?int $userId = null): bool
+{
+    return fc_auth_user_is_super_admin($userId);
+}
+
+/**
  * @return array{ID:int,user_login:string,user_email:string,display_name:string}|null
  */
 function fc_auth_find_user_by_id(int $userId): ?array
@@ -452,7 +532,7 @@ function fc_auth_is_switched(): bool
 }
 
 /**
- * Admin access: administrator, role with FC grants, or Login As from an administrator.
+ * Admin access: Super Admin, role with FC grants, or Login As from an authorized admin.
  */
 function fc_auth_can_access_admin(): bool
 {
@@ -461,7 +541,7 @@ function fc_auth_can_access_admin(): bool
         return false;
     }
 
-    if (fc_auth_user_is_administrator((int) $user['id'])) {
+    if (fc_auth_user_is_super_admin((int) $user['id'])) {
         return true;
     }
 
@@ -470,8 +550,11 @@ function fc_auth_can_access_admin(): bool
     }
 
     $from = fc_auth_switch_from();
-    if ($from !== null && fc_auth_user_is_administrator((int) $from['id'])) {
-        return true;
+    if ($from !== null) {
+        $fromId = (int) $from['id'];
+        if (fc_auth_user_is_super_admin($fromId) || fc_auth_user_has_any_permission($fromId)) {
+            return true;
+        }
     }
 
     return false;
@@ -545,7 +628,7 @@ function fc_auth_user_has_any_permission(int $userId): bool
     if ($userId <= 0) {
         return false;
     }
-    if (fc_auth_user_is_administrator($userId)) {
+    if (fc_auth_user_is_super_admin($userId)) {
         return true;
     }
     if (!function_exists('fc_group_permissions_get')) {
@@ -553,9 +636,6 @@ function fc_auth_user_has_any_permission(int $userId): bool
     }
 
     foreach (fc_auth_user_roles($userId) as $role) {
-        if ($role === 'administrator') {
-            return true;
-        }
         $matrix = fc_group_permissions_get($role);
         if (fc_permissions_matrix_has_grant($matrix)) {
             return true;
@@ -581,7 +661,7 @@ function fc_auth_user_can(string $permKey): bool
     }
 
     $userId = (int) $user['id'];
-    if (fc_auth_user_is_administrator($userId)) {
+    if (fc_auth_user_is_super_admin($userId)) {
         return true;
     }
 
@@ -590,9 +670,6 @@ function fc_auth_user_can(string $permKey): bool
     }
 
     foreach (fc_auth_user_roles($userId) as $role) {
-        if ($role === 'administrator') {
-            return true;
-        }
         $matrix = fc_group_permissions_get($role);
         if (fc_permissions_get_path($matrix, $permKey)) {
             return true;
@@ -710,7 +787,7 @@ function fc_auth_switch_to_user(int $userId): array
     if (!fc_auth_can_access_admin()) {
         return ['ok' => false, 'message' => 'Access denied.'];
     }
-    if (!fc_auth_user_can('users.login_as') && !fc_auth_user_is_administrator((int) (fc_auth_user()['id'] ?? 0))) {
+    if (!fc_auth_user_can('users.login_as') && !fc_auth_user_is_super_admin((int) (fc_auth_user()['id'] ?? 0))) {
         return ['ok' => false, 'message' => 'You do not have Login As permission.'];
     }
 
@@ -745,7 +822,7 @@ function fc_auth_switch_to_user(int $userId): array
         ];
     }
 
-    fc_auth_login_user($target, false);
+    fc_auth_login_user($target, false, false);
 
     $label = $target['display_name'] !== '' ? $target['display_name'] : $target['user_login'];
 
@@ -776,7 +853,7 @@ function fc_auth_switch_back(): array
 
     fc_auth_boot();
     unset($_SESSION[FC_AUTH_SWITCH_KEY]);
-    fc_auth_login_user($original, fc_auth_is_remembered());
+    fc_auth_login_user($original, fc_auth_is_remembered(), false);
 
     $label = $original['display_name'] !== '' ? $original['display_name'] : $original['user_login'];
 
@@ -814,17 +891,22 @@ function fc_auth_is_logged_in(): bool
 /**
  * @param array{ID:int,user_login:string,user_email:string,display_name:string} $user
  */
-function fc_auth_login_user(array $user, bool $remember = false): void
+function fc_auth_login_user(array $user, bool $remember = false, bool $recordLastLogin = true): void
 {
     fc_auth_boot();
+    if (function_exists('fc_presence_forget')) {
+        fc_presence_forget();
+    }
     session_regenerate_id(true);
+    unset($_SESSION['fc_presence_activity_meta_at']);
 
+    $now = time();
     $_SESSION[FC_AUTH_SESSION_KEY] = [
         'id'           => (int) $user['ID'],
         'login'        => (string) $user['user_login'],
         'email'        => (string) $user['user_email'],
         'display_name' => (string) ($user['display_name'] ?: $user['user_login']),
-        'logged_in_at' => time(),
+        'logged_in_at' => $now,
     ];
     $_SESSION[FC_AUTH_REMEMBER_SESSION_KEY] = $remember;
 
@@ -841,11 +923,29 @@ function fc_auth_login_user(array $user, bool $remember = false): void
 
     fc_auth_refresh_session_cookie(fc_auth_session_ttl($remember));
     fc_auth_set_remember_cookie($remember);
+
+    $sessionUser = [
+        'id' => (int) $user['ID'],
+        'login' => (string) $user['user_login'],
+        'email' => (string) $user['user_email'],
+        'display_name' => (string) ($user['display_name'] ?: $user['user_login']),
+        'logged_in_at' => $now,
+    ];
+
+    if ($recordLastLogin && function_exists('fc_presence_set_last_login')) {
+        fc_presence_set_last_login((int) $user['ID'], $now);
+    }
+    if (function_exists('fc_presence_touch')) {
+        fc_presence_touch($sessionUser, true);
+    }
 }
 
 function fc_auth_logout(): void
 {
     fc_auth_boot();
+    if (function_exists('fc_presence_forget')) {
+        fc_presence_forget();
+    }
     if (function_exists('fc_admin_clear_site_context')) {
         fc_admin_clear_site_context();
     }
@@ -906,7 +1006,7 @@ function fc_auth_attempt_login(string $username, string $password, bool $remembe
         ];
     }
 
-    if (!fc_auth_user_is_administrator($user['ID']) && !fc_auth_user_has_any_permission($user['ID'])) {
+    if (!fc_auth_user_is_super_admin($user['ID']) && !fc_auth_user_has_any_permission($user['ID'])) {
         return [
             'ok'      => false,
             'message' => 'Access denied. You do not have permission to access the admin.',

@@ -2861,6 +2861,17 @@
         updateHeaderActions();
     }
 
+    function readSystemFieldValue(el) {
+        if (!el) {
+            return '';
+        }
+        if (el.type === 'number') {
+            var n = parseInt(el.value, 10);
+            return Number.isFinite(n) ? n : 0;
+        }
+        return el.value;
+    }
+
     function paintSystemForm() {
         document.querySelectorAll('[data-fc-system-field]').forEach(function (el) {
             var key = el.getAttribute('data-fc-system-field');
@@ -2882,14 +2893,18 @@
         state.systemFormBound = true;
 
         document.querySelectorAll('[data-fc-system-field]').forEach(function (el) {
-            el.addEventListener('change', function () {
+            var onFieldChange = function () {
                 var key = el.getAttribute('data-fc-system-field');
                 if (!key) {
                     return;
                 }
-                state.system[key] = el.value;
+                state.system[key] = readSystemFieldValue(el);
                 setSystemDirty(true);
-            });
+            };
+            el.addEventListener('change', onFieldChange);
+            if (el.type === 'number') {
+                el.addEventListener('input', onFieldChange);
+            }
         });
 
         var saveBtn = document.getElementById('fc-system-save');

@@ -600,13 +600,55 @@ function fc_entries_admin_parse_request(): array
     ];
 }
 
-function fc_entries_admin_entry_url(string $adminBase, int $entryId): string
+/**
+ * Allow only same-origin relative planner-entries list URLs (not detail routes).
+ */
+function fc_entries_admin_sanitize_list_return_url(string $adminBase, string $candidate): string
+{
+    $fallback = fc_entries_admin_list_path($adminBase);
+    $candidate = trim($candidate);
+    if ($candidate === '') {
+        return $fallback;
+    }
+
+    // Reject absolute / protocol-relative URLs (open-redirect safety).
+    if (preg_match('#^(?:[a-z][a-z0-9+.-]*:)?//#i', $candidate) === 1) {
+        return $fallback;
+    }
+
+    // Accept query-only return values.
+    if ($candidate[0] === '?') {
+        return $fallback . $candidate;
+    }
+
+    $listPath = $fallback;
+    if (!str_starts_with($candidate, $listPath)) {
+        return $fallback;
+    }
+
+    $after = substr($candidate, strlen($listPath));
+    // List URL only: "" or "?…" — reject "/123" detail paths.
+    if ($after !== '' && $after[0] !== '?') {
+        return $fallback;
+    }
+
+    return $candidate;
+}
+
+function fc_entries_admin_entry_url(string $adminBase, int $entryId, ?string $returnUrl = null): string
 {
     if ($entryId <= 0) {
         return fc_entries_admin_list_path($adminBase);
     }
 
-    return fc_entries_admin_list_path($adminBase) . '/' . $entryId;
+    $url = fc_entries_admin_list_path($adminBase) . '/' . $entryId;
+    if ($returnUrl === null || $returnUrl === '') {
+        return $url;
+    }
+
+    $safeReturn = fc_entries_admin_sanitize_list_return_url($adminBase, $returnUrl);
+
+    return $url . '?return=' . rawurlencode($safeReturn);
 }
 
 /**
@@ -845,7 +887,7 @@ function fc_entries_admin_page_data(string $adminBase, string $appBase): array
             return fc_entries_admin_url($adminBase, $overrides);
         },
         'entry_url' => static function (int $entryId) use ($adminBase): string {
-            return fc_entries_admin_entry_url($adminBase, $entryId);
+            return fc_entries_admin_entry_url($adminBase, $entryId, fc_entries_admin_url($adminBase));
         },
     ];
 }
@@ -876,13 +918,15 @@ function fc_entries_admin_detail_page_data(string $adminBase, string $appBase, i
         }
     }
 
+    $returnCandidate = isset($_GET['return']) ? (string) $_GET['return'] : '';
+
     return [
         'entry_id' => $entryId,
         'item' => $item,
         'error' => $error,
         'admin_base' => $adminBase,
         'app_base' => rtrim($appBase, '/'),
-        'list_url' => fc_entries_admin_url($adminBase),
+        'list_url' => fc_entries_admin_sanitize_list_return_url($adminBase, $returnCandidate),
     ];
 }
 

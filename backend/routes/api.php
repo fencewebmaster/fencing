@@ -11,6 +11,7 @@ use Fc\Admin\Controllers\Api\GalleryController;
 use Fc\Admin\Controllers\Api\GroupPermissionsController;
 use Fc\Admin\Controllers\Api\ProductsController;
 use Fc\Admin\Controllers\Api\SettingsController;
+use Fc\Admin\Controllers\Api\UsersApiController;
 
 /**
  * API module registry.
@@ -35,4 +36,6 @@ return [
     'fenceStylesController' => static function (): void { FenceStylesController::dispatch(); },
     'groupPermissions'      => static function (): void { GroupPermissionsController::dispatch(); },
     'groupPermissionsController' => static function (): void { GroupPermissionsController::dispatch(); },
+    'users'                 => static function (): void { UsersApiController::dispatch(); },
+    'usersController'       => static function (): void { UsersApiController::dispatch(); },
 ];
