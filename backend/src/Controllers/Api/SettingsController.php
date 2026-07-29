@@ -54,6 +54,11 @@ final class SettingsController
             return;
         }
 
+        if ($action === 'cloudflare-verify') {
+            self::handleCloudflareVerify($method);
+            return;
+        }
+
         if ($action === 'git-pull') {
             self::handleGitPull($method);
             return;
@@ -289,6 +294,57 @@ final class SettingsController
 
         http_response_code(405);
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    private static function handleCloudflareVerify(string $method): void
+    {
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $payload = self::jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (!function_exists('fc_auth_verify_csrf') || !fc_auth_verify_csrf(
+            isset($payload['csrf']) ? (string) $payload['csrf'] : null
+        )) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        require_once FC_ROOT . '/config/cloudflare.php';
+
+        $token = trim((string) ($payload['cloudflareApiToken'] ?? ''));
+        if ($token === '') {
+            $saved = fc_integrations_get();
+            $token = trim((string) ($saved['cloudflareApiToken'] ?? ''));
+        }
+
+        $zoneId = trim((string) ($payload['cloudflareZoneId'] ?? ''));
+        $siteKey = trim((string) ($payload['siteKey'] ?? ''));
+
+        $result = fc_cloudflare_verify_zone($token, $zoneId);
+        if (empty($result['ok'])) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => (string) ($result['error'] ?? 'Cloudflare zone check failed.'),
+                'siteKey' => $siteKey,
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode([
+            'ok' => true,
+            'zoneName' => (string) ($result['zoneName'] ?? ''),
+            'status' => (string) ($result['status'] ?? ''),
+            'siteKey' => $siteKey,
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     private static function handleGitPull(string $method): void

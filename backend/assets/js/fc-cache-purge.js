@@ -67,7 +67,53 @@
         if (!flash || !flash.message) {
             return;
         }
-        toast(flash.type === 'error' ? 'error' : 'success', flash.message);
+
+        function attempt(triesLeft) {
+            var T = global.FcAdminToast;
+            if (!T) {
+                if (triesLeft > 0) {
+                    window.setTimeout(function () {
+                        attempt(triesLeft - 1);
+                    }, 50);
+                }
+                return;
+            }
+            toast(flash.type === 'error' ? 'error' : 'success', flash.message);
+        }
+
+        attempt(40);
+    }
+
+    function stripPurgeCacheBust() {
+        try {
+            var url = new URL(window.location.href);
+            if (!url.searchParams.has('fc_purged')) {
+                return;
+            }
+            url.searchParams.delete('fc_purged');
+            var next = url.pathname + url.search + url.hash;
+            if (window.history && typeof window.history.replaceState === 'function') {
+                window.history.replaceState(null, '', next);
+            }
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function reloadAfterPurge(target) {
+        // After Cloudflare purge, force a fresh document fetch (avoid bfcache / stale CDN HTML)
+        // so the success flash can display on the reloaded page.
+        if (target === 'cloudflare') {
+            try {
+                var url = new URL(window.location.href);
+                url.searchParams.set('fc_purged', String(Date.now()));
+                window.location.assign(url.toString());
+                return;
+            } catch (e) {
+                /* fall through */
+            }
+        }
+        window.location.reload();
     }
 
     function closeDropdown(root) {
@@ -267,7 +313,7 @@
                     msg = 'Purged ' + count + ' cache files (' + label + ').';
                 }
                 setFlash(msg, 'success');
-                window.location.reload();
+                reloadAfterPurge(target);
             })
             .catch(function (err) {
                 toast('error', (err && err.message) || 'Could not purge cache.');
@@ -374,6 +420,7 @@
 
     function initAll() {
         document.querySelectorAll('[data-fc-cache-purge-dropdown]').forEach(init);
+        stripPurgeCacheBust();
         window.setTimeout(showPendingFlash, 0);
     }
 
@@ -385,6 +432,11 @@
         if (event.key === 'Escape') {
             document.querySelectorAll('[data-fc-cache-purge-dropdown].is-open').forEach(closeDropdown);
         }
+    });
+
+    window.addEventListener('pageshow', function () {
+        stripPurgeCacheBust();
+        showPendingFlash();
     });
 
     if (document.readyState === 'loading') {

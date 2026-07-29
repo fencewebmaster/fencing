@@ -457,10 +457,23 @@
     box-shadow: 0 0 0 1px #2271b1;
 }
 
-.fc-settings-field-copy.is-copied {
+.fc-settings-field-copy.is-copied,
+.fc-settings-field-copy.is-verified {
     border-color: #198754 !important;
     background: #f0fdf4 !important;
     color: #15803d !important;
+}
+
+.fc-settings-field-copy.is-verify-failed {
+    border-color: #dc2626 !important;
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+}
+
+.fc-settings-field-copy.is-verifying {
+    cursor: wait;
+    opacity: 0.85;
+    pointer-events: none;
 }
 
 .fc-catalog-check-tree,
@@ -835,6 +848,19 @@ html[data-fc-admin-theme='dark'] .fc-settings-field-copy:hover {
     background: var(--fc-admin-surface-subtle);
     border-color: var(--fc-admin-link);
     color: var(--fc-admin-link);
+}
+
+html[data-fc-admin-theme='dark'] .fc-settings-field-copy.is-copied,
+html[data-fc-admin-theme='dark'] .fc-settings-field-copy.is-verified {
+    border-color: #22c55e !important;
+    background: rgba(34, 197, 94, 0.12) !important;
+    color: #4ade80 !important;
+}
+
+html[data-fc-admin-theme='dark'] .fc-settings-field-copy.is-verify-failed {
+    border-color: #f87171 !important;
+    background: rgba(248, 113, 113, 0.12) !important;
+    color: #fca5a5 !important;
 }
 
 html[data-fc-admin-theme='dark'] .fc-settings-field::placeholder {

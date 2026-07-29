@@ -10,6 +10,7 @@ data/.wc-products-*.lock
 data/wc-products-*
 data/products*
 data/groups-permissions/*.json
+data/theme.json
 
 # Generated storage (keep directory placeholders)
 data/storage/cache/**/*.json
