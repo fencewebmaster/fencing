@@ -83,7 +83,7 @@ $appBase = (string) ($page['app_base'] ?? '..');
                 </div>
 
                 <div class="login-form-card">
-                    <form id="login-form" novalidate autocomplete="off">
+                    <form id="login-form" method="post" action="" novalidate autocomplete="on">
                         <input type="hidden" name="csrf_token" value="<?php echo $h((string) ($page['csrf'] ?? '')); ?>">
                         <input type="hidden" name="redirect" value="<?php echo $h((string) ($page['redirect'] ?? '')); ?>">
 
@@ -102,12 +102,10 @@ $appBase = (string) ($page['app_base'] ?? '..');
                                 placeholder="Enter your username or email"
                                 required
                                 autofocus
-                                autocomplete="off"
+                                autocomplete="username"
                                 autocapitalize="off"
                                 autocorrect="off"
                                 spellcheck="false"
-                                data-lpignore="true"
-                                data-1p-ignore
                             >
                             <p class="fc-login-field__error hidden" data-error="username"></p>
                         </div>
@@ -122,12 +120,10 @@ $appBase = (string) ($page['app_base'] ?? '..');
                                     class="fc-settings-field"
                                     placeholder="Enter your password"
                                     required
-                                    autocomplete="new-password"
+                                    autocomplete="current-password"
                                     autocapitalize="off"
                                     autocorrect="off"
                                     spellcheck="false"
-                                    data-lpignore="true"
-                                    data-1p-ignore
                                 >
                                 <button type="button" id="toggle-password" class="fc-login-field__action" aria-label="Toggle password visibility">
                                     <i class="fas fa-eye" aria-hidden="true"></i>

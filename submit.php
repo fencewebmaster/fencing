@@ -29,7 +29,8 @@ post_product_skus($cart_items_data);
 // Save or update planner
 $info = $_SESSION;
 
-$_SESSION['planner_id'] = $planner_id = isset($info['planner_id']) ? $info['planner_id'] : get_uid(6);
+$planner_ref = fc_planner_resolve_submission_planner_id($_POST['planner_id'] ?? null);
+$_SESSION['planner_id'] = $planner_id = $planner_ref['planner_id'];
 
 $data = json_encode($info);
 
@@ -65,16 +66,27 @@ $data_inputs = [
   'cart_data'          => @$fc_cart['items'],
   'cart_items_data'    => @$fc_data['cart_items'],
   'project_plans_data' => @$fc_data['project_plans'],
-  'created_at'         => date('Y-m-d H:i:s'),
   'updated_at'         => date('Y-m-d H:i:s'),
 ];
 
 $data_inputs = array_merge($data_inputs, fc_planner_submission_meta());
+
+// Keep the original creation time when updating an existing quote.
+if (! $planner_ref['exists']) {
+    $data_inputs['created_at'] = date('Y-m-d H:i:s');
+}
 
 $where = ['planner_id' => $planner_id];
 
 $db = new Database();
 $res = $db->updateOrCreate('planners', $data_inputs, $where);
 
-echo 'SUCCESS';
+if (empty($res['success'])) {
+    error_log('FC submit.php: could not save planner ' . $planner_id . ' — ' . (string) ($res['message'] ?? 'unknown error'));
+    http_response_code(500);
+    echo 'ERROR';
+    exit;
+}
+
+echo 'SUCCESS:' . $planner_id;
 exit;

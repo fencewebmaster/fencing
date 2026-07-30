@@ -2326,6 +2326,24 @@ a.fc-entries-pagination__btn:hover {
     max-width: 18rem;
 }
 
+.fc-entries-table__fence-types {
+    max-width: 14rem;
+    vertical-align: top;
+    white-space: normal;
+}
+
+.fc-entries-fence-types {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    line-height: 1.25;
+    white-space: normal;
+}
+
+.fc-entries-fence-types__item {
+    display: block;
+}
+
 .fc-entries-status {
     display: inline-flex;
     align-items: center;
@@ -2341,6 +2359,219 @@ a.fc-entries-pagination__btn:hover {
 .fc-entries-status--planning {
     background: rgba(246, 121, 37, 0.12);
     color: #9a3412;
+}
+
+.fc-entries-status--duplicate {
+    background: rgba(100, 116, 139, 0.14);
+    color: #475569;
+}
+
+.fc-entries-dedupe-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.fc-entries-dedupe-trigger i {
+    font-size: 0.8125rem;
+}
+
+.fc-entries-dedupe-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+}
+
+.fc-entries-dedupe-modal[hidden] {
+    display: none !important;
+}
+
+.fc-entries-dedupe-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.64);
+    backdrop-filter: blur(2px);
+}
+
+.fc-entries-dedupe-modal__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(36rem, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    border: 1px solid #dcdcde;
+    border-radius: 0.875rem;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.3);
+    overflow: hidden;
+}
+
+.fc-entries-dedupe-modal__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 1.25rem 4.5rem 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.fc-entries-dedupe-modal__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.625rem;
+    background: rgba(100, 116, 139, 0.12);
+    color: #475569;
+    font-size: 1.1rem;
+}
+
+.fc-entries-dedupe-modal__header h2 {
+    margin: 0;
+    color: #1d2327;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.fc-entries-dedupe-modal__header p {
+    margin: 0.2rem 0 0;
+    color: #646970;
+    font-size: 0.8125rem;
+}
+
+.fc-entries-dedupe-modal__body {
+    max-height: calc(100vh - 13rem);
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.fc-entries-dedupe-modal__intro {
+    margin: 0 0 1rem;
+    color: #475569;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.fc-entries-dedupe-progress__status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.625rem;
+    color: #1e293b;
+    font-size: 0.875rem;
+}
+
+.fc-entries-dedupe-progress__track {
+    height: 0.65rem;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.fc-entries-dedupe-progress__track > span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #64748b, #94a3b8);
+    transition: width 0.25s ease;
+}
+
+.fc-entries-dedupe-progress__details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+}
+
+.fc-entries-dedupe-progress__details > div {
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background: #f8fafc;
+}
+
+.fc-entries-dedupe-progress__details dt {
+    margin-bottom: 0.2rem;
+    color: #64748b;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.fc-entries-dedupe-progress__details dd {
+    margin: 0;
+    color: #1e293b;
+    font-size: 0.78rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.fc-entries-dedupe-progress__message {
+    margin: 0.875rem 0 0;
+    color: #64748b;
+    font-size: 0.8125rem;
+}
+
+.fc-entries-dedupe-modal__error {
+    margin-top: 0.875rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 0.8125rem;
+}
+
+.fc-entries-dedupe-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem 1.25rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-modal__dialog {
+    border-color: #3c434a;
+    background: #1d2327;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-modal__header,
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-modal__footer {
+    border-color: #3c434a;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-modal__header h2,
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-progress__status,
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-progress__details dd {
+    color: #f0f0f1;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-modal__header p,
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-modal__intro,
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-progress__message,
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-progress__details dt {
+    color: #a7aaad;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-progress__details > div {
+    border-color: #3c434a;
+    background: #2c3338;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-dedupe-progress__track {
+    background: #3c434a;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-status--duplicate {
+    background: rgba(148, 163, 184, 0.18);
+    color: #cbd5e1;
 }
 
 .fc-entries-empty,
@@ -2901,7 +3132,7 @@ html[data-fc-admin-theme='dark'] .fc-entries-modal__meta--detail .fc-entries-mod
 
 .fc-entries-modal__value-wrap {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.35rem;
     min-width: 0;
 }
@@ -2909,6 +3140,10 @@ html[data-fc-admin-theme='dark'] .fc-entries-modal__meta--detail .fc-entries-mod
 .fc-entries-modal__value-wrap .fc-entries-modal__value {
     flex: 1 1 auto;
     min-width: 0;
+}
+
+.fc-entries-modal__value-wrap .fc-entries-detail-copy-btn {
+    margin-top: 0.1rem;
 }
 
 .fc-entries-device {

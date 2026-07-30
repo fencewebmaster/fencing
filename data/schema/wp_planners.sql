@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `wp_planners` (
   `updated_at` datetime DEFAULT NULL,
   `trashed_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `planner_id` (`planner_id`),
+  UNIQUE KEY `planner_id` (`planner_id`),
   KEY `status` (`status`),
   KEY `trashed_at` (`trashed_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

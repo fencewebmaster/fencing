@@ -34,6 +34,15 @@ final class EntriesApiController extends Controller
                 case 'import':
                     $this->importEntries();
                     break;
+                case 'dedupe-scan':
+                    $this->dedupeScan();
+                    break;
+                case 'dedupe-apply':
+                    $this->dedupeApply();
+                    break;
+                case 'restore-duplicate':
+                    $this->bulkRestoreDuplicate();
+                    break;
                 default:
                     JsonResponse::error('Unknown action.', 400);
             }
@@ -67,7 +76,14 @@ final class EntriesApiController extends Controller
         $offset  = (int) $this->request->query('offset', 0);
         $withStatuses = (string) $this->request->query('statuses', '') === '1';
         $withTotal    = (string) $this->request->query('total', '') === '1';
-        $view = strtolower(trim((string) $this->request->query('view', 'all'))) === 'trash' ? 'trash' : 'all';
+        $viewRaw = strtolower(trim((string) $this->request->query('view', 'all')));
+        if ($viewRaw === 'trash') {
+            $view = 'trash';
+        } elseif ($viewRaw === 'duplicates') {
+            $view = 'duplicates';
+        } else {
+            $view = 'all';
+        }
 
         $result = PlannerEntryModel::list($search, $status, $limit, $offset, $withStatuses, $withTotal, '', '', [], null, $view);
 
@@ -220,6 +236,109 @@ final class EntriesApiController extends Controller
         }
 
         JsonResponse::ok($result);
+    }
+
+    private function dedupeScan(): void
+    {
+        PlannerEntryModel::ensureLoaded();
+
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (
+            function_exists('fc_auth_verify_csrf')
+            && !fc_auth_verify_csrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)
+        ) {
+            JsonResponse::error('Invalid security token. Refresh and try again.', 403);
+        }
+
+        $result = fc_planners_dedupe_scan();
+        if (empty($result['ok'])) {
+            JsonResponse::error((string) ($result['error'] ?? 'Could not scan for duplicates.'), 400);
+        }
+
+        JsonResponse::ok([
+            'ok' => true,
+            'groups' => (int) ($result['groups'] ?? 0),
+            'keep_count' => (int) ($result['keep_count'] ?? 0),
+            'mark_count' => (int) ($result['mark_count'] ?? 0),
+            'mark_ids' => is_array($result['mark_ids'] ?? null) ? $result['mark_ids'] : [],
+            'sample' => is_array($result['sample'] ?? null) ? $result['sample'] : [],
+            'message' => ((int) ($result['mark_count'] ?? 0)) === 0
+                ? 'No duplicate planner IDs found.'
+                : ((int) ($result['mark_count'] ?? 0)) . ' older duplicate '
+                    . (((int) ($result['mark_count'] ?? 0)) === 1 ? 'entry' : 'entries')
+                    . ' found across ' . (int) ($result['groups'] ?? 0) . ' '
+                    . (((int) ($result['groups'] ?? 0)) === 1 ? 'planner ID' : 'planner IDs') . '.',
+        ]);
+    }
+
+    private function dedupeApply(): void
+    {
+        PlannerEntryModel::ensureLoaded();
+
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (
+            function_exists('fc_auth_verify_csrf')
+            && !fc_auth_verify_csrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)
+        ) {
+            JsonResponse::error('Invalid security token. Refresh and try again.', 403);
+        }
+
+        $ids = $payload['ids'] ?? [];
+        if (!is_array($ids)) {
+            JsonResponse::error('Invalid entry ids.', 400);
+        }
+
+        $offset = (int) ($payload['offset'] ?? 0);
+        $batchSize = (int) ($payload['batch_size'] ?? 100);
+        $result = fc_planners_dedupe_apply_batch($ids, $offset, $batchSize);
+        if (empty($result['ok'])) {
+            JsonResponse::error((string) ($result['error'] ?? 'Could not mark duplicates.'), 400);
+        }
+
+        JsonResponse::ok([
+            'ok' => true,
+            'updated' => (int) ($result['updated'] ?? 0),
+            'processed' => (int) ($result['processed'] ?? 0),
+            'remaining' => (int) ($result['remaining'] ?? 0),
+            'done' => !empty($result['done']),
+        ]);
+    }
+
+    private function bulkRestoreDuplicate(): void
+    {
+        PlannerEntryModel::ensureLoaded();
+
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        $ids = $payload['ids'] ?? [];
+        if (!is_array($ids)) {
+            JsonResponse::error('Invalid entry ids.', 400);
+        }
+
+        $result = fc_planners_bulk_restore_from_duplicate($ids);
+        if (empty($result['ok'])) {
+            JsonResponse::error((string) ($result['error'] ?? 'Could not restore entries.'), 400);
+        }
+
+        $updated = (int) ($result['updated'] ?? 0);
+        $noun = $updated === 1 ? 'entry' : 'entries';
+
+        JsonResponse::ok([
+            'ok' => true,
+            'updated' => $updated,
+            'message' => $updated . ' ' . $noun . ' restored to All.',
+        ]);
     }
 
     public static function dispatch(): void

@@ -100,22 +100,6 @@
             return;
         }
 
-        // Prevent browser/password-manager autofill suggestions on first focus.
-        ['username', 'password'].forEach(function (fieldName) {
-            var input = form.elements[fieldName];
-            if (!input) {
-                return;
-            }
-            input.setAttribute('readonly', 'readonly');
-            input.addEventListener(
-                'focus',
-                function () {
-                    input.removeAttribute('readonly');
-                },
-                { once: true }
-            );
-        });
-
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             clearLoginError();

@@ -83,6 +83,12 @@ $item = $page['item'] ?? null;
                                 <i class="<?php echo $h((string) ($detailRow['device_icon'] ?? 'fa-solid fa-circle-question')); ?>" aria-hidden="true"></i>
                                 <span><?php echo $cell($detailRow['display'] ?? ''); ?></span>
                             </span>
+                            <?php elseif (($detailRow['key'] ?? '') === 'fence_type' && !empty($detailRow['display_items']) && is_array($detailRow['display_items'])) : ?>
+                            <span class="fc-entries-fence-types">
+                                <?php foreach ($detailRow['display_items'] as $fenceLine) : ?>
+                                <span class="fc-entries-fence-types__item"><?php echo $cell($fenceLine); ?></span>
+                                <?php endforeach; ?>
+                            </span>
                             <?php elseif (!empty($detailRow['display_items']) && is_array($detailRow['display_items'])) : ?>
                             <ul class="fc-entries-detail-extra-list mb-0">
                                 <?php foreach ($detailRow['display_items'] as $extraItem) : ?>

@@ -446,6 +446,9 @@ function savePlanner() {
     // var form = $('form')[0]; 
     var formData = new FormData();
     formData.set("action", 'save_planner');
+    if (typeof planner_id !== 'undefined' && planner_id) {
+        formData.set("planner_id", String(planner_id).trim());
+    }
     $.ajax({
         url: 'checkout.php',
         type: "POST",
@@ -5459,6 +5462,19 @@ function fcSyncProjectPlanSessionCart(onDone) {
 
 //----------------------------------------------------------------------------------
 
+var fcPlannerSubmitInFlight = false;
+
+/**
+ * Read the saved quote id back from submit.php ("SUCCESS:<planner_id>").
+ */
+function fcParseSavedPlannerId(response) {
+    if (typeof response !== 'string') {
+        return '';
+    }
+    var parts = response.trim().split(':');
+    return parts.length > 1 ? parts[1].trim() : '';
+}
+
 function submit_fence_planner(status = '', options) {
     options = options || {};
     var forceProceed = options.forceProceed === true;
@@ -5613,6 +5629,13 @@ function submit_fence_planner(status = '', options) {
                 formData.set(key, value);
             });
 
+            // Send the quote id the page was rendered with: submit.php can then update the existing
+            // row even when the PHP session no longer holds it (expired session, dropped cookie).
+            var existingPlannerId = fcPlannerHasQuoteId() ? String(planner_id).trim() : '';
+            if (existingPlannerId) {
+                formData.set('planner_id', existingPlannerId);
+            }
+
             var uri_success = '';
             if (formStyle == 'barr') {
                 uri_success = '&barr-success';
@@ -5621,6 +5644,12 @@ function submit_fence_planner(status = '', options) {
             } else if (formStyle == 'glass_pool') {
                 uri_success = '&glass-success';
             }
+
+            // A second POST while the first is still open would save the plan twice.
+            if (fcPlannerSubmitInFlight) {
+                return;
+            }
+            fcPlannerSubmitInFlight = true;
 
             $.ajax({
                 url: 'submit.php',
@@ -5633,40 +5662,43 @@ function submit_fence_planner(status = '', options) {
                 success: function(response) {
                     try {
 
-                        var count = 0;
-
-                        if (status == 'new') {
-                            setTimeout(function() {
-                                $('.fc-loader ul li').each(function(i) {
-                                    var _this = $(this);
-                                    setTimeout(function() {
-                                        _this.addClass('fc-text-success');
-                                        count++;
-                                        if (count == 1) {
-                                            window.location = 'project-plan?project-success' + uri_success;
-                                        }
-                                    }, 1000 * i);
-                                });
-                            }, 1000);
-
-                        } else {
-                            setTimeout(function() {
-                                $('.fc-loader ul li').each(function(i) {
-                                    var _this = $(this);
-                                    setTimeout(function() {
-                                        _this.addClass('fc-text-success');
-                                        count++;
-
-                                        if (count == 1) {
-                                            window.location = 'project-plan?project-success&qid=' + planner_id + uri_success;
-                                        }
-
-                                    }, 1000 * i);
-                                });
-                            }, 1000);
+                        var savedPlannerId = fcParseSavedPlannerId(response);
+                        if (savedPlannerId && typeof planner_id !== 'undefined') {
+                            planner_id = savedPlannerId;
                         }
+
+                        var quoteId = savedPlannerId || existingPlannerId;
+                        var count = 0;
+                        var target = quoteId
+                            ? 'project-plan?project-success&qid=' + encodeURIComponent(quoteId) + uri_success
+                            : 'project-plan?project-success' + uri_success;
+
+                        setTimeout(function() {
+                            $('.fc-loader ul li').each(function(i) {
+                                var _this = $(this);
+                                setTimeout(function() {
+                                    _this.addClass('fc-text-success');
+                                    count++;
+                                    if (count == 1) {
+                                        window.location = target;
+                                    }
+                                }, 1000 * i);
+                            });
+                        }, 1000);
                     } catch (err) {
 
+                    }
+                },
+                error: function() {
+                    fcPlannerSubmitInFlight = false;
+                    $('.fc-loader-overlay').hide();
+                    if (typeof fcShowPopupAlertModal === 'function') {
+                        fcShowPopupAlertModal(
+                            'Save failed',
+                            'We could not save your plan. Please check your connection and try again.'
+                        );
+                    } else {
+                        window.alert('We could not save your plan. Please try again.');
                     }
                 }
             });

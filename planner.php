@@ -53,7 +53,9 @@ if ( $qid = @$_GET['qid'] ) {
     $load_quote_attempt = $qid;
 
     $db = new Database();
-    $res = $db->select_where( 'planners', '`planner_id`="' . $qid . '"' );
+    $res = fc_planner_is_valid_planner_id( $qid )
+        ? $db->select_where( 'planners', '`planner_id`="' . $qid . '"' )
+        : array();
 
     if ( $res && is_object( $res ) && ! fc_planners_row_is_trashed( $res ) ) {
         // Clear fence session data

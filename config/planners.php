@@ -98,6 +98,7 @@ function fc_planners_list_columns(): array
         'fence_type',
         'timeframe',
         'section_count',
+        'quote_load_count',
         'state',
         'device',
         'user_agent',
@@ -409,6 +410,171 @@ function fc_planner_persist_session(array $fences): array
 }
 
 /**
+ * Planner ids are get_uid() output — uppercase letters and digits only.
+ */
+function fc_planner_is_valid_planner_id(string $plannerId): bool
+{
+    return (bool) preg_match('/^[A-Za-z0-9]{4,64}$/', $plannerId);
+}
+
+/**
+ * Whether the planners table exposes `trashed_at` (older tables predate the column).
+ */
+function fc_planner_planners_has_trashed_column(mysqli $conn, string $table): bool
+{
+    static $cache = [];
+
+    if (array_key_exists($table, $cache)) {
+        return $cache[$table];
+    }
+
+    try {
+        $result = $conn->query("SHOW COLUMNS FROM `" . $conn->real_escape_string($table) . "` LIKE 'trashed_at'");
+        $cache[$table] = (bool) ($result && $result->num_rows > 0);
+    } catch (\mysqli_sql_exception $e) {
+        $cache[$table] = false;
+    }
+
+    return $cache[$table];
+}
+
+/**
+ * Exact planner_id lookup (prepared, so all-digit ids match as strings).
+ *
+ * @return array{found:bool,trashed:bool}
+ */
+function fc_planner_planner_id_state(string $plannerId): array
+{
+    $state = ['found' => false, 'trashed' => false];
+
+    $plannerId = trim($plannerId);
+    if ($plannerId === '') {
+        return $state;
+    }
+
+    $db = new Database();
+    $conn = $db->connect();
+    if (!$conn instanceof mysqli) {
+        return $state;
+    }
+
+    $table = implode('_', array_filter([$db->prefix . 'planners', $db->is_demo]));
+    $select = fc_planner_planners_has_trashed_column($conn, $table) ? '`id`, `trashed_at`' : '`id`';
+
+    try {
+        $stmt = $conn->prepare(
+            'SELECT ' . $select . ' FROM `' . $table . '` WHERE `planner_id` = ? ORDER BY `id` DESC LIMIT 1'
+        );
+    } catch (\mysqli_sql_exception $e) {
+        $conn->close();
+
+        return $state;
+    }
+
+    if (!$stmt) {
+        $conn->close();
+
+        return $state;
+    }
+
+    $stmt->bind_param('s', $plannerId);
+
+    try {
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result ? $result->fetch_assoc() : null;
+    } catch (\mysqli_sql_exception $e) {
+        $stmt->close();
+        $conn->close();
+
+        return $state;
+    }
+
+    $stmt->close();
+    $conn->close();
+
+    if (!is_array($row)) {
+        return $state;
+    }
+
+    $state['found'] = true;
+    $state['trashed'] = trim((string) ($row['trashed_at'] ?? '')) !== '';
+
+    return $state;
+}
+
+/**
+ * Mint a planner id that is not taken yet (get_uid() on its own can collide).
+ */
+function fc_planner_new_planner_id(): string
+{
+    if (!function_exists('get_uid')) {
+        require_once __DIR__ . '/helpers.php';
+    }
+
+    for ($attempt = 0; $attempt < 12; $attempt++) {
+        $candidate = get_uid(6);
+        if (!fc_planner_planner_id_state($candidate)['found']) {
+            return $candidate;
+        }
+    }
+
+    return strtoupper(bin2hex(random_bytes(4)));
+}
+
+/**
+ * Decide which planner row a public save (submit.php / checkout.php) writes to.
+ *
+ * The session is authoritative. When it holds no id — session GC, dropped cookie, another tab —
+ * fall back to the id the page rendered and posted back, accepted only when that quote still
+ * exists and is not trashed, so a stale or guessed id cannot resurrect a deleted quote. Without
+ * that fallback every lost session minted a fresh id and inserted a second row for one quote.
+ *
+ * @param mixed $postedPlannerId Untrusted planner_id from the request.
+ * @param bool  $allowNew        False for order pushes, which must never create a new quote.
+ * @return array{planner_id:string,exists:bool,source:string}
+ */
+function fc_planner_resolve_submission_planner_id($postedPlannerId = null, bool $allowNew = true): array
+{
+    $sessionId = trim((string) ($_SESSION['planner_id'] ?? ''));
+    if ($sessionId !== '') {
+        $state = fc_planner_planner_id_state($sessionId);
+        if (!$state['trashed']) {
+            return [
+                'planner_id' => $sessionId,
+                'exists' => $state['found'],
+                'source' => 'session',
+            ];
+        }
+    }
+
+    $posted = is_scalar($postedPlannerId) ? trim((string) $postedPlannerId) : '';
+    if ($posted !== '' && fc_planner_is_valid_planner_id($posted)) {
+        $state = fc_planner_planner_id_state($posted);
+        // A trashed quote must not be written to; anything else keeps the id the visitor sees,
+        // so the Quote ID on screen and the stored row stay the same even after a failed save.
+        if (!$state['trashed']) {
+            $_SESSION['planner_id'] = $posted;
+
+            return [
+                'planner_id' => $posted,
+                'exists' => $state['found'],
+                'source' => 'request',
+            ];
+        }
+    }
+
+    if (!$allowNew) {
+        return ['planner_id' => '', 'exists' => false, 'source' => 'none'];
+    }
+
+    $newId = fc_planner_new_planner_id();
+    $_SESSION['planner_id'] = $newId;
+
+    return ['planner_id' => $newId, 'exists' => false, 'source' => 'new'];
+}
+
+/**
  * Whether a planners row is soft-deleted (in trash).
  *
  * @param object|array|null $row
@@ -480,8 +646,13 @@ function fc_planners_open_db(): array
         throw new \RuntimeException(fc_planners_db_error_message($db));
     }
 
-    fc_planners_ensure_table($conn, $table);
-    fc_planners_ensure_columns($conn, $table);
+    // Schema checks once per request — list/statuses/counts open the DB separately.
+    static $ensured = [];
+    if (!isset($ensured[$table])) {
+        fc_planners_ensure_table($conn, $table);
+        fc_planners_ensure_columns($conn, $table);
+        $ensured[$table] = true;
+    }
 
     return [
         'db' => $db,
@@ -670,8 +841,24 @@ function fc_planners_format_fence_type_summary(array $rows): string
         if ($name === '' || $count <= 0) {
             continue;
         }
-        $parts[] = $count . ' x ' . $name;
+        $parts[] = $count . ' × ' . $name;
     }
+
+    return implode("\n", $parts);
+}
+
+/**
+ * Single-line fence type summary (CSV, titles, tooltips).
+ */
+function fc_planners_format_fence_type_summary_inline(string $label): string
+{
+    $label = trim(str_replace(["\r\n", "\r"], "\n", $label));
+    if ($label === '') {
+        return '';
+    }
+
+    $parts = preg_split('/\n+/', $label) ?: [];
+    $parts = array_values(array_filter(array_map('trim', $parts), static fn(string $part): bool => $part !== ''));
 
     return implode(', ', $parts);
 }
@@ -709,9 +896,10 @@ function fc_planners_fence_type_label_list(string $fenceTypeRaw, int $sectionCou
 function fc_planners_normalize_list_row(object $row): array
 {
     $item = fc_planners_normalize_row(fc_planners_list_columns(), $row, false);
+    // Labels come from the lightweight fence_type column (no fence_data blob on list).
     $item['fence_type_label'] = fc_planners_fence_type_label(
         (string) ($row->fence_type ?? ''),
-        $row->fence_data ?? null,
+        null,
         isset($row->section_count) ? (int) $row->section_count : 0
     );
 
@@ -741,6 +929,22 @@ function fc_planners_browser_case_sql(): string
 }
 
 /**
+ * Normalize planner-entries list view key.
+ */
+function fc_planners_normalize_list_view(string $view): string
+{
+    $view = strtolower(trim($view));
+    if ($view === 'trash') {
+        return 'trash';
+    }
+    if ($view === 'duplicates') {
+        return 'duplicates';
+    }
+
+    return 'all';
+}
+
+/**
  * @return array{where:string,types:string,params:list<mixed>}|null
  */
 function fc_planners_build_filters(
@@ -765,15 +969,22 @@ function fc_planners_build_filters(
     $types = '';
     $params = [];
 
-    $trashView = $trashView === 'trash' ? 'trash' : 'all';
+    $trashView = fc_planners_normalize_list_view($trashView);
     if ($trashView === 'trash') {
         $parts[] = 'trashed_at IS NOT NULL';
+    } elseif ($trashView === 'duplicates') {
+        // Soft-archived duplicates: still live rows, excluded from All.
+        $parts[] = 'trashed_at IS NULL';
+        $parts[] = "status = 'duplicate'";
     } else {
         $parts[] = 'trashed_at IS NULL';
+        // Index-friendly: avoid LOWER/TRIM on status for every list load.
+        $parts[] = "(status IS NULL OR status <> 'duplicate')";
     }
 
     $status = trim($status);
-    if ($status !== '') {
+    // Duplicates tab already scopes by status; ignore a conflicting status filter.
+    if ($status !== '' && $trashView !== 'duplicates') {
         $parts[] = 'status = ?';
         $types .= 's';
         $params[] = $status;
@@ -844,10 +1055,10 @@ function fc_planners_build_filters(
         $fenceParts = [];
         foreach ($fenceTypes as $slug) {
             $escaped = addcslashes($slug, '%_\\');
-            $fenceParts[] = '(fence_type LIKE ? OR fence_data LIKE ?)';
-            $types .= 'ss';
+            // fence_type is JSON like {"slat":"slat"} — avoid fence_data LONGTEXT scans.
+            $fenceParts[] = 'fence_type LIKE ?';
+            $types .= 's';
             $params[] = '%"' . $escaped . '":%';
-            $params[] = '%"' . $escaped . '"%';
         }
         $parts[] = '(' . implode(' OR ', $fenceParts) . ')';
     }
@@ -971,7 +1182,7 @@ function fc_planners_list_entries(
     $devices = array_values($devices);
     $browsers = array_values($browsers);
     $fenceTypes = array_values($fenceTypes);
-    $trashView = $trashView === 'trash' ? 'trash' : 'all';
+    $trashView = fc_planners_normalize_list_view($trashView);
     $dateField = $dateField === 'updated_at' ? 'updated_at' : 'created_at';
 
     try {
@@ -1005,8 +1216,8 @@ function fc_planners_list_entries(
         return ['ok' => false, 'error' => 'Invalid filters.'];
     }
 
-    $columns = implode(', ', fc_planners_list_columns());
-    $listSelect = $columns . ', fence_data';
+    // List columns only — never pull LONGTEXT fence_data on the list page.
+    $listSelect = implode(', ', fc_planners_list_columns());
     $total = null;
     $orderBy = $dateField . ' DESC, id DESC';
 
@@ -1123,11 +1334,11 @@ function fc_planners_list_entries(
 }
 
 /**
- * @return array{all:int,trash:int}
+ * @return array{all:int,trash:int,duplicates:int}
  */
 function fc_planners_trash_view_counts(): array
 {
-    $counts = ['all' => 0, 'trash' => 0];
+    $counts = ['all' => 0, 'trash' => 0, 'duplicates' => 0];
 
     try {
         $ctx = fc_planners_open_db();
@@ -1137,19 +1348,298 @@ function fc_planners_trash_view_counts(): array
 
     $table = $ctx['table'];
     $conn = $ctx['conn'];
+    $safe = $conn->real_escape_string($table);
     $sql = 'SELECT'
-        . ' SUM(CASE WHEN trashed_at IS NULL THEN 1 ELSE 0 END) AS active_count,'
-        . ' SUM(CASE WHEN trashed_at IS NOT NULL THEN 1 ELSE 0 END) AS trash_count'
-        . ' FROM `' . $conn->real_escape_string($table) . '`';
+        . ' SUM(CASE WHEN trashed_at IS NULL AND (status IS NULL OR status <> \'duplicate\') THEN 1 ELSE 0 END) AS active_count,'
+        . ' SUM(CASE WHEN trashed_at IS NOT NULL THEN 1 ELSE 0 END) AS trash_count,'
+        . ' SUM(CASE WHEN trashed_at IS NULL AND status = \'duplicate\' THEN 1 ELSE 0 END) AS duplicate_count'
+        . ' FROM `' . $safe . '`';
     $result = $conn->query($sql);
     if ($result && ($row = $result->fetch_object())) {
         $counts['all'] = (int) ($row->active_count ?? 0);
         $counts['trash'] = (int) ($row->trash_count ?? 0);
+        $counts['duplicates'] = (int) ($row->duplicate_count ?? 0);
     }
 
     fc_planners_close_db($conn);
 
     return $counts;
+}
+
+/**
+ * Fast check: whether any active planner_id appears more than once.
+ *
+ * Uses a self-join + LIMIT 1 so MySQL can stop at the first match.
+ * Full grouping still happens only in fc_planners_dedupe_scan() on click.
+ */
+function fc_planners_duplicate_candidate_count(): int
+{
+    try {
+        $ctx = fc_planners_open_db();
+    } catch (\RuntimeException $e) {
+        return 0;
+    }
+
+    $table = $ctx['table'];
+    $conn = $ctx['conn'];
+    $safe = $conn->real_escape_string($table);
+
+    $sql = 'SELECT 1 FROM `' . $safe . '` a'
+        . ' INNER JOIN `' . $safe . '` b'
+        . '   ON a.`planner_id` = b.`planner_id` AND a.`id` < b.`id`'
+        . ' WHERE a.`trashed_at` IS NULL'
+        . "   AND (a.`status` IS NULL OR a.`status` <> 'duplicate')"
+        . "   AND a.`planner_id` IS NOT NULL AND a.`planner_id` <> ''"
+        . '   AND b.`trashed_at` IS NULL'
+        . "   AND (b.`status` IS NULL OR b.`status` <> 'duplicate')"
+        . ' LIMIT 1';
+
+    $result = $conn->query($sql);
+    $found = $result && $result->num_rows > 0;
+    fc_planners_close_db($conn);
+
+    return $found ? 1 : 0;
+}
+
+/**
+ * Scan for duplicate groups (same planner_id on more than one active row).
+ * Keeps the newest row in each group; older ids are marked duplicate.
+ *
+ * @return array{
+ *   ok:bool,
+ *   groups?:int,
+ *   keep_count?:int,
+ *   mark_count?:int,
+ *   mark_ids?:list<int>,
+ *   keep_ids?:list<int>,
+ *   sample?:list<array{planner_id:string,keep_id:int,mark_ids:list<int>,total:int}>,
+ *   error?:string
+ * }
+ */
+function fc_planners_dedupe_scan(int $sampleLimit = 8): array
+{
+    $sampleLimit = max(0, min(50, $sampleLimit));
+
+    try {
+        $ctx = fc_planners_open_db();
+    } catch (\RuntimeException $e) {
+        return ['ok' => false, 'error' => $e->getMessage()];
+    }
+
+    $table = $ctx['table'];
+    $conn = $ctx['conn'];
+    $safe = $conn->real_escape_string($table);
+
+    // Group in PHP by planner_id — keep newest (created_at DESC, id DESC).
+    $sql = 'SELECT `id`, TRIM(`planner_id`) AS planner_key, `created_at`'
+        . ' FROM `' . $safe . '`'
+        . ' WHERE `trashed_at` IS NULL'
+        . "   AND (`status` IS NULL OR `status` <> 'duplicate')"
+        . "   AND `planner_id` IS NOT NULL AND `planner_id` <> ''"
+        . ' ORDER BY planner_key ASC, `created_at` DESC, `id` DESC';
+
+    $result = $conn->query($sql);
+    if (!$result) {
+        $err = $conn->error;
+        fc_planners_close_db($conn);
+
+        return ['ok' => false, 'error' => 'Could not scan for duplicates.' . ($err !== '' ? ' ' . $err : '')];
+    }
+
+    /** @var array<string, list<array{id:int,planner_id:string}>> $byGroup */
+    $byGroup = [];
+    while ($row = $result->fetch_assoc()) {
+        $plannerKey = (string) ($row['planner_key'] ?? '');
+        if ($plannerKey === '') {
+            continue;
+        }
+        if (!isset($byGroup[$plannerKey])) {
+            $byGroup[$plannerKey] = [];
+        }
+        $byGroup[$plannerKey][] = [
+            'id' => (int) ($row['id'] ?? 0),
+            'planner_id' => $plannerKey,
+        ];
+    }
+
+    fc_planners_close_db($conn);
+
+    $markIds = [];
+    $keepIds = [];
+    $sample = [];
+    $groups = 0;
+
+    foreach ($byGroup as $plannerKey => $rows) {
+        if (count($rows) < 2) {
+            continue;
+        }
+        $groups++;
+        $keepId = (int) ($rows[0]['id'] ?? 0);
+        if ($keepId > 0) {
+            $keepIds[] = $keepId;
+        }
+        $groupMarkIds = [];
+        for ($i = 1, $n = count($rows); $i < $n; $i++) {
+            $id = (int) ($rows[$i]['id'] ?? 0);
+            if ($id > 0) {
+                $markIds[] = $id;
+                $groupMarkIds[] = $id;
+            }
+        }
+        if (count($sample) < $sampleLimit) {
+            $sample[] = [
+                'planner_id' => (string) $plannerKey,
+                'keep_id' => $keepId,
+                'mark_ids' => $groupMarkIds,
+                'total' => count($rows),
+            ];
+        }
+    }
+
+    return [
+        'ok' => true,
+        'groups' => $groups,
+        'keep_count' => count($keepIds),
+        'mark_count' => count($markIds),
+        'mark_ids' => $markIds,
+        'keep_ids' => $keepIds,
+        'sample' => $sample,
+    ];
+}
+
+/**
+ * Mark planner rows as status=duplicate (soft archive; keeps newest siblings).
+ *
+ * @param list<int> $ids
+ * @return array{ok:bool,updated?:int,error?:string}
+ */
+function fc_planners_bulk_mark_duplicate(array $ids): array
+{
+    return fc_planners_bulk_set_status($ids, 'duplicate');
+}
+
+/**
+ * Restore rows previously marked duplicate back to planning.
+ *
+ * @param list<int> $ids
+ * @return array{ok:bool,updated?:int,error?:string}
+ */
+function fc_planners_bulk_restore_from_duplicate(array $ids): array
+{
+    return fc_planners_bulk_set_status($ids, 'planning', 'duplicate');
+}
+
+/**
+ * @param list<int> $ids
+ * @return array{ok:bool,updated?:int,error?:string}
+ */
+function fc_planners_bulk_set_status(array $ids, string $status, ?string $onlyCurrentStatus = null): array
+{
+    $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static function (int $id): bool {
+        return $id > 0;
+    })));
+    if ($ids === []) {
+        return ['ok' => false, 'error' => 'No entries selected.'];
+    }
+    if (count($ids) > 500) {
+        return ['ok' => false, 'error' => 'Too many entries selected (max 500).'];
+    }
+
+    $status = strtolower(trim($status));
+    if ($status === '' || !preg_match('/^[a-z0-9_\-]{1,64}$/', $status)) {
+        return ['ok' => false, 'error' => 'Invalid status.'];
+    }
+
+    try {
+        $ctx = fc_planners_open_db();
+    } catch (\RuntimeException $e) {
+        return ['ok' => false, 'error' => $e->getMessage()];
+    }
+
+    $table = $ctx['table'];
+    $conn = $ctx['conn'];
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $types = 's' . str_repeat('i', count($ids));
+    $params = array_merge([$status], $ids);
+
+    $sql = 'UPDATE `' . $table . '` SET `status` = ?, `status_updated_at` = NOW(), `updated_at` = NOW()'
+        . ' WHERE `id` IN (' . $placeholders . ') AND `trashed_at` IS NULL';
+
+    if ($onlyCurrentStatus !== null) {
+        $only = strtolower(trim($onlyCurrentStatus));
+        if ($only !== '' && preg_match('/^[a-z0-9_\-]{1,64}$/', $only)) {
+            $sql .= ' AND `status` = ?';
+            $types .= 's';
+            $params[] = $only;
+        }
+    }
+
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        fc_planners_close_db($conn);
+
+        return ['ok' => false, 'error' => 'Could not update entries.'];
+    }
+
+    $stmt->bind_param($types, ...$params);
+    if (!$stmt->execute()) {
+        $stmt->close();
+        fc_planners_close_db($conn);
+
+        return ['ok' => false, 'error' => 'Could not update entries.'];
+    }
+
+    $updated = (int) $stmt->affected_rows;
+    $stmt->close();
+    fc_planners_close_db($conn);
+
+    return ['ok' => true, 'updated' => $updated];
+}
+
+/**
+ * Apply duplicate marking in batches (for progress UI).
+ *
+ * @param list<int> $ids
+ * @return array{ok:bool,updated?:int,processed?:int,remaining?:int,done?:bool,error?:string}
+ */
+function fc_planners_dedupe_apply_batch(array $ids, int $offset = 0, int $batchSize = 100): array
+{
+    $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static function (int $id): bool {
+        return $id > 0;
+    })));
+    $offset = max(0, $offset);
+    $batchSize = max(1, min(200, $batchSize));
+
+    if ($ids === []) {
+        return ['ok' => true, 'updated' => 0, 'processed' => 0, 'remaining' => 0, 'done' => true];
+    }
+
+    $slice = array_slice($ids, $offset, $batchSize);
+    if ($slice === []) {
+        return [
+            'ok' => true,
+            'updated' => 0,
+            'processed' => count($ids),
+            'remaining' => 0,
+            'done' => true,
+        ];
+    }
+
+    $result = fc_planners_bulk_mark_duplicate($slice);
+    if (empty($result['ok'])) {
+        return $result;
+    }
+
+    $processed = $offset + count($slice);
+    $remaining = max(0, count($ids) - $processed);
+
+    return [
+        'ok' => true,
+        'updated' => (int) ($result['updated'] ?? 0),
+        'processed' => $processed,
+        'remaining' => $remaining,
+        'done' => $remaining === 0,
+    ];
 }
 
 /**

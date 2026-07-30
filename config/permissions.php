@@ -880,7 +880,8 @@ function fc_permissions_keys_for_api(string $module, string $action = ''): array
             default => ['products.fence_styles.view_list', 'products.fence_styles.view', 'products.fence_styles.edit'],
         },
         'entries', 'entriesController' => match ($action) {
-            'trash', 'restore', 'delete' => ['planner_entries.trash_delete_restore'],
+            'trash', 'restore', 'delete', 'dedupe-scan', 'dedupe-apply', 'restore-duplicate'
+                => ['planner_entries.trash_delete_restore'],
             'export', 'import' => ['planner_entries.import_export'],
             'get' => ['planner_entries.view'],
             default => ['planner_entries.view_list'],

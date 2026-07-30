@@ -538,7 +538,13 @@ function fc_entries_admin_parse_request(): array
         $_GET['quote_loads_max'] ?? null
     );
     $viewRaw = strtolower(trim((string) ($_GET['view'] ?? 'all')));
-    $view = $viewRaw === 'trash' ? 'trash' : 'all';
+    if ($viewRaw === 'trash') {
+        $view = 'trash';
+    } elseif ($viewRaw === 'duplicates') {
+        $view = 'duplicates';
+    } else {
+        $view = 'all';
+    }
     $fenceTypes = fc_entries_admin_normalize_fence_types($_GET['fence_type'] ?? []);
     $dateField = fc_entries_admin_normalize_date_field((string) ($_GET['date_field'] ?? fc_entries_admin_default_date_field()));
     // First visit (no date_period param) uses System → Date Settings default.
@@ -786,9 +792,15 @@ function fc_entries_admin_pagination_window(int $current, int $total): array
 
 function fc_entries_admin_status_class(string $status): string
 {
-    return strtolower($status) === 'planning'
-        ? 'fc-entries-status fc-entries-status--planning'
-        : 'fc-entries-status';
+    $status = strtolower(trim($status));
+    if ($status === 'planning') {
+        return 'fc-entries-status fc-entries-status--planning';
+    }
+    if ($status === 'duplicate') {
+        return 'fc-entries-status fc-entries-status--duplicate';
+    }
+
+    return 'fc-entries-status';
 }
 
 /**
@@ -832,6 +844,8 @@ function fc_entries_admin_page_data(string $adminBase, string $appBase): array
     $states = fc_entries_admin_state_options();
     $fenceTypeOptions = fc_entries_admin_fence_type_options();
     $viewCounts = fc_planners_trash_view_counts();
+    $view = (string) ($request['view'] ?? 'all');
+    $duplicateCandidates = 0;
 
     $error = '';
     if (empty($list['ok'])) {
@@ -862,8 +876,6 @@ function fc_entries_admin_page_data(string $adminBase, string $appBase): array
         $countLabel = $shownFrom . '–' . $shownTo . (!empty($list['has_more']) ? '+' : '');
     }
 
-    $view = (string) ($request['view'] ?? 'all');
-
     return [
         'request' => $request,
         'list' => $list,
@@ -876,6 +888,7 @@ function fc_entries_admin_page_data(string $adminBase, string $appBase): array
         'fence_type_options' => $fenceTypeOptions,
         'view' => $view,
         'view_counts' => $viewCounts,
+        'duplicate_candidate_count' => $duplicateCandidates,
         'total' => $total,
         'total_pages' => $totalPages,
         'count_label' => $countLabel,
@@ -1187,9 +1200,18 @@ function fc_entries_admin_build_list_view(array $page): array
         || $selectedFenceTypes !== [];
     $page['fence_type_filter_label'] = fc_entries_admin_fence_type_filter_label($fenceTypeOptions, $selectedFenceTypes);
     $page['form_action'] = fc_entries_admin_route_slug();
-    $view = ((string) ($req['view'] ?? 'all')) === 'trash' ? 'trash' : 'all';
+    $viewRaw = (string) ($req['view'] ?? 'all');
+    if ($viewRaw === 'trash') {
+        $view = 'trash';
+    } elseif ($viewRaw === 'duplicates') {
+        $view = 'duplicates';
+    } else {
+        $view = 'all';
+    }
     $page['view'] = $view;
-    $viewCounts = is_array($page['view_counts'] ?? null) ? $page['view_counts'] : ['all' => 0, 'trash' => 0];
+    $viewCounts = is_array($page['view_counts'] ?? null)
+        ? $page['view_counts']
+        : ['all' => 0, 'trash' => 0, 'duplicates' => 0];
     $page['tabs'] = [
         [
             'key' => 'all',
@@ -1204,6 +1226,13 @@ function fc_entries_admin_build_list_view(array $page): array
             'count' => (int) ($viewCounts['trash'] ?? 0),
             'is_active' => $view === 'trash',
             'href' => is_callable($url) ? (string) $url(['view' => 'trash', 'page' => 1]) : '?view=trash',
+        ],
+        [
+            'key' => 'duplicates',
+            'label' => 'Duplicates',
+            'count' => (int) ($viewCounts['duplicates'] ?? 0),
+            'is_active' => $view === 'duplicates',
+            'href' => is_callable($url) ? (string) $url(['view' => 'duplicates', 'page' => 1]) : '?view=duplicates',
         ],
     ];
     $page['clear_filters_url'] = is_callable($url)
@@ -1234,16 +1263,30 @@ function fc_entries_admin_build_list_view(array $page): array
     $page['filter_hidden_html'] = fc_entries_admin_filter_hidden_html($req, $selectedFenceTypes);
     $page['api_url'] = (string) ($page['api_url'] ?? 'api.php?module=entries');
     $page['is_trash_view'] = $view === 'trash';
-    $bulkOptions = $view === 'trash'
-        ? [
+    $page['is_duplicates_view'] = $view === 'duplicates';
+    $canDedupe = !function_exists('fc_auth_user_can') || fc_auth_user_can('planner_entries.trash_delete_restore');
+    // Always available on All when permitted — scanning happens on click, not page load.
+    $page['can_remove_duplicates'] = $canDedupe && $view === 'all';
+    $page['duplicate_candidate_count'] = (int) ($page['duplicate_candidate_count'] ?? 0);
+    if ($view === 'trash') {
+        $bulkOptions = [
             ['value' => 'export', 'label' => 'Export as JSON', 'perm' => 'planner_entries.import_export'],
             ['value' => 'restore', 'label' => 'Restore', 'perm' => 'planner_entries.trash_delete_restore'],
             ['value' => 'delete', 'label' => 'Delete permanently', 'perm' => 'planner_entries.trash_delete_restore'],
-        ]
-        : [
+        ];
+    } elseif ($view === 'duplicates') {
+        $bulkOptions = [
+            ['value' => 'export', 'label' => 'Export as JSON', 'perm' => 'planner_entries.import_export'],
+            ['value' => 'restore-duplicate', 'label' => 'Restore to All', 'perm' => 'planner_entries.trash_delete_restore'],
+            ['value' => 'trash', 'label' => 'Move to trash', 'perm' => 'planner_entries.trash_delete_restore'],
+            ['value' => 'delete', 'label' => 'Delete permanently', 'perm' => 'planner_entries.trash_delete_restore'],
+        ];
+    } else {
+        $bulkOptions = [
             ['value' => 'export', 'label' => 'Export as JSON', 'perm' => 'planner_entries.import_export'],
             ['value' => 'trash', 'label' => 'Move to trash', 'perm' => 'planner_entries.trash_delete_restore'],
         ];
+    }
     $page['bulk_action_options'] = [];
     foreach ($bulkOptions as $option) {
         $perm = (string) ($option['perm'] ?? '');
@@ -1289,6 +1332,11 @@ function fc_entries_admin_build_list_view(array $page): array
                 (int) ($item['section_count'] ?? 0)
             );
         }
+        $fenceLabelLines = preg_split('/\r\n|\r|\n/', $fenceLabel) ?: [];
+        $fenceLabelLines = array_values(array_filter(
+            array_map(static fn($line): string => trim((string) $line), $fenceLabelLines),
+            static fn(string $line): bool => $line !== ''
+        ));
         $timeframeSlug = (string) ($item['timeframe'] ?? '');
         $status = (string) ($item['status'] ?? '');
         $device = trim((string) ($item['device'] ?? ''));
@@ -1309,8 +1357,13 @@ function fc_entries_admin_build_list_view(array $page): array
             'email'              => (string) ($item['email'] ?? ''),
             'mobile'             => (string) ($item['mobile'] ?? ''),
             'fence_label'        => $fenceLabel,
+            'fence_label_inline' => function_exists('fc_planners_format_fence_type_summary_inline')
+                ? fc_planners_format_fence_type_summary_inline($fenceLabel)
+                : $fenceLabel,
+            'fence_label_lines'  => $fenceLabelLines,
             'timeframe_label'    => (string) ($timeframes[$timeframeSlug] ?? $timeframeSlug),
             'section_count'      => (string) ($item['section_count'] ?? ''),
+            'quote_load_count'   => (string) max(0, (int) ($item['quote_load_count'] ?? 0)),
             'state'              => (string) ($item['state'] ?? ''),
             'device'             => $device !== '' ? $device : 'Unknown',
             'device_icon'        => fc_entries_admin_device_icon($device),
@@ -1389,8 +1442,9 @@ function fc_entries_admin_filter_hidden_html(array $req, array $selectedFenceTyp
                 . fc_entries_admin_h((string) $value) . '">';
         }
     }
-    if (!in_array('view', $exclude, true) && ($req['view'] ?? 'all') === 'trash') {
-        $parts[] = '<input type="hidden" name="view" value="trash">';
+    if (!in_array('view', $exclude, true) && in_array(($req['view'] ?? 'all'), ['trash', 'duplicates'], true)) {
+        $parts[] = '<input type="hidden" name="view" value="'
+            . fc_entries_admin_h((string) $req['view']) . '">';
     }
     if (!in_array('date_period', $exclude, true) && ($req['date_period'] ?? '') !== '') {
         $parts[] = '<input type="hidden" name="date_period" value="' . fc_entries_admin_h((string) $req['date_period']) . '">';
@@ -1501,9 +1555,18 @@ function fc_entries_admin_build_detail_view(array $page): array
                 if ($raw === '') {
                     $raw = fc_planners_fence_type_label(
                         (string) ($item['fence_type'] ?? ''),
-                        null,
+                        $item['fence_data'] ?? null,
                         (int) ($item['section_count'] ?? 0)
                     );
+                }
+                $fenceLines = preg_split('/\r\n|\r|\n/', (string) $raw) ?: [];
+                $fenceLines = array_values(array_filter(
+                    array_map(static fn($line): string => trim((string) $line), $fenceLines),
+                    static fn(string $line): bool => $line !== ''
+                ));
+                if ($fenceLines !== []) {
+                    $extraItems = $fenceLines;
+                    $raw = implode("\n", $fenceLines);
                 }
             } elseif ($fieldKey === 'timeframe') {
                 $slug = trim((string) $raw);

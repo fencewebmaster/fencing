@@ -10,16 +10,19 @@ $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
 if ( empty( $info ) && ! empty( $_GET['qid'] ) ) {
+    $qid = trim( (string) $_GET['qid'] );
     $db  = new Database();
-    $row = $db->select_where( 'planners', '`planner_id`="' . $_GET['qid'] . '"' );
+    $row = fc_planner_is_valid_planner_id( $qid )
+        ? $db->select_where( 'planners', '`planner_id`="' . $qid . '"' )
+        : null;
     if ( $row && is_object( $row ) && ! fc_planners_row_is_trashed( $row ) ) {
-        $_SESSION['planner_id'] = $_GET['qid'];
+        $_SESSION['planner_id'] = $qid;
         $site = sites( $_SERVER['HTTP_HOST'], 'domain', true );
         if ( $site ) {
             $_SESSION['site'] = $site;
         }
         fc_hydrate_planner_quote_session_from_row( $row );
-        fc_planners_increment_quote_load_count( (string) $_GET['qid'] );
+        fc_planners_increment_quote_load_count( $qid );
         $info = isset( $_SESSION['fc_data'] ) ? $_SESSION['fc_data'] : [];
     }
 }

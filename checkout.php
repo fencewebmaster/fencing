@@ -11,7 +11,9 @@ if( @$_POST['action'] == 'push_order' ) {
 
     $info = $_SESSION;
 
-    $planner_id = isset( $info['planner_id'] ) ? $info['planner_id'] : null;
+    // Never mint an id here: an order push must attach to the quote that was already saved.
+    $planner_ref = fc_planner_resolve_submission_planner_id( @$_POST['planner_id'], false );
+    $planner_id  = $planner_ref['planner_id'] !== '' ? $planner_ref['planner_id'] : null;
 
     if ( ! $planner_id ) {
         echo json_encode( array(
@@ -67,11 +69,15 @@ if( @$_POST['action'] == 'push_order' ) {
       'cart_data'          => @$fc_cart['items'],
       'cart_items_data'    => @$fc_data['cart_items'],
       'project_plans_data' => @$fc_data['project_plans'],
-      'created_at'         => date('Y-m-d H:i:s'),
       'updated_at'         => date('Y-m-d H:i:s'),
     ];
 
     $data_inputs = array_merge($data_inputs, fc_planner_submission_meta());
+
+    // Keep the original creation time when updating an existing quote.
+    if ( ! $planner_ref['exists'] ) {
+        $data_inputs['created_at'] = date('Y-m-d H:i:s');
+    }
 
     $where = [ 'planner_id' => $planner_id ];
 
@@ -216,7 +222,8 @@ if( @$_POST['action'] == 'push_order' ) {
 
     $info = $_SESSION;
 
-    $planner_id  = isset($info['planner_id']) ? $info['planner_id'] : get_uid(6);
+    $planner_ref = fc_planner_resolve_submission_planner_id(@$_POST['planner_id']);
+    $planner_id  = $planner_ref['planner_id'];
 
     $_SESSION['planner_id'] = $planner_id;
 
@@ -252,11 +259,15 @@ if( @$_POST['action'] == 'push_order' ) {
       'cart_data'          => @$fc_cart['items'],
       'cart_items_data'    => @$fc_data['cart_items'],
       'project_plans_data' => @$fc_data['project_plans'],
-      'created_at'         => date('Y-m-d H:i:s'),
       'updated_at'         => date('Y-m-d H:i:s'),
     ];
 
     $data_inputs = array_merge($data_inputs, fc_planner_submission_meta());
+
+    // Keep the original creation time when updating an existing quote.
+    if ( ! $planner_ref['exists'] ) {
+        $data_inputs['created_at'] = date('Y-m-d H:i:s');
+    }
 
     $where = ['planner_id' => $planner_id];
 

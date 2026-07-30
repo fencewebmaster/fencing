@@ -42,6 +42,8 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
         <form class="fc-entries-page__toolbar-form" method="get" action="<?php echo $h((string) $page['form_action']); ?>">
             <?php if (($page['view'] ?? 'all') === 'trash') : ?>
             <input type="hidden" name="view" value="trash">
+            <?php elseif (($page['view'] ?? 'all') === 'duplicates') : ?>
+            <input type="hidden" name="view" value="duplicates">
             <?php endif; ?>
             <div class="fc-entries-page__toolbar-row">
                 <div class="fc-entries-page__search-group">
@@ -99,6 +101,16 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                         accept="application/json,.json"
                         hidden
                     >
+                    <?php endif; ?>
+                    <?php if (!empty($page['can_remove_duplicates'])) : ?>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger fw-semibold fc-entries-dedupe-trigger"
+                        data-fc-entries-dedupe-open
+                        data-fc-entries-dedupe-candidates="<?php echo (int) ($page['duplicate_candidate_count'] ?? 0); ?>"
+                    >
+                        <i class="fa-solid fa-clone" aria-hidden="true"></i>
+                    </button>
                     <?php endif; ?>
                 </div>
 
@@ -529,6 +541,7 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                         <th scope="col">Fence type</th>
                         <th scope="col">Timeframe</th>
                         <th scope="col">Sections</th>
+                        <th scope="col">Loads</th>
                         <th scope="col">State</th>
                         <th scope="col">Device</th>
                         <th scope="col"><?php echo $h((string) ($page['date_column_label'] ?? 'Created At')); ?></th>
@@ -537,7 +550,15 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                 <tbody>
                     <?php if (empty($page['has_table_rows'])) : ?>
                     <tr>
-                        <td colspan="12" class="fc-entries-empty"><?php echo !empty($page['is_trash_view']) ? 'Trash is empty.' : 'No planner entries found.'; ?></td>
+                        <td colspan="13" class="fc-entries-empty"><?php
+                            if (!empty($page['is_trash_view'])) {
+                                echo 'Trash is empty.';
+                            } elseif (!empty($page['is_duplicates_view'])) {
+                                echo 'No duplicate entries found.';
+                            } else {
+                                echo 'No planner entries found.';
+                            }
+                        ?></td>
                     </tr>
                     <?php else : ?>
                     <?php foreach ($page['table_rows'] as $row) : ?>
@@ -592,9 +613,29 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                         <td class="fc-entries-table__truncate"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['name'] ?? ''); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['name'] ?? ''); ?></span><?php endif; ?></td>
                         <td class="fc-entries-table__truncate fc-entries-table__truncate--wide"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['email'] ?? ''); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['email'] ?? ''); ?></span><?php endif; ?></td>
                         <td class="fc-entries-table__truncate"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['mobile'] ?? ''); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['mobile'] ?? ''); ?></span><?php endif; ?></td>
-                        <td class="fc-entries-table__truncate" title="<?php echo $h((string) ($row['fence_label'] ?? '')); ?>"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['fence_label'] ?? ''); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['fence_label'] ?? ''); ?></span><?php endif; ?></td>
+                        <td class="fc-entries-table__fence-types" title="<?php echo $h((string) ($row['fence_label_inline'] ?? $row['fence_label'] ?? '')); ?>">
+                            <?php
+                            $fenceLines = is_array($row['fence_label_lines'] ?? null) ? $row['fence_label_lines'] : [];
+                            $fenceInner = '';
+                            if ($fenceLines === []) {
+                                $fenceInner = $cell('');
+                            } else {
+                                $fenceInner = '<span class="fc-entries-fence-types">';
+                                foreach ($fenceLines as $fenceLine) {
+                                    $fenceInner .= '<span class="fc-entries-fence-types__item">' . $h((string) $fenceLine) . '</span>';
+                                }
+                                $fenceInner .= '</span>';
+                            }
+                            ?>
+                            <?php if ($rowCanOpen) : ?>
+                            <a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $fenceInner; ?></a>
+                            <?php else : ?>
+                            <span class="fc-entries-row-text"><?php echo $fenceInner; ?></span>
+                            <?php endif; ?>
+                        </td>
                         <td class="fc-entries-table__truncate"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['timeframe_label'] ?? ''); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['timeframe_label'] ?? ''); ?></span><?php endif; ?></td>
                         <td class="fc-entries-table__truncate"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['section_count'] ?? ''); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['section_count'] ?? ''); ?></span><?php endif; ?></td>
+                        <td class="fc-entries-table__truncate"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['quote_load_count'] ?? '0'); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['quote_load_count'] ?? '0'); ?></span><?php endif; ?></td>
                         <td class="fc-entries-table__truncate"><?php if ($rowCanOpen) : ?><a class="fc-entries-row-link" href="<?php echo $h($rowHref); ?>"><?php echo $cell($row['state'] ?? ''); ?></a><?php else : ?><span class="fc-entries-row-text"><?php echo $cell($row['state'] ?? ''); ?></span><?php endif; ?></td>
                         <td class="fc-entries-table__device-col">
                             <?php if ($rowCanOpen) : ?>
@@ -686,4 +727,77 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
             <?php endif; ?>
         </div>
     </footer>
+
+    <div class="fc-entries-dedupe-modal" data-fc-entries-dedupe-modal hidden>
+        <div class="fc-entries-dedupe-modal__backdrop" data-fc-entries-dedupe-close aria-hidden="true"></div>
+        <section
+            class="fc-entries-dedupe-modal__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fc-entries-dedupe-title"
+            tabindex="-1"
+        >
+            <header class="fc-entries-dedupe-modal__header">
+                <span class="fc-entries-dedupe-modal__icon" aria-hidden="true">
+                    <i class="fa-solid fa-clone"></i>
+                </span>
+                <div>
+                    <h2 id="fc-entries-dedupe-title">Find Duplicates</h2>
+                    <p data-fc-entries-dedupe-subtitle>Scanning planner entries for matching planner IDs…</p>
+                </div>
+                <button
+                    type="button"
+                    class="fencing-modal-close"
+                    data-fc-entries-dedupe-close
+                    aria-label="Close find duplicates"
+                ></button>
+            </header>
+            <div class="fc-entries-dedupe-modal__body">
+                <p class="fc-entries-dedupe-modal__intro" data-fc-entries-dedupe-intro>
+                    Entries that share the same <strong>planner ID</strong> are scanned. Older copies are marked as
+                    <strong>duplicate</strong>; the newest entry for each planner ID stays in All.
+                </p>
+                <div class="fc-entries-dedupe-progress" data-fc-entries-dedupe-progress>
+                    <div class="fc-entries-dedupe-progress__status">
+                        <span data-fc-entries-dedupe-status>Preparing…</span>
+                        <strong data-fc-entries-dedupe-percent>0%</strong>
+                    </div>
+                    <div class="fc-entries-dedupe-progress__track" aria-hidden="true">
+                        <span data-fc-entries-dedupe-bar style="width: 0%"></span>
+                    </div>
+                    <dl class="fc-entries-dedupe-progress__details">
+                        <div>
+                            <dt>Planner ID groups</dt>
+                            <dd data-fc-entries-dedupe-groups>—</dd>
+                        </div>
+                        <div>
+                            <dt>Kept (newest)</dt>
+                            <dd data-fc-entries-dedupe-kept>—</dd>
+                        </div>
+                        <div>
+                            <dt>Marked duplicate</dt>
+                            <dd data-fc-entries-dedupe-marked>—</dd>
+                        </div>
+                        <div>
+                            <dt>Processed</dt>
+                            <dd data-fc-entries-dedupe-processed>—</dd>
+                        </div>
+                    </dl>
+                    <p class="fc-entries-dedupe-progress__message" data-fc-entries-dedupe-message></p>
+                    <div class="fc-entries-dedupe-modal__error" data-fc-entries-dedupe-error hidden></div>
+                </div>
+            </div>
+            <footer class="fc-entries-dedupe-modal__footer">
+                <button type="button" class="btn btn-sm btn-light fw-semibold" data-fc-entries-dedupe-close>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-orange fw-semibold" data-fc-entries-dedupe-start hidden>
+                    Start cleanup
+                </button>
+                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-entries-dedupe-done hidden>
+                    View Duplicates
+                </button>
+            </footer>
+        </section>
+    </div>
 </div>

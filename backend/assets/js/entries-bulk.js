@@ -189,9 +189,12 @@
                 ' as JSON? The file includes full planner details for import on another site.';
             confirmLabel = 'Export JSON';
             variant = 'info';
-        } else if (action === 'restore') {
-            title = 'Restore selected entries';
-            message = 'Restore ' + count + ' selected ' + noun + '?';
+        } else if (action === 'restore' || action === 'restore-duplicate') {
+            title = action === 'restore-duplicate' ? 'Restore to All' : 'Restore selected entries';
+            message =
+                action === 'restore-duplicate'
+                    ? 'Restore ' + count + ' selected ' + noun + ' back to All?'
+                    : 'Restore ' + count + ' selected ' + noun + '?';
             confirmLabel = 'Restore';
             variant = 'info';
         } else if (action === 'delete') {
@@ -274,7 +277,7 @@
     function runBulk(root, action, ids) {
         var endpoint = apiUrl(root, action);
         var loadingMsg =
-            action === 'restore'
+            action === 'restore' || action === 'restore-duplicate'
                 ? 'Restoring entries…'
                 : action === 'delete'
                   ? 'Deleting entries…'
@@ -508,8 +511,343 @@
         });
 
         bindImport(root);
+        bindDedupe(root);
         syncSelectionUi(root);
         showHeaderNotice(root, consumeFlash());
+    }
+
+    function csrfToken(root) {
+        return root.getAttribute('data-fc-entries-csrf') || '';
+    }
+
+    function bindDedupe(root) {
+        var openBtn = root.querySelector('[data-fc-entries-dedupe-open]');
+        var modal = root.querySelector('[data-fc-entries-dedupe-modal]');
+        if (!openBtn || !modal) {
+            return;
+        }
+
+        var dialog = modal.querySelector('.fc-entries-dedupe-modal__dialog');
+        var subtitle = modal.querySelector('[data-fc-entries-dedupe-subtitle]');
+        var statusEl = modal.querySelector('[data-fc-entries-dedupe-status]');
+        var percentEl = modal.querySelector('[data-fc-entries-dedupe-percent]');
+        var barEl = modal.querySelector('[data-fc-entries-dedupe-bar]');
+        var groupsEl = modal.querySelector('[data-fc-entries-dedupe-groups]');
+        var keptEl = modal.querySelector('[data-fc-entries-dedupe-kept]');
+        var markedEl = modal.querySelector('[data-fc-entries-dedupe-marked]');
+        var processedEl = modal.querySelector('[data-fc-entries-dedupe-processed]');
+        var messageEl = modal.querySelector('[data-fc-entries-dedupe-message]');
+        var errorEl = modal.querySelector('[data-fc-entries-dedupe-error]');
+        var startBtn = modal.querySelector('[data-fc-entries-dedupe-start]');
+        var doneBtn = modal.querySelector('[data-fc-entries-dedupe-done]');
+
+        var running = false;
+        var markIds = [];
+        var markedTotal = 0;
+        var scanSummary = null;
+
+        function setProgress(percent, statusText) {
+            var pct = Math.max(0, Math.min(100, Math.round(percent)));
+            if (percentEl) {
+                percentEl.textContent = pct + '%';
+            }
+            if (barEl) {
+                barEl.style.width = pct + '%';
+            }
+            if (statusEl && statusText) {
+                statusEl.textContent = statusText;
+            }
+        }
+
+        function setError(message) {
+            if (!errorEl) {
+                return;
+            }
+            if (!message) {
+                errorEl.hidden = true;
+                errorEl.textContent = '';
+                return;
+            }
+            errorEl.hidden = false;
+            errorEl.textContent = message;
+        }
+
+        function setDetails(groups, kept, marked, processed) {
+            if (groupsEl) {
+                groupsEl.textContent = groups == null ? '—' : String(groups);
+            }
+            if (keptEl) {
+                keptEl.textContent = kept == null ? '—' : String(kept);
+            }
+            if (markedEl) {
+                markedEl.textContent = marked == null ? '—' : String(marked);
+            }
+            if (processedEl) {
+                processedEl.textContent = processed == null ? '—' : String(processed);
+            }
+        }
+
+        function setRunningUi(isRunning) {
+            running = !!isRunning;
+            modal.querySelectorAll('[data-fc-entries-dedupe-close]').forEach(function (btn) {
+                if (btn === doneBtn) {
+                    return;
+                }
+                btn.disabled = running;
+            });
+            if (startBtn) {
+                startBtn.disabled = running;
+            }
+            if (doneBtn) {
+                doneBtn.disabled = false;
+            }
+        }
+
+        function openModal() {
+            markIds = [];
+            markedTotal = 0;
+            scanSummary = null;
+            setError('');
+            setDetails(null, null, null, null);
+            setProgress(0, 'Preparing…');
+            if (subtitle) {
+                subtitle.textContent = 'Scanning planner entries for matching planner IDs…';
+            }
+            if (messageEl) {
+                messageEl.textContent = '';
+            }
+            if (startBtn) {
+                startBtn.hidden = true;
+            }
+            if (doneBtn) {
+                doneBtn.hidden = true;
+            }
+            modal.hidden = false;
+            document.documentElement.classList.add('fc-admin-scroll-lock');
+            if (dialog && typeof dialog.focus === 'function') {
+                dialog.focus();
+            }
+            runScan();
+        }
+
+        function closeModal() {
+            if (running) {
+                return;
+            }
+            modal.hidden = true;
+            document.documentElement.classList.remove('fc-admin-scroll-lock');
+        }
+
+        function postJson(action, body) {
+            return fetch(apiUrl(root, action), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body || {}),
+            }).then(function (res) {
+                return res.json().then(function (data) {
+                    return { ok: res.ok, data: data };
+                });
+            });
+        }
+
+        function runScan() {
+            setRunningUi(true);
+            setProgress(12, 'Scanning for duplicate planner IDs…');
+            if (messageEl) {
+                messageEl.textContent = 'Grouping active entries by planner ID and finding older copies…';
+            }
+
+            postJson('dedupe-scan', { csrf: csrfToken(root) })
+                .then(function (result) {
+                    if (!result.ok || !result.data || result.data.ok === false) {
+                        throw new Error(
+                            (result.data && (result.data.error || result.data.message)) ||
+                                'Scan failed.'
+                        );
+                    }
+
+                    scanSummary = result.data;
+                    markIds = Array.isArray(result.data.mark_ids) ? result.data.mark_ids : [];
+                    setDetails(
+                        result.data.groups,
+                        result.data.keep_count,
+                        result.data.mark_count,
+                        0
+                    );
+                    setProgress(100, 'Scan complete');
+                    if (subtitle) {
+                        subtitle.textContent =
+                            markIds.length > 0
+                                ? 'Ready to mark older matching planner IDs as duplicate.'
+                                : 'No duplicate planner IDs found.';
+                    }
+                    if (messageEl) {
+                        messageEl.textContent = result.data.message || '';
+                    }
+
+                    if (markIds.length === 0) {
+                        if (doneBtn) {
+                            doneBtn.hidden = false;
+                            doneBtn.textContent = 'Close';
+                        }
+                        setRunningUi(false);
+                        return;
+                    }
+
+                    if (startBtn) {
+                        startBtn.hidden = false;
+                        startBtn.textContent =
+                            'Mark ' +
+                            markIds.length +
+                            ' duplicate' +
+                            (markIds.length === 1 ? '' : 's');
+                    }
+                    setRunningUi(false);
+                })
+                .catch(function (err) {
+                    setError(err.message || 'Could not scan for duplicates.');
+                    setProgress(0, 'Scan failed');
+                    setRunningUi(false);
+                });
+        }
+
+        function applyNextBatch(offset) {
+            var total = markIds.length;
+            var batchSize = 100;
+            setProgress(
+                total ? Math.min(99, Math.round((offset / total) * 100)) : 0,
+                'Marking older entries as duplicate…'
+            );
+
+            return postJson('dedupe-apply', {
+                csrf: csrfToken(root),
+                ids: markIds,
+                offset: offset,
+                batch_size: batchSize,
+            }).then(function (result) {
+                if (!result.ok || !result.data || result.data.ok === false) {
+                    throw new Error(
+                        (result.data && (result.data.error || result.data.message)) ||
+                            'Could not mark duplicates.'
+                    );
+                }
+
+                markedTotal += Number(result.data.updated || 0);
+                var processed = Number(result.data.processed || offset);
+                setDetails(
+                    scanSummary && scanSummary.groups,
+                    scanSummary && scanSummary.keep_count,
+                    scanSummary && scanSummary.mark_count,
+                    markedTotal
+                );
+                setProgress(
+                    total ? Math.min(99, Math.round((processed / total) * 100)) : 0,
+                    'Marking older entries as duplicate…'
+                );
+
+                if (result.data.done) {
+                    return result.data;
+                }
+
+                return applyNextBatch(processed);
+            });
+        }
+
+        function runApply() {
+            if (!markIds.length || running) {
+                return;
+            }
+            setRunningUi(true);
+            setError('');
+            if (startBtn) {
+                startBtn.hidden = true;
+            }
+            if (subtitle) {
+                subtitle.textContent = 'Updating older matching planner IDs…';
+            }
+            if (messageEl) {
+                messageEl.textContent =
+                    'Keeping the newest entry for each planner ID and moving older ones to Duplicates.';
+            }
+            setProgress(0, 'Marking older entries as duplicate…');
+
+            applyNextBatch(0)
+                .then(function () {
+                    setProgress(100, 'Cleanup complete');
+                    if (subtitle) {
+                        subtitle.textContent = 'Duplicate cleanup finished.';
+                    }
+                    if (messageEl) {
+                        messageEl.textContent =
+                            markedTotal +
+                            ' older ' +
+                            (markedTotal === 1 ? 'entry was' : 'entries were') +
+                            ' marked as duplicate. Newest planner IDs remain in All.';
+                    }
+                    if (doneBtn) {
+                        doneBtn.hidden = false;
+                        doneBtn.textContent = 'View Duplicates';
+                    }
+                    setFlash(
+                        markedTotal +
+                            ' duplicate ' +
+                            (markedTotal === 1 ? 'entry' : 'entries') +
+                            ' moved to the Duplicates tab.',
+                        'success'
+                    );
+                    setRunningUi(false);
+                })
+                .catch(function (err) {
+                    setError(err.message || 'Could not mark duplicates.');
+                    setProgress(0, 'Cleanup failed');
+                    if (startBtn) {
+                        startBtn.hidden = false;
+                    }
+                    setRunningUi(false);
+                });
+        }
+
+        openBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            openModal();
+        });
+
+        if (startBtn) {
+            startBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                runApply();
+            });
+        }
+
+        if (doneBtn) {
+            doneBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (markIds.length === 0 && markedTotal === 0) {
+                    closeModal();
+                    return;
+                }
+                var base = root.getAttribute('data-fc-entries-api') || '';
+                // Prefer staying on planner-entries with duplicates view.
+                global.location.href = 'planner-entries?view=duplicates';
+            });
+        }
+
+        modal.querySelectorAll('[data-fc-entries-dedupe-close]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                closeModal();
+            });
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !modal.hidden && !running) {
+                closeModal();
+            }
+        });
     }
 
     function boot() {

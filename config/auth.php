@@ -13,13 +13,21 @@ const FC_AUTH_SESSION_KEY = 'fc_admin_user';
 const FC_AUTH_SWITCH_KEY = 'fc_admin_switch_from';
 const FC_AUTH_REMEMBER_COOKIE = 'fc_admin_remember';
 const FC_AUTH_REMEMBER_SESSION_KEY = 'fc_admin_remember';
+const FC_AUTH_REMEMBER_META_PREFIX = 'fc_remember_token_';
+/** Max remembered devices stored per user. */
+const FC_AUTH_REMEMBER_MAX_TOKENS = 10;
 /** Non–Remember me sessions last 24 hours from login. */
 const FC_AUTH_SESSION_TTL = 86400;
-/** Remember me: long-lived session (~10 years) until intentional logout. */
+/** Remember me: long-lived cookie (~10 years) until intentional logout. */
 const FC_AUTH_REMEMBER_TTL = 315360000;
 
 function fc_auth_cookie_secure(): bool
 {
+    $forwarded = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+    if ($forwarded === 'https') {
+        return true;
+    }
+
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
         || ((int) ($_SERVER['SERVER_PORT'] ?? 0) === 443);
 }
@@ -27,6 +35,18 @@ function fc_auth_cookie_secure(): bool
 function fc_auth_session_ttl(bool $remember): int
 {
     return $remember ? FC_AUTH_REMEMBER_TTL : FC_AUTH_SESSION_TTL;
+}
+
+/**
+ * Dedicated writable directory for admin PHP sessions (isolated from public GC).
+ */
+function fc_auth_session_save_path(): string
+{
+    if (!function_exists('fc_storage_sessions_dir')) {
+        require_once __DIR__ . '/storage.php';
+    }
+
+    return fc_storage_sessions_dir();
 }
 
 /**
@@ -65,45 +85,575 @@ function fc_auth_refresh_session_cookie(int $lifetime): void
     ]);
 }
 
-function fc_auth_set_remember_cookie(bool $remember): void
+/**
+ * @return array{selector:string,validator:string}|null
+ */
+function fc_auth_parse_remember_cookie(?string $raw): ?array
+{
+    $raw = trim((string) $raw);
+    if ($raw === '' || !preg_match('/^[a-f0-9]{32}:[a-f0-9]{64}$/', $raw)) {
+        return null;
+    }
+
+    $parts = explode(':', $raw, 2);
+
+    return [
+        'selector' => $parts[0],
+        'validator' => $parts[1],
+    ];
+}
+
+function fc_auth_remember_meta_key(string $selector): string
+{
+    return FC_AUTH_REMEMBER_META_PREFIX . $selector;
+}
+
+function fc_auth_password_fingerprint(string $passwordHash): string
+{
+    return hash('sha256', $passwordHash);
+}
+
+function fc_auth_hash_remember_validator(string $validator): string
+{
+    return hash('sha256', $validator);
+}
+
+/**
+ * Write the persistent remember cookie (selector:validator).
+ */
+function fc_auth_write_remember_cookie(string $token): void
 {
     if (headers_sent()) {
         return;
     }
 
     $secure = fc_auth_cookie_secure();
-    if ($remember) {
-        setcookie(FC_AUTH_REMEMBER_COOKIE, '1', [
-            'expires'  => time() + FC_AUTH_REMEMBER_TTL,
-            'path'     => '/',
-            'secure'   => $secure,
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ]);
-        $_COOKIE[FC_AUTH_REMEMBER_COOKIE] = '1';
+    setcookie(FC_AUTH_REMEMBER_COOKIE, $token, [
+        'expires'  => time() + FC_AUTH_REMEMBER_TTL,
+        'path'     => '/',
+        'secure'   => $secure,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    $_COOKIE[FC_AUTH_REMEMBER_COOKIE] = $token;
+}
 
+/**
+ * Clear the persistent remember cookie from the browser.
+ */
+function fc_auth_clear_remember_cookie(): void
+{
+    if (headers_sent()) {
         return;
     }
 
-    if (isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE])) {
-        setcookie(FC_AUTH_REMEMBER_COOKIE, '', [
-            'expires'  => time() - 3600,
-            'path'     => '/',
-            'secure'   => $secure,
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ]);
-        unset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]);
+    if (!isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE])) {
+        return;
     }
+
+    $secure = fc_auth_cookie_secure();
+    setcookie(FC_AUTH_REMEMBER_COOKIE, '', [
+        'expires'  => time() - 3600,
+        'path'     => '/',
+        'secure'   => $secure,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    unset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]);
+}
+
+/**
+ * @deprecated Use fc_auth_issue_remember_token / fc_auth_clear_remember_cookie.
+ */
+function fc_auth_set_remember_cookie(bool $remember): void
+{
+    if ($remember) {
+        return;
+    }
+
+    fc_auth_clear_remember_cookie();
 }
 
 function fc_auth_is_remembered(): bool
 {
-    if (!empty($_SESSION[FC_AUTH_REMEMBER_SESSION_KEY])) {
+    if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION[FC_AUTH_REMEMBER_SESSION_KEY])) {
         return true;
     }
 
-    return !empty($_COOKIE[FC_AUTH_REMEMBER_COOKIE]);
+    return fc_auth_parse_remember_cookie(
+        isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : null
+    ) !== null;
+}
+
+/**
+ * Fetch a single usermeta value.
+ */
+function fc_auth_usermeta_get(int $userId, string $metaKey): ?string
+{
+    if ($userId <= 0 || $metaKey === '') {
+        return null;
+    }
+
+    $conn = fc_auth_db();
+    if (!$conn instanceof mysqli) {
+        return null;
+    }
+
+    $metaTable = fc_auth_usermeta_table();
+    $stmt = $conn->prepare("SELECT meta_value FROM `{$metaTable}` WHERE user_id = ? AND meta_key = ? LIMIT 1");
+    if (!$stmt) {
+        $conn->close();
+
+        return null;
+    }
+
+    $stmt->bind_param('is', $userId, $metaKey);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result ? $result->fetch_assoc() : null;
+    $stmt->close();
+    $conn->close();
+
+    if (!is_array($row) || !array_key_exists('meta_value', $row)) {
+        return null;
+    }
+
+    return (string) $row['meta_value'];
+}
+
+/**
+ * Upsert a usermeta value.
+ */
+function fc_auth_usermeta_set(int $userId, string $metaKey, string $metaValue): bool
+{
+    if ($userId <= 0 || $metaKey === '') {
+        return false;
+    }
+
+    $conn = fc_auth_db();
+    if (!$conn instanceof mysqli) {
+        return false;
+    }
+
+    $metaTable = fc_auth_usermeta_table();
+    $select = $conn->prepare("SELECT umeta_id FROM `{$metaTable}` WHERE user_id = ? AND meta_key = ? LIMIT 1");
+    if (!$select) {
+        $conn->close();
+
+        return false;
+    }
+
+    $select->bind_param('is', $userId, $metaKey);
+    $select->execute();
+    $result = $select->get_result();
+    $row = $result ? $result->fetch_assoc() : null;
+    $select->close();
+
+    $ok = false;
+    if (is_array($row) && !empty($row['umeta_id'])) {
+        $umetaId = (int) $row['umeta_id'];
+        $update = $conn->prepare("UPDATE `{$metaTable}` SET meta_value = ? WHERE umeta_id = ? LIMIT 1");
+        if ($update) {
+            $update->bind_param('si', $metaValue, $umetaId);
+            $ok = $update->execute();
+            $update->close();
+        }
+    } else {
+        $insert = $conn->prepare("INSERT INTO `{$metaTable}` (user_id, meta_key, meta_value) VALUES (?, ?, ?)");
+        if ($insert) {
+            $insert->bind_param('iss', $userId, $metaKey, $metaValue);
+            $ok = $insert->execute();
+            $insert->close();
+        }
+    }
+
+    $conn->close();
+
+    return $ok;
+}
+
+/**
+ * Delete a usermeta row.
+ */
+function fc_auth_usermeta_delete(int $userId, string $metaKey): void
+{
+    if ($userId <= 0 || $metaKey === '') {
+        return;
+    }
+
+    $conn = fc_auth_db();
+    if (!$conn instanceof mysqli) {
+        return;
+    }
+
+    $metaTable = fc_auth_usermeta_table();
+    $stmt = $conn->prepare("DELETE FROM `{$metaTable}` WHERE user_id = ? AND meta_key = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('is', $userId, $metaKey);
+        $stmt->execute();
+        $stmt->close();
+    }
+    $conn->close();
+}
+
+/**
+ * @return list<array{selector:string,meta_key:string,created:int,used:int}>
+ */
+function fc_auth_list_remember_tokens(int $userId): array
+{
+    if ($userId <= 0) {
+        return [];
+    }
+
+    $conn = fc_auth_db();
+    if (!$conn instanceof mysqli) {
+        return [];
+    }
+
+    $metaTable = fc_auth_usermeta_table();
+    $like = FC_AUTH_REMEMBER_META_PREFIX . '%';
+    $stmt = $conn->prepare(
+        "SELECT meta_key, meta_value FROM `{$metaTable}` WHERE user_id = ? AND meta_key LIKE ?"
+    );
+    if (!$stmt) {
+        $conn->close();
+
+        return [];
+    }
+
+    $stmt->bind_param('is', $userId, $like);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rows = [];
+    while ($result && ($row = $result->fetch_assoc())) {
+        $metaKey = (string) ($row['meta_key'] ?? '');
+        $selector = substr($metaKey, strlen(FC_AUTH_REMEMBER_META_PREFIX));
+        if ($selector === '' || !preg_match('/^[a-f0-9]{32}$/', $selector)) {
+            continue;
+        }
+        $payload = json_decode((string) ($row['meta_value'] ?? ''), true);
+        $rows[] = [
+            'selector' => $selector,
+            'meta_key' => $metaKey,
+            'created' => is_array($payload) ? (int) ($payload['created'] ?? 0) : 0,
+            'used' => is_array($payload) ? (int) ($payload['used'] ?? 0) : 0,
+        ];
+    }
+    $stmt->close();
+    $conn->close();
+
+    return $rows;
+}
+
+/**
+ * Keep at most FC_AUTH_REMEMBER_MAX_TOKENS remembered devices per user.
+ */
+function fc_auth_prune_remember_tokens(int $userId, ?string $keepSelector = null): void
+{
+    $tokens = fc_auth_list_remember_tokens($userId);
+    if (count($tokens) <= FC_AUTH_REMEMBER_MAX_TOKENS) {
+        return;
+    }
+
+    usort($tokens, static function (array $a, array $b): int {
+        $aTouch = max((int) ($a['used'] ?? 0), (int) ($a['created'] ?? 0));
+        $bTouch = max((int) ($b['used'] ?? 0), (int) ($b['created'] ?? 0));
+
+        return $aTouch <=> $bTouch;
+    });
+
+    $overflow = count($tokens) - FC_AUTH_REMEMBER_MAX_TOKENS;
+    for ($i = 0; $i < $overflow; $i++) {
+        $selector = (string) ($tokens[$i]['selector'] ?? '');
+        if ($keepSelector !== null && $selector === $keepSelector) {
+            continue;
+        }
+        fc_auth_usermeta_delete($userId, (string) ($tokens[$i]['meta_key'] ?? ''));
+    }
+}
+
+/**
+ * Current WordPress password hash for a user (for remember-token binding).
+ */
+function fc_auth_user_password_hash(int $userId): string
+{
+    if ($userId <= 0) {
+        return '';
+    }
+
+    $conn = fc_auth_db();
+    if (!$conn instanceof mysqli) {
+        return '';
+    }
+
+    $table = fc_auth_users_table();
+    $stmt = $conn->prepare("SELECT user_pass FROM `{$table}` WHERE ID = ? LIMIT 1");
+    if (!$stmt) {
+        $conn->close();
+
+        return '';
+    }
+
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result ? $result->fetch_assoc() : null;
+    $stmt->close();
+    $conn->close();
+
+    return is_array($row) ? (string) ($row['user_pass'] ?? '') : '';
+}
+
+/**
+ * Issue a new rotating remember token for the user and set the cookie.
+ */
+function fc_auth_issue_remember_token(int $userId, ?string $passwordHash = null): bool
+{
+    if ($userId <= 0) {
+        return false;
+    }
+
+    $passwordHash = $passwordHash !== null && $passwordHash !== ''
+        ? $passwordHash
+        : fc_auth_user_password_hash($userId);
+    if ($passwordHash === '') {
+        return false;
+    }
+
+    // Replace any existing cookie token for this browser.
+    fc_auth_revoke_remember_token_from_cookie();
+
+    $selector = bin2hex(random_bytes(16));
+    $validator = bin2hex(random_bytes(32));
+    $now = time();
+    $payload = json_encode([
+        'hash' => fc_auth_hash_remember_validator($validator),
+        'pw' => fc_auth_password_fingerprint($passwordHash),
+        'created' => $now,
+        'used' => $now,
+    ], JSON_UNESCAPED_SLASHES);
+
+    if ($payload === false || !fc_auth_usermeta_set($userId, fc_auth_remember_meta_key($selector), $payload)) {
+        return false;
+    }
+
+    fc_auth_prune_remember_tokens($userId, $selector);
+    fc_auth_write_remember_cookie($selector . ':' . $validator);
+
+    return true;
+}
+
+/**
+ * Revoke the remember token referenced by the current cookie (if any).
+ */
+function fc_auth_revoke_remember_token_from_cookie(?int $userId = null): void
+{
+    $parsed = fc_auth_parse_remember_cookie(
+        isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : null
+    );
+    if ($parsed === null) {
+        fc_auth_clear_remember_cookie();
+
+        return;
+    }
+
+    $metaKey = fc_auth_remember_meta_key($parsed['selector']);
+    if ($userId !== null && $userId > 0) {
+        fc_auth_usermeta_delete($userId, $metaKey);
+    } else {
+        // Lookup owner by scanning is expensive; cookie selector is unique enough —
+        // delete by meta_key across users via a targeted query.
+        $conn = fc_auth_db();
+        if ($conn instanceof mysqli) {
+            $metaTable = fc_auth_usermeta_table();
+            $stmt = $conn->prepare("DELETE FROM `{$metaTable}` WHERE meta_key = ? LIMIT 1");
+            if ($stmt) {
+                $stmt->bind_param('s', $metaKey);
+                $stmt->execute();
+                $stmt->close();
+            }
+            $conn->close();
+        }
+    }
+
+    fc_auth_clear_remember_cookie();
+}
+
+/**
+ * Renew cookie expiry for an already-valid remember token (no rotation).
+ */
+function fc_auth_renew_remember_cookie(): void
+{
+    $raw = isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : '';
+    if (fc_auth_parse_remember_cookie($raw) === null) {
+        return;
+    }
+
+    fc_auth_write_remember_cookie($raw);
+}
+
+/**
+ * Resolve remember-token owner user id from selector meta row.
+ */
+function fc_auth_remember_token_owner(string $selector): int
+{
+    if ($selector === '' || !preg_match('/^[a-f0-9]{32}$/', $selector)) {
+        return 0;
+    }
+
+    $conn = fc_auth_db();
+    if (!$conn instanceof mysqli) {
+        return 0;
+    }
+
+    $metaTable = fc_auth_usermeta_table();
+    $metaKey = fc_auth_remember_meta_key($selector);
+    $stmt = $conn->prepare("SELECT user_id FROM `{$metaTable}` WHERE meta_key = ? LIMIT 1");
+    if (!$stmt) {
+        $conn->close();
+
+        return 0;
+    }
+
+    $stmt->bind_param('s', $metaKey);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result ? $result->fetch_assoc() : null;
+    $stmt->close();
+    $conn->close();
+
+    return is_array($row) ? (int) ($row['user_id'] ?? 0) : 0;
+}
+
+/**
+ * Restore an authenticated admin session from a valid remember cookie.
+ */
+function fc_auth_try_restore_from_remember(): bool
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return false;
+    }
+
+    $existing = $_SESSION[FC_AUTH_SESSION_KEY] ?? null;
+    if (is_array($existing) && !empty($existing['id'])) {
+        return true;
+    }
+
+    $raw = isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : '';
+    $parsed = fc_auth_parse_remember_cookie($raw);
+    if ($parsed === null) {
+        if ($raw !== '') {
+            // Legacy boolean cookie or malformed — drop it.
+            fc_auth_clear_remember_cookie();
+        }
+
+        return false;
+    }
+
+    $userId = fc_auth_remember_token_owner($parsed['selector']);
+    if ($userId <= 0) {
+        fc_auth_clear_remember_cookie();
+
+        return false;
+    }
+
+    $metaKey = fc_auth_remember_meta_key($parsed['selector']);
+    $metaRaw = fc_auth_usermeta_get($userId, $metaKey);
+    $payload = is_string($metaRaw) ? json_decode($metaRaw, true) : null;
+    if (!is_array($payload)) {
+        fc_auth_usermeta_delete($userId, $metaKey);
+        fc_auth_clear_remember_cookie();
+
+        return false;
+    }
+
+    $storedHash = (string) ($payload['hash'] ?? '');
+    $expectedHash = fc_auth_hash_remember_validator($parsed['validator']);
+    if ($storedHash === '' || !hash_equals($storedHash, $expectedHash)) {
+        fc_auth_usermeta_delete($userId, $metaKey);
+        fc_auth_clear_remember_cookie();
+
+        return false;
+    }
+
+    $passwordHash = fc_auth_user_password_hash($userId);
+    $storedPw = (string) ($payload['pw'] ?? '');
+    if ($passwordHash === '' || $storedPw === '' || !hash_equals($storedPw, fc_auth_password_fingerprint($passwordHash))) {
+        // Password changed — invalidate this and all remember tokens for safety.
+        foreach (fc_auth_list_remember_tokens($userId) as $token) {
+            fc_auth_usermeta_delete($userId, (string) ($token['meta_key'] ?? ''));
+        }
+        fc_auth_clear_remember_cookie();
+
+        return false;
+    }
+
+    $user = fc_auth_find_user_by_id($userId);
+    if ($user === null) {
+        fc_auth_usermeta_delete($userId, $metaKey);
+        fc_auth_clear_remember_cookie();
+
+        return false;
+    }
+
+    if (!fc_auth_user_is_super_admin($userId) && !fc_auth_user_has_any_permission($userId)) {
+        fc_auth_usermeta_delete($userId, $metaKey);
+        fc_auth_clear_remember_cookie();
+
+        return false;
+    }
+
+    // Rotate validator so stolen cookies become single-use after restore.
+    $newValidator = bin2hex(random_bytes(32));
+    $now = time();
+    $rotated = json_encode([
+        'hash' => fc_auth_hash_remember_validator($newValidator),
+        'pw' => fc_auth_password_fingerprint($passwordHash),
+        'created' => (int) ($payload['created'] ?? $now),
+        'used' => $now,
+    ], JSON_UNESCAPED_SLASHES);
+    if ($rotated === false || !fc_auth_usermeta_set($userId, $metaKey, $rotated)) {
+        fc_auth_clear_remember_cookie();
+
+        return false;
+    }
+
+    session_regenerate_id(true);
+    unset($_SESSION['fc_presence_activity_meta_at']);
+
+    $_SESSION[FC_AUTH_SESSION_KEY] = [
+        'id'           => (int) $user['ID'],
+        'login'        => (string) $user['user_login'],
+        'email'        => (string) $user['user_email'],
+        'display_name' => (string) ($user['display_name'] ?: $user['user_login']),
+        'logged_in_at' => $now,
+    ];
+    $_SESSION[FC_AUTH_REMEMBER_SESSION_KEY] = true;
+
+    if (function_exists('fc_db_host_mysql_key')) {
+        $hostKey = fc_db_host_mysql_key();
+        if (function_exists('fc_admin_set_auth_db_key') && function_exists('fc_admin_auth_db_key') && fc_admin_auth_db_key() === '') {
+            fc_admin_set_auth_db_key($hostKey);
+        }
+        if (function_exists('fc_admin_set_site_key') && function_exists('fc_admin_site_key') && fc_admin_site_key() === '') {
+            fc_admin_set_site_key($hostKey);
+        }
+    }
+
+    fc_auth_refresh_session_cookie(FC_AUTH_REMEMBER_TTL);
+    fc_auth_write_remember_cookie($parsed['selector'] . ':' . $newValidator);
+
+    if (function_exists('fc_presence_touch')) {
+        fc_presence_touch([
+            'id' => (int) $user['ID'],
+            'login' => (string) $user['user_login'],
+            'email' => (string) $user['user_email'],
+            'display_name' => (string) ($user['display_name'] ?: $user['user_login']),
+            'logged_in_at' => $now,
+        ], true);
+    }
+
+    return true;
 }
 
 /**
@@ -120,12 +670,21 @@ function fc_auth_enforce_session_ttl(): void
         return;
     }
 
-    $remember = fc_auth_is_remembered();
+    $remember = !empty($_SESSION[FC_AUTH_REMEMBER_SESSION_KEY])
+        || fc_auth_parse_remember_cookie(
+            isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : null
+        ) !== null;
     $_SESSION[FC_AUTH_REMEMBER_SESSION_KEY] = $remember;
 
     if ($remember) {
         fc_auth_refresh_session_cookie(FC_AUTH_REMEMBER_TTL);
-        fc_auth_set_remember_cookie(true);
+        $raw = isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : '';
+        if (fc_auth_parse_remember_cookie($raw) !== null) {
+            fc_auth_renew_remember_cookie();
+        } else {
+            // Upgrade legacy remember=1 sessions to a secure token.
+            fc_auth_issue_remember_token((int) $user['id']);
+        }
 
         return;
     }
@@ -151,7 +710,7 @@ function fc_auth_enforce_session_ttl(): void
             $_SESSION[FC_AUTH_REMEMBER_SESSION_KEY],
             $_SESSION['fc_csrf']
         );
-        fc_auth_set_remember_cookie(false);
+        fc_auth_clear_remember_cookie();
         if (!headers_sent() && ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', [
@@ -180,6 +739,10 @@ function fc_auth_boot(): void
     if (session_status() === PHP_SESSION_ACTIVE) {
         if (!$booting) {
             $booting = true;
+            $user = $_SESSION[FC_AUTH_SESSION_KEY] ?? null;
+            if (!is_array($user) || empty($user['id'])) {
+                fc_auth_try_restore_from_remember();
+            }
             fc_auth_enforce_session_ttl();
             $booting = false;
         }
@@ -187,7 +750,9 @@ function fc_auth_boot(): void
         return;
     }
 
-    $rememberHint = !empty($_COOKIE[FC_AUTH_REMEMBER_COOKIE]);
+    $rememberHint = fc_auth_parse_remember_cookie(
+        isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : null
+    ) !== null;
     $lifetime = fc_auth_session_ttl($rememberHint);
 
     if (!headers_sent()) {
@@ -197,10 +762,15 @@ function fc_auth_boot(): void
         @ini_set('session.gc_maxlifetime', (string) max($lifetime, FC_AUTH_SESSION_TTL));
     }
 
-    fc_session_start();
+    // Always isolate admin sessions from public PHP session GC.
+    fc_session_start(fc_auth_session_save_path());
 
     if (!$booting) {
         $booting = true;
+        $user = $_SESSION[FC_AUTH_SESSION_KEY] ?? null;
+        if (!is_array($user) || empty($user['id'])) {
+            fc_auth_try_restore_from_remember();
+        }
         fc_auth_enforce_session_ttl();
         $booting = false;
     }
@@ -813,16 +1383,19 @@ function fc_auth_switch_to_user(int $userId): array
     }
 
     fc_auth_boot();
+    $wasRemembered = fc_auth_is_remembered();
     if (!fc_auth_is_switched()) {
         $_SESSION[FC_AUTH_SWITCH_KEY] = [
             'id'           => (int) $current['id'],
             'login'        => (string) $current['login'],
             'email'        => (string) $current['email'],
             'display_name' => (string) $current['display_name'],
+            'remember'     => $wasRemembered,
         ];
     }
 
-    fc_auth_login_user($target, false, false);
+    // Do not revoke the original admin's remember token while switched.
+    fc_auth_login_user($target, false, false, false);
 
     $label = $target['display_name'] !== '' ? $target['display_name'] : $target['user_login'];
 
@@ -852,8 +1425,15 @@ function fc_auth_switch_back(): array
     }
 
     fc_auth_boot();
+    $remember = !empty($from['remember']) || fc_auth_is_remembered();
     unset($_SESSION[FC_AUTH_SWITCH_KEY]);
-    fc_auth_login_user($original, fc_auth_is_remembered(), false);
+    // Restore session flag; keep existing remember cookie if present.
+    fc_auth_login_user($original, $remember, false, false);
+    if ($remember && fc_auth_parse_remember_cookie(
+        isset($_COOKIE[FC_AUTH_REMEMBER_COOKIE]) ? (string) $_COOKIE[FC_AUTH_REMEMBER_COOKIE] : null
+    ) === null) {
+        fc_auth_issue_remember_token((int) $original['ID']);
+    }
 
     $label = $original['display_name'] !== '' ? $original['display_name'] : $original['user_login'];
 
@@ -889,10 +1469,15 @@ function fc_auth_is_logged_in(): bool
 }
 
 /**
- * @param array{ID:int,user_login:string,user_email:string,display_name:string} $user
+ * @param array{ID:int,user_login:string,user_email:string,display_name:string,user_pass?:string} $user
+ * @param bool $manageRememberTokens When false (e.g. Login As), leave the persistent cookie alone.
  */
-function fc_auth_login_user(array $user, bool $remember = false, bool $recordLastLogin = true): void
-{
+function fc_auth_login_user(
+    array $user,
+    bool $remember = false,
+    bool $recordLastLogin = true,
+    bool $manageRememberTokens = true
+): void {
     fc_auth_boot();
     if (function_exists('fc_presence_forget')) {
         fc_presence_forget();
@@ -922,10 +1507,19 @@ function fc_auth_login_user(array $user, bool $remember = false, bool $recordLas
     }
 
     fc_auth_refresh_session_cookie(fc_auth_session_ttl($remember));
-    fc_auth_set_remember_cookie($remember);
+
+    $userId = (int) $user['ID'];
+    if ($manageRememberTokens) {
+        $passwordHash = isset($user['user_pass']) ? (string) $user['user_pass'] : '';
+        if ($remember) {
+            fc_auth_issue_remember_token($userId, $passwordHash !== '' ? $passwordHash : null);
+        } else {
+            fc_auth_revoke_remember_token_from_cookie($userId);
+        }
+    }
 
     $sessionUser = [
-        'id' => (int) $user['ID'],
+        'id' => $userId,
         'login' => (string) $user['user_login'],
         'email' => (string) $user['user_email'],
         'display_name' => (string) ($user['display_name'] ?: $user['user_login']),
@@ -933,7 +1527,7 @@ function fc_auth_login_user(array $user, bool $remember = false, bool $recordLas
     ];
 
     if ($recordLastLogin && function_exists('fc_presence_set_last_login')) {
-        fc_presence_set_last_login((int) $user['ID'], $now);
+        fc_presence_set_last_login($userId, $now);
     }
     if (function_exists('fc_presence_touch')) {
         fc_presence_touch($sessionUser, true);
@@ -943,20 +1537,28 @@ function fc_auth_login_user(array $user, bool $remember = false, bool $recordLas
 function fc_auth_logout(): void
 {
     fc_auth_boot();
+
+    $userId = 0;
+    if (is_array($_SESSION[FC_AUTH_SESSION_KEY] ?? null)) {
+        $userId = (int) ($_SESSION[FC_AUTH_SESSION_KEY]['id'] ?? 0);
+    }
+
     if (function_exists('fc_presence_forget')) {
         fc_presence_forget();
     }
     if (function_exists('fc_admin_clear_site_context')) {
         fc_admin_clear_site_context();
     }
+
+    // Revoke persistent token before clearing the session cookie.
+    fc_auth_revoke_remember_token_from_cookie($userId > 0 ? $userId : null);
+
     unset(
         $_SESSION[FC_AUTH_SESSION_KEY],
         $_SESSION[FC_AUTH_SWITCH_KEY],
         $_SESSION[FC_AUTH_REMEMBER_SESSION_KEY],
         $_SESSION['fc_csrf']
     );
-
-    fc_auth_set_remember_cookie(false);
 
     if (ini_get('session.use_cookies')) {
         $params = session_get_cookie_params();

@@ -48,18 +48,26 @@ class Database {
     function insert($table, $data) {
         $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
 
+        $conn = $this->connect();
+
+        if (! $conn instanceof mysqli) {
+            return [
+                'success' => FALSE,
+                'message' => 'Database error: ' . ($this->last_connect_error ?: 'connection failed'),
+            ];
+        }
+
         $new_data = array();
 
         foreach($data as $k => $v) {
-            $new_data[$k] = array_to_json($v);
+            // Escaping is mandatory: unescaped text broke every save containing an apostrophe.
+            $new_data[$k] = $conn->real_escape_string((string) array_to_json($v));
         }
 
         $columns = implode(', ', array_keys($data));
         $values  = "'" .implode("','", array_values($new_data)). "'";
 
         $sql = "INSERT INTO ".$table." (".$columns.") VALUES (".$values.")";
-
-        $conn = $this->connect();
 
         try {
             $ok = $conn->query($sql);
@@ -89,32 +97,62 @@ class Database {
 
     //----------------------------------------------------------------------------------
 
+    /**
+     * Build a WHERE clause with every string value quoted.
+     *
+     * Bare numeric values made MySQL compare numerically, so an all-digit planner_id
+     * cast the whole varchar column and could match an unrelated row.
+     *
+     * @param array<string, mixed> $where
+     */
+    function where_clause($where, $conn = null) {
+        $parts = array();
+
+        foreach ($where as $key => $value) {
+            if (is_int($value) || is_float($value)) {
+                $parts[] = '`' . $key . '`=' . $value;
+                continue;
+            }
+
+            $value = (string) $value;
+            $escaped = $conn instanceof mysqli ? $conn->real_escape_string($value) : addslashes($value);
+
+            $parts[] = '`' . $key . "`='" . $escaped . "'";
+        }
+
+        return implode(' AND ', $parts);
+    }
+
+    //----------------------------------------------------------------------------------
+
     function update($table = '', $data  = array(), $where  = array()) {
         $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
 
-        $new_data = $where_data = array();
+        $conn = $this->connect();
+
+        if (! $conn instanceof mysqli) {
+            return [
+                'success' => FALSE,
+                'message' => 'Database error: ' . ($this->last_connect_error ?: 'connection failed'),
+            ];
+        }
+
+        $new_data = array();
 
         foreach ($data as $key => $value) {
             // Only bare SQL literals for real int/float — never for numeric strings (e.g. mobile "0412…").
             if ( is_int( $value ) || is_float( $value ) ) {
                 $new_data[] = $key . '=' . $value;
             } else {
-                $new_data[] = $key . "='" . array_to_json( $value ) . "'";
+                $new_data[] = $key . "='" . $conn->real_escape_string( (string) array_to_json( $value ) ) . "'";
             }
         }
 
         $set_data = implode(', ', $new_data);
 
-        foreach ($where as $key => $value) {
-            $where_data[] = $key."=".(is_numeric($value) ? $value : "'".$value."'");
-        }
-
-        $where_data = implode(' AND ', $where_data);
-
+        $where_data = $this->where_clause($where, $conn);
 
         $sql = "UPDATE ".$table." SET $set_data WHERE $where_data;";
-
-        $conn = $this->connect();
 
         try {
             $ok = $conn->query($sql);
@@ -145,13 +183,7 @@ class Database {
     //----------------------------------------------------------------------------------
 
     function updateOrCreate($table, $data, $where) {
-        $where_data = array();
-        
-        foreach ($where as $key => $value) {
-            $where_data[] = $key."=".(is_numeric($value) ? $value : "'".$value."'");
-        }
-
-        $where_data = implode(' AND ', $where_data);
+        $where_data = $this->where_clause($where);
 
         $find = $this->select_where($table, $where_data, 'id');
 
