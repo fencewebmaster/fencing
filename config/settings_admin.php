@@ -11,6 +11,7 @@ require_once __DIR__ . '/fence-colors.php';
 require_once __DIR__ . '/catalog.php';
 require_once __DIR__ . '/system.php';
 require_once __DIR__ . '/integrations.php';
+require_once __DIR__ . '/console.php';
 
 /**
  * @return array<string, mixed>
@@ -34,6 +35,10 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
     $catalogPayload = fc_catalog_api_payload($initialTab === 'catalog');
     $systemPayload = fc_system_api_payload();
     $integrationsPayload = fc_integrations_api_payload();
+    $consolePayload = fc_console_api_payload();
+    $console = is_array($consolePayload['console'] ?? null)
+        ? $consolePayload['console']
+        : fc_console_defaults();
 
     $activePreset = (string) ($theme['activePreset'] ?? fc_theme_detect_preset($theme['colors'] ?? []) ?? '');
     $colors = is_array($theme['colors'] ?? null) ? $theme['colors'] : [];
@@ -77,6 +82,8 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
         'superAdmin'        => is_array($integrationsPayload['superAdmin'] ?? null)
             ? $integrationsPayload['superAdmin']
             : [],
+        'console'           => $console,
+        'consoleDefaults'   => $consolePayload['defaults'] ?? fc_console_defaults(),
         'csrf'              => function_exists('fc_auth_csrf_token') ? fc_auth_csrf_token() : '',
     ];
 
@@ -145,6 +152,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'title'       => (string) ($field['help'] ?? ''),
             'help'        => (string) ($field['help'] ?? ''),
             'logo_url'    => $key === 'logo' ? fc_branding_logo_url($appBase, $branding) : '',
+            'favicon_url' => $key === 'favicon' ? fc_branding_favicon_url($appBase, $branding) : '',
         ];
     }
 
@@ -189,7 +197,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'catalog'      => 'Catalog',
             'system'       => 'System',
             'integration'  => 'Integration',
-            'dev-mode'     => 'Dev Mode',
+            'console'      => 'Console',
         ],
         'btn_secondary'    => 'btn btn-sm btn-dark fw-semibold',
         'btn_primary'      => 'btn btn-sm btn-orange fw-semibold',
@@ -201,6 +209,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'tagline'  => (string) ($branding['tagline'] ?? ''),
             'version'  => (string) ($branding['version'] ?? ''),
             'logo_url' => fc_branding_logo_url($appBase, $branding),
+            'favicon_url' => fc_branding_favicon_url($appBase, $branding),
         ],
         'fence_sort_columns' => fc_settings_admin_fence_sort_columns(),
         'fence_rows'       => $fenceRows,
@@ -216,6 +225,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
         'super_admin'      => is_array($integrationsPayload['superAdmin'] ?? null)
             ? $integrationsPayload['superAdmin']
             : [],
+        'console'          => $console,
         'panel_class'      => [
             'theme'        => $initialTab === 'theme' ? '' : 'hidden ',
             'branding'     => $initialTab === 'branding' ? '' : 'hidden ',
@@ -223,7 +233,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'catalog'      => $initialTab === 'catalog' ? '' : 'hidden ',
             'system'       => $initialTab === 'system' ? '' : 'hidden ',
             'integration'  => $initialTab === 'integration' ? '' : 'hidden ',
-            'dev_mode'     => $initialTab === 'dev-mode' ? '' : 'hidden ',
+            'console'      => $initialTab === 'console' ? '' : 'hidden ',
         ],
         'header_actions_class' => [
             'theme'        => $initialTab === 'theme' ? 'flex' : 'hidden',
@@ -232,7 +242,7 @@ function fc_settings_admin_view_data(string $adminBase, string $appBase, string 
             'catalog'      => $initialTab === 'catalog' ? 'flex' : 'hidden',
             'system'       => $initialTab === 'system' ? 'flex' : 'hidden',
             'integration'  => $initialTab === 'integration' ? 'flex' : 'hidden',
-            'dev_mode'     => $initialTab === 'dev-mode' ? 'flex' : 'hidden',
+            'console'      => $initialTab === 'console' ? 'flex' : 'hidden',
         ],
         'bootstrap'        => $bootstrap,
     ];
@@ -378,7 +388,7 @@ function fc_settings_admin_is_original_fence_slug(string $slug, array $defaults)
  */
 function fc_settings_admin_branding_field_order(): array
 {
-    return ['logo', 'appName', 'tagline', 'version'];
+    return ['logo', 'favicon', 'appName', 'tagline', 'version'];
 }
 
 /**

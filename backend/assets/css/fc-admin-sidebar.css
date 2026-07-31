@@ -12,10 +12,14 @@ html:not([data-fc-admin-theme]) {
     --fc-sidebar-text-muted: #94a3b8;
     --fc-sidebar-text-heading: #f8fafc;
     --fc-sidebar-hover-bg: rgba(51, 65, 85, 0.7);
-    --fc-sidebar-active-bg: rgba(246, 121, 37, 0.16);
-    --fc-sidebar-active-text: #fdba74;
+    --fc-sidebar-active-bg: color-mix(
+        in srgb,
+        var(--fc-princeton-orange, #f67925) 8%,
+        transparent
+    );
+    --fc-sidebar-active-text: var(--fc-princeton-orange, #f67925);
     --fc-sidebar-active-icon-bg: rgba(246, 121, 37, 0.22);
-    --fc-sidebar-active-icon: #fb923c;
+    --fc-sidebar-active-icon: var(--fc-princeton-orange, #f67925);
     --fc-sidebar-icon-bg: rgba(51, 65, 85, 0.85);
     --fc-sidebar-icon: #94a3b8;
     --fc-sidebar-accent: var(--fc-princeton-orange, #f67925);
@@ -35,10 +39,14 @@ html[data-fc-admin-theme='dark'] {
     --fc-sidebar-text-muted: #64748b;
     --fc-sidebar-text-heading: #f8fafc;
     --fc-sidebar-hover-bg: rgba(51, 65, 85, 0.55);
-    --fc-sidebar-active-bg: rgba(246, 121, 37, 0.12);
-    --fc-sidebar-active-text: #fdba74;
+    --fc-sidebar-active-bg: color-mix(
+        in srgb,
+        var(--fc-princeton-orange, #f67925) 12%,
+        transparent
+    );
+    --fc-sidebar-active-text: var(--fc-princeton-orange, #f67925);
     --fc-sidebar-active-icon-bg: rgba(246, 121, 37, 0.2);
-    --fc-sidebar-active-icon: #fb923c;
+    --fc-sidebar-active-icon: var(--fc-princeton-orange, #f67925);
     --fc-sidebar-icon-bg: rgba(51, 65, 85, 0.65);
     --fc-sidebar-icon: #94a3b8;
     --fc-sidebar-accent: var(--fc-princeton-orange, #f67925);

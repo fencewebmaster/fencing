@@ -696,6 +696,10 @@ html:has(body.fc-planner-page) {
     display: none !important;
 }
 
+html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
+    display: none !important;
+}
+
 .fc-project-plan-page .btn:not(.btn-close) {
     font-size: 0.8125rem;
     line-height: 1.35;

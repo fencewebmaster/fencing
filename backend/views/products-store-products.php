@@ -26,6 +26,8 @@ $fcStoreCsvReady = ($page['error'] ?? '') === '';
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden" data-fc-store-products-server="1" data-fc-store-products-php="1">
     <script type="application/json" id="fc-store-products-bootstrap"><?php echo $page['bootstrap_json']; ?></script>
 
+    <div class="fc-entries-page__notice" data-fc-store-products-notice hidden role="status" aria-live="polite"></div>
+
     <div class="fc-entries-page__toolbar fc-sp-toolbar fc-admin-sticky-header sticky top-0 z-20 shrink-0">
         <form class="fc-entries-page__toolbar-form" method="get" action="<?php echo $h((string) ($page['form_action'] ?? '')); ?>">
             <div class="fc-entries-page__toolbar-row">

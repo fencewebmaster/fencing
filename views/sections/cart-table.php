@@ -90,7 +90,12 @@ $cart_included_count = function_exists( 'fc_cart_included_item_count' )
                         </div>
 
                         <div class="text-muted mb-1"><?php echo @$cart_item['sku']; ?></div>
-                        <?php if ( ! empty( $cart_item['slug'] ) ) : ?>
+                        <?php
+                        if ( ! function_exists( 'fc_console_debug_mode' ) ) {
+                            require_once dirname( __DIR__, 2 ) . '/config/console.php';
+                        }
+                        if ( ! empty( $cart_item['slug'] ) && fc_console_debug_mode() ) :
+                        ?>
                         <div class="small text-muted mb-1 fc-cart-item-slug"><?php echo htmlspecialchars( (string) $cart_item['slug'], ENT_QUOTES, 'UTF-8' ); ?></div>
                         <?php endif; ?>
                         <?php

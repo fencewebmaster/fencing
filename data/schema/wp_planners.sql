@@ -40,5 +40,10 @@ CREATE TABLE IF NOT EXISTS `wp_planners` (
   KEY `trashed_at` (`trashed_at`),
   KEY `idx_list_active_created` (`trashed_at`, `status`, `created_at`, `id`),
   KEY `idx_trash_status` (`trashed_at`, `status`),
-  KEY `idx_list_updated` (`trashed_at`, `updated_at`, `id`)
+  KEY `idx_list_updated` (`trashed_at`, `updated_at`, `id`),
+  KEY `idx_created_at` (`created_at`, `id`),
+  KEY `idx_email` (`email`),
+  KEY `idx_email_cover` (`email`, `id`, `created_at`),
+  KEY `idx_state` (`state`),
+  KEY `idx_device` (`device`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

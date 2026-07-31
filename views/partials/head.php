@@ -26,7 +26,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 <?php endif; ?>
 
-<link rel="icon" type="image/x-icon" href="<?php echo load_file('assets/img/fav.ico'); ?>">
+<?php
+// Dynamic favicon: prefer branding favicon when set, fallback to bundled fav.ico
+$fcFavicon = '';
+if (function_exists('fc_branding_favicon_url')) {
+    $fcFavicon = fc_branding_favicon_url('');
+}
+
+if ($fcFavicon !== '') {
+    $faviconHref = $fcFavicon;
+    if (!preg_match('/^https?:\\/\\//i', $faviconHref) && strpos($faviconHref, '//') !== 0 && !preg_match('/^data:/i', $faviconHref)) {
+        // make absolute URL relative to current host/path
+        $faviconHref = base_url(ltrim($faviconHref, '/'));
+    }
+    echo '<link rel="icon" href="' . htmlspecialchars($faviconHref, ENT_QUOTES, 'UTF-8') . '">';
+} else {
+    echo '<link rel="icon" type="image/x-icon" href="' . htmlspecialchars(load_file('assets/img/fav.ico'), ENT_QUOTES, 'UTF-8') . '">';
+}
+?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 

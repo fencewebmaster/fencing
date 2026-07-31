@@ -17,6 +17,7 @@ final class SettingsController
         require_once FC_ROOT . '/config/catalog.php';
         require_once FC_ROOT . '/config/system.php';
         require_once FC_ROOT . '/config/integrations.php';
+        require_once FC_ROOT . '/config/console.php';
 
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store');
@@ -61,6 +62,11 @@ final class SettingsController
 
         if ($action === 'git-pull') {
             self::handleGitPull($method);
+            return;
+        }
+
+        if ($action === 'console') {
+            self::handleConsole($method);
             return;
         }
 
@@ -345,6 +351,54 @@ final class SettingsController
             'status' => (string) ($result['status'] ?? ''),
             'siteKey' => $siteKey,
         ], JSON_UNESCAPED_UNICODE);
+    }
+
+    private static function handleConsole(string $method): void
+    {
+        if ($method === 'GET') {
+            echo json_encode(fc_console_api_payload(), JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if ($method === 'POST') {
+            $payload = self::jsonBody();
+            if (!is_array($payload) || !isset($payload['console']) || !is_array($payload['console'])) {
+                http_response_code(400);
+                echo json_encode([
+                    'ok' => false,
+                    'error' => 'Invalid JSON. Expected { "console": { "debugMode": false } }.',
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (!function_exists('fc_auth_verify_csrf') || !fc_auth_verify_csrf(
+                isset($payload['csrf']) ? (string) $payload['csrf'] : null
+            )) {
+                http_response_code(403);
+                echo json_encode([
+                    'ok' => false,
+                    'error' => 'Invalid security token. Refresh and try again.',
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $result = fc_console_save($payload['console']);
+            if (!$result['ok']) {
+                http_response_code(400);
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $response = fc_console_api_payload();
+            $response['message'] = !empty($response['console']['debugMode'])
+                ? 'Debug Mode turned on.'
+                : 'Debug Mode turned off.';
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        http_response_code(405);
+        echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
     private static function handleGitPull(string $method): void

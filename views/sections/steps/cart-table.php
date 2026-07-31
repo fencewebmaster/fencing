@@ -60,7 +60,12 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                         <div class="fw-bold text-dark mb-2"><?php echo @$cart_item['name']; ?></div>
 
                         <div class="text-muted mb-1"><?php echo @$cart_item['sku']; ?></div>
-                        <?php if ( ! empty( $cart_item['slug'] ) ) : ?>
+                        <?php
+                        if ( ! function_exists( 'fc_console_debug_mode' ) ) {
+                            require_once dirname( __DIR__, 3 ) . '/config/console.php';
+                        }
+                        if ( ! empty( $cart_item['slug'] ) && fc_console_debug_mode() ) :
+                        ?>
                         <div class="small text-muted mb-1 fc-cart-item-slug"><?php echo htmlspecialchars( (string) $cart_item['slug'], ENT_QUOTES, 'UTF-8' ); ?></div>
                         <?php endif; ?>
                         <?php

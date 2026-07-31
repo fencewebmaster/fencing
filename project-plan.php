@@ -78,9 +78,15 @@ if ( ! empty( $info['fences'] ) ) {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html data-fc-debug="<?php
+	if (!function_exists('fc_console_debug_mode')) {
+		require_once __DIR__ . '/config/console.php';
+	}
+	echo fc_console_debug_mode() ? '1' : '0';
+?>">
 	<head>
 	<?php include 'views/partials/head.php'; ?>
+	<script>window.FC_DEBUG = document.documentElement.getAttribute('data-fc-debug') === '1';</script>
 	</head>
 	<body class="fc-project-plan-page fc-project-plan-page-loading">
 

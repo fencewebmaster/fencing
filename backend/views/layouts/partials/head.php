@@ -1,6 +1,14 @@
 <head>
     <script>
     (function(){try{var t=localStorage.getItem('fc-admin-appearance');document.documentElement.setAttribute('data-fc-admin-theme',t==='dark'?'dark':'light');}catch(e){}})();
+    <?php
+    if (!function_exists('fc_console_debug_mode')) {
+        require_once FC_ROOT . '/config/console.php';
+    }
+    $fcDebugMode = fc_console_debug_mode();
+    ?>
+    document.documentElement.setAttribute('data-fc-debug', '<?php echo $fcDebugMode ? '1' : '0'; ?>');
+    window.FC_DEBUG = <?php echo $fcDebugMode ? 'true' : 'false'; ?>;
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,6 +30,14 @@
     <link rel="stylesheet" type="text/css" href="assets/css/entries-admin.css">
     <link rel="stylesheet" type="text/css" href="assets/css/fc-lazy.css">
     <link rel="stylesheet" type="text/css" href="assets/css/fence-styles-admin.css">
+    <?php
+    $fcFavicon = '';
+    if (function_exists('fc_branding_favicon_url')) {
+        $fcFavicon = fc_branding_favicon_url($fcAppBase ?? '');
+    }
+    if ($fcFavicon !== '') : ?>
+    <link rel="icon" href="<?php echo htmlspecialchars((string) $fcFavicon, ENT_QUOTES, 'UTF-8'); ?>" />
+    <?php endif; ?>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {

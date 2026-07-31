@@ -34,6 +34,84 @@
 
     var TOAST_CSV_REORDER = 'fc-csv-reorder';
     var TOAST_CSV_UPDATE = 'fc-csv-update';
+    var FLASH_KEY = 'fc-store-products-save-flash';
+
+    function setFlash(message, type) {
+        try {
+            sessionStorage.setItem(
+                FLASH_KEY,
+                JSON.stringify({
+                    message: String(message || ''),
+                    type: type === 'error' ? 'error' : 'success'
+                })
+            );
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function consumeFlash() {
+        try {
+            var raw = sessionStorage.getItem(FLASH_KEY);
+            if (!raw) {
+                return null;
+            }
+            sessionStorage.removeItem(FLASH_KEY);
+            var data = JSON.parse(raw);
+            if (!data || !data.message) {
+                return null;
+            }
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function showHeaderNotice(root, flash) {
+        if (!root) {
+            root = document.querySelector('[data-fc-store-products-server]');
+        }
+        var mount = root ? root.querySelector('[data-fc-store-products-notice]') : null;
+        if (!mount || !flash || !flash.message) {
+            return;
+        }
+
+        var type = flash.type === 'error' ? 'error' : 'success';
+        mount.hidden = false;
+        mount.className =
+            'fc-entries-page__notice fc-entries-page__notice--' + type + ' is-visible';
+        mount.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        mount.innerHTML =
+            '<p class="fc-entries-page__notice-text"></p>' +
+            '<button type="button" class="fc-entries-page__notice-dismiss" aria-label="Dismiss notice">' +
+            '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' +
+            '</button>';
+
+        var textEl = mount.querySelector('.fc-entries-page__notice-text');
+        if (textEl) {
+            textEl.textContent = flash.message;
+        }
+
+        var dismiss = mount.querySelector('.fc-entries-page__notice-dismiss');
+        if (dismiss) {
+            dismiss.addEventListener('click', function () {
+                mount.hidden = true;
+                mount.classList.remove('is-visible');
+                mount.innerHTML = '';
+            });
+        }
+    }
+
+    function reloadWithNotice(message, type) {
+        setFlash(message, type === 'error' ? 'error' : 'success');
+        try {
+            var next = new URL(window.location.href);
+            window.location.assign(next.pathname + next.search);
+        } catch (e) {
+            window.location.reload();
+        }
+    }
+
     var FILTER_URL_KEYS = {
         supplier: 'supplier',
         style: 'style',
@@ -943,7 +1021,7 @@
                 .then(function () {
                     csvToast('ok', 'products.csv updated — row order saved.', TOAST_CSV_REORDER);
                     if (phpMode && onPersistReload) {
-                        onPersistReload();
+                        reloadWithNotice('products.csv updated — row order saved.', 'success');
                         return null;
                     }
                     return fetch(API_LOAD, {
@@ -964,13 +1042,11 @@
                     }
                 })
                 .catch(function (err) {
-                    csvToast(
-                        'error',
-                        (err.message || 'Could not save row order.') + ' Table reloaded.',
-                        TOAST_CSV_REORDER
-                    );
+                    var failMsg =
+                        (err.message || 'Could not save row order.') + ' Table reloaded.';
+                    csvToast('error', failMsg, TOAST_CSV_REORDER);
                     if (phpMode && onPersistReload) {
-                        onPersistReload();
+                        reloadWithNotice(failMsg, 'error');
                         return null;
                     }
                     return fetch(API_LOAD, {
@@ -1975,13 +2051,18 @@
                     });
                 })
                 .then(function () {
-                    csvToast('ok', 'products.csv updated — product saved.', TOAST_CSV_UPDATE);
                     setEditFormDirty(false);
                     closeEditModal(true);
+                    var slug =
+                        fields.SLUG != null && String(fields.SLUG).trim() !== ''
+                            ? String(fields.SLUG).trim()
+                            : 'Product';
+                    var savedMsg = slug + ' updated.';
                     if (phpMode && onPersistReload) {
-                        onPersistReload();
+                        reloadWithNotice(savedMsg, 'success');
                         return null;
                     }
+                    csvToast('ok', savedMsg, TOAST_CSV_UPDATE);
                     return fetch(API_LOAD, {
                         method: 'GET',
                         headers: { Accept: 'application/json' },
@@ -2539,10 +2620,7 @@
                         });
                 })
                 .then(function (body) {
-                    toast('success', body.message || 'CSV imported successfully.');
-                    window.setTimeout(function () {
-                        window.location.reload();
-                    }, 600);
+                    reloadWithNotice(body.message || 'CSV imported successfully.', 'success');
                 })
                 .catch(function (error) {
                     toast('error', (error && error.message) || 'Could not import CSV.');
@@ -2639,6 +2717,7 @@
                 bindStoreProductsCsvActions(bootstrap);
             }
             container.removeAttribute('aria-busy');
+            showHeaderNotice(container, consumeFlash());
             window.requestAnimationFrame(function () {
                 window.dispatchEvent(new Event('resize'));
             });

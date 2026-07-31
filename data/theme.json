@@ -1,10 +1,10 @@
 {
     "colors": {
         "--fc-brand-primary": "#d4112f",
-        "--fc-princeton-orange": "#f67925",
-        "--fc-pumpkin": "#ff6b08",
-        "--fc-jaffa": "#f5853a",
-        "--fc-fiery-orange": "#cb6520",
+        "--fc-princeton-orange": "#d4112f",
+        "--fc-pumpkin": "#ad0101",
+        "--fc-jaffa": "#eb2424",
+        "--fc-fiery-orange": "#8f0e26",
         "--fc-green": "#04a725",
         "--fc-texas-green": "#0b9321",
         "--fc-deep-blue": "#143052",
@@ -16,15 +16,10 @@
         "--fc-white": "#ffffff",
         "--fc-black": "#000000"
     },
-    "system": {
-        "dashboardDefaultDatePeriod": "this_week",
-        "entriesDefaultDatePeriod": "this_month",
-        "entriesDefaultDateField": "created_at",
-        "dateFormat": "Y\/d\/m h:i A"
-    },
-    "updatedAt": "2026-07-29T03:27:35+00:00",
+    "updatedAt": "2026-07-31T17:19:42+00:00",
     "branding": {
         "logo": "assets\/uploads\/cropped-Website-Logo-Color-Updated-3.png",
+        "favicon": "assets\/uploads\/cropped-Website-Logo-Color-Updated-3.png",
         "appName": "Fencing Calculator",
         "tagline": "Calculate your fence cost and the materials needed.",
         "version": "v13.0.0"
@@ -269,5 +264,14 @@
         "columnsMobile": 1,
         "sidebarTitle": "Product Lookup",
         "sidebarSubtitle": "Search the live catalog"
+    },
+    "system": {
+        "dashboardDefaultDatePeriod": "this_week",
+        "entriesDefaultDatePeriod": "this_month",
+        "entriesDefaultDateField": "created_at",
+        "dateFormat": "Y\/d\/m h:i A",
+        "presenceUpdateIntervalSeconds": 20,
+        "presenceOnlineWindowMinutes": 3,
+        "activityRelativeHours": 24
     }
 }

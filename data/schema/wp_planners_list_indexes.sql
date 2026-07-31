@@ -17,3 +17,12 @@ ALTER TABLE `wp_planners` ADD KEY `idx_trash_status` (`trashed_at`, `status`);
 
 -- Trash / updated views
 ALTER TABLE `wp_planners` ADD KEY `idx_list_updated` (`trashed_at`, `updated_at`, `id`);
+
+-- Dashboard trend / recent ORDER BY created_at
+ALTER TABLE `wp_planners` ADD KEY `idx_created_at` (`created_at`, `id`);
+
+-- Dashboard top-customers GROUP BY email
+ALTER TABLE `wp_planners` ADD KEY `idx_email` (`email`);
+ALTER TABLE `wp_planners` ADD KEY `idx_email_cover` (`email`, `id`, `created_at`);
+ALTER TABLE `wp_planners` ADD KEY `idx_state` (`state`);
+ALTER TABLE `wp_planners` ADD KEY `idx_device` (`device`);

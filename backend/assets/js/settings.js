@@ -11,6 +11,7 @@
     var API_SYSTEM = fcApiUrl('settings', 'action=system');
     var API_INTEGRATIONS = fcApiUrl('settings', 'action=integrations');
     var API_CLOUDFLARE_VERIFY = fcApiUrl('settings', 'action=cloudflare-verify');
+    var API_CONSOLE = fcApiUrl('settings', 'action=console');
     var API_DEV_CONSOLE = fcApiUrl('settings', 'action=dev-console');
     var TOAST_THEME = 'fc-theme-save';
     var TOAST_BRANDING = 'fc-branding-save';
@@ -18,6 +19,7 @@
     var TOAST_CATALOG = 'fc-catalog-save';
     var TOAST_SYSTEM = 'fc-system-save';
     var TOAST_INTEGRATIONS = 'fc-integrations-save';
+    var TOAST_CONSOLE = 'fc-console-save';
     var TOAST_CLOUDFLARE_VERIFY = 'fc-cloudflare-verify';
 
     var SETTINGS_TABS = [
@@ -27,7 +29,7 @@
         'catalog',
         'system',
         'integration',
-        'dev-mode'
+        'console'
     ];
     var SETTINGS_DEFAULT_TAB = 'theme';
     var SETTINGS_URL_TAB_KEY = 'tab';
@@ -79,6 +81,10 @@
         integrationsRevision: '',
         integrationDirty: false,
         integrationFormBound: false,
+        console: { debugMode: false },
+        consoleDefaults: { debugMode: false },
+        consoleFormBound: false,
+        consoleSaving: false,
         csrf: ''
     };
 
@@ -104,8 +110,8 @@
         if (normalized === 'integrations') {
             normalized = 'integration';
         }
-        if (normalized === 'devmode' || normalized === 'dev') {
-            normalized = 'dev-mode';
+        if (normalized === 'dev-mode' || normalized === 'devmode' || normalized === 'dev') {
+            normalized = 'console';
         }
         return SETTINGS_TABS.indexOf(normalized) !== -1 ? normalized : SETTINGS_DEFAULT_TAB;
     }
@@ -294,19 +300,102 @@
         return base + '/' + value.replace(/^\/+/, '');
     }
 
+    var FLASH_KEY = 'fc-settings-save-flash';
+
+    function setFlash(message, type) {
+        try {
+            sessionStorage.setItem(
+                FLASH_KEY,
+                JSON.stringify({
+                    message: String(message || ''),
+                    type: type === 'error' ? 'error' : 'success',
+                })
+            );
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function consumeFlash() {
+        try {
+            var raw = sessionStorage.getItem(FLASH_KEY);
+            if (!raw) {
+                return null;
+            }
+            sessionStorage.removeItem(FLASH_KEY);
+            var data = JSON.parse(raw);
+            if (!data || !data.message) {
+                return null;
+            }
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function showHeaderNotice(root, flash) {
+        if (!root) {
+            root = document.getElementById('fc-settings-root');
+        }
+        var mount = root ? root.querySelector('[data-fc-settings-notice]') : null;
+        if (!mount || !flash || !flash.message) {
+            return;
+        }
+        var type = flash.type === 'error' ? 'error' : 'success';
+        mount.hidden = false;
+        mount.className = 'fc-entries-page__notice fc-entries-page__notice--' + type + ' is-visible';
+        mount.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        mount.innerHTML =
+            '<p class="fc-entries-page__notice-text"></p>' +
+            '<button type="button" class="fc-entries-page__notice-dismiss" aria-label="Dismiss notice">' +
+            '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' +
+            '</button>';
+        var textEl = mount.querySelector('.fc-entries-page__notice-text');
+        if (textEl) {
+            textEl.textContent = flash.message;
+        }
+        var dismiss = mount.querySelector('.fc-entries-page__notice-dismiss');
+        if (dismiss) {
+            dismiss.addEventListener('click', function () {
+                mount.hidden = true;
+                mount.classList.remove('is-visible');
+                mount.innerHTML = '';
+            });
+        }
+    }
+
     function updateBrandingLogoPreview() {
-        var preview = document.getElementById('fc-branding-logo-preview');
-        var sidebarPreview = document.getElementById('fc-branding-preview-logo');
+        // Logo preview (large)
+        var logoPreview = document.getElementById('fc-branding-logo-preview');
+        var logoSidebar = document.getElementById('fc-branding-preview-logo');
         var logoPath = String(state.branding.logo || '').trim();
         var logoUrl = brandingAssetUrl(logoPath);
 
-        [preview, sidebarPreview].forEach(function (el) {
+        [logoPreview, logoSidebar].forEach(function (el) {
             if (!el) {
                 return;
             }
             el.classList.toggle('fc-settings-branding-logo__preview--empty', !logoUrl);
             if (logoUrl) {
                 el.style.setProperty('--fc-branding-logo-preview', 'url(' + logoUrl + ')');
+            } else {
+                el.style.removeProperty('--fc-branding-logo-preview');
+            }
+        });
+
+        // Favicon preview (small)
+        var faviconPreview = document.getElementById('fc-branding-favicon-preview');
+        var faviconSidebar = document.getElementById('fc-branding-preview-favicon');
+        var faviconPath = String(state.branding.favicon || '').trim();
+        var faviconUrl = brandingAssetUrl(faviconPath);
+
+        [faviconPreview, faviconSidebar].forEach(function (el) {
+            if (!el) {
+                return;
+            }
+            el.classList.toggle('fc-settings-branding-logo__preview--empty', !faviconUrl);
+            if (faviconUrl) {
+                el.style.setProperty('--fc-branding-logo-preview', 'url(' + faviconUrl + ')');
             } else {
                 el.style.removeProperty('--fc-branding-logo-preview');
             }
@@ -346,7 +435,7 @@
             { id: 'catalog', label: 'Catalog' },
             { id: 'system', label: 'System' },
             { id: 'integration', label: 'Integration' },
-            { id: 'dev-mode', label: 'Dev Mode' }
+            { id: 'console', label: 'Console' }
         ];
 
         return (
@@ -461,8 +550,8 @@
             btnPrimary +
             '">Save Integrations</button>' +
             '</div>' +
-            '<div id="fc-settings-header-actions-dev-mode" class="' +
-            (state.activeTab === 'dev-mode' ? 'flex' : 'hidden') +
+            '<div id="fc-settings-header-actions-console" class="' +
+            (state.activeTab === 'console' ? 'flex' : 'hidden') +
             ' flex-wrap gap-2"></div></div>'
         );
     }
@@ -474,7 +563,7 @@
         var catalogActions = document.getElementById('fc-settings-header-actions-catalog');
         var systemActions = document.getElementById('fc-settings-header-actions-system');
         var integrationActions = document.getElementById('fc-settings-header-actions-integration');
-        var devModeActions = document.getElementById('fc-settings-header-actions-dev-mode');
+        var consoleActions = document.getElementById('fc-settings-header-actions-console');
         var themeDirty = document.getElementById('fc-settings-theme-dirty');
         var brandingDirty = document.getElementById('fc-settings-branding-dirty');
         var fenceColorsDirty = document.getElementById('fc-settings-fence-colors-dirty');
@@ -506,9 +595,9 @@
             integrationActions.classList.toggle('hidden', state.activeTab !== 'integration');
             integrationActions.classList.toggle('flex', state.activeTab === 'integration');
         }
-        if (devModeActions) {
-            devModeActions.classList.toggle('hidden', state.activeTab !== 'dev-mode');
-            devModeActions.classList.toggle('flex', state.activeTab === 'dev-mode');
+        if (consoleActions) {
+            consoleActions.classList.toggle('hidden', state.activeTab !== 'console');
+            consoleActions.classList.toggle('flex', state.activeTab === 'console');
         }
         if (themeDirty) {
             themeDirty.classList.toggle('hidden', state.activeTab !== 'theme' || !state.themeDirty);
@@ -557,7 +646,7 @@
 
     function presetCardClasses(isSelected) {
         return (
-            'fc-theme-preset group flex items-start gap-3 rounded-xl border-2 p-4 text-left transition ' +
+            'fc-theme-preset group flex items-start gap-3 border-2 p-4 text-left transition ' +
             (isSelected
                 ? 'fc-theme-preset--selected'
                 : 'border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-white')
@@ -1335,7 +1424,7 @@
         var catalogPanel = document.getElementById('fc-settings-panel-catalog');
         var systemPanel = document.getElementById('fc-settings-panel-system');
         var integrationPanel = document.getElementById('fc-settings-panel-integration');
-        var devModePanel = document.getElementById('fc-settings-panel-dev-mode');
+        var consolePanel = document.getElementById('fc-settings-panel-console');
         var preview = document.getElementById('fc-settings-preview');
         var layout = document.getElementById('fc-settings-layout');
         var showPreview = tabId === 'theme' || tabId === 'branding';
@@ -1358,8 +1447,8 @@
         if (integrationPanel) {
             integrationPanel.classList.toggle('hidden', tabId !== 'integration');
         }
-        if (devModePanel) {
-            devModePanel.classList.toggle('hidden', tabId !== 'dev-mode');
+        if (consolePanel) {
+            consolePanel.classList.toggle('hidden', tabId !== 'console');
         }
         if (layout) {
             layout.classList.toggle('lg:grid-cols-2', showPreview);
@@ -1495,16 +1584,24 @@
             }
             btn.setAttribute('data-fc-branding-bound', '1');
             btn.addEventListener('click', function () {
-                var input = document.querySelector('[data-fc-branding-field="logo"]');
+                var container = btn.closest('.fc-settings-branding-logo');
+                if (!container) {
+                    return;
+                }
+                var input = container.querySelector('input[data-fc-branding-field]');
                 if (!input || !global.FcAdminMediaPicker || typeof global.FcAdminMediaPicker.open !== 'function') {
                     return;
                 }
+                var key = input.getAttribute('data-fc-branding-field');
                 global.FcAdminMediaPicker.open({
                     appBase: getAppBase(),
                     onSelect: function (path) {
                         input.value = path;
-                        state.branding.logo = path;
+                        if (key) {
+                            state.branding[key] = path;
+                        }
                         input.dispatchEvent(new Event('input', { bubbles: true }));
+                        updateBrandingPreview();
                     }
                 });
             });
@@ -1516,13 +1613,21 @@
             }
             btn.setAttribute('data-fc-branding-bound', '1');
             btn.addEventListener('click', function () {
-                var input = document.querySelector('[data-fc-branding-field="logo"]');
+                var container = btn.closest('.fc-settings-branding-logo');
+                if (!container) {
+                    return;
+                }
+                var input = container.querySelector('input[data-fc-branding-field]');
                 if (!input) {
                     return;
                 }
+                var key = input.getAttribute('data-fc-branding-field');
                 input.value = '';
-                state.branding.logo = '';
+                if (key) {
+                    state.branding[key] = '';
+                }
                 input.dispatchEvent(new Event('input', { bubbles: true }));
+                updateBrandingPreview();
             });
         });
 
@@ -1862,7 +1967,118 @@
     }
 
     function bindDevModeForm() {
+        bindDebugModeToggle();
         bindDevConsole();
+    }
+
+    function applyDebugModeFlag(enabled) {
+        var on = !!enabled;
+        try {
+            document.documentElement.setAttribute('data-fc-debug', on ? '1' : '0');
+        } catch (e) {
+            /* ignore */
+        }
+        try {
+            global.FC_DEBUG = on;
+        } catch (e2) {
+            /* ignore */
+        }
+    }
+
+    function paintDebugModeToggle() {
+        var enabled = !!(state.console && state.console.debugMode);
+        document.querySelectorAll('[data-fc-debug-mode]').forEach(function (btn) {
+            var value = btn.getAttribute('data-fc-debug-mode') === '1';
+            var active = value === enabled;
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            btn.classList.toggle('bg-white', active);
+            btn.classList.toggle('text-slate-900', active);
+            btn.classList.toggle('shadow-sm', active);
+            btn.classList.toggle('text-slate-600', !active);
+            btn.classList.toggle('hover:text-slate-900', !active);
+        });
+        applyDebugModeFlag(enabled);
+    }
+
+    function saveDebugMode(enabled) {
+        if (state.consoleSaving) {
+            return;
+        }
+        var next = !!enabled;
+        if (!!(state.console && state.console.debugMode) === next) {
+            paintDebugModeToggle();
+            return;
+        }
+
+        state.consoleSaving = true;
+        state.console = Object.assign({}, state.console || {}, { debugMode: next });
+        paintDebugModeToggle();
+        toast('saving', next ? 'Turning Debug Mode on…' : 'Turning Debug Mode off…', TOAST_CONSOLE);
+
+        fetch(API_CONSOLE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                console: state.console,
+                csrf: state.csrf
+            })
+        })
+            .then(function (res) {
+                return res.json().then(function (body) {
+                    if (!res.ok || !body.ok) {
+                        throw new Error((body && body.error) || 'Save failed');
+                    }
+                    return body;
+                });
+            })
+            .then(function (body) {
+                state.console = Object.assign(
+                    {},
+                    state.consoleDefaults || { debugMode: false },
+                    body.console || state.console
+                );
+                paintDebugModeToggle();
+                setFlash(
+                    body.message ||
+                        (state.console.debugMode ? 'Debug Mode turned on.' : 'Debug Mode turned off.'),
+                    'success'
+                );
+                try {
+                    var url = new URL(window.location.href);
+                    window.location.assign(url.pathname + url.search);
+                } catch (e) {
+                    window.location.reload();
+                }
+            })
+            .catch(function (err) {
+                state.console = Object.assign({}, state.console || {}, { debugMode: !next });
+                paintDebugModeToggle();
+                toast('error', err.message || 'Could not update Debug Mode.', TOAST_CONSOLE);
+            })
+            .then(function () {
+                state.consoleSaving = false;
+            });
+    }
+
+    function bindDebugModeToggle() {
+        if (state.consoleFormBound) {
+            return;
+        }
+        var buttons = document.querySelectorAll('[data-fc-debug-mode]');
+        if (!buttons.length) {
+            return;
+        }
+        state.consoleFormBound = true;
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                saveDebugMode(btn.getAttribute('data-fc-debug-mode') === '1');
+            });
+        });
+        paintDebugModeToggle();
     }
 
     function bindDevConsole() {
@@ -2215,7 +2431,13 @@
                 paintThemeForm();
                 updatePresetCards();
                 setThemeDirty(false);
-                toast('ok', 'Theme saved — refresh the planner to see changes.', TOAST_THEME);
+                setFlash(body.message || 'Theme saved — refresh the planner to see changes.', 'success');
+                try {
+                    var next = new URL(window.location.href);
+                    window.location.assign(next.pathname + next.search);
+                } catch (e) {
+                    window.location.reload();
+                }
             })
             .catch(function (err) {
                 toast('error', err.message || 'Could not save theme.', TOAST_THEME);
@@ -2247,7 +2469,13 @@
                 state.brandingSchema = body.schema || state.brandingSchema;
                 paintBrandingForm();
                 setBrandingDirty(false);
-                toast('ok', 'Branding saved — refresh the planner to see changes.', TOAST_BRANDING);
+                setFlash(body.message || 'Branding saved — refresh the planner to see changes.', 'success');
+                try {
+                    var next = new URL(window.location.href);
+                    window.location.assign(next.pathname + next.search);
+                } catch (e) {
+                    window.location.reload();
+                }
             })
             .catch(function (err) {
                 toast('error', err.message || 'Could not save branding.', TOAST_BRANDING);
@@ -2278,7 +2506,13 @@
                 state.fenceColorsDefaults = cloneFenceColorsList(body.defaults || state.fenceColorsDefaults);
                 refreshFenceColorsTable();
                 setFenceColorsDirty(false);
-                toast('ok', 'Fence colors saved — refresh the planner to see changes.', TOAST_FENCE_COLORS);
+                setFlash(body.message || 'Fence colors saved — refresh the planner to see changes.', 'success');
+                try {
+                    var next = new URL(window.location.href);
+                    window.location.assign(next.pathname + next.search);
+                } catch (e) {
+                    window.location.reload();
+                }
             })
             .catch(function (err) {
                 toast('error', err.message || 'Could not save fence colors.', TOAST_FENCE_COLORS);
@@ -2524,7 +2758,13 @@
                 state.integrationsRevision = body.revision || state.integrationsRevision;
                 paintIntegrationForm();
                 setIntegrationDirty(false);
-                toast('ok', 'Integration settings saved.', TOAST_INTEGRATIONS);
+                setFlash(body.message || 'Integration settings saved.', 'success');
+                try {
+                    var next = new URL(window.location.href);
+                    window.location.assign(next.pathname + next.search);
+                } catch (e) {
+                    window.location.reload();
+                }
             })
             .catch(function (err) {
                 toast('error', err.message || 'Could not save integration settings.', TOAST_INTEGRATIONS);
@@ -2964,7 +3204,13 @@
                 state.catalogOptionsLoaded = true;
                 paintCatalogForm();
                 setCatalogDirty(false);
-                toast('ok', 'Catalog settings saved — refresh Product Lookup to see changes.', TOAST_CATALOG);
+                setFlash(body.message || 'Catalog settings saved — refresh Product Lookup to see changes.', 'success');
+                try {
+                    var next = new URL(window.location.href);
+                    window.location.assign(next.pathname + next.search);
+                } catch (e) {
+                    window.location.reload();
+                }
             })
             .catch(function (err) {
                 toast('error', err.message || 'Could not save catalog settings.', TOAST_CATALOG);
@@ -3060,7 +3306,13 @@
                 state.systemDefaults = Object.assign({}, body.defaults || state.systemDefaults);
                 paintSystemForm();
                 setSystemDirty(false);
-                toast('ok', 'System settings saved.', TOAST_SYSTEM);
+                setFlash(body.message || 'System settings saved.', 'success');
+                try {
+                    var next = new URL(window.location.href);
+                    window.location.assign(next.pathname + next.search);
+                } catch (e) {
+                    window.location.reload();
+                }
             })
             .catch(function (err) {
                 toast('error', err.message || 'Could not save system settings.', TOAST_SYSTEM);
@@ -3117,6 +3369,15 @@
         state.integrationsRevision = data.integrationsRevision || '';
         state.csrf = data.csrf || '';
 
+        state.console = Object.assign(
+            { debugMode: false },
+            data.console || {}
+        );
+        state.consoleDefaults = Object.assign(
+            { debugMode: false },
+            data.consoleDefaults || {}
+        );
+
         state.themeDirty = false;
         state.brandingDirty = false;
         state.fenceColorsDirty = false;
@@ -3128,6 +3389,8 @@
         state.catalogFormBound = false;
         state.systemFormBound = false;
         state.integrationFormBound = false;
+        state.consoleFormBound = false;
+        state.consoleSaving = false;
 
         state.activeTab = normalizeSettingsTab(data.activeTab || readSettingsTabFromUrl());
         syncSettingsTabUrl(state.activeTab);
@@ -3165,6 +3428,12 @@
             });
         }
         container.removeAttribute('aria-busy');
+        // Show flash notice if present (from previous save)
+        try {
+            showHeaderNotice(container, consumeFlash());
+        } catch (e) {
+            /* ignore */
+        }
 
         return Promise.resolve(true);
     }

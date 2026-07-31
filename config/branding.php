@@ -14,6 +14,7 @@ function fc_branding_defaults(): array
 {
     return [
         'logo' => '',
+        'favicon' => '',
         'appName' => 'Fencing Calculator',
         'tagline' => 'Calculate your fence cost and the materials needed.',
         'version' => 'v10.0.0 beta',
@@ -31,6 +32,12 @@ function fc_branding_schema(): array
             'type' => 'image',
             'placeholder' => 'assets/uploads/logo.png',
             'help' => 'Shown on the admin login page and sidebar header. SVG, PNG, JPG, WebP, or GIF recommended.',
+        ],
+        'favicon' => [
+            'label' => 'Favicon',
+            'type' => 'image',
+            'placeholder' => 'assets/uploads/favicon.png',
+            'help' => 'Small site icon shown in browser tabs. ICO, PNG, or SVG recommended (16×16 or 32×32).',
         ],
         'appName' => [
             'label' => 'App name',
@@ -95,6 +102,21 @@ function fc_branding_normalize_field(string $key, string $value): ?string
 
         return str_replace('\\', '/', $value);
     }
+    if ($key === 'favicon') {
+        if ($value === '') {
+            return '';
+        }
+
+        if (mb_strlen($value) > 500) {
+            $value = mb_substr($value, 0, 500);
+        }
+
+        if (!fc_branding_is_valid_logo_path($value)) {
+            return null;
+        }
+
+        return str_replace('\\', '/', $value);
+    }
 
     if ($value === '') {
         return null;
@@ -127,6 +149,30 @@ function fc_branding_is_valid_logo_path(string $value): bool
     $path = ltrim(str_replace('\\', '/', $value), '/');
 
     return (bool) preg_match('#^(?:assets/uploads|assets/img)/[^/]+$#', $path);
+}
+
+/**
+ * @param array<string, string>|null $branding
+ */
+function fc_branding_favicon_url(string $appBase, ?array $branding = null): string
+{
+    if ($branding === null) {
+        $branding = fc_branding_get();
+    }
+
+    $path = trim((string) ($branding['favicon'] ?? ''));
+    if ($path === '') {
+        return '';
+    }
+
+    if (preg_match('/^https?:\/\//i', $path) || preg_match('/^data:/i', $path) || str_starts_with($path, '//')) {
+        return $path;
+    }
+
+    $base = rtrim(str_replace('\\', '/', $appBase), '/');
+    $rel = ltrim(str_replace('\\', '/', $path), '/');
+
+    return $base !== '' ? $base . '/' . $rel : $rel;
 }
 
 /**

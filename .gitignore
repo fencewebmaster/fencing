@@ -11,6 +11,7 @@ data/wc-products-*
 data/products*
 data/groups-permissions/*.json
 data/theme.json
+data/console.json
 
 # Generated storage (keep directory placeholders)
 data/storage/cache/**/*.json

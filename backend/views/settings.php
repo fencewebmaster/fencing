@@ -67,8 +67,9 @@ $tab = $fcSettingsPage;
                     <button type="button" id="fc-integration-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Discard Changes</button>
                     <button type="button" id="fc-integration-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Integrations</button>
                 </div>
-                <div id="fc-settings-header-actions-dev-mode" class="<?php echo $h((string) $tab['header_actions_class']['dev_mode']); ?> flex-wrap gap-2"></div>
+                <div id="fc-settings-header-actions-console" class="<?php echo $h((string) $tab['header_actions_class']['console']); ?> flex-wrap gap-2"></div>
             </div>
+            <div data-fc-settings-notice hidden class="fc-entries-page__notice fc-entries-page__notice--success" aria-hidden="true"></div>
 
             <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
                 <div id="fc-settings-layout" class="grid w-full grid-cols-1 gap-6 p-4 sm:p-6 lg:items-start <?php echo $h((string) $tab['layout_class']); ?>">
@@ -88,7 +89,7 @@ $tab = $fcSettingsPage;
                                     <button
                                         type="button"
                                         data-fc-theme-preset="<?php echo $h((string) $preset['id']); ?>"
-                                        class="fc-theme-preset group flex items-start gap-3 rounded-xl border-2 p-4 text-left transition <?php echo $h((string) $preset['card_class']); ?>"
+                                        class="fc-theme-preset group flex items-start gap-3 border-2 p-4 text-left transition <?php echo $h((string) $preset['card_class']); ?>"
                                         aria-pressed="<?php echo !empty($preset['is_selected']) ? 'true' : 'false'; ?>"
                                     >
                                         <span class="mt-0.5 flex h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm" aria-hidden="true">
@@ -149,13 +150,10 @@ $tab = $fcSettingsPage;
                                         <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
                                             <span class="w-full shrink-0 text-sm font-medium text-slate-700 sm:w-28 sm:pt-2"><?php echo $h((string) $field['label']); ?></span>
                                             <span class="min-w-0 flex-1 space-y-2">
-                                                <div class="fc-settings-branding-logo__preview<?php echo ($field['logo_url'] ?? '') !== '' ? '' : ' fc-settings-branding-logo__preview--empty'; ?>" id="fc-branding-logo-preview"<?php echo ($field['logo_url'] ?? '') !== '' ? ' style="--fc-branding-logo-preview:url(' . $h((string) $field['logo_url']) . ')"' : ''; ?>>
-                                                    <span class="fc-settings-branding-logo__preview-fallback" aria-hidden="true"><i class="fa-solid fa-image"></i></span>
-                                                </div>
                                                 <div class="fc-settings-branding-logo__inputs">
                                                     <input type="text" id="<?php echo $h((string) $field['field_id']); ?>" data-fc-branding-field="<?php echo $h((string) $field['key']); ?>" value="<?php echo $h((string) $field['value']); ?>" placeholder="<?php echo $h((string) $field['placeholder']); ?>" title="<?php echo $h((string) $field['title']); ?>" class="fc-settings-field font-mono text-xs" spellcheck="false" autocomplete="off" />
-                                                    <button type="button" class="fc-settings-branding-logo__pick" data-fc-branding-pick title="Upload or choose logo" aria-label="Upload or choose logo"><i class="fa-solid fa-image" aria-hidden="true"></i></button>
-                                                    <button type="button" class="fc-settings-branding-logo__clear" data-fc-branding-clear title="Remove logo" aria-label="Remove logo"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                                                    <button type="button" class="fc-settings-branding-logo__pick" data-fc-branding-pick title="Upload or choose <?php echo $h((string) $field['label']); ?>" aria-label="Upload or choose <?php echo $h((string) $field['label']); ?>"><i class="fa-solid fa-image" aria-hidden="true"></i></button>
+                                                    <button type="button" class="fc-settings-branding-logo__clear" data-fc-branding-clear title="Remove <?php echo $h((string) $field['label']); ?>" aria-label="Remove <?php echo $h((string) $field['label']); ?>"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                                                 </div>
                                                 <?php if ($field['help'] !== '') : ?>
                                                 <span class="block text-xs text-slate-500"><?php echo $h((string) $field['help']); ?></span>
@@ -628,11 +626,44 @@ $tab = $fcSettingsPage;
 
                         </div>
 
-                        <div id="fc-settings-panel-dev-mode" class="<?php echo $h((string) $tab['panel_class']['dev_mode']); ?>space-y-5">
+                        <div id="fc-settings-panel-console" class="<?php echo $h((string) $tab['panel_class']['console']); ?>space-y-5">
                             <div>
-                                <h2 class="text-lg font-semibold text-slate-900">Dev Mode</h2>
+                                <h2 class="text-lg font-semibold text-slate-900">Console</h2>
                                 <p class="mt-1 text-sm text-slate-500">Development tools for deploying updates on this environment.</p>
                             </div>
+
+                            <?php
+                            $consoleSettings = is_array($tab['console'] ?? null) ? $tab['console'] : [];
+                            $debugModeOn = !empty($consoleSettings['debugMode']);
+                            $debugOffClass = $debugModeOn
+                                ? 'text-slate-600 hover:text-slate-900'
+                                : 'bg-white text-slate-900 shadow-sm';
+                            $debugOnClass = $debugModeOn
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900';
+                            ?>
+                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                                <div class="flex flex-wrap items-center justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-800">Debug Mode</h3>
+                                        <p class="mt-1 text-xs text-slate-500">When on, enables verbose debugging across the app. Off by default.</p>
+                                    </div>
+                                    <div class="flex flex-wrap rounded-lg bg-slate-200/80 p-1" role="group" aria-label="Debug Mode">
+                                        <button
+                                            type="button"
+                                            data-fc-debug-mode="0"
+                                            aria-pressed="<?php echo $debugModeOn ? 'false' : 'true'; ?>"
+                                            class="rounded-md px-4 py-2 text-sm font-medium transition <?php echo $h($debugOffClass); ?>"
+                                        >Off</button>
+                                        <button
+                                            type="button"
+                                            data-fc-debug-mode="1"
+                                            aria-pressed="<?php echo $debugModeOn ? 'true' : 'false'; ?>"
+                                            class="rounded-md px-4 py-2 text-sm font-medium transition <?php echo $h($debugOnClass); ?>"
+                                        >On</button>
+                                    </div>
+                                </div>
+                            </section>
 
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
@@ -680,9 +711,19 @@ $tab = $fcSettingsPage;
                             <p class="mb-3 text-sm font-semibold text-slate-800">Live preview</p>
                             <div class="space-y-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-sm">
                                 <div class="border-b border-slate-200 px-3 py-3">
-                                    <p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Logo</p>
-                                    <div id="fc-branding-preview-logo" class="fc-settings-branding-logo__preview fc-settings-branding-logo__preview--sidebar<?php echo ($tab['branding_preview']['logo_url'] ?? '') !== '' ? '' : ' fc-settings-branding-logo__preview--empty'; ?>"<?php echo ($tab['branding_preview']['logo_url'] ?? '') !== '' ? ' style="--fc-branding-logo-preview:url(' . $h((string) $tab['branding_preview']['logo_url']) . ')"' : ''; ?>>
-                                        <span class="fc-settings-branding-logo__preview-fallback" aria-hidden="true"><i class="fa-solid fa-border-all"></i></span>
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex flex-col items-start">
+                                            <p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Logo</p>
+                                            <div id="fc-branding-preview-logo" class="fc-settings-branding-logo__preview fc-settings-branding-logo__preview--sidebar<?php echo ($tab['branding_preview']['logo_url'] ?? '') !== '' ? '' : ' fc-settings-branding-logo__preview--empty'; ?>"<?php echo ($tab['branding_preview']['logo_url'] ?? '') !== '' ? ' style="--fc-branding-logo-preview:url(' . $h((string) $tab['branding_preview']['logo_url']) . ');width:48px;height:48px;"' : ' style="width:48px;height:48px;"'; ?>>
+                                                <span class="fc-settings-branding-logo__preview-fallback" aria-hidden="true"><i class="fa-solid fa-border-all"></i></span>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col items-start">
+                                            <p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Favicon</p>
+                                            <div id="fc-branding-preview-favicon" class="fc-settings-branding-logo__preview fc-settings-branding-logo__preview--sidebar"<?php echo ($tab['branding_preview']['favicon_url'] ?? '') !== '' ? ' style="--fc-branding-logo-preview:url(' . $h((string) $tab['branding_preview']['favicon_url']) . ')"' : ''; ?>>
+                                                <span class="fc-settings-branding-logo__preview-fallback" aria-hidden="true"><i class="fa-solid fa-image"></i></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="border-b border-slate-200 px-3 py-3">

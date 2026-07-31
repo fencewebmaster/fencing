@@ -221,6 +221,11 @@ function fc_planners_ensure_indexes(mysqli $conn, string $table): void
         'idx_list_active_created' => 'ADD KEY `idx_list_active_created` (`trashed_at`, `status`, `created_at`, `id`)',
         'idx_trash_status' => 'ADD KEY `idx_trash_status` (`trashed_at`, `status`)',
         'idx_list_updated' => 'ADD KEY `idx_list_updated` (`trashed_at`, `updated_at`, `id`)',
+        'idx_created_at' => 'ADD KEY `idx_created_at` (`created_at`, `id`)',
+        'idx_email' => 'ADD KEY `idx_email` (`email`)',
+        'idx_email_cover' => 'ADD KEY `idx_email_cover` (`email`, `id`, `created_at`)',
+        'idx_state' => 'ADD KEY `idx_state` (`state`)',
+        'idx_device' => 'ADD KEY `idx_device` (`device`)',
     ];
 
     foreach ($indexes as $name => $ddl) {

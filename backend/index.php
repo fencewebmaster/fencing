@@ -23,10 +23,16 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en" class="h-full" data-fc-admin-theme="light">
+<html lang="en" class="h-full" data-fc-admin-theme="light" data-fc-debug="<?php
+    if (!function_exists('fc_console_debug_mode')) {
+        require_once FC_ROOT . '/config/console.php';
+    }
+    echo fc_console_debug_mode() ? '1' : '0';
+?>">
 <head>
     <script>
     (function(){try{var t=localStorage.getItem('fc-admin-appearance');document.documentElement.setAttribute('data-fc-admin-theme',t==='dark'?'dark':'light');if(localStorage.getItem('fc-admin-sidebar-collapsed')==='1'){document.documentElement.classList.add('fc-admin-sidebar-collapsed');}}catch(e){}})();
+    window.FC_DEBUG = document.documentElement.getAttribute('data-fc-debug') === '1';
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,6 +56,14 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
     <link rel="stylesheet" type="text/css" href="assets/css/dashboard-admin.css">
     <link rel="stylesheet" type="text/css" href="assets/css/fc-lazy.css">
     <link rel="stylesheet" type="text/css" href="assets/css/fence-styles-admin.css">
+    <?php
+    $fcFavicon = '';
+    if (function_exists('fc_branding_favicon_url')) {
+        $fcFavicon = fc_branding_favicon_url($fcAppBase ?? '');
+    }
+    if ($fcFavicon !== '') : ?>
+    <link rel="icon" href="<?php echo htmlspecialchars((string) $fcFavicon, ENT_QUOTES, 'UTF-8'); ?>" />
+    <?php endif; ?>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {

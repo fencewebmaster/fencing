@@ -12,9 +12,25 @@ function fc_dashboard_admin_h(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Dashboard date column. Prefer created_at (indexed) — COALESCE() blocks range indexes.
+ */
 function fc_dashboard_admin_date_expr(): string
 {
-    return 'COALESCE(created_at, updated_at)';
+    return 'created_at';
+}
+
+/**
+ * Inclusive day range [start, end] as datetime strings for index-friendly predicates.
+ *
+ * @return array{from:string,to:string}
+ */
+function fc_dashboard_admin_day_bounds(string $ymd): array
+{
+    return [
+        'from' => $ymd . ' 00:00:00',
+        'to' => $ymd . ' 23:59:59',
+    ];
 }
 
 /**
@@ -162,7 +178,7 @@ function fc_dashboard_admin_group_count(
     $dateExpr = fc_dashboard_admin_date_expr();
     $dateFilter = fc_dashboard_admin_date_bounds_clause($dateExpr, $bounds);
 
-    $where = $safeCol . " IS NOT NULL AND TRIM(" . $safeCol . ") <> ''";
+    $where = $safeCol . " IS NOT NULL AND " . $safeCol . " <> ''";
     if ($extraWhere !== '') {
         $where .= ' AND (' . $extraWhere . ')';
     }
@@ -224,81 +240,99 @@ function fc_dashboard_admin_summary_stats(): array
     /** @var mysqli $conn */
     $conn = $ctx['conn'];
     $table = (string) $ctx['table'];
-    $dateExpr = fc_dashboard_admin_date_expr();
+    $safe = $conn->real_escape_string($table);
     $now = new DateTime('now');
     $today = $now->format('Y-m-d');
     $yesterday = (clone $now)->modify('-1 day')->format('Y-m-d');
+    $todayBounds = fc_dashboard_admin_day_bounds($today);
+    $yesterdayBounds = fc_dashboard_admin_day_bounds($yesterday);
     $weekStart = (clone $now)->modify('monday this week')->format('Y-m-d 00:00:00');
     $monthStart = $now->format('Y-m-01 00:00:00');
     $yearStart = $now->format('Y-01-01 00:00:00');
 
-    $plannerWhere = "planner_id IS NOT NULL AND TRIM(planner_id) <> ''";
-    $emailWhere = "email IS NOT NULL AND TRIM(email) <> ''";
-    $plannerCol = 'planner_id';
-    $emailCol = 'LOWER(TRIM(email))';
-
-    $periods = [
-        'today' => [
-            'where' => 'DATE(' . $dateExpr . ') = ?',
-            'types' => 's',
-            'params' => [$today],
-        ],
-        'yesterday' => [
-            'where' => 'DATE(' . $dateExpr . ') = ?',
-            'types' => 's',
-            'params' => [$yesterday],
-        ],
-        'week' => [
-            'where' => $dateExpr . ' >= ?',
-            'types' => 's',
-            'params' => [$weekStart],
-        ],
-        'month' => [
-            'where' => $dateExpr . ' >= ?',
-            'types' => 's',
-            'params' => [$monthStart],
-        ],
-        'year' => [
-            'where' => $dateExpr . ' >= ?',
-            'types' => 's',
-            'params' => [$yearStart],
-        ],
-    ];
-
-    $entries = [];
-    $customers = [];
-    foreach ($periods as $key => $period) {
-        $entries[$key] = fc_dashboard_admin_distinct_count(
-            $conn,
-            $table,
-            $plannerCol,
-            $plannerWhere . ' AND ' . $period['where'],
-            $period['types'],
-            $period['params']
-        );
-        $customers[$key] = fc_dashboard_admin_distinct_count(
-            $conn,
-            $table,
-            $emailCol,
-            $emailWhere . ' AND ' . $period['where'],
-            $period['types'],
-            $period['params']
-        );
-    }
-
-    $payload = [
+    $zeros = [
         'ok' => true,
-        'today_entries' => $entries['today'],
-        'yesterday_entries' => $entries['yesterday'],
-        'week_entries' => $entries['week'],
-        'month_entries' => $entries['month'],
-        'year_entries' => $entries['year'],
-        'today_customers' => $customers['today'],
-        'yesterday_customers' => $customers['yesterday'],
-        'week_customers' => $customers['week'],
-        'month_customers' => $customers['month'],
-        'year_customers' => $customers['year'],
+        'today_entries' => 0,
+        'yesterday_entries' => 0,
+        'week_entries' => 0,
+        'month_entries' => 0,
+        'year_entries' => 0,
+        'today_customers' => 0,
+        'yesterday_customers' => 0,
+        'week_customers' => 0,
+        'month_customers' => 0,
+        'year_customers' => 0,
     ];
+
+    // Indexed day ranges for today/yesterday; one pass for week/month/year.
+    $daySql = "SELECT"
+        . " COUNT(DISTINCT CASE WHEN planner_id IS NOT NULL AND planner_id <> '' THEN planner_id END) AS entries,"
+        . " COUNT(DISTINCT CASE WHEN email IS NOT NULL AND email <> '' THEN LOWER(email) END) AS customers"
+        . " FROM `{$safe}` WHERE created_at >= ? AND created_at <= ?";
+
+    $rangeSql = "SELECT"
+        . " COUNT(DISTINCT CASE WHEN created_at >= ? AND planner_id IS NOT NULL AND planner_id <> '' THEN planner_id END) AS week_entries,"
+        . " COUNT(DISTINCT CASE WHEN created_at >= ? AND email IS NOT NULL AND email <> '' THEN LOWER(email) END) AS week_customers,"
+        . " COUNT(DISTINCT CASE WHEN created_at >= ? AND planner_id IS NOT NULL AND planner_id <> '' THEN planner_id END) AS month_entries,"
+        . " COUNT(DISTINCT CASE WHEN created_at >= ? AND email IS NOT NULL AND email <> '' THEN LOWER(email) END) AS month_customers,"
+        . " COUNT(DISTINCT CASE WHEN created_at >= ? AND planner_id IS NOT NULL AND planner_id <> '' THEN planner_id END) AS year_entries,"
+        . " COUNT(DISTINCT CASE WHEN created_at >= ? AND email IS NOT NULL AND email <> '' THEN LOWER(email) END) AS year_customers"
+        . " FROM `{$safe}` WHERE created_at >= ?";
+
+    $payload = $zeros;
+
+    $fetchDay = static function (mysqli $conn, string $sql, string $from, string $to): array {
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            return ['entries' => 0, 'customers' => 0];
+        }
+        $stmt->bind_param('ss', $from, $to);
+        if (!$stmt->execute()) {
+            $stmt->close();
+
+            return ['entries' => 0, 'customers' => 0];
+        }
+        $row = $stmt->get_result()->fetch_object();
+        $stmt->close();
+
+        return [
+            'entries' => (int) ($row->entries ?? 0),
+            'customers' => (int) ($row->customers ?? 0),
+        ];
+    };
+
+    $todayStats = $fetchDay($conn, $daySql, $todayBounds['from'], $todayBounds['to']);
+    $yesterdayStats = $fetchDay($conn, $daySql, $yesterdayBounds['from'], $yesterdayBounds['to']);
+    $payload['today_entries'] = $todayStats['entries'];
+    $payload['today_customers'] = $todayStats['customers'];
+    $payload['yesterday_entries'] = $yesterdayStats['entries'];
+    $payload['yesterday_customers'] = $yesterdayStats['customers'];
+
+    $rangeStmt = $conn->prepare($rangeSql);
+    if ($rangeStmt) {
+        $rangeStmt->bind_param(
+            'sssssss',
+            $weekStart,
+            $weekStart,
+            $monthStart,
+            $monthStart,
+            $yearStart,
+            $yearStart,
+            $yearStart
+        );
+        if ($rangeStmt->execute()) {
+            $row = $rangeStmt->get_result()->fetch_object();
+            if ($row) {
+                $payload['week_entries'] = (int) ($row->week_entries ?? 0);
+                $payload['week_customers'] = (int) ($row->week_customers ?? 0);
+                $payload['month_entries'] = (int) ($row->month_entries ?? 0);
+                $payload['month_customers'] = (int) ($row->month_customers ?? 0);
+                $payload['year_entries'] = (int) ($row->year_entries ?? 0);
+                $payload['year_customers'] = (int) ($row->year_customers ?? 0);
+            }
+        }
+        $rangeStmt->close();
+    }
 
     fc_planners_close_db($conn);
 
@@ -385,13 +419,14 @@ function fc_dashboard_admin_recent_entries_query(mysqli $conn, string $table, in
 {
     $dateExpr = fc_dashboard_admin_date_expr();
     $dateClause = fc_dashboard_admin_date_bounds_clause($dateExpr, $bounds);
+    // List columns only — fence_type is enough for labels (no fence_data LONGTEXT).
     $sql = 'SELECT id, planner_id, name, email, mobile, address, postcode, state, status, section_count,'
-        . ' fence_type, fence_data, updated_at, created_at FROM `'
+        . ' fence_type, updated_at, created_at FROM `'
         . $conn->real_escape_string($table) . '`';
     if ($dateClause['clause'] !== '') {
         $sql .= ' WHERE ' . $dateClause['clause'];
     }
-    $sql .= ' ORDER BY ' . $dateExpr . ' DESC LIMIT ' . max(1, min(20, $limit));
+    $sql .= ' ORDER BY created_at DESC, id DESC LIMIT ' . max(1, min(20, $limit));
 
     $items = [];
     $result = null;
@@ -560,11 +595,11 @@ function fc_dashboard_admin_chart_payload(string $period = '', string $from = ''
     $browsers = [];
     $osList = [];
     $deviceBrowserCombinations = [];
-    $uaSql = 'SELECT user_agent FROM `' . $conn->real_escape_string($table) . '` WHERE user_agent IS NOT NULL AND TRIM(user_agent) <> \'\'';
+    $uaSql = 'SELECT user_agent FROM `' . $conn->real_escape_string($table) . '` WHERE user_agent IS NOT NULL AND user_agent <> \'\'';
     if ($dateClause['clause'] !== '') {
         $uaSql .= ' AND (' . $dateClause['clause'] . ')';
     }
-    $uaSql .= ' ORDER BY id DESC LIMIT 500';
+    $uaSql .= ' ORDER BY id DESC LIMIT 250';
 
     $uaStmt = null;
     $uaResult = null;
@@ -675,26 +710,21 @@ function fc_dashboard_admin_top_customers(mysqli $conn, string $table, int $limi
 {
     $dateExpr = fc_dashboard_admin_date_expr();
     $dateClause = fc_dashboard_admin_date_bounds_clause($dateExpr, $bounds);
-    $sep = "\x1f";
-    $escapedSep = str_replace("'", "''", $sep);
+    $safe = $conn->real_escape_string($table);
+    $limit = max(1, min(20, $limit));
 
-    $sql = 'SELECT email, COUNT(*) AS c,'
-        . ' MAX(' . $dateExpr . ') AS last_seen,'
-        . ' SUBSTRING_INDEX(GROUP_CONCAT(NULLIF(TRIM(name), \'\') ORDER BY ' . $dateExpr . ' DESC SEPARATOR \'' . $escapedSep . '\'), \'' . $escapedSep . '\', 1) AS name,'
-        . ' SUBSTRING_INDEX(GROUP_CONCAT(NULLIF(TRIM(mobile), \'\') ORDER BY ' . $dateExpr . ' DESC SEPARATOR \'' . $escapedSep . '\'), \'' . $escapedSep . '\', 1) AS mobile,'
-        . ' SUBSTRING_INDEX(GROUP_CONCAT(NULLIF(TRIM(address), \'\') ORDER BY ' . $dateExpr . ' DESC SEPARATOR \'' . $escapedSep . '\'), \'' . $escapedSep . '\', 1) AS address,'
-        . ' SUBSTRING_INDEX(GROUP_CONCAT(NULLIF(TRIM(postcode), \'\') ORDER BY ' . $dateExpr . ' DESC SEPARATOR \'' . $escapedSep . '\'), \'' . $escapedSep . '\', 1) AS postcode,'
-        . ' SUBSTRING_INDEX(GROUP_CONCAT(NULLIF(TRIM(state), \'\') ORDER BY ' . $dateExpr . ' DESC SEPARATOR \'' . $escapedSep . '\'), \'' . $escapedSep . '\', 1) AS state'
-        . ' FROM `' . $conn->real_escape_string($table) . '`'
-        . " WHERE email IS NOT NULL AND TRIM(email) <> ''";
+    // Pass 1: cheap GROUP BY — covering idx_email_cover avoids LONGTEXT row reads.
+    $sql = 'SELECT email, COUNT(*) AS c, MAX(id) AS last_id, MAX(' . $dateExpr . ') AS last_seen'
+        . ' FROM `' . $safe . '`'
+        . " WHERE email IS NOT NULL AND email <> ''";
 
     if ($dateClause['clause'] !== '') {
         $sql .= ' AND (' . $dateClause['clause'] . ')';
     }
 
-    $sql .= ' GROUP BY email ORDER BY c DESC LIMIT ' . max(1, min(20, $limit));
+    $sql .= ' GROUP BY email ORDER BY c DESC LIMIT ' . $limit;
 
-    $rows = [];
+    $aggregates = [];
     $result = null;
     if ($dateClause['types'] === '') {
         $result = $conn->query($sql);
@@ -712,26 +742,54 @@ function fc_dashboard_admin_top_customers(mysqli $conn, string $table, int $limi
     if ($result) {
         while ($row = $result->fetch_object()) {
             $email = trim((string) ($row->email ?? ''));
-            if ($email === '') {
+            $lastId = (int) ($row->last_id ?? 0);
+            if ($email === '' || $lastId <= 0) {
                 continue;
             }
-
-            $name = trim((string) ($row->name ?? ''));
-            $state = strtoupper(trim((string) ($row->state ?? '')));
-            $rows[] = [
+            $aggregates[$lastId] = [
                 'email' => $email,
-                'name' => $name !== '' ? $name : $email,
-                'mobile' => trim((string) ($row->mobile ?? '')),
-                'address' => fc_dashboard_admin_format_customer_address(
-                    (string) ($row->address ?? ''),
-                    (string) ($row->postcode ?? ''),
-                    (string) ($row->state ?? '')
-                ),
-                'state' => $state,
                 'count' => (int) ($row->c ?? 0),
                 'last_seen' => (string) ($row->last_seen ?? ''),
             ];
         }
+    }
+
+    if ($aggregates === []) {
+        return [];
+    }
+
+    // Pass 2: latest contact details for the top N only.
+    $ids = array_keys($aggregates);
+    $idList = implode(',', array_map('intval', $ids));
+    $detailSql = 'SELECT id, name, mobile, address, postcode, state FROM `' . $safe . '`'
+        . ' WHERE id IN (' . $idList . ')';
+    $details = [];
+    $detailResult = $conn->query($detailSql);
+    if ($detailResult) {
+        while ($row = $detailResult->fetch_object()) {
+            $details[(int) ($row->id ?? 0)] = $row;
+        }
+    }
+
+    $rows = [];
+    foreach ($aggregates as $lastId => $agg) {
+        $detail = $details[$lastId] ?? null;
+        $email = $agg['email'];
+        $name = trim((string) ($detail->name ?? ''));
+        $state = strtoupper(trim((string) ($detail->state ?? '')));
+        $rows[] = [
+            'email' => $email,
+            'name' => $name !== '' ? $name : $email,
+            'mobile' => trim((string) ($detail->mobile ?? '')),
+            'address' => fc_dashboard_admin_format_customer_address(
+                (string) ($detail->address ?? ''),
+                (string) ($detail->postcode ?? ''),
+                (string) ($detail->state ?? '')
+            ),
+            'state' => $state,
+            'count' => (int) $agg['count'],
+            'last_seen' => (string) $agg['last_seen'],
+        ];
     }
 
     return $rows;
@@ -794,12 +852,13 @@ function fc_dashboard_admin_fence_style_counts(mysqli $conn, string $table, ?arr
 {
     $dateExpr = fc_dashboard_admin_date_expr();
     $dateClause = fc_dashboard_admin_date_bounds_clause($dateExpr, $bounds);
-    $sql = 'SELECT fence_type, fence_data, section_count FROM `'
+    // Use fence_type (varchar) only — avoid scanning fence_data LONGTEXT for every row.
+    $sql = 'SELECT fence_type, section_count FROM `'
         . $conn->real_escape_string($table) . '`';
     if ($dateClause['clause'] !== '') {
         $sql .= ' WHERE ' . $dateClause['clause'];
     }
-    $sql .= ' ORDER BY id DESC';
+    $sql .= ' ORDER BY id DESC LIMIT 3000';
 
     $counts = [];
     $labels = [];
@@ -820,19 +879,12 @@ function fc_dashboard_admin_fence_style_counts(mysqli $conn, string $table, ?arr
 
     if ($result) {
         while ($row = $result->fetch_object()) {
-            $styleRows = fc_planners_fence_section_types_from_rows(
-                fc_planners_decode_json_field($row->fence_data ?? null),
+            $styleRows = fc_planners_fence_section_types_from_type_map(
+                (string) ($row->fence_type ?? ''),
                 $fences
             );
-
-            if ($styleRows === []) {
-                $styleRows = fc_planners_fence_section_types_from_type_map(
-                    (string) ($row->fence_type ?? ''),
-                    $fences
-                );
-                if (count($styleRows) === 1 && (int) ($row->section_count ?? 0) > 0) {
-                    $styleRows[0]['count'] = (int) $row->section_count;
-                }
+            if (count($styleRows) === 1 && (int) ($row->section_count ?? 0) > 0) {
+                $styleRows[0]['count'] = (int) $row->section_count;
             }
 
             foreach ($styleRows as $styleRow) {
@@ -996,7 +1048,7 @@ function fc_dashboard_admin_product_insights(mysqli $conn, string $table, int $s
     if ($dateClause['clause'] !== '') {
         $sql .= ' WHERE ' . $dateClause['clause'];
     }
-    $sql .= ' ORDER BY id DESC LIMIT ' . max(20, min(300, $sampleLimit));
+    $sql .= ' ORDER BY id DESC LIMIT ' . max(20, min(200, $sampleLimit));
 
     $colours = [];
     $gates = [];
@@ -1302,10 +1354,8 @@ function fc_dashboard_admin_page_data(string $adminBase, string $appBase, ?array
 {
     require_once __DIR__ . '/entries_admin.php';
 
+    // KPIs only on initial HTML — system/health/recent load via charts/API when needed.
     $summary = fc_dashboard_admin_summary_stats();
-    $system = fc_dashboard_admin_system_counts();
-    $health = fc_dashboard_admin_health();
-    $recent = fc_dashboard_admin_recent_entries(8);
 
     $entriesBase = fc_entries_admin_list_path($adminBase);
     $today = (new DateTime('now'))->format('Y-m-d');
@@ -1326,11 +1376,11 @@ function fc_dashboard_admin_page_data(string $adminBase, string $appBase, ?array
         ];
 
     return [
-        'ok' => ($summary['ok'] ?? false) && ($system['ok'] ?? false),
+        'ok' => !empty($summary['ok']),
         'summary' => $summary,
-        'system' => $system,
-        'health' => $health,
-        'recent_entries' => $recent,
+        'system' => ['ok' => true],
+        'health' => ['ok' => true],
+        'recent_entries' => [],
         'widgets_visible' => $widgetsVisible,
         'links' => [
             'entries' => $entriesBase,

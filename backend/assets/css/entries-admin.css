@@ -1890,6 +1890,7 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
     gap: 0.75rem;
     margin: 0;
     padding: 0.75rem 1.25rem;
+    border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
     font-size: 0.875rem;
     line-height: 1.45;
@@ -1901,7 +1902,7 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
 
 .fc-entries-page__notice--success {
     background: #edfaef;
-    border-bottom-color: #68de7c;
+    border-color: #68de7c;
     color: #005c12;
 }
 
