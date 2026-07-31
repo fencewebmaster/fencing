@@ -76,6 +76,7 @@ function fc_permissions_tree(): array
                 ['key' => 'view', 'label' => 'View'],
                 ['key' => 'import_export', 'label' => 'Import/Export'],
                 ['key' => 'trash_delete_restore', 'label' => 'Trash/Delete/Restore'],
+                ['key' => 'find_duplicates', 'label' => 'Find Duplicates'],
             ],
         ],
         [
@@ -421,6 +422,14 @@ function fc_permissions_migrate_planner_entries_matrix(array $matrix): array
         )
     ) {
         $pe['trash_delete_restore'] = true;
+    }
+
+    // Previously gated by trash_delete_restore — preserve access until first explicit save.
+    if (
+        !array_key_exists('find_duplicates', $pe)
+        && !empty($pe['trash_delete_restore'])
+    ) {
+        $pe['find_duplicates'] = true;
     }
 
     return $matrix;
@@ -880,8 +889,8 @@ function fc_permissions_keys_for_api(string $module, string $action = ''): array
             default => ['products.fence_styles.view_list', 'products.fence_styles.view', 'products.fence_styles.edit'],
         },
         'entries', 'entriesController' => match ($action) {
-            'trash', 'restore', 'delete', 'dedupe-scan', 'dedupe-apply', 'restore-duplicate'
-                => ['planner_entries.trash_delete_restore'],
+            'trash', 'restore', 'delete' => ['planner_entries.trash_delete_restore'],
+            'dedupe-scan', 'dedupe-apply', 'restore-duplicate' => ['planner_entries.find_duplicates'],
             'export', 'import' => ['planner_entries.import_export'],
             'get' => ['planner_entries.view'],
             default => ['planner_entries.view_list'],

@@ -1264,7 +1264,7 @@ function fc_entries_admin_build_list_view(array $page): array
     $page['api_url'] = (string) ($page['api_url'] ?? 'api.php?module=entries');
     $page['is_trash_view'] = $view === 'trash';
     $page['is_duplicates_view'] = $view === 'duplicates';
-    $canDedupe = !function_exists('fc_auth_user_can') || fc_auth_user_can('planner_entries.trash_delete_restore');
+    $canDedupe = !function_exists('fc_auth_user_can') || fc_auth_user_can('planner_entries.find_duplicates');
     // Always available on All when permitted — scanning happens on click, not page load.
     $page['can_remove_duplicates'] = $canDedupe && $view === 'all';
     $page['duplicate_candidate_count'] = (int) ($page['duplicate_candidate_count'] ?? 0);
@@ -1277,7 +1277,7 @@ function fc_entries_admin_build_list_view(array $page): array
     } elseif ($view === 'duplicates') {
         $bulkOptions = [
             ['value' => 'export', 'label' => 'Export as JSON', 'perm' => 'planner_entries.import_export'],
-            ['value' => 'restore-duplicate', 'label' => 'Restore to All', 'perm' => 'planner_entries.trash_delete_restore'],
+            ['value' => 'restore-duplicate', 'label' => 'Restore to All', 'perm' => 'planner_entries.find_duplicates'],
             ['value' => 'trash', 'label' => 'Move to trash', 'perm' => 'planner_entries.trash_delete_restore'],
             ['value' => 'delete', 'label' => 'Delete permanently', 'perm' => 'planner_entries.trash_delete_restore'],
         ];

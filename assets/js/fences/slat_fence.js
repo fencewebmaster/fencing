@@ -4632,7 +4632,7 @@ SlatFence = {
      * Panel qty from overall span: midPosts = floor(span / maxSpan), panels = midPosts + 1 (Slat Planner V6 F82 + 1).
      * `maxPanelSpanMm` from `getMaxPanelSpanMmFromInfo()` / `4-SLAT.php` `max_panel_span_mm`.
      */
-    countEvenPanelsFromOverallSpan: function(spanMm, maxPanelSpanMm, postWidthMm, info) {
+    countEvenPanelsFromOverallSpan: function(spanMm, maxPanelSpanMm, postWidthMm, info, removedPostsMm) {
         var span = parseInt(spanMm, 10);
         var maxSpan = parseInt(maxPanelSpanMm, 10);
         if (!Number.isFinite(maxSpan) || maxSpan <= 0) {
@@ -4645,7 +4645,25 @@ SlatFence = {
             return 1;
         }
         var midPosts = Math.floor(span / maxSpan);
-        return Math.max(1, midPosts + 1);
+        var count = Math.max(1, midPosts + 1);
+
+        // A bay can still land over `max_panel_width_mm` once interior posts are removed
+        // from the span — add posts until every even panel fits the widest stock panel.
+        var maxWidth = this.getMaxPanelWidthMmFromInfo(info);
+        var postW = parseInt(postWidthMm, 10);
+        if (!Number.isFinite(postW) || postW <= 0) {
+            postW = 50;
+        }
+        if (Number.isFinite(maxWidth) && maxWidth > 0) {
+            while (
+                count < 500 &&
+                this.computeSlatEvenPanelWidthMm(span, count, postW, removedPostsMm) > maxWidth
+            ) {
+                count += 1;
+            }
+        }
+
+        return count;
     },
 
     /**
@@ -4679,7 +4697,33 @@ SlatFence = {
     },
 
     /**
-     * Even panel width (mm): ceil((overall − totalPosts) / N).
+     * Total panel material (mm) inside a clear span: only the N−1 interior posts.
+     *
+     * `spanMm` comes from `getSlatInfillSpanMm()`, which has already applied the
+     * "Width Dimension From" offset (−1×post center-line, −2×post outside) and so
+     * excludes both end posts. Deducting `(N+1)×post` here as well would remove the
+     * end posts twice. `removedPostsMm` is added back because that offset assumed
+     * both end posts were present.
+     */
+    computeSlatPanelSpanMm: function(spanMm, panelCount, postWidthMm, removedPostsMm) {
+        var span = parseInt(spanMm, 10);
+        var n = parseInt(panelCount, 10);
+        var postW = parseInt(postWidthMm, 10);
+        var removed = parseInt(removedPostsMm, 10);
+        if (!Number.isFinite(span) || !Number.isFinite(n) || n <= 0) {
+            return 0;
+        }
+        if (!Number.isFinite(postW) || postW <= 0) {
+            postW = 50;
+        }
+        if (!Number.isFinite(removed) || removed < 0) {
+            removed = 0;
+        }
+        return Math.max(0, span + removed - (n - 1) * postW);
+    },
+
+    /**
+     * Even panel width (mm): ceil(panelSpan / N) where panelSpan excludes interior posts only.
      * `removedPostsMm` from `getRemovedEndPostsMm()` when left/right end is no-post.
      */
     computeSlatEvenPanelWidthMm: function(overallMm, panelCount, postWidthMm, removedPostsMm) {
@@ -4692,8 +4736,7 @@ SlatFence = {
         if (!Number.isFinite(postW) || postW <= 0) {
             postW = 50;
         }
-        var totalPosts = this.computeSlatTotalPostsMm(n, postW, removedPostsMm);
-        var avail = ov - totalPosts;
+        var avail = this.computeSlatPanelSpanMm(ov, n, postW, removedPostsMm);
         if (avail <= 0) {
             return 0;
         }

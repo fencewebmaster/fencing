@@ -1,5 +1,5 @@
 /**
- * FC Admin — Copy planner share link from Planner ID column.
+ * FC Admin — Copy planner share link (click) or ID (Ctrl/Cmd+click) from Planner ID column.
  */
 (function () {
     'use strict';
@@ -85,7 +85,7 @@
         }
     }
 
-    function showCopiedEffect(button) {
+    function showCopiedEffect(button, label) {
         var wrap = button.closest('.fc-entries-planner-id-wrap');
         if (!wrap) {
             return;
@@ -95,6 +95,7 @@
         wrap.classList.add('is-copied');
 
         var toast = getToast();
+        toast.textContent = label || 'Copied!';
         toast.classList.add('is-visible');
         positionToast(button);
 
@@ -106,17 +107,23 @@
             e.preventDefault();
             e.stopPropagation();
 
-            var url = button.getAttribute('data-fc-copy-planner-url');
-            if (!url) {
+            var copyId = e.ctrlKey || e.metaKey;
+            var text = copyId
+                ? button.getAttribute('data-fc-copy-planner-id')
+                : button.getAttribute('data-fc-copy-planner-url');
+            if (!text) {
                 return;
             }
 
-            copyText(url)
+            var toastLabel = copyId ? 'ID copied!' : 'Link copied!';
+            var promptLabel = copyId ? 'Copy planner ID:' : 'Copy planner link:';
+
+            copyText(text)
                 .then(function () {
-                    showCopiedEffect(button);
+                    showCopiedEffect(button, toastLabel);
                 })
                 .catch(function () {
-                    window.prompt('Copy planner link:', url);
+                    window.prompt(promptLabel, text);
                 });
         });
     }

@@ -110,6 +110,7 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                         data-fc-entries-dedupe-candidates="<?php echo (int) ($page['duplicate_candidate_count'] ?? 0); ?>"
                     >
                         <i class="fa-solid fa-clone" aria-hidden="true"></i>
+                        <span>Find Duplicates</span>
                     </button>
                     <?php endif; ?>
                 </div>
@@ -526,13 +527,16 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
     <div class="fc-entries-page__content">
         <div class="fc-entries-table-wrap">
             <table class="fc-entries-table">
+                <?php $showBulkChecks = !empty($page['bulk_action_options']); ?>
                 <thead>
                     <tr>
+                        <?php if ($showBulkChecks) : ?>
                         <th scope="col" class="fc-entries-table__check-col">
                             <label class="fc-entries-check">
                                 <input type="checkbox" data-fc-entries-select-all aria-label="Select all entries on this page">
                             </label>
                         </th>
+                        <?php endif; ?>
                         <th scope="col">Planner ID</th>
                         <th scope="col">Status</th>
                         <th scope="col">Name</th>
@@ -550,7 +554,7 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                 <tbody>
                     <?php if (empty($page['has_table_rows'])) : ?>
                     <tr>
-                        <td colspan="13" class="fc-entries-empty"><?php
+                        <td colspan="<?php echo $showBulkChecks ? '13' : '12'; ?>" class="fc-entries-empty"><?php
                             if (!empty($page['is_trash_view'])) {
                                 echo 'Trash is empty.';
                             } elseif (!empty($page['is_duplicates_view'])) {
@@ -574,6 +578,7 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                         data-fc-entries-row-href="<?php echo $h($rowHref); ?>"
                         <?php endif; ?>
                     >
+                        <?php if ($showBulkChecks) : ?>
                         <td class="fc-entries-table__check-col">
                             <label class="fc-entries-check">
                                 <input
@@ -584,14 +589,16 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                                 >
                             </label>
                         </td>
+                        <?php endif; ?>
                         <td class="fc-entries-table__mono fc-entries-table__planner-id">
                             <span class="fc-entries-planner-id-wrap">
                                 <button
                                     type="button"
                                     class="fc-entries-planner-id"
                                     data-fc-copy-planner-url="<?php echo $h((string) ($row['planner_share_url'] ?? '')); ?>"
-                                    title="Click to copy planner link"
-                                    aria-label="<?php echo $h('Copy planner link for ' . ($row['planner_id'] ?? '')); ?>"
+                                    data-fc-copy-planner-id="<?php echo $h((string) ($row['planner_id'] ?? '')); ?>"
+                                    title="Click to copy link · Ctrl+click to copy ID"
+                                    aria-label="<?php echo $h('Copy planner link for ' . ($row['planner_id'] ?? '') . '. Ctrl+click to copy ID.'); ?>"
                                 ><?php echo $cell($row['planner_id'] ?? ''); ?></button>
                             </span>
                         </td>

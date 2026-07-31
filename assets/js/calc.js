@@ -383,12 +383,15 @@ function calculate_fences(data) {
                     slatSpan,
                     slatMaxSpan,
                     post_panel,
-                    info
+                    info,
+                    slatRemovedPosts
                 );
                 C16 = slatPanelQty;
                 C17 = slatPanelQty;
                 C18 = slatPanelQty;
-                C14 = slatSpan - SlatFence.computeSlatTotalPostsMm(
+                // slatSpan already excludes both end posts (Width Dimension From offset).
+                C14 = SlatFence.computeSlatPanelSpanMm(
+                    slatSpan,
                     slatPanelQty,
                     post_panel,
                     slatRemovedPosts

@@ -191,6 +191,45 @@ function fc_planners_ensure_columns(mysqli $conn, string $table): void
         }
         $conn->query("ALTER TABLE `{$safe}` ADD COLUMN `{$column}` {$definition}");
     }
+
+    fc_planners_ensure_indexes($conn, $table);
+}
+
+/**
+ * Add list/filter indexes used by planner-entries (idempotent).
+ *
+ * Avoid UNIQUE(planner_id) while duplicate planner_ids may still exist.
+ */
+function fc_planners_ensure_indexes(mysqli $conn, string $table): void
+{
+    $safe = $conn->real_escape_string($table);
+    $existing = [];
+    $idxResult = $conn->query('SHOW INDEX FROM `' . $safe . '`');
+    if ($idxResult) {
+        while ($row = $idxResult->fetch_assoc()) {
+            $name = (string) ($row['Key_name'] ?? '');
+            if ($name !== '') {
+                $existing[$name] = true;
+            }
+        }
+    }
+
+    $indexes = [
+        'planner_id' => 'ADD KEY `planner_id` (`planner_id`)',
+        'status' => 'ADD KEY `status` (`status`)',
+        'trashed_at' => 'ADD KEY `trashed_at` (`trashed_at`)',
+        'idx_list_active_created' => 'ADD KEY `idx_list_active_created` (`trashed_at`, `status`, `created_at`, `id`)',
+        'idx_trash_status' => 'ADD KEY `idx_trash_status` (`trashed_at`, `status`)',
+        'idx_list_updated' => 'ADD KEY `idx_list_updated` (`trashed_at`, `updated_at`, `id`)',
+    ];
+
+    foreach ($indexes as $name => $ddl) {
+        if (isset($existing[$name])) {
+            continue;
+        }
+        // Ignore failures (e.g. race with another request adding the same key).
+        @$conn->query('ALTER TABLE `' . $safe . '` ' . $ddl);
+    }
 }
 
 /**
@@ -638,6 +677,12 @@ function fc_planners_db_error_message(?Database $db = null): string
  */
 function fc_planners_open_db(): array
 {
+    // One mysqli handle per request — list/statuses/counts used to open 3 separate connections.
+    static $ctx = null;
+    if (is_array($ctx) && ($ctx['conn'] ?? null) instanceof mysqli) {
+        return $ctx;
+    }
+
     $db = new Database();
     $table = implode('_', array_filter([$db->prefix . 'planners', $db->is_demo]));
     $conn  = $db->connect();
@@ -646,7 +691,6 @@ function fc_planners_open_db(): array
         throw new \RuntimeException(fc_planners_db_error_message($db));
     }
 
-    // Schema checks once per request — list/statuses/counts open the DB separately.
     static $ensured = [];
     if (!isset($ensured[$table])) {
         fc_planners_ensure_table($conn, $table);
@@ -654,16 +698,25 @@ function fc_planners_open_db(): array
         $ensured[$table] = true;
     }
 
-    return [
+    $ctx = [
         'db' => $db,
         'table' => $table,
         'conn' => $conn,
     ];
+
+    register_shutdown_function(static function () use (&$ctx): void {
+        if (is_array($ctx) && ($ctx['conn'] ?? null) instanceof mysqli) {
+            @$ctx['conn']->close();
+            $ctx = null;
+        }
+    });
+
+    return $ctx;
 }
 
 function fc_planners_close_db(mysqli $conn): void
 {
-    $conn->close();
+    // Request-scoped connection is closed on shutdown — keep it open for reuse.
 }
 
 /**
@@ -1120,27 +1173,9 @@ function fc_planners_bind_filters(mysqli_stmt $stmt, array $filters): void
 
 function fc_planners_get_statuses(): array
 {
-    try {
-        $ctx = fc_planners_open_db();
-    } catch (\RuntimeException $e) {
-        return [];
-    }
-
-    $table = $ctx['table'];
-    $conn = $ctx['conn'];
-
-    $statuses = [];
-    $statusSql = "SELECT DISTINCT status FROM `" . $table . "` WHERE status IS NOT NULL AND status <> '' ORDER BY status ASC";
-    $statusResult = $conn->query($statusSql);
-    if ($statusResult) {
-        while ($row = $statusResult->fetch_object()) {
-            $statuses[] = (string) ($row->status ?? '');
-        }
-    }
-
-    fc_planners_close_db($conn);
-
-    return $statuses;
+    // Known planner statuses — avoids a full DISTINCT scan on every list page load.
+    // Keep in sync with submit/checkout flows and Find Duplicates (status=duplicate).
+    return ['duplicate', 'ordered', 'planning'];
 }
 
 /**
@@ -1295,13 +1330,7 @@ function fc_planners_list_entries(
 
     $statuses = [];
     if ($withStatuses) {
-        $statusSql = "SELECT DISTINCT status FROM `" . $table . "` WHERE status IS NOT NULL AND status <> '' ORDER BY status ASC";
-        $statusResult = $conn->query($statusSql);
-        if ($statusResult) {
-            while ($row = $statusResult->fetch_object()) {
-                $statuses[] = (string) ($row->status ?? '');
-            }
-        }
+        $statuses = fc_planners_get_statuses();
     }
 
     fc_planners_close_db($conn);
@@ -1349,16 +1378,21 @@ function fc_planners_trash_view_counts(): array
     $table = $ctx['table'];
     $conn = $ctx['conn'];
     $safe = $conn->real_escape_string($table);
-    $sql = 'SELECT'
-        . ' SUM(CASE WHEN trashed_at IS NULL AND (status IS NULL OR status <> \'duplicate\') THEN 1 ELSE 0 END) AS active_count,'
-        . ' SUM(CASE WHEN trashed_at IS NOT NULL THEN 1 ELSE 0 END) AS trash_count,'
-        . ' SUM(CASE WHEN trashed_at IS NULL AND status = \'duplicate\' THEN 1 ELSE 0 END) AS duplicate_count'
-        . ' FROM `' . $safe . '`';
-    $result = $conn->query($sql);
-    if ($result && ($row = $result->fetch_object())) {
-        $counts['all'] = (int) ($row->active_count ?? 0);
-        $counts['trash'] = (int) ($row->trash_count ?? 0);
-        $counts['duplicates'] = (int) ($row->duplicate_count ?? 0);
+
+    // Three indexed COUNTs beat one full-table SUM(CASE…) once idx_trash_status exists.
+    $queries = [
+        'all' => 'SELECT COUNT(*) AS c FROM `' . $safe . '`'
+            . ' WHERE trashed_at IS NULL AND (status IS NULL OR status <> \'duplicate\')',
+        'trash' => 'SELECT COUNT(*) AS c FROM `' . $safe . '` WHERE trashed_at IS NOT NULL',
+        'duplicates' => 'SELECT COUNT(*) AS c FROM `' . $safe . '`'
+            . ' WHERE trashed_at IS NULL AND status = \'duplicate\'',
+    ];
+
+    foreach ($queries as $key => $sql) {
+        $result = $conn->query($sql);
+        if ($result && ($row = $result->fetch_object())) {
+            $counts[$key] = (int) ($row->c ?? 0);
+        }
     }
 
     fc_planners_close_db($conn);
