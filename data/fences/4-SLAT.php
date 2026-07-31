@@ -414,12 +414,12 @@ $fences['slat']['settings'] = [
 				'options' => [
 					[
 						'slug' => '-1',
-						'title' => 'Center-line Width',
-						'default' => TRUE
+						'title' => 'Center-line Width'
 					],
 					[
 						'slug' => '-2',
-						'title' => 'Outside Width'
+						'title' => 'Outside Width',
+						'default' => TRUE
 					]
 				]
 			]
