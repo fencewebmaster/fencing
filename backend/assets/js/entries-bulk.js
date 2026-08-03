@@ -392,6 +392,54 @@
             });
     }
 
+    function bindToolbarMenu(root) {
+        var menu = root.querySelector('[data-fc-entries-toolbar-menu]');
+        var toggle = menu && menu.querySelector('[data-fc-entries-toolbar-menu-toggle]');
+        var panel = menu && menu.querySelector('[data-fc-entries-toolbar-menu-panel]');
+        if (!menu || !toggle || !panel || menu.dataset.fcToolbarMenuBound === '1') {
+            return;
+        }
+        menu.dataset.fcToolbarMenuBound = '1';
+
+        function close() {
+            panel.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+
+        function open() {
+            panel.hidden = false;
+            toggle.setAttribute('aria-expanded', 'true');
+        }
+
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (panel.hidden) {
+                open();
+            } else {
+                close();
+            }
+        });
+
+        panel.addEventListener('click', function (e) {
+            if (e.target.closest('[data-fc-entries-import-open], [data-fc-entries-dedupe-open]')) {
+                close();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!panel.hidden && !menu.contains(e.target)) {
+                close();
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !panel.hidden) {
+                close();
+                toggle.focus();
+            }
+        });
+    }
+
     function bindImport(root) {
         var openBtn = root.querySelector('[data-fc-entries-import-open]');
         var fileInput = root.querySelector('[data-fc-entries-import-file]');
@@ -510,6 +558,7 @@
             global.location.href = href;
         });
 
+        bindToolbarMenu(root);
         bindImport(root);
         bindDedupe(root);
         syncSelectionUi(root);

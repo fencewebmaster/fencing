@@ -134,6 +134,12 @@ if( @$_POST['action'] == 'push_order' ) {
         exit;
     }
 
+    // Push succeeded — the quote has actually been handed off to the store, so mark it submitted.
+    $db->update( 'planners', [
+        'status'            => 'submitted',
+        'status_updated_at' => date('Y-m-d H:i:s'),
+    ], [ 'planner_id' => $planner_id ] );
+
     echo $response;
 
     // Clear fence session data

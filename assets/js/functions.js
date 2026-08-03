@@ -5636,6 +5636,10 @@ function submit_fence_planner(status = '', options) {
                 formData.set('planner_id', existingPlannerId);
             }
 
+            // Tells submit.php not to overwrite the 'reloaded' status this same page load
+            // just set server-side (planner.php -> fc_planners_mark_reloaded()).
+            formData.set('is_quote_reload', options.isQuoteReload ? '1' : '0');
+
             var uri_success = '';
             if (formStyle == 'barr') {
                 uri_success = '&barr-success';

@@ -86,32 +86,49 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
                     >
                         <span>Filters</span>
                     </button>
-                    <?php if (!empty($page['can_import'])) : ?>
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-dark fw-semibold fc-entries-import-trigger"
-                        data-fc-entries-import-open
-                    >
-                        <span>Import</span>
-                    </button>
-                    <input
-                        type="file"
-                        class="fc-entries-import-file"
-                        data-fc-entries-import-file
-                        accept="application/json,.json"
-                        hidden
-                    >
-                    <?php endif; ?>
-                    <?php if (!empty($page['can_remove_duplicates'])) : ?>
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger fw-semibold fc-entries-dedupe-trigger"
-                        data-fc-entries-dedupe-open
-                        data-fc-entries-dedupe-candidates="<?php echo (int) ($page['duplicate_candidate_count'] ?? 0); ?>"
-                    >
-                        <i class="fa-solid fa-clone" aria-hidden="true"></i>
-                        <span>Find Duplicates</span>
-                    </button>
+                    <?php if (!empty($page['can_import']) || !empty($page['can_remove_duplicates'])) : ?>
+                    <div class="fc-entries-toolbar-menu" data-fc-entries-toolbar-menu>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-dark fw-semibold fc-entries-toolbar-menu__toggle"
+                            data-fc-entries-toolbar-menu-toggle
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            title="More actions"
+                        >
+                            <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                        </button>
+                        <div class="fc-entries-toolbar-menu__panel" data-fc-entries-toolbar-menu-panel hidden>
+                            <?php if (!empty($page['can_import'])) : ?>
+                            <button
+                                type="button"
+                                class="fc-entries-toolbar-menu__item"
+                                data-fc-entries-import-open
+                            >
+                                <i class="fa-solid fa-file-import" aria-hidden="true"></i>
+                                <span>Import</span>
+                            </button>
+                            <input
+                                type="file"
+                                class="fc-entries-import-file"
+                                data-fc-entries-import-file
+                                accept="application/json,.json"
+                                hidden
+                            >
+                            <?php endif; ?>
+                            <?php if (!empty($page['can_remove_duplicates'])) : ?>
+                            <button
+                                type="button"
+                                class="fc-entries-toolbar-menu__item fc-entries-toolbar-menu__item--danger"
+                                data-fc-entries-dedupe-open
+                                data-fc-entries-dedupe-candidates="<?php echo (int) ($page['duplicate_candidate_count'] ?? 0); ?>"
+                            >
+                                <i class="fa-solid fa-clone" aria-hidden="true"></i>
+                                <span>Find Duplicates</span>
+                            </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                     <?php endif; ?>
                 </div>
 

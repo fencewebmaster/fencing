@@ -19,6 +19,7 @@ $page = $fcLoginPage;
 $appName = (string) ($page['app_name'] ?? 'Fencing Calculator');
 $logoUrl = (string) ($page['logo_url'] ?? '');
 $appBase = (string) ($page['app_base'] ?? '..');
+$version = (string) ($page['version'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-full" data-fc-admin-theme="light">
@@ -146,7 +147,7 @@ $appBase = (string) ($page['app_base'] ?? '..');
                 </div>
 
                 <p class="login-footer-note">
-
+                    &copy; <?php echo date('Y'); ?> <?php echo $h($appName); ?><?php echo $version !== '' ? ' &middot; ' . $h($version) : ''; ?>
                 </p>
             </div>
         </div>

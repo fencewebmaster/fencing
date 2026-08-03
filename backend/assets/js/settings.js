@@ -1338,9 +1338,17 @@
             '<p class="mb-3 text-sm font-semibold text-slate-800">Live preview</p>' +
             '<div class="space-y-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-sm">' +
             '<div class="border-b border-slate-200 px-3 py-3">' +
+            '<div class="flex items-start gap-4">' +
+            '<div class="flex flex-col items-start">' +
             '<p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Logo</p>' +
-            '<div id="fc-branding-preview-logo" class="fc-settings-branding-logo__preview fc-settings-branding-logo__preview--sidebar fc-settings-branding-logo__preview--empty">' +
+            '<div id="fc-branding-preview-logo" class="fc-settings-branding-logo__preview fc-settings-branding-logo__preview--sidebar fc-settings-branding-logo__preview--empty" style="width:48px;height:48px;">' +
             '<span class="fc-settings-branding-logo__preview-fallback" aria-hidden="true"><i class="fa-solid fa-border-all"></i></span>' +
+            '</div></div>' +
+            '<div class="flex flex-col items-start">' +
+            '<p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Favicon</p>' +
+            '<div id="fc-branding-preview-favicon" class="fc-settings-branding-logo__preview fc-settings-branding-logo__preview--sidebar fc-settings-branding-logo__preview--empty">' +
+            '<span class="fc-settings-branding-logo__preview-fallback" aria-hidden="true"><i class="fa-solid fa-image"></i></span>' +
+            '</div></div>' +
             '</div></div>' +
             '<div class="border-b border-slate-200 px-3 py-3">' +
             '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">App name</p>' +

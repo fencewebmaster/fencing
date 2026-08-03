@@ -32,6 +32,10 @@ $info = $_SESSION;
 $planner_ref = fc_planner_resolve_submission_planner_id($_POST['planner_id'] ?? null);
 $_SESSION['planner_id'] = $planner_id = $planner_ref['planner_id'];
 
+// This save fired automatically right after a `?qid=` reload (see p1.js: fcRunQuoteReloadSubmit).
+// planner.php already set status='reloaded' for this same request cycle — don't clobber it back to 'planning'.
+$is_quote_reload = !empty($_POST['is_quote_reload']);
+
 $data = json_encode($info);
 
 $fc_data     = @$info['fc_data'];
@@ -68,6 +72,10 @@ $data_inputs = [
   'project_plans_data' => @$fc_data['project_plans'],
   'updated_at'         => date('Y-m-d H:i:s'),
 ];
+
+if ($is_quote_reload) {
+    unset($data_inputs['status'], $data_inputs['status_updated_at']);
+}
 
 $data_inputs = array_merge($data_inputs, fc_planner_submission_meta());
 

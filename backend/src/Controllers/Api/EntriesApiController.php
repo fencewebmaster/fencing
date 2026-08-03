@@ -8,6 +8,7 @@ use Fc\Admin\Core\Controller;
 use Fc\Admin\Core\JsonResponse;
 use Fc\Admin\Core\Request;
 use Fc\Admin\Models\PlannerEntryModel;
+use Fc\Admin\Services\PlannerEntryMaintenanceService;
 
 final class EntriesApiController extends Controller
 {
@@ -111,8 +112,6 @@ final class EntriesApiController extends Controller
 
     private function bulkTrash(bool $trash): void
     {
-        PlannerEntryModel::ensureLoaded();
-
         $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
@@ -123,7 +122,7 @@ final class EntriesApiController extends Controller
             JsonResponse::error('Invalid entry ids.', 400);
         }
 
-        $result = fc_planners_bulk_set_trashed($ids, $trash);
+        $result = PlannerEntryMaintenanceService::bulkSetTrashed($ids, $trash);
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not update entries.'), 400);
         }
@@ -143,8 +142,6 @@ final class EntriesApiController extends Controller
 
     private function bulkDelete(): void
     {
-        PlannerEntryModel::ensureLoaded();
-
         $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
@@ -155,7 +152,7 @@ final class EntriesApiController extends Controller
             JsonResponse::error('Invalid entry ids.', 400);
         }
 
-        $result = fc_planners_bulk_delete_permanently($ids);
+        $result = PlannerEntryMaintenanceService::bulkDeletePermanently($ids);
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not delete entries.'), 400);
         }
@@ -172,8 +169,6 @@ final class EntriesApiController extends Controller
 
     private function exportSelected(): void
     {
-        PlannerEntryModel::ensureLoaded();
-
         $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
@@ -184,7 +179,7 @@ final class EntriesApiController extends Controller
             JsonResponse::error('Invalid entry ids.', 400);
         }
 
-        $result = fc_planners_export_entries_by_ids($ids);
+        $result = PlannerEntryMaintenanceService::exportEntriesByIds($ids);
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not export entries.'), 400);
         }
@@ -203,8 +198,6 @@ final class EntriesApiController extends Controller
 
     private function importEntries(): void
     {
-        PlannerEntryModel::ensureLoaded();
-
         $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             JsonResponse::error('Invalid JSON body.', 400);
@@ -230,7 +223,7 @@ final class EntriesApiController extends Controller
         }
 
         $mode = isset($payload['mode']) ? (string) $payload['mode'] : 'overwrite';
-        $result = fc_planners_import_entries($entries, $mode);
+        $result = PlannerEntryMaintenanceService::importEntries($entries, $mode);
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not import entries.'), 400);
         }
@@ -240,8 +233,6 @@ final class EntriesApiController extends Controller
 
     private function dedupeScan(): void
     {
-        PlannerEntryModel::ensureLoaded();
-
         $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
@@ -254,7 +245,7 @@ final class EntriesApiController extends Controller
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
-        $result = fc_planners_dedupe_scan();
+        $result = PlannerEntryMaintenanceService::dedupeScan();
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not scan for duplicates.'), 400);
         }
@@ -277,8 +268,6 @@ final class EntriesApiController extends Controller
 
     private function dedupeApply(): void
     {
-        PlannerEntryModel::ensureLoaded();
-
         $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
@@ -298,7 +287,7 @@ final class EntriesApiController extends Controller
 
         $offset = (int) ($payload['offset'] ?? 0);
         $batchSize = (int) ($payload['batch_size'] ?? 100);
-        $result = fc_planners_dedupe_apply_batch($ids, $offset, $batchSize);
+        $result = PlannerEntryMaintenanceService::dedupeApplyBatch($ids, $offset, $batchSize);
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not mark duplicates.'), 400);
         }
@@ -314,8 +303,6 @@ final class EntriesApiController extends Controller
 
     private function bulkRestoreDuplicate(): void
     {
-        PlannerEntryModel::ensureLoaded();
-
         $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
@@ -326,7 +313,7 @@ final class EntriesApiController extends Controller
             JsonResponse::error('Invalid entry ids.', 400);
         }
 
-        $result = fc_planners_bulk_restore_from_duplicate($ids);
+        $result = PlannerEntryMaintenanceService::bulkRestoreFromDuplicate($ids);
         if (empty($result['ok'])) {
             JsonResponse::error((string) ($result['error'] ?? 'Could not restore entries.'), 400);
         }

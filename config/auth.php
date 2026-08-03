@@ -1719,6 +1719,7 @@ function fc_auth_login_view_data(string $adminBase, string $appBase): array
         'app_base'     => $appBase,
         'app_name'     => $appName,
         'tagline'      => $tagline,
+        'version'      => (string) ($branding['version'] ?? ''),
         'logo_url'     => function_exists('fc_branding_logo_url') ? fc_branding_logo_url($appBase, $branding) : '',
         'csrf'         => fc_auth_csrf_token(),
         'redirect'     => $redirect,

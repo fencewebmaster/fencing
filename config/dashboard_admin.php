@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+use Fc\Admin\Models\PlannerEntryPresenter;
+
 require_once __DIR__ . '/planners.php';
 
 function fc_dashboard_admin_h(string $value): string
@@ -445,7 +447,7 @@ function fc_dashboard_admin_recent_entries_query(mysqli $conn, string $table, in
 
     if ($result) {
         while ($row = $result->fetch_object()) {
-            $normalized = fc_planners_normalize_list_row($row);
+            $normalized = PlannerEntryPresenter::normalizeListRow($row);
             $name = trim((string) ($normalized['name'] ?? ''));
             $plannerId = trim((string) ($normalized['planner_id'] ?? ''));
             $items[] = [
@@ -862,7 +864,7 @@ function fc_dashboard_admin_fence_style_counts(mysqli $conn, string $table, ?arr
 
     $counts = [];
     $labels = [];
-    $fences = fc_planners_fence_catalog();
+    $fences = PlannerEntryPresenter::fenceCatalog();
     $result = null;
     if ($dateClause['types'] === '') {
         $result = $conn->query($sql);
@@ -879,7 +881,7 @@ function fc_dashboard_admin_fence_style_counts(mysqli $conn, string $table, ?arr
 
     if ($result) {
         while ($row = $result->fetch_object()) {
-            $styleRows = fc_planners_fence_section_types_from_type_map(
+            $styleRows = PlannerEntryPresenter::fenceSectionTypesFromTypeMap(
                 (string) ($row->fence_type ?? ''),
                 $fences
             );
@@ -1070,7 +1072,7 @@ function fc_dashboard_admin_product_insights(mysqli $conn, string $table, int $s
 
     if ($result) {
         while ($row = $result->fetch_object()) {
-            $colors = fc_planners_decode_json_field($row->color_data ?? null);
+            $colors = PlannerEntryPresenter::decodeJsonField($row->color_data ?? null);
             foreach ($colors as $colorRow) {
                 if (!is_array($colorRow)) {
                     continue;
@@ -1081,7 +1083,7 @@ function fc_dashboard_admin_product_insights(mysqli $conn, string $table, int $s
                 }
             }
 
-            $fences = fc_planners_decode_json_field($row->fence_data ?? null);
+            $fences = PlannerEntryPresenter::decodeJsonField($row->fence_data ?? null);
             foreach ($fences as $fenceRow) {
                 if (!is_array($fenceRow)) {
                     continue;

@@ -5,7 +5,8 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/planners.php';
+use Fc\Admin\Models\PlannerEntryModel;
+use Fc\Admin\Models\PlannerEntryPresenter;
 
 function fc_entries_admin_route_slug(): string
 {
@@ -374,7 +375,7 @@ function fc_entries_admin_state_options(): array
  */
 function fc_entries_admin_fence_type_options(): array
 {
-    $catalog = fc_planners_fence_catalog();
+    $catalog = PlannerEntryPresenter::fenceCatalog();
     $options = [];
 
     foreach ($catalog as $slug => $fence) {
@@ -404,7 +405,7 @@ function fc_entries_admin_normalize_fence_types($raw): array
         $raw = trim((string) $raw) === '' ? [] : [trim((string) $raw)];
     }
 
-    $valid = array_keys(fc_planners_fence_catalog());
+    $valid = array_keys(PlannerEntryPresenter::fenceCatalog());
     $out = [];
 
     foreach ($raw as $slug) {
@@ -817,7 +818,7 @@ function fc_entries_admin_page_data(string $adminBase, string $appBase): array
     $request = fc_entries_admin_parse_request();
     $limit = $request['is_all'] ? 0 : (int) $request['per_page'];
 
-    $list = fc_planners_list_entries(
+    $list = PlannerEntryModel::list(
         $request['q'],
         $request['status'],
         $limit,
@@ -839,11 +840,11 @@ function fc_entries_admin_page_data(string $adminBase, string $appBase): array
         $request['quote_loads_max'] ?? null
     );
 
-    $statuses = fc_planners_get_statuses();
+    $statuses = PlannerEntryModel::statusList();
     $timeframes = fc_entries_admin_timeframe_options();
     $states = fc_entries_admin_state_options();
     $fenceTypeOptions = fc_entries_admin_fence_type_options();
-    $viewCounts = fc_planners_trash_view_counts();
+    $viewCounts = PlannerEntryModel::trashViewCounts();
     $view = (string) ($request['view'] ?? 'all');
     $duplicateCandidates = 0;
 
@@ -923,7 +924,7 @@ function fc_entries_admin_detail_page_data(string $adminBase, string $appBase, i
     if ($entryId <= 0) {
         $error = 'Entry ID required.';
     } else {
-        $result = fc_planners_get_entry_by_id($entryId);
+        $result = PlannerEntryModel::getById($entryId);
         if (!empty($result['ok']) && isset($result['item']) && is_array($result['item'])) {
             $item = $result['item'];
         } else {
@@ -950,7 +951,7 @@ function fc_entries_admin_redirect_legacy_detail(string $adminBase): void
         return;
     }
 
-    $entryId = ctype_digit($detail) ? (int) $detail : (int) (fc_planners_entry_id_for_planner($detail) ?? 0);
+    $entryId = ctype_digit($detail) ? (int) $detail : (int) (PlannerEntryModel::entryIdForPlanner($detail) ?? 0);
     if ($entryId <= 0) {
         return;
     }
@@ -1326,7 +1327,7 @@ function fc_entries_admin_build_list_view(array $page): array
         $entryId = (int) ($item['id'] ?? 0);
         $fenceLabel = (string) ($item['fence_type_label'] ?? '');
         if ($fenceLabel === '') {
-            $fenceLabel = fc_planners_fence_type_label(
+            $fenceLabel = PlannerEntryPresenter::fenceTypeLabel(
                 (string) ($item['fence_type'] ?? ''),
                 null,
                 (int) ($item['section_count'] ?? 0)
@@ -1357,9 +1358,7 @@ function fc_entries_admin_build_list_view(array $page): array
             'email'              => (string) ($item['email'] ?? ''),
             'mobile'             => (string) ($item['mobile'] ?? ''),
             'fence_label'        => $fenceLabel,
-            'fence_label_inline' => function_exists('fc_planners_format_fence_type_summary_inline')
-                ? fc_planners_format_fence_type_summary_inline($fenceLabel)
-                : $fenceLabel,
+            'fence_label_inline' => PlannerEntryPresenter::formatFenceTypeSummaryInline($fenceLabel),
             'fence_label_lines'  => $fenceLabelLines,
             'timeframe_label'    => (string) ($timeframes[$timeframeSlug] ?? $timeframeSlug),
             'section_count'      => (string) ($item['section_count'] ?? ''),
@@ -1553,7 +1552,7 @@ function fc_entries_admin_build_detail_view(array $page): array
             if ($fieldKey === 'fence_type') {
                 $raw = (string) ($item['fence_type_label'] ?? '');
                 if ($raw === '') {
-                    $raw = fc_planners_fence_type_label(
+                    $raw = PlannerEntryPresenter::fenceTypeLabel(
                         (string) ($item['fence_type'] ?? ''),
                         $item['fence_data'] ?? null,
                         (int) ($item['section_count'] ?? 0)

@@ -1132,6 +1132,77 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
     background: #135e96;
 }
 
+.fc-entries-toolbar-menu {
+    position: relative;
+    display: flex;
+    align-self: stretch;
+}
+
+.fc-entries-toolbar-menu__toggle {
+    align-self: stretch;
+    height: auto;
+    padding: 0.35rem 0.75rem !important;
+    line-height: 1.35 !important;
+}
+
+.fc-entries-toolbar-menu__toggle i {
+    line-height: inherit;
+}
+
+.fc-entries-toolbar-menu__panel {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 12rem;
+    width: max-content;
+    max-width: min(18rem, calc(100vw - 2rem));
+    padding: 0.35rem;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.fc-entries-toolbar-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #2c3338;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fc-entries-toolbar-menu__item i {
+    flex-shrink: 0;
+    width: 1rem;
+    text-align: center;
+    color: #646970;
+}
+
+.fc-entries-toolbar-menu__item:hover {
+    background: #f0f0f1;
+}
+
+.fc-entries-toolbar-menu__item--danger:hover {
+    background: #fcf0f1;
+}
+
+.fc-entries-toolbar-menu__item--danger:hover i,
+.fc-entries-toolbar-menu__item--danger:hover span {
+    color: #d63638;
+}
+
 .fc-store-products-color-dropdown {
     flex: 0 1 11rem;
     min-width: 9rem;
@@ -2839,6 +2910,24 @@ html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__clear {
 
 html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown.is-active .fc-entries-fence-dropdown__toggle {
     border-color: var(--fc-admin-link);
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-toolbar-menu__panel {
+    background: var(--fc-admin-surface);
+    border-color: var(--fc-admin-border);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-toolbar-menu__item {
+    color: var(--fc-admin-text-heading);
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-toolbar-menu__item i {
+    color: var(--fc-admin-text-muted);
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-toolbar-menu__item:hover {
+    background: var(--fc-admin-surface-muted);
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__panel {

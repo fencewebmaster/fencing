@@ -22,7 +22,7 @@ if ( empty( $info ) && ! empty( $_GET['qid'] ) ) {
             $_SESSION['site'] = $site;
         }
         fc_hydrate_planner_quote_session_from_row( $row );
-        fc_planners_increment_quote_load_count( $qid );
+        fc_planners_mark_reloaded( $qid );
         $info = isset( $_SESSION['fc_data'] ) ? $_SESSION['fc_data'] : [];
     }
 }

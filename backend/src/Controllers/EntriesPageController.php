@@ -6,6 +6,7 @@ namespace Fc\Admin\Controllers;
 
 use Fc\Admin\Core\Controller;
 use Fc\Admin\Models\PlannerEntryModel;
+use Fc\Admin\Models\PlannerEntryPresenter;
 use Fc\Admin\Services\AdminContext;
 
 final class EntriesPageController extends Controller
@@ -65,6 +66,6 @@ final class EntriesPageController extends Controller
             require_once FC_ROOT . '/config/entries_admin.php';
         }
 
-        fc_planners_fence_catalog();
+        PlannerEntryPresenter::fenceCatalog();
     }
 }

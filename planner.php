@@ -68,7 +68,7 @@ if ( $qid = @$_GET['qid'] ) {
 
         fc_hydrate_planner_quote_session_from_row( $res );
 
-        fc_planners_increment_quote_load_count( $qid );
+        fc_planners_mark_reloaded( $qid );
 
         $res = fc_planner_row_to_js_fence_info( $res );
     } else {

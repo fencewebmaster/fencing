@@ -226,7 +226,7 @@ let Planner = {
         } else {
             $('.li-create small').html('Updating your plan...');
         }
-        submit_fence_planner('update', { skipCartRebuild: isQuoteReload });
+        submit_fence_planner('update', { skipCartRebuild: isQuoteReload, isQuoteReload: isQuoteReload });
     },
 
     //----------------------------------------------------------------------------------
