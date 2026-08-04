@@ -13,13 +13,19 @@ use Throwable;
  * data/wc-products-{GO|JG}.csv (ID,SKU,Name,Images).
  *
  * Uses the database rather than the public Store API so private/draft products
- * are included (3000+ rows), matching the full WooCommerce catalogue.
+ * are included (3000+ rows), matching the full WooCommerce catalogue. Variable
+ * product variations are included too, one CSV row per variation SKU — each
+ * variation's Name/Images fall back to its parent product where it has none
+ * of its own (see fetchProductsPage()).
  */
 final class WooCommerceProductExportService
 {
     private const SOURCES = ['GO', 'JG'];
 
     private const PER_PAGE = 100;
+
+    /** Post types included in the export. */
+    private const POST_TYPES = ['product', 'product_variation'];
 
     /** Product statuses included in the export (excludes trash). */
     private const STATUSES = ['publish', 'private', 'draft', 'pending'];
@@ -394,13 +400,14 @@ final class WooCommerceProductExportService
     private static function countProducts(PDO $pdo, string $prefix): int
     {
         $posts = $prefix . 'posts';
-        $placeholders = implode(',', array_fill(0, count(self::STATUSES), '?'));
+        $typePlaceholders = implode(',', array_fill(0, count(self::POST_TYPES), '?'));
+        $statusPlaceholders = implode(',', array_fill(0, count(self::STATUSES), '?'));
         $stmt = $pdo->prepare(
             "SELECT COUNT(*) FROM `{$posts}`
-             WHERE post_type = 'product'
-               AND post_status IN ({$placeholders})"
+             WHERE post_type IN ({$typePlaceholders})
+               AND post_status IN ({$statusPlaceholders})"
         );
-        $stmt->execute(self::STATUSES);
+        $stmt->execute(array_merge(self::POST_TYPES, self::STATUSES));
         return max(0, (int) $stmt->fetchColumn());
     }
 
@@ -416,19 +423,20 @@ final class WooCommerceProductExportService
     ): array {
         $posts = $prefix . 'posts';
         $postmeta = $prefix . 'postmeta';
-        $placeholders = implode(',', array_fill(0, count(self::STATUSES), '?'));
+        $typePlaceholders = implode(',', array_fill(0, count(self::POST_TYPES), '?'));
+        $statusPlaceholders = implode(',', array_fill(0, count(self::STATUSES), '?'));
 
         try {
             $stmt = $pdo->prepare(
-                "SELECT p.ID, p.post_title
+                "SELECT p.ID, p.post_title, p.post_type, p.post_parent
                  FROM `{$posts}` p
-                 WHERE p.post_type = 'product'
-                   AND p.post_status IN ({$placeholders})
+                 WHERE p.post_type IN ({$typePlaceholders})
+                   AND p.post_status IN ({$statusPlaceholders})
                    AND p.ID > ?
                  ORDER BY p.ID ASC
                  LIMIT {$limit}"
             );
-            $stmt->execute(array_merge(self::STATUSES, [$afterId]));
+            $stmt->execute(array_merge(self::POST_TYPES, self::STATUSES, [$afterId]));
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         } catch (Throwable $e) {
             return self::error('Database query failed while loading products.');
@@ -446,22 +454,32 @@ final class WooCommerceProductExportService
             '_product_image_gallery',
         ]);
 
+        // Variations need their parent's title (name fallback) and image meta (image fallback).
+        $variationParents = [];
+        foreach ($rows as $row) {
+            if (($row['post_type'] ?? '') !== 'product_variation') {
+                continue;
+            }
+            $vid = (int) ($row['ID'] ?? 0);
+            $pid = (int) ($row['post_parent'] ?? 0);
+            if ($vid > 0 && $pid > 0) {
+                $variationParents[$vid] = $pid;
+            }
+        }
+        $parentIds = array_values(array_unique(array_values($variationParents)));
+        $parentTitles = self::loadPostTitles($pdo, $posts, $parentIds);
+        $parentMeta = self::loadProductMeta($pdo, $postmeta, $parentIds, [
+            '_thumbnail_id',
+            '_product_image_gallery',
+        ]);
+        $variationAttrs = self::fetchVariationAttributes($pdo, $postmeta, array_keys($variationParents));
+
         $attachmentIds = [];
         foreach ($ids as $id) {
-            $meta = $metaByPost[$id] ?? [];
-            $thumbId = (int) ($meta['_thumbnail_id'] ?? 0);
-            if ($thumbId > 0) {
-                $attachmentIds[$thumbId] = true;
-            }
-            $galleryRaw = trim((string) ($meta['_product_image_gallery'] ?? ''));
-            if ($galleryRaw !== '') {
-                foreach (preg_split('/\s*,\s*/', $galleryRaw) ?: [] as $gid) {
-                    $aid = (int) $gid;
-                    if ($aid > 0) {
-                        $attachmentIds[$aid] = true;
-                    }
-                }
-            }
+            self::collectAttachmentIds($metaByPost[$id] ?? [], $attachmentIds);
+        }
+        foreach ($parentIds as $pid) {
+            self::collectAttachmentIds($parentMeta[$pid] ?? [], $attachmentIds);
         }
 
         $urls = self::resolveAttachmentUrls($pdo, $prefix, $source, array_keys($attachmentIds));
@@ -472,25 +490,49 @@ final class WooCommerceProductExportService
                 continue;
             }
             $meta = $metaByPost[$id] ?? [];
-            $imageList = [];
-            $thumbId = (int) ($meta['_thumbnail_id'] ?? 0);
-            if ($thumbId > 0 && isset($urls[$thumbId]) && $urls[$thumbId] !== '') {
-                $imageList[] = $urls[$thumbId];
+
+            if (($row['post_type'] ?? '') !== 'product_variation') {
+                $products[] = [
+                    'id' => $id,
+                    'sku' => (string) ($meta['_sku'] ?? ''),
+                    'name' => (string) ($row['post_title'] ?? ''),
+                    'images' => implode(', ', self::resolveImageList($meta, $urls)),
+                ];
+                continue;
             }
-            $galleryRaw = trim((string) ($meta['_product_image_gallery'] ?? ''));
-            if ($galleryRaw !== '') {
-                foreach (preg_split('/\s*,\s*/', $galleryRaw) ?: [] as $gid) {
-                    $aid = (int) $gid;
-                    if ($aid > 0 && isset($urls[$aid]) && $urls[$aid] !== '' && !in_array($urls[$aid], $imageList, true)) {
-                        $imageList[] = $urls[$aid];
-                    }
+
+            $parentId = $variationParents[$id] ?? 0;
+            $parentTitle = trim((string) ($parentTitles[$parentId] ?? ''));
+
+            $attrs = $variationAttrs[$id] ?? [];
+            ksort($attrs);
+            $suffixParts = [];
+            foreach ($attrs as $value) {
+                $humanized = self::humanizeAttributeValue($value);
+                if ($humanized !== '') {
+                    $suffixParts[] = $humanized;
                 }
+            }
+            $suffix = implode(' / ', $suffixParts);
+
+            if ($parentTitle !== '') {
+                $name = $suffix !== '' ? $parentTitle . " \u{2013} " . $suffix : $parentTitle;
+            } else {
+                // Orphaned variation (parent missing/deleted): fall back to the variation's
+                // own post_title rather than dropping the row — finalize() requires the row
+                // count to exactly match countProducts(), so every counted row must be emitted.
+                $name = (string) ($row['post_title'] ?? '');
+            }
+
+            $imageList = self::resolveImageList($meta, $urls);
+            if ($imageList === [] && $parentId > 0) {
+                $imageList = self::resolveImageList($parentMeta[$parentId] ?? [], $urls);
             }
 
             $products[] = [
                 'id' => $id,
                 'sku' => (string) ($meta['_sku'] ?? ''),
-                'name' => (string) ($row['post_title'] ?? ''),
+                'name' => $name,
                 'images' => implode(', ', $imageList),
             ];
         }
@@ -530,6 +572,137 @@ final class WooCommerceProductExportService
         }
 
         return $out;
+    }
+
+    /**
+     * Batched wp_posts.post_title lookup — used for a variation's parent-name fallback.
+     * No post_status/post_type filter: a parent that exists but was excluded by our own
+     * filters (e.g. trashed) is still valid fallback data; only a truly deleted parent
+     * (no row at all) falls through to the variation's own post_title.
+     *
+     * @param list<int> $postIds
+     * @return array<int, string>
+     */
+    private static function loadPostTitles(PDO $pdo, string $posts, array $postIds): array
+    {
+        $postIds = array_values(array_unique(array_filter(
+            array_map('intval', $postIds),
+            static fn(int $id): bool => $id > 0
+        )));
+        if ($postIds === []) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($postIds), '?'));
+        $stmt = $pdo->prepare(
+            "SELECT ID, post_title FROM `{$posts}` WHERE ID IN ({$placeholders})"
+        );
+        $stmt->execute($postIds);
+
+        $out = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $id = (int) ($row['ID'] ?? 0);
+            if ($id > 0) {
+                $out[$id] = (string) ($row['post_title'] ?? '');
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Batched variation attribute postmeta lookup (dynamic key names, e.g. attribute_pa_color,
+     * attribute_size — unknown in advance per product, hence LIKE rather than an exact IN list).
+     *
+     * @param list<int> $variationIds
+     * @return array<int, array<string, string>>
+     */
+    private static function fetchVariationAttributes(PDO $pdo, string $postmeta, array $variationIds): array
+    {
+        $variationIds = array_values(array_unique(array_filter(
+            array_map('intval', $variationIds),
+            static fn(int $id): bool => $id > 0
+        )));
+        if ($variationIds === []) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($variationIds), '?'));
+        $stmt = $pdo->prepare(
+            "SELECT post_id, meta_key, meta_value
+             FROM `{$postmeta}`
+             WHERE post_id IN ({$placeholders})
+               AND meta_key LIKE 'attribute_%'"
+        );
+        $stmt->execute($variationIds);
+
+        $out = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $id = (int) ($row['post_id'] ?? 0);
+            $key = (string) ($row['meta_key'] ?? '');
+            $value = trim((string) ($row['meta_value'] ?? ''));
+            if ($id > 0 && $key !== '' && $value !== '') {
+                $out[$id][$key] = $value;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Turns a raw attribute value (often a taxonomy term slug, e.g. "matte-black") into a
+     * readable label ("Matte Black"). Not multibyte-aware — a leading non-ASCII character
+     * won't be capitalized, which is a cosmetic no-op, not data corruption.
+     */
+    private static function humanizeAttributeValue(string $value): string
+    {
+        $value = trim($value);
+        return $value === '' ? '' : ucwords(str_replace(['-', '_'], ' ', $value));
+    }
+
+    /**
+     * @param array<string, string> $meta
+     * @param array<int, bool> $attachmentIds
+     */
+    private static function collectAttachmentIds(array $meta, array &$attachmentIds): void
+    {
+        $thumbId = (int) ($meta['_thumbnail_id'] ?? 0);
+        if ($thumbId > 0) {
+            $attachmentIds[$thumbId] = true;
+        }
+        $galleryRaw = trim((string) ($meta['_product_image_gallery'] ?? ''));
+        if ($galleryRaw !== '') {
+            foreach (preg_split('/\s*,\s*/', $galleryRaw) ?: [] as $gid) {
+                $aid = (int) $gid;
+                if ($aid > 0) {
+                    $attachmentIds[$aid] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<string, string> $meta
+     * @param array<int, string> $urls
+     * @return list<string>
+     */
+    private static function resolveImageList(array $meta, array $urls): array
+    {
+        $imageList = [];
+        $thumbId = (int) ($meta['_thumbnail_id'] ?? 0);
+        if ($thumbId > 0 && isset($urls[$thumbId]) && $urls[$thumbId] !== '') {
+            $imageList[] = $urls[$thumbId];
+        }
+        $galleryRaw = trim((string) ($meta['_product_image_gallery'] ?? ''));
+        if ($galleryRaw !== '') {
+            foreach (preg_split('/\s*,\s*/', $galleryRaw) ?: [] as $gid) {
+                $aid = (int) $gid;
+                if ($aid > 0 && isset($urls[$aid]) && $urls[$aid] !== '' && !in_array($urls[$aid], $imageList, true)) {
+                    $imageList[] = $urls[$aid];
+                }
+            }
+        }
+        return $imageList;
     }
 
     /**

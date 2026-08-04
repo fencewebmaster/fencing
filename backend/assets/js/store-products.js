@@ -10,7 +10,6 @@
     var API_UPDATE = fcApiUrl('products', 'action=update-store-product');
     var API_WC_SKU_INDEX = fcApiUrl('products', 'action=wc-sku-index');
 
-    var PRIMARY_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE'];
     var DETAILS_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
     var LIST_DISPLAY_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE', 'Colors'];
 
@@ -152,6 +151,40 @@
                 ? window.history.state
                 : {};
         window.history.replaceState(state, '', nextUrl);
+    }
+
+    var SORT_URL_KEYS = { column: 'sort', dir: 'dir' };
+
+    function readSortFromUrl() {
+        var params = new URLSearchParams(window.location.search);
+        var dir = params.get(SORT_URL_KEYS.dir);
+
+        return {
+            column: params.get(SORT_URL_KEYS.column) || '',
+            dir: dir === 'desc' ? 'desc' : 'asc'
+        };
+    }
+
+    // Sorting is server-driven (see ProductsController::queryStoreProducts) so it's
+    // correct across pagination — clicking a header navigates instead of re-sorting
+    // whatever subset of rows happens to be loaded in the browser.
+    function navigateWithSort(column) {
+        var current = readSortFromUrl();
+        var params = new URLSearchParams(window.location.search);
+        if (current.column === column) {
+            if (current.dir === 'asc') {
+                params.set(SORT_URL_KEYS.dir, 'desc');
+            } else {
+                params.delete(SORT_URL_KEYS.column);
+                params.delete(SORT_URL_KEYS.dir);
+            }
+        } else {
+            params.set(SORT_URL_KEYS.column, column);
+            params.set(SORT_URL_KEYS.dir, 'asc');
+        }
+        params.delete('page');
+        var search = params.toString();
+        window.location.assign(window.location.pathname + (search ? '?' + search : ''));
     }
 
     function getDetailsColumns(allColumns) {
@@ -734,6 +767,13 @@
         var styleColorsMap = options.styleColorsMap || {};
         var displayColumns = options.displayColumns || insertSkusColumn(columns);
 
+        var COLUMN_WIDTH_CLASS = {
+            SLUG: 'w-[14rem]',
+            PRODUCT: 'w-[18rem]',
+            SUPPLIER: 'w-[6rem]',
+            STYLE: 'w-[7rem]'
+        };
+
         var colgroup =
             (draggable ? '<col class="w-10" />' : '') +
             displayColumns
@@ -745,14 +785,9 @@
                         return '<col class="fc-sys-product-skus-col" />';
                     }
                     if (col === 'DESCRIPTION') {
-                        return '<col class="fc-sys-product-desc-col min-w-[8rem]" />';
+                        return '<col class="fc-sys-product-desc-col" />';
                     }
-                    var isPrimary = PRIMARY_COLUMNS.indexOf(col) !== -1;
-                    return (
-                        '<col' +
-                        (isPrimary ? ' class="min-w-[8rem]"' : ' class="min-w-[6rem]"') +
-                        ' />'
-                    );
+                    return '<col class="' + (COLUMN_WIDTH_CLASS[col] || 'w-[8rem]') + '" />';
                 })
                 .join('');
 
@@ -770,16 +805,25 @@
                             : '';
                     var header =
                         col === 'Colors' || col === 'SKUs' ? col : formatHeader(col);
+                    var sortable = col !== 'Colors';
                     var extra =
                         (col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '') +
                         (col === 'Colors' ? ' fc-sys-product-colors-cell' : '') +
-                        (col === 'SKUs' ? ' fc-sys-product-skus-cell' : '');
+                        (col === 'SKUs' ? ' fc-sys-product-skus-cell' : '') +
+                        (sortable ? ' cursor-pointer select-none hover:bg-slate-100' : '');
                     return (
                         '<th scope="col" class="whitespace-nowrap px-3 py-2' +
                         sticky +
                         extra +
-                        '">' +
-                        escapeHtml(header) +
+                        '"' +
+                        (sortable
+                            ? ' data-sort-col="' + escapeHtml(col) + '" role="button" tabindex="0" aria-sort="none"'
+                            : '') +
+                        '>' +
+                        (sortable
+                            ? '<div class="flex items-center justify-between gap-1"><span>' + escapeHtml(header) + '</span>' +
+                              '<i class="fa-solid fa-sort fc-sp-sort-icon text-slate-300" aria-hidden="true"></i></div>'
+                            : '<span>' + escapeHtml(header) + '</span>') +
                         '</th>'
                     );
                 })
@@ -799,7 +843,7 @@
                         '"' +
                         ' class="fc-store-products-row fc-store-products-row--clickable ' +
                         stripeBg +
-                        '/50 hover:bg-indigo-50/40"' +
+                        '/50"' +
                         '>' +
                         (draggable
                             ? '<td class="fc-sp-sticky fc-sp-sticky-grip cursor-grab border-b border-slate-100 px-2 py-2 text-center text-slate-400 active:cursor-grabbing ' +
@@ -816,7 +860,7 @@
                                         : '';
                                 if (col === 'SKUs') {
                                     return (
-                                        '<td class="whitespace-nowrap border-b border-slate-100 px-3 py-2 fc-sys-product-skus-cell' +
+                                        '<td class="border-b border-slate-100 px-3 py-2 fc-sys-product-skus-cell' +
                                         sticky +
                                         '">' +
                                         skusCellHtml(row, allColumns, styleColorsMap) +
@@ -835,7 +879,8 @@
                                 var val = row[col] != null ? row[col] : '';
                                 var empty = val === '';
                                 return (
-                                    '<td class="whitespace-nowrap border-b border-slate-100 px-3 py-2' +
+                                    '<td class="border-b border-slate-100 px-3 py-2' +
+                                    (col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '') +
                                     sticky +
                                     (empty ? ' text-slate-300' : '') +
                                     '">' +
@@ -855,7 +900,7 @@
             '<div class="fc-store-products-scroll fc-sp-table-body fc-sp-hide-x-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto' +
             (draggable ? ' fc-sp-has-grip' : '') +
             '">' +
-            '<table class="w-full min-w-max border-collapse text-left">' +
+            '<table class="fc-store-products-table fc-sp-table-fixed border-collapse text-left">' +
             '<colgroup>' +
             colgroup +
             '</colgroup>' +
@@ -889,6 +934,9 @@
         var filterUrlSyncTimer = null;
         var isSaving = false;
         var bottomScrollSync = null;
+        // Column-header sort — server-driven (see navigateWithSort); this just mirrors
+        // the sort/dir URL params PHP already used to decide how allRows is ordered.
+        var sortState = readSortFromUrl();
 
         var shell =
             '<div class="flex h-full min-h-0 flex-col">' +
@@ -916,6 +964,8 @@
             '</div>';
 
         function getVisibleRows() {
+            // allRows is already in the order the server returned (sorted server-side
+            // when a sort is active) — filtering here preserves that relative order.
             return applyRowFilters(allRows, {
                 query: searchQuery,
                 supplier: supplierFilter,
@@ -925,6 +975,10 @@
 
         function hasActiveFilters() {
             return searchQuery.length > 0 || supplierFilter.length > 0 || styleFilter.length > 0;
+        }
+
+        function isSortActive() {
+            return sortState.column !== '';
         }
 
         function scheduleFilterUrlSync(immediate) {
@@ -2111,7 +2165,7 @@
             var dragRow = null;
 
             tbody.addEventListener('mousedown', function (e) {
-                if (hasActiveFilters()) {
+                if (hasActiveFilters() || isSortActive()) {
                     return;
                 }
                 var grip = e.target.closest('.fc-sp-sticky-grip');
@@ -2132,7 +2186,7 @@
 
             tbody.addEventListener('dragstart', function (e) {
                 var tr = e.target.closest('tr.fc-store-products-row');
-                if (!tr || hasActiveFilters() || !tr.draggable) {
+                if (!tr || hasActiveFilters() || isSortActive() || !tr.draggable) {
                     e.preventDefault();
                     return;
                 }
@@ -2160,7 +2214,7 @@
             });
 
             tbody.addEventListener('dragover', function (e) {
-                if (!dragRow || hasActiveFilters()) {
+                if (!dragRow || hasActiveFilters() || isSortActive()) {
                     return;
                 }
                 e.preventDefault();
@@ -2186,7 +2240,7 @@
 
             tbody.addEventListener('drop', function (e) {
                 e.preventDefault();
-                if (!dragRow || hasActiveFilters()) {
+                if (!dragRow || hasActiveFilters() || isSortActive()) {
                     return;
                 }
                 var target = e.target.closest('tr.fc-store-products-row');
@@ -2290,6 +2344,43 @@
             };
         }
 
+        function updateSortIndicators(root) {
+            var ths = root.querySelectorAll('th[data-sort-col]');
+            ths.forEach(function (th) {
+                var icon = th.querySelector('.fc-sp-sort-icon');
+                var isActive = th.getAttribute('data-sort-col') === sortState.column;
+                th.setAttribute('aria-sort', isActive ? (sortState.dir === 'asc' ? 'ascending' : 'descending') : 'none');
+                if (!icon) {
+                    return;
+                }
+                icon.className = 'fa-solid fc-sp-sort-icon ' +
+                    (isActive
+                        ? (sortState.dir === 'asc' ? 'fa-sort-up text-slate-600' : 'fa-sort-down text-slate-600')
+                        : 'fa-sort text-slate-300');
+            });
+        }
+
+        function initHeaderSort(root) {
+            var ths = root.querySelectorAll('th[data-sort-col]');
+            ths.forEach(function (th) {
+                if (th.dataset.fcSortBound === '1') {
+                    return;
+                }
+                th.dataset.fcSortBound = '1';
+                var column = th.getAttribute('data-sort-col');
+                th.addEventListener('click', function () {
+                    navigateWithSort(column);
+                });
+                th.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigateWithSort(column);
+                    }
+                });
+            });
+            updateSortIndicators(root);
+        }
+
         function paintTable(rows) {
             var wrap = document.getElementById('fc-store-products-table-wrap');
             var countEl = document.getElementById('fc-store-products-count');
@@ -2299,7 +2390,7 @@
 
             destroyBottomHorizontalScroll();
 
-            var filtered = hasActiveFilters();
+            var filtered = hasActiveFilters() || isSortActive();
             var displayColumns = getListDisplayColumns(columns);
 
             function renderRows(visibleRows) {
@@ -2320,6 +2411,7 @@
                             initRowDragDrop(tbody);
                         }
                     }
+                    initHeaderSort(wrap);
                     initBottomHorizontalScroll(wrap);
                 }
 
@@ -2398,6 +2490,7 @@
                 var wrap = document.getElementById('fc-store-products-table-wrap');
                 var tbody = options.tbody || document.getElementById('fc-store-products-tbody');
                 if (wrap) {
+                    initHeaderSort(wrap);
                     initBottomHorizontalScroll(wrap);
                 }
                 if (tbody && options.canEdit !== false) {

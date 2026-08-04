@@ -1524,7 +1524,8 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
 }
 
 .fc-fs-kv-block--table .fc-fs-kv-row--table:hover:not(.fc-fs-kv-row--dragging):not(.fc-fs-kv-row--drag-over) {
-    background: #f8fafc;
+    background: rgba(246, 121, 37, 0.14);
+    background: color-mix(in srgb, var(--fc-princeton-orange) 14%, transparent);
     box-shadow: inset 3px 0 0 var(--fc-princeton-orange, #f67925);
 }
 

@@ -564,7 +564,9 @@ function fc_store_products_admin_table_html(
     array $styleLabels = [],
     array $styleColors = [],
     bool $canEdit = true,
-    array $skuSet = []
+    array $skuSet = [],
+    string $sortColumn = '',
+    string $sortDir = 'asc'
 ): string {
     if ($displayColumns === []) {
         $displayColumns = $allColumns;
@@ -582,14 +584,17 @@ function fc_store_products_admin_table_html(
         }
     }
 
-    $primaryColumns = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE', 'Colors'];
     $colgroup = ($draggable ? '<col class="w-10" />' : '');
     foreach ($displayColumns as $col) {
         $widthClass = match ($col) {
+            'SLUG' => 'w-[14rem]',
+            'PRODUCT' => 'w-[18rem]',
+            'SUPPLIER' => 'w-[6rem]',
+            'STYLE' => 'w-[7rem]',
             'Colors' => 'fc-sys-product-colors-col',
             'DESCRIPTION' => 'fc-sys-product-desc-col',
             'SKUs' => 'fc-sys-product-skus-col',
-            default => in_array($col, $primaryColumns, true) ? 'min-w-[8rem]' : 'min-w-[6rem]',
+            default => 'w-[8rem]',
         };
         $colgroup .= '<col class="' . $widthClass . '" />';
     }
@@ -601,11 +606,24 @@ function fc_store_products_admin_table_html(
     foreach ($displayColumns as $colIndex => $col) {
         $sticky = $colIndex === 0 ? ' fc-sp-sticky fc-sp-sticky-col relative' : '';
         $header = $col === 'Colors' || $col === 'SKUs' ? $col : fc_products_admin_format_header($col);
+        $sortable = $col !== 'Colors';
+        $isActiveSort = $sortable && $sortColumn === $col;
+        $ariaSort = $isActiveSort ? ($sortDir === 'desc' ? 'descending' : 'ascending') : 'none';
+        $iconClass = $isActiveSort
+            ? ($sortDir === 'desc' ? 'fa-sort-down text-slate-600' : 'fa-sort-up text-slate-600')
+            : 'fa-sort text-slate-300';
         $headClass = 'whitespace-nowrap px-3 py-2' . $sticky
             . ($col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '')
             . ($col === 'Colors' ? ' fc-sys-product-colors-cell' : '')
-            . ($col === 'SKUs' ? ' fc-sys-product-skus-cell' : '');
-        $thead .= '<th scope="col" class="' . trim($headClass) . '">' . fc_products_admin_h($header) . '</th>';
+            . ($col === 'SKUs' ? ' fc-sys-product-skus-cell' : '')
+            . ($sortable ? ' cursor-pointer select-none hover:bg-slate-100' : '');
+        $thead .= '<th scope="col" class="' . trim($headClass) . '"'
+            . ($sortable ? ' data-sort-col="' . fc_products_admin_h($col) . '" role="button" tabindex="0" aria-sort="' . $ariaSort . '"' : '')
+            . '>' . ($sortable
+                ? '<div class="flex items-center justify-between gap-1"><span>' . fc_products_admin_h($header) . '</span>'
+                    . '<i class="fa-solid ' . $iconClass . ' fc-sp-sort-icon" aria-hidden="true"></i></div>'
+                : '<span>' . fc_products_admin_h($header) . '</span>')
+            . '</th>';
     }
     $thead .= '</tr></thead>';
 
@@ -615,7 +633,7 @@ function fc_store_products_admin_table_html(
         $stripeBg = $rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
         $rowClass = 'fc-store-products-row ' . $stripeBg . '/50';
         if ($canEdit) {
-            $rowClass .= ' fc-store-products-row--clickable hover:bg-indigo-50/40';
+            $rowClass .= ' fc-store-products-row--clickable';
         }
         $tbody .= '<tr data-row-index="' . $dataRowIndex . '"'
             . ($canEdit ? ' data-fc-sp-editable="1"' : '')
@@ -634,7 +652,7 @@ function fc_store_products_admin_table_html(
             }
             if ($col === 'SKUs') {
                 $cellHtml = fc_store_products_admin_skus_cell_html($row, $allColumns, $styleColors, $skuSetLookup);
-                $tbody .= '<td class="border-b border-slate-100 px-3 py-2 fc-sys-product-skus-cell whitespace-nowrap' . $sticky . '">'
+                $tbody .= '<td class="border-b border-slate-100 px-3 py-2 fc-sys-product-skus-cell' . $sticky . '">'
                     . $cellHtml . '</td>';
                 continue;
             }
@@ -646,7 +664,7 @@ function fc_store_products_admin_table_html(
                 : $val;
             $cellClass = 'border-b border-slate-100 px-3 py-2' . $sticky
                 . ($empty ? ' text-slate-300' : '')
-                . ($col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell max-w-md' : ' whitespace-nowrap');
+                . ($col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '');
             $tbody .= '<td class="' . trim($cellClass) . '"'
                 . ($col === 'DESCRIPTION' && !$empty ? ' title="' . fc_products_admin_h($displayVal) . '"' : '')
                 . '>'
@@ -657,7 +675,7 @@ function fc_store_products_admin_table_html(
     }
     $tbody .= '</tbody>';
 
-    $table = '<table class="fc-store-products-table w-full min-w-max border-collapse text-left">'
+    $table = '<table class="fc-store-products-table fc-sp-table-fixed border-collapse text-left">'
         . '<colgroup>' . $colgroup . '</colgroup>'
         . $thead . $tbody
         . '</table>';
@@ -700,6 +718,8 @@ function fc_store_products_admin_url(string $adminBase, array $overrides = []): 
             'supplier' => trim((string) ($overrides['supplier'] ?? '')),
             'style'    => trim((string) ($overrides['style'] ?? '')),
             'q'        => trim((string) ($overrides['q'] ?? '')),
+            'sort'     => trim((string) ($overrides['sort'] ?? '')),
+            'dir'      => strtolower(trim((string) ($overrides['dir'] ?? ''))),
             'page'     => $isAll ? 1 : (int) ($overrides['page'] ?? 1),
             'per_page' => $isAll ? 'all' : (int) $perPageRaw,
         ],
@@ -713,6 +733,9 @@ function fc_store_products_admin_url(string $adminBase, array $overrides = []): 
                 }
 
                 return (int) $value > 0 && (int) $value !== 50;
+            }
+            if ($key === 'dir') {
+                return $value === 'desc';
             }
 
             return $value !== '' && $value !== null;
@@ -772,11 +795,20 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
     $colorColumnValues = is_array($filterMeta['colors'] ?? null) ? $filterMeta['colors'] : [];
     $selectedColors = fc_store_products_admin_parse_color_filters($query, $colorColumnValues);
 
+    $sortableColumns = array_values(array_diff(fc_store_products_admin_list_columns(), ['Colors']));
+    $sortColumn = trim((string) ($query['sort'] ?? ''));
+    if (!in_array($sortColumn, $sortableColumns, true)) {
+        $sortColumn = '';
+    }
+    $sortDir = strtolower(trim((string) ($query['dir'] ?? 'asc'))) === 'desc' ? 'desc' : 'asc';
+
     $filters = [
         'supplier' => trim((string) ($query['supplier'] ?? '')),
         'style'    => trim((string) ($query['style'] ?? '')),
         'q'        => trim((string) ($query['q'] ?? '')),
         'colors'   => $selectedColors,
+        'sort'     => $sortColumn,
+        'dir'      => $sortDir,
     ];
     $hasActiveFilters = $filters['supplier'] !== ''
         || $filters['style'] !== ''
@@ -819,7 +851,7 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
     $currentPage = $isAll ? 1 : max(1, (int) ($payload['page'] ?? $page));
     $formAction = fc_products_admin_admin_url($adminBase, 'products/system-products');
     $canEdit = !function_exists('fc_auth_user_can') || fc_auth_user_can('products.system_products.edit');
-    $canReorder = $canEdit && $isAll && !$hasActiveFilters;
+    $canReorder = $canEdit && $isAll && !$hasActiveFilters && $sortColumn === '';
 
     $countLabel = $hasActiveFilters
         ? $total . ' match' . ($total === 1 ? '' : 'es')
@@ -849,7 +881,9 @@ function fc_store_products_admin_view_data(string $adminBase, array $query = [])
                 $styleLabels,
                 $styleColors,
                 $canEdit,
-                $skuSet
+                $skuSet,
+                $sortColumn,
+                $sortDir
             );
         }
     }

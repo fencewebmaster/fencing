@@ -11,6 +11,13 @@ use Fc\Admin\Services\WooCommerceProductExportService;
 
 final class ProductsController
 {
+    /**
+     * Columns the products.csv list view can be sorted by — 'SKUs' is a derived key
+     * (first non-empty SKU across the row's style-appropriate color columns), not a
+     * literal CSV column.
+     */
+    public const STORE_SORT_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE', 'SKUs'];
+
     private static function productsCsvPath(): string
     {
         return FC_ROOT . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'products.csv';
@@ -405,6 +412,13 @@ final class ProductsController
             || $search !== ''
             || $colorFilters !== [];
 
+        $sortColumn = trim((string) ($filters['sort'] ?? ''));
+        if (!in_array($sortColumn, self::STORE_SORT_COLUMNS, true)) {
+            $sortColumn = '';
+        }
+        $sortDir = strtolower(trim((string) ($filters['dir'] ?? 'asc'))) === 'desc' ? 'desc' : 'asc';
+        $isSorted = $sortColumn !== '';
+
         $page = max(1, $page);
         if ($loadAll) {
             $perPage = PHP_INT_MAX;
@@ -414,13 +428,17 @@ final class ProductsController
             $offset = ($page - 1) * $perPage;
         }
 
+        // Sorting needs the whole filtered set before pagination can slice it, so the
+        // cached-total/early-exit fast path only applies when there is no sort.
         $cachedTotal = null;
-        if (!$hasFilters && !$loadAll) {
+        if (!$hasFilters && !$loadAll && !$isSorted) {
             $countMeta = self::countStoreProducts();
             if (!empty($countMeta['ok'])) {
                 $cachedTotal = (int) $countMeta['total'];
             }
         }
+
+        $styleColors = self::getFenceStyleColors();
 
         $matched = 0;
         $unfiltered = 0;
@@ -458,7 +476,7 @@ final class ProductsController
                 }
             }
 
-            if ($matched >= $offset && ($loadAll || count($rows) < $perPage)) {
+            if ($isSorted || $loadAll || ($matched >= $offset && count($rows) < $perPage)) {
                 $row['_rowIndex'] = $rowIndex;
                 $rows[] = $row;
             }
@@ -467,7 +485,8 @@ final class ProductsController
             $rowIndex++;
 
             if (
-                !$loadAll
+                !$isSorted
+                && !$loadAll
                 && $cachedTotal !== null
                 && count($rows) >= $perPage
                 && $matched >= ($offset + $perPage)
@@ -482,6 +501,20 @@ final class ProductsController
         if ($cachedTotal !== null) {
             $matched = $cachedTotal;
             $unfiltered = $cachedTotal;
+        }
+
+        if ($isSorted) {
+            usort($rows, static function (array $a, array $b) use ($sortColumn, $columns, $styleColors, $sortDir): int {
+                $av = self::storeCsvSortKey($a, $sortColumn, $columns, $styleColors);
+                $bv = self::storeCsvSortKey($b, $sortColumn, $columns, $styleColors);
+                $cmp = $av <=> $bv;
+
+                return $sortDir === 'desc' ? -$cmp : $cmp;
+            });
+            $matched = count($rows);
+            if (!$loadAll) {
+                $rows = array_slice($rows, $offset, $perPage);
+            }
         }
 
         if ($loadAll) {
@@ -504,7 +537,7 @@ final class ProductsController
             'per_page' => $loadAll ? $matched : $perPage,
             'total_pages' => $totalPages,
             'file' => 'products.csv',
-            'styleColors' => self::getFenceStyleColors(),
+            'styleColors' => $styleColors,
         ];
     }
 
@@ -541,6 +574,54 @@ final class ProductsController
         $sku = trim((string) ($row[$column] ?? ''));
 
         return $sku !== '' && strtoupper($sku) !== 'OFF';
+    }
+
+    /**
+     * @param array<string, string> $row
+     * @param list<string> $columns
+     * @param array<string, list<string>> $styleColors
+     * @return list<string>
+     */
+    private static function storeCsvAllowedColorColumns(array $row, array $columns, array $styleColors): array
+    {
+        $style = trim((string) ($row['STYLE'] ?? ''));
+        if (isset($styleColors[$style]) && is_array($styleColors[$style])) {
+            return array_values($styleColors[$style]);
+        }
+
+        return self::storeCsvColorColumns($columns);
+    }
+
+    /**
+     * First non-empty, non-"OFF" SKU value across a row's style-appropriate color columns.
+     *
+     * @param array<string, string> $row
+     * @param list<string> $columns
+     * @param array<string, list<string>> $styleColors
+     */
+    private static function storeCsvRowFirstSku(array $row, array $columns, array $styleColors): string
+    {
+        foreach (self::storeCsvAllowedColorColumns($row, $columns, $styleColors) as $column) {
+            if (self::storeCsvColorColumnHasSku($row, $column)) {
+                return trim((string) ($row[$column] ?? ''));
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @param array<string, string> $row
+     * @param list<string> $columns
+     * @param array<string, list<string>> $styleColors
+     */
+    private static function storeCsvSortKey(array $row, string $sortColumn, array $columns, array $styleColors): string
+    {
+        if ($sortColumn === 'SKUs') {
+            return strtolower(self::storeCsvRowFirstSku($row, $columns, $styleColors));
+        }
+
+        return strtolower(trim((string) ($row[$sortColumn] ?? '')));
     }
 
     /**

@@ -799,7 +799,8 @@
 }
 
 .fc-gallery-list__row:hover {
-    background: #f6f7f7;
+    background: rgba(246, 121, 37, 0.14);
+    background: color-mix(in srgb, var(--fc-princeton-orange) 14%, transparent);
 }
 
 .fc-gallery-list__row:focus-visible {

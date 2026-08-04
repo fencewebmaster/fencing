@@ -2206,7 +2206,8 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
 }
 
 .fc-entries-table__row:hover {
-    background: #f8fafc;
+    background: rgba(246, 121, 37, 0.14);
+    background: color-mix(in srgb, var(--fc-princeton-orange) 14%, transparent);
     box-shadow: inset 3px 0 0 var(--fc-princeton-orange, #f67925);
 }
 

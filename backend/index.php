@@ -220,15 +220,38 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             background: #e2e8f0;
             pointer-events: none;
         }
-        #fc-store-products-table-wrap tbody tr:hover td.fc-sp-sticky,
         #fc-store-products-table-wrap tbody tr.fc-store-products-row--drag-over td.fc-sp-sticky {
             background-color: rgb(238 242 255 / 0.55);
         }
         #fc-store-products-table-wrap tbody tr.fc-store-products-row--clickable {
             cursor: pointer;
         }
+        #fc-store-products-table-wrap tbody tr.fc-store-products-row--clickable:hover {
+            background-color: rgb(254, 236, 225) !important;
+            background-color: color-mix(in srgb, var(--fc-princeton-orange) 14%, white) !important;
+        }
+        #fc-store-products-table-wrap tbody tr.fc-store-products-row--clickable:hover td {
+            background-color: rgb(254, 236, 225) !important;
+            background-color: color-mix(in srgb, var(--fc-princeton-orange) 14%, white) !important;
+        }
+        #fc-store-products-table-wrap tbody tr.fc-store-products-row--clickable:hover td.fc-sp-sticky {
+            background-color: rgb(254, 236, 225) !important;
+            background-color: color-mix(in srgb, var(--fc-princeton-orange) 14%, white) !important;
+        }
         #fc-store-products-table-wrap .fc-sp-table-layout {
             min-height: 0;
+        }
+        #fc-store-products-table-wrap .fc-sp-table-fixed {
+            table-layout: fixed;
+            width: 100%;
+            min-width: max-content;
+        }
+        #fc-store-products-table-wrap td.fc-sp-sticky-col {
+            white-space: nowrap;
+        }
+        #fc-store-products-table-wrap td {
+            white-space: normal;
+            overflow-wrap: anywhere;
         }
         #fc-store-products-table-wrap .fc-store-products-scroll {
             overflow-x: hidden;
@@ -271,16 +294,6 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             scrollbar-width: thin;
             scrollbar-color: #94a3b8 #f1f5f9;
         }
-        [data-fc-store-products-php] #fc-store-products-table-wrap .fc-sp-bottom-scrollbar {
-            display: none;
-        }
-        [data-fc-store-products-php] #fc-store-products-table-wrap .fc-sp-table-layout {
-            flex: none;
-            min-height: 0;
-        }
-        [data-fc-store-products-php] #fc-store-products-table-wrap .fc-store-products-scroll {
-            overflow: visible;
-        }
         [data-fc-store-products-php] .fc-store-products-body {
             overflow: auto;
             min-height: 0;
@@ -295,15 +308,15 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
         }
         #fc-store-products-table-wrap .fc-sys-product-colors {
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem 0.75rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.35rem;
         }
         #fc-store-products-table-wrap .fc-sys-product-color {
             display: inline-flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.35rem;
-            white-space: nowrap;
+            max-width: 100%;
         }
         #fc-store-products-table-wrap .fc-sys-product-color__swatch {
             display: inline-block;
@@ -319,17 +332,24 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             font-weight: 600;
             letter-spacing: 0.03em;
             color: #475569;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height: 1.3;
         }
         #fc-store-products-table-wrap .fc-sys-product-desc-cell {
-            max-width: 18rem;
-            white-space: normal;
             line-height: 1.35;
         }
+        #fc-store-products-table-wrap .fc-sys-product-desc-col {
+            width: 16rem;
+        }
         #fc-store-products-table-wrap .fc-sys-product-colors-col {
-            min-width: 10rem;
+            width: 11rem;
         }
         #fc-store-products-table-wrap .fc-sys-product-skus-col {
-            min-width: 4.5rem;
+            width: 5rem;
+        }
+        #fc-store-products-table-wrap .fc-sys-product-skus-cell {
+            white-space: nowrap;
         }
         #fc-store-products-table-wrap .fc-sp-skus-summary {
             display: inline-flex;
@@ -459,8 +479,17 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             background: #e2e8f0;
             pointer-events: none;
         }
+        #fc-system-products-table-wrap tbody tr:hover {
+            background-color: rgb(254, 236, 225) !important;
+            background-color: color-mix(in srgb, var(--fc-princeton-orange) 14%, white) !important;
+        }
+        #fc-system-products-table-wrap tbody tr:hover td {
+            background-color: rgb(254, 236, 225) !important;
+            background-color: color-mix(in srgb, var(--fc-princeton-orange) 14%, white) !important;
+        }
         #fc-system-products-table-wrap tbody tr:hover td.fc-sp-sticky {
-            background-color: rgb(238 242 255 / 0.55);
+            background-color: rgb(254, 236, 225) !important;
+            background-color: color-mix(in srgb, var(--fc-princeton-orange) 14%, white) !important;
         }
         #fc-system-products-table-wrap .fc-sp-table-layout {
             min-height: 0;
