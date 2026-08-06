@@ -694,7 +694,15 @@
     }
 
     function ensureUploadQueue() {
-        if (state.uploadQueue || !global.FcGalleryUploadQueue) {
+        if (state.uploadQueue) {
+            // Keep the queue's token in sync — it's created once and cached, but the
+            // CSRF token can be (re)hydrated later (e.g. re-login without a full page
+            // reload), and a stale token here causes every upload to fail with
+            // "Invalid security token" even though the page itself is fine.
+            state.uploadQueue.csrf = state.csrf;
+            return state.uploadQueue;
+        }
+        if (!global.FcGalleryUploadQueue) {
             return state.uploadQueue;
         }
 
