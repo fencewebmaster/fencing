@@ -1,7 +1,10 @@
 <?php
-include 'config/helpers.php';
+require_once __DIR__ . '/app/src/Core/Autoloader.php';
+\Fc\Admin\Core\Autoloader::register();
 
-$redirect_to = base_url('planner');
+require_once __DIR__ . '/app/src/Helpers/UrlHelper.php';
+
+$redirect_to = \Fc\Admin\Helpers\UrlHelper::baseUrl('planner');
 
 $query_vars = $_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING'] : '';
 

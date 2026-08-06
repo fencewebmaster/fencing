@@ -11,7 +11,10 @@
                     
                     <div class="text-uppercase mb-2 fw-bold">Color Options</div>
 
-                    <?php $colors =  fc_convert_inputs($info['color']);  ?>
+                    <?php
+                    require_once dirname(__DIR__, 3) . '/app/src/Services/CartBuilderService.php';
+                    $colors = \Fc\Admin\Services\CartBuilderService::convertInputs($info['color']);
+                    ?>
                     <?php foreach( $colors as $color_data ): ?>
                     <div class="fencing-form-group fc-mb-0">
                         <?php

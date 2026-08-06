@@ -1,3 +1,4 @@
+<?php require_once dirname(__DIR__, 4) . '/app/src/Helpers/UrlHelper.php'; ?>
 <div class="fc-other-products fc-form-group">
     <div class="row">
         <input type="hidden" name="extra" value="">
@@ -5,7 +6,7 @@
         <div class="col-md-3 col-sm-4 col-6">
             <div class="fc-form-check-img fc-rounded mb-3">
                 <label class="fc-form-check">
-                <img class="fc-rounded" src="<?php echo base_url(); ?>assets/img/plans/webp/<?php echo $extra_k; ?>.webp">								
+                <img class="fc-rounded" src="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl(); ?>public/assets/img/plans/webp/<?php echo $extra_k; ?>.webp">								
                 <input type="checkbox" name="extra[]" value="<?php echo $extra_k; ?>">
                 </label>
                 <div class="text-center fw-bold py-2 small"><?php echo $extra_v; ?></div>

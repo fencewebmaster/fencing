@@ -153,7 +153,7 @@
 									<?php
 									$colors = [];
 									if ( isset( $info['color'] ) && $info['color'] !== '' && $info['color'] !== null ) {
-										$colors = is_array( $info['color'] ) ? $info['color'] : fc_convert_inputs( $info['color'] );
+										$colors = is_array( $info['color'] ) ? $info['color'] : \Fc\Admin\Services\CartBuilderService::convertInputs( $info['color'] );
 									}
 									if ( ! is_array( $colors ) ) {
 										$colors = [];
@@ -193,9 +193,7 @@
 										$_fence_title = ( $_fence_slug !== '' && isset( $fences[ $_fence_slug ]['title'] ) )
 											? $fences[ $_fence_slug ]['title']
 											: $_fence_slug;
-										$_fence_section_count = function_exists( 'fc_planner_section_count_for_fence_slug' )
-											? fc_planner_section_count_for_fence_slug( $_fence_slug )
-											: 0;
+										$_fence_section_count = \Fc\Admin\Services\FenceCatalogService::plannerSectionCountForFenceSlug( $_fence_slug );
 									?>
 
 											<div class="fc-project-plan-color__slide">
@@ -240,7 +238,7 @@
 							<td width="180">Fence Type</td>
 							<td>
 								<?php
-								$fence_types_rows = fc_fence_section_types_with_counts( $fences );
+								$fence_types_rows = \Fc\Admin\Services\FenceCatalogService::fenceSectionTypesWithCounts( $fences );
 								if ( ! empty( $fence_types_rows ) ) :
 								?>
 								<ul class="fc-project-details-value-list mb-0 ps-3">
@@ -262,7 +260,7 @@
 							<td>
 								<?php
 								$nothing_extra = isset( $info['nothing_extra'] ) ? (string) $info['nothing_extra'] : '';
-								$extra = is_array( @$info['extra'] ) ? $info['extra'] : fc_convert_inputs( @$info['extra'] );
+								$extra = is_array( @$info['extra'] ) ? $info['extra'] : \Fc\Admin\Services\CartBuilderService::convertInputs( @$info['extra'] );
 								if ( ! is_array( $extra ) ) {
 									if ( is_string( $extra ) && trim( $extra ) !== '' && trim( $extra ) !== 'nothing' ) {
 										$extra = array_filter( array_map( 'trim', explode( ',', $extra ) ) );
@@ -275,7 +273,7 @@
 								Nothing Extra, Just Fencing
 								<?php elseif ( ! empty( $extra ) ) : ?>
 								<ul class="fc-project-details-value-list mb-0 ps-3">
-									<?php echo fc_get_items( 'fc_extra_needed', $extra, true ); ?>
+									<?php echo \Fc\Admin\Helpers\ArrayHelper::mapCallable( 'fc_extra_needed', $extra, true ); ?>
 								</ul>
 								<?php else : ?>
 								Nothing Extra, Just Fencing

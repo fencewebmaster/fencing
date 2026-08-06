@@ -1,8 +1,6 @@
 <?php
-if (!function_exists('fc_branding_get')) {
-    require_once dirname(__DIR__, 2) . '/config/branding.php';
-}
-$fcBranding = fc_branding_get();
+require_once dirname(__DIR__, 2) . '/app/src/Services/BrandingSettings.php';
+$fcBranding = \Fc\Admin\Services\BrandingSettings::get();
 ?>
 <h2 class="fc-header-title"><?php echo htmlspecialchars($fcBranding['appName'], ENT_QUOTES, 'UTF-8'); ?></h2>
 

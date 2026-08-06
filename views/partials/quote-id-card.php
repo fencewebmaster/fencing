@@ -2,7 +2,8 @@
 $quote_id_dom_id = isset( $quote_id_dom_id ) ? (string) $quote_id_dom_id : 'quote-id-1';
 $quote_card_class = isset( $quote_card_class ) ? (string) $quote_card_class : '';
 $quote_id_val = isset( $quote_id_val ) ? (string) $quote_id_val : (string) ( @$_SESSION['planner_id'] ?? '' );
-$quote_share_url = function_exists( 'fc_planner_qid_share_url' ) ? fc_planner_qid_share_url( $quote_id_val ) : '';
+require_once dirname(__DIR__, 2) . '/app/src/Services/PlannerSessionService.php';
+$quote_share_url = \Fc\Admin\Services\PlannerSessionService::qidShareUrl( $quote_id_val );
 $quote_card_hide_head = ! empty( $quote_card_hide_head );
 $qic_head_class = strpos( $quote_card_class, 'float-end' ) !== false ? 'qic-head px-3' : 'qic-head';
 ?>

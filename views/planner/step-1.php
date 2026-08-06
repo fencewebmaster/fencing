@@ -1,3 +1,4 @@
+<?php require_once dirname(__DIR__, 2) . '/app/src/Helpers/UrlHelper.php'; ?>
 <div class="fencing-section fencing-section--has-border fencing-section--no-radius-top" data-section="1">
 
     <!-- [START] STYLES AREA -->
@@ -63,7 +64,7 @@
                 <div>
 
                     <div class="fencing-style-img">
-                        <img src="<?php echo base_url() . $fence['image']; ?>" alt="<?php echo htmlspecialchars( (string) $fence['title'], ENT_QUOTES, 'UTF-8' ); ?>">
+                        <img src="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl() . $fence['image']; ?>" alt="<?php echo htmlspecialchars( (string) $fence['title'], ENT_QUOTES, 'UTF-8' ); ?>">
                         <?php if ( ! $fence_is_live ) : ?>
                         <div class="fencing-style-unavailable">Not Available</div>
                         <?php endif; ?>
@@ -84,7 +85,7 @@
                 <div>
 
                     <div class="fencing-style-img">
-                        <img src="<?php echo base_url(); ?>assets/img/webp/plain-white.webp">  
+                        <img src="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl(); ?>public/assets/img/webp/plain-white.webp">  
                         <div class="lq-mid-desc">
                             <div class="lq-icon">
                                 <i class="fa-solid fa-file-circle-plus"></i>                                         

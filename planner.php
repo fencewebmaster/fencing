@@ -1,47 +1,54 @@
 <?php
-require_once __DIR__ . '/config/session.php';
-fc_session_start();
+require_once __DIR__ . '/app/src/Core/Autoloader.php';
+\Fc\Admin\Core\Autoloader::register();
+
+require_once __DIR__ . '/app/src/Core/SessionBootstrap.php';
+\Fc\Admin\Core\SessionBootstrap::start();
 
 $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
-include 'config/helpers.php';
+require_once __DIR__ . '/app/src/Services/SiteRegistryService.php';
+require_once __DIR__ . '/app/src/Services/PlannerSessionService.php';
+require_once __DIR__ . '/app/src/Helpers/UrlHelper.php';
+require_once __DIR__ . '/app/src/Helpers/AssetHelper.php';
 
 if( @$_GET['action'] == 'clear-all' || @$_GET['site'] || @$_GET['sid'] ) {
     // Clear fence session data
-    clear_planner_sessions();
+    \Fc\Admin\Services\PlannerSessionService::clearPlannerSessions();
 }
 
 if( @$_GET['site'] || @$_GET['sid'] ) {
 
-    $redirect_to    = base_url('planner');
+    $redirect_to    = \Fc\Admin\Helpers\UrlHelper::baseUrl('planner');
     $query_vars     = $_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING'] : '';
-    $new_query_vars = array_diff_key(query_vars($query_vars), ['sid' => 1, 'site' => 1]);
+    $new_query_vars = array_diff_key(\Fc\Admin\Helpers\UrlHelper::queryVars($query_vars), ['sid' => 1, 'site' => 1]);
 
     if( @$_GET['sid'] ) {
-        $site = sites($_GET['sid'], 'id', true);
+        $site = \Fc\Admin\Services\SiteRegistryService::all($_GET['sid'], 'id', true);
     } else {
-        $site = sites($_GET['site'], 'domain', true);        
+        $site = \Fc\Admin\Services\SiteRegistryService::all($_GET['site'], 'domain', true);
     }
 
     if( $site ) {
-        $_SESSION["site"] = $site;          
+        $_SESSION["site"] = $site;
         header("Location: ".$redirect_to.'?'.http_build_query($new_query_vars));
     } else {
-       header("Location: ".toURL($_GET['url']));
+       header("Location: ".\Fc\Admin\Helpers\UrlHelper::toUrl($_GET['url']));
     }
-    exit;      
-} 
+    exit;
+}
 
 
 
 if( ! @$_SESSION["site"] ) {
-    $site = sites($_SERVER['HTTP_HOST'], 'domain', true);    
-    $_SESSION["site"] = $site;  
+    $site = \Fc\Admin\Services\SiteRegistryService::all($_SERVER['HTTP_HOST'], 'domain', true);
+    $_SESSION["site"] = $site;
 }
 
-include 'data/settings.php';
-include 'config/database.php';
-require_once __DIR__ . '/config/planners.php';
+include 'writable/settings.php';
+require_once __DIR__ . '/app/src/Services/DatabaseConfigService.php';
+require_once __DIR__ . '/app/src/Services/Database.php';
+require_once __DIR__ . '/app/src/Services/PlannerRecordService.php';
 
 $res = array();
 $load_quote_failed = false;
@@ -52,28 +59,28 @@ if ( $qid = @$_GET['qid'] ) {
     $qid = trim( (string) $qid );
     $load_quote_attempt = $qid;
 
-    $db = new Database();
-    $res = fc_planner_is_valid_planner_id( $qid )
+    $db = new \Fc\Admin\Services\Database();
+    $res = \Fc\Admin\Services\PlannerRecordService::isValidPlannerId( $qid )
         ? $db->select_where( 'planners', '`planner_id`="' . $qid . '"' )
         : array();
 
-    if ( $res && is_object( $res ) && ! fc_planners_row_is_trashed( $res ) ) {
+    if ( $res && is_object( $res ) && ! \Fc\Admin\Services\PlannerRecordService::rowIsTrashed( $res ) ) {
         // Clear fence session data
-        clear_planner_sessions();
+        \Fc\Admin\Services\PlannerSessionService::clearPlannerSessions();
 
         $_SESSION['planner_id'] = $qid;
 
-        $site = sites( $_SERVER['HTTP_HOST'], 'domain', true );
+        $site = \Fc\Admin\Services\SiteRegistryService::all( $_SERVER['HTTP_HOST'], 'domain', true );
         $_SESSION['site'] = $site;
 
-        fc_hydrate_planner_quote_session_from_row( $res );
+        \Fc\Admin\Services\PlannerSessionService::hydrateFromRow( $res );
 
-        fc_planners_mark_reloaded( $qid );
+        \Fc\Admin\Services\PlannerRecordService::markReloaded( $qid );
 
-        $res = fc_planner_row_to_js_fence_info( $res );
+        $res = \Fc\Admin\Services\PlannerSessionService::rowToJsFenceInfo( $res );
     } else {
         $load_quote_failed = true;
-        $load_quote_error  = ( $res && is_object( $res ) && fc_planners_row_is_trashed( $res ) )
+        $load_quote_error  = ( $res && is_object( $res ) && \Fc\Admin\Services\PlannerRecordService::rowIsTrashed( $res ) )
             ? 'This quote is no longer available.'
             : 'No quote found for that Quote ID. Please check the ID and try again.';
         $res               = (object) array();
@@ -86,15 +93,15 @@ if (
     empty( $_GET['qid'] ) &&
     ! empty( $_SESSION['planner_id'] )
 ) {
-    $db      = new Database();
+    $db      = new \Fc\Admin\Services\Database();
     $pid     = str_replace( '"', '""', (string) $_SESSION['planner_id'] );
     $db_row  = $db->select_where( 'planners', '`planner_id`="' . $pid . '"' );
 
-    if ( $db_row && is_object( $db_row ) && ! fc_planners_row_is_trashed( $db_row ) ) {
-        fc_hydrate_planner_quote_session_from_row( $db_row );
-        $res = fc_planner_row_to_js_fence_info( $db_row );
-    } elseif ( $db_row && is_object( $db_row ) && fc_planners_row_is_trashed( $db_row ) ) {
-        clear_planner_sessions();
+    if ( $db_row && is_object( $db_row ) && ! \Fc\Admin\Services\PlannerRecordService::rowIsTrashed( $db_row ) ) {
+        \Fc\Admin\Services\PlannerSessionService::hydrateFromRow( $db_row );
+        $res = \Fc\Admin\Services\PlannerSessionService::rowToJsFenceInfo( $db_row );
+    } elseif ( $db_row && is_object( $db_row ) && \Fc\Admin\Services\PlannerRecordService::rowIsTrashed( $db_row ) ) {
+        \Fc\Admin\Services\PlannerSessionService::clearPlannerSessions();
         unset( $_SESSION['planner_id'] );
         $load_quote_failed = true;
         $load_quote_error  = 'This quote is no longer available.';
@@ -124,17 +131,15 @@ if (
     ];
 }
 
-$site_info = sites($_SERVER['HTTP_HOST'], 'domain', true);    
+$site_info = \Fc\Admin\Services\SiteRegistryService::all($_SERVER['HTTP_HOST'], 'domain', true);
 
-$fc_session_project_plans = function_exists( 'fc_planner_client_project_plans_from_session' )
-    ? fc_planner_client_project_plans_from_session()
-    : '';
+$fc_session_project_plans = \Fc\Admin\Services\PlannerSessionService::clientProjectPlansFromSession();
 
 if ( is_object( $res ) && $fc_session_project_plans !== '' ) {
     $res->project_plans_data = $fc_session_project_plans;
 }
 
-$_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
+$_SESSION['live_mode'] = \Fc\Admin\Helpers\UrlHelper::inUriSegment(\Fc\Admin\Services\SiteRegistryService::demoStages()) ? FALSE : TRUE;
 ?>
 
 <!DOCTYPE html>
@@ -248,7 +253,7 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
         var fc_fence_info = <?php echo json_encode($res); ?>;
         var planner_id    = "<?php echo @$_SESSION['planner_id']; ?>";
         var fc_session_project_plans = <?php echo json_encode( $fc_session_project_plans ); ?>;
-        var planner_share_url = "<?php echo function_exists('fc_planner_qid_share_url') ? fc_planner_qid_share_url() : ''; ?>";
+        var planner_share_url = "<?php echo \Fc\Admin\Services\PlannerSessionService::qidShareUrl(); ?>";
         var fc_load_quote_failed = <?php echo $load_quote_failed ? 'true' : 'false'; ?>;
         var fc_load_quote_error = <?php echo json_encode( $load_quote_error ); ?>;
         var fc_load_quote_attempt = <?php echo json_encode( $load_quote_attempt ); ?>;
@@ -256,9 +261,9 @@ $_SESSION['live_mode'] = in_uri_segment(demo_stages()) ? FALSE : TRUE;
 
         <?php include 'views/partials/footer.php'; ?>
 
-        <script defer src="<?php echo load_file('assets/js/cart-items.js'); ?>"></script>
-        <script defer src="<?php echo load_file('assets/js/fc-planner-summary.js'); ?>"></script>
-        <script defer src="<?php echo load_file('assets/js/p1.js'); ?>"></script>
+        <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/cart-items.js'); ?>"></script>
+        <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/fc-planner-summary.js'); ?>"></script>
+        <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/p1.js'); ?>"></script>
 
     </body>
 </html>

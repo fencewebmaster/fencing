@@ -31,11 +31,11 @@ $current = (int) ($req['page'] ?? 1);
         $start = max(1, $current - $window);
         $end = min($pages, $current + $window);
         if ($current > 1) {
-            $prev = fc_lookup_url($req, ['page' => $current - 1, 'view' => null]);
+            $prev = \Fc\Admin\Services\ProductLookupService::url($req, ['page' => $current - 1, 'view' => null]);
             echo '<a class="fc-lookup-pagination__btn" href="' . $h($prev) . '">Previous</a>';
         }
         if ($start > 1) {
-            echo '<a class="fc-lookup-pagination__page" href="' . $h(fc_lookup_url($req, ['page' => 1, 'view' => null])) . '">1</a>';
+            echo '<a class="fc-lookup-pagination__page" href="' . $h(\Fc\Admin\Services\ProductLookupService::url($req, ['page' => 1, 'view' => null])) . '">1</a>';
             if ($start > 2) {
                 echo '<span class="fc-lookup-pagination__ellipsis">…</span>';
             }
@@ -44,17 +44,17 @@ $current = (int) ($req['page'] ?? 1);
             if ($p === $current) {
                 echo '<span class="fc-lookup-pagination__page is-current" aria-current="page">' . $p . '</span>';
             } else {
-                echo '<a class="fc-lookup-pagination__page" href="' . $h(fc_lookup_url($req, ['page' => $p, 'view' => null])) . '">' . $p . '</a>';
+                echo '<a class="fc-lookup-pagination__page" href="' . $h(\Fc\Admin\Services\ProductLookupService::url($req, ['page' => $p, 'view' => null])) . '">' . $p . '</a>';
             }
         }
         if ($end < $pages) {
             if ($end < $pages - 1) {
                 echo '<span class="fc-lookup-pagination__ellipsis">…</span>';
             }
-            echo '<a class="fc-lookup-pagination__page" href="' . $h(fc_lookup_url($req, ['page' => $pages, 'view' => null])) . '">' . $pages . '</a>';
+            echo '<a class="fc-lookup-pagination__page" href="' . $h(\Fc\Admin\Services\ProductLookupService::url($req, ['page' => $pages, 'view' => null])) . '">' . $pages . '</a>';
         }
         if ($current < $pages) {
-            $next = fc_lookup_url($req, ['page' => $current + 1, 'view' => null]);
+            $next = \Fc\Admin\Services\ProductLookupService::url($req, ['page' => $current + 1, 'view' => null]);
             echo '<a class="fc-lookup-pagination__btn" href="' . $h($next) . '">Next</a>';
         }
         ?>

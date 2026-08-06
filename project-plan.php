@@ -1,28 +1,38 @@
 <?php
-require_once __DIR__ . '/config/session.php';
-fc_session_start();
+require_once __DIR__ . '/app/src/Core/Autoloader.php';
+\Fc\Admin\Core\Autoloader::register();
 
-include 'config/helpers.php';
-include 'config/database.php';
-require_once __DIR__ . '/config/planners.php';
+require_once __DIR__ . '/app/src/Core/SessionBootstrap.php';
+\Fc\Admin\Core\SessionBootstrap::start();
+
+require_once __DIR__ . '/app/src/Services/DatabaseConfigService.php';
+require_once __DIR__ . '/app/src/Services/Database.php';
+require_once __DIR__ . '/app/src/Services/PlannerRecordService.php';
+require_once __DIR__ . '/app/src/Services/SiteRegistryService.php';
+require_once __DIR__ . '/app/src/Services/PlannerSessionService.php';
+require_once __DIR__ . '/app/src/Services/FenceCatalogService.php';
+require_once __DIR__ . '/app/src/Services/CartBuilderService.php';
+require_once __DIR__ . '/app/src/Services/WcProductCsvService.php';
+require_once __DIR__ . '/app/src/Helpers/UrlHelper.php';
+require_once __DIR__ . '/app/src/Helpers/AssetHelper.php';
 
 $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
 if ( empty( $info ) && ! empty( $_GET['qid'] ) ) {
     $qid = trim( (string) $_GET['qid'] );
-    $db  = new Database();
-    $row = fc_planner_is_valid_planner_id( $qid )
+    $db  = new \Fc\Admin\Services\Database();
+    $row = \Fc\Admin\Services\PlannerRecordService::isValidPlannerId( $qid )
         ? $db->select_where( 'planners', '`planner_id`="' . $qid . '"' )
         : null;
-    if ( $row && is_object( $row ) && ! fc_planners_row_is_trashed( $row ) ) {
+    if ( $row && is_object( $row ) && ! \Fc\Admin\Services\PlannerRecordService::rowIsTrashed( $row ) ) {
         $_SESSION['planner_id'] = $qid;
-        $site = sites( $_SERVER['HTTP_HOST'], 'domain', true );
+        $site = \Fc\Admin\Services\SiteRegistryService::all( $_SERVER['HTTP_HOST'], 'domain', true );
         if ( $site ) {
             $_SESSION['site'] = $site;
         }
-        fc_hydrate_planner_quote_session_from_row( $row );
-        fc_planners_mark_reloaded( $qid );
+        \Fc\Admin\Services\PlannerSessionService::hydrateFromRow( $row );
+        \Fc\Admin\Services\PlannerRecordService::markReloaded( $qid );
         $info = isset( $_SESSION['fc_data'] ) ? $_SESSION['fc_data'] : [];
     }
 }
@@ -34,34 +44,34 @@ if ( empty( $info ) ) {
 
 date_default_timezone_set('Asia/Manila');
 
-include 'data/settings.php';
+include 'writable/settings.php';
 include 'views/fields.php';
 
 if ( ! empty( $info['cart_items'] ) ) {
 	$cart_items_grouped = json_decode( $info['cart_items'], true );
 	if ( is_array( $cart_items_grouped ) && count( $cart_items_grouped ) ) {
-		$colors = fc_planner_color_rows_from_session();
-		$cart_items_regrouped = fc_regroup_planner_cart_items_for_skus( $cart_items_grouped, $colors );
-		$cart_items_data = fc_format_regrouped_cart_items_for_product_skus(
+		$colors = \Fc\Admin\Services\PlannerSessionService::colorRowsFromSession();
+		$cart_items_regrouped = \Fc\Admin\Services\FenceCatalogService::regroupPlannerCartItemsForSkus( $cart_items_grouped, $colors );
+		$cart_items_data = \Fc\Admin\Services\FenceCatalogService::formatRegroupedCartItemsForProductSkus(
 			$cart_items_regrouped,
 			isset( $info['fences'] ) ? $info['fences'] : '[]'
 		);
 		if ( ! empty( $cart_items_data ) ) {
-			post_product_skus( $cart_items_data );
+			\Fc\Admin\Services\CartBuilderService::postProductSkus( $cart_items_data );
 			$cart = isset( $_SESSION['fc_cart'] ) ? $_SESSION['fc_cart'] : $cart;
 		}
 	}
 }
 
 if ( ! empty( $cart['items'] ) && is_array( $cart['items'] ) ) {
-	fc_cart_ensure_items_have_images( $cart['items'] );
+	\Fc\Admin\Services\WcProductCsvService::ensureItemsHaveImages( $cart['items'] );
 	$_SESSION['fc_cart']['items'] = $cart['items'];
 }
 
-$site_info = sites(@$_SESSION['site']['id'], 'id', true);
+$site_info = \Fc\Admin\Services\SiteRegistryService::all(@$_SESSION['site']['id'], 'id', true);
 
 /** Same shape as planner `fc_fence_info` — p2.js hydrates localStorage so Project Plans render without planner tab open. */
-$fc_fence_info = fc_planner_row_to_js_fence_info(
+$fc_fence_info = \Fc\Admin\Services\PlannerSessionService::rowToJsFenceInfo(
 	(object) array(
 		'fence_data'         => isset( $info['fences'] ) ? $info['fences'] : '',
 		'cart_items_data'    => isset( $info['cart_items'] ) ? $info['cart_items'] : '[]',
@@ -79,10 +89,10 @@ if ( ! empty( $info['fences'] ) ) {
 
 <!DOCTYPE html>
 <html data-fc-debug="<?php
-	if (!function_exists('fc_console_debug_mode')) {
-		require_once __DIR__ . '/config/console.php';
+	if (!class_exists('\Fc\Admin\Services\ConsoleSettings')) {
+		require_once __DIR__ . '/app/src/Services/ConsoleSettings.php';
 	}
-	echo fc_console_debug_mode() ? '1' : '0';
+	echo \Fc\Admin\Services\ConsoleSettings::debugMode() ? '1' : '0';
 ?>">
 	<head>
 	<?php include 'views/partials/head.php'; ?>
@@ -96,7 +106,7 @@ if ( ! empty( $info['fences'] ) ) {
 		<div id="place_order-section" class="fencing-container container-lg fc-project-plan fc-position-relative mt-5" data-tab="1">
 
 			<!-- [START] CHECKOUT FORM -->
-			<form method="POST" id="paymentFrm" action="<?php echo base_url('checkout.php'); ?>">
+			<form method="POST" id="paymentFrm" action="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl('checkout.php'); ?>">
 
 				<input type="hidden" name="action" value="">
 
@@ -155,22 +165,22 @@ if ( ! empty( $info['fences'] ) ) {
 		<!-- Config -->
 		<script type="text/javascript">
 		var fc_data  = <?php echo json_encode($fences); ?>;
-		var base_url = '<?php echo base_url(); ?>';
+		var base_url = '<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl(); ?>';
 		var fc_fence_info = <?php echo json_encode( $fc_fence_info, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>;
 		var planner_id = "<?php echo @$_SESSION['planner_id']; ?>";
-		var planner_share_url = "<?php echo function_exists('fc_planner_qid_share_url') ? fc_planner_qid_share_url() : ''; ?>";
+		var planner_share_url = "<?php echo \Fc\Admin\Services\PlannerSessionService::qidShareUrl(); ?>";
 		</script>
 
 		<?php include 'views/partials/footer.php'; ?>	
 
-		<script defer src="<?php echo load_file('assets/js/modern-screenshot.js'); ?>"></script>
-		<script defer src="<?php echo load_file('assets/js/html2canvas.min.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/modern-screenshot.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/html2canvas.min.js'); ?>"></script>
 		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
-		<script defer src="<?php echo load_file('assets/js/checkout.js'); ?>"></script>
-		<script defer src="<?php echo load_file('assets/js/cart-items.js'); ?>"></script>
-		<script defer src="<?php echo load_file('assets/js/fc-planner-summary.js'); ?>"></script>
-		<script defer src="<?php echo load_file('assets/js/p2.js'); ?>"></script>
-		<script defer src="<?php echo load_file('assets/js/fc-project-plan-color-slick.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/checkout.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/cart-items.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/fc-planner-summary.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/p2.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/fc-project-plan-color-slick.js'); ?>"></script>
 
 		<script type="text/javascript">
 		(function() {

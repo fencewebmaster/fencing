@@ -1,10 +1,14 @@
 <?php
-require_once __DIR__ . '/config/session.php';
-fc_session_start();
+require_once __DIR__ . '/app/src/Core/Autoloader.php';
+\Fc\Admin\Core\Autoloader::register();
 
-include 'data/settings.php';
-include 'config/helpers.php';
-include 'config/database.php'; 
+require_once __DIR__ . '/app/src/Core/SessionBootstrap.php';
+\Fc\Admin\Core\SessionBootstrap::start();
+
+include 'writable/settings.php';
+require_once __DIR__ . '/app/src/Services/DatabaseConfigService.php';
+require_once __DIR__ . '/app/src/Services/Database.php';
+require_once __DIR__ . '/app/src/Helpers/FileHelper.php';
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 
@@ -13,7 +17,7 @@ if( $action == 'get-size' ) {
     $key   = $_POST['key'];
     $value = $_POST['value'];
 
-    $rows = load_csv('data/sizes/'.$name.'.csv');
+    $rows = \Fc\Admin\Helpers\FileHelper::loadCsv('writable/sizes/'.$name.'.csv');
     $data = array();
     
     foreach ($rows as $row) {

@@ -5,7 +5,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/config/helpers.php';
-require_once __DIR__ . '/config/http_errors.php';
+require_once __DIR__ . '/app/src/Core/Autoloader.php';
+\Fc\Admin\Core\Autoloader::register();
 
-fc_abort_404('frontend');
+require_once __DIR__ . '/app/src/Core/NotFoundHandler.php';
+
+\Fc\Admin\Core\NotFoundHandler::abort('frontend');

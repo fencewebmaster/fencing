@@ -27,7 +27,7 @@ $badgeLabels = [
         $slug = (string) ($product['slug'] ?? '');
         $images = is_array($product['images'] ?? null) ? $product['images'] : [];
         $primary = (string) ($images[0] ?? '');
-        $quickUrl = fc_lookup_url($req, ['view' => $slug !== '' ? $slug : (string) $id]);
+        $quickUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['view' => $slug !== '' ? $slug : (string) $id]);
         $sku = (string) ($product['sku'] ?? '');
         $stock = (string) ($product['stock_status'] ?? '');
         $rating = (float) ($product['rating'] ?? 0);

@@ -1,4 +1,7 @@
-<?php 
+<?php
+require_once dirname(__DIR__, 2) . '/app/src/Services/CartBuilderService.php';
+require_once dirname(__DIR__, 2) . '/app/src/Services/FenceCatalogService.php';
+require_once dirname(__DIR__, 2) . '/app/src/Services/WcProductCsvService.php';
 $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 $edited = FALSE;
 ?>
@@ -6,9 +9,9 @@ $edited = FALSE;
 <?php if( @$cart ): ?>
 
 <?php
-$cart_included_count = function_exists( 'fc_cart_included_item_count' )
-    ? fc_cart_included_item_count( isset( $cart['items'] ) && is_array( $cart['items'] ) ? $cart['items'] : array() )
-    : count( $cart['items'] );
+$cart_included_count = \Fc\Admin\Services\CartBuilderService::cartIncludedItemCount(
+    isset( $cart['items'] ) && is_array( $cart['items'] ) ? $cart['items'] : array()
+);
 ?>
 
 <span class="badge bg-danger mb-2 text-uppercase p-2"><?php echo (int) $cart_included_count; ?> Items</span>
@@ -60,9 +63,7 @@ $cart_included_count = function_exists( 'fc_cart_included_item_count' )
                     </td>
 
                     <?php
-                    $full_cart_image = function_exists( 'fc_cart_display_image_url' )
-                        ? fc_cart_display_image_url( (string) ( $cart_item['image'] ?? '' ) )
-                        : trim( (string) ( $cart_item['image'] ?? '' ) );
+                    $full_cart_image = \Fc\Admin\Services\WcProductCsvService::displayImageUrl( (string) ( $cart_item['image'] ?? '' ) );
                     $product_image_attrs = ' class="product-image fc-cart-product-image-cell align-middle"';
                     if ( $full_cart_image !== '' ) {
                         $product_image_attrs = ' class="product-image fc-cart-product-image-cell align-middle fc-cart-gallery-trigger" role="button" tabindex="0" aria-label="View larger image"'
@@ -91,17 +92,15 @@ $cart_included_count = function_exists( 'fc_cart_included_item_count' )
 
                         <div class="text-muted mb-1"><?php echo @$cart_item['sku']; ?></div>
                         <?php
-                        if ( ! function_exists( 'fc_console_debug_mode' ) ) {
-                            require_once dirname( __DIR__, 2 ) . '/config/console.php';
+                        if ( ! class_exists( '\Fc\Admin\Services\ConsoleSettings' ) ) {
+                            require_once dirname( __DIR__, 2 ) . '/app/src/Services/ConsoleSettings.php';
                         }
-                        if ( ! empty( $cart_item['slug'] ) && fc_console_debug_mode() ) :
+                        if ( ! empty( $cart_item['slug'] ) && \Fc\Admin\Services\ConsoleSettings::debugMode() ) :
                         ?>
                         <div class="small text-muted mb-1 fc-cart-item-slug"><?php echo htmlspecialchars( (string) $cart_item['slug'], ENT_QUOTES, 'UTF-8' ); ?></div>
                         <?php endif; ?>
                         <?php
-                        $fence_style_label = function_exists( 'fc_cart_item_fence_style_label' )
-                            ? fc_cart_item_fence_style_label( $cart_item, isset( $fences ) ? $fences : array() )
-                            : '';
+                        $fence_style_label = \Fc\Admin\Services\FenceCatalogService::cartItemFenceStyleLabel( $cart_item, isset( $fences ) ? $fences : array() );
                         if ( $fence_style_label !== '' ) :
                         ?>
                         <div class="small text-muted mb-2 fc-cart-fence-style"><?php echo htmlspecialchars( $fence_style_label, ENT_QUOTES, 'UTF-8' ); ?></div>

@@ -7,7 +7,7 @@
 declare(strict_types=1);
 
 $isBootError = empty($page['ok']);
-$clearUrl = (string) ($page['clear_url'] ?? fc_lookup_base_path());
+$clearUrl = (string) ($page['clear_url'] ?? \Fc\Admin\Services\ProductLookupService::basePath());
 ?>
 <div class="fc-lookup-empty" role="status">
     <div class="fc-lookup-empty__icon" aria-hidden="true">

@@ -9,7 +9,7 @@ declare(strict_types=1);
 $req = is_array($page['request'] ?? null) ? $page['request'] : [];
 $layout = (($req['layout'] ?? 'grid') === 'list') ? 'list' : 'grid';
 $logoUrl = isset($fcLookupLogoUrl) ? (string) $fcLookupLogoUrl : '';
-$catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : (function_exists('fc_catalog_get') ? fc_catalog_get() : []);
+$catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : \Fc\Admin\Services\CatalogSettings::get();
 $sidebarTitle = trim((string) ($catalog['sidebarTitle'] ?? 'Product Lookup'));
 if ($sidebarTitle === '') {
     $sidebarTitle = 'Product Lookup';

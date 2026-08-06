@@ -1,3 +1,4 @@
+<?php require_once dirname(__DIR__, 2) . '/app/src/Services/AppConfigService.php'; ?>
 <div class="row fc-form-field fc-gate-modal-gate-only-height-row g-2 align-items-end mb-2">
     <div class="col-md-6 col-12 px-1 fc-gate-modal-gate-only-col mb-0">
         <div class="fw-bold small mb-1">Gate</div>
@@ -65,8 +66,8 @@
                         type="number"
                         class="numeric fc-form-field text-center py-1"
                         input-type="number"
-                        data-min="<?php echo config()->overall->min; ?>"
-                        maxlength="<?php echo config()->overall->length; ?>"
+                        data-min="<?php echo \Fc\Admin\Services\AppConfigService::all()->overall->min; ?>"
+                        maxlength="<?php echo \Fc\Admin\Services\AppConfigService::all()->overall->length; ?>"
                         data-max="{{maxWidth}}"
                     >
                     <span>mm</span>

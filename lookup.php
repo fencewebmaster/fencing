@@ -5,14 +5,22 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/config/theme.php';
-require_once __DIR__ . '/config/branding.php';
-require_once __DIR__ . '/config/catalog.php';
-require_once __DIR__ . '/config/lookup.php';
+require_once __DIR__ . '/app/src/Core/Autoloader.php';
+\Fc\Admin\Core\Autoloader::register();
 
-$page = fc_lookup_build_page($_GET);
-$h = 'fc_lookup_h';
-$catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : fc_catalog_get();
+require_once __DIR__ . '/app/src/Services/ThemeSettings.php';
+require_once __DIR__ . '/app/src/Services/BrandingSettings.php';
+require_once __DIR__ . '/app/src/Services/CatalogSettings.php';
+require_once __DIR__ . '/app/src/Services/ProductLookupService.php';
+
+use Fc\Admin\Helpers\StringHelper;
+use Fc\Admin\Services\BrandingSettings;
+use Fc\Admin\Services\CatalogSettings;
+use Fc\Admin\Services\ProductLookupService;
+
+$page = ProductLookupService::buildPage($_GET);
+$h = static fn (string $value): string => StringHelper::escapeHtml(StringHelper::decodeHtmlEntities($value));
+$catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : CatalogSettings::get();
 $fcLookupPageTitle = trim((string) ($catalog['sidebarTitle'] ?? 'Product Lookup'));
 if ($fcLookupPageTitle === '') {
     $fcLookupPageTitle = 'Product Lookup';
@@ -24,7 +32,7 @@ if ($fcLookupAppBase === '/' || $fcLookupAppBase === '.' || $fcLookupAppBase ===
     $fcLookupAppBase = '';
 }
 $fcLookupAppBase = rtrim($fcLookupAppBase, '/');
-$fcLookupLogoUrl = fc_branding_logo_url($fcLookupAppBase);
+$fcLookupLogoUrl = BrandingSettings::logoUrl($fcLookupAppBase);
 
 $asset = static function (string $rel) use ($fcLookupAppBase): string {
     $rel = ltrim($rel, '/');
@@ -40,20 +48,20 @@ $asset = static function (string $rel) use ($fcLookupAppBase): string {
     return $url;
 };
 
-$adminCssBase = 'backend/assets/css/';
+$adminCssBase = 'public/assets/css/';
 ?><!DOCTYPE html>
 <html lang="en" data-fc-admin-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $h($fcLookupPageTitle); ?></title>
-    <?php echo fc_theme_css_block(); ?>
-    <link rel="stylesheet" href="<?php echo $h($asset('assets/css/fonts.css')); ?>">
+    <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
+    <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/fonts.css')); ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'fc-admin-buttons.css')); ?>">
     <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'fc-admin-theme.css')); ?>">
-    <link rel="stylesheet" href="<?php echo $h($asset('assets/css/lookup.css')); ?>">
+    <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/lookup.css')); ?>">
     <style>
         .fc-lookup-page {
             --fc-lookup-cols-desktop: <?php echo (int) ($catalog['columnsDesktop'] ?? 4); ?>;
@@ -65,6 +73,6 @@ $adminCssBase = 'backend/assets/css/';
 </head>
 <body class="fc-lookup-page fc-admin-page">
 <?php require __DIR__ . '/views/lookup/page.php'; ?>
-<script src="<?php echo $h($asset('assets/js/lookup.js')); ?>" defer></script>
+<script src="<?php echo $h($asset('public/assets/js/lookup.js')); ?>" defer></script>
 </body>
 </html>

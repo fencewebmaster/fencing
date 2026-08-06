@@ -12,23 +12,17 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
 $layout = (($req['layout'] ?? 'grid') === 'list') ? 'list' : 'grid';
 $orderbyOptions = is_array($page['orderby_options'] ?? null) ? $page['orderby_options'] : [];
 $catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : [];
-$defaultPerPage = function_exists('fc_catalog_clamp_results_per_page')
-    ? fc_catalog_clamp_results_per_page($catalog['resultsPerPage'] ?? 12)
-    : max(1, (int) ($catalog['resultsPerPage'] ?? 12));
-$perPageOptions = is_array($page['per_page_options'] ?? null) ? $page['per_page_options'] : (
-    function_exists('fc_catalog_results_per_page_choices')
-        ? fc_catalog_results_per_page_choices($defaultPerPage)
-        : [$defaultPerPage, $defaultPerPage * 2, $defaultPerPage * 3, $defaultPerPage * 4, $defaultPerPage * 5]
-);
+$defaultPerPage = \Fc\Admin\Services\CatalogSettings::clampResultsPerPage($catalog['resultsPerPage'] ?? 12);
+$perPageOptions = is_array($page['per_page_options'] ?? null) ? $page['per_page_options'] : \Fc\Admin\Services\CatalogSettings::resultsPerPageChoices($defaultPerPage);
 $currentPerPage = (int) ($req['per_page'] ?? $defaultPerPage);
 if (!in_array($currentPerPage, array_map('intval', $perPageOptions), true)) {
     $currentPerPage = $defaultPerPage;
 }
 
-$gridUrl = fc_lookup_url($req, ['layout' => 'grid', 'view' => null, 'page' => null]);
-$listUrl = fc_lookup_url($req, ['layout' => 'list', 'view' => null, 'page' => null]);
+$gridUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['layout' => 'grid', 'view' => null, 'page' => null]);
+$listUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['layout' => 'list', 'view' => null, 'page' => null]);
 ?>
-<form class="fc-lookup-toolbar__controls" method="get" action="<?php echo $h(fc_lookup_base_path()); ?>">
+<form class="fc-lookup-toolbar__controls" method="get" action="<?php echo $h(\Fc\Admin\Services\ProductLookupService::basePath()); ?>">
     <?php
     if (($req['q'] ?? '') !== '') {
         echo '<input type="hidden" name="q" value="' . $h((string) $req['q']) . '">';

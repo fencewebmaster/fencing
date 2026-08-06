@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 $qv = is_array($page['quick_view'] ?? null) ? $page['quick_view'] : [];
 $req = is_array($page['request'] ?? null) ? $page['request'] : [];
-$closeUrl = fc_lookup_url($req, ['view' => null]);
+$closeUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['view' => null]);
 $gallery = is_array($qv['gallery'] ?? null) ? $qv['gallery'] : [];
 $permalink = (string) ($qv['permalink'] ?? '');
 $sku = (string) ($qv['sku'] ?? '');
@@ -233,7 +233,7 @@ $renderRow = static function (
                     $rid = (int) ($related['id'] ?? 0);
                     $rSlug = (string) ($related['slug'] ?? '');
                     $rImg = (string) (($related['images'][0] ?? '') ?: '');
-                    $rQuick = fc_lookup_url($req, ['view' => $rSlug !== '' ? $rSlug : (string) $rid]);
+                    $rQuick = \Fc\Admin\Services\ProductLookupService::url($req, ['view' => $rSlug !== '' ? $rSlug : (string) $rid]);
                 ?>
                 <a class="fc-lookup-related" href="<?php echo $h($rQuick); ?>" title="<?php echo $h((string) ($related['name'] ?? '')); ?>">
                     <?php if ($rImg !== '') : ?>

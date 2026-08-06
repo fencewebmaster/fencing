@@ -3,23 +3,23 @@ config.php
 config.php.lock
 config.php.bak.php
 config.php.tmp.*.php
-data/wc-products-*-downloading.csv
-data/wc-products-*.csv.backup
-data/.wc-products-*-job.json
-data/.wc-products-*.lock
-data/wc-products-*
-data/products*
-data/groups-permissions/*.json
-data/theme.json
-data/console.json
+writable/wc-products-*-downloading.csv
+writable/wc-products-*.csv.backup
+writable/.wc-products-*-job.json
+writable/.wc-products-*.lock
+writable/wc-products-*
+writable/products*
+writable/groups-permissions/*.json
+writable/theme.json
+writable/console.json
 
 # Generated storage (keep directory placeholders)
-data/storage/cache/**/*.json
-data/storage/sessions/sess_*
-data/storage/presence/*.json
-!data/storage/**/.gitkeep
+writable/storage/cache/**/*.json
+writable/storage/sessions/sess_*
+writable/storage/presence/*.json
+!writable/storage/**/.gitkeep
 
 # User uploads (keep .htaccess)
-assets/uploads/**
-!assets/uploads/.htaccess
-!assets/uploads/.gitkeep
+public/assets/uploads/**
+!public/assets/uploads/.htaccess
+!public/assets/uploads/.gitkeep

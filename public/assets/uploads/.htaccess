@@ -1,0 +1,12 @@
+Options -Indexes
+
+<FilesMatch "\.(?i:php|phtml|php3|php4|php5|phar)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.svg$">
+        Header set Content-Security-Policy "script-src 'none'; sandbox"
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+</IfModule>

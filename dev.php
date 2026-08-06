@@ -1,7 +1,11 @@
 <?php
-include 'config/helpers.php';
+require_once __DIR__ . '/app/src/Core/Autoloader.php';
+\Fc\Admin\Core\Autoloader::register();
 
-$redirect_to = base_url('planner');
+require_once __DIR__ . '/app/src/Helpers/UrlHelper.php';
+require_once __DIR__ . '/app/src/Helpers/FileHelper.php';
+
+$redirect_to = \Fc\Admin\Helpers\UrlHelper::baseUrl('planner');
 
 $action = $_GET['action'];
 
@@ -10,9 +14,9 @@ if( $action == 'git-pull' ) {
 }
 
 if( $action == 'minify-css' ) {
-	
-	foreach ( glob('assets/css/*[!{.min}].css') as $file) {
-		minifiy_css( realpath($file) );
+
+	foreach ( glob('public/assets/css/*[!{.min}].css') as $file) {
+		\Fc\Admin\Helpers\FileHelper::minifyCss( realpath($file) );
 	}
 
 }

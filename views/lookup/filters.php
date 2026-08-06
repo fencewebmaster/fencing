@@ -89,10 +89,10 @@ $clearOverrides = static function (array $overrides) use ($req): string {
     $overrides['page'] = null;
     $overrides['view'] = null;
 
-    return fc_lookup_url($req, $overrides);
+    return \Fc\Admin\Services\ProductLookupService::url($req, $overrides);
 };
 ?>
-<form class="fc-lookup-filters" method="get" action="<?php echo $h(fc_lookup_base_path()); ?>" data-fc-lookup-filters>
+<form class="fc-lookup-filters" method="get" action="<?php echo $h(\Fc\Admin\Services\ProductLookupService::basePath()); ?>" data-fc-lookup-filters>
     <input type="hidden" name="layout" value="<?php echo $h((string) ($req['layout'] ?? 'grid')); ?>">
     <input type="hidden" name="orderby" value="<?php echo $h((string) ($req['orderby'] ?? 'default')); ?>">
     <?php
@@ -146,7 +146,7 @@ $clearOverrides = static function (array $overrides) use ($req): string {
             <?php $groupHead('Price', $priceActive, $clearOverrides(['min_price' => null, 'max_price' => null]), true); ?>
             <div class="fc-lookup-filter-group__body">
                 <?php
-                    $currency = function_exists('fc_lookup_currency_symbol') ? fc_lookup_currency_symbol() : '$';
+                    $currency = \Fc\Admin\Services\ProductLookupService::currencySymbol();
                     $sliderMin = $minPriceVal !== '' ? (float) $minPriceVal : $priceMinBound;
                     $sliderMax = $maxPriceVal !== '' ? (float) $maxPriceVal : $priceMaxBound;
                     $sliderMin = max($priceMinBound, min($priceMaxBound, $sliderMin));
@@ -364,7 +364,7 @@ $clearOverrides = static function (array $overrides) use ($req): string {
         <button type="submit" class="btn btn-sm btn-orange fw-semibold w-100">Apply</button>
         <?php
         $hasActive = !empty($page['has_active_filters']);
-        $clearUrl = (string) ($page['clear_url'] ?? fc_lookup_base_path());
+        $clearUrl = (string) ($page['clear_url'] ?? \Fc\Admin\Services\ProductLookupService::basePath());
         ?>
         <?php if ($hasActive) : ?>
         <a class="btn btn-sm btn-dark fw-semibold w-100 fc-lookup-filters__clear-all" href="<?php echo $h($clearUrl); ?>">Clear all</a>
