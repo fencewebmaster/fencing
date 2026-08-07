@@ -3164,7 +3164,8 @@ SlatFence = {
 
         var offset = parseInt(wdf, 10);
         if (!Number.isFinite(offset)) {
-            offset = -1;
+            // Keep in sync with the "Width Dimension From" field default (Outside Width).
+            offset = -2;
         }
 
         var postW = parseInt(FENCE.get(slug, 'post'), 10);
@@ -3527,7 +3528,8 @@ SlatFence = {
         widthDimensionFrom = Number.isFinite(widthDimensionFrom) ? widthDimensionFrom : parseInt(savedWdf, 10);
 
         if (!Number.isFinite(widthDimensionFrom)) {
-            widthDimensionFrom = -1;
+            // Keep in sync with the "Width Dimension From" field default (Outside Width).
+            widthDimensionFrom = -2;
         }
 
         var postW = parseInt(FENCE.get(slug, 'post'), 10);
@@ -4278,7 +4280,8 @@ SlatFence = {
             return item.key === 'width_dimension_from';
         })?.val, 10);
 
-        var mult = (Number.isFinite(gateWdf) && (gateWdf === -1 || gateWdf === -2)) ? Math.abs(gateWdf) : 1;
+        // Keep in sync with the "Width Dimension From" field default (Outside Width = -2).
+        var mult = (Number.isFinite(gateWdf) && (gateWdf === -1 || gateWdf === -2)) ? Math.abs(gateWdf) : 2;
         return (gate_size + 20 + 20 + (mult * center_point)) + 'W';
     },
 
