@@ -4837,6 +4837,23 @@ SlatFence = {
         // FSQ infill tab: matrix forces "No Post" — no S-120ROD, cement glue, or slat_post lines (slat-fence-app.html).
         var isSlatInfill = fenceKind === 'slat_fence_infill';
 
+        // slat_fixings+* are optional add-ons (like Barr's base_plate+dynabolts): listed with a
+        // suggested qty but kept out of the cart total until the user clicks "Add to cart".
+        var addOptional = function(slug, qty) {
+            qty = parseInt(qty, 10);
+            if (!qty || qty <= 0) return;
+            var found = array.find(function(item) {
+                return item?.slug === slug;
+            });
+            if (found) {
+                found.optional = true;
+                found.qty = found.qty || 0;
+                found.suggested_qty = (found.suggested_qty || 0) + qty;
+            } else {
+                array.push({ slug: slug, qty: 0, optional: true, suggested_qty: qty });
+            }
+        };
+
         var postAgg = this.aggregatePostOptQtyFromCart(array, context);
         var byOpt = postAgg.byOpt;
         // FSQ M63 num 1 = Base Plated, 2 = Cement In, 3 = Wall Fix (see form MCQ 63 export).
@@ -4847,7 +4864,7 @@ SlatFence = {
 
         if (!isSlatInfill) {
             if (threadRodPosts > 0) {
-                addOrInc('slat_fixings+thread_rods', threadRodPosts);
+                addOptional('slat_fixings+thread_rods', threadRodPosts);
             }
 
             var gateBasePosts = this.countGateBasePlatedPostsForGlue(calc, context);
@@ -4858,12 +4875,12 @@ SlatFence = {
             var f421 = f420 === 0 ? 0 : f420 / 4;
             var glueTubes = Math.round(f421 + f241);
             if (glueTubes > 0) {
-                addOrInc('slat_fixings+glue_tube', glueTubes);
-                addOrInc('slat_fixings+glue_gun', 1);
+                addOptional('slat_fixings+glue_tube', glueTubes);
+                addOptional('slat_fixings+glue_gun', 1);
             }
 
             if (cementPosts > 0) {
-                addOrInc('slat_fixings+cement', cementPosts);
+                addOptional('slat_fixings+cement', cementPosts);
             }
         }
 

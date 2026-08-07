@@ -33,6 +33,19 @@ final class SettingsPresenter
         $catalogPayload = CatalogSettings::apiPayload($initialTab === 'catalog');
         $systemPayload = SystemSettings::apiPayload();
         $integrationsPayload = IntegrationsSettings::apiPayload();
+        $integrationsData = is_array($integrationsPayload['integrations'] ?? null) ? $integrationsPayload['integrations'] : [];
+        if (!empty($integrationsData['sites']) && is_array($integrationsData['sites'])) {
+            foreach ($integrationsData['sites'] as &$siteRow) {
+                if (is_array($siteRow)) {
+                    $logoPath = (string) ($siteRow['logo'] ?? '');
+                    if ($logoPath === '') {
+                        $logoPath = (string) ($siteRow['logoDefault'] ?? '');
+                    }
+                    $siteRow['logoUrl'] = BrandingSettings::logoUrl($appBase, ['logo' => $logoPath]);
+                }
+            }
+            unset($siteRow);
+        }
         $consolePayload = ConsoleSettings::apiPayload();
         $console = is_array($consolePayload['console'] ?? null)
             ? $consolePayload['console']
@@ -74,8 +87,8 @@ final class SettingsPresenter
             'systemDatePeriodChoices' => $systemPayload['datePeriodChoices'] ?? SystemSettings::datePeriodChoices(),
             'systemDateFieldChoices' => $systemPayload['dateFieldChoices'] ?? SystemSettings::dateFieldChoices(),
             'systemDateFormatChoices' => $systemPayload['dateFormatChoices'] ?? SystemSettings::dateFormatChoices(),
-            'integrations' => $integrationsPayload['integrations'] ?? [],
-            'integrationsInitial' => $integrationsPayload['integrations'] ?? [],
+            'integrations' => $integrationsData,
+            'integrationsInitial' => $integrationsData,
             'integrationsRevision' => (string) ($integrationsPayload['revision'] ?? ''),
             'superAdmin' => is_array($integrationsPayload['superAdmin'] ?? null)
                 ? $integrationsPayload['superAdmin']
@@ -219,7 +232,7 @@ final class SettingsPresenter
             'system_date_period_choices' => $systemPayload['datePeriodChoices'] ?? SystemSettings::datePeriodChoices(),
             'system_date_field_choices' => $systemPayload['dateFieldChoices'] ?? SystemSettings::dateFieldChoices(),
             'system_date_format_choices' => $systemPayload['dateFormatChoices'] ?? SystemSettings::dateFormatChoices(),
-            'integrations' => $integrationsPayload['integrations'] ?? [],
+            'integrations' => $integrationsData,
             'super_admin' => is_array($integrationsPayload['superAdmin'] ?? null)
                 ? $integrationsPayload['superAdmin']
                 : [],

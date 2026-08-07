@@ -133,6 +133,11 @@ if (
 
 $site_info = \Fc\Admin\Services\SiteRegistryService::all($_SERVER['HTTP_HOST'], 'domain', true);
 
+// Header logo: Settings → Integrations override for this site, else the registry asset.
+$fc_site_logo_url = \Fc\Admin\Services\SiteRegistryService::logoUrl(
+    is_array($site_info) ? $site_info : (string) $_SERVER['HTTP_HOST']
+);
+
 $fc_session_project_plans = \Fc\Admin\Services\PlannerSessionService::clientProjectPlansFromSession();
 
 if ( is_object( $res ) && $fc_session_project_plans !== '' ) {
@@ -164,8 +169,10 @@ $_SESSION['live_mode'] = \Fc\Admin\Helpers\UrlHelper::inUriSegment(\Fc\Admin\Ser
                         <div class="col-md-6 col-sm-auto">
                             <div class="d-sm-block d-none">
                                 <div class="fc-flex-end">
-                                    <img src="<?php echo $site_info['logo']; ?>" style="max-width: 200px;">
-                                </div>                        
+                                    <?php if ( $fc_site_logo_url !== '' ) : ?>
+                                    <img src="<?php echo htmlspecialchars($fc_site_logo_url, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars((string) @$site_info['name'], ENT_QUOTES, 'UTF-8'); ?>" style="max-width: 200px;" decoding="async">
+                                    <?php endif; ?>
+                                </div>
                             </div>
 
                             <div class="d-sm-block-x d-none">

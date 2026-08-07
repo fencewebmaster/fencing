@@ -33,7 +33,7 @@ final class BrandingSettings
                 'label' => 'Logo',
                 'type' => 'image',
                 'placeholder' => 'public/assets/uploads/logo.png',
-                'help' => 'Shown on the admin login page and sidebar header. SVG, PNG, JPG, WebP, or GIF recommended.',
+                'help' => 'Shown on the admin login page, and in the sidebar header when the active site has no logo of its own. SVG, PNG, JPG, WebP, or GIF recommended.',
             ],
             'favicon' => [
                 'label' => 'Favicon',

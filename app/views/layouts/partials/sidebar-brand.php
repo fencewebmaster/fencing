@@ -17,15 +17,25 @@ $fcSiteHomeKey = is_array($fcAdminHomeSite) ? (string) ($fcAdminHomeSite['key'] 
 $fcSiteSwitchToken = \Fc\Admin\Services\AuthService::csrfToken();
 $fcSiteCurrentKey = is_array($fcAdminCurrentSite) ? (string) ($fcAdminCurrentSite['key'] ?? '') : '';
 $fcSiteCurrentName = is_array($fcAdminCurrentSite) ? (string) ($fcAdminCurrentSite['name'] ?? 'FC Admin') : 'FC Admin';
+// Site logos come from Settings → Integrations (site_logo override, else the registry asset).
+// logoUrl() is reused so absolute URLs / data: values pass through unchanged.
+$fcAppBaseUrl = isset($fcAppBase) ? (string) $fcAppBase : '';
+$fcSiteLogoUrl = static function (string $logo) use ($fcAppBaseUrl): string {
+    $logo = trim($logo);
+    if ($logo === '') {
+        return '';
+    }
+
+    return \Fc\Admin\Services\BrandingSettings::logoUrl($fcAppBaseUrl, ['logo' => $logo]);
+};
+
 $fcSiteCurrentLogo = is_array($fcAdminCurrentSite) ? (string) ($fcAdminCurrentSite['logo'] ?? '') : '';
-$fcSiteCurrentLogoUrl = ($fcSiteCurrentLogo !== '' && isset($fcAppBase))
-    ? rtrim((string) $fcAppBase, '/') . '/' . ltrim($fcSiteCurrentLogo, '/')
-    : '';
+$fcSiteCurrentLogoUrl = $fcSiteLogoUrl($fcSiteCurrentLogo);
 $fcBrandingLogoUrl = isset($fcAppBase)
     ? \Fc\Admin\Services\BrandingSettings::logoUrl((string) $fcAppBase, is_array($fcBranding ?? null) ? $fcBranding : null)
     : '';
-// Prefer the admin branding logo in the header mark; fall back to the active site logo.
-$fcHeaderLogoUrl = $fcBrandingLogoUrl !== '' ? $fcBrandingLogoUrl : $fcSiteCurrentLogoUrl;
+// Show the active site's logo in the header mark; fall back to the admin branding logo.
+$fcHeaderLogoUrl = $fcSiteCurrentLogoUrl !== '' ? $fcSiteCurrentLogoUrl : $fcBrandingLogoUrl;
 $fcSiteRedirectPath = rtrim((string) ($fcAdminBase ?? ''), '/') . '/dashboard';
 
 $fcFormatSiteUrl = static function (string $domain): string {
@@ -83,9 +93,7 @@ $fcHomeSupplier = is_array($fcAdminHomeSite)
     ? strtoupper(trim((string) ($fcAdminHomeSite['supplier'] ?? '')))
     : '';
 $fcHomeLogo = is_array($fcAdminHomeSite) ? (string) ($fcAdminHomeSite['logo'] ?? '') : '';
-$fcHomeLogoUrl = ($fcHomeLogo !== '' && isset($fcAppBase))
-    ? rtrim((string) $fcAppBase, '/') . '/' . ltrim($fcHomeLogo, '/')
-    : '';
+$fcHomeLogoUrl = $fcSiteLogoUrl($fcHomeLogo);
 $fcHomeIsCurrent = $fcSiteHomeKey !== '' && $fcSiteHomeKey === $fcSiteCurrentKey;
 $fcHomeSwitchHref = $fcSiteHomeKey !== ''
     ? rtrim((string) $fcAdminBase, '/') . '/users/switch-site?' . http_build_query([
@@ -202,9 +210,7 @@ $fcHomeSwitchHref = $fcSiteHomeKey !== ''
                 $siteHost = $fcFormatSiteHost($siteDomain);
                 $siteSupplier = strtoupper(trim((string) ($site['supplier'] ?? '')));
                 $siteLogo = (string) ($site['logo'] ?? '');
-                $siteLogoUrl = $siteLogo !== ''
-                    ? rtrim((string) $fcAppBase, '/') . '/' . ltrim($siteLogo, '/')
-                    : '';
+                $siteLogoUrl = $fcSiteLogoUrl($siteLogo);
                 $isCurrent = $siteKey !== '' && $siteKey === $fcSiteCurrentKey;
                 $switchHref = rtrim((string) $fcAdminBase, '/') . '/users/switch-site?' . http_build_query([
                     'site' => $siteKey,

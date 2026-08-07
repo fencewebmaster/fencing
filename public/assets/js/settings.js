@@ -2595,6 +2595,43 @@
             input.addEventListener('change', syncSiteField);
         });
 
+        document.querySelectorAll('[data-fc-integration-site-logo-pick]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var siteKey = btn.getAttribute('data-fc-integration-site-logo-pick');
+                var input = document.querySelector(
+                    '[data-fc-integration-site="' + siteKey + '"][data-fc-integration-site-field="logo"]'
+                );
+                if (!input || !global.FcAdminMediaPicker || typeof global.FcAdminMediaPicker.open !== 'function') {
+                    return;
+                }
+                global.FcAdminMediaPicker.open({
+                    appBase: getAppBase(),
+                    csrf: state.csrf,
+                    onSelect: function (path) {
+                        input.value = path;
+                        var sites = Array.isArray(state.integrations.sites) ? state.integrations.sites : [];
+                        var site = sites.find(function (row) {
+                            return String(row.key || '') === siteKey;
+                        });
+                        if (site) {
+                            site.logo = path;
+                        }
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        var preview = document.querySelector(
+                            '[data-fc-integration-site-logo-preview="' + siteKey + '"]'
+                        );
+                        if (preview) {
+                            var url = fenceColorPreviewUrl({ image: path }, getAppBase());
+                            preview.innerHTML = url
+                                ? '<img src="' + escapeHtml(url) + '" alt="" loading="lazy" decoding="async" />'
+                                : '';
+                        }
+                        setIntegrationDirty(true);
+                    }
+                });
+            });
+        });
+
         document.querySelectorAll('[data-fc-integration-reveal]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = btn.getAttribute('data-fc-integration-reveal');

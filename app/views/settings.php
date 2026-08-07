@@ -578,8 +578,8 @@ $tab = $fcSettingsPage;
                             </div>
 
                             <div class="overflow-x-auto border border-slate-200 bg-white">
-                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                        <span>Site</span><span>Supplier</span><span>Gtag ID</span><span>GTM ID</span><span>Cloudflare Zone ID</span>
+                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                        <span>Site</span><span>Logo</span><span>Supplier</span><span>Gtag ID</span><span>GTM ID</span><span>Cloudflare Zone ID</span>
                                     </div>
                                     <?php foreach (($integrations['sites'] ?? []) as $site) : ?>
                                     <?php
@@ -589,11 +589,22 @@ $tab = $fcSettingsPage;
                                         $siteSupplier = '';
                                     }
                                     ?>
-                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0">
-                                        <div class="min-w-0">
-                                            <span class="block truncate text-sm font-semibold text-slate-800"><?php echo $h((string) ($site['label'] ?? $site['key'] ?? '')); ?></span>
-                                            <code class="block truncate text-[11px] text-slate-400"><?php echo $h((string) ($site['key'] ?? '')); ?></code>
+                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0">
+                                        <div class="min-w-0 flex items-center gap-2.5">
+                                            <span class="fc-settings-site-logo shrink-0" data-fc-integration-site-logo-preview="<?php echo $h((string) ($site['key'] ?? '')); ?>">
+                                                <?php if (!empty($site['logoUrl'])) : ?>
+                                                <img src="<?php echo $h((string) $site['logoUrl']); ?>" alt="" loading="lazy" decoding="async">
+                                                <?php endif; ?>
+                                            </span>
+                                            <span class="min-w-0">
+                                                <span class="block truncate text-sm font-semibold text-slate-800"><?php echo $h((string) ($site['label'] ?? $site['key'] ?? '')); ?></span>
+                                                <code class="block truncate text-[11px] text-slate-400"><?php echo $h((string) ($site['key'] ?? '')); ?></code>
+                                            </span>
                                         </div>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="text" id="fc-integration-<?php echo $h((string) $siteFieldId); ?>-logo" data-fc-integration-site="<?php echo $h((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="logo" value="<?php echo $h((string) ($site['logo'] ?? '')); ?>" class="fc-settings-field font-mono" placeholder="<?php echo $h((string) ($site['logoDefault'] ?? 'public/assets/img/… or URL')); ?>" autocomplete="off" spellcheck="false" aria-label="<?php echo $h((string) ($site['label'] ?? 'Site')); ?> logo" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-site-logo-pick="<?php echo $h((string) ($site['key'] ?? '')); ?>" aria-label="Set <?php echo $h((string) ($site['label'] ?? 'Site')); ?> logo" title="Set logo"><i class="fa-solid fa-image" aria-hidden="true"></i></button>
+                                        </span>
                                         <label class="min-w-0">
                                             <span class="sr-only"><?php echo $h((string) ($site['label'] ?? 'Site')); ?> supplier</span>
                                             <select

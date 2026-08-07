@@ -114,6 +114,41 @@ final class IntegrationsSettings
     }
 
     /**
+     * Site logo path for a site key, via the canonical domain->logo map (SiteRegistryService::all()).
+     * Falls back to the Perth logo when a site has no dedicated asset (matches AdminSiteRegistry's fallback).
+     */
+    public static function logoForKey(string $key): string
+    {
+        $fallback = 'public/assets/img/logo/fencesperth.webp';
+        $key = trim($key);
+        if ($key === '') {
+            return $fallback;
+        }
+
+        $rows = SiteRegistryService::all();
+        if (!is_array($rows)) {
+            return $fallback;
+        }
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $domain = (string) ($row['domain'] ?? '');
+            if ($domain === '') {
+                continue;
+            }
+            if (AdminSiteRegistry::mysqlKeyFromDomain($domain) === $key) {
+                $logo = trim((string) ($row['logo'] ?? ''));
+
+                return $logo !== '' ? $logo : $fallback;
+            }
+        }
+
+        return $fallback;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public static function get(): array
@@ -124,13 +159,18 @@ final class IntegrationsSettings
         $gtag = is_array($config['gtag_id'] ?? null) ? $config['gtag_id'] : [];
         $gtm = is_array($config['gtm_id'] ?? null) ? $config['gtm_id'] : [];
         $zones = is_array($config['cloudflare_zone_id'] ?? null) ? $config['cloudflare_zone_id'] : [];
+        $logos = is_array($config['site_logo'] ?? null) ? $config['site_logo'] : [];
         $sites = [];
 
         foreach (self::siteKeys($config) as $key) {
+            // 'logo' is the raw stored override (blank = no override, use the auto-derived default).
+            // 'logoDefault' is always populated so the UI can preview/fall back to it without saving it.
             $sites[] = [
                 'key' => $key,
                 'label' => self::siteLabel($key),
                 'supplier' => self::supplierForKey($key, $config) ?: 'JG',
+                'logo' => trim((string) ($logos[$key] ?? '')),
+                'logoDefault' => self::logoForKey($key),
                 'gtagId' => (string) ($gtag[$key] ?? ''),
                 'gtmId' => (string) ($gtm[$key] ?? ''),
                 'cloudflareZoneId' => (string) ($zones[$key] ?? ''),
@@ -232,6 +272,7 @@ final class IntegrationsSettings
             $gtag = self::cleanValue($site['gtagId'] ?? '', 50);
             $gtm = self::cleanValue($site['gtmId'] ?? '', 50);
             $zone = self::cleanValue($site['cloudflareZoneId'] ?? '', 64);
+            $logo = self::cleanValue($site['logo'] ?? '', 500);
             $supplier = self::normalizeSupplier((string) ($site['supplier'] ?? ''));
             if ($supplier === '') {
                 $supplier = self::supplierForKey($key);
@@ -245,6 +286,9 @@ final class IntegrationsSettings
             if ($zone === null || ($zone !== '' && !preg_match('/^[a-f0-9]{32}$/i', $zone))) {
                 return ['ok' => false, 'error' => 'Invalid Cloudflare Zone ID for ' . self::siteLabel($key) . '.'];
             }
+            if ($logo === null) {
+                return ['ok' => false, 'error' => 'Logo path/URL is invalid for ' . self::siteLabel($key) . '.'];
+            }
             if ($supplier === '') {
                 return ['ok' => false, 'error' => 'Supplier must be GO or JG for ' . self::siteLabel($key) . '.'];
             }
@@ -252,6 +296,8 @@ final class IntegrationsSettings
                 'key' => $key,
                 'label' => self::siteLabel($key),
                 'supplier' => $supplier,
+                'logo' => $logo,
+                'logoDefault' => self::logoForKey($key),
                 'gtagId' => strtoupper($gtag),
                 'gtmId' => strtoupper($gtm),
                 'cloudflareZoneId' => strtolower((string) $zone),
@@ -320,6 +366,7 @@ final class IntegrationsSettings
                 ? $config['cloudflare_zone_id']
                 : [];
             $config['supplier'] = is_array($config['supplier'] ?? null) ? $config['supplier'] : [];
+            $config['site_logo'] = is_array($config['site_logo'] ?? null) ? $config['site_logo'] : [];
 
             $config['apikey']['google_map'] = (string) $next['googleMapsApiKey'];
             $config['apikey']['chatra'] = (string) $next['chatraApiKey'];
@@ -333,6 +380,8 @@ final class IntegrationsSettings
                 $config['gtm_id'][$key] = (string) $site['gtmId'];
                 $config['cloudflare_zone_id'][$key] = (string) $site['cloudflareZoneId'];
                 $config['supplier'][$key] = (string) ($site['supplier'] ?? '');
+                // Blank = no override; get() falls back to the auto-derived logo (logoForKey()).
+                $config['site_logo'][$key] = (string) ($site['logo'] ?? '');
             }
 
             $php = "<?php\n\n\$config = " . var_export($config, true) . ";\n";

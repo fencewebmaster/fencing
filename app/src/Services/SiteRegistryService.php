@@ -50,6 +50,77 @@ final class SiteRegistryService
     }
 
     /**
+     * Per-site logo overrides saved in Settings → Integrations (config.php `site_logo`).
+     * Blank entries mean "no override" and are dropped by siteMap().
+     *
+     * @return array<string, string>
+     */
+    public static function logoOverrides(): array
+    {
+        return AppConfigService::siteMap('site_logo');
+    }
+
+    /**
+     * Logo path for a config site key: settings override first, then the supplied fallback asset.
+     *
+     * @param array<string, string>|null $overrides Pre-loaded map (avoids re-reading config per row).
+     */
+    public static function logoForKey(string $key, string $fallback = '', ?array $overrides = null): string
+    {
+        $key = trim($key);
+        if ($key === '') {
+            return $fallback;
+        }
+
+        $overrides = $overrides ?? self::logoOverrides();
+        $override = trim((string) ($overrides[$key] ?? ''));
+
+        return $override !== '' ? $override : $fallback;
+    }
+
+    /**
+     * Logo path for a domain. Staging hosts use their own override when set,
+     * otherwise they inherit the production site's override.
+     */
+    public static function logoForDomain(string $domain, string $fallback = ''): string
+    {
+        $overrides = self::logoOverrides();
+        $keys = [AdminSiteRegistry::mysqlKeyFromDomain($domain), self::keyFromDomain($domain)];
+
+        foreach ($keys as $key) {
+            $logo = self::logoForKey($key, '', $overrides);
+            if ($logo !== '') {
+                return $logo;
+            }
+        }
+
+        return $fallback;
+    }
+
+    /**
+     * Browser-ready logo URL for a site row from all() (or a bare domain), settings override applied.
+     * Absolute http(s)/protocol-relative/data values pass through untouched.
+     *
+     * @param array<string, mixed>|string $site
+     */
+    public static function logoUrl(array|string $site): string
+    {
+        $domain = is_array($site) ? (string) ($site['domain'] ?? '') : (string) $site;
+        $fallback = is_array($site) ? trim((string) ($site['logo'] ?? '')) : '';
+
+        $logo = self::logoForDomain($domain, $fallback);
+        if ($logo === '') {
+            return '';
+        }
+
+        if (preg_match('#^(?:https?:)?//#i', $logo) || preg_match('/^data:/i', $logo)) {
+            return $logo;
+        }
+
+        return UrlHelper::baseUrl(ltrim(str_replace('\\', '/', $logo), '/'));
+    }
+
+    /**
      * Supplier code for a site key (or domain) from config.php `supplier`.
      */
     public static function supplier(string $siteKeyOrDomain, string $fallback = ''): string

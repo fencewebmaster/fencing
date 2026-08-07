@@ -11,6 +11,7 @@ final class AdminSiteRegistry
 {
     private const SITE_SESSION_KEY = 'fc_admin_site_key';
     private const AUTH_DB_SESSION_KEY = 'fc_admin_auth_db_key';
+    private const DEFAULT_SITE_LOGO = 'public/assets/img/logo/fencesperth.webp';
 
     /**
      * MySQL keys available in fc/config.php.
@@ -71,6 +72,7 @@ final class AdminSiteRegistry
     {
         $mysqlKeys = self::mysqlKeys();
         $mysqlLookup = array_fill_keys($mysqlKeys, true);
+        $logoOverrides = SiteRegistryService::logoOverrides();
         $all = SiteRegistryService::all();
         if (!is_array($all)) {
             return [];
@@ -108,7 +110,7 @@ final class AdminSiteRegistry
             $byKey[$key] = [
                 'key' => $key,
                 'name' => $name,
-                'logo' => (string) ($row['logo'] ?? ''),
+                'logo' => SiteRegistryService::logoForKey($key, (string) ($row['logo'] ?? ''), $logoOverrides),
                 'domain' => $domain,
                 'id' => $id,
                 'supplier' => strtoupper(trim((string) ($row['supplier'] ?? ''))),
@@ -123,7 +125,7 @@ final class AdminSiteRegistry
             $byKey[$key] = [
                 'key' => $key,
                 'name' => $key === 'localhost' ? 'Localhost' : ucwords(str_replace(['.', '-', '_'], ' ', $key)),
-                'logo' => 'public/assets/img/logo/fencesperth.webp',
+                'logo' => SiteRegistryService::logoForKey($key, self::DEFAULT_SITE_LOGO, $logoOverrides),
                 'domain' => $key === 'localhost' ? 'localhost' : $key,
                 'id' => 0,
                 'supplier' => '',
@@ -247,7 +249,7 @@ final class AdminSiteRegistry
         return [
             'key' => $key,
             'name' => $key === 'localhost' ? 'Localhost' : ucwords(str_replace(['.', '-', '_'], ' ', $key)),
-            'logo' => 'public/assets/img/logo/fencesperth.webp',
+            'logo' => SiteRegistryService::logoForKey($key, self::DEFAULT_SITE_LOGO),
             'domain' => $key === 'localhost' ? 'localhost' : $key,
             'id' => 0,
             'supplier' => '',
@@ -329,7 +331,7 @@ final class AdminSiteRegistry
         return [
             'key' => $key !== '' ? $key : 'localhost',
             'name' => $key !== '' ? $key : 'Localhost',
-            'logo' => 'public/assets/img/logo/fencesperth.webp',
+            'logo' => SiteRegistryService::logoForKey($key !== '' ? $key : 'localhost', self::DEFAULT_SITE_LOGO),
             'domain' => $key !== '' ? $key : 'localhost',
             'id' => 0,
             'supplier' => '',
