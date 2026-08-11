@@ -7,17 +7,14 @@ RewriteEngine on
 RewriteRule ^backend/?$ public/index.php [L,QSA]
 RewriteRule ^backend/(.+)$ public/$1 [L,QSA]
 
-# Product Lookup quick view: /lookup/view/{slug}
-RewriteRule ^lookup/view/([^/]+)/?$ lookup.php?view=$1 [QSA,L,NC]
+# Never serve app config or writable data directly.
+RewriteRule ^(config\.json|writable) - [F,L,NC]
 
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^(.*)$ $1.php [NC,L]
-
-RewriteRule ^(config.json|writable) - [F,L,NC]
-
-# Unknown frontend paths → 404 (admin handled under /backend/ and /public/)
+# Frontend front controller: every public URL (/planner, /checkout, /lookup/view/{slug},
+# …) is routed by index.php via app/routes/frontend.php. Real files (public/assets/…)
+# and the admin mounts are left alone; anything else — including unknown paths, which
+# the router answers with the 404 view — goes to index.php.
+RewriteCond %{REQUEST_URI} !(/backend|/public)(/|$)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !(/backend|/public)(/|$)
-RewriteRule ^ 404.php [L]
+RewriteRule ^ index.php [L,QSA]

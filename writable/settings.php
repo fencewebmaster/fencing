@@ -1,4 +1,14 @@
 <?php
+/**
+ * Fence catalog data — assembles $fences from writable/fences/*.php and drops
+ * non-live styles outside dev/localhost.
+ *
+ * Load it through \Fc\Admin\Services\FenceSettingsService, never directly: that service
+ * publishes $GLOBALS['fences'] (which CartBuilderService and FenceCatalogService read via
+ * `global $fences`) and loads the fc_*() view helpers, which now live in
+ * app/src/Helpers/fc_functions.php over app/src/Services/PlannerOptionSettings.php.
+ */
+
 $uri_segments = explode('/', trim(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH), '/'));
 $host_header = $_SERVER['HTTP_HOST'] ?? '';
 $host = parse_url('//' . $host_header, PHP_URL_HOST);
@@ -24,87 +34,3 @@ foreach ($fences as $fik => $fence_info) {
 }
 
 $fences = $fences_data;
-
-//----------------------------------------------------------------------------------
-
-if (!function_exists('fc_color')) {
-	function fc_color($val ='') {
-		if (!class_exists('\Fc\Admin\Services\FenceColorSettings')) {
-			require_once dirname(__DIR__) . '/app/src/Services/FenceColorSettings.php';
-		}
-		$data = \Fc\Admin\Services\FenceColorSettings::legacyMap();
-		return ($val) ? ($data[$val] ?? null) : $data;
-	}
-}
-
-//----------------------------------------------------------------------------------
-
-if (!function_exists('fc_state')) {
-	function fc_state($val ='') {
-		$data = [
-			"ACT" => "Australian Capital Territory",
-			"NSW" => "New South Wales",
-			"NT"  => "Northern Territory",
-			"QLD" => "Queensland",
-			"SA"  => "South Australia",
-			"TAS" => "Tasmania",
-			"VIC" => "Victoria",
-			"WA"  => "Western Australia",
-		];
-		return ($val) ? $data[$val] : $data;
-	}
-}
-
-//----------------------------------------------------------------------------------
-
-if (!function_exists('fc_timeframe')) {
-	function fc_timeframe($val ='') {
-		$data = [
-			'asap'    => 'ASAP - Within 24hrs',
-			'soon'    => 'SOON - This Week',
-			'later'   => 'LATER - This Month',
-			'looking' => 'NIL - Just Looking',
-		];
-		return ($val) ? $data[$val] : $data;
-	}
-}
-
-//----------------------------------------------------------------------------------
-
-if (!function_exists('fc_extra_needed')) {
-	function fc_extra_needed($val ='') {
-		// Choices shown in planner / Download Your Project Plans (checkboxes). NIL is separate radio in other-items-needed.php.
-		$selectable = [
-			'pump-enclosure' => 'Pump Enclosure',
-		];
-		// Labels for older saved quotes / emails that still reference removed extras.
-		$labels = array_merge($selectable, [
-			'pool-covers'       => 'Pool Covers',
-			'decking'           => 'Decking',
-			'pergola'           => 'Pergola',
-			'shed'              => 'Shed',
-			'outdoor-furniture' => 'Outdoor Furniture',
-			'outdoor-kitchen'   => 'Outdoor Kitchen',
-		]);
-
-		if( empty($val) ){
-			return $selectable;
-		}
-
-		$paramParts = explode(',', $val);
-		$paramParts = array_map('trim', $paramParts);
-		$textValues = [];
-
-		foreach ($paramParts as $part) {
-			if (array_key_exists($part, $labels)) {
-				$textValues[] = $labels[$part];
-			}
-		}
-
-		if (!empty($textValues)) {
-			return implode(', ', $textValues);
-		}
-
-		return 'Nothing Extra, Just Fencing';
-	}
-}

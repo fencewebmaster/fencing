@@ -18,7 +18,7 @@ final class NotFoundHandler
      */
     public static function view404Path(): string
     {
-        return dirname(__DIR__, 3) . '/views/errors/404.php';
+        return dirname(__DIR__, 2) . '/views/frontend/errors/404.php';
     }
 
     /**
@@ -26,7 +26,7 @@ final class NotFoundHandler
      */
     public static function plannerUrl(): string
     {
-        $script = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/fc/404.php'));
+        $script = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/fc/index.php'));
         $dir = rtrim(dirname($script), '/');
 
         // When served from /fc/public/… or /fc/backend/…, climb to the app root.

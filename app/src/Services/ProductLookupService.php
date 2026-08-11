@@ -107,13 +107,14 @@ final class ProductLookupService
 
     /**
      * Base path for this page (e.g. /wp/fencing/fc/lookup).
+     *
+     * The lookup page used to be its own script, so stripping ".php" off SCRIPT_NAME gave
+     * the right URL. It is a route on the shared front controller now, so the path is the
+     * app mount plus the route name.
      */
     public static function basePath(): string
     {
-        $script = (string) ($_SERVER['SCRIPT_NAME'] ?? '/lookup.php');
-        $path = preg_replace('/\.php$/i', '', $script);
-
-        return $path !== null && $path !== '' ? $path : '/lookup';
+        return \Fc\Admin\Core\FrontendApplication::basePath() . '/lookup';
     }
 
     /**
@@ -268,7 +269,7 @@ final class ProductLookupService
     {
         $catalog = CatalogSettings::get();
 
-        // Pretty path /lookup/view/{slug} may arrive as PATH_INFO when rewrite maps to lookup.php
+        // Pretty path /lookup/view/{slug} is routed with a {slug} param, but keep the PATH_INFO/URI fallbacks
         if (!isset($get['view']) || trim((string) $get['view']) === '') {
             $pathInfo = (string) ($_SERVER['PATH_INFO'] ?? '');
             if (preg_match('#(^|/)view/([^/]+)/?$#', $pathInfo, $m)) {

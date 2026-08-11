@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../app/app_bootstrap.php';
+require __DIR__ . '/../app/bootstrap.php';
 
 $module = isset($_GET['module']) ? (string) $_GET['module'] : '';
 

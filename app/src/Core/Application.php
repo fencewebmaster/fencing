@@ -23,19 +23,22 @@ final class Application
         $this->webRouter = new Router();
         $this->apiRoutes = require FC_ADMIN_ROOT . '/routes/api.php';
 
-        $register = require FC_ADMIN_ROOT . '/routes/web.php';
-        if (is_callable($register)) {
-            $register($this->webRouter);
-        }
+        RouteLoader::apply('admin', $this->webRouter);
     }
 
     public static function handleWebRequest(): AdminContext
     {
+        // Before constructing anything: AdminContext reads the admin session, and
+        // AuthService can only set its cookie while no output has been sent.
+        AdminBootstrap::boot();
+
         return (new self())->dispatchWeb();
     }
 
     public static function handleApiRequest(?string $module = null): void
     {
+        AdminBootstrap::boot();
+
         (new self())->dispatchApi($module);
     }
 

@@ -385,7 +385,7 @@ final class PlannerRecordService
     }
 
     /**
-     * Decide which planner row a public save (submit.php / checkout.php) writes to.
+     * Decide which planner row a public save (/submit or /checkout) writes to.
      *
      * The session is authoritative. When it holds no id — session GC, dropped cookie, another tab —
      * fall back to the id the page rendered and posted back, accepted only when that quote still

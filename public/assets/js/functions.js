@@ -450,7 +450,7 @@ function savePlanner() {
         formData.set("planner_id", String(planner_id).trim());
     }
     $.ajax({
-        url: 'checkout.php',
+        url: 'checkout',
         type: "POST",
         data: formData,
         headers: {},
@@ -4164,7 +4164,7 @@ function fcRestorePlannerGateSegmentBlobsAfterSessionMerge(snap, qidFromUrl) {
 /**
  * After session `fence_data` is merged into localStorage, restore each `custom_fence-{tab}-{slug}`
  * value from a pre-merge snapshot. `$_SESSION['fc_data']['fences']` can lag behind local edits
- * (e.g. post options changed in the planner but not yet POSTed via submit.php). Previously only
+ * (e.g. post options changed in the planner but not yet POSTed via the /submit route). Previously only
  * `custom_fence-{tab}` was restored for tabs with `calculateValue`, so segment blobs were still
  * overwritten and changes disappeared on reload — especially after load-quote + session hydrate.
  */
@@ -5435,8 +5435,8 @@ function fcSyncProjectPlanSessionCart(onDone) {
 
     var checkoutUrl =
         typeof base_url === 'function'
-            ? base_url('checkout.php')
-            : 'checkout.php';
+            ? base_url('checkout')
+            : 'checkout';
 
     fetch(checkoutUrl, { method: 'POST', body: formData, credentials: 'same-origin' })
         .then(function(res) {
@@ -5465,7 +5465,7 @@ function fcSyncProjectPlanSessionCart(onDone) {
 var fcPlannerSubmitInFlight = false;
 
 /**
- * Read the saved quote id back from submit.php ("SUCCESS:<planner_id>").
+ * Read the saved quote id back from /submit ("SUCCESS:<planner_id>").
  */
 function fcParseSavedPlannerId(response) {
     if (typeof response !== 'string') {
@@ -5629,15 +5629,15 @@ function submit_fence_planner(status = '', options) {
                 formData.set(key, value);
             });
 
-            // Send the quote id the page was rendered with: submit.php can then update the existing
+            // Send the quote id the page was rendered with: /submit can then update the existing
             // row even when the PHP session no longer holds it (expired session, dropped cookie).
             var existingPlannerId = fcPlannerHasQuoteId() ? String(planner_id).trim() : '';
             if (existingPlannerId) {
                 formData.set('planner_id', existingPlannerId);
             }
 
-            // Tells submit.php not to overwrite the 'reloaded' status this same page load
-            // just set server-side (planner.php -> fc_planners_mark_reloaded()).
+            // Tells /submit not to overwrite the 'reloaded' status this same page load
+            // just set server-side (PlannerController -> PlannerRecordService::markReloaded()).
             formData.set('is_quote_reload', options.isQuoteReload ? '1' : '0');
 
             var uri_success = '';
@@ -5656,7 +5656,7 @@ function submit_fence_planner(status = '', options) {
             fcPlannerSubmitInFlight = true;
 
             $.ajax({
-                url: 'submit.php',
+                url: 'submit',
                 type: "POST",
                 data: formData,
                 headers: {},

@@ -1,16 +1,13 @@
 <?php
-require_once __DIR__ . '/app/src/Core/Autoloader.php';
-\Fc\Admin\Core\Autoloader::register();
+/**
+ * FC frontend — front controller.
+ *
+ * The only PHP entry point in the web root. .htaccess rewrites every public URL that
+ * isn't a real file onto this file; routing lives in the 'frontend' group of app/routes/web.php.
+ */
 
-require_once __DIR__ . '/app/src/Helpers/UrlHelper.php';
+declare(strict_types=1);
 
-$redirect_to = \Fc\Admin\Helpers\UrlHelper::baseUrl('planner');
+require __DIR__ . '/app/bootstrap.php';
 
-$query_vars = $_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING'] : '';
-
-if( $query_vars ) {
-	header("Location: ".$redirect_to.$query_vars);
-	exit;
-}
-
-header("Location: ".$redirect_to.'?site='.$_SERVER['SERVER_NAME']);
+\Fc\Admin\Core\FrontendApplication::handleWebRequest();

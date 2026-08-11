@@ -79,14 +79,6 @@ final class UrlHelper
     }
 
     /**
-     * Current entry script filename (e.g. planner.php).
-     */
-    public static function pageScript(): string
-    {
-        return basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
-    }
-
-    /**
      * Resolve the externally-visible admin mount base (e.g. "/wp/fence/fc/backend"),
      * recognizing known mount segments in the request URI itself rather than relying
      * on SCRIPT_NAME. This matters because /backend is served via an internal

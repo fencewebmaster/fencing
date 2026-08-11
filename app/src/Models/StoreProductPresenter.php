@@ -7,6 +7,7 @@ namespace Fc\Admin\Models;
 use Fc\Admin\Helpers\StringHelper;
 use Fc\Admin\Helpers\ViewHelper;
 use Fc\Admin\Services\AuthService;
+use Fc\Admin\Services\FenceColorSettings;
 use Fc\Admin\Services\PermissionService;
 
 /**
@@ -120,12 +121,8 @@ final class StoreProductPresenter
 
     public static function colorBackground(string $csvColumn): string
     {
-        if (!function_exists('fc_color')) {
-            require_once FC_ROOT . '/writable/settings.php';
-        }
-
         $slug = self::csvColumnToColorSlug($csvColumn);
-        $colors = fc_color();
+        $colors = FenceColorSettings::legacyMap();
         if (is_array($colors[$slug] ?? null)) {
             return (string) ($colors[$slug]['background_color'] ?? '#cbd5e1');
         }
@@ -135,12 +132,8 @@ final class StoreProductPresenter
 
     public static function colorLabel(string $csvColumn): string
     {
-        if (!function_exists('fc_color')) {
-            require_once FC_ROOT . '/writable/settings.php';
-        }
-
         $slug = self::csvColumnToColorSlug($csvColumn);
-        $colors = fc_color();
+        $colors = FenceColorSettings::legacyMap();
         if (is_array($colors[$slug] ?? null)) {
             $title = trim((string) ($colors[$slug]['title'] ?? ''));
             if ($title !== '') {

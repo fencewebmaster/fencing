@@ -7,6 +7,7 @@ namespace Fc\Admin\Models;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PermissionService;
+use Fc\Admin\Services\PlannerOptionSettings;
 use Fc\Admin\Services\SystemSettings;
 use Fc\Admin\Services\WcProductCsvService;
 
@@ -609,16 +610,6 @@ final class PlannerEntryPresenter
         return $item;
     }
 
-    private static function ensureSettingsLoaded(): void
-    {
-        static $loaded = false;
-        if ($loaded) {
-            return;
-        }
-        require_once FC_ROOT . '/writable/settings.php';
-        $loaded = true;
-    }
-
     private static function routeSlug(): string
     {
         return 'planner-entries';
@@ -942,9 +933,7 @@ final class PlannerEntryPresenter
      */
     public static function timeframeOptions(): array
     {
-        self::ensureSettingsLoaded();
-
-        return fc_timeframe();
+        return PlannerOptionSettings::timeframes();
     }
 
     /**
@@ -952,9 +941,7 @@ final class PlannerEntryPresenter
      */
     public static function stateOptions(): array
     {
-        self::ensureSettingsLoaded();
-
-        return fc_state();
+        return PlannerOptionSettings::states();
     }
 
     /**
@@ -1150,12 +1137,10 @@ final class PlannerEntryPresenter
         $defaultPerPage = self::defaultPerPage();
         $perPageRaw = strtolower(trim((string) ($query['per_page'] ?? (string) $defaultPerPage)));
 
-        self::ensureSettingsLoaded();
-
-        if ($timeframe !== '' && !array_key_exists($timeframe, fc_timeframe())) {
+        if ($timeframe !== '' && !array_key_exists($timeframe, PlannerOptionSettings::timeframes())) {
             $timeframe = '';
         }
-        if ($state !== '' && !array_key_exists($state, fc_state())) {
+        if ($state !== '' && !array_key_exists($state, PlannerOptionSettings::states())) {
             $state = '';
         }
 
@@ -1516,8 +1501,6 @@ final class PlannerEntryPresenter
 
     public static function extraItems(mixed $raw): array
     {
-        self::ensureSettingsLoaded();
-
         if ($raw === null || $raw === '' || (is_string($raw) && trim($raw) === '[]')) {
             return ['Nothing Extra, Just Fencing'];
         }
@@ -1552,18 +1535,14 @@ final class PlannerEntryPresenter
             return ['Nothing Extra, Just Fencing'];
         }
 
-        if (!function_exists('fc_extra_needed')) {
-            require_once FC_ROOT . '/writable/settings.php';
-        }
-
         $labels = [];
         foreach ($items as $slug) {
             if ($slug === '' || $slug === 'nothing') {
                 continue;
             }
 
-            $label = fc_extra_needed($slug);
-            $labels[] = is_string($label) && $label !== '' ? $label : $slug;
+            $label = PlannerOptionSettings::extraLabel($slug);
+            $labels[] = $label !== '' ? $label : $slug;
         }
 
         return $labels !== [] ? $labels : ['Nothing Extra, Just Fencing'];
@@ -2086,8 +2065,7 @@ final class PlannerEntryPresenter
                 } elseif ($fieldKey === 'timeframe') {
                     $slug = trim((string) $raw);
                     if ($slug !== '') {
-                        self::ensureSettingsLoaded();
-                        $raw = fc_timeframe($slug) ?: $slug;
+                        $raw = PlannerOptionSettings::timeframeLabel($slug) ?: $slug;
                     }
                 } elseif ($fieldKey === 'extra') {
                     $extraItems = self::extraItems($raw);

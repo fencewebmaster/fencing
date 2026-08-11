@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../app/app_bootstrap.php';
+require __DIR__ . '/../app/bootstrap.php';
 
 use Fc\Admin\Core\Application;
 
@@ -18,7 +18,7 @@ $fcCan = static function (string $key): bool {
 };
 
 if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
-    include __DIR__ . '/../app/views/login.php';
+    include __DIR__ . '/../app/views/admin/login.php';
     return;
 }
 ?>
@@ -1393,7 +1393,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             aria-label="Admin navigation"
             aria-hidden="true"
         >
-            <?php include __DIR__ . '/../app/views/layouts/partials/sidebar-brand.php'; ?>
+            <?php include __DIR__ . '/../app/views/admin/layouts/partials/sidebar-brand.php'; ?>
 
             <nav class="fc-sidebar-nav" id="fc-admin-nav" aria-label="Main">
                 <ul class="fc-sidebar-nav__list">
@@ -1708,7 +1708,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
                     $page = $fcDashboardPage;
                     $datePeriodOptions = is_array($page['date_period_options'] ?? null) ? $page['date_period_options'] : [];
                     $fcDashboardDateDropdownContext = 'topbar';
-                    require __DIR__ . '/../app/views/partials/dashboard-date-dropdown.php';
+                    require __DIR__ . '/../app/views/admin/partials/dashboard-date-dropdown.php';
                     ?>
                     <?php endif; ?>
                     <div class="fc-admin-theme-switcher shrink-0" role="group" aria-label="Appearance">
@@ -1881,25 +1881,25 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
                     aria-live="polite"
                 >
                 <?php if ($fcAdminIsDashboard && is_array($fcDashboardPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/dashboard.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/dashboard.php'; ?>
                 <?php elseif ($fcAdminRoute === $fcPlannerEntriesRoute && is_array($fcEntriesDetailPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/entries-detail.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/entries-detail.php'; ?>
                 <?php elseif ($fcAdminRoute === $fcPlannerEntriesRoute && is_array($fcEntriesPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/entries.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/entries.php'; ?>
                 <?php elseif (!empty($fcAdminIsUsers) && is_array($fcUsersPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/users.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/users.php'; ?>
                 <?php elseif (!empty($fcAdminIsGroupPermissions) && is_array($fcGroupPermissionsPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/group-permissions.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/group-permissions.php'; ?>
                 <?php elseif ($fcAdminIsSettings && is_array($fcSettingsPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/settings.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/settings.php'; ?>
                 <?php elseif ($fcAdminIsGallery && is_array($fcGalleryPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/gallery.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/gallery.php'; ?>
                 <?php elseif ($fcAdminRoute === 'products/fence-styles' && is_array($fcFenceStylesPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/products-fence-styles.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/products-fence-styles.php'; ?>
                 <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/products-system-products.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/products-system-products.php'; ?>
                 <?php elseif ($fcAdminRoute === 'products/system-products' && is_array($fcStoreProductsPage)) : ?>
-                    <?php include __DIR__ . '/../app/views/products-store-products.php'; ?>
+                    <?php include __DIR__ . '/../app/views/admin/products-store-products.php'; ?>
                 <?php endif; ?>
                 </div>
             </main>

@@ -1306,6 +1306,39 @@
             }
         }
 
+        /** Thumbnail slot shown left of a SKU field. Always rendered, so the grid columns stay aligned. */
+        function skuThumbHtml(value) {
+            var image = String(metaForSku(value).image || '').trim();
+            if (!image) {
+                return '<span class="fc-sp-sku-thumb fc-sp-sku-thumb--empty" data-fc-sp-sku-thumb aria-hidden="true"></span>';
+            }
+            return (
+                '<img class="fc-sp-sku-thumb" data-fc-sp-sku-thumb src="' +
+                escapeHtml(image) +
+                '" alt="" loading="lazy" decoding="async">'
+            );
+        }
+
+        /**
+         * Swap a SKU field's thumbnail in place (img <-> placeholder). Fields are built before the WC
+         * SKU index resolves, so every slot starts as a placeholder and is filled in from here.
+         */
+        function paintSkuThumb(field, value) {
+            if (!field) {
+                return;
+            }
+            var slot = field.querySelector('[data-fc-sp-sku-thumb]');
+            if (!slot) {
+                return;
+            }
+            var image = String(metaForSku(value).image || '').trim();
+            var current = slot.tagName === 'IMG' ? slot.getAttribute('src') || '' : '';
+            if (current === image) {
+                return;
+            }
+            slot.outerHTML = skuThumbHtml(value);
+        }
+
         function paintSkuStatus(checkBtn, value) {
             if (!checkBtn) {
                 return;
@@ -1356,6 +1389,7 @@
             var wrap = input.closest('.fc-sp-field-input-wrap--sku');
             var checkBtn = wrap ? wrap.querySelector('[data-fc-sp-sku-check]') : null;
             paintSkuStatus(checkBtn, input.value);
+            paintSkuThumb(input.closest('.fc-sp-field--sku'), input.value);
         }
 
         function refreshAllSkuStatuses() {
@@ -1928,15 +1962,13 @@
                     var id = 'fc-sp-field-' + col.replace(/[^a-zA-Z0-9_-]/g, '_');
                     var isSlug = col === 'SLUG';
                     var isDescription = col === 'DESCRIPTION';
+                    var isSku = DETAILS_COLUMNS.indexOf(col) === -1;
                     var fieldHtml = buildFieldControl(col, val);
                     var labelPrefix = isSlug
                         ? '<i class="fa-solid fa-lock fc-sp-field__lock" aria-hidden="true"></i>'
                         : '';
 
-                    return (
-                        '<div class="fc-sp-field' +
-                        (isDescription ? ' fc-sp-field--wide' : '') +
-                        '">' +
+                    var labelAndControl =
                         '<label class="fc-sp-field__label" for="' +
                         escapeHtml(id) +
                         '">' +
@@ -1947,7 +1979,24 @@
                         fieldHtml +
                         (isSlug
                             ? '<p class="fc-sp-field__help">Unique identifier — cannot be changed after creation.</p>'
-                            : '') +
+                            : '');
+
+                    // SKU columns carry the product thumbnail to the left of the label + input stack.
+                    if (isSku) {
+                        return (
+                            '<div class="fc-sp-field fc-sp-field--sku">' +
+                            skuThumbHtml(val) +
+                            '<div class="fc-sp-field__main">' +
+                            labelAndControl +
+                            '</div></div>'
+                        );
+                    }
+
+                    return (
+                        '<div class="fc-sp-field' +
+                        (isDescription ? ' fc-sp-field--wide' : '') +
+                        '">' +
+                        labelAndControl +
                         '</div>'
                     );
                 })

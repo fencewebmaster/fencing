@@ -875,7 +875,7 @@ _doc.on('click', '.js-fc-optional-cart-toggle', function(e) {
     formData.set('include', include);
 
     var checkoutUrl =
-        typeof base_url === 'function' ? base_url('checkout.php') : 'checkout.php';
+        typeof base_url === 'function' ? base_url('checkout') : 'checkout';
 
     fetch(checkoutUrl, {
         method: 'POST',
@@ -1011,7 +1011,7 @@ $("#paymentFrm").validate({
             });
             $(".fc-table-items .fc-form-control").css({ 'color': '#4caf50' });
             $.ajax({
-                url: 'checkout.php',
+                url: 'checkout',
                 type: "POST",
                 data: formData,
                 headers: {},
@@ -1053,7 +1053,7 @@ $("#paymentFrm").validate({
                 }
             } catch (ePp) {}
             $.ajax({
-                url: 'checkout.php',
+                url: 'checkout',
                 type: "POST",
                 data: formData,
                 beforeSend: function() {
@@ -1106,7 +1106,7 @@ $("#paymentFrm").validate({
             });
             $(".fc-table-customer .fc-form-control").css({ 'color': '#4caf50' });
             $.ajax({
-                url: 'checkout.php',
+                url: 'checkout',
                 type: "POST",
                 data: formData,
                 beforeSend: function() {
@@ -1152,7 +1152,7 @@ $("#paymentFrm").validate({
                 $('.fc-loader ul li:first-child').addClass('fc-text-success');
             }, 500);
             $.ajax({
-                url: 'checkout.php',
+                url: 'checkout',
                 type: "POST",
                 data: formData,
                 headers: {},
