@@ -262,9 +262,19 @@
         return String(value || '').trim();
     }
 
+    /** "OFF" marks a colour this product is deliberately not sold in — not a missing SKU. */
+    function isSkuOffValue(value) {
+        return normalizeSkuValue(value).toUpperCase() === 'OFF';
+    }
+
     function isSkuMissingValue(value) {
         var sku = normalizeSkuValue(value);
         return sku === '' || sku.toUpperCase() === 'OFF';
+    }
+
+    /** Counts toward the x/y tally: either a real catalogue SKU, or a deliberate OFF. */
+    function skuCountsAsComplete(value) {
+        return isSkuOffValue(value) || skuExistsInCatalogue(value);
     }
 
     function skuExistsInCatalogue(value) {
@@ -428,15 +438,20 @@
         var allowed = getAllowedColorColumns(row, allColumns, styleColorsMap);
         var total = allowed.length;
         var found = 0;
+        var off = 0;
         allowed.forEach(function (column) {
             var value = row && row[column] != null ? row[column] : '';
-            if (skuExistsInCatalogue(value)) {
+            if (isSkuOffValue(value)) {
+                off += 1;
+            }
+            if (skuCountsAsComplete(value)) {
                 found += 1;
             }
         });
         return {
             found: found,
             total: total,
+            off: off,
             complete: total > 0 && found === total
         };
     }
@@ -447,13 +462,23 @@
             return '<span class="text-slate-300">—</span>';
         }
         var complete = summary.complete;
-        var statusClass = complete ? 'fc-sp-sku-status--found' : 'fc-sp-sku-status--missing';
+        var hasOff = summary.off > 0;
+        // A real gap outranks everything: grey first, then red for a colour set to OFF, else green.
+        var statusClass = !complete
+            ? 'fc-sp-sku-status--missing'
+            : hasOff
+              ? 'fc-sp-sku-status--off'
+              : 'fc-sp-sku-status--found';
         var wrapClass = complete
             ? 'fc-sp-skus-summary--complete'
             : 'fc-sp-skus-summary--incomplete';
-        var label = complete
-            ? 'All style SKUs found in store catalogue'
-            : 'Some style SKUs missing from store catalogue';
+        var label = hasOff
+            ? complete
+                ? 'All style SKUs accounted for — includes a colour set to OFF'
+                : 'Some style SKUs missing — includes a colour set to OFF'
+            : complete
+              ? 'All style SKUs found in store catalogue'
+              : 'Some style SKUs missing from store catalogue';
         return (
             '<span class="fc-sp-skus-summary ' +
             wrapClass +
@@ -1343,16 +1368,21 @@
             if (!checkBtn) {
                 return;
             }
-            var empty = isSkuMissingValue(value);
-            var found = !empty && skuExistsInCatalogue(value);
-            var missing = !empty && !found;
+            // OFF is deliberate, so it counts as complete, but stays visually distinct (red dot).
+            var off = isSkuOffValue(value);
+            var empty = !off && normalizeSkuValue(value) === '';
+            var found = !off && !empty && skuExistsInCatalogue(value);
+            var missing = !off && !empty && !found;
+            checkBtn.classList.toggle('fc-sp-sku-check--off', off);
             checkBtn.classList.toggle('fc-sp-sku-check--empty', empty);
             checkBtn.classList.toggle('fc-sp-sku-check--found', found);
             checkBtn.classList.toggle('fc-sp-sku-check--missing', missing);
 
             var icon = checkBtn.querySelector('i');
             if (icon) {
-                if (found) {
+                if (off) {
+                    icon.className = 'fa-solid fa-circle';
+                } else if (found) {
                     icon.className = 'fa-solid fa-check';
                 } else if (empty) {
                     icon.className = 'fa-solid fa-exclamation';
@@ -1361,7 +1391,13 @@
                 }
             }
 
-            if (found) {
+            if (off) {
+                checkBtn.setAttribute(
+                    'aria-label',
+                    'SKU is set to OFF and counts as complete. Open similar SKUs.'
+                );
+                checkBtn.title = 'Set to OFF — counted as complete';
+            } else if (found) {
                 checkBtn.setAttribute(
                     'aria-label',
                     'SKU found in store catalogue. Open similar SKUs.'

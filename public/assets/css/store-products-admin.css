@@ -218,6 +218,12 @@
     background: #22c55e;
     box-shadow: inset 0 0 0 1px rgba(21, 128, 61, 0.2);
 }
+/* Row contains a colour set to OFF — flagged red over the green/grey states. */
+#fc-store-products-table-wrap .fc-sp-sku-status--off,
+#fc-sp-edit-modal .fc-sp-sku-status--off {
+    background: #dc2626;
+    box-shadow: inset 0 0 0 1px rgba(153, 27, 27, 0.25);
+}
 html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-skus-summary {
     color: #cbd5e1;
 }
@@ -232,6 +238,11 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--missing {
 html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-sku-status--found,
 html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--found {
     background: #22c55e;
+    box-shadow: none;
+}
+html[data-fc-admin-theme='dark'] #fc-store-products-table-wrap .fc-sp-sku-status--off,
+html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--off {
+    background: #f87171;
     box-shadow: none;
 }
 .fc-sp-toolbar {
@@ -697,6 +708,17 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-edit-section-title {
 #fc-sp-edit-modal .fc-sp-sku-check--empty:focus-visible {
     color: #64748b;
 }
+/* Deliberately OFF — counted as complete, but flagged red so it stands out from a real SKU. */
+#fc-sp-edit-modal .fc-sp-sku-check--off {
+    color: #dc2626;
+}
+#fc-sp-edit-modal .fc-sp-sku-check--off:hover,
+#fc-sp-edit-modal .fc-sp-sku-check--off:focus-visible {
+    color: #b91c1c;
+}
+#fc-sp-edit-modal .fc-sp-sku-check--off i {
+    font-size: 0.5rem;
+}
 #fc-sp-edit-modal .fc-sp-sku-check--missing {
     color: #dc2626;
 }
@@ -970,6 +992,13 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check:focus-visibl
 }
 html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--empty {
     color: #94a3b8;
+}
+html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--off {
+    color: #f87171;
+}
+html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--off:hover,
+html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--off:focus-visible {
+    color: #fca5a5;
 }
 html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-check--missing {
     color: #f87171;

@@ -288,10 +288,18 @@ final class StoreProductPresenter
         $allowed = self::allowedColorColumns($row, $allColumns, $styleColors);
         $total = count($allowed);
         $found = 0;
+        $offCount = 0;
 
         foreach ($allowed as $column) {
             $sku = trim((string) ($row[$column] ?? ''));
-            if ($sku === '' || strtoupper($sku) === 'OFF') {
+            if ($sku === '') {
+                continue;
+            }
+            // "OFF" marks a colour this product is deliberately not sold in, so it counts as
+            // complete rather than as a gap to chase.
+            if (strtoupper($sku) === 'OFF') {
+                $found++;
+                $offCount++;
                 continue;
             }
             if (isset($skuSetLookup[$sku])) {
@@ -303,6 +311,7 @@ final class StoreProductPresenter
             'found'    => $found,
             'total'    => $total,
             'complete' => $total > 0 && $found === $total,
+            'off'      => $offCount,
         ];
     }
 
@@ -323,12 +332,26 @@ final class StoreProductPresenter
         }
 
         $complete = $summary['complete'];
-        $statusClass = $complete ? 'fc-sp-sku-status--found' : 'fc-sp-sku-status--missing';
+        $hasOff = ($summary['off'] ?? 0) > 0;
+        // A real gap outranks everything: grey first, then red for a colour set to OFF, else green.
+        if (!$complete) {
+            $statusClass = 'fc-sp-sku-status--missing';
+        } elseif ($hasOff) {
+            $statusClass = 'fc-sp-sku-status--off';
+        } else {
+            $statusClass = 'fc-sp-sku-status--found';
+        }
         $wrapClass = $complete ? 'fc-sp-skus-summary--complete' : 'fc-sp-skus-summary--incomplete';
         $ratio = $summary['found'] . '/' . $summary['total'];
-        $label = $complete
-            ? 'All style SKUs found in store catalogue'
-            : 'Some style SKUs missing from store catalogue';
+        if ($hasOff) {
+            $label = $complete
+                ? 'All style SKUs accounted for — includes a colour set to OFF'
+                : 'Some style SKUs missing — includes a colour set to OFF';
+        } else {
+            $label = $complete
+                ? 'All style SKUs found in store catalogue'
+                : 'Some style SKUs missing from store catalogue';
+        }
 
         return '<span class="fc-sp-skus-summary ' . $wrapClass . '" title="' . StringHelper::escapeHtml($label) . '">'
             . '<span class="fc-sp-sku-status ' . $statusClass . '" aria-hidden="true"></span>'

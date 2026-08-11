@@ -476,10 +476,13 @@ final class StoreProductModel
                 }
             }
             if ($incompleteOnly) {
-                // Same summary the SKUs column shows. Rows with no colour columns for their style
-                // render "—" and have nothing to complete, so they are not "incomplete" either.
+                // Same summary the SKUs column shows. Keep anything worth reviewing: a real gap, or
+                // a colour set to OFF (complete, but flagged red and still worth eyeballing). Rows
+                // with no colour columns for their style render "—" and have nothing to review.
                 $summary = StoreProductPresenter::skusSummary($row, $columns, $styleColors, $skuSetLookup);
-                if ($summary['total'] === 0 || $summary['complete']) {
+                $needsReview = $summary['total'] > 0
+                    && (!$summary['complete'] || ($summary['off'] ?? 0) > 0);
+                if (!$needsReview) {
                     $rowIndex++;
                     continue;
                 }
