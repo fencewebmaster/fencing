@@ -111,6 +111,23 @@ $fcStoreCsvReady = ($page['error'] ?? '') === '';
                         </div>
                     </div>
                 </div>
+                <label
+                    class="fc-entries-page__filter fc-sp-incomplete-toggle<?php echo !empty($page['incomplete_sku']) ? ' is-active' : ''; ?>"
+                    title="Show only products missing one or more store SKUs"
+                >
+                    <input
+                        type="checkbox"
+                        class="fc-sp-incomplete-toggle__input"
+                        name="incomplete"
+                        value="1"
+                        onchange="this.form.submit()"
+                        <?php echo !empty($page['incomplete_sku']) ? ' checked' : ''; ?>
+                    >
+                    <span class="fc-sp-incomplete-toggle__track" aria-hidden="true">
+                        <span class="fc-sp-incomplete-toggle__thumb"></span>
+                    </span>
+                    <span class="fc-sp-incomplete-toggle__label">SKU</span>
+                </label>
                 <input type="hidden" name="per_page" value="<?php echo !empty($page['is_all']) ? 'all' : (int) ($page['per_page'] ?? 50); ?>">
                 <?php if (!empty($page['has_active_filters'])) : ?>
                 <a
@@ -134,15 +151,16 @@ $fcStoreCsvReady = ($page['error'] ?? '') === '';
                 <div class="fc-products-download-dropdown" data-fc-store-products-download-dropdown>
                     <button
                         type="button"
-                        class="btn btn-sm btn-orange fw-semibold fc-products-download-trigger"
+                        class="btn btn-sm btn-dark fw-semibold fc-products-download-trigger fc-entries-toolbar-menu__toggle"
                         data-fc-store-products-download-toggle
                         aria-haspopup="menu"
                         aria-expanded="false"
                         aria-controls="fc-store-products-download-menu"
+                        aria-label="More actions"
+                        title="More actions"
                         id="fc-store-products-download-toggle"
                     >
-                        <span>Download</span>
-                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
                     </button>
                     <div
                         class="fc-products-download-dropdown__panel"

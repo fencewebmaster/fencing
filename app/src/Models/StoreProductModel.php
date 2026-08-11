@@ -403,10 +403,12 @@ final class StoreProductModel
             }
         }
         $colorFilters = array_values(array_unique($colorFilters));
+        $incompleteOnly = !empty($filters['incomplete']);
         $hasFilters = $supplierFilter !== ''
             || $styleFilter !== ''
             || $search !== ''
-            || $colorFilters !== [];
+            || $colorFilters !== []
+            || $incompleteOnly;
 
         $sortColumn = trim((string) ($filters['sort'] ?? ''));
         if (!in_array($sortColumn, self::STORE_SORT_COLUMNS, true)) {
@@ -435,6 +437,8 @@ final class StoreProductModel
         }
 
         $styleColors = StoreProductPresenter::styleColorsMap();
+        // Only pay for the WC catalogue index when the incomplete-SKU filter is on.
+        $skuSetLookup = $incompleteOnly ? \Fc\Admin\Services\WcProductSkuIndex::skuLookup() : [];
 
         $matched = 0;
         $unfiltered = 0;
@@ -467,6 +471,15 @@ final class StoreProductModel
             if ($search !== '') {
                 $haystack = strtolower(implode(' ', array_map(static fn($v): string => (string) $v, $row)));
                 if (!str_contains($haystack, $search)) {
+                    $rowIndex++;
+                    continue;
+                }
+            }
+            if ($incompleteOnly) {
+                // Same summary the SKUs column shows. Rows with no colour columns for their style
+                // render "—" and have nothing to complete, so they are not "incomplete" either.
+                $summary = StoreProductPresenter::skusSummary($row, $columns, $styleColors, $skuSetLookup);
+                if ($summary['total'] === 0 || $summary['complete']) {
                     $rowIndex++;
                     continue;
                 }

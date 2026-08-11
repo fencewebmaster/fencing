@@ -588,6 +588,7 @@ final class StoreProductPresenter
                 'dir'      => strtolower(trim((string) ($overrides['dir'] ?? ''))),
                 'page'     => $isAll ? 1 : (int) ($overrides['page'] ?? 1),
                 'per_page' => $isAll ? 'all' : (int) $perPageRaw,
+                'incomplete' => !empty($overrides['incomplete']) ? '1' : '',
             ],
             static function ($value, string $key): bool {
                 if ($key === 'page') {
@@ -668,18 +669,26 @@ final class StoreProductPresenter
         }
         $sortDir = strtolower(trim((string) ($query['dir'] ?? 'asc'))) === 'desc' ? 'desc' : 'asc';
 
+        $incompleteOnly = in_array(
+            strtolower(trim((string) ($query['incomplete'] ?? ''))),
+            ['1', 'true', 'on', 'yes'],
+            true
+        );
+
         $filters = [
-            'supplier' => trim((string) ($query['supplier'] ?? '')),
-            'style'    => trim((string) ($query['style'] ?? '')),
-            'q'        => trim((string) ($query['q'] ?? '')),
-            'colors'   => $selectedColors,
-            'sort'     => $sortColumn,
-            'dir'      => $sortDir,
+            'supplier'   => trim((string) ($query['supplier'] ?? '')),
+            'style'      => trim((string) ($query['style'] ?? '')),
+            'q'          => trim((string) ($query['q'] ?? '')),
+            'colors'     => $selectedColors,
+            'sort'       => $sortColumn,
+            'dir'        => $sortDir,
+            'incomplete' => $incompleteOnly,
         ];
         $hasActiveFilters = $filters['supplier'] !== ''
             || $filters['style'] !== ''
             || $filters['q'] !== ''
-            || $filters['colors'] !== [];
+            || $filters['colors'] !== []
+            || $incompleteOnly;
 
         $perPageOptions = [50, 100, 250, 500];
         $perPageRaw = strtolower(trim((string) ($query['per_page'] ?? '50')));
@@ -725,7 +734,7 @@ final class StoreProductPresenter
 
         $skuSet = [];
         if ($error === '' && $rows !== []) {
-            $skuSet = \Fc\Admin\Services\WcProductSkuIndex::skuUnion();
+            $skuSet = \Fc\Admin\Services\WcProductSkuIndex::skuLookup();
         }
 
         $tableHtml = '';
@@ -791,6 +800,7 @@ final class StoreProductPresenter
             'color_options'      => $colorOptions,
             'selected_colors'    => $selectedColors,
             'color_filter_label' => self::colorFilterLabel($colorOptions, $selectedColors),
+            'incomplete_sku'     => $incompleteOnly,
             'count_label'        => $countLabel,
             'file_label'         => (string) ($payload['file'] ?? 'products.csv'),
             'table_html'         => $tableHtml,

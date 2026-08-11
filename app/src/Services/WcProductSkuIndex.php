@@ -240,6 +240,17 @@ final class WcProductSkuIndex
     }
 
     /**
+     * Union of SKUs as a keyed lookup, for `isset($lookup[$sku])` membership tests.
+     * skuUnion() is a plain list, so indexing it by SKU never matches.
+     *
+     * @return array<string, true>
+     */
+    public static function skuLookup(): array
+    {
+        return array_fill_keys(self::skuUnion(), true);
+    }
+
+    /**
      * @return array{ok:bool,skus:list<string>,products:list<array{sku:string,name:string,image:string}>}
      */
     public static function indexPayload(): array
