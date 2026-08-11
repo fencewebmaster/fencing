@@ -1653,7 +1653,11 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
                             <span>Open planner</span>
                         </a>
                         <a
-                            href="<?php echo htmlspecialchars($fcAdminBase . '/logout', ENT_QUOTES, 'UTF-8'); ?>"
+                            href="<?php echo htmlspecialchars(
+                                \Fc\Admin\Models\AuthPresenter::logoutUrl($fcAdminBase),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ); ?>"
                             class="fc-sidebar-user__menu-item fc-sidebar-user__menu-item--danger"
                             role="menuitem"
                         >
