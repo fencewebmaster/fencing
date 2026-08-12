@@ -9,6 +9,7 @@ namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Models\StoreProductModel;
 use Fc\Admin\Models\SystemProductModel;
+use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\StoreProductMaintenanceService;
 use Fc\Admin\Services\WcProductSkuIndex;
@@ -193,6 +194,7 @@ final class ProductsController
     private static function downloadStoreProductsCsv(): void
     {
         $filename = 'products.csv';
+        $downloadFilename = AdminSiteRegistry::currentSiteFilenameSlug() . '-system-products.csv';
         $path = StoreProductModel::csvPath();
         if (!is_readable($path) || !is_file($path)) {
             http_response_code(404);
@@ -206,7 +208,7 @@ final class ProductsController
 
         $size = @filesize($path);
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Disposition: attachment; filename="' . $downloadFilename . '"');
         header('X-Content-Type-Options: nosniff');
         header('Cache-Control: no-store, no-cache, must-revalidate');
         if (is_int($size) && $size >= 0) {

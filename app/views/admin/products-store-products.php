@@ -22,6 +22,7 @@ $styleOptions = is_array($page['style_options'] ?? null) ? $page['style_options'
 $colorOptions = is_array($page['color_options'] ?? null) ? $page['color_options'] : [];
 $perPageOptions = is_array($page['per_page_options'] ?? null) ? $page['per_page_options'] : [];
 $fcStoreCsvReady = ($page['error'] ?? '') === '';
+$fcStoreCsvName = \Fc\Admin\Services\AdminSiteRegistry::currentSiteFilenameSlug() . '-system-products.csv';
 ?>
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden" data-fc-store-products-server="1" data-fc-store-products-php="1">
     <script type="application/json" id="fc-store-products-bootstrap"><?php echo $page['bootstrap_json']; ?></script>
@@ -174,7 +175,7 @@ $fcStoreCsvReady = ($page['error'] ?? '') === '';
                             class="fc-products-download-dropdown__option<?php echo $fcStoreCsvReady ? '' : ' is-disabled'; ?>"
                             role="menuitem"
                             data-fc-store-products-download-csv
-                            data-fc-store-products-csv-name="products.csv"
+                            data-fc-store-products-csv-name="<?php echo $h($fcStoreCsvName); ?>"
                             <?php echo $fcStoreCsvReady ? '' : ' disabled aria-disabled="true"'; ?>
                         >
                             <span>Export CSV</span>

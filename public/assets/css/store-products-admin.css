@@ -670,6 +670,28 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-edit-section-title {
         linear-gradient(315deg, #f8fafc 25%, transparent 25%) 0 0 / 1rem 1rem,
         linear-gradient(45deg, #f8fafc 25%, #e2e8f0 25%) 0 0 / 1rem 1rem;
 }
+#fc-sp-edit-modal .fc-sp-sku-thumb--viewable {
+    cursor: pointer;
+    transition: opacity 0.12s ease;
+}
+#fc-sp-edit-modal .fc-sp-sku-thumb--viewable:hover {
+    opacity: 0.85;
+}
+#fc-sp-edit-modal .fc-sp-sku-thumb--viewable:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+.fc-sp-gallery-caption__color {
+    display: block;
+}
+.fc-sp-gallery-caption__sku {
+    display: block;
+    margin-top: 0.2rem;
+    font-family: monospace;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    opacity: 0.85;
+}
 #fc-sp-edit-modal .fc-sp-sku-check {
     position: absolute;
     left: 0.3rem;

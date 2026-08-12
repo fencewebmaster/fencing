@@ -257,6 +257,23 @@ final class AdminSiteRegistry
     }
 
     /**
+     * Filename-safe domain for the current admin site, for exported file names
+     * (e.g. "fencesperth.com-system-products.csv").
+     */
+    public static function currentSiteFilenameSlug(): string
+    {
+        $site = self::currentSite();
+        $domain = trim((string) ($site['domain'] ?? ''));
+        if ($domain === '') {
+            return 'site';
+        }
+
+        $slug = preg_replace('/[^a-zA-Z0-9_.-]+/', '-', $domain);
+
+        return is_string($slug) && $slug !== '' ? $slug : 'site';
+    }
+
+    /**
      * True when admin data DB differs from the login (auth) DB.
      */
     public static function isSiteSwitched(): bool
