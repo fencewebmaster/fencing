@@ -2135,7 +2135,6 @@
                         '  pwd                  Show project root',
                         '  git <args>           Any git command in the project root',
                         '',
-                        'Mutating git commands (pull, push, merge, reset, …) require CONFIRM.',
                         'Shell operators and -C / --git-dir overrides are blocked.'
                     ].join('\n'),
                     'out'
@@ -2267,29 +2266,6 @@
             return false;
         }
 
-        function confirmGitCommand(command) {
-            var Modal = global.FcAdminModal;
-            var label = String(command || 'git').trim();
-            if (Modal && typeof Modal.confirm === 'function') {
-                return Modal.confirm({
-                    title: 'Run git command?',
-                    message: 'This will run "' + label + '" on the server in the project root. Continue?',
-                    confirmLabel: 'Run command',
-                    cancelLabel: 'Cancel',
-                    variant: 'warning',
-                    confirmText: 'CONFIRM',
-                    confirmPrompt: 'Type {confirm} to continue.'
-                });
-            }
-            return Promise.resolve(
-                window.prompt(
-                    'This will run "' +
-                        label +
-                        '" on the server in the project root.\n\nType CONFIRM to continue:'
-                ) === 'CONFIRM'
-            );
-        }
-
         function executeCommand(command) {
             var trimmed = String(command || '').trim();
             if (!trimmed || busy) {
@@ -2303,64 +2279,53 @@
                 return;
             }
 
-            var needsConfirm = gitNeedsConfirm(trimmed);
-            var confirmPromise = needsConfirm ? confirmGitCommand(trimmed) : Promise.resolve(true);
+            busy = true;
+            input.disabled = true;
+            appendLine('$ ' + trimmed, 'cmd');
 
-            confirmPromise.then(function (ok) {
-                if (!ok) {
-                    appendLine('$ ' + trimmed, 'cmd');
-                    appendLine('Cancelled.', 'muted');
-                    return;
-                }
+            var body = {
+                csrf: state.csrf || '',
+                command: trimmed
+            };
+            if (gitNeedsConfirm(trimmed)) {
+                body.confirm = 'CONFIRM';
+            }
 
-                busy = true;
-                input.disabled = true;
-                appendLine('$ ' + trimmed, 'cmd');
-
-                var body = {
-                    csrf: state.csrf || '',
-                    command: trimmed
-                };
-                if (needsConfirm) {
-                    body.confirm = 'CONFIRM';
-                }
-
-                fetch(API_DEV_CONSOLE, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify(body)
-                })
-                    .then(function (res) {
-                        return res.json().then(function (payload) {
-                            return { res: res, body: payload || {} };
-                        });
-                    })
-                    .then(function (result) {
-                        var payload = result.body;
-                        if (payload.clear) {
-                            clearOutput();
-                            return;
-                        }
-                        var text = String(payload.output || payload.error || '').trim();
-                        if (!result.res.ok || !payload.ok) {
-                            appendLine(text || payload.error || 'Command failed.', 'err');
-                            return;
-                        }
-                        appendLine(text || '(no output)', 'out');
-                    })
-                    .catch(function (err) {
-                        appendLine((err && err.message) || 'Could not run command.', 'err');
-                    })
-                    .finally(function () {
-                        busy = false;
-                        input.disabled = false;
-                        input.focus();
+            fetch(API_DEV_CONSOLE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(body)
+            })
+                .then(function (res) {
+                    return res.json().then(function (payload) {
+                        return { res: res, body: payload || {} };
                     });
-            });
+                })
+                .then(function (result) {
+                    var payload = result.body;
+                    if (payload.clear) {
+                        clearOutput();
+                        return;
+                    }
+                    var text = String(payload.output || payload.error || '').trim();
+                    if (!result.res.ok || !payload.ok) {
+                        appendLine(text || payload.error || 'Command failed.', 'err');
+                        return;
+                    }
+                    appendLine(text || '(no output)', 'out');
+                })
+                .catch(function (err) {
+                    appendLine((err && err.message) || 'Could not run command.', 'err');
+                })
+                .finally(function () {
+                    busy = false;
+                    input.disabled = false;
+                    input.focus();
+                });
         }
 
         form.addEventListener('submit', function (e) {
