@@ -10,6 +10,7 @@ use Fc\Admin\Services\CatalogSettings;
 use Fc\Admin\Services\ConsoleSettings;
 use Fc\Admin\Services\FenceColorSettings;
 use Fc\Admin\Services\IntegrationsSettings;
+use Fc\Admin\Services\PlannerOptionSettings;
 use Fc\Admin\Services\SystemSettings;
 use Fc\Admin\Services\ThemeSettings;
 
@@ -46,6 +47,19 @@ final class SettingsPresenter
             }
             unset($siteRow);
         }
+        $projectPlanPayload = PlannerOptionSettings::apiPayload();
+        $projectPlanItems = is_array($projectPlanPayload['extraItems'] ?? null) ? $projectPlanPayload['extraItems'] : [];
+        foreach ($projectPlanItems as &$ppItem) {
+            if (is_array($ppItem)) {
+                $imgPath = (string) ($ppItem['image'] ?? '');
+                if ($imgPath === '') {
+                    $imgPath = (string) ($ppItem['imageDefault'] ?? '');
+                }
+                $ppItem['imageUrl'] = BrandingSettings::logoUrl($appBase, ['logo' => $imgPath]);
+            }
+        }
+        unset($ppItem);
+        $projectPlanDefaults = is_array($projectPlanPayload['defaults'] ?? null) ? $projectPlanPayload['defaults'] : [];
         $consolePayload = ConsoleSettings::apiPayload();
         $console = is_array($consolePayload['console'] ?? null)
             ? $consolePayload['console']
@@ -93,6 +107,8 @@ final class SettingsPresenter
             'superAdmin' => is_array($integrationsPayload['superAdmin'] ?? null)
                 ? $integrationsPayload['superAdmin']
                 : [],
+            'projectPlanItems' => $projectPlanItems,
+            'projectPlanDefaults' => $projectPlanDefaults,
             'console' => $console,
             'consoleDefaults' => $consolePayload['defaults'] ?? ConsoleSettings::defaults(),
             'csrf' => AuthService::csrfToken(),
@@ -207,6 +223,7 @@ final class SettingsPresenter
                 'fence-colors' => 'Fence colors',
                 'catalog' => 'Catalog',
                 'system' => 'System',
+                'project-plan' => 'Project Plan',
                 'integration' => 'Integration',
                 'console' => 'Console',
             ],
@@ -236,6 +253,7 @@ final class SettingsPresenter
             'super_admin' => is_array($integrationsPayload['superAdmin'] ?? null)
                 ? $integrationsPayload['superAdmin']
                 : [],
+            'project_plan_items' => $projectPlanItems,
             'console' => $console,
             'panel_class' => [
                 'theme' => $initialTab === 'theme' ? '' : 'hidden ',
@@ -244,6 +262,7 @@ final class SettingsPresenter
                 'catalog' => $initialTab === 'catalog' ? '' : 'hidden ',
                 'system' => $initialTab === 'system' ? '' : 'hidden ',
                 'integration' => $initialTab === 'integration' ? '' : 'hidden ',
+                'project_plan' => $initialTab === 'project-plan' ? '' : 'hidden ',
                 'console' => $initialTab === 'console' ? '' : 'hidden ',
             ],
             'header_actions_class' => [
@@ -253,6 +272,7 @@ final class SettingsPresenter
                 'catalog' => $initialTab === 'catalog' ? 'flex' : 'hidden',
                 'system' => $initialTab === 'system' ? 'flex' : 'hidden',
                 'integration' => $initialTab === 'integration' ? 'flex' : 'hidden',
+                'project_plan' => $initialTab === 'project-plan' ? 'flex' : 'hidden',
                 'console' => $initialTab === 'console' ? 'flex' : 'hidden',
             ],
             'bootstrap' => $bootstrap,

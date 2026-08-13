@@ -152,7 +152,7 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
         </div>
     </div>
     <div class="fc-products-download-modal" data-fc-products-download-modal hidden>
-        <div class="fc-products-download-modal__backdrop" data-fc-products-download-close aria-hidden="true"></div>
+        <div class="fc-products-download-modal__backdrop" aria-hidden="true"></div>
         <section
             class="fc-products-download-modal__dialog"
             role="dialog"

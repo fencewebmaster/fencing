@@ -1174,7 +1174,7 @@
 
             var modalHtml =
                 '<div id="fc-sp-edit-modal" class="fixed inset-0 z-[100] items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="fc-sp-edit-modal-title" aria-hidden="true">' +
-                '<div class="fc-sp-edit-backdrop absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" data-fc-sp-modal-close aria-hidden="true"></div>' +
+                '<div class="fc-sp-edit-backdrop absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" aria-hidden="true"></div>' +
                 '<div class="fc-sp-edit-panel relative flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl">' +
                 '<button type="button" class="fencing-modal-close" data-fc-sp-modal-close aria-label="Close"></button>' +
                 '<div class="shrink-0 border-b border-slate-200 px-6 py-4 pr-12">' +

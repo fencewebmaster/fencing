@@ -2,14 +2,25 @@
 <div class="fc-other-products fc-form-group">
     <div class="row">
         <input type="hidden" name="extra" value="">
-        <?php foreach( fc_extra_needed() as $extra_k => $extra_v ): ?>
+        <?php foreach( \Fc\Admin\Services\PlannerOptionSettings::extraItems() as $extra_item ): ?>
+        <?php
+        $extra_k = (string) ($extra_item['slug'] ?? '');
+        $extra_v = (string) ($extra_item['label'] ?? '');
+        $extra_image = trim((string) ($extra_item['image'] ?? ''));
+        if ($extra_image === '') {
+            $extra_image = trim((string) ($extra_item['imageDefault'] ?? ''));
+        }
+        $extra_image_url = preg_match('#^https?://#i', $extra_image) || str_starts_with($extra_image, 'data:')
+            ? $extra_image
+            : \Fc\Admin\Helpers\UrlHelper::baseUrl() . $extra_image;
+        ?>
         <div class="col-md-3 col-sm-4 col-6">
             <div class="fc-form-check-img fc-rounded mb-3">
                 <label class="fc-form-check">
-                <img class="fc-rounded" src="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl(); ?>public/assets/img/plans/webp/<?php echo $extra_k; ?>.webp">								
-                <input type="checkbox" name="extra[]" value="<?php echo $extra_k; ?>">
+                <img class="fc-rounded" src="<?php echo htmlspecialchars($extra_image_url, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="checkbox" name="extra[]" value="<?php echo htmlspecialchars($extra_k, ENT_QUOTES, 'UTF-8'); ?>">
                 </label>
-                <div class="text-center fw-bold py-2 small"><?php echo $extra_v; ?></div>
+                <div class="text-center fw-bold py-2 small"><?php echo htmlspecialchars($extra_v, ENT_QUOTES, 'UTF-8'); ?></div>
             </div>
         </div>
         <?php endforeach; ?>

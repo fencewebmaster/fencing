@@ -284,7 +284,10 @@ final class ProductLookupService
         }
 
         $defaultPerPage = CatalogSettings::clampResultsPerPage($catalog['resultsPerPage'] ?? 12);
-        $perPageAllowed = CatalogSettings::resultsPerPageChoices($defaultPerPage);
+        $perPageAllowed = CatalogSettings::resultsPerPageChoices(
+            $defaultPerPage,
+            !empty($catalog['resultsPerPageAllEnabled'])
+        );
         $perPage = array_key_exists('per_page', $get) ? (int) $get['per_page'] : $defaultPerPage;
         if (!in_array($perPage, $perPageAllowed, true)) {
             $perPage = $defaultPerPage;
@@ -730,7 +733,8 @@ final class ProductLookupService
         $result = ProductLookupQueryService::queryIds($request);
         $ids = $result['ids'];
         $total = (int) $result['total'];
-        $pages = $perPage > 0 ? (int) ceil($total / $perPage) : 0;
+        $isAll = $perPage === CatalogSettings::ALL_PER_PAGE;
+        $pages = $isAll ? ($total > 0 ? 1 : 0) : ($perPage > 0 ? (int) ceil($total / $perPage) : 0);
 
         $products = [];
         foreach ($ids as $pid) {
@@ -741,8 +745,13 @@ final class ProductLookupService
             }
         }
 
-        $from = $total === 0 ? 0 : (($page - 1) * $perPage) + 1;
-        $to = min($total, $page * $perPage);
+        if ($isAll) {
+            $from = $total === 0 ? 0 : 1;
+            $to = $total;
+        } else {
+            $from = $total === 0 ? 0 : (($page - 1) * $perPage) + 1;
+            $to = min($total, $page * $perPage);
+        }
 
         $payload = [
             'products' => $products,
@@ -902,7 +911,8 @@ final class ProductLookupService
                 'clear_url' => self::basePath(),
                 'orderby_options' => self::orderbyOptions(),
                 'per_page_options' => CatalogSettings::resultsPerPageChoices(
-                    (int) ($catalog['resultsPerPage'] ?? 12)
+                    (int) ($catalog['resultsPerPage'] ?? 12),
+                    !empty($catalog['resultsPerPageAllEnabled'])
                 ),
                 'catalog' => $catalog,
             ];

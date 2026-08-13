@@ -11,6 +11,7 @@
     var API_SYSTEM = fcApiUrl('settings', 'action=system');
     var API_INTEGRATIONS = fcApiUrl('settings', 'action=integrations');
     var API_CLOUDFLARE_VERIFY = fcApiUrl('settings', 'action=cloudflare-verify');
+    var API_PROJECT_PLAN = fcApiUrl('settings', 'action=project-plan');
     var API_CONSOLE = fcApiUrl('settings', 'action=console');
     var API_DEV_CONSOLE = fcApiUrl('settings', 'action=dev-console');
     var TOAST_THEME = 'fc-theme-save';
@@ -21,6 +22,10 @@
     var TOAST_INTEGRATIONS = 'fc-integrations-save';
     var TOAST_CONSOLE = 'fc-console-save';
     var TOAST_CLOUDFLARE_VERIFY = 'fc-cloudflare-verify';
+    var TOAST_PROJECT_PLAN = 'fc-project-plan-save';
+    var SETTINGS_IMAGE_PREVIEW_BODY_CLASS = 'fc-entries-cart-gallery-open';
+    var settingsImagePreviewEl = null;
+    var settingsImagePreviewKeydownHandler = null;
 
     var SETTINGS_TABS = [
         'theme',
@@ -29,6 +34,7 @@
         'catalog',
         'system',
         'integration',
+        'project-plan',
         'console'
     ];
     var SETTINGS_DEFAULT_TAB = 'theme';
@@ -263,6 +269,109 @@
         });
     }
 
+    /** <img> markup for a settings preview thumbnail, clickable to view larger (project plan items, integration logos). */
+    function buildViewableImgHtml(url, label) {
+        var safeLabel = escapeHtml(String(label || ''));
+        return (
+            '<img src="' +
+            escapeHtml(url) +
+            '" alt="" loading="lazy" decoding="async" tabindex="0" role="button" data-fc-settings-image-view data-fc-settings-image-view-label="' +
+            safeLabel +
+            '" aria-label="View larger image' +
+            (safeLabel ? ' for ' + safeLabel : '') +
+            '" />'
+        );
+    }
+
+    function closeSettingsImagePreview() {
+        if (!settingsImagePreviewEl) {
+            return;
+        }
+        if (settingsImagePreviewKeydownHandler) {
+            document.removeEventListener('keydown', settingsImagePreviewKeydownHandler);
+            settingsImagePreviewKeydownHandler = null;
+        }
+        settingsImagePreviewEl.remove();
+        settingsImagePreviewEl = null;
+        document.body.classList.remove(SETTINGS_IMAGE_PREVIEW_BODY_CLASS);
+    }
+
+    function openSettingsImagePreview(url, label) {
+        if (!url) {
+            return;
+        }
+        closeSettingsImagePreview();
+
+        var caption = String(label || '').trim();
+        settingsImagePreviewEl = document.createElement('div');
+        settingsImagePreviewEl.className = 'fc-entries-cart-gallery';
+        settingsImagePreviewEl.setAttribute('role', 'dialog');
+        settingsImagePreviewEl.setAttribute('aria-modal', 'true');
+        settingsImagePreviewEl.setAttribute('aria-label', caption || 'Image preview');
+        settingsImagePreviewEl.innerHTML =
+            '<div class="fc-entries-cart-gallery__backdrop" data-fc-settings-image-close aria-hidden="true"></div>' +
+            '<button type="button" class="fencing-modal-close" data-fc-settings-image-close aria-label="Close"></button>' +
+            '<div class="fc-entries-cart-gallery__stage">' +
+            '<img class="fc-entries-cart-gallery__image" src="' +
+            escapeHtml(url) +
+            '" alt="' +
+            escapeHtml(caption) +
+            '">' +
+            (caption ? '<p class="fc-entries-cart-gallery__caption">' + escapeHtml(caption) + '</p>' : '') +
+            '</div>';
+
+        document.body.appendChild(settingsImagePreviewEl);
+        document.body.classList.add(SETTINGS_IMAGE_PREVIEW_BODY_CLASS);
+
+        settingsImagePreviewEl.querySelectorAll('[data-fc-settings-image-close]').forEach(function (btn) {
+            btn.addEventListener('click', closeSettingsImagePreview);
+        });
+
+        settingsImagePreviewKeydownHandler = function (e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeSettingsImagePreview();
+            }
+        };
+        document.addEventListener('keydown', settingsImagePreviewKeydownHandler);
+    }
+
+    function bindSettingsImagePreviewTriggers(root) {
+        var scope = root || document;
+        if (scope.getAttribute && scope.getAttribute('data-fc-settings-image-view-bound') === '1') {
+            return;
+        }
+        if (scope.setAttribute) {
+            scope.setAttribute('data-fc-settings-image-view-bound', '1');
+        }
+
+        function triggerFor(target) {
+            var url = target.currentSrc || target.src || '';
+            openSettingsImagePreview(url, target.getAttribute('data-fc-settings-image-view-label') || '');
+        }
+
+        scope.addEventListener('click', function (e) {
+            var target = e.target.closest('[data-fc-settings-image-view]');
+            if (!target || (root && !root.contains(target))) {
+                return;
+            }
+            e.preventDefault();
+            triggerFor(target);
+        });
+
+        scope.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ') {
+                return;
+            }
+            var target = e.target.closest('[data-fc-settings-image-view]');
+            if (!target || (root && !root.contains(target))) {
+                return;
+            }
+            e.preventDefault();
+            triggerFor(target);
+        });
+    }
+
     function applyLiveTheme() {
         if (global.FcTheme && typeof global.FcTheme.apply === 'function') {
             global.FcTheme.apply(state.colors);
@@ -435,6 +544,7 @@
             { id: 'catalog', label: 'Catalog' },
             { id: 'system', label: 'System' },
             { id: 'integration', label: 'Integration' },
+            { id: 'project-plan', label: 'Project Plan' },
             { id: 'console', label: 'Console' }
         ];
 
@@ -563,6 +673,7 @@
         var catalogActions = document.getElementById('fc-settings-header-actions-catalog');
         var systemActions = document.getElementById('fc-settings-header-actions-system');
         var integrationActions = document.getElementById('fc-settings-header-actions-integration');
+        var projectPlanActions = document.getElementById('fc-settings-header-actions-project-plan');
         var consoleActions = document.getElementById('fc-settings-header-actions-console');
         var themeDirty = document.getElementById('fc-settings-theme-dirty');
         var brandingDirty = document.getElementById('fc-settings-branding-dirty');
@@ -570,6 +681,7 @@
         var catalogDirty = document.getElementById('fc-settings-catalog-dirty');
         var systemDirty = document.getElementById('fc-settings-system-dirty');
         var integrationDirty = document.getElementById('fc-settings-integration-dirty');
+        var projectPlanDirty = document.getElementById('fc-settings-project-plan-dirty');
 
         if (themeActions) {
             themeActions.classList.toggle('hidden', state.activeTab !== 'theme');
@@ -594,6 +706,10 @@
         if (integrationActions) {
             integrationActions.classList.toggle('hidden', state.activeTab !== 'integration');
             integrationActions.classList.toggle('flex', state.activeTab === 'integration');
+        }
+        if (projectPlanActions) {
+            projectPlanActions.classList.toggle('hidden', state.activeTab !== 'project-plan');
+            projectPlanActions.classList.toggle('flex', state.activeTab === 'project-plan');
         }
         if (consoleActions) {
             consoleActions.classList.toggle('hidden', state.activeTab !== 'console');
@@ -621,6 +737,12 @@
             integrationDirty.classList.toggle(
                 'hidden',
                 state.activeTab !== 'integration' || !state.integrationDirty
+            );
+        }
+        if (projectPlanDirty) {
+            projectPlanDirty.classList.toggle(
+                'hidden',
+                state.activeTab !== 'project-plan' || !state.projectPlanItemsDirty
             );
         }
     }
@@ -1020,6 +1142,19 @@
                 subLabel: row.subLabel || row.sub_label || '',
                 color: row.color || '',
                 image: row.image || ''
+            };
+        });
+    }
+
+    function cloneProjectPlanItems(list) {
+        return (list || []).map(function (row) {
+            return {
+                key: row.slug || '',
+                slug: row.slug || '',
+                label: row.label || '',
+                image: row.image || '',
+                imageDefault: row.imageDefault || '',
+                isOriginal: !!row.isOriginal
             };
         });
     }
@@ -1432,6 +1567,7 @@
         var catalogPanel = document.getElementById('fc-settings-panel-catalog');
         var systemPanel = document.getElementById('fc-settings-panel-system');
         var integrationPanel = document.getElementById('fc-settings-panel-integration');
+        var projectPlanPanel = document.getElementById('fc-settings-panel-project-plan');
         var consolePanel = document.getElementById('fc-settings-panel-console');
         var preview = document.getElementById('fc-settings-preview');
         var layout = document.getElementById('fc-settings-layout');
@@ -1454,6 +1590,9 @@
         }
         if (integrationPanel) {
             integrationPanel.classList.toggle('hidden', tabId !== 'integration');
+        }
+        if (projectPlanPanel) {
+            projectPlanPanel.classList.toggle('hidden', tabId !== 'project-plan');
         }
         if (consolePanel) {
             consolePanel.classList.toggle('hidden', tabId !== 'console');
@@ -2587,9 +2726,7 @@
                         );
                         if (preview) {
                             var url = fenceColorPreviewUrl({ image: path }, getAppBase());
-                            preview.innerHTML = url
-                                ? '<img src="' + escapeHtml(url) + '" alt="" loading="lazy" decoding="async" />'
-                                : '';
+                            preview.innerHTML = url ? buildViewableImgHtml(url, site ? site.label || siteKey : siteKey) : '';
                         }
                         setIntegrationDirty(true);
                     }
@@ -2783,6 +2920,388 @@
             });
     }
 
+    function projectPlanItemKey(item) {
+        return (item && (item.key || item.slug)) || '';
+    }
+
+    function findProjectPlanItemByKey(key) {
+        return state.projectPlanItems.find(function (row) {
+            return projectPlanItemKey(row) === key;
+        });
+    }
+
+    function paintProjectPlanForm() {
+        document.querySelectorAll('[data-fc-project-plan-item-field]').forEach(function (input) {
+            var key = input.getAttribute('data-fc-project-plan-item');
+            var field = input.getAttribute('data-fc-project-plan-item-field');
+            var item = findProjectPlanItemByKey(key);
+            input.value = item && field ? item[field] || '' : '';
+        });
+    }
+
+    function setProjectPlanDirty(isDirty) {
+        state.projectPlanItemsDirty = !!isDirty;
+        updateHeaderActions();
+    }
+
+    /** Field sync + image-pick + remove wiring for one item row. Reused for both
+     *  server-rendered rows (at initial bind) and rows added via "Add item". */
+    function bindProjectPlanItemRow(rowEl) {
+        if (!rowEl || rowEl.getAttribute('data-fc-pp-row-bound') === '1') {
+            return;
+        }
+        rowEl.setAttribute('data-fc-pp-row-bound', '1');
+
+        rowEl.querySelectorAll('[data-fc-project-plan-item-field]').forEach(function (input) {
+            function sync() {
+                var key = input.getAttribute('data-fc-project-plan-item');
+                var field = input.getAttribute('data-fc-project-plan-item-field');
+                var item = findProjectPlanItemByKey(key);
+                if (item && field) {
+                    item[field] = input.value;
+                    setProjectPlanDirty(true);
+                }
+            }
+            input.addEventListener('input', sync);
+            input.addEventListener('change', sync);
+        });
+
+        var pickBtn = rowEl.querySelector('[data-fc-project-plan-item-pick]');
+        if (pickBtn) {
+            pickBtn.addEventListener('click', function () {
+                var key = pickBtn.getAttribute('data-fc-project-plan-item-pick');
+                var input = rowEl.querySelector(
+                    '[data-fc-project-plan-item="' + key + '"][data-fc-project-plan-item-field="image"]'
+                );
+                if (!input || !global.FcAdminMediaPicker || typeof global.FcAdminMediaPicker.open !== 'function') {
+                    return;
+                }
+                global.FcAdminMediaPicker.open({
+                    appBase: getAppBase(),
+                    csrf: state.csrf,
+                    onSelect: function (path) {
+                        input.value = path;
+                        var item = findProjectPlanItemByKey(key);
+                        if (item) {
+                            item.image = path;
+                        }
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        var preview = rowEl.querySelector('[data-fc-project-plan-item-preview="' + key + '"]');
+                        if (preview) {
+                            var url = fenceColorPreviewUrl({ image: path }, getAppBase());
+                            preview.innerHTML = url ? buildViewableImgHtml(url, (item && item.label) || key) : '';
+                        }
+                        setProjectPlanDirty(true);
+                    }
+                });
+            });
+        }
+
+        var removeBtn = rowEl.querySelector('[data-fc-project-plan-item-remove]');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function () {
+                var key = removeBtn.getAttribute('data-fc-project-plan-item-remove');
+                state.projectPlanItems = state.projectPlanItems.filter(function (row) {
+                    return projectPlanItemKey(row) !== key;
+                });
+                rowEl.remove();
+                setProjectPlanDirty(true);
+            });
+        }
+    }
+
+    /** Blank row markup for a newly added (not yet saved) extra item. */
+    function renderProjectPlanItemRowHtml(item) {
+        var key = escapeHtml(projectPlanItemKey(item));
+        var slugId = 'fc-project-plan-item-' + key + '-slug';
+        var labelId = 'fc-project-plan-item-' + key + '-label';
+        var imageId = 'fc-project-plan-item-' + key + '-image';
+
+        return (
+            '<div class="grid min-w-[52rem] grid-cols-[1.5rem_2.5rem_minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.4fr)_2.25rem] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0" data-fc-project-plan-row="' +
+            key +
+            '">' +
+            '<span class="fc-project-plan-grip" data-fc-project-plan-grip role="button" tabindex="0" aria-label="Drag to reorder" title="Drag to reorder">' +
+            '<i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>' +
+            '</span>' +
+            '<span class="fc-settings-site-logo shrink-0" data-fc-project-plan-item-preview="' +
+            key +
+            '"></span>' +
+            '<span class="fc-settings-field-input-wrap">' +
+            '<input type="text" id="' +
+            slugId +
+            '" data-fc-project-plan-item="' +
+            key +
+            '" data-fc-project-plan-item-field="slug" value="" class="fc-settings-field font-mono" spellcheck="false" autocomplete="off" placeholder="e.g. gate-opener" aria-label="Slug">' +
+            '<button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="' +
+            slugId +
+            '" aria-label="Copy Slug" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>' +
+            '</span>' +
+            '<span class="fc-settings-field-input-wrap">' +
+            '<input type="text" id="' +
+            labelId +
+            '" data-fc-project-plan-item="' +
+            key +
+            '" data-fc-project-plan-item-field="label" value="" class="fc-settings-field" aria-label="Label">' +
+            '<button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="' +
+            labelId +
+            '" aria-label="Copy Label" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>' +
+            '</span>' +
+            '<span class="fc-settings-field-input-wrap">' +
+            '<input type="text" id="' +
+            imageId +
+            '" data-fc-project-plan-item="' +
+            key +
+            '" data-fc-project-plan-item-field="image" value="" class="fc-settings-field font-mono" placeholder="public/assets/img/plans/webp/…" autocomplete="off" spellcheck="false" aria-label="Image">' +
+            '<button type="button" class="fc-settings-field-copy" data-fc-project-plan-item-pick="' +
+            key +
+            '" title="Set image" aria-label="Set image"><i class="fa-solid fa-image" aria-hidden="true"></i></button>' +
+            '<button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="' +
+            imageId +
+            '" aria-label="Copy Image" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>' +
+            '</span>' +
+            '<button type="button" class="fc-project-plan-remove" data-fc-project-plan-item-remove="' +
+            key +
+            '" title="Remove item" aria-label="Remove item"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>' +
+            '</div>'
+        );
+    }
+
+    function syncProjectPlanOrderFromDom() {
+        var container = document.getElementById('fc-project-plan-items');
+        if (!container) {
+            return;
+        }
+        var rows = container.querySelectorAll('[data-fc-project-plan-row]');
+        var next = [];
+        rows.forEach(function (rowEl) {
+            var key = rowEl.getAttribute('data-fc-project-plan-row');
+            var item = findProjectPlanItemByKey(key);
+            if (item) {
+                next.push(item);
+            }
+        });
+        if (next.length === state.projectPlanItems.length) {
+            state.projectPlanItems = next;
+        }
+    }
+
+    function moveProjectPlanRowBeforeTarget(fromRow, targetRow) {
+        if (!fromRow || !targetRow || fromRow === targetRow) {
+            return;
+        }
+        var parent = targetRow.parentNode;
+        if (!parent) {
+            return;
+        }
+        var siblings = Array.prototype.slice.call(parent.querySelectorAll(':scope > [data-fc-project-plan-row]'));
+        var fromIndex = siblings.indexOf(fromRow);
+        var toIndex = siblings.indexOf(targetRow);
+        if (fromIndex < 0 || toIndex < 0) {
+            return;
+        }
+        if (fromIndex < toIndex) {
+            parent.insertBefore(fromRow, targetRow.nextSibling);
+        } else {
+            parent.insertBefore(fromRow, targetRow);
+        }
+    }
+
+    function bindProjectPlanDragDrop(container) {
+        if (!container || container.getAttribute('data-fc-pp-drag-bound') === '1') {
+            return;
+        }
+        container.setAttribute('data-fc-pp-drag-bound', '1');
+
+        var dragRow = null;
+
+        function clearDragOver() {
+            container.querySelectorAll('.fc-project-plan-row--drag-over').forEach(function (row) {
+                row.classList.remove('fc-project-plan-row--drag-over');
+            });
+        }
+
+        function resetDraggable() {
+            container.querySelectorAll('[data-fc-project-plan-row]').forEach(function (row) {
+                row.draggable = false;
+            });
+        }
+
+        container.addEventListener('mousedown', function (e) {
+            var grip = e.target.closest('[data-fc-project-plan-grip]');
+            if (!grip || !container.contains(grip)) {
+                return;
+            }
+            var row = grip.closest('[data-fc-project-plan-row]');
+            if (row) {
+                row.draggable = true;
+            }
+        });
+
+        container.addEventListener('mouseup', resetDraggable);
+
+        container.addEventListener('dragstart', function (e) {
+            var row = e.target.closest('[data-fc-project-plan-row]');
+            if (!row || !container.contains(row) || !row.draggable) {
+                e.preventDefault();
+                return;
+            }
+            dragRow = row;
+            row.classList.add('fc-project-plan-row--dragging');
+            if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', 'project-plan-row');
+            }
+        });
+
+        container.addEventListener('dragend', function () {
+            if (dragRow) {
+                dragRow.classList.remove('fc-project-plan-row--dragging');
+            }
+            clearDragOver();
+            resetDraggable();
+            dragRow = null;
+        });
+
+        container.addEventListener('dragover', function (e) {
+            if (!dragRow) {
+                return;
+            }
+            var target = e.target.closest('[data-fc-project-plan-row]');
+            if (!target || !container.contains(target) || target === dragRow) {
+                return;
+            }
+            e.preventDefault();
+            clearDragOver();
+            target.classList.add('fc-project-plan-row--drag-over');
+        });
+
+        container.addEventListener('dragleave', function (e) {
+            var row = e.target.closest('[data-fc-project-plan-row]');
+            if (row) {
+                row.classList.remove('fc-project-plan-row--drag-over');
+            }
+        });
+
+        container.addEventListener('drop', function (e) {
+            if (!dragRow) {
+                return;
+            }
+            var target = e.target.closest('[data-fc-project-plan-row]');
+            if (!target || !container.contains(target) || target === dragRow) {
+                return;
+            }
+            e.preventDefault();
+            moveProjectPlanRowBeforeTarget(dragRow, target);
+            clearDragOver();
+            syncProjectPlanOrderFromDom();
+            setProjectPlanDirty(true);
+        });
+    }
+
+    function bindProjectPlanForm() {
+        if (state.projectPlanFormBound) {
+            return;
+        }
+        state.projectPlanFormBound = true;
+
+        document.querySelectorAll('[data-fc-project-plan-row]').forEach(function (rowEl) {
+            bindProjectPlanItemRow(rowEl);
+        });
+
+        var addBtn = document.getElementById('fc-project-plan-add');
+        var itemsContainer = document.getElementById('fc-project-plan-items');
+        if (itemsContainer) {
+            bindProjectPlanDragDrop(itemsContainer);
+        }
+        if (addBtn && itemsContainer) {
+            addBtn.addEventListener('click', function () {
+                state.projectPlanItemCounter = (state.projectPlanItemCounter || 0) + 1;
+                var item = {
+                    key: 'new-' + state.projectPlanItemCounter,
+                    slug: '',
+                    label: '',
+                    image: '',
+                    imageDefault: '',
+                    isOriginal: false
+                };
+                state.projectPlanItems.push(item);
+                itemsContainer.insertAdjacentHTML('beforeend', renderProjectPlanItemRowHtml(item));
+                var rowEl = itemsContainer.lastElementChild;
+                bindProjectPlanItemRow(rowEl);
+                setProjectPlanDirty(true);
+                var slugInput = rowEl.querySelector('[data-fc-project-plan-item-field="slug"]');
+                if (slugInput) {
+                    slugInput.focus();
+                }
+            });
+        }
+
+        var saveBtn = document.getElementById('fc-project-plan-save');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', saveProjectPlan);
+        }
+        var resetBtn = document.getElementById('fc-project-plan-reset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                state.projectPlanItems = state.projectPlanItems.map(function (row) {
+                    var def = state.projectPlanItemsDefaults.find(function (d) {
+                        return d.slug === row.slug;
+                    });
+                    return {
+                        key: projectPlanItemKey(row),
+                        slug: row.slug,
+                        label: def ? def.label : row.label,
+                        image: '',
+                        imageDefault: row.imageDefault,
+                        isOriginal: row.isOriginal
+                    };
+                });
+                paintProjectPlanForm();
+                document.querySelectorAll('[data-fc-project-plan-item-preview]').forEach(function (preview) {
+                    var key = preview.getAttribute('data-fc-project-plan-item-preview');
+                    var item = findProjectPlanItemByKey(key);
+                    var url = item ? fenceColorPreviewUrl({ image: item.imageDefault }, getAppBase()) : '';
+                    preview.innerHTML = url
+                        ? '<img src="' + escapeHtml(url) + '" alt="" loading="lazy" decoding="async" />'
+                        : '';
+                });
+                setProjectPlanDirty(true);
+            });
+        }
+    }
+
+    function saveProjectPlan() {
+        toast('saving', 'Saving Project Plan settings…', TOAST_PROJECT_PLAN);
+        fetch(API_PROJECT_PLAN, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ items: state.projectPlanItems, csrf: state.csrf })
+        })
+            .then(function (res) {
+                return res.json().then(function (body) {
+                    if (!res.ok || !body.ok) {
+                        throw new Error((body && body.error) || 'Save failed');
+                    }
+                    return body;
+                });
+            })
+            .then(function (body) {
+                state.projectPlanItems = cloneProjectPlanItems(body.extraItems || state.projectPlanItems);
+                paintProjectPlanForm();
+                setProjectPlanDirty(false);
+                setFlash(body.message || 'Project Plan settings saved.', 'success');
+                window.location.reload();
+            })
+            .catch(function (err) {
+                toast('error', err.message || 'Could not save Project Plan settings.', TOAST_PROJECT_PLAN);
+            });
+    }
+
     function cloneCatalog(catalog) {
         try {
             return JSON.parse(JSON.stringify(catalog || {}));
@@ -2964,27 +3483,6 @@
         }
     }
 
-    function catalogResultsPerPageList(base) {
-        var n = parseInt(base, 10);
-        if (!n || n < 1) {
-            n = 12;
-        }
-        if (n > 100) {
-            n = 100;
-        }
-        return [n, n * 2, n * 3, n * 4, n * 5];
-    }
-
-    function paintCatalogResultsPerPageHint() {
-        var hint = document.getElementById('fc-catalog-resultsPerPage-hint');
-        if (!hint) {
-            return;
-        }
-        var list = catalogResultsPerPageList(state.catalog.resultsPerPage);
-        hint.textContent =
-            'Lookup Per page list: ' + list.join(', ') + ' (default ' + list[0] + ').';
-    }
-
     function paintCatalogForm() {
         document.querySelectorAll('[data-fc-catalog-field]').forEach(function (el) {
             var key = el.getAttribute('data-fc-catalog-field');
@@ -2992,11 +3490,12 @@
                 return;
             }
             var value = state.catalog[key];
-            if (el.tagName === 'SELECT' || el.tagName === 'INPUT') {
+            if (el.type === 'checkbox') {
+                el.checked = !!value;
+            } else if (el.tagName === 'SELECT' || el.tagName === 'INPUT') {
                 el.value = value == null ? '' : String(value);
             }
         });
-        paintCatalogResultsPerPageHint();
         paintCatalogLists();
     }
 
@@ -3080,13 +3579,12 @@
                 if (!key) {
                     return;
                 }
-                if (el.type === 'number' || key === 'resultsPerPage') {
+                if (el.type === 'checkbox') {
+                    state.catalog[key] = !!el.checked;
+                } else if (el.type === 'number' || key === 'resultsPerPage') {
                     state.catalog[key] = el.value === '' ? '' : Number(el.value);
                 } else {
                     state.catalog[key] = el.value;
-                }
-                if (key === 'resultsPerPage') {
-                    paintCatalogResultsPerPageHint();
                 }
                 setCatalogDirty(true);
             };
@@ -3381,6 +3879,9 @@
         state.integrationsRevision = data.integrationsRevision || '';
         state.csrf = data.csrf || '';
 
+        state.projectPlanItems = cloneProjectPlanItems(data.projectPlanItems || []);
+        state.projectPlanItemsDefaults = cloneProjectPlanItems(data.projectPlanDefaults || []);
+
         state.console = Object.assign(
             { debugMode: false },
             data.console || {}
@@ -3396,11 +3897,13 @@
         state.catalogDirty = false;
         state.systemDirty = false;
         state.integrationDirty = false;
+        state.projectPlanItemsDirty = false;
         state.fenceColorsSort = { column: null, direction: 'asc' };
         fenceColorsTableBound = false;
         state.catalogFormBound = false;
         state.systemFormBound = false;
         state.integrationFormBound = false;
+        state.projectPlanFormBound = false;
         state.consoleFormBound = false;
         state.consoleSaving = false;
 
@@ -3421,12 +3924,14 @@
         applyBootstrapState(data);
         bindSettingsShell();
         bindSettingsCopyButtons(container);
+        bindSettingsImagePreviewTriggers(container);
         bindThemeForm();
         bindBrandingForm();
         bindFenceColorsForm();
         bindCatalogForm();
         bindSystemForm();
         bindIntegrationForm();
+        bindProjectPlanForm();
         bindDevModeForm();
         updatePresetCards();
         applyLiveTheme();
@@ -3434,6 +3939,7 @@
         paintCatalogForm();
         paintSystemForm();
         paintIntegrationForm();
+        paintProjectPlanForm();
         if (state.activeTab === 'catalog') {
             ensureCatalogOptions().then(function () {
                 paintCatalogForm();

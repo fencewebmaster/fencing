@@ -1696,9 +1696,68 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
     display: block;
 }
 
+.fc-settings-site-logo img[data-fc-settings-image-view] {
+    cursor: zoom-in;
+}
+
+.fc-settings-site-logo img[data-fc-settings-image-view]:hover {
+    opacity: 0.85;
+}
+
+.fc-settings-site-logo img[data-fc-settings-image-view]:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 1px;
+}
+
 html[data-fc-admin-theme='dark'] .fc-settings-site-logo {
     background: var(--fc-admin-surface-muted);
     border-color: var(--fc-admin-border);
+}
+
+.fc-project-plan-grip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: grab;
+}
+
+.fc-project-plan-grip:hover {
+    color: #475569;
+}
+
+.fc-project-plan-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.125rem;
+    height: 2.125rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 3px;
+    background: #fff;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+}
+
+.fc-project-plan-remove:hover {
+    color: #dc2626;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.fc-project-plan-remove--disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.fc-project-plan-row--dragging {
+    box-shadow: 0 0 0 1px #cbd5e1;
+}
+
+.fc-project-plan-row--drag-over {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
 }
 
 .fc-fs-kv-block--fence-colors .fc-fs-kv-row__grip {

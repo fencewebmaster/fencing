@@ -14,6 +14,10 @@ $orderbyOptions = is_array($page['orderby_options'] ?? null) ? $page['orderby_op
 $catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : [];
 $defaultPerPage = \Fc\Admin\Services\CatalogSettings::clampResultsPerPage($catalog['resultsPerPage'] ?? 12);
 $perPageOptions = is_array($page['per_page_options'] ?? null) ? $page['per_page_options'] : \Fc\Admin\Services\CatalogSettings::resultsPerPageChoices($defaultPerPage);
+$perPageOptions = array_values(array_filter(
+    $perPageOptions,
+    static fn($opt): bool => (int) $opt !== \Fc\Admin\Services\CatalogSettings::ALL_PER_PAGE
+));
 $currentPerPage = (int) ($req['per_page'] ?? $defaultPerPage);
 if (!in_array($currentPerPage, array_map('intval', $perPageOptions), true)) {
     $currentPerPage = $defaultPerPage;

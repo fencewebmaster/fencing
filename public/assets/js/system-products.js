@@ -211,7 +211,7 @@
         galleryEl.setAttribute('aria-modal', 'true');
         galleryEl.setAttribute('aria-label', caption);
         galleryEl.innerHTML =
-            '<div class="fc-entries-cart-gallery__backdrop" data-fc-cart-gallery-close aria-hidden="true"></div>' +
+            '<div class="fc-entries-cart-gallery__backdrop" aria-hidden="true"></div>' +
             '<button type="button" class="fencing-modal-close" data-fc-cart-gallery-close aria-label="Close"></button>' +
             '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--prev" data-fc-cart-gallery-prev aria-label="Previous image">' +
             '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>' +

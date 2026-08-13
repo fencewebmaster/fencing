@@ -15,6 +15,7 @@ use Fc\Admin\Services\ConsoleSettings;
 use Fc\Admin\Services\DevConsoleService;
 use Fc\Admin\Services\FenceColorSettings;
 use Fc\Admin\Services\IntegrationsSettings;
+use Fc\Admin\Services\PlannerOptionSettings;
 use Fc\Admin\Services\SystemSettings;
 use Fc\Admin\Services\ThemeSettings;
 
@@ -61,6 +62,11 @@ final class SettingsController
 
         if ($action === 'cloudflare-verify') {
             self::handleCloudflareVerify($method);
+            return;
+        }
+
+        if ($action === 'project-plan') {
+            self::handleProjectPlan($method);
             return;
         }
 
@@ -208,6 +214,48 @@ final class SettingsController
             $response = FenceColorSettings::apiPayload();
             $response['message'] = 'Fence colors saved.';
             echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        http_response_code(405);
+        echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    private static function handleProjectPlan(string $method): void
+    {
+        if ($method === 'GET') {
+            echo json_encode(PlannerOptionSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if ($method === 'POST') {
+            $payload = self::jsonBody();
+            if (!is_array($payload) || !isset($payload['items']) || !is_array($payload['items'])) {
+                http_response_code(400);
+                echo json_encode([
+                    'ok' => false,
+                    'error' => 'Invalid JSON. Expected { "items": [ { "slug": "pump-enclosure", "label": "Pump Enclosure", "image": "" } ] }.',
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (!AuthService::verifyCsrf(
+                isset($payload['csrf']) ? (string) $payload['csrf'] : null
+            )) {
+                http_response_code(403);
+                echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $result = PlannerOptionSettings::saveExtraItems($payload['items']);
+            if (empty($result['ok'])) {
+                http_response_code(400);
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $result['message'] = 'Project Plan settings saved.';
+            echo json_encode($result, JSON_UNESCAPED_UNICODE);
             return;
         }
 

@@ -9,6 +9,9 @@ namespace Fc\Admin\Services;
  */
 final class CatalogSettings
 {
+    /** Sentinel "per page" value meaning "show every matching product on one page". */
+    public const ALL_PER_PAGE = -1;
+
     /**
      * @return array<string, mixed>
      */
@@ -21,6 +24,8 @@ final class CatalogSettings
             'priceMax' => 30000,
             'defaultOrderby' => 'default',
             'resultsPerPage' => 12,
+            'resultsPerPageAllEnabled' => false,
+            'resultsPerPageListSize' => 5,
             'columnsDesktop' => 4,
             'columnsLaptop' => 3,
             'columnsTablet' => 2,
@@ -65,20 +70,53 @@ final class CatalogSettings
     }
 
     /**
-     * Product Lookup "Per page" options: base × 1 … × 5 (always 5 items).
-     * e.g. 20 → 20, 40, 60, 80, 100
+     * Clamp the admin "Per page list size" value (how many multiples of the base are offered).
+     */
+    public static function clampResultsPerPageListSize($value): int
+    {
+        $n = (int) $value;
+        if ($n < 1) {
+            $n = 1;
+        }
+        if ($n > 10) {
+            $n = 10;
+        }
+
+        return $n;
+    }
+
+    /**
+     * Product Lookup "Per page" options: base × 1 … × listSize, plus ALL_PER_PAGE
+     * when the admin has enabled the "All" option.
+     * e.g. base 20, listSize 5 → 20, 40, 60, 80, 100[, -1]
      *
      * @return list<int>
      */
-    public static function resultsPerPageChoices(?int $base = null): array
-    {
-        if ($base === null) {
-            $base = (int) (self::get()['resultsPerPage'] ?? 12);
+    public static function resultsPerPageChoices(
+        ?int $base = null,
+        ?bool $allEnabled = null,
+        ?int $listSize = null
+    ): array {
+        if ($base === null || $allEnabled === null || $listSize === null) {
+            $settings = self::get();
+            if ($base === null) {
+                $base = (int) ($settings['resultsPerPage'] ?? 12);
+            }
+            if ($allEnabled === null) {
+                $allEnabled = !empty($settings['resultsPerPageAllEnabled']);
+            }
+            if ($listSize === null) {
+                $listSize = (int) ($settings['resultsPerPageListSize'] ?? 5);
+            }
         }
         $base = self::clampResultsPerPage($base);
+        $listSize = self::clampResultsPerPageListSize($listSize);
         $out = [];
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= $listSize; $i++) {
             $out[] = $base * $i;
+        }
+        if ($allEnabled) {
+            $out[] = self::ALL_PER_PAGE;
         }
 
         return $out;
@@ -150,6 +188,12 @@ final class CatalogSettings
         $resultsPerPage = self::clampResultsPerPage(
             $input['resultsPerPage'] ?? $defaults['resultsPerPage']
         );
+        $resultsPerPageAllEnabled = array_key_exists('resultsPerPageAllEnabled', $input)
+            ? !empty($input['resultsPerPageAllEnabled'])
+            : (bool) $defaults['resultsPerPageAllEnabled'];
+        $resultsPerPageListSize = self::clampResultsPerPageListSize(
+            $input['resultsPerPageListSize'] ?? $defaults['resultsPerPageListSize']
+        );
 
         $clampCols = static function ($value, int $fallback): int {
             $n = (int) $value;
@@ -183,6 +227,8 @@ final class CatalogSettings
             'priceMax' => $priceMax,
             'defaultOrderby' => $orderby,
             'resultsPerPage' => $resultsPerPage,
+            'resultsPerPageAllEnabled' => $resultsPerPageAllEnabled,
+            'resultsPerPageListSize' => $resultsPerPageListSize,
             'columnsDesktop' => $clampCols($input['columnsDesktop'] ?? $defaults['columnsDesktop'], 4),
             'columnsLaptop' => $clampCols($input['columnsLaptop'] ?? $defaults['columnsLaptop'], 3),
             'columnsTablet' => $clampCols($input['columnsTablet'] ?? $defaults['columnsTablet'], 2),
@@ -323,7 +369,9 @@ final class CatalogSettings
             'defaults' => self::defaults(),
             'orderbyChoices' => self::orderbyChoices(),
             'resultsPerPageChoices' => self::resultsPerPageChoices(
-                (int) ($catalog['resultsPerPage'] ?? 12)
+                (int) ($catalog['resultsPerPage'] ?? 12),
+                !empty($catalog['resultsPerPageAllEnabled']),
+                (int) ($catalog['resultsPerPageListSize'] ?? 5)
             ),
             'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
             'categories' => [],

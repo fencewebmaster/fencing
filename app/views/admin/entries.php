@@ -753,7 +753,7 @@ $req = is_array($page['request'] ?? null) ? $page['request'] : [];
     </footer>
 
     <div class="fc-entries-dedupe-modal" data-fc-entries-dedupe-modal hidden>
-        <div class="fc-entries-dedupe-modal__backdrop" data-fc-entries-dedupe-close aria-hidden="true"></div>
+        <div class="fc-entries-dedupe-modal__backdrop" aria-hidden="true"></div>
         <section
             class="fc-entries-dedupe-modal__dialog"
             role="dialog"

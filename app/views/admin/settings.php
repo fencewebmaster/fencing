@@ -42,6 +42,7 @@ $tab = $fcSettingsPage;
                     <span id="fc-settings-catalog-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
                     <span id="fc-settings-system-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
                     <span id="fc-settings-integration-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
+                    <span id="fc-settings-project-plan-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
                 </div>
                 <div id="fc-settings-header-actions-theme" class="<?php echo $h((string) $tab['header_actions_class']['theme']); ?> flex-wrap gap-2">
                     <button type="button" id="fc-theme-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
@@ -67,6 +68,10 @@ $tab = $fcSettingsPage;
                     <button type="button" id="fc-integration-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Discard Changes</button>
                     <button type="button" id="fc-integration-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Integrations</button>
                 </div>
+                <div id="fc-settings-header-actions-project-plan" class="<?php echo $h((string) $tab['header_actions_class']['project_plan']); ?> flex-wrap gap-2">
+                    <button type="button" id="fc-project-plan-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
+                    <button type="button" id="fc-project-plan-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Project Plan</button>
+                </div>
                 <div id="fc-settings-header-actions-console" class="<?php echo $h((string) $tab['header_actions_class']['console']); ?> flex-wrap gap-2"></div>
             </div>
             <div data-fc-settings-notice hidden class="fc-entries-page__notice fc-entries-page__notice--success" aria-hidden="true"></div>
@@ -75,11 +80,6 @@ $tab = $fcSettingsPage;
                 <div id="fc-settings-layout" class="grid w-full grid-cols-1 gap-6 p-4 sm:p-6 lg:items-start <?php echo $h((string) $tab['layout_class']); ?>">
                     <div class="min-w-0 space-y-5">
                         <div id="fc-settings-panel-theme" class="<?php echo $h((string) $tab['panel_class']['theme']); ?>space-y-5">
-                            <div>
-                                <h2 class="text-lg font-semibold text-slate-900">Theme colors</h2>
-                                <p class="mt-1 text-sm text-slate-500">Edit CSS variables used across the fencing calculator planner.</p>
-                            </div>
-
                             <?php if (!empty($tab['presets'])) : ?>
                             <section class="border border-slate-200 bg-white p-4 sm:p-5">
                                 <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500">Presets</h3>
@@ -138,10 +138,6 @@ $tab = $fcSettingsPage;
                         </div>
 
                         <div id="fc-settings-panel-branding" class="<?php echo $h((string) $tab['panel_class']['branding']); ?>space-y-3">
-                            <div>
-                                <h2 class="text-lg font-semibold text-slate-900">Branding</h2>
-                                <p class="mt-1 text-sm text-slate-500">App name, logo, tagline, and version shown on the planner and admin.</p>
-                            </div>
                             <section class="border border-slate-200 bg-slate-50/60 p-3 sm:p-3.5">
                                 <div class="grid grid-cols-1 gap-3">
                                     <?php foreach ($tab['branding_fields'] as $field) : ?>
@@ -181,7 +177,6 @@ $tab = $fcSettingsPage;
                             <article class="fc-fs-field-group fc-fs-field-group--outer fc-fs-field-group--full fc-fs-field-group--kv-table">
                                 <header class="fc-fs-field-group__head">
                                     <div class="fc-fs-field-group__head-copy">
-                                        <h4 class="fc-fs-field-group__head-title">Fence colors</h4>
                                         <p class="fc-fs-field-group__head-sub">Colour swatches shown in the planner. Use a hex colour or CSS gradient, or an image URL. Image takes priority when both are set.</p>
                                     </div>
                                 </header>
@@ -267,11 +262,6 @@ $tab = $fcSettingsPage;
                         </div>
 
                         <div id="fc-settings-panel-catalog" class="<?php echo $h((string) $tab['panel_class']['catalog']); ?>space-y-5">
-                            <div>
-                                <h2 class="text-lg font-semibold text-slate-900">Catalog Settings</h2>
-                                <p class="mt-1 text-sm text-slate-500">Configure the public Product Lookup page filters, sorting, grid layout, and sidebar branding.</p>
-                            </div>
-
                             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5 lg:items-stretch">
                                 <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                     <div>
@@ -312,7 +302,7 @@ $tab = $fcSettingsPage;
                                         <h3 class="text-sm font-semibold text-slate-800">Default sorting</h3>
                                         <p class="mt-1 text-xs text-slate-500">Defaults used when a visitor opens Product Lookup without sort or page-size query params.</p>
                                     </div>
-                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-start">
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-start">
                                         <label class="flex min-w-0 flex-col gap-1">
                                             <span class="text-sm font-medium text-slate-700">Sort by</span>
                                             <select id="fc-catalog-defaultOrderby" data-fc-catalog-field="defaultOrderby" class="fc-settings-field">
@@ -332,9 +322,18 @@ $tab = $fcSettingsPage;
                                                 max="100"
                                                 step="1"
                                             />
-                                            <span class="text-xs text-slate-500" id="fc-catalog-resultsPerPage-hint">
-                                                Lookup Per page list: n, 2n, 3n, 4n, 5n.
-                                            </span>
+                                        </label>
+                                        <label class="flex min-w-0 flex-col gap-1">
+                                            <span class="text-sm font-medium text-slate-700">Per page list size</span>
+                                            <input
+                                                type="number"
+                                                id="fc-catalog-resultsPerPageListSize"
+                                                data-fc-catalog-field="resultsPerPageListSize"
+                                                class="fc-settings-field"
+                                                min="1"
+                                                max="10"
+                                                step="1"
+                                            />
                                         </label>
                                     </div>
                                 </section>
@@ -410,11 +409,6 @@ $tab = $fcSettingsPage;
                         </div>
 
                         <div id="fc-settings-panel-system" class="<?php echo $h((string) $tab['panel_class']['system']); ?>space-y-5">
-                            <div>
-                                <h2 class="text-lg font-semibold text-slate-900">System</h2>
-                                <p class="mt-1 text-sm text-slate-500">Defaults for admin date filters and how dates are shown across the backend.</p>
-                            </div>
-
                             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
@@ -523,11 +517,6 @@ $tab = $fcSettingsPage;
 
                         <?php $integrations = is_array($tab['integrations'] ?? null) ? $tab['integrations'] : []; ?>
                         <div id="fc-settings-panel-integration" class="<?php echo $h((string) $tab['panel_class']['integration']); ?>space-y-5">
-                            <div>
-                                <h2 class="text-lg font-semibold text-slate-900">Integration Settings</h2>
-                                <p class="mt-1 text-sm text-slate-500">Manage third-party API keys, webhooks, and analytics IDs stored securely in <code>config.php</code>.</p>
-                            </div>
-
                             <div class="grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-stretch">
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
                                 <div class="mb-4">
@@ -593,7 +582,7 @@ $tab = $fcSettingsPage;
                                         <div class="min-w-0 flex items-center gap-2.5">
                                             <span class="fc-settings-site-logo shrink-0" data-fc-integration-site-logo-preview="<?php echo $h((string) ($site['key'] ?? '')); ?>">
                                                 <?php if (!empty($site['logoUrl'])) : ?>
-                                                <img src="<?php echo $h((string) $site['logoUrl']); ?>" alt="" loading="lazy" decoding="async">
+                                                <img src="<?php echo $h((string) $site['logoUrl']); ?>" alt="" loading="lazy" decoding="async" tabindex="0" role="button" data-fc-settings-image-view data-fc-settings-image-view-label="<?php echo $h((string) ($site['label'] ?? $site['key'] ?? '')); ?>" aria-label="View larger image for <?php echo $h((string) ($site['label'] ?? $site['key'] ?? '')); ?>">
                                                 <?php endif; ?>
                                             </span>
                                             <span class="min-w-0">
@@ -637,12 +626,64 @@ $tab = $fcSettingsPage;
 
                         </div>
 
-                        <div id="fc-settings-panel-console" class="<?php echo $h((string) $tab['panel_class']['console']); ?>space-y-5">
-                            <div>
-                                <h2 class="text-lg font-semibold text-slate-900">Console</h2>
-                                <p class="mt-1 text-sm text-slate-500">Development tools for deploying updates on this environment.</p>
+                        <div id="fc-settings-panel-project-plan" class="<?php echo $h((string) $tab['panel_class']['project_plan']); ?>space-y-5">
+                            <div class="overflow-x-auto border border-slate-200 bg-white">
+                                <div class="grid min-w-[52rem] grid-cols-[1.5rem_2.5rem_minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.4fr)_2.25rem] items-center gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                    <span></span><span></span><span>Slug</span><span>Label</span><span>Image</span><span></span>
+                                </div>
+                                <div id="fc-project-plan-items">
+                                    <?php foreach (($tab['project_plan_items'] ?? []) as $ppItem) : ?>
+                                    <?php
+                                    $ppIsOriginal = !empty($ppItem['isOriginal']);
+                                    $ppKey = (string) ($ppItem['slug'] ?? '');
+                                    $ppSlugId = 'fc-project-plan-item-' . $h($ppKey) . '-slug';
+                                    $ppLabelId = 'fc-project-plan-item-' . $h($ppKey) . '-label';
+                                    $ppImageId = 'fc-project-plan-item-' . $h($ppKey) . '-image';
+                                    $ppViewLabel = (string) ($ppItem['label'] ?? '') !== '' ? (string) $ppItem['label'] : $ppKey;
+                                    ?>
+                                    <div class="grid min-w-[52rem] grid-cols-[1.5rem_2.5rem_minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.4fr)_2.25rem] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0" data-fc-project-plan-row="<?php echo $h($ppKey); ?>">
+                                        <span class="fc-project-plan-grip" data-fc-project-plan-grip role="button" tabindex="0" aria-label="Drag to reorder" title="Drag to reorder">
+                                            <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
+                                        </span>
+                                        <span class="fc-settings-site-logo shrink-0" data-fc-project-plan-item-preview="<?php echo $h($ppKey); ?>">
+                                            <?php if (!empty($ppItem['imageUrl'])) : ?>
+                                            <img src="<?php echo $h((string) $ppItem['imageUrl']); ?>" alt="" loading="lazy" decoding="async" tabindex="0" role="button" data-fc-settings-image-view data-fc-settings-image-view-label="<?php echo $h($ppViewLabel); ?>" aria-label="View larger image for <?php echo $h($ppViewLabel); ?>">
+                                            <?php endif; ?>
+                                        </span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <?php if ($ppIsOriginal) : ?>
+                                            <input type="text" id="<?php echo $ppSlugId; ?>" value="<?php echo $h($ppKey); ?>" class="fc-settings-field font-mono" readonly aria-readonly="true" title="Original item slugs cannot be changed" aria-label="Slug" />
+                                            <?php else : ?>
+                                            <input type="text" id="<?php echo $ppSlugId; ?>" data-fc-project-plan-item="<?php echo $h($ppKey); ?>" data-fc-project-plan-item-field="slug" value="<?php echo $h($ppKey); ?>" class="fc-settings-field font-mono" spellcheck="false" autocomplete="off" placeholder="e.g. gate-opener" aria-label="Slug" />
+                                            <?php endif; ?>
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="<?php echo $ppSlugId; ?>" aria-label="Copy Slug" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="text" id="<?php echo $ppLabelId; ?>" data-fc-project-plan-item="<?php echo $h($ppKey); ?>" data-fc-project-plan-item-field="label" value="<?php echo $h((string) ($ppItem['label'] ?? '')); ?>" class="fc-settings-field" aria-label="Label" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="<?php echo $ppLabelId; ?>" aria-label="Copy Label" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="text" id="<?php echo $ppImageId; ?>" data-fc-project-plan-item="<?php echo $h($ppKey); ?>" data-fc-project-plan-item-field="image" value="<?php echo $h((string) ($ppItem['image'] ?? '')); ?>" class="fc-settings-field font-mono" placeholder="<?php echo $h((string) ($ppItem['imageDefault'] ?? '')); ?>" autocomplete="off" spellcheck="false" aria-label="Image" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-project-plan-item-pick="<?php echo $h($ppKey); ?>" title="Set image" aria-label="Set image"><i class="fa-solid fa-image" aria-hidden="true"></i></button>
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="<?php echo $ppImageId; ?>" aria-label="Copy Image" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                        <?php if ($ppIsOriginal) : ?>
+                                        <span class="fc-project-plan-remove fc-project-plan-remove--disabled" aria-hidden="true" title="Original items cannot be removed">
+                                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                        </span>
+                                        <?php else : ?>
+                                        <button type="button" class="fc-project-plan-remove" data-fc-project-plan-item-remove="<?php echo $h($ppKey); ?>" title="Remove item" aria-label="Remove item"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
+                            <button type="button" id="fc-project-plan-add" class="btn btn-sm btn-dark fw-semibold">
+                                <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Add item
+                            </button>
+                        </div>
 
+                        <div id="fc-settings-panel-console" class="<?php echo $h((string) $tab['panel_class']['console']); ?>space-y-5">
                             <?php
                             $consoleSettings = is_array($tab['console'] ?? null) ? $tab['console'] : [];
                             $debugModeOn = !empty($consoleSettings['debugMode']);

@@ -9,7 +9,7 @@ use Fc\Admin\Services\AdminContext;
 
 final class SettingsPageController extends BaseController
 {
-    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'console'];
+    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'project-plan', 'console'];
 
     public function index(AdminContext $context): void
     {

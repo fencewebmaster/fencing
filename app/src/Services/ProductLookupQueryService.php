@@ -560,11 +560,16 @@ final class ProductLookupQueryService
         $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();
 
-        $perPage = max(1, (int) ($request['per_page'] ?? 12));
-        $page = max(1, (int) ($request['page'] ?? 1));
-        $offset = ($page - 1) * $perPage;
-
-        $idSql = 'SELECT DISTINCT p.ID' . $from . ' ORDER BY ' . $orderSql . ' LIMIT ' . (int) $perPage . ' OFFSET ' . (int) $offset;
+        $perPageRaw = (int) ($request['per_page'] ?? 12);
+        $idSql = 'SELECT DISTINCT p.ID' . $from . ' ORDER BY ' . $orderSql;
+        if ($perPageRaw === CatalogSettings::ALL_PER_PAGE) {
+            // "All" — every matching product on one page, no LIMIT/OFFSET.
+        } else {
+            $perPage = max(1, $perPageRaw);
+            $page = max(1, (int) ($request['page'] ?? 1));
+            $offset = ($page - 1) * $perPage;
+            $idSql .= ' LIMIT ' . (int) $perPage . ' OFFSET ' . (int) $offset;
+        }
         $idStmt = $pdo->prepare($idSql);
         $idStmt->execute($params);
         $ids = array_map('intval', $idStmt->fetchAll(\PDO::FETCH_COLUMN));

@@ -67,6 +67,227 @@ final class PlannerOptionSettings
     }
 
     /**
+     * Hardcoded seed for the fixed set of extra-item slugs (never derived from saved
+     * overrides — this is what defines which slugs exist at all).
+     *
+     * @return array<string, string>
+     */
+    private static function legacyDefaultExtraOptions(): array
+    {
+        return [
+            'pump-enclosure' => 'Pump Enclosure',
+        ];
+    }
+
+    /**
+     * Default label + conventional image path per fixed extra-item slug.
+     *
+     * @return list<array{slug:string,label:string,image:string}>
+     */
+    public static function defaultExtraItems(): array
+    {
+        $items = [];
+        foreach (self::legacyDefaultExtraOptions() as $slug => $label) {
+            $items[] = [
+                'slug' => $slug,
+                'label' => $label,
+                'image' => 'public/assets/img/plans/webp/' . $slug . '.webp',
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * Normalize a submitted extra-item slug (lowercase letters/digits/hyphens/underscores).
+     */
+    public static function normalizeSlug(string $slug): ?string
+    {
+        $slug = strtolower(trim($slug));
+        if ($slug === '') {
+            return null;
+        }
+        if (!preg_match('/^[a-z0-9_-]+$/', $slug)) {
+            return null;
+        }
+        if (mb_strlen($slug) > 80) {
+            $slug = mb_substr($slug, 0, 80);
+        }
+
+        return $slug;
+    }
+
+    /**
+     * Extra items shown on the planner's "Anything Else" step: the fixed seed slugs (always
+     * present, label/image overridable) plus any admin-added items beyond the seed.
+     * 'image' is the raw stored override (blank = no override); 'imageDefault' is always
+     * populated so callers can fall back to it without saving it (same split as the
+     * Integration tab's per-site logo field). 'isOriginal' marks seed items, which can't be
+     * removed or re-slugged through the admin UI.
+     *
+     * Saved order is authoritative — saveExtraItems() writes rows in the admin's dragged
+     * order, and theme.json (a JSON object) preserves that order on read-back, so seed items
+     * can be repositioned relative to admin-added ones, not just re-labelled.
+     *
+     * @return list<array{slug:string,label:string,image:string,imageDefault:string,isOriginal:bool}>
+     */
+    public static function extraItems(): array
+    {
+        $defaults = self::defaultExtraItems();
+        $defaultsBySlug = [];
+        foreach ($defaults as $default) {
+            $defaultsBySlug[$default['slug']] = $default;
+        }
+
+        $file = ThemeSettings::readFile();
+        $saved = isset($file['plannerExtraOptions']) && is_array($file['plannerExtraOptions'])
+            ? $file['plannerExtraOptions']
+            : [];
+
+        $items = [];
+        $seen = [];
+
+        foreach ($saved as $slug => $row) {
+            $slug = is_string($slug) ? self::normalizeSlug($slug) : null;
+            if ($slug === null || isset($seen[$slug]) || !is_array($row)) {
+                continue;
+            }
+            $isOriginal = isset($defaultsBySlug[$slug]);
+            $label = trim((string) ($row['label'] ?? ''));
+            if ($label === '' && $isOriginal) {
+                $label = $defaultsBySlug[$slug]['label'];
+            }
+            if ($label === '' && !$isOriginal) {
+                // An admin-added item needs a label to be worth showing.
+                continue;
+            }
+            $items[] = [
+                'slug' => $slug,
+                'label' => $label,
+                'image' => trim((string) ($row['image'] ?? '')),
+                'imageDefault' => $isOriginal
+                    ? $defaultsBySlug[$slug]['image']
+                    : 'public/assets/img/plans/webp/' . $slug . '.webp',
+                'isOriginal' => $isOriginal,
+            ];
+            $seen[$slug] = true;
+        }
+
+        // A seed slug never saved yet (fresh install, or never touched) still needs to show up.
+        foreach ($defaults as $default) {
+            if (isset($seen[$default['slug']])) {
+                continue;
+            }
+            $items[] = [
+                'slug' => $default['slug'],
+                'label' => $default['label'],
+                'image' => '',
+                'imageDefault' => $default['image'],
+                'isOriginal' => true,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array{label:string,image:string}
+     */
+    private static function normalizeExtraItemInput(array $row): array
+    {
+        $label = trim((string) ($row['label'] ?? ''));
+        if (mb_strlen($label) > 120) {
+            $label = mb_substr($label, 0, 120);
+        }
+        $image = trim((string) ($row['image'] ?? ''));
+        if (mb_strlen($image) > 500) {
+            $image = mb_substr($image, 0, 500);
+        }
+
+        return ['label' => $label, 'image' => $image];
+    }
+
+    /**
+     * Persist the extra-item list: label/image overrides for the fixed seed slugs, plus any
+     * admin-added items (each needs a valid slug and a label to be kept). Seed slugs can't be
+     * removed — a submission missing one is rejected rather than silently dropping it.
+     *
+     * @param list<array<string, mixed>> $rows
+     * @return array{ok:bool,extraItems?:list<array{slug:string,label:string,image:string,imageDefault:string,isOriginal:bool}>,error?:string}
+     */
+    public static function saveExtraItems(array $rows): array
+    {
+        $requiredSlugs = array_column(self::defaultExtraItems(), 'slug');
+        $bySlug = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $slug = isset($row['slug']) ? self::normalizeSlug((string) $row['slug']) : null;
+            if ($slug === null) {
+                continue;
+            }
+            $normalized = self::normalizeExtraItemInput($row);
+            if (!in_array($slug, $requiredSlugs, true) && $normalized['label'] === '') {
+                // A brand-new item needs at least a label to be worth keeping.
+                continue;
+            }
+            $bySlug[$slug] = $normalized;
+        }
+
+        foreach ($requiredSlugs as $requiredSlug) {
+            if (!isset($bySlug[$requiredSlug])) {
+                return [
+                    'ok' => false,
+                    'error' => 'Cannot remove required item: ' . $requiredSlug,
+                ];
+            }
+        }
+
+        $path = ThemeSettings::filePath();
+        $dir = dirname($path);
+
+        if (!is_writable($dir)) {
+            return ['ok' => false, 'error' => 'writable/ directory is not writable.'];
+        }
+        if (file_exists($path) && !is_writable($path)) {
+            return ['ok' => false, 'error' => 'theme.json is not writable.'];
+        }
+
+        $existing = ThemeSettings::readFile();
+        $payload = $existing;
+        $payload['plannerExtraOptions'] = $bySlug;
+        $payload['updatedAt'] = gmdate('c');
+
+        $tmp = $path . '.tmp.' . getmypid() . '.' . bin2hex(random_bytes(4));
+        if (file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
+            return ['ok' => false, 'error' => 'Unable to write settings file.'];
+        }
+        if (!rename($tmp, $path)) {
+            @unlink($tmp);
+            return ['ok' => false, 'error' => 'Unable to save theme.json.'];
+        }
+
+        return ['ok' => true, 'extraItems' => self::extraItems()];
+    }
+
+    /**
+     * @return array{ok:bool,extraItems:list<array{slug:string,label:string,image:string,imageDefault:string}>,defaults:list<array{slug:string,label:string,image:string}>,updatedAt?:string|null}
+     */
+    public static function apiPayload(): array
+    {
+        $file = ThemeSettings::readFile();
+
+        return [
+            'ok' => true,
+            'extraItems' => self::extraItems(),
+            'defaults' => self::defaultExtraItems(),
+            'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
+        ];
+    }
+
+    /**
      * Extras offered as checkboxes in the planner / Download Your Project Plans.
      *
      * "Nothing extra" is a separate radio (see modal/submit/form/other-items-needed.php),
@@ -76,9 +297,12 @@ final class PlannerOptionSettings
      */
     public static function extraOptions(): array
     {
-        return [
-            'pump-enclosure' => 'Pump Enclosure',
-        ];
+        $out = [];
+        foreach (self::extraItems() as $item) {
+            $out[$item['slug']] = $item['label'];
+        }
+
+        return $out;
     }
 
     /**

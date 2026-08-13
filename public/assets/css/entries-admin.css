@@ -530,7 +530,6 @@
 }
 
 .fc-catalog-check:has(input:checked) {
-    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 10%, #fff);
     border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 28%, #e2e4e7);
 }
 
