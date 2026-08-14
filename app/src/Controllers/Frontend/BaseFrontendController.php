@@ -33,7 +33,7 @@ abstract class BaseFrontendController extends BaseController
     }
 
     /**
-     * Load writable/settings.php and return the fence catalog.
+     * Assemble (via FenceSettingsService) and return the fence catalog.
      *
      * @return array<string, mixed>
      */

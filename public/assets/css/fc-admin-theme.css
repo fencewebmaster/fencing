@@ -694,7 +694,6 @@ html[data-fc-admin-theme='dark'] .fc-fs-tab.is-active {
 }
 
 html[data-fc-admin-theme='dark'] .fc-fs-input,
-html[data-fc-admin-theme='dark'] .fc-fs-search,
 html[data-fc-admin-theme='dark'] .fc-fs-json-editor,
 html[data-fc-admin-theme='dark'] .fc-fs-json-editor--full {
     background: var(--fc-admin-surface);
@@ -716,8 +715,7 @@ html[data-fc-admin-theme='dark'] .fc-fs-input--readonly {
     color: var(--fc-admin-text-muted);
 }
 
-html[data-fc-admin-theme='dark'] .fc-fs-input:focus,
-html[data-fc-admin-theme='dark'] .fc-fs-search:focus {
+html[data-fc-admin-theme='dark'] .fc-fs-input:focus {
     border-color: var(--fc-admin-link);
     box-shadow: 0 0 0 1px var(--fc-admin-link);
 }
@@ -779,28 +777,10 @@ html[data-fc-admin-theme='dark'] .fc-fs-mode-toggle__btn.is-active {
 html[data-fc-admin-theme='dark'] .fc-fs-gui-overview-card,
 html[data-fc-admin-theme='dark'] .fc-fs-gui-card,
 html[data-fc-admin-theme='dark'] .fc-fs-gui-section__hero,
-html[data-fc-admin-theme='dark'] .fc-fs-gui-panel__intro,
 html[data-fc-admin-theme='dark'] .fc-fs-gui-subsection,
 html[data-fc-admin-theme='dark'] .fc-fs-option-card {
     background: var(--fc-admin-surface);
     border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-fs-gui-panel__intro {
-    background: linear-gradient(135deg, rgba(234, 88, 12, 0.12) 0%, var(--fc-admin-surface) 60%);
-    border-color: rgba(251, 146, 60, 0.35);
-}
-
-html[data-fc-admin-theme='dark'] .fc-fs-gui-panel__intro-icon {
-    background: var(--fc-admin-surface-muted);
-    border-color: rgba(251, 146, 60, 0.35);
-    color: #fb923c;
-}
-
-html[data-fc-admin-theme='dark'] .fc-fs-gui-panel__step {
-    color: #fdba74;
-    background: rgba(234, 88, 12, 0.18);
-    border-color: rgba(251, 146, 60, 0.35);
 }
 
 html[data-fc-admin-theme='dark'] .fc-fs-gui-section__hero {

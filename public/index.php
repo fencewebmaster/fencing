@@ -504,35 +504,6 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             border-color: #8c8f94;
             box-shadow: none;
         }
-        .fc-fs-search-wrap {
-            position: relative;
-            min-width: 12rem;
-        }
-        .fc-fs-search-icon {
-            position: absolute;
-            left: 0.65rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 0.75rem;
-            pointer-events: none;
-        }
-        .fc-fs-search {
-            width: 100%;
-            border: 1px solid #8c8f94;
-            border-radius: 3px;
-            padding: 0.4rem 0.65rem 0.4rem 1.85rem;
-            font-size: 0.875rem;
-            line-height: 1.4;
-            background: #fff;
-            color: #2c3338;
-            transition: border-color 0.12s ease, box-shadow 0.12s ease;
-        }
-        .fc-fs-search:focus {
-            outline: none;
-            border-color: #2271b1;
-            box-shadow: 0 0 0 1px #2271b1;
-        }
         .fc-fs-settings-layout {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
@@ -696,51 +667,10 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
         }
         /* GUI editor — tab bar in toolbar (Tailwind classes in JS) */
-        .fc-fs-gui-panel__intro {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.85rem;
-            margin-bottom: 1.25rem;
-            padding: 1rem 1.15rem;
-            border: 1px solid #fed7aa;
-            border-radius: 0.75rem;
-            background: linear-gradient(135deg, #fff7ed 0%, #fff 55%);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-        }
-        .fc-fs-gui-panel__intro-icon {
-            width: 2.75rem;
-            height: 2.75rem;
-            border-radius: 0.625rem;
-            background: #fff;
-            color: #ea580c;
-            border: 1px solid #fed7aa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 1.05rem;
-            box-shadow: 0 1px 2px rgba(234, 88, 12, 0.08);
-        }
-        .fc-fs-gui-panel__step {
-            display: inline-block;
-            margin-bottom: 0.35rem;
-            font-size: 0.6875rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #c2410c;
-            background: #ffedd5;
-            border: 1px solid #fdba74;
-            border-radius: 9999px;
-            padding: 0.15rem 0.55rem;
-        }
-        .fc-fs-gui-panel__intro .fc-fs-panel-title {
-            font-size: 1.0625rem;
-        }
         .fc-fs-gui-overview-card,
         .fc-fs-gui-card {
             border: 1px solid #e2e8f0;
-            border-radius: 0.75rem;
+            border-radius: 0;
             background: #fff;
             overflow: hidden;
         }
@@ -814,7 +744,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
         }
         .fc-fs-gui-subsection {
             border: 1px solid #e2e8f0;
-            border-radius: 0.625rem;
+            border-radius: 0;
             background: #fafafa;
             overflow: hidden;
         }
@@ -1004,6 +934,9 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
         .fc-fs-gui-toggle__input:checked + .fc-fs-gui-toggle__track::after {
             transform: translateX(1rem);
         }
+        .fc-fs-style-preview__live-toggle .fc-fs-gui-toggle__input:checked + .fc-fs-gui-toggle__track {
+            background: var(--fc-princeton-orange);
+        }
         .fc-fs-gui-toggle__label {
             font-size: 0.8125rem;
             font-weight: 500;
@@ -1059,7 +992,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             flex-direction: column;
             gap: 0.25rem;
             border: 1px solid #e2e8f0;
-            border-radius: 0.625rem;
+            border-radius: 0;
             padding: 0.35rem;
             background: #f8fafc;
             max-height: 28rem;
@@ -1074,7 +1007,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             text-align: left;
             border: none;
             background: transparent;
-            border-radius: 0.45rem;
+            border-radius: 0;
             padding: 0.55rem 0.65rem;
             cursor: pointer;
         }
@@ -1097,7 +1030,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             gap: 0.85rem 1rem;
             padding: 1rem 1.1rem;
             border: 1px solid #c7d2fe;
-            border-radius: 0.75rem;
+            border-radius: 0;
             background: linear-gradient(135deg, #eef2ff 0%, #fff 60%);
             margin-bottom: 1rem;
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -1148,7 +1081,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             display: flex;
             gap: 0.75rem;
             padding: 0.85rem 1rem;
-            border-radius: 0.625rem;
+            border-radius: 0;
             background: #eff6ff;
             border: 1px solid #bfdbfe;
             margin-bottom: 0.85rem;
@@ -1183,7 +1116,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
             align-items: end;
             padding: 0.65rem;
             border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
+            border-radius: 0;
             background: #f8fafc;
         }
         .fc-fs-kv-row__grip {
@@ -1278,7 +1211,7 @@ if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
         }
         .fc-fs-option-card {
             border: 1px solid #e2e8f0;
-            border-radius: 0.625rem;
+            border-radius: 0;
             background: #fafafa;
             overflow: hidden;
         }

@@ -192,7 +192,7 @@ final class PlannerPageModel
     }
 
     /**
-     * Fence catalog from writable/settings.php.
+     * Fence catalog from FenceSettingsService.
      *
      * @return array<string, mixed>
      */

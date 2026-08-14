@@ -42,7 +42,7 @@ final class PlannerSubmissionModel
     /**
      * Build the planners-table payload from the current session.
      *
-     * @param array<string, mixed> $fences  Fence catalog (writable/settings.php).
+     * @param array<string, mixed> $fences  Fence catalog (FenceSettingsService).
      * @param array{location?:bool,status?:bool,site_url?:string} $options
      *        `site_url` overrides the session site URL — the store push resolves the live
      *        WooCommerce URL first (SiteRegistryService::wpSiteUrl()) and records that one.

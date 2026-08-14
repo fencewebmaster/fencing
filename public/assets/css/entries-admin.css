@@ -1309,6 +1309,16 @@ html[data-fc-admin-theme='dark'] .fc-system-products-tab.is-active .fc-system-pr
     max-width: 100%;
 }
 
+#fc-system-products-table-wrap .fc-sys-sku-view-link {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+#fc-system-products-table-wrap tbody tr:hover .fc-sys-sku-view-link,
+#fc-system-products-table-wrap tbody tr:focus-within .fc-sys-sku-view-link {
+    opacity: 1;
+}
+
 .fc-products-download-trigger {
     gap: 0.45rem;
     white-space: nowrap;

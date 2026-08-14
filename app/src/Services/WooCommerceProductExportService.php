@@ -10,7 +10,7 @@ use Throwable;
 
 /**
  * Exports WooCommerce products from the WordPress MySQL database into
- * writable/wc-products-{GO|JG}.csv (ID,SKU,Name,Images).
+ * writable/wc-products-{GO|JG}.csv (ID,Slug,SKU,Name,Images).
  *
  * Uses the database rather than the public Store API so private/draft products
  * are included (3000+ rows), matching the full WooCommerce catalogue. Variable
@@ -71,7 +71,7 @@ final class WooCommerceProductExportService
                 return self::error('Unable to create the downloading CSV file.');
             }
 
-            $headerWritten = fputcsv($handle, ['ID', 'SKU', 'Name', 'Images']);
+            $headerWritten = fputcsv($handle, ['ID', 'Slug', 'SKU', 'Name', 'Images']);
             fflush($handle);
             fclose($handle);
             if ($headerWritten === false) {
@@ -122,7 +122,7 @@ final class WooCommerceProductExportService
             return self::error('Invalid download job.');
         }
 
-        return self::withLock($source, static function () use ($source, $jobId): array {
+        $result = self::withLock($source, static function () use ($source, $jobId): array {
             $state = self::readState($source);
             if ($state === null || !hash_equals((string) ($state['id'] ?? ''), $jobId)) {
                 return self::error('Download job not found.');
@@ -174,6 +174,7 @@ final class WooCommerceProductExportService
                 }
                 $row = [
                     (string) $id,
+                    (string) ($product['slug'] ?? ''),
                     (string) ($product['sku'] ?? ''),
                     (string) ($product['name'] ?? ''),
                     (string) ($product['images'] ?? ''),
@@ -235,6 +236,15 @@ final class WooCommerceProductExportService
             self::writeState($source, $state);
             return ['ok' => true, 'job' => self::publicState($state)];
         });
+
+        // Outside withLock() on purpose: the lock file's handle is still open (and, on
+        // Windows, exclusively so) until withLock() closes it — unlinking it any earlier
+        // fails there.
+        if (($result['job']['status'] ?? '') === 'complete') {
+            self::cleanupJobFiles($source);
+        }
+
+        return $result;
     }
 
     /**
@@ -250,7 +260,7 @@ final class WooCommerceProductExportService
             return self::error('Invalid download job.');
         }
 
-        return self::withLock($source, static function () use ($source, $jobId): array {
+        $result = self::withLock($source, static function () use ($source, $jobId): array {
             $state = self::readState($source);
             if ($state === null || !hash_equals((string) ($state['id'] ?? ''), $jobId)) {
                 return self::error('Download job not found.');
@@ -269,6 +279,13 @@ final class WooCommerceProductExportService
 
             return ['ok' => true, 'job' => self::publicState($state)];
         });
+
+        // Outside withLock() on purpose — see the same note in step().
+        if (($result['job']['status'] ?? '') === 'cancelled') {
+            self::cleanupJobFiles($source);
+        }
+
+        return $result;
     }
 
     /**
@@ -281,24 +298,24 @@ final class WooCommerceProductExportService
             return self::error('Invalid product source.');
         }
 
-        return self::withLock($source, static function () use ($source): array {
-            $state = self::readState($source);
-            if ($state === null) {
-                return [
-                    'ok' => true,
-                    'job' => [
-                        'source' => $source,
-                        'status' => 'idle',
-                        'workingFile' => basename(self::workingPath($source)),
-                        'finalFile' => basename(self::finalPath($source)),
-                        'store' => 'WordPress database',
-                        'message' => 'Ready to start.',
-                    ],
-                ];
-            }
+        // Deliberately lock-free: a plain status read shouldn't create the .lock file —
+        // that should only appear once a download actually starts (see withLock()).
+        $state = self::readState($source);
+        if ($state === null) {
+            return [
+                'ok' => true,
+                'job' => [
+                    'source' => $source,
+                    'status' => 'idle',
+                    'workingFile' => basename(self::workingPath($source)),
+                    'finalFile' => basename(self::finalPath($source)),
+                    'store' => 'WordPress database',
+                    'message' => 'Ready to start.',
+                ],
+            ];
+        }
 
-            return ['ok' => true, 'job' => self::publicState($state)];
-        });
+        return ['ok' => true, 'job' => self::publicState($state)];
     }
 
     private static function normalizeSource(string $source): string
@@ -330,6 +347,17 @@ final class WooCommerceProductExportService
     private static function lockPath(string $source): string
     {
         return self::dataPath('.wc-products-' . $source . '.lock');
+    }
+
+    /**
+     * Remove the job state/lock files once a download reaches a terminal "done" state
+     * (complete or cancelled) — nothing left to poll or resume, so writable/ shouldn't
+     * keep them around. Failed jobs are left in place for diagnostics.
+     */
+    private static function cleanupJobFiles(string $source): void
+    {
+        @unlink(self::statePath($source));
+        @unlink(self::lockPath($source));
     }
 
     /**
@@ -418,7 +446,7 @@ final class WooCommerceProductExportService
 
         try {
             $stmt = $pdo->prepare(
-                "SELECT p.ID, p.post_title, p.post_type, p.post_parent
+                "SELECT p.ID, p.post_title, p.post_name, p.post_type, p.post_parent
                  FROM `{$posts}` p
                  WHERE p.post_type IN ({$typePlaceholders})
                    AND p.post_status IN ({$statusPlaceholders})
@@ -457,7 +485,7 @@ final class WooCommerceProductExportService
             }
         }
         $parentIds = array_values(array_unique(array_values($variationParents)));
-        $parentTitles = self::loadPostTitles($pdo, $posts, $parentIds);
+        $parentPosts = self::loadPostTitlesAndSlugs($pdo, $posts, $parentIds);
         $parentMeta = self::loadProductMeta($pdo, $postmeta, $parentIds, [
             '_thumbnail_id',
             '_product_image_gallery',
@@ -484,6 +512,7 @@ final class WooCommerceProductExportService
             if (($row['post_type'] ?? '') !== 'product_variation') {
                 $products[] = [
                     'id' => $id,
+                    'slug' => (string) ($row['post_name'] ?? ''),
                     'sku' => (string) ($meta['_sku'] ?? ''),
                     'name' => (string) ($row['post_title'] ?? ''),
                     'images' => implode(', ', self::resolveImageList($meta, $urls)),
@@ -492,7 +521,8 @@ final class WooCommerceProductExportService
             }
 
             $parentId = $variationParents[$id] ?? 0;
-            $parentTitle = trim((string) ($parentTitles[$parentId] ?? ''));
+            $parentTitle = trim((string) ($parentPosts[$parentId]['title'] ?? ''));
+            $parentSlug = trim((string) ($parentPosts[$parentId]['slug'] ?? ''));
 
             $attrs = $variationAttrs[$id] ?? [];
             ksort($attrs);
@@ -514,6 +544,9 @@ final class WooCommerceProductExportService
                 $name = (string) ($row['post_title'] ?? '');
             }
 
+            // Same orphaned-parent fallback as $name above: use the variation's own slug.
+            $slug = $parentSlug !== '' ? $parentSlug : (string) ($row['post_name'] ?? '');
+
             $imageList = self::resolveImageList($meta, $urls);
             if ($imageList === [] && $parentId > 0) {
                 $imageList = self::resolveImageList($parentMeta[$parentId] ?? [], $urls);
@@ -521,6 +554,7 @@ final class WooCommerceProductExportService
 
             $products[] = [
                 'id' => $id,
+                'slug' => $slug,
                 'sku' => (string) ($meta['_sku'] ?? ''),
                 'name' => $name,
                 'images' => implode(', ', $imageList),
@@ -565,15 +599,15 @@ final class WooCommerceProductExportService
     }
 
     /**
-     * Batched wp_posts.post_title lookup — used for a variation's parent-name fallback.
-     * No post_status/post_type filter: a parent that exists but was excluded by our own
-     * filters (e.g. trashed) is still valid fallback data; only a truly deleted parent
-     * (no row at all) falls through to the variation's own post_title.
+     * Batched wp_posts.post_title/post_name lookup — used for a variation's parent-name and
+     * parent-slug fallback. No post_status/post_type filter: a parent that exists but was
+     * excluded by our own filters (e.g. trashed) is still valid fallback data; only a truly
+     * deleted parent (no row at all) falls through to the variation's own post_title/post_name.
      *
      * @param list<int> $postIds
-     * @return array<int, string>
+     * @return array<int, array{title:string,slug:string}>
      */
-    private static function loadPostTitles(PDO $pdo, string $posts, array $postIds): array
+    private static function loadPostTitlesAndSlugs(PDO $pdo, string $posts, array $postIds): array
     {
         $postIds = array_values(array_unique(array_filter(
             array_map('intval', $postIds),
@@ -585,7 +619,7 @@ final class WooCommerceProductExportService
 
         $placeholders = implode(',', array_fill(0, count($postIds), '?'));
         $stmt = $pdo->prepare(
-            "SELECT ID, post_title FROM `{$posts}` WHERE ID IN ({$placeholders})"
+            "SELECT ID, post_title, post_name FROM `{$posts}` WHERE ID IN ({$placeholders})"
         );
         $stmt->execute($postIds);
 
@@ -593,7 +627,10 @@ final class WooCommerceProductExportService
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $id = (int) ($row['ID'] ?? 0);
             if ($id > 0) {
-                $out[$id] = (string) ($row['post_title'] ?? '');
+                $out[$id] = [
+                    'title' => (string) ($row['post_title'] ?? ''),
+                    'slug' => (string) ($row['post_name'] ?? ''),
+                ];
             }
         }
 
@@ -851,7 +888,7 @@ final class WooCommerceProductExportService
         fclose($handle);
 
         if (
-            $header !== ['ID', 'SKU', 'Name', 'Images']
+            $header !== ['ID', 'Slug', 'SKU', 'Name', 'Images']
             || $rows !== $expectedRows
             || ($storeTotal > 0 && $rows !== $storeTotal)
             || $hasInvalidId

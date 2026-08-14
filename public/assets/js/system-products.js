@@ -15,6 +15,74 @@
         index: 0
     };
 
+    var FLASH_KEY = 'fc-system-products-download-flash';
+
+    function setFlash(message, type) {
+        try {
+            sessionStorage.setItem(
+                FLASH_KEY,
+                JSON.stringify({
+                    message: String(message || ''),
+                    type: type === 'error' ? 'error' : 'success'
+                })
+            );
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function consumeFlash() {
+        try {
+            var raw = sessionStorage.getItem(FLASH_KEY);
+            if (!raw) {
+                return null;
+            }
+            sessionStorage.removeItem(FLASH_KEY);
+            var data = JSON.parse(raw);
+            if (!data || !data.message) {
+                return null;
+            }
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function showHeaderNotice(root, flash) {
+        if (!root) {
+            root = document.querySelector('[data-fc-system-products-server]');
+        }
+        var mount = root ? root.querySelector('[data-fc-system-products-notice]') : null;
+        if (!mount || !flash || !flash.message) {
+            return;
+        }
+
+        var type = flash.type === 'error' ? 'error' : 'success';
+        mount.hidden = false;
+        mount.className =
+            'fc-entries-page__notice fc-entries-page__notice--' + type + ' is-visible';
+        mount.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        mount.innerHTML =
+            '<p class="fc-entries-page__notice-text"></p>' +
+            '<button type="button" class="fc-entries-page__notice-dismiss" aria-label="Dismiss notice">' +
+            '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' +
+            '</button>';
+
+        var textEl = mount.querySelector('.fc-entries-page__notice-text');
+        if (textEl) {
+            textEl.textContent = flash.message;
+        }
+
+        var dismiss = mount.querySelector('.fc-entries-page__notice-dismiss');
+        if (dismiss) {
+            dismiss.addEventListener('click', function () {
+                mount.hidden = true;
+                mount.classList.remove('is-visible');
+                mount.innerHTML = '';
+            });
+        }
+    }
+
     function orderSystemProductColumns(cols) {
         var ordered = [];
         cols = cols.filter(function (col) {
@@ -1413,6 +1481,32 @@
             });
         }
 
+        function startAutoReloadCountdown(seconds, flashMessage) {
+            if (startButton) {
+                startButton.disabled = true;
+            }
+            var remaining = seconds;
+
+            function render() {
+                if (startLabel) {
+                    startLabel.textContent =
+                        'Page reload in ' + remaining + ' second' + (remaining === 1 ? '' : 's') + '…';
+                }
+            }
+
+            render();
+            var timer = window.setInterval(function () {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    window.clearInterval(timer);
+                    setFlash(flashMessage, 'success');
+                    window.location.reload();
+                    return;
+                }
+                render();
+            }, 1000);
+        }
+
         function showError(message, job) {
             running = false;
             completedThisRun = false;
@@ -1444,6 +1538,9 @@
                     complete = true;
                     completedThisRun = true;
                     resetStartButton();
+                    var completeMessage = body.job.message || 'Product download complete.';
+                    toast('success', completeMessage);
+                    startAutoReloadCountdown(5, completeMessage);
                     return;
                 }
                 window.setTimeout(runNextStep, 150);
@@ -1715,6 +1812,7 @@
         };
 
         container.removeAttribute('aria-busy');
+        showHeaderNotice(container, consumeFlash());
         window.requestAnimationFrame(function () {
             window.dispatchEvent(new Event('resize'));
         });

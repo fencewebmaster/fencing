@@ -21,7 +21,7 @@ final class FenceCatalogService
     /**
      * Human-readable fence style label for cart / item list (matches planner `fc_data[slug].title`).
      *
-     * @param array<string, mixed>|null $fences Fence catalog from `writable/settings.php`.
+     * @param array<string, mixed>|null $fences Fence catalog from FenceSettingsService.
      */
     public static function styleTitleFromSlug(string $slug, ?array $fences = null): string
     {

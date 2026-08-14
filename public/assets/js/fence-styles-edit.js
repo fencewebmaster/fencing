@@ -509,7 +509,7 @@
             (checked ? ' checked' : '') +
             ' class="fc-fs-gui-toggle__input">' +
             '<span class="fc-fs-gui-toggle__track" aria-hidden="true"></span>' +
-            '<span class="fc-fs-gui-toggle__label">Live</span></label>'
+            '<span class="fc-fs-gui-toggle__label">LIVE</span></label>'
         );
     }
 

@@ -20,6 +20,8 @@ $paginationLinks = is_array($page['pagination_links'] ?? null) ? $page['paginati
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden" data-fc-system-products-server="1" data-fc-system-products-php="1">
     <script type="application/json" id="fc-system-products-bootstrap"><?php echo $page['bootstrap_json']; ?></script>
 
+    <div class="fc-entries-page__notice" data-fc-system-products-notice hidden role="status" aria-live="polite"></div>
+
     <nav class="fc-gallery-page__tabs fc-system-products-tabs" role="tablist" aria-label="Store product source">
         <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
         <a

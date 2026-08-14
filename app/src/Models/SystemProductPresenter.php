@@ -6,8 +6,10 @@ namespace Fc\Admin\Models;
 
 use Fc\Admin\Helpers\StringHelper;
 use Fc\Admin\Helpers\ViewHelper;
+use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
+use Fc\Admin\Services\SiteRegistryService;
 
 /**
  * System products (writable/wc-products-GO.csv, writable/wc-products-JG.csv) row shaping — pure,
@@ -44,6 +46,21 @@ final class SystemProductPresenter
      */
     public static function cellHtml(string $col, string $val, array $row): array
     {
+        if ($col === 'SKU') {
+            $skuHtml = $val === ''
+                ? '—'
+                : '<span class="fc-sys-sku-value block text-sm text-slate-800">' . StringHelper::escapeHtml($val) . '</span>';
+
+            $viewUrl = self::productViewUrl(trim((string) ($row['Slug'] ?? '')));
+            if ($viewUrl !== '') {
+                $skuHtml .= '<a href="' . StringHelper::escapeHtml($viewUrl) . '" target="_blank" rel="noopener noreferrer" '
+                    . 'class="fc-sys-sku-view-link mt-0.5 inline-flex items-center text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline">'
+                    . 'View Product</a>';
+            }
+
+            return ['html' => $skuHtml, 'empty' => $val === '' && $viewUrl === ''];
+        }
+
         if ($val === '') {
             if ($col === 'Images') {
                 return [
@@ -95,15 +112,28 @@ final class SystemProductPresenter
             ];
         }
 
-        if ($col === 'SKU') {
-            return [
-                'html' => '<span class="fc-sys-sku-value block text-sm text-slate-800">'
-                    . StringHelper::escapeHtml($val) . '</span>',
-                'empty' => false,
-            ];
+        return ['html' => StringHelper::escapeHtml($val), 'empty' => false];
+    }
+
+    /**
+     * "View Product" link for the SKU cell — the currently selected admin site's own URL
+     * (session site switcher), not the CSV's GO/JG source, + the product slug.
+     */
+    private static function productViewUrl(string $slug): string
+    {
+        if ($slug === '') {
+            return '';
         }
 
-        return ['html' => StringHelper::escapeHtml($val), 'empty' => false];
+        $domain = trim((string) (AdminSiteRegistry::currentSite()['domain'] ?? ''));
+        if ($domain === '') {
+            return '';
+        }
+
+        $site = SiteRegistryService::all($domain, 'domain', true);
+        $base = is_array($site) ? rtrim((string) ($site['url'] ?? ''), '/') : '';
+
+        return $base !== '' ? $base . '/product/' . rawurlencode($slug) . '/' : '';
     }
 
     /**
@@ -267,6 +297,9 @@ final class SystemProductPresenter
         $page = $isAll ? 1 : max(1, (int) ($query['page'] ?? 1));
 
         $displayColumns = ['Images', 'SKU', 'Name'];
+        // 'Slug' rides along on each row (for the SKU cell's "View Product" link) without
+        // becoming its own header column — stripped back out of $columns below.
+        $fetchColumns = array_merge($displayColumns, ['Slug']);
 
         $tabs = [];
         foreach (['GO', 'JG'] as $tab) {
@@ -288,7 +321,7 @@ final class SystemProductPresenter
 
         // Counts first (cached), then stream only the visible page from CSV.
         $queryPerPage = $isAll ? PHP_INT_MAX : $perPage;
-        $payload = SystemProductModel::query($source, $search, $page, $queryPerPage, $displayColumns);
+        $payload = SystemProductModel::query($source, $search, $page, $queryPerPage, $fetchColumns);
         if (
             !$isAll
             && !empty($payload['ok'])
@@ -297,14 +330,14 @@ final class SystemProductPresenter
             && $page > (int) $payload['total_pages']
         ) {
             $page = max(1, (int) $payload['total_pages']);
-            $payload = SystemProductModel::query($source, $search, $page, $queryPerPage, $displayColumns);
+            $payload = SystemProductModel::query($source, $search, $page, $queryPerPage, $fetchColumns);
         }
 
         $error = !empty($payload['ok']) ? '' : (string) ($payload['error'] ?? 'Could not load store products.');
         $columns = self::orderColumns(
             array_values(array_filter(
                 is_array($payload['columns'] ?? null) ? $payload['columns'] : [],
-                static fn($col): bool => is_string($col)
+                static fn($col): bool => is_string($col) && $col !== 'Slug'
             ))
         );
         $rows = is_array($payload['rows'] ?? null) ? $payload['rows'] : [];

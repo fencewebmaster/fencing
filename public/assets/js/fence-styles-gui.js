@@ -184,25 +184,6 @@
             });
     }
 
-    function renderPanelIntro(opts) {
-        opts = opts || {};
-        var rowClass = 'fc-fs-gui-panel__intro' + (opts.row ? ' fc-fs-gui-panel__intro--row' : '');
-        return (
-            '<div class="' +
-            rowClass +
-            '">' +
-            '<div class="fc-fs-gui-panel__intro-copy">' +
-            (opts.step ? '<p class="fc-fs-gui-panel__eyebrow">' + escapeHtml(opts.step) + '</p>' : '') +
-            '<h3 class="fc-fs-panel-title">' +
-            escapeHtml(opts.title || '') +
-            '</h3>' +
-            (opts.desc ? '<p class="fc-fs-panel-desc">' + escapeHtml(opts.desc) + '</p>' : '') +
-            '</div>' +
-            (opts.actions || '') +
-            '</div>'
-        );
-    }
-
     function renderSubsection(title, icon, bodyHtml, hint) {
         return renderFieldGroup(title, bodyHtml, { nested: true, hint: hint });
     }
@@ -1446,11 +1427,6 @@
         // Overview
         html +=
             '<div class="fc-fs-gui-panel" data-gui-panel="overview">' +
-            renderPanelIntro({
-                icon: 'fa-solid fa-house',
-                title: 'Style overview',
-                desc: 'Catalog identity and panel defaults.'
-            }) +
             '<div class="fc-fs-gui-overview">' +
             renderOverviewGroup(
                 'Catalog',
@@ -1504,12 +1480,6 @@
         // Form
         html +=
             '<div class="fc-fs-gui-panel hidden" data-gui-panel="form">' +
-            renderPanelIntro({
-                icon: 'fa-solid fa-list-check',
-                step: 'Step 2',
-                title: 'Planner form fields',
-                desc: 'Fields shown when customers configure measurements and options on step 2.'
-            }) +
             '<div class="fc-fs-gui-stack fc-fs-gui-stack--compact fc-fs-gui-panel-fields" data-gui-form-stack">';
         if (!form.length) {
             html += '<p class="text-sm text-slate-500 fc-fs-form-empty">No step 2 fields defined for this style.</p>';
@@ -1521,20 +1491,7 @@
         html += '</div></div>';
 
         // Modals / settings
-        html +=
-            '<div class="fc-fs-gui-panel hidden" data-gui-panel="modals">' +
-            renderPanelIntro({
-                icon: 'fa-solid fa-window-maximize',
-                step: 'Step 3',
-                title: 'Planner modal sections',
-                desc: 'Side panels, gate, post, and spacing controls.',
-                row: true,
-                actions:
-                    '<div class="fc-fs-search-wrap">' +
-                    '<i class="fa-solid fa-magnifying-glass fc-fs-search-icon" aria-hidden="true"></i>' +
-                    '<input type="search" class="fc-fs-search fc-fs-gui-section-search" placeholder="Filter sections…" autocomplete="off">' +
-                    '</div>'
-            });
+        html += '<div class="fc-fs-gui-panel hidden" data-gui-panel="modals">';
 
         if (!settingKeys.length) {
             html += '<p class="text-sm text-slate-500">No modal settings for this style.</p>';
@@ -1567,11 +1524,6 @@
         // Extra
         html +=
             '<div class="fc-fs-gui-panel hidden" data-gui-panel="extra">' +
-            renderPanelIntro({
-                icon: 'fa-solid fa-gear',
-                title: 'Additional settings',
-                desc: 'Numeric limits and pack quantities for specialized fence types.'
-            }) +
             '<div class="fc-fs-gui-extra fc-fs-gui-stack fc-fs-gui-stack--compact">';
 
         var limitsHtml = '';
@@ -2258,6 +2210,24 @@
             }
         }
 
+        function uncheckOtherDefaultChoices(optionCard, optPath) {
+            var list = optionCard.parentElement;
+            if (!list) {
+                return;
+            }
+            list.querySelectorAll('.fc-fs-option-card').forEach(function (card) {
+                if (card === optionCard) {
+                    return;
+                }
+                var siblingIdx = card.getAttribute('data-gui-option-idx');
+                var siblingCheckbox = card.querySelector('[data-gui-path="' + optPath + '.' + siblingIdx + '.default"]');
+                if (siblingCheckbox && siblingCheckbox.checked) {
+                    siblingCheckbox.checked = false;
+                    applyPath(optPath + '.' + siblingIdx + '.default', false);
+                }
+            });
+        }
+
         function refreshColorSection(wrap, path) {
             if (!wrap) {
                 return;
@@ -2301,6 +2271,17 @@
             }
             var path = el.getAttribute('data-gui-path');
             applyPath(path, coerceValue(path, el));
+
+            if (el.type === 'checkbox' && el.checked) {
+                var optionCard = el.closest('.fc-fs-option-card');
+                if (optionCard) {
+                    var optPath = optionCard.getAttribute('data-gui-option-path');
+                    var optIdx = optionCard.getAttribute('data-gui-option-idx');
+                    if (optPath && optIdx !== null && path === optPath + '.' + optIdx + '.default') {
+                        uncheckOtherDefaultChoices(optionCard, optPath);
+                    }
+                }
+            }
 
             if (el.tagName === 'SELECT' && /\.type$/.test(path)) {
                 var typeMatch = path.match(/^form\.(\d+)\.type$/);
@@ -2373,17 +2354,6 @@
                 }
             });
         });
-
-        var sectionSearch = guiRoot.querySelector('.fc-fs-gui-section-search');
-        if (sectionSearch) {
-            sectionSearch.addEventListener('input', function () {
-                var q = sectionSearch.value.trim().toLowerCase();
-                sectionNav.forEach(function (btn) {
-                    var text = btn.textContent.toLowerCase();
-                    btn.classList.toggle('hidden', q !== '' && text.indexOf(q) === -1);
-                });
-            });
-        }
 
         guiRoot.addEventListener('click', function (e) {
             var colorRemove = e.target.closest('[data-gui-color-remove]');

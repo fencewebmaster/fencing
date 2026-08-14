@@ -4,7 +4,7 @@
  *
  * Rendered by Controllers\Frontend\PlannerController.
  *
- * @var array        $fences                   Fence catalog (writable/settings.php).
+ * @var array        $fences                   Fence catalog (FenceSettingsService).
  * @var array        $info                     Session fc_data.
  * @var object|array $res                      JS `fc_fence_info` payload.
  * @var array|null   $site_info                Site registry row for the current host.

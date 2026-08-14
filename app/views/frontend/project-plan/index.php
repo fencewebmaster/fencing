@@ -4,7 +4,7 @@
  *
  * Rendered by Controllers\Frontend\ProjectPlanController.
  *
- * @var array      $fences        Fence catalog (writable/settings.php).
+ * @var array      $fences        Fence catalog (FenceSettingsService).
  * @var array      $info          Session fc_data.
  * @var array      $cart          Session fc_cart.
  * @var array|null $site_info     Site registry row for the session's site.
