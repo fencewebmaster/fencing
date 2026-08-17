@@ -11,25 +11,6 @@
     box-sizing: border-box;
 }
 
-.fc-fs-styles-page__head {
-    margin-bottom: 1.5rem;
-}
-
-.fc-fs-styles-page__title {
-    margin: 0;
-    font-size: 1.375rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: #0f172a;
-}
-
-.fc-fs-styles-page__desc {
-    margin: 0.35rem 0 0;
-    font-size: 0.875rem;
-    color: #64748b;
-    line-height: 1.5;
-}
-
 /* —— Style cards (planner Step 1 look + hover) —— */
 .fc-admin-fence-styles {
     width: 100%;
@@ -522,17 +503,6 @@ body.fc-fs-preview-lightbox-open {
     padding-right: 0.5rem;
 }
 
-/* —— Mode toggle —— */
-.fc-fs-mode-toggle {
-    background: #f8fafc;
-    border-color: #e2e8f0;
-}
-
-.fc-fs-mode-toggle__btn.is-active {
-    color: #0f172a;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-}
-
 /* —— GUI tab nav (settings-style pill bar — lives in toolbar) —— */
 .fc-fs-gui-panels {
     padding-top: 0;
@@ -551,8 +521,7 @@ body.fc-fs-preview-lightbox-open {
 }
 
 /* —— Field groups (overview + step panels) —— */
-.fc-fs-field-group,
-.fc-fs-overview-group {
+.fc-fs-field-group{
     border: 1px solid #e2e8f0;
     border-radius: 0;
     background: #fff;
@@ -560,18 +529,15 @@ body.fc-fs-preview-lightbox-open {
     width: 100%;
 }
 
-.fc-fs-field-group--full,
-.fc-fs-overview-group--full {
+.fc-fs-field-group--full{
     width: 100%;
 }
 
-.fc-fs-gui-overview .fc-fs-field-group--full,
-.fc-fs-gui-overview .fc-fs-overview-group--full {
+.fc-fs-gui-overview .fc-fs-field-group--full{
     grid-column: 1 / -1;
 }
 
-.fc-fs-field-group__title,
-.fc-fs-overview-group__title {
+.fc-fs-field-group__title{
     margin: 0;
     padding: 0.4375rem 0.75rem;
     font-size: 0.6875rem;
@@ -583,8 +549,7 @@ body.fc-fs-preview-lightbox-open {
     border-bottom: 1px solid #f1f5f9;
 }
 
-.fc-fs-field-group__body,
-.fc-fs-overview-group__body {
+.fc-fs-field-group__body{
     padding: 0.625rem 0.75rem;
 }
 
@@ -677,21 +642,18 @@ body.fc-fs-preview-lightbox-open {
     font-size: 0.8125rem;
 }
 
-.fc-fs-field-row,
-.fc-fs-overview-catalog-row {
+.fc-fs-field-row{
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 0.5rem 0.75rem;
 }
 
 @media (min-width: 640px) {
-    .fc-fs-field-row--2,
-    .fc-fs-overview-catalog-row.fc-fs-field-row--2 {
+    .fc-fs-field-row--2{
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .fc-fs-field-row--3,
-    .fc-fs-overview-catalog-row {
+    .fc-fs-field-row--3{
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
@@ -855,23 +817,6 @@ body.fc-fs-preview-lightbox-open {
     min-width: 4.75rem;
     padding: 0.3125rem 0.625rem;
     font-size: 0.75rem;
-}
-
-.fc-fs-color-tags-block--compact .fc-fs-gui-field__hint--inline {
-    margin: 0 0 0.375rem;
-}
-
-.fc-fs-color-tags-block--compact .fc-fs-color-tags {
-    margin-bottom: 0.375rem;
-}
-
-.fc-fs-color-tags-block--compact .fc-fs-color-add {
-    gap: 0.375rem;
-}
-
-.fc-fs-color-tags-block--compact .fc-fs-color-add .fc-fs-input {
-    padding: 0.375rem 0.5rem;
-    font-size: 0.8125rem;
 }
 
 /* —— Fence style color picker (from Settings → Fence colors) —— */
@@ -1271,42 +1216,6 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
     color: var(--fc-admin-text-heading);
 }
 
-/* —— Cards —— */
-.fc-fs-gui-overview-card,
-.fc-fs-gui-card {
-    border-color: #e2e8f0;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-.fc-fs-gui-card__head,
-.fc-fs-gui-card__head--accent,
-.fc-fs-gui-card__head--field {
-    padding: 0.875rem 1.25rem;
-    background: #fff;
-    border-bottom: 1px solid #f1f5f9;
-    border-left: none;
-}
-
-.fc-fs-gui-card__index {
-    display: none;
-}
-
-.fc-fs-gui-card__title {
-    font-size: 0.9375rem;
-    font-weight: 600;
-}
-
-.fc-fs-gui-card__sub {
-    font-size: 0.75rem;
-    color: #94a3b8;
-}
-
-.fc-fs-gui-type-badge,
-.fc-fs-gui-type-badge--indigo {
-    display: none;
-}
-
 .fc-fs-gui-marker {
     width: 1.5rem;
     height: 1.5rem;
@@ -1317,39 +1226,8 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
     font-weight: 600;
 }
 
-.fc-fs-gui-card__body {
-    padding: 1.25rem;
-}
-
 .fc-fs-gui-stack {
     gap: 0.75rem;
-}
-
-/* —— Subsections (options lists) —— */
-.fc-fs-gui-subsection {
-    border-color: #e2e8f0;
-    border-radius: 0;
-    background: #fff;
-}
-
-.fc-fs-gui-subsection__head {
-    padding: 0.625rem 0.875rem;
-    background: #fafafa;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.fc-fs-gui-subsection__head i {
-    display: none;
-}
-
-.fc-fs-gui-subsection__title {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: #334155;
-}
-
-.fc-fs-gui-subsection__body {
-    padding: 0.875rem;
 }
 
 .fc-fs-gui-field__hint {
@@ -1964,90 +1842,6 @@ html[data-fc-admin-theme='dark'] .fc-fs-kv-block--fence-colors .fc-settings-fenc
     border: 1px solid #e2e8f0;
 }
 
-.fc-fs-gui-section__hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-}
-
-@media (min-width: 768px) {
-    .fc-fs-gui-section__hero {
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: start;
-    }
-}
-
-.fc-fs-gui-section__fields {
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 0.85rem 1rem;
-}
-
-@media (min-width: 640px) {
-    .fc-fs-gui-section__fields {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-.fc-fs-gui-section__hero .fc-fs-gui-section__key {
-    grid-column: 1 / -1;
-}
-
-.fc-fs-gui-section__toggles {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-
-@media (min-width: 768px) {
-    .fc-fs-gui-section__toggles {
-        min-width: 10rem;
-    }
-}
-
-.fc-fs-gui-section__hero {
-    padding: 1.25rem;
-    margin-bottom: 1.25rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0;
-    background: #fff;
-    box-shadow: none;
-}
-
-.fc-fs-gui-section__hero-icon {
-    display: none;
-}
-
-.fc-fs-gui-section__key {
-    display: block;
-    margin: 0 0 0.75rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #94a3b8;
-    background: transparent;
-    border: none;
-    padding: 0;
-    border-radius: 0;
-}
-
-.fc-fs-gui-callout,
-.fc-fs-gui-callout--gate {
-    gap: 0;
-    padding: 1rem 1.25rem;
-    border-radius: 0;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: inherit;
-    margin-bottom: 1rem;
-}
-
-.fc-fs-gui-callout > i,
-.fc-fs-gui-callout--gate > i {
-    display: none;
-}
-
 /* —— Option cards (Step 3 choices) —— */
 .fc-fs-options {
     border-top-color: #f1f5f9;
@@ -2291,13 +2085,6 @@ html[data-fc-admin-theme='dark'] .fc-fs-kv-block--fence-colors .fc-settings-fenc
     padding: 0 0.5rem 0 0.35rem;
 }
 
-/* —— Dev mode tabs —— */
-.fc-fs-tab.is-active {
-    color: #0f172a;
-    background: #f8fafc;
-    border-color: #e2e8f0;
-}
-
 /* —— Dark mode —— */
 html[data-fc-admin-theme='dark'] .fc-fs-styles-page__title {
     color: var(--fc-admin-text-heading);
@@ -2329,12 +2116,7 @@ html[data-fc-admin-theme='dark'] .fc-fs-style-preview__eyebrow {
 }
 
 html[data-fc-admin-theme='dark'] .fc-admin-fence-styles .fc-admin-fence-style-link > div,
-html[data-fc-admin-theme='dark'] .fc-fs-gui-overview-card,
 html[data-fc-admin-theme='dark'] .fc-fs-field-group,
-html[data-fc-admin-theme='dark'] .fc-fs-overview-group,
-html[data-fc-admin-theme='dark'] .fc-fs-gui-card,
-html[data-fc-admin-theme='dark'] .fc-fs-gui-subsection,
-html[data-fc-admin-theme='dark'] .fc-fs-gui-section__hero,
 html[data-fc-admin-theme='dark'] .fc-fs-option-card,
 html[data-fc-admin-theme='dark'] .fc-fs-kv-row {
     background: var(--fc-admin-surface);
@@ -2378,11 +2160,7 @@ html[data-fc-admin-theme='dark'] .fc-fs-edit-toolbar {
     background: var(--fc-admin-surface);
     border-color: var(--fc-admin-border);
 }
-
-html[data-fc-admin-theme='dark'] .fc-fs-gui-card__head,
-html[data-fc-admin-theme='dark'] .fc-fs-gui-subsection__head,
 html[data-fc-admin-theme='dark'] .fc-fs-field-group__title,
-html[data-fc-admin-theme='dark'] .fc-fs-overview-group__title,
 html[data-fc-admin-theme='dark'] .fc-fs-field-group--outer > .fc-fs-field-group__head {
     background: var(--fc-admin-surface);
     border-color: var(--fc-admin-border);
@@ -2404,11 +2182,4 @@ html[data-fc-admin-theme='dark'] .fc-fs-field-group__head-sub {
 html[data-fc-admin-theme='dark'] .fc-fs-gui-modals-nav__item.is-active {
     background: var(--fc-admin-surface-muted);
     border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-fs-gui-callout,
-html[data-fc-admin-theme='dark'] .fc-fs-gui-callout--gate {
-    background: var(--fc-admin-surface-muted);
-    border-color: var(--fc-admin-border);
-    color: var(--fc-admin-text);
 }

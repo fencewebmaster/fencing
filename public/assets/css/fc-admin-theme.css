@@ -873,6 +873,12 @@ html[data-fc-admin-theme='dark'] .fc-fs-panel-group-tabs__input:checked + .fc-fs
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
+.fc-fs-gui-field--wysiwyg .tox-tinymce {
+    border-radius: 3px;
+    border-color: #8c8f94 !important;
+    overflow: hidden;
+}
+
 html[data-fc-admin-theme='dark'] .fc-fs-gui-field--wysiwyg .tox-tinymce {
     border-color: rgba(148, 163, 184, 0.35) !important;
 }

@@ -29,27 +29,27 @@
 }
 
 .fc-admin-page .btn-orange {
-    background: var(--fc-princeton-orange) !important;
-    color: var(--fc-white) !important;
-    border-bottom: 2px solid var(--fc-fiery-orange) !important;
+    background: var(--fc-princeton-orange);
+    color: var(--fc-white);
+    border-bottom: 2px solid var(--fc-fiery-orange);
 }
 
 .fc-admin-page .btn-orange:hover:not(:disabled):not(.disabled) {
-    background: var(--fc-pumpkin) !important;
-    color: var(--fc-white) !important;
+    background: var(--fc-pumpkin);
+    color: var(--fc-white);
 }
 
 .fc-admin-page .btn-orange-outline {
-    background: transparent !important;
-    color: var(--fc-princeton-orange) !important;
-    border: 1px solid var(--fc-princeton-orange) !important;
-    border-bottom: 2px solid var(--fc-fiery-orange) !important;
+    background: transparent;
+    color: var(--fc-princeton-orange);
+    border: 1px solid var(--fc-princeton-orange);
+    border-bottom: 2px solid var(--fc-fiery-orange);
 }
 
 .fc-admin-page .btn-orange-outline:hover:not(:disabled):not(.disabled) {
-    background: var(--fc-princeton-orange) !important;
-    color: var(--fc-white) !important;
-    border-color: var(--fc-princeton-orange) !important;
+    background: var(--fc-princeton-orange);
+    color: var(--fc-white);
+    border-color: var(--fc-princeton-orange);
 }
 
 .fc-admin-page .btn-orange-outline:focus-visible {

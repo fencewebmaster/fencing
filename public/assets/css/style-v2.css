@@ -52,8 +52,7 @@
     border-radius: var(--fc-step2-radius) !important;
 }
 
-[data-section="2"] .fc-select-2,
-[data-section="2"] .fc-select {
+[data-section="2"] .fc-select-2 {
     border-radius: var(--fc-step2-radius) !important;
 }
 
@@ -216,12 +215,6 @@
     }
 }
 
-.fc-cart-items .fc-edit-item {
-    border: 1px solid var(--fc-princeton-orange);
-    background: var(--fc-princeton-orange);
-    color: var(--fc-white);
-}
-
 .btn-fc-outline-danger {
     background: var(--fc-white);
 }
@@ -237,10 +230,6 @@
 
 .fc-card-body {
     position: relative;
-}
-
-.fc-card-body .fc-loader-container {
-    height: 100%;
 }
 
 .fc-section-loader-overlay {
@@ -339,19 +328,6 @@
     opacity: 0.55;
     pointer-events: none;
     cursor: not-allowed;
-}
-
-/* Main Slat: Add Gate / Gate Options until Step 2 Gate ONLY is selected */
-#btn-gate.fc-slat-gate-requires-gate-only,
-.fencing-btn-modal[data-key="gate"].fc-slat-gate-requires-gate-only {
-    opacity: 0.45;
-    pointer-events: none;
-    cursor: not-allowed;
-}
-
-#btn-gate.fc-slat-gate-requires-gate-only span,
-.fencing-btn-modal[data-key="gate"].fc-slat-gate-requires-gate-only span {
-    color: #9aa0a6;
 }
 
 @media print {

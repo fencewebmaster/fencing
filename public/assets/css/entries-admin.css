@@ -78,8 +78,6 @@
     border-color: #2271b1;
     box-shadow: 0 0 0 1px #2271b1;
 }
-
-.fc-entries-page__status,
 .fc-entries-page__filter {
     min-width: 9rem;
     border: 1px solid #8c8f94;
@@ -140,7 +138,7 @@
 }
 
 .fc-entries-advanced-search[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .fc-entries-advanced-search__backdrop {
@@ -1247,7 +1245,7 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
 }
 
 .fc-system-products-tab__count[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .fc-system-products-tab.is-active .fc-system-products-tab__count {
@@ -1454,7 +1452,7 @@ html[data-fc-admin-theme='dark'] .fc-sp-incomplete-toggle.is-active {
 }
 
 .fc-products-download-dropdown__panel[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .fc-products-download-dropdown__option {
@@ -1517,7 +1515,7 @@ html[data-fc-admin-theme='dark'] .fc-products-download-dropdown__option:hover:no
 }
 
 .fc-products-download-modal[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .fc-products-download-modal__backdrop {
@@ -1955,10 +1953,6 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
 .fc-entries-date-dropdown__clear:hover {
     color: #135e96;
     text-decoration: underline;
-}
-
-.fc-entries-import-trigger {
-    white-space: nowrap;
 }
 
 .fc-entries-page__count {
@@ -2534,16 +2528,6 @@ a.fc-entries-pagination__btn:hover {
     color: #475569;
 }
 
-.fc-entries-dedupe-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.fc-entries-dedupe-trigger i {
-    font-size: 0.8125rem;
-}
-
 .fc-entries-dedupe-modal {
     position: fixed;
     inset: 0;
@@ -2554,7 +2538,7 @@ a.fc-entries-pagination__btn:hover {
 }
 
 .fc-entries-dedupe-modal[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .fc-entries-dedupe-modal__backdrop {
@@ -2743,8 +2727,7 @@ html[data-fc-admin-theme='dark'] .fc-entries-status--duplicate {
 }
 
 .fc-entries-empty,
-.fc-entries-error,
-.fc-entries-page__loading {
+.fc-entries-error{
     padding: 2.5rem 1.25rem;
     text-align: center;
     color: #646970;
@@ -2856,7 +2839,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-page__bulk-count {
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-page__search,
-html[data-fc-admin-theme='dark'] .fc-entries-page__status,
 html[data-fc-admin-theme='dark'] .fc-entries-page__filter,
 html[data-fc-admin-theme='dark'] .fc-entries-page__per-page-select {
     background: var(--fc-admin-surface-muted);
@@ -2954,8 +2936,7 @@ html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__caret,
 html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__option,
 html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__caret,
 html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__icon,
-html[data-fc-admin-theme='dark'] .fc-entries-empty,
-html[data-fc-admin-theme='dark'] .fc-entries-page__loading {
+html[data-fc-admin-theme='dark'] .fc-entries-empty{
     color: var(--fc-admin-text-muted);
 }
 
@@ -3527,7 +3508,7 @@ html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn.is-copied {
 }
 
 .fc-entries-cart-table__no-results[hidden] {
-    display: none !important;
+    display: none;
 }
 
 .fc-entries-cart-table__no-results-icon {
@@ -4313,5 +4294,4 @@ html[data-fc-admin-theme='dark'] .fc-users-permissions-notice {
     max-width: min(20rem, calc(100vw - 1rem));
     z-index: 100;
 }
-
 

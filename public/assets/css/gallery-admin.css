@@ -84,15 +84,6 @@
     gap: 0.75rem 1rem;
 }
 
-.fc-gallery-page__toolbar-end {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    margin-left: auto;
-    flex-shrink: 0;
-}
-
 .fc-gallery-page__toolbar .fc-gallery-page__count {
     margin-left: auto;
 }
@@ -232,12 +223,6 @@
 .fc-gallery-page__dropzone.is-dragover {
     border-color: var(--fc-princeton-orange, #f67925);
     background: rgba(246, 121, 37, 0.04);
-}
-
-.fc-gallery-page__dropzone--busy {
-    opacity: 0.65;
-    pointer-events: none;
-    cursor: wait;
 }
 
 .fc-gallery-page__dropzone--full {
@@ -1346,10 +1331,6 @@ html[data-fc-admin-theme='dark'] .fc-gallery-item__badge {
     color: #646970;
 }
 
-.fc-media-picker__desc code {
-    font-size: 0.75rem;
-}
-
 .fc-media-picker__tabs {
     flex-shrink: 0;
     display: flex;
@@ -1398,15 +1379,6 @@ html[data-fc-admin-theme='dark'] .fc-gallery-item__badge {
     background: #f6f7f7;
 }
 
-.fc-media-picker__toolbar-end {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    margin-left: auto;
-    flex-shrink: 0;
-}
-
 .fc-media-picker__dropzone {
     border: 1px dashed #c3c4c7;
     border-radius: 3px;
@@ -1420,12 +1392,6 @@ html[data-fc-admin-theme='dark'] .fc-gallery-item__badge {
 .fc-media-picker__dropzone.is-dragover {
     border-color: var(--fc-princeton-orange, #f67925);
     background: rgba(246, 121, 37, 0.04);
-}
-
-.fc-media-picker__dropzone--busy {
-    opacity: 0.65;
-    pointer-events: none;
-    cursor: wait;
 }
 
 .fc-media-picker.fc-media-picker--upload {
