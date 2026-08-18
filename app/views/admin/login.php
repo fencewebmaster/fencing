@@ -161,7 +161,7 @@ $version = (string) ($page['version'] ?? '');
             redirect: <?php echo json_encode((string) ($page['redirect'] ?? ''), JSON_UNESCAPED_SLASHES); ?>
         };
     </script>
-    <script src="assets/js/fc-admin-appearance.js"></script>
-    <script src="assets/js/login.js"></script>
+    <script src="assets/js/admin/core/fc-admin-appearance.js"></script>
+    <script src="assets/js/admin/login.js"></script>
 </body>
 </html>

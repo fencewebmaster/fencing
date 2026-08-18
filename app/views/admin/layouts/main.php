@@ -1411,81 +1411,81 @@ declare(strict_types=1);
 
     <div id="fc-admin-modal-root" class="pointer-events-none fixed inset-0 z-[9999]" aria-hidden="true"></div>
 
-    <script src="assets/js/fc-admin-ui.js"></script>
-    <script src="assets/js/fc-theme.js"></script>
-    <script src="assets/js/fc-admin-appearance.js"></script>
-    <script src="assets/js/fc-lazy.js"></script>
-    <script src="assets/js/toast.js"></script>
-    <script src="assets/js/fc-cache-purge.js"></script>
+    <script src="assets/js/admin/core/fc-admin-ui.js"></script>
+    <script src="assets/js/admin/core/fc-theme.js"></script>
+    <script src="assets/js/admin/core/fc-admin-appearance.js"></script>
+    <script src="assets/js/admin/core/fc-lazy.js"></script>
+    <script src="assets/js/admin/core/toast.js"></script>
+    <script src="assets/js/admin/core/fc-cache-purge.js"></script>
     <?php if ($fcAdminIsDashboard) : ?>
-    <script src="assets/js/vendor/chart.umd.min.js"></script>
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/entries-date-filter.js"></script>
-    <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/admin/vendor/chart.umd.min.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/dashboard/entries-date-filter.js"></script>
+    <script src="assets/js/admin/dashboard/dashboard.js"></script>
     <?php elseif ($fcAdminIsEntries) : ?>
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/modal.js"></script>
-    <script src="assets/js/entries-filters.js"></script>
-    <script src="assets/js/entries-date-filter.js"></script>
-    <script src="assets/js/entries-planner-copy.js"></script>
-    <script src="assets/js/entries-bulk.js"></script>
-    <script src="assets/js/entries-detail-copy.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/core/modal.js"></script>
+    <script src="assets/js/admin/entries/entries-filters.js"></script>
+    <script src="assets/js/admin/dashboard/entries-date-filter.js"></script>
+    <script src="assets/js/admin/entries/entries-planner-copy.js"></script>
+    <script src="assets/js/admin/entries/entries-bulk.js"></script>
+    <script src="assets/js/admin/entries/entries-detail-copy.js"></script>
     <?php if (is_array($fcEntriesDetailPage)) : ?>
-    <script src="assets/js/entries-cart-filters.js"></script>
-    <script src="assets/js/entries-cart-gallery.js"></script>
+    <script src="assets/js/admin/entries/entries-cart-filters.js"></script>
+    <script src="assets/js/admin/entries/entries-cart-gallery.js"></script>
     <?php endif; ?>
     <?php elseif (!empty($fcAdminIsUsers)) : ?>
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/users-presence.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/users-presence.js"></script>
     <?php elseif (!empty($fcAdminIsGroupPermissions)) : ?>
-    <script src="assets/js/group-permissions.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/admin/group-permissions.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
     <?php elseif ($fcAdminIsSettings) : ?>
-    <script src="assets/js/modal.js"></script>
-    <script src="assets/js/gallery-upload-queue.js"></script>
-    <script src="assets/js/gallery.js"></script>
-    <script src="assets/js/media-picker.js"></script>
-    <script src="assets/js/settings.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/admin/core/modal.js"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
+    <script src="assets/js/admin/gallery.js"></script>
+    <script src="assets/js/admin/core/media-picker.js"></script>
+    <script src="assets/js/admin/settings.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
     <?php elseif ($fcAdminIsGallery) : ?>
-    <script src="assets/js/modal.js"></script>
-    <script src="assets/js/gallery-upload-queue.js"></script>
-    <script src="assets/js/gallery.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/admin/core/modal.js"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
+    <script src="assets/js/admin/gallery.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
     <?php elseif ($fcAdminRoute === 'products/store-products') : ?>
-    <script src="assets/js/modal.js"></script>
-    <script src="assets/js/system-products.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/admin/core/modal.js"></script>
+    <script src="assets/js/admin/products/system-products.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
     <?php elseif ($fcAdminRoute === 'products/system-products') : ?>
-    <script src="assets/js/modal.js"></script>
-    <script src="assets/js/store-products-color-filter.js"></script>
-    <script src="assets/js/store-products.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/admin/core/modal.js"></script>
+    <script src="assets/js/admin/products/store-products-color-filter.js"></script>
+    <script src="assets/js/admin/products/store-products.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
     <?php elseif ($fcAdminRoute === 'products/fence-styles' || preg_match('#^products/fence-styles/edit/#', (string) $fcAdminRoute)) : ?>
-    <script src="assets/js/modal.js"></script>
-    <script src="assets/js/gallery-upload-queue.js"></script>
-    <script src="assets/js/gallery.js"></script>
-    <script src="assets/js/media-picker.js"></script>
-    <script src="assets/js/fence-styles-wysiwyg.js"></script>
-    <script src="assets/js/fence-styles-code-editor.js"></script>
-    <script src="assets/js/fence-styles-gui.js"></script>
-    <script src="assets/js/fence-styles-edit.js"></script>
-    <script src="assets/js/fence-styles.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/admin/core/modal.js"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
+    <script src="assets/js/admin/gallery.js"></script>
+    <script src="assets/js/admin/core/media-picker.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-wysiwyg.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-code-editor.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-gui.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-edit.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
     <?php else : ?>
-    <script src="assets/js/modal.js"></script>
-    <script src="assets/js/store-products.js"></script>
-    <script src="assets/js/system-products.js"></script>
-    <script src="assets/js/gallery-upload-queue.js"></script>
-    <script src="assets/js/gallery.js"></script>
-    <script src="assets/js/media-picker.js"></script>
-    <script src="assets/js/fence-styles-wysiwyg.js"></script>
-    <script src="assets/js/fence-styles-code-editor.js"></script>
-    <script src="assets/js/fence-styles-gui.js"></script>
-    <script src="assets/js/fence-styles-edit.js"></script>
-    <script src="assets/js/fence-styles.js"></script>
-    <script src="assets/js/settings.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/admin/core/modal.js"></script>
+    <script src="assets/js/admin/products/store-products.js"></script>
+    <script src="assets/js/admin/products/system-products.js"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
+    <script src="assets/js/admin/gallery.js"></script>
+    <script src="assets/js/admin/core/media-picker.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-wysiwyg.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-code-editor.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-gui.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles-edit.js"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles.js"></script>
+    <script src="assets/js/admin/settings.js"></script>
+    <script src="assets/js/admin/core/app.js"></script>
     <?php endif; ?>
 </body>
 </html>

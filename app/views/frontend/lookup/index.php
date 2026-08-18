@@ -40,6 +40,6 @@ $adminCssBase = 'public/assets/css/';
 </head>
 <body class="fc-lookup-page fc-admin-page">
 <?php require __DIR__ . '/page.php'; ?>
-<script src="<?php echo $h($asset('public/assets/js/lookup.js')); ?>" defer></script>
+<script src="<?php echo $h($asset('public/assets/js/frontend/lookup.js')); ?>" defer></script>
 </body>
 </html>
