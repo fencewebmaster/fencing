@@ -51,67 +51,21 @@
         }
     }
 
+    var flash = new window.FC.util.FlashMessage({
+        storageKey: FLASH_KEY,
+        noticeSelector: '[data-fc-gp-notice]'
+    });
+
     function setFlash(message, type) {
-        try {
-            sessionStorage.setItem(
-                FLASH_KEY,
-                JSON.stringify({
-                    message: String(message || ''),
-                    type: type === 'error' ? 'error' : 'success',
-                })
-            );
-        } catch (e) {
-            /* ignore */
-        }
+        flash.set(message, type);
     }
 
     function consumeFlash() {
-        try {
-            var raw = sessionStorage.getItem(FLASH_KEY);
-            if (!raw) {
-                return null;
-            }
-            sessionStorage.removeItem(FLASH_KEY);
-            var data = JSON.parse(raw);
-            if (!data || !data.message) {
-                return null;
-            }
-            return data;
-        } catch (e) {
-            return null;
-        }
+        return flash.consume();
     }
 
-    function showHeaderNotice(root, flash) {
-        var mount = root.querySelector('[data-fc-gp-notice]');
-        if (!mount || !flash || !flash.message) {
-            return;
-        }
-
-        var type = flash.type === 'error' ? 'error' : 'success';
-        mount.hidden = false;
-        mount.className =
-            'fc-entries-page__notice fc-entries-page__notice--' + type + ' is-visible';
-        mount.setAttribute('role', type === 'error' ? 'alert' : 'status');
-        mount.innerHTML =
-            '<p class="fc-entries-page__notice-text"></p>' +
-            '<button type="button" class="fc-entries-page__notice-dismiss" aria-label="Dismiss notice">' +
-            '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' +
-            '</button>';
-
-        var textEl = mount.querySelector('.fc-entries-page__notice-text');
-        if (textEl) {
-            textEl.textContent = flash.message;
-        }
-
-        var dismiss = mount.querySelector('.fc-entries-page__notice-dismiss');
-        if (dismiss) {
-            dismiss.addEventListener('click', function () {
-                mount.hidden = true;
-                mount.classList.remove('is-visible');
-                mount.innerHTML = '';
-            });
-        }
+    function showHeaderNotice(root, flashData) {
+        flash.renderInto(root, flashData);
     }
 
     function getPath(obj, path) {
@@ -253,13 +207,7 @@
         return html;
     }
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = window.FC.util.escapeHtml;
 
     function escapeAttr(text) {
         return escapeHtml(text).replace(/'/g, '&#39;');
@@ -778,10 +726,12 @@
         showHeaderNotice(root, consumeFlash());
     }
 
-    window.FcAdminGroupPermissions = {
-        init: init,
-        hydrateFromServer: init,
-    };
+    class GroupPermissionsPage extends window.FC.PageController {
+        hydrate(container) {
+            init(container);
+        }
+    }
+    window.FC.PageRegistry.register('users/group-permissions', new GroupPermissionsPage());
 
     document.addEventListener('DOMContentLoaded', init);
 })();

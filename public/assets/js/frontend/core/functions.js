@@ -4217,7 +4217,7 @@ function getSelectedFenceData(slug, itab) {
 /**
  * Slat Fence: set CSS slat gap based on selected "slat_gap".
  *
- * We render slats using `repeating-linear-gradient` in CSS (see `public/assets/css/style.css`).
+ * We render slats using `repeating-linear-gradient` in CSS (see `public/assets/css/frontend/style.css`).
  * This function updates `--fc-slat-gap-px` on the slat fence container so the visible
  * gap matches the selected mm option (scaled to the planner UI).
  */

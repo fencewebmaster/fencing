@@ -77,6 +77,7 @@
     }
 
     function closeDropdown(root) {
+        window.FC.components.DropdownRegistry.notifyClosed(root);
         var toggle = root.querySelector('.fc-entries-fence-dropdown__toggle');
         var panel = root.querySelector('.fc-entries-fence-dropdown__panel');
         if (!toggle || !panel) {
@@ -129,24 +130,8 @@
             return;
         }
 
-        document.querySelectorAll(
-            '[data-fc-entries-multi-dropdown].is-open, [data-fc-entries-fence-dropdown].is-open'
-        ).forEach(function (otherRoot) {
-            if (otherRoot !== root) {
-                closeDropdown(otherRoot);
-            }
-        });
-
-        document.querySelectorAll('[data-fc-entries-date-dropdown].is-open').forEach(function (dateRoot) {
-            var datePanel = dateRoot.querySelector('.fc-entries-date-dropdown__panel');
-            var dateToggle = dateRoot.querySelector('.fc-entries-date-dropdown__toggle');
-            if (datePanel) {
-                datePanel.hidden = true;
-            }
-            if (dateToggle) {
-                dateToggle.setAttribute('aria-expanded', 'false');
-            }
-            dateRoot.classList.remove('is-open');
+        window.FC.components.DropdownRegistry.openExclusive(root, function () {
+            closeDropdown(root);
         });
 
         panel.hidden = false;
@@ -251,7 +236,6 @@
 
         var dialog = modal.querySelector('.fc-entries-advanced-search__dialog');
         var closeButtons = modal.querySelectorAll('[data-fc-entries-advanced-close]');
-        var adminMain = document.getElementById('fc-admin-main');
         var previousFocus = null;
 
         function focusableElements() {
@@ -288,10 +272,7 @@
             modal.classList.add('is-open');
             trigger.setAttribute('aria-expanded', 'true');
             document.body.classList.add('fc-entries-advanced-search-open');
-            document.documentElement.classList.add('fc-admin-scroll-lock');
-            if (adminMain) {
-                adminMain.classList.add('fc-admin-scroll-lock');
-            }
+            window.FcAdminModal.lockScroll();
             window.requestAnimationFrame(function () {
                 var firstField = dialog.querySelector('select, input:not([type="hidden"])');
                 (firstField || dialog).focus();
@@ -307,10 +288,7 @@
             modal.hidden = true;
             trigger.setAttribute('aria-expanded', 'false');
             document.body.classList.remove('fc-entries-advanced-search-open');
-            document.documentElement.classList.remove('fc-admin-scroll-lock');
-            if (adminMain) {
-                adminMain.classList.remove('fc-admin-scroll-lock');
-            }
+            window.FcAdminModal.unlockScroll();
             if (previousFocus && typeof previousFocus.focus === 'function') {
                 previousFocus.focus();
             } else {

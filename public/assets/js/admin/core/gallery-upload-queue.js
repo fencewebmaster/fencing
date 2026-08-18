@@ -4,13 +4,7 @@
 (function (global) {
     'use strict';
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
     function formatBytes(bytes) {
         var n = Number(bytes) || 0;

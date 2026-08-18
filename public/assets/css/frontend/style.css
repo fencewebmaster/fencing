@@ -1761,7 +1761,7 @@ h2.fc-header-title+p {
 }
 
 .fc-video-bg {
-    background: linear-gradient(var(--fc-a-black-0), var(--fc-a-black-75)), url(../img/webp/video-bg.webp);
+    background: linear-gradient(var(--fc-a-black-0), var(--fc-a-black-75)), url(../../img/webp/video-bg.webp);
     width: 100%;
     max-width: 200px;
     background-size: cover;
@@ -2070,7 +2070,7 @@ a.fc-tab-active {
     border-radius: 5px;
     /* Arrow */
     appearance: none;
-    background-image: url(../img/webp/arrow-s.webp);
+    background-image: url(../../img/webp/arrow-s.webp);
     background-repeat: no-repeat;
     background-position: right 15px top 50%;
     background-size: 13px auto;
@@ -2865,7 +2865,7 @@ a.fc-tab-active {
 }
 
 .fc-loader-gif {
-    background: url(../img/loaders/1.gif) no-repeat center;
+    background: url(../../img/loaders/1.gif) no-repeat center;
     width: 80px;
     height: 80px;
     background-size: 100%;
@@ -7204,7 +7204,7 @@ thead.fc-border th:last-child {
     display: inline-block;
     vertical-align: middle;
     content: "";
-    background: url(../img/webp/btn-arrow.webp) no-repeat center;
+    background: url(../../img/webp/btn-arrow.webp) no-repeat center;
     width: 20px;
     height: 12px;
     background-size: 100% auto;
@@ -7217,7 +7217,7 @@ thead.fc-border th:last-child {
 
     .fencing-panel-controls #btn-left_side.fc-btn-active:before,
     .fencing-panel-controls #btn-left_side:hover:before {
-        background-image: url(../img/webp/btn-arrow-white.webp);
+        background-image: url(../../img/webp/btn-arrow-white.webp);
     }
 }
 
@@ -7225,7 +7225,7 @@ thead.fc-border th:last-child {
     display: inline-block;
     vertical-align: middle;
     content: "";
-    background: url(../img/webp/btn-arrow.webp) no-repeat center;
+    background: url(../../img/webp/btn-arrow.webp) no-repeat center;
     width: 20px;
     height: 12px;
     background-size: 100% auto;
@@ -7239,7 +7239,7 @@ thead.fc-border th:last-child {
 
     .fencing-panel-controls #btn-right_side.fc-btn-active:after,
     .fencing-panel-controls #btn-right_side:hover:after {
-        background-image: url(../img/webp/btn-arrow-white.webp);
+        background-image: url(../../img/webp/btn-arrow-white.webp);
     }
 }
 
@@ -8660,7 +8660,7 @@ thead.fc-border th:last-child {
 }
 
 .ally {
-    background-image: url(../img/webp/ally-thin.webp?v=1);
+    background-image: url(../../img/webp/ally-thin.webp?v=1);
     background-repeat: repeat;
     border-color: var(--fc-black);
     background-size: 9px;
@@ -8774,7 +8774,7 @@ thead.fc-border th:last-child {
 }
 
 .offcut-body {
-    background-image: url(../img/webp/ally-thin.webp);
+    background-image: url(../../img/webp/ally-thin.webp);
     background-repeat: repeat;
     background-size: 9px;
     background-color: var(--fc-lavender-blush);
@@ -8782,14 +8782,14 @@ thead.fc-border th:last-child {
 
 .custom-height .ally,
 .custom-height .offcut-body {
-    background-image: url(../img/webp/ally-thick.webp);
+    background-image: url(../../img/webp/ally-thick.webp);
     background-size: 10px;
 }
 
 .custom-height .ally:before,
 .custom-height .offcut-body:before {
     content: "";
-    background-image: url(../img/webp/ally-thick.webp?v=1);
+    background-image: url(../../img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: var(--fc-white);
@@ -8802,7 +8802,7 @@ thead.fc-border th:last-child {
 .custom-height .ally:after,
 .custom-height .offcut-body:after {
     content: "";
-    background-image: url(../img/webp/ally-thick.webp?v=1);
+    background-image: url(../../img/webp/ally-thick.webp?v=1);
     background-repeat: repeat;
     background-size: 10px;
     background-color: var(--fc-white);
@@ -9196,7 +9196,7 @@ thead.fc-border th:last-child {
 .fencing-panel-rail {
     height: 9px;
     top: -10px;
-    background-image: url(../img/webp/hand-rail-round.webp);
+    background-image: url(../../img/x/hand-rail-round.png);
     background-size: 100% 6px;
     position: absolute;
     width: 100%;
@@ -9245,13 +9245,13 @@ thead.fc-border th:last-child {
 
 .opt-1 .fencing-panel-spigot,
 .opt-1-1 .fencing-panel-spigot {
-    background-image: url(../img/webp/bolt-down-w.png);
+    background-image: url(../../img/webp/bolt-down-w.png);
     height: 40px;
     width: 35px;
 }
 .opt-2 .fencing-panel-spigot,
 .opt-2-1 .fencing-panel-spigot {
-    background-image: url(../img/webp/core-drill-w.png);
+    background-image: url(../../img/webp/core-drill-w.png);
     min-height: 40px;
     min-width: 40px;
     height: 40px;
@@ -9289,7 +9289,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-panel-pinfix {
-    background-image: url(../img/webp/pinfix.png);
+    background-image: url(../../img/webp/pinfix.png);
     background-size: contain;
     background-repeat: no-repeat;
     height: 15px;
@@ -10360,7 +10360,7 @@ input[type="number"] {
     display: inline-block;
     width: 30px;
     height: 30px;
-    background: url(../img/australian-flag.png);
+    background: url(../../img/australian-flag.png);
     background-size: contain;
     background-repeat: no-repeat;
     position: absolute;

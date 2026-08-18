@@ -15,7 +15,7 @@
 
 declare(strict_types=1);
 
-$adminCssBase = 'public/assets/css/';
+$adminCssBase = 'public/assets/css/admin/';
 ?><!DOCTYPE html>
 <html lang="en" data-fc-admin-theme="light">
 <head>
@@ -26,9 +26,9 @@ $adminCssBase = 'public/assets/css/';
     <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/fonts.css')); ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'fc-admin-buttons.css')); ?>">
-    <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'fc-admin-theme.css')); ?>">
-    <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/lookup.css')); ?>">
+    <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'buttons.css')); ?>">
+    <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'theme.css')); ?>">
+    <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/frontend/lookup.css')); ?>">
     <style>
         .fc-lookup-page {
             --fc-lookup-cols-desktop: <?php echo (int) ($catalog['columnsDesktop'] ?? 4); ?>;

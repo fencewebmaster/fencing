@@ -31,35 +31,14 @@
         }
     }
 
+    var flashMessage = new global.FC.util.FlashMessage({ storageKey: FLASH_KEY });
+
     function setFlash(message, type) {
-        try {
-            sessionStorage.setItem(
-                FLASH_KEY,
-                JSON.stringify({
-                    message: String(message || ''),
-                    type: type === 'error' ? 'error' : 'success',
-                })
-            );
-        } catch (e) {
-            /* ignore */
-        }
+        flashMessage.set(message, type);
     }
 
     function consumeFlash() {
-        try {
-            var raw = sessionStorage.getItem(FLASH_KEY);
-            if (!raw) {
-                return null;
-            }
-            sessionStorage.removeItem(FLASH_KEY);
-            var data = JSON.parse(raw);
-            if (!data || !data.message) {
-                return null;
-            }
-            return data;
-        } catch (e) {
-            return null;
-        }
+        return flashMessage.consume();
     }
 
     function showPendingFlash() {
@@ -117,6 +96,7 @@
     }
 
     function closeDropdown(root) {
+        global.FC.components.DropdownRegistry.notifyClosed(root);
         var toggle = root.querySelector('.fc-entries-date-dropdown__toggle');
         var panel = root.querySelector('.fc-entries-date-dropdown__panel');
         if (!toggle || !panel) {
@@ -131,40 +111,6 @@
     function clearActiveOption(root) {
         root.querySelectorAll('.fc-admin-cache-dropdown__option.is-active').forEach(function (btn) {
             btn.classList.remove('is-active');
-        });
-    }
-
-    function closeOtherMenus(root) {
-        document.querySelectorAll('[data-fc-cache-purge-dropdown].is-open').forEach(function (other) {
-            if (other !== root) {
-                closeDropdown(other);
-            }
-        });
-
-        document.querySelectorAll('[data-fc-entries-date-dropdown].is-open').forEach(function (dateRoot) {
-            var panel = dateRoot.querySelector('.fc-entries-date-dropdown__panel');
-            var toggle = dateRoot.querySelector('.fc-entries-date-dropdown__toggle');
-            if (panel) {
-                panel.hidden = true;
-            }
-            if (toggle) {
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-            dateRoot.classList.remove('is-open');
-        });
-
-        document.querySelectorAll(
-            '[data-fc-entries-multi-dropdown].is-open, [data-fc-entries-fence-dropdown].is-open'
-        ).forEach(function (fence) {
-            var fencePanel = fence.querySelector('.fc-entries-fence-dropdown__panel');
-            var fenceToggle = fence.querySelector('.fc-entries-fence-dropdown__toggle');
-            if (fencePanel) {
-                fencePanel.hidden = true;
-            }
-            if (fenceToggle) {
-                fenceToggle.setAttribute('aria-expanded', 'false');
-            }
-            fence.classList.remove('is-open');
         });
     }
 
@@ -248,7 +194,9 @@
             return;
         }
 
-        closeOtherMenus(root);
+        global.FC.components.DropdownRegistry.openExclusive(root, function () {
+            closeDropdown(root);
+        });
         panel.hidden = false;
         toggle.setAttribute('aria-expanded', 'true');
         root.classList.add('is-open');

@@ -35,8 +35,8 @@ $version = (string) ($page['version'] ?? '');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" type="text/css" href="assets/css/fc-admin-theme.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/login.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/login.css">
 </head>
 <body class="h-full fc-login-body">
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2"></div>
@@ -161,7 +161,8 @@ $version = (string) ($page['version'] ?? '');
             redirect: <?php echo json_encode((string) ($page['redirect'] ?? ''), JSON_UNESCAPED_SLASHES); ?>
         };
     </script>
-    <script src="assets/js/admin/core/fc-admin-appearance.js"></script>
-    <script src="assets/js/admin/login.js"></script>
+    <script src="assets/js/admin/core/namespace.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/namespace.js'); ?>"></script>
+    <script src="assets/js/admin/core/admin-appearance.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/admin-appearance.js'); ?>"></script>
+    <script src="assets/js/admin/login.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/login.js'); ?>"></script>
 </body>
 </html>

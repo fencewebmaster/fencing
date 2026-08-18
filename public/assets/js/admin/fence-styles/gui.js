@@ -164,13 +164,7 @@
         'dropdown_option_check'
     ];
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
     function isPlainObject(val) {
         return val !== null && typeof val === 'object' && !Array.isArray(val);

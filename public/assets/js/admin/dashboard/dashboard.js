@@ -14,13 +14,7 @@
     /** @type {Object.<string, string>} */
     var stateColorMap = {};
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = window.FC.util.escapeHtml;
 
     function getRoot(el) {
         if (el) {
@@ -1646,10 +1640,12 @@
         }
     }
 
-    window.FcAdminDashboard = {
-        init: initDashboard,
-        hydrateFromServer: hydrateFromServer,
-    };
+    class DashboardPage extends window.FC.PageController {
+        hydrate(container) {
+            hydrateFromServer(container);
+        }
+    }
+    window.FC.PageRegistry.register('dashboard', new DashboardPage());
 
     document.addEventListener('DOMContentLoaded', function () {
         var root = getRoot();

@@ -8,79 +8,40 @@
     var PRIMARY_COLUMNS = ['Images', 'SKU', 'Name'];
     var SYSTEM_COLUMN_ORDER = ['Images', 'SKU', 'Name'];
     var GALLERY_BODY_CLASS = 'fc-entries-cart-gallery-open';
-    var galleryEl = null;
-    var galleryKeydownHandler = null;
-    var galleryState = {
-        slides: [],
-        index: 0
-    };
 
     var FLASH_KEY = 'fc-system-products-download-flash';
 
-    function setFlash(message, type) {
-        try {
-            sessionStorage.setItem(
-                FLASH_KEY,
-                JSON.stringify({
-                    message: String(message || ''),
-                    type: type === 'error' ? 'error' : 'success'
-                })
-            );
-        } catch (e) {
-            /* ignore */
+    var flashMessage = new global.FC.util.FlashMessage({
+        storageKey: FLASH_KEY,
+        noticeSelector: '[data-fc-system-products-notice]',
+        defaultRoot: function () {
+            return document.querySelector('[data-fc-system-products-server]');
         }
+    });
+
+    // NOTE: intentionally registered under the *store-products* route — the
+    // route/controller naming is cross-wired throughout this app (route
+    // 'products/store-products' renders and hydrates THIS file's page,
+    // route 'products/system-products' renders products/store-products.js).
+    // This is pre-existing, self-consistent behavior; do not "fix" it here
+    // without also updating app/views/admin/layouts/main.php and core/app.js.
+    class SystemProductsPage extends global.FC.PageController {
+        hydrate(container) {
+            hydrateFromServer(container);
+        }
+    }
+    var pageController = new SystemProductsPage();
+
+    function setFlash(message, type) {
+        flashMessage.set(message, type);
     }
 
     function consumeFlash() {
-        try {
-            var raw = sessionStorage.getItem(FLASH_KEY);
-            if (!raw) {
-                return null;
-            }
-            sessionStorage.removeItem(FLASH_KEY);
-            var data = JSON.parse(raw);
-            if (!data || !data.message) {
-                return null;
-            }
-            return data;
-        } catch (e) {
-            return null;
-        }
+        return flashMessage.consume();
     }
 
-    function showHeaderNotice(root, flash) {
-        if (!root) {
-            root = document.querySelector('[data-fc-system-products-server]');
-        }
-        var mount = root ? root.querySelector('[data-fc-system-products-notice]') : null;
-        if (!mount || !flash || !flash.message) {
-            return;
-        }
-
-        var type = flash.type === 'error' ? 'error' : 'success';
-        mount.hidden = false;
-        mount.className =
-            'fc-entries-page__notice fc-entries-page__notice--' + type + ' is-visible';
-        mount.setAttribute('role', type === 'error' ? 'alert' : 'status');
-        mount.innerHTML =
-            '<p class="fc-entries-page__notice-text"></p>' +
-            '<button type="button" class="fc-entries-page__notice-dismiss" aria-label="Dismiss notice">' +
-            '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' +
-            '</button>';
-
-        var textEl = mount.querySelector('.fc-entries-page__notice-text');
-        if (textEl) {
-            textEl.textContent = flash.message;
-        }
-
-        var dismiss = mount.querySelector('.fc-entries-page__notice-dismiss');
-        if (dismiss) {
-            dismiss.addEventListener('click', function () {
-                mount.hidden = true;
-                mount.classList.remove('is-visible');
-                mount.innerHTML = '';
-            });
-        }
+    function showHeaderNotice(root, flashData) {
+        flashMessage.renderInto(root, flashData);
     }
 
     function orderSystemProductColumns(cols) {
@@ -119,228 +80,24 @@
         q: 'q'
     };
 
-    function scrollGalleryThumbIntoView() {
-        if (!galleryEl) {
-            return;
-        }
-
-        var thumbsEl = galleryEl.querySelector('[data-fc-cart-gallery-thumbs]');
-        if (!thumbsEl || thumbsEl.hidden) {
-            return;
-        }
-
-        var activeThumb = thumbsEl.querySelector('[data-fc-cart-gallery-thumb].is-active');
-        if (!activeThumb) {
-            return;
-        }
-
-        activeThumb.scrollIntoView({
-            behavior: 'smooth',
-            inline: 'center',
-            block: 'nearest'
-        });
-    }
-
-    function renderGalleryThumbs() {
-        if (!galleryEl) {
-            return;
-        }
-
-        var thumbsEl = galleryEl.querySelector('[data-fc-cart-gallery-thumbs]');
-        if (!thumbsEl) {
-            return;
-        }
-
-        if (galleryState.slides.length <= 1) {
-            thumbsEl.hidden = true;
-            thumbsEl.innerHTML = '';
-            return;
-        }
-
-        thumbsEl.hidden = false;
-        thumbsEl.innerHTML = galleryState.slides
-            .map(function (slide, index) {
-                var active = index === galleryState.index ? ' is-active' : '';
-                return (
-                    '<button type="button" class="fc-entries-cart-gallery__thumb' +
-                    active +
-                    '" data-fc-cart-gallery-thumb="' +
-                    index +
-                    '" aria-label="View image ' +
-                    (index + 1) +
-                    ' of ' +
-                    galleryState.slides.length +
-                    '">' +
-                    '<img src="' +
-                    escapeHtml(slide.url) +
-                    '" alt="" loading="lazy" decoding="async">' +
-                    '</button>'
-                );
-            })
-            .join('');
-
-        requestAnimationFrame(scrollGalleryThumbIntoView);
-    }
-
-    function renderGallerySlide() {
-        if (!galleryEl || !galleryState.slides.length) {
-            return;
-        }
-
-        var slide = galleryState.slides[galleryState.index];
-        var imageEl = galleryEl.querySelector('[data-fc-cart-gallery-image]');
-        var captionEl = galleryEl.querySelector('[data-fc-cart-gallery-caption]');
-        var counterEl = galleryEl.querySelector('[data-fc-cart-gallery-counter]');
-        var prevBtn = galleryEl.querySelector('[data-fc-cart-gallery-prev]');
-        var nextBtn = galleryEl.querySelector('[data-fc-cart-gallery-next]');
-
-        if (imageEl) {
-            imageEl.src = slide.url;
-            imageEl.alt = slide.caption || 'Product image';
-        }
-
-        if (captionEl) {
-            captionEl.textContent = slide.caption || '';
-            captionEl.hidden = !slide.caption;
-        }
-
-        if (counterEl) {
-            counterEl.textContent = galleryState.index + 1 + ' / ' + galleryState.slides.length;
-            counterEl.hidden = galleryState.slides.length <= 1;
-        }
-
-        if (prevBtn) {
-            prevBtn.disabled = galleryState.slides.length <= 1;
-        }
-
-        if (nextBtn) {
-            nextBtn.disabled = galleryState.slides.length <= 1;
-        }
-
-        galleryEl.querySelectorAll('[data-fc-cart-gallery-thumb]').forEach(function (btn) {
-            var thumbIndex = parseInt(btn.getAttribute('data-fc-cart-gallery-thumb') || '-1', 10);
-            btn.classList.toggle('is-active', thumbIndex === galleryState.index);
-        });
-
-        scrollGalleryThumbIntoView();
-    }
-
-    function closeGalleryModal() {
-        if (!galleryEl) {
-            return;
-        }
-
-        if (galleryKeydownHandler) {
-            document.removeEventListener('keydown', galleryKeydownHandler);
-            galleryKeydownHandler = null;
-        }
-
-        galleryEl.remove();
-        galleryEl = null;
-        galleryState.slides = [];
-        galleryState.index = 0;
-        document.body.classList.remove(GALLERY_BODY_CLASS);
-    }
-
-    function showGallerySlide(index) {
-        if (!galleryState.slides.length) {
-            return;
-        }
-
-        if (index < 0) {
-            index = galleryState.slides.length - 1;
-        } else if (index >= galleryState.slides.length) {
-            index = 0;
-        }
-
-        galleryState.index = index;
-        renderGallerySlide();
-    }
+    var lightbox = new global.FC.components.ImageLightbox({
+        bodyOpenClass: GALLERY_BODY_CLASS,
+        closeOnBackdrop: false
+    });
 
     function openGalleryModal(urls, title, startIndex) {
         if (!urls || !urls.length) {
             return;
         }
-
-        closeGalleryModal();
-
         var caption = title || 'Product images';
-        galleryState.slides = urls.map(function (url) {
-            return {
-                url: url,
-                caption: caption
-            };
+        var slides = urls.map(function (url) {
+            return { url: url, caption: caption };
         });
-        galleryState.index = Math.max(0, Math.min(startIndex || 0, galleryState.slides.length - 1));
+        lightbox.open(slides, startIndex || 0, { ariaLabel: caption, focusClose: false });
+    }
 
-        galleryEl = document.createElement('div');
-        galleryEl.className = 'fc-entries-cart-gallery';
-        galleryEl.setAttribute('role', 'dialog');
-        galleryEl.setAttribute('aria-modal', 'true');
-        galleryEl.setAttribute('aria-label', caption);
-        galleryEl.innerHTML =
-            '<div class="fc-entries-cart-gallery__backdrop" aria-hidden="true"></div>' +
-            '<button type="button" class="fencing-modal-close" data-fc-cart-gallery-close aria-label="Close"></button>' +
-            '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--prev" data-fc-cart-gallery-prev aria-label="Previous image">' +
-            '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>' +
-            '<div class="fc-entries-cart-gallery__stage">' +
-            '<img class="fc-entries-cart-gallery__image" data-fc-cart-gallery-image src="" alt="">' +
-            '<p class="fc-entries-cart-gallery__caption" data-fc-cart-gallery-caption hidden></p>' +
-            '<span class="fc-entries-cart-gallery__counter" data-fc-cart-gallery-counter hidden></span>' +
-            '</div>' +
-            '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--next" data-fc-cart-gallery-next aria-label="Next image">' +
-            '<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>' +
-            '<div class="fc-entries-cart-gallery__thumbs" data-fc-cart-gallery-thumbs hidden></div>';
-
-        document.body.appendChild(galleryEl);
-        document.body.classList.add(GALLERY_BODY_CLASS);
-
-        galleryEl.querySelectorAll('[data-fc-cart-gallery-close]').forEach(function (btn) {
-            btn.addEventListener('click', closeGalleryModal);
-        });
-
-        var prevBtn = galleryEl.querySelector('[data-fc-cart-gallery-prev]');
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function () {
-                showGallerySlide(galleryState.index - 1);
-            });
-        }
-
-        var nextBtn = galleryEl.querySelector('[data-fc-cart-gallery-next]');
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function () {
-                showGallerySlide(galleryState.index + 1);
-            });
-        }
-
-        galleryEl.addEventListener('click', function (e) {
-            var thumbBtn = e.target.closest('[data-fc-cart-gallery-thumb]');
-            if (!thumbBtn) {
-                return;
-            }
-            e.preventDefault();
-            showGallerySlide(parseInt(thumbBtn.getAttribute('data-fc-cart-gallery-thumb') || '0', 10));
-        });
-
-        galleryKeydownHandler = function (e) {
-            if (!galleryEl) {
-                return;
-            }
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                closeGalleryModal();
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                showGallerySlide(galleryState.index - 1);
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                showGallerySlide(galleryState.index + 1);
-            }
-        };
-
-        document.addEventListener('keydown', galleryKeydownHandler);
-        renderGalleryThumbs();
-        renderGallerySlide();
+    function closeGalleryModal() {
+        lightbox.close();
     }
 
     function destroyGalleryModal() {
@@ -389,22 +146,9 @@
         window.history.replaceState(state, '', nextUrl);
     }
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
-    function formatHeader(label) {
-        return String(label || '')
-            .replace(/_/g, ' ')
-            .toLowerCase()
-            .replace(/\b\w/g, function (c) {
-                return c.toUpperCase();
-            });
-    }
+    var formatHeader = global.FC.util.formatHeader;
 
     function applySearchFilter(rows, query) {
         if (!query) {
@@ -1096,7 +840,7 @@
                 }
                 var page = renderPage(data);
                 container.innerHTML = page.html;
-                container._fcSysDestroy = page.destroy;
+                pageController.destroy = page.destroy;
                 page.init();
                 window.requestAnimationFrame(function () {
                     window.dispatchEvent(new Event('resize'));
@@ -1237,23 +981,7 @@
             link.remove();
         }
 
-        function toast(kind, message) {
-            var T = global.FcAdminToast;
-            if (!T) {
-                return;
-            }
-            if (kind === 'saving' && typeof T.loading === 'function') {
-                T.loading(message, 'fc-products-catalogue');
-                return;
-            }
-            if (kind === 'success' && typeof T.success === 'function') {
-                T.success(message, { id: 'fc-products-catalogue', duration: 4500 });
-                return;
-            }
-            if (kind === 'error' && typeof T.error === 'function') {
-                T.error(message, { id: 'fc-products-catalogue', duration: 5000 });
-            }
-        }
+        var toast = global.FC.util.toastProductsCatalogue;
 
         function importCsvFile(file) {
             if (!file) {
@@ -1599,11 +1327,7 @@
             previousFocus = document.activeElement;
             modal.hidden = false;
             resetStartButton();
-            document.documentElement.classList.add('fc-admin-scroll-lock');
-            var adminMain = document.getElementById('fc-admin-main');
-            if (adminMain) {
-                adminMain.classList.add('fc-admin-scroll-lock');
-            }
+            global.FcAdminModal.lockScroll();
             window.requestAnimationFrame(function () {
                 if (dialog) {
                     dialog.focus();
@@ -1617,11 +1341,7 @@
                 return;
             }
             modal.hidden = true;
-            document.documentElement.classList.remove('fc-admin-scroll-lock');
-            var adminMain = document.getElementById('fc-admin-main');
-            if (adminMain) {
-                adminMain.classList.remove('fc-admin-scroll-lock');
-            }
+            global.FcAdminModal.unlockScroll();
             if (previousFocus && typeof previousFocus.focus === 'function') {
                 previousFocus.focus();
             }
@@ -1806,7 +1526,7 @@
         }
         bindProductDownload();
 
-        container._fcSysDestroy = function () {
+        pageController.destroy = function () {
             destroyBottomHorizontalScroll();
             destroyGalleryModal();
         };
@@ -1866,7 +1586,7 @@
 
                 var page = renderPage(body);
                 container.innerHTML = page.html;
-                container._fcSysDestroy = page.destroy;
+                pageController.destroy = page.destroy;
                 page.init();
 
                 if (data.tabTotals && typeof data.tabTotals === 'object') {
@@ -1902,8 +1622,5 @@
             });
     }
 
-    global.FcAdminSystemProducts = {
-        load: loadSystemProducts,
-        hydrateFromServer: hydrateFromServer
-    };
+    global.FC.PageRegistry.register('products/store-products', pageController);
 })(window);

@@ -10,13 +10,7 @@
     var API_FENCE_COLORS = fcApiUrl('settings', 'action=fence-colors');
     var TOAST_SAVE = 'fc-fence-style-save';
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
     function editRoute(slug) {
         return 'products/fence-styles/edit/' + encodeURIComponent(slug);
@@ -31,22 +25,7 @@
     }
 
     function toast(kind, message, toastId) {
-        var T = global.FcAdminToast;
-        if (!T) {
-            return;
-        }
-        if (kind === 'saving') {
-            T.loading(message, toastId);
-            return;
-        }
-        if (toastId) {
-            T.dismiss(toastId);
-        }
-        if (kind === 'ok') {
-            T.success(message);
-        } else if (kind === 'error') {
-            T.error(message);
-        }
+        global.FC.util.toast(kind, message, toastId);
     }
 
     function renderLoading(message) {
@@ -368,4 +347,11 @@
         loadEdit: loadFenceStyleEdit,
         parseEditSlug: parseEditSlug
     };
+
+    class FenceStylesPage extends global.FC.PageController {
+        hydrate(container) {
+            hydrateFromServer(container);
+        }
+    }
+    global.FC.PageRegistry.register('products/fence-styles', new FenceStylesPage());
 })(window);

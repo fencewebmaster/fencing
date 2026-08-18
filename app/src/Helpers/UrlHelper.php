@@ -110,4 +110,22 @@ final class UrlHelper
 
         return rtrim(dirname($script), '/');
     }
+
+    /**
+     * Cache-busting query string for a static asset under public/, keyed to
+     * the file's own mtime so a stale browser-cached <script>/<link> tag
+     * only serves outdated content until the next request after a deploy —
+     * without this, editing a JS/CSS file's content (without touching the
+     * HTML that references it) can leave already-loaded sessions on the old
+     * version indefinitely, since the URL never changes.
+     *
+     * @param string $relativePath path relative to the public/ directory, e.g. "assets/js/admin/settings.js"
+     */
+    public static function assetVersion(string $relativePath): string
+    {
+        $full = dirname(__DIR__, 3) . '/public/' . ltrim($relativePath, '/');
+        $mtime = @filemtime($full);
+
+        return $mtime !== false ? (string) $mtime : '0';
+    }
 }

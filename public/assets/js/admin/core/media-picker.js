@@ -81,30 +81,10 @@
         return 'Choose an image from the media library.';
     }
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
     function toast(kind, message, toastId) {
-        var T = global.FcAdminToast;
-        if (!T) {
-            return;
-        }
-        toastId = toastId || TOAST_PICKER;
-        if (kind === 'saving') {
-            T.loading(message, toastId);
-            return;
-        }
-        T.dismiss(toastId);
-        if (kind === 'ok') {
-            T.success(message);
-        } else if (kind === 'error') {
-            T.error(message);
-        }
+        global.FC.util.toast(kind, message, toastId || TOAST_PICKER);
     }
 
     function assetUrl(path) {
@@ -125,23 +105,8 @@
         });
     }
 
-    function lockScroll() {
-        document.documentElement.classList.add('fc-admin-scroll-lock');
-        document.body.classList.add('fc-admin-scroll-lock');
-        var main = document.getElementById('fc-admin-main');
-        if (main) {
-            main.classList.add('fc-admin-scroll-lock');
-        }
-    }
-
-    function unlockScroll() {
-        document.documentElement.classList.remove('fc-admin-scroll-lock');
-        document.body.classList.remove('fc-admin-scroll-lock');
-        var main = document.getElementById('fc-admin-main');
-        if (main) {
-            main.classList.remove('fc-admin-scroll-lock');
-        }
-    }
+    var lockScroll = global.FcAdminModal.lockScroll;
+    var unlockScroll = global.FcAdminModal.unlockScroll;
 
     function clearModalRoot() {
         var root = document.getElementById('fc-admin-modal-root');

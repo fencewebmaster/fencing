@@ -62,10 +62,10 @@
 
 
 <!-- Scripts -->
+<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/helpers.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/main.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery.inputmask.min.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/planner-modal.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/helpers.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/functions.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/events.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/fencing-styles-slick.js'); ?>"></script>

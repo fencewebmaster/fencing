@@ -8,14 +8,7 @@
     var modalsById = {};
     var activePromiseModal = null;
     var scrollLockCount = 0;
-
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
     function normalizeOpts(opts) {
         if (typeof opts === 'string') {
@@ -430,6 +423,8 @@
         alert: alert,
         loading: loading,
         dismiss: dismiss,
-        open: openModal
+        open: openModal,
+        lockScroll: lockPageScroll,
+        unlockScroll: unlockPageScroll
     };
 })(window);

@@ -174,8 +174,8 @@ html[data-fc-admin-theme='dark'] .fc-admin-theme-switcher__btn--active {
 
 /*
  * Cache purge in topbar — must beat .fc-entries-date-dropdown
- * (min-width: 10rem) from entries-admin.css which loads after this file.
- * Final overrides also live at the end of entries-admin.css.
+ * (min-width: 10rem) from entries.css which loads after this file.
+ * Final overrides also live at the end of entries.css.
  */
 .fc-entries-date-dropdown.fc-admin-cache-dropdown {
     position: relative;

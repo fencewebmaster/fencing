@@ -29,16 +29,16 @@ declare(strict_types=1);
     <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($fcFontsHref, ENT_QUOTES, 'UTF-8'); ?>">
-    <link rel="stylesheet" type="text/css" href="assets/css/fc-admin-buttons.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/fc-admin-theme.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/fc-admin-sidebar.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/gallery-admin.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/entries-admin.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/group-permissions.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/dashboard-admin.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/fc-lazy.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/fence-styles-admin.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/store-products-admin.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/buttons.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/sidebar.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/gallery.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/entries.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/group-permissions.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/dashboard.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/lazy.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/fence-styles.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/store-products.css">
     <?php
     $fcFavicon = \Fc\Admin\Services\BrandingSettings::faviconUrl($fcAppBase ?? '');
     if ($fcFavicon !== '') : ?>
@@ -1411,81 +1411,112 @@ declare(strict_types=1);
 
     <div id="fc-admin-modal-root" class="pointer-events-none fixed inset-0 z-[9999]" aria-hidden="true"></div>
 
-    <script src="assets/js/admin/core/fc-admin-ui.js"></script>
-    <script src="assets/js/admin/core/fc-theme.js"></script>
-    <script src="assets/js/admin/core/fc-admin-appearance.js"></script>
-    <script src="assets/js/admin/core/fc-lazy.js"></script>
-    <script src="assets/js/admin/core/toast.js"></script>
-    <script src="assets/js/admin/core/fc-cache-purge.js"></script>
+    <script src="assets/js/admin/core/namespace.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/namespace.js'); ?>"></script>
+    <script src="assets/js/admin/utils/dom.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/utils/dom.js'); ?>"></script>
+    <script src="assets/js/admin/utils/clipboard.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/utils/clipboard.js'); ?>"></script>
+    <script src="assets/js/admin/utils/toast-bridge.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/utils/toast-bridge.js'); ?>"></script>
+    <script src="assets/js/admin/utils/flash.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/utils/flash.js'); ?>"></script>
+    <script src="assets/js/admin/components/copy-field-button.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/components/copy-field-button.js'); ?>"></script>
+    <script src="assets/js/admin/components/dropdown-registry.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/components/dropdown-registry.js'); ?>"></script>
+    <script src="assets/js/admin/core/page-controller.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/page-controller.js'); ?>"></script>
+    <script src="assets/js/admin/core/admin-ui.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/admin-ui.js'); ?>"></script>
+    <script src="assets/js/admin/core/theme.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/theme.js'); ?>"></script>
+    <script src="assets/js/admin/core/admin-appearance.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/admin-appearance.js'); ?>"></script>
+    <script src="assets/js/admin/core/lazy.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/lazy.js'); ?>"></script>
+    <script src="assets/js/admin/core/toast.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/toast.js'); ?>"></script>
+    <script src="assets/js/admin/core/cache-purge.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/cache-purge.js'); ?>"></script>
     <?php if ($fcAdminIsDashboard) : ?>
-    <script src="assets/js/admin/vendor/chart.umd.min.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
-    <script src="assets/js/admin/dashboard/entries-date-filter.js"></script>
-    <script src="assets/js/admin/dashboard/dashboard.js"></script>
+    <script src="assets/js/admin/vendor/chart.umd.min.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/vendor/chart.umd.min.js'); ?>"></script>
+    <script src="assets/js/admin/dashboard/entries-date-filter.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/dashboard/entries-date-filter.js'); ?>"></script>
+    <script src="assets/js/admin/dashboard/dashboard.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/dashboard/dashboard.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminIsEntries) : ?>
-    <script src="assets/js/admin/core/app.js"></script>
-    <script src="assets/js/admin/core/modal.js"></script>
-    <script src="assets/js/admin/entries/entries-filters.js"></script>
-    <script src="assets/js/admin/dashboard/entries-date-filter.js"></script>
-    <script src="assets/js/admin/entries/entries-planner-copy.js"></script>
-    <script src="assets/js/admin/entries/entries-bulk.js"></script>
-    <script src="assets/js/admin/entries/entries-detail-copy.js"></script>
+    <script src="assets/js/admin/core/modal.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="assets/js/admin/entries/filters.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/entries/filters.js'); ?>"></script>
+    <script src="assets/js/admin/dashboard/entries-date-filter.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/dashboard/entries-date-filter.js'); ?>"></script>
+    <script src="assets/js/admin/components/copy-tooltip.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/components/copy-tooltip.js'); ?>"></script>
+    <script src="assets/js/admin/entries/planner-copy.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/entries/planner-copy.js'); ?>"></script>
+    <script src="assets/js/admin/entries/bulk.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/entries/bulk.js'); ?>"></script>
+    <script src="assets/js/admin/entries/detail-copy.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/entries/detail-copy.js'); ?>"></script>
     <?php if (is_array($fcEntriesDetailPage)) : ?>
-    <script src="assets/js/admin/entries/entries-cart-filters.js"></script>
-    <script src="assets/js/admin/entries/entries-cart-gallery.js"></script>
+    <script src="assets/js/admin/entries/cart-filters.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/entries/cart-filters.js'); ?>"></script>
+    <script src="assets/js/admin/components/image-lightbox.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/components/image-lightbox.js'); ?>"></script>
+    <script src="assets/js/admin/entries/cart-gallery.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/entries/cart-gallery.js'); ?>"></script>
     <?php endif; ?>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif (!empty($fcAdminIsUsers)) : ?>
-    <script src="assets/js/admin/core/app.js"></script>
-    <script src="assets/js/admin/users-presence.js"></script>
+    <script src="assets/js/admin/users-presence.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/users-presence.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif (!empty($fcAdminIsGroupPermissions)) : ?>
-    <script src="assets/js/admin/group-permissions.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/group-permissions.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/group-permissions.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminIsSettings) : ?>
-    <script src="assets/js/admin/core/modal.js"></script>
-    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
-    <script src="assets/js/admin/gallery.js"></script>
-    <script src="assets/js/admin/core/media-picker.js"></script>
-    <script src="assets/js/admin/settings.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/core/modal.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/gallery-upload-queue.js'); ?>"></script>
+    <script src="assets/js/admin/gallery.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/gallery.js'); ?>"></script>
+    <script src="assets/js/admin/core/media-picker.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/media-picker.js'); ?>"></script>
+    <script src="assets/js/admin/components/image-lightbox.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/components/image-lightbox.js'); ?>"></script>
+    <script src="assets/js/admin/settings.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/settings.js'); ?>"></script>
+    <script src="assets/js/admin/pages/settings-tab-controller.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/settings-tab-controller.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/theme-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/theme-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/branding-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/branding-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/fence-colors-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/fence-colors-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/catalog-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/catalog-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/system-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/system-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/integration-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/integration-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/project-plan-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/console-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/console-tab.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminIsGallery) : ?>
-    <script src="assets/js/admin/core/modal.js"></script>
-    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
-    <script src="assets/js/admin/gallery.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/core/modal.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/gallery-upload-queue.js'); ?>"></script>
+    <script src="assets/js/admin/gallery.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/gallery.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminRoute === 'products/store-products') : ?>
-    <script src="assets/js/admin/core/modal.js"></script>
-    <script src="assets/js/admin/products/system-products.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/core/modal.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="assets/js/admin/components/image-lightbox.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/components/image-lightbox.js'); ?>"></script>
+    <script src="assets/js/admin/products/system-products.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/products/system-products.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminRoute === 'products/system-products') : ?>
-    <script src="assets/js/admin/core/modal.js"></script>
-    <script src="assets/js/admin/products/store-products-color-filter.js"></script>
-    <script src="assets/js/admin/products/store-products.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/core/modal.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="assets/js/admin/products/store-products-color-filter.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/products/store-products-color-filter.js'); ?>"></script>
+    <script src="assets/js/admin/products/store-products.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/products/store-products.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminRoute === 'products/fence-styles' || preg_match('#^products/fence-styles/edit/#', (string) $fcAdminRoute)) : ?>
-    <script src="assets/js/admin/core/modal.js"></script>
-    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
-    <script src="assets/js/admin/gallery.js"></script>
-    <script src="assets/js/admin/core/media-picker.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-wysiwyg.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-code-editor.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-gui.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-edit.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/core/modal.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/gallery-upload-queue.js'); ?>"></script>
+    <script src="assets/js/admin/gallery.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/gallery.js'); ?>"></script>
+    <script src="assets/js/admin/core/media-picker.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/media-picker.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/wysiwyg.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/wysiwyg.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/code-editor.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/code-editor.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/gui.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/gui.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/edit.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/edit.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/fence-styles.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php else : ?>
-    <script src="assets/js/admin/core/modal.js"></script>
-    <script src="assets/js/admin/products/store-products.js"></script>
-    <script src="assets/js/admin/products/system-products.js"></script>
-    <script src="assets/js/admin/core/gallery-upload-queue.js"></script>
-    <script src="assets/js/admin/gallery.js"></script>
-    <script src="assets/js/admin/core/media-picker.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-wysiwyg.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-code-editor.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-gui.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles-edit.js"></script>
-    <script src="assets/js/admin/fence-styles/fence-styles.js"></script>
-    <script src="assets/js/admin/settings.js"></script>
-    <script src="assets/js/admin/core/app.js"></script>
+    <script src="assets/js/admin/core/modal.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="assets/js/admin/components/image-lightbox.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/components/image-lightbox.js'); ?>"></script>
+    <script src="assets/js/admin/products/store-products.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/products/store-products.js'); ?>"></script>
+    <script src="assets/js/admin/products/system-products.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/products/system-products.js'); ?>"></script>
+    <script src="assets/js/admin/core/gallery-upload-queue.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/gallery-upload-queue.js'); ?>"></script>
+    <script src="assets/js/admin/gallery.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/gallery.js'); ?>"></script>
+    <script src="assets/js/admin/core/media-picker.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/media-picker.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/wysiwyg.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/wysiwyg.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/code-editor.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/code-editor.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/gui.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/gui.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/edit.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/edit.js'); ?>"></script>
+    <script src="assets/js/admin/fence-styles/fence-styles.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/fence-styles/fence-styles.js'); ?>"></script>
+    <script src="assets/js/admin/settings.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/settings.js'); ?>"></script>
+    <script src="assets/js/admin/pages/settings-tab-controller.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/settings-tab-controller.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/theme-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/theme-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/branding-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/branding-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/fence-colors-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/fence-colors-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/catalog-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/catalog-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/system-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/system-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/integration-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/integration-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/project-plan-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
+    <script src="assets/js/admin/pages/tabs/console-tab.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/pages/tabs/console-tab.js'); ?>"></script>
+    <script src="assets/js/admin/core/app.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/app.js'); ?>"></script>
     <?php endif; ?>
 </body>
 </html>

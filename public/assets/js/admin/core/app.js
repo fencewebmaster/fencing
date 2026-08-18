@@ -379,6 +379,65 @@
         }
     }
 
+    /**
+     * Route → server-hydration config for every route whose content is
+     * swapped in place (server already rendered the target markup). Routes
+     * that need special handling (the fence-styles edit sub-route, which is
+     * genuinely client-rendered; planner-entries, which has no JS controller
+     * to hydrate) are handled as explicit branches below instead.
+     *
+     * NOTE: 'products/store-products' and 'products/system-products' map to
+     * FC.PageRegistry entries registered under the SAME (cross-wired) keys
+     * by system-products.js/store-products.js respectively — this mirrors a
+     * pre-existing, self-consistent route/controller-naming swap elsewhere
+     * in this app (see the NOTE comments in those two files). Do not "fix"
+     * it here without also updating the two files and the PHP script tags.
+     */
+    var ROUTE_CONFIG = {
+        'products/store-products': {
+            serverAttr: 'data-fc-system-products-server',
+            marker: '[data-fc-system-products-server]',
+            viewport: 'fill'
+        },
+        'products/system-products': {
+            serverAttr: 'data-fc-store-products-server',
+            marker: '[data-fc-store-products-server]',
+            viewport: 'fill'
+        },
+        'products/fence-styles': {
+            serverAttr: 'data-fc-fence-styles-server',
+            marker: '[data-fc-fence-styles-server]',
+            viewport: 'fill'
+        },
+        gallery: {
+            serverAttr: 'data-fc-gallery-server',
+            marker: '.fc-gallery-page[data-fc-gallery-server]',
+            viewport: 'fill'
+        },
+        users: {
+            serverAttr: 'data-fc-users-server',
+            marker: '[data-fc-users-list]',
+            viewport: 'fill'
+        },
+        'users/group-permissions': {
+            serverAttr: 'data-fc-group-permissions-server',
+            marker: '[data-fc-group-permissions]',
+            viewport: 'fill'
+        },
+        settings: {
+            serverAttr: 'data-fc-settings-server',
+            marker: '.fc-settings-page',
+            viewport: 'fill'
+        }
+    };
+    ROUTE_CONFIG[DEFAULT_ROUTE] = {
+        serverAttr: 'data-fc-dashboard-server',
+        marker: '[data-fc-dashboard-server]',
+        viewport: 'scroll'
+    };
+
+    var currentController = null;
+
     function renderPage(route, pageTitle) {
         if (titleEl) {
             titleEl.textContent = pageTitle;
@@ -391,94 +450,10 @@
 
         contentEl.setAttribute('data-route', route);
 
-        if (typeof contentEl._fcSpDestroy === 'function') {
-            contentEl._fcSpDestroy();
-            contentEl._fcSpDestroy = null;
+        if (currentController && typeof currentController.destroy === 'function') {
+            currentController.destroy();
         }
-
-        if (typeof contentEl._fcSysDestroy === 'function') {
-            contentEl._fcSysDestroy();
-            contentEl._fcSysDestroy = null;
-        }
-
-        if (typeof contentEl._fcSettingsDestroy === 'function') {
-            contentEl._fcSettingsDestroy();
-            contentEl._fcSettingsDestroy = null;
-        }
-
-        if (typeof contentEl._fcGalleryDestroy === 'function') {
-            contentEl._fcGalleryDestroy();
-            contentEl._fcGalleryDestroy = null;
-        }
-
-        if (route === 'products/store-products') {
-            setStoreProductsViewportLayout(true);
-            if (
-                contentEl.getAttribute('data-fc-system-products-server') === '1' &&
-                contentEl.querySelector('[data-fc-system-products-server]')
-            ) {
-                contentEl.setAttribute('data-route', 'products/store-products');
-                if (titleEl) {
-                    titleEl.textContent = pageTitle;
-                }
-                updateDocumentTitle(pageTitle);
-                if (
-                    window.FcAdminSystemProducts &&
-                    typeof window.FcAdminSystemProducts.hydrateFromServer === 'function'
-                ) {
-                    window.FcAdminSystemProducts.hydrateFromServer(contentEl);
-                }
-                return;
-            }
-            window.location.href = routeToUrl('products/store-products');
-            return;
-        }
-
-        if (route === 'products/system-products') {
-            setStoreProductsViewportLayout(true);
-            if (
-                contentEl.getAttribute('data-fc-store-products-server') === '1' &&
-                contentEl.querySelector('[data-fc-store-products-server]')
-            ) {
-                contentEl.setAttribute('data-route', 'products/system-products');
-                if (titleEl) {
-                    titleEl.textContent = pageTitle;
-                }
-                updateDocumentTitle(pageTitle);
-                if (
-                    window.FcAdminStoreProducts &&
-                    typeof window.FcAdminStoreProducts.hydrateFromServer === 'function'
-                ) {
-                    window.FcAdminStoreProducts.hydrateFromServer(contentEl);
-                }
-                return;
-            }
-            window.location.href = routeToUrl('products/system-products');
-            return;
-        }
-
-        if (route === 'products/fence-styles') {
-            setStoreProductsViewportLayout(true);
-            if (
-                contentEl.getAttribute('data-fc-fence-styles-server') === '1' &&
-                contentEl.querySelector('[data-fc-fence-styles-server]')
-            ) {
-                contentEl.setAttribute('data-route', 'products/fence-styles');
-                if (titleEl) {
-                    titleEl.textContent = pageTitle;
-                }
-                updateDocumentTitle(pageTitle);
-                if (
-                    window.FcAdminFenceStyles &&
-                    typeof window.FcAdminFenceStyles.hydrateFromServer === 'function'
-                ) {
-                    window.FcAdminFenceStyles.hydrateFromServer(contentEl);
-                }
-                return;
-            }
-            window.location.href = routeToUrl('products/fence-styles');
-            return;
-        }
+        currentController = null;
 
         if (route.indexOf('products/fence-styles/edit/') === 0) {
             setStoreProductsViewportLayout(true);
@@ -493,29 +468,6 @@
                 contentEl.innerHTML =
                     '<p class="p-6 text-sm text-red-600">Fence style editor failed to load.</p>';
             }
-            return;
-        }
-
-        if (route === 'gallery') {
-            setStoreProductsViewportLayout(true);
-            if (
-                contentEl.getAttribute('data-fc-gallery-server') === '1' &&
-                contentEl.querySelector('.fc-gallery-page[data-fc-gallery-server]')
-            ) {
-                contentEl.setAttribute('data-route', 'gallery');
-                if (titleEl) {
-                    titleEl.textContent = pageTitle;
-                }
-                updateDocumentTitle(pageTitle);
-                if (
-                    window.FcAdminGallery &&
-                    typeof window.FcAdminGallery.hydrateFromServer === 'function'
-                ) {
-                    window.FcAdminGallery.hydrateFromServer(contentEl);
-                }
-                return;
-            }
-            window.location.href = routeToUrl('gallery');
             return;
         }
 
@@ -537,91 +489,28 @@
             return;
         }
 
-        if (route === 'users') {
-            setStoreProductsViewportLayout(true);
+        var cfg = ROUTE_CONFIG[route];
+        if (cfg) {
+            setStoreProductsViewportLayout(cfg.viewport === 'fill');
             if (
-                contentEl.getAttribute('data-fc-users-server') === '1' &&
-                contentEl.querySelector('[data-fc-users-list]')
+                contentEl.getAttribute(cfg.serverAttr) === '1' &&
+                contentEl.querySelector(cfg.marker)
             ) {
-                contentEl.setAttribute('data-route', 'users');
+                contentEl.setAttribute('data-route', route);
                 if (titleEl) {
                     titleEl.textContent = pageTitle;
                 }
                 updateDocumentTitle(pageTitle);
-                return;
-            }
-            window.location.href = routeToUrl('users');
-            return;
-        }
-
-        if (route === 'users/group-permissions') {
-            setStoreProductsViewportLayout(true);
-            if (
-                contentEl.getAttribute('data-fc-group-permissions-server') === '1' &&
-                contentEl.querySelector('[data-fc-group-permissions]')
-            ) {
-                contentEl.setAttribute('data-route', 'users/group-permissions');
-                if (titleEl) {
-                    titleEl.textContent = pageTitle;
-                }
-                updateDocumentTitle(pageTitle);
-                if (
-                    window.FcAdminGroupPermissions &&
-                    typeof window.FcAdminGroupPermissions.hydrateFromServer === 'function'
-                ) {
-                    window.FcAdminGroupPermissions.hydrateFromServer();
+                var controller = window.FC.PageRegistry.get(route);
+                if (controller) {
+                    currentController = controller;
+                    if (typeof controller.hydrate === 'function') {
+                        controller.hydrate(contentEl);
+                    }
                 }
                 return;
             }
-            window.location.href = routeToUrl('users/group-permissions');
-            return;
-        }
-
-        if (route === 'settings') {
-            setStoreProductsViewportLayout(true);
-            if (
-                contentEl.getAttribute('data-fc-settings-server') === '1' &&
-                contentEl.querySelector('.fc-settings-page')
-            ) {
-                contentEl.setAttribute('data-route', 'settings');
-                if (titleEl) {
-                    titleEl.textContent = pageTitle;
-                }
-                updateDocumentTitle(pageTitle);
-                if (
-                    window.FcAdminSettings &&
-                    typeof window.FcAdminSettings.hydrateFromServer === 'function'
-                ) {
-                    window.FcAdminSettings.hydrateFromServer(
-                        contentEl.querySelector('#fc-settings-root') || contentEl
-                    );
-                }
-                return;
-            }
-            window.location.href = routeToUrl('settings');
-            return;
-        }
-
-        if (route === DEFAULT_ROUTE) {
-            setStoreProductsViewportLayout(false);
-            if (
-                contentEl.getAttribute('data-fc-dashboard-server') === '1' &&
-                contentEl.querySelector('[data-fc-dashboard-server]')
-            ) {
-                contentEl.setAttribute('data-route', DEFAULT_ROUTE);
-                if (titleEl) {
-                    titleEl.textContent = pageTitle;
-                }
-                updateDocumentTitle(pageTitle);
-                if (
-                    window.FcAdminDashboard &&
-                    typeof window.FcAdminDashboard.hydrateFromServer === 'function'
-                ) {
-                    window.FcAdminDashboard.hydrateFromServer(contentEl);
-                }
-                return;
-            }
-            window.location.href = routeToUrl(DEFAULT_ROUTE) + (window.location.search || '');
+            window.location.href = routeToUrl(route) + (route === DEFAULT_ROUTE ? (window.location.search || '') : '');
             return;
         }
 

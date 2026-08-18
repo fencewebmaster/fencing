@@ -52,8 +52,8 @@ if ($fcFavicon !== '') {
 
 <link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/fonts.css'); ?>">
 
-<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/style.css'); ?>">
-<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/style-v2.css'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/style.css'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/style-v2.css'); ?>">
 <?php
 require_once dirname(__DIR__, 4) . '/app/src/Services/ThemeSettings.php';
 echo \Fc\Admin\Services\ThemeSettings::cssBlock();

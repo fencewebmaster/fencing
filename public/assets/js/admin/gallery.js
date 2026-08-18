@@ -31,13 +31,7 @@
         csrf: ''
     };
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
     function normalizeGalleryTab(tab) {
         var normalized = String(tab || '')
@@ -81,21 +75,7 @@
     }
 
     function toast(kind, message, toastId) {
-        var T = global.FcAdminToast;
-        if (!T) {
-            return;
-        }
-        toastId = toastId || TOAST_GALLERY;
-        if (kind === 'saving') {
-            T.loading(message, toastId);
-            return;
-        }
-        T.dismiss(toastId);
-        if (kind === 'ok') {
-            T.success(message);
-        } else if (kind === 'error') {
-            T.error(message);
-        }
+        global.FC.util.toast(kind, message, toastId || TOAST_GALLERY);
     }
 
     function formatBytes(bytes) {
@@ -382,86 +362,25 @@
         );
     }
 
-    function lockScroll() {
-        document.documentElement.classList.add('fc-admin-scroll-lock');
-        document.body.classList.add('fc-admin-scroll-lock');
-        var main = document.getElementById('fc-admin-main');
-        if (main) {
-            main.classList.add('fc-admin-scroll-lock');
-        }
-    }
+    var lockScroll = global.FcAdminModal.lockScroll;
+    var unlockScroll = global.FcAdminModal.unlockScroll;
 
-    function unlockScroll() {
-        document.documentElement.classList.remove('fc-admin-scroll-lock');
-        document.body.classList.remove('fc-admin-scroll-lock');
-        var main = document.getElementById('fc-admin-main');
-        if (main) {
-            main.classList.remove('fc-admin-scroll-lock');
+    var copyFieldButton = new global.FC.components.CopyFieldButton({
+        dataAttr: 'data-fc-gallery-copy-for',
+        onCopied: function () {
+            toast('ok', 'Copied to clipboard', TOAST_GALLERY);
+        },
+        onError: function () {
+            toast('error', 'Could not copy to clipboard', TOAST_GALLERY);
         }
-    }
+    });
 
     function buildFieldCopyButton(fieldId, label) {
-        return (
-            '<button type="button" class="fc-sp-field-copy" data-fc-gallery-copy-for="' +
-            escapeHtml(fieldId) +
-            '" aria-label="Copy ' +
-            escapeHtml(label) +
-            '" title="Copy to clipboard">' +
-            '<i class="fa-regular fa-copy" aria-hidden="true"></i></button>'
-        );
-    }
-
-    function showCopyFeedback(btn) {
-        if (!btn) {
-            return;
-        }
-        var icon = btn.querySelector('i');
-        if (!icon) {
-            return;
-        }
-        icon.className = 'fa-solid fa-check text-sm text-emerald-600';
-        btn.classList.add('fc-sp-field-copy--copied');
-        window.setTimeout(function () {
-            icon.className = 'fa-regular fa-copy text-sm';
-            btn.classList.remove('fc-sp-field-copy--copied');
-        }, 1500);
+        return copyFieldButton.markup(fieldId, label);
     }
 
     function copyFieldToClipboard(control, btn) {
-        if (!control) {
-            return;
-        }
-
-        var text = String(control.value != null ? control.value : '');
-
-        function onCopied() {
-            showCopyFeedback(btn);
-            if (text.trim()) {
-                toast('ok', 'Copied to clipboard', TOAST_GALLERY);
-            }
-        }
-
-        function fallbackCopy() {
-            try {
-                control.focus();
-                control.select();
-                control.setSelectionRange(0, text.length);
-                if (document.execCommand('copy')) {
-                    onCopied();
-                    return;
-                }
-            } catch (err) {
-                /* fall through */
-            }
-            toast('error', 'Could not copy to clipboard', TOAST_GALLERY);
-        }
-
-        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-            navigator.clipboard.writeText(text).then(onCopied).catch(fallbackCopy);
-            return;
-        }
-
-        fallbackCopy();
+        copyFieldButton.copy(control, btn);
     }
 
     function renderCopyField(id, label, value) {
@@ -1256,7 +1175,7 @@
         state.appBase =
             data.appBase || (document.body && document.body.getAttribute('data-fc-app-base')) || '';
 
-        container._fcGalleryDestroy = function () {
+        pageController.destroy = function () {
             closeAttachmentModal();
             state.container = null;
         };
@@ -1297,4 +1216,12 @@
         load: loadGallery,
         hydrateFromServer: hydrateFromServer
     };
+
+    class GalleryPage extends global.FC.PageController {
+        hydrate(container) {
+            hydrateFromServer(container);
+        }
+    }
+    var pageController = new GalleryPage();
+    global.FC.PageRegistry.register('gallery', pageController);
 })(window);

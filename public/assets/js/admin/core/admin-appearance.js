@@ -66,16 +66,6 @@
         bindSwitcher();
     }
 
-    global.FcAdminAppearance = {
-        get: readStoredTheme,
-        set: function (theme) {
-            applyTheme(theme);
-        },
-        toggle: function () {
-            applyTheme(readStoredTheme() === 'dark' ? 'light' : 'dark');
-        }
-    };
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {

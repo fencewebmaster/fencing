@@ -39,70 +39,35 @@
     var TOAST_CSV_UPDATE = 'fc-csv-update';
     var FLASH_KEY = 'fc-store-products-save-flash';
 
-    function setFlash(message, type) {
-        try {
-            sessionStorage.setItem(
-                FLASH_KEY,
-                JSON.stringify({
-                    message: String(message || ''),
-                    type: type === 'error' ? 'error' : 'success'
-                })
-            );
-        } catch (e) {
-            /* ignore */
+    // NOTE: intentionally registered under the *system-products* route —
+    // see the matching note in products/system-products.js. Route/controller
+    // naming is cross-wired throughout this app; pre-existing and
+    // self-consistent, do not "fix" it here.
+    class StoreProductsPage extends global.FC.PageController {
+        hydrate(container) {
+            hydrateFromServer(container);
         }
+    }
+    var pageController = new StoreProductsPage();
+
+    var flashMessage = new global.FC.util.FlashMessage({
+        storageKey: FLASH_KEY,
+        noticeSelector: '[data-fc-store-products-notice]',
+        defaultRoot: function () {
+            return document.querySelector('[data-fc-store-products-server]');
+        }
+    });
+
+    function setFlash(message, type) {
+        flashMessage.set(message, type);
     }
 
     function consumeFlash() {
-        try {
-            var raw = sessionStorage.getItem(FLASH_KEY);
-            if (!raw) {
-                return null;
-            }
-            sessionStorage.removeItem(FLASH_KEY);
-            var data = JSON.parse(raw);
-            if (!data || !data.message) {
-                return null;
-            }
-            return data;
-        } catch (e) {
-            return null;
-        }
+        return flashMessage.consume();
     }
 
-    function showHeaderNotice(root, flash) {
-        if (!root) {
-            root = document.querySelector('[data-fc-store-products-server]');
-        }
-        var mount = root ? root.querySelector('[data-fc-store-products-notice]') : null;
-        if (!mount || !flash || !flash.message) {
-            return;
-        }
-
-        var type = flash.type === 'error' ? 'error' : 'success';
-        mount.hidden = false;
-        mount.className =
-            'fc-entries-page__notice fc-entries-page__notice--' + type + ' is-visible';
-        mount.setAttribute('role', type === 'error' ? 'alert' : 'status');
-        mount.innerHTML =
-            '<p class="fc-entries-page__notice-text"></p>' +
-            '<button type="button" class="fc-entries-page__notice-dismiss" aria-label="Dismiss notice">' +
-            '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' +
-            '</button>';
-
-        var textEl = mount.querySelector('.fc-entries-page__notice-text');
-        if (textEl) {
-            textEl.textContent = flash.message;
-        }
-
-        var dismiss = mount.querySelector('.fc-entries-page__notice-dismiss');
-        if (dismiss) {
-            dismiss.addEventListener('click', function () {
-                mount.hidden = true;
-                mount.classList.remove('is-visible');
-                mount.innerHTML = '';
-            });
-        }
+    function showHeaderNotice(root, flashData) {
+        flashMessage.renderInto(root, flashData);
     }
 
     function reloadWithNotice(message, type) {
@@ -573,13 +538,7 @@
         }
     }
 
-    function escapeHtml(text) {
-        return String(text == null ? '' : text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+    var escapeHtml = global.FC.util.escapeHtml;
 
     function decodeHtmlEntities(text) {
         var raw = String(text == null ? '' : text);
@@ -595,93 +554,25 @@
         return decodeHtmlEntities(String(name || '').trim());
     }
 
-    function buildFieldCopyButton(fieldId, label, options) {
-        options = options || {};
-        var compactClass = options.compact ? ' fc-sp-field-copy--compact' : '';
-
-        return (
-            '<button type="button" class="fc-sp-field-copy' +
-            compactClass +
-            '" data-fc-sp-copy-for="' +
-            escapeHtml(fieldId) +
-            '" aria-label="Copy ' +
-            escapeHtml(label) +
-            '" title="Copy to clipboard">' +
-            '<i class="fa-regular fa-copy" aria-hidden="true"></i></button>'
-        );
-    }
-
-    function showCopyFeedback(btn) {
-        if (!btn) {
-            return;
-        }
-        var icon = btn.querySelector('i');
-        if (!icon) {
-            return;
-        }
-        icon.className = 'fa-solid fa-check text-sm text-emerald-600';
-        btn.classList.add('fc-sp-field-copy--copied');
-        window.setTimeout(function () {
-            icon.className = 'fa-regular fa-copy text-sm';
-            btn.classList.remove('fc-sp-field-copy--copied');
-        }, 1500);
-    }
-
-    function copyFieldToClipboard(control, btn) {
-        if (!control) {
-            return;
-        }
-
-        var text = String(control.value != null ? control.value : '');
-
-        function onCopied() {
-            showCopyFeedback(btn);
+    var copyFieldButton = new global.FC.components.CopyFieldButton({
+        dataAttr: 'data-fc-sp-copy-for',
+        onCopied: function () {
             var T = global.FcAdminToast;
-            if (T && text.trim()) {
+            if (T) {
                 T.success('Copied to clipboard');
             }
         }
+    });
 
-        function fallbackCopy() {
-            try {
-                var isTextarea = control.tagName === 'TEXTAREA';
-                if (isTextarea) {
-                    control.focus();
-                    control.select();
-                } else {
-                    control.focus();
-                    control.select();
-                    control.setSelectionRange(0, text.length);
-                }
-                if (document.execCommand('copy')) {
-                    onCopied();
-                    return;
-                }
-            } catch (err) {
-                /* fall through */
-            }
-            var T = global.FcAdminToast;
-            if (T) {
-                T.error('Could not copy to clipboard');
-            }
-        }
-
-        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-            navigator.clipboard.writeText(text).then(onCopied).catch(fallbackCopy);
-            return;
-        }
-
-        fallbackCopy();
+    function buildFieldCopyButton(fieldId, label, options) {
+        return copyFieldButton.markup(fieldId, label, options);
     }
 
-    function formatHeader(label) {
-        return String(label || '')
-            .replace(/_/g, ' ')
-            .toLowerCase()
-            .replace(/\b\w/g, function (c) {
-                return c.toUpperCase();
-            });
+    function copyFieldToClipboard(control, btn) {
+        copyFieldButton.copy(control, btn);
     }
+
+    var formatHeader = global.FC.util.formatHeader;
 
     function renderLoading() {
         return (
@@ -2897,7 +2788,7 @@
                 }
                 var page = renderPage(data);
                 container.innerHTML = page.html;
-                container._fcSpDestroy = page.destroy;
+                pageController.destroy = page.destroy;
                 page.init();
                 window.requestAnimationFrame(function () {
                     window.dispatchEvent(new Event('resize'));
@@ -2935,23 +2826,7 @@
         var importInput = dropdown.querySelector('[data-fc-store-products-import-input]');
         var csrf = String((bootstrap && bootstrap.csrf) || '');
 
-        function toast(kind, message) {
-            var T = global.FcAdminToast;
-            if (!T) {
-                return;
-            }
-            if (kind === 'saving' && typeof T.loading === 'function') {
-                T.loading(message, 'fc-products-catalogue');
-                return;
-            }
-            if (kind === 'success' && typeof T.success === 'function') {
-                T.success(message, { id: 'fc-products-catalogue', duration: 4500 });
-                return;
-            }
-            if (kind === 'error' && typeof T.error === 'function') {
-                T.error(message, { id: 'fc-products-catalogue', duration: 5000 });
-            }
-        }
+        var toast = global.FC.util.toastProductsCatalogue;
 
         function closeMenu() {
             if (!panel || !toggle) {
@@ -3150,7 +3025,7 @@
                     window.location.reload();
                 }
             });
-            container._fcSpDestroy = page.destroy;
+            pageController.destroy = page.destroy;
             if (typeof page.bindPhpShell === 'function') {
                 page.bindPhpShell({
                     tbody: document.getElementById('fc-store-products-tbody'),
@@ -3198,7 +3073,7 @@
 
                 var page = renderPage(body);
                 container.innerHTML = page.html;
-                container._fcSpDestroy = page.destroy;
+                pageController.destroy = page.destroy;
                 page.init();
                 container.removeAttribute('aria-busy');
                 window.requestAnimationFrame(function () {
@@ -3216,8 +3091,5 @@
             });
     }
 
-    global.FcAdminStoreProducts = {
-        load: loadStoreProducts,
-        hydrateFromServer: hydrateFromServer
-    };
+    global.FC.PageRegistry.register('products/system-products', pageController);
 })(window);
