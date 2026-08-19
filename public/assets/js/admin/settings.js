@@ -254,6 +254,200 @@
         flash.renderInto(root, flashData);
     }
 
+    var SETTINGS_IO_TOAST_ID = 'fc-settings-io';
+
+    function reloadWithNotice(message, type) {
+        flash.set(message, type === 'error' ? 'error' : 'success');
+        try {
+            var next = new URL(window.location.href);
+            window.location.assign(next.pathname + next.search);
+        } catch (e) {
+            window.location.reload();
+        }
+    }
+
+    function bindSettingsIoMenu() {
+        var dropdown = document.querySelector('[data-fc-settings-io-dropdown]');
+        if (!dropdown || dropdown.dataset.fcBound === '1') {
+            return;
+        }
+        dropdown.dataset.fcBound = '1';
+
+        var toggle = dropdown.querySelector('[data-fc-settings-io-toggle]');
+        var panel = dropdown.querySelector('.fc-products-download-dropdown__panel');
+        var exportTrigger = dropdown.querySelector('[data-fc-settings-export]');
+        var importTrigger = dropdown.querySelector('[data-fc-settings-import]');
+        var importInput = dropdown.querySelector('[data-fc-settings-import-input]');
+
+        function closeMenu() {
+            if (!panel || !toggle) {
+                return;
+            }
+            panel.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('is-open');
+            panel.style.left = '';
+            panel.style.top = '';
+            panel.style.position = '';
+            panel.style.right = '';
+            panel.style.zIndex = '';
+        }
+
+        function positionMenu() {
+            if (!toggle || !panel || panel.hidden) {
+                return;
+            }
+            var rect = toggle.getBoundingClientRect();
+            var gap = 6;
+            panel.style.position = 'fixed';
+            panel.style.zIndex = '80';
+            panel.style.left = Math.round(rect.left) + 'px';
+            panel.style.top = Math.round(rect.bottom + gap) + 'px';
+            panel.style.right = 'auto';
+
+            var panelRect = panel.getBoundingClientRect();
+            var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+            var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+            if (panelRect.right > viewportWidth - 8) {
+                panel.style.left = Math.max(8, viewportWidth - panelRect.width - 8) + 'px';
+            }
+            if (panelRect.bottom > viewportHeight - 8) {
+                var aboveTop = rect.top - gap - panelRect.height;
+                if (aboveTop >= 8) {
+                    panel.style.top = aboveTop + 'px';
+                }
+            }
+        }
+
+        function openMenu() {
+            if (!panel || !toggle) {
+                return;
+            }
+            panel.hidden = false;
+            toggle.setAttribute('aria-expanded', 'true');
+            dropdown.classList.add('is-open');
+            positionMenu();
+        }
+
+        function exportSettings() {
+            closeMenu();
+            var link = document.createElement('a');
+            link.href = fcApiUrl('settings', 'action=export');
+            link.download = 'fc-settings-export.json';
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        function importSettingsFile(file) {
+            if (!file) {
+                return;
+            }
+            var name = String(file.name || '').toLowerCase();
+            if (!name.endsWith('.json')) {
+                global.FC.util.toast('error', 'Only .json files can be imported.', SETTINGS_IO_TOAST_ID);
+                return;
+            }
+            if (!state.csrf) {
+                global.FC.util.toast('error', 'Missing security token. Refresh and try again.', SETTINGS_IO_TOAST_ID);
+                return;
+            }
+
+            closeMenu();
+            global.FC.util.toast('saving', 'Importing settings…', SETTINGS_IO_TOAST_ID);
+
+            var formData = new FormData();
+            formData.append('csrf', state.csrf);
+            formData.append('file', file);
+
+            fetch(fcApiUrl('settings', 'action=import'), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' },
+                body: formData
+            })
+                .then(function (response) {
+                    return response.json().catch(function () {
+                        return { ok: false, error: 'Invalid server response.' };
+                    });
+                })
+                .then(function (body) {
+                    if ((body.applied || 0) > 0) {
+                        reloadWithNotice(body.message || 'Settings imported.', body.ok ? 'success' : 'error');
+                        return;
+                    }
+                    throw new Error(body.error || body.message || 'Could not import settings.');
+                })
+                .catch(function (error) {
+                    global.FC.util.toast(
+                        'error',
+                        (error && error.message) || 'Could not import settings.',
+                        SETTINGS_IO_TOAST_ID
+                    );
+                })
+                .then(function () {
+                    if (importInput) {
+                        importInput.value = '';
+                    }
+                });
+        }
+
+        if (toggle && panel) {
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (panel.hidden) {
+                    openMenu();
+                } else {
+                    closeMenu();
+                }
+            });
+            panel.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+            document.addEventListener('click', function () {
+                closeMenu();
+            });
+            window.addEventListener('resize', function () {
+                if (!panel.hidden) {
+                    positionMenu();
+                }
+            });
+            window.addEventListener(
+                'scroll',
+                function () {
+                    if (!panel.hidden) {
+                        positionMenu();
+                    }
+                },
+                true
+            );
+        }
+
+        if (exportTrigger) {
+            exportTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                exportSettings();
+            });
+        }
+
+        if (importTrigger && importInput) {
+            importTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeMenu();
+                importInput.click();
+            });
+            importInput.addEventListener('change', function () {
+                var file = importInput.files && importInput.files[0] ? importInput.files[0] : null;
+                importSettingsFile(file);
+            });
+        }
+    }
+
     function updateHeaderActions() {
         var themeActions = document.getElementById('fc-settings-header-actions-theme');
         var brandingActions = document.getElementById('fc-settings-header-actions-branding');
@@ -514,6 +708,7 @@
         bindSettingsShell();
         bindSettingsCopyButtons(container);
         bindSettingsImagePreviewTriggers(container);
+        bindSettingsIoMenu();
         global.FC.Settings.tabs.theme.bind();
         global.FC.Settings.tabs.branding.bind();
         global.FC.Settings.tabs.fenceColors.bind();

@@ -44,6 +44,7 @@ $tab = $fcSettingsPage;
                     <span id="fc-settings-integration-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
                     <span id="fc-settings-project-plan-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
                 </div>
+                <div class="flex flex-wrap items-center gap-2">
                 <div id="fc-settings-header-actions-theme" class="<?php echo $h((string) $tab['header_actions_class']['theme']); ?> flex-wrap gap-2">
                     <button type="button" id="fc-theme-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
                     <button type="button" id="fc-theme-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Theme</button>
@@ -73,6 +74,44 @@ $tab = $fcSettingsPage;
                     <button type="button" id="fc-project-plan-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Project Plan</button>
                 </div>
                 <div id="fc-settings-header-actions-console" class="<?php echo $h((string) $tab['header_actions_class']['console']); ?> flex-wrap gap-2"></div>
+                <div class="fc-products-download-dropdown" data-fc-settings-io-dropdown>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-dark fw-semibold fc-entries-toolbar-menu__toggle"
+                        data-fc-settings-io-toggle
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="fc-settings-io-menu"
+                        aria-label="Import or export settings"
+                        title="Import or export settings"
+                        id="fc-settings-io-toggle"
+                    >
+                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                    </button>
+                    <div
+                        class="fc-products-download-dropdown__panel"
+                        id="fc-settings-io-menu"
+                        role="menu"
+                        aria-labelledby="fc-settings-io-toggle"
+                        hidden
+                    >
+                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-settings-export>
+                            <span>Export Settings</span>
+                        </button>
+                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-settings-import>
+                            <span>Import Settings</span>
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        class="sr-only"
+                        accept="application/json,.json"
+                        data-fc-settings-import-input
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
+                </div>
             </div>
             <div data-fc-settings-notice hidden class="fc-entries-page__notice fc-entries-page__notice--success" aria-hidden="true"></div>
 

@@ -80,6 +80,16 @@ final class SettingsController
             return;
         }
 
+        if ($action === 'export') {
+            self::handleExport($method);
+            return;
+        }
+
+        if ($action === 'import') {
+            self::handleImport($method);
+            return;
+        }
+
         if ($action === 'dev-console') {
             self::handleDevConsole($method);
             return;
@@ -489,6 +499,161 @@ final class SettingsController
 
         http_response_code(405);
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    private static function handleExport(string $method): void
+    {
+        if ($method !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $settings = [
+            'theme'        => ThemeSettings::get(),
+            'branding'     => BrandingSettings::get(),
+            'fenceColors'  => FenceColorSettings::get(),
+            'catalog'      => CatalogSettings::get(),
+            'system'       => SystemSettings::get(),
+            'integrations' => IntegrationsSettings::get(),
+            'projectPlan'  => PlannerOptionSettings::extraItems(),
+            'console'      => ConsoleSettings::get(),
+        ];
+
+        $json = json_encode([
+            'ok' => true,
+            'type' => 'fc-admin-settings-export',
+            'version' => 1,
+            'exportedAt' => date('c'),
+            'settings' => $settings,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="fc-settings-' . date('Y-m-d') . '.json"');
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        echo $json;
+    }
+
+    private static function handleImport(string $method): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $csrf = isset($_POST['csrf']) ? (string) $_POST['csrf'] : '';
+        if (!AuthService::verifyCsrf($csrf)) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (empty($_FILES['file']) || !is_array($_FILES['file'])) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Choose a settings .json file to import.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $file = $_FILES['file'];
+        $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($error !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Upload failed. Please try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        $originalName = (string) ($file['name'] ?? 'settings.json');
+        $size = (int) ($file['size'] ?? 0);
+        if ($tmp === '' || !is_uploaded_file($tmp) || !is_readable($tmp)) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Uploaded file is not readable.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        if ($size <= 0 || $size > 5 * 1024 * 1024) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Settings file must be between 1 byte and 5MB.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $extension = strtolower((string) pathinfo($originalName, PATHINFO_EXTENSION));
+        if ($extension !== 'json') {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Only .json files can be imported.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $raw = file_get_contents($tmp);
+        $decoded = is_string($raw) ? json_decode($raw, true) : null;
+        if (!is_array($decoded)) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'That file is not valid JSON.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $settings = is_array($decoded['settings'] ?? null) ? $decoded['settings'] : $decoded;
+
+        $results = [];
+        $appliedCount = 0;
+        $failedSections = [];
+
+        foreach (['theme', 'branding', 'fenceColors', 'catalog', 'system', 'integrations', 'projectPlan', 'console'] as $key) {
+            if (!array_key_exists($key, $settings) || !is_array($settings[$key])) {
+                continue;
+            }
+
+            $value = $settings[$key];
+            $result = match ($key) {
+                'theme' => ThemeSettings::save($value),
+                'branding' => BrandingSettings::save($value),
+                'fenceColors' => FenceColorSettings::save($value),
+                'catalog' => CatalogSettings::save($value),
+                'system' => SystemSettings::save($value),
+                'integrations' => IntegrationsSettings::save($value, ''),
+                'projectPlan' => PlannerOptionSettings::saveExtraItems($value),
+                'console' => ConsoleSettings::save($value),
+                default => ['ok' => false, 'error' => 'Unknown section.'],
+            };
+
+            $ok = !empty($result['ok']);
+            $results[$key] = [
+                'ok' => $ok,
+                'error' => $ok ? null : (string) ($result['error'] ?? 'Failed to save.'),
+            ];
+
+            if ($ok) {
+                $appliedCount++;
+            } else {
+                $failedSections[] = $key;
+            }
+        }
+
+        if ($results === []) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'No recognized settings sections were found in that file.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $ok = $failedSections === [];
+        if (!$ok) {
+            http_response_code(400);
+        }
+
+        echo json_encode([
+            'ok' => $ok,
+            'applied' => $appliedCount,
+            'results' => $results,
+            'message' => $ok
+                ? 'Imported ' . $appliedCount . ' setting section' . ($appliedCount === 1 ? '' : 's') . '.'
+                : 'Some sections failed to import: ' . implode(', ', $failedSections) . '.',
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     private static function handleGitPull(string $method): void
