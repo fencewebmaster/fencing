@@ -16,9 +16,9 @@
                 <div class="fc-form-field fc-color-options js-fc-color-options-slick" data-key="color_options" data-slug="{{slug}}" name="color_options" type="text_option" value="">
                     <?php foreach(fc_color() as $co_k => $co_v): ?>
                     <div class="fc-color-options__slide">
-                        <div class="fc-select-item fc-select fc-select-color fc-mb-0" data-color-title="<?php echo $co_v['title']; ?>" data-color-code="<?php echo $co_v['background_color']; ?>" data-color-subtitle="<?php echo $co_v['sub_title']; ?>" data-slug="<?php echo $co_k; ?>" style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
-                            <p><strong><?php echo $co_v['title']; ?></strong><br />
-                            <span><?php echo $co_v['sub_title']; ?></span></p>
+                        <div class="fc-select-item fc-select fc-select-color fc-mb-0" data-color-title="<?php echo htmlspecialchars((string) $co_v['title'], ENT_QUOTES, 'UTF-8'); ?>" data-color-code="<?php echo htmlspecialchars((string) $co_v['background_color'], ENT_QUOTES, 'UTF-8'); ?>" data-color-subtitle="<?php echo htmlspecialchars((string) $co_v['sub_title'], ENT_QUOTES, 'UTF-8'); ?>" data-slug="<?php echo htmlspecialchars((string) $co_k, ENT_QUOTES, 'UTF-8'); ?>" style="background:<?php echo htmlspecialchars((string) $co_v['background_color'], ENT_QUOTES, 'UTF-8'); ?>;color:<?php echo htmlspecialchars((string) $co_v['text_color'], ENT_QUOTES, 'UTF-8'); ?>;">
+                            <p><strong><?php echo htmlspecialchars((string) $co_v['title'], ENT_QUOTES, 'UTF-8'); ?></strong><br />
+                            <span><?php echo htmlspecialchars((string) $co_v['sub_title'], ENT_QUOTES, 'UTF-8'); ?></span></p>
                         </div>
                     </div>
                     <?php endforeach; ?>

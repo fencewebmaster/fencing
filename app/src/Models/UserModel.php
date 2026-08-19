@@ -504,7 +504,7 @@ final class UserModel extends Model
             return [];
         }
 
-        $caps = @unserialize((string) $capsRaw);
+        $caps = @unserialize((string) $capsRaw, ['allowed_classes' => false]);
         if (!is_array($caps)) {
             return [];
         }
@@ -622,7 +622,7 @@ final class UserModel extends Model
         $params = [];
 
         if ($q !== '') {
-            $like = '%' . $q . '%';
+            $like = '%' . addcslashes($q, '%_\\') . '%';
             $where[] = '(u.user_login LIKE ? OR u.user_email LIKE ? OR u.display_name LIKE ? OR CAST(u.ID AS CHAR) LIKE ?)';
             $types .= 'ssss';
             $params[] = $like;
@@ -633,7 +633,7 @@ final class UserModel extends Model
 
         if ($role !== '') {
             // Serialized WP caps look like: a:1:{s:13:"administrator";b:1;}
-            $roleNeedle = '%"' . $role . '";b:1%';
+            $roleNeedle = '%"' . addcslashes($role, '%_\\') . '";b:1%';
             $where[] = 'um.meta_value LIKE ?';
             $types .= 's';
             $params[] = $roleNeedle;

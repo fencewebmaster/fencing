@@ -72,13 +72,13 @@
                                     <div class="fc-color-options__slide">
 
                                         <div class="fc-select-item fc-select fc-select-color fc-mb-0 <?php echo $color_data['color']==$co_k?'fc-selected':''; ?>"
-                                            data-color-title="<?php echo $co_v['title']; ?>"
-                                            data-color-code="<?php echo $co_v['background_color']; ?>"
-                                            data-color-subtitle="<?php echo $co_v['sub_title']; ?>"
-                                            data-slug="<?php echo $co_k; ?>"
-                                            style="background:<?php echo $co_v['background_color']; ?>;color:<?php echo $co_v['text_color']; ?>;">
-                                            <p class="mb-sm-2 mb-0"><strong><?php echo $co_v['title']; ?></strong>
-                                            <span><?php echo $co_v['sub_title']; ?></span></p>
+                                            data-color-title="<?php echo htmlspecialchars((string) $co_v['title'], ENT_QUOTES, 'UTF-8'); ?>"
+                                            data-color-code="<?php echo htmlspecialchars((string) $co_v['background_color'], ENT_QUOTES, 'UTF-8'); ?>"
+                                            data-color-subtitle="<?php echo htmlspecialchars((string) $co_v['sub_title'], ENT_QUOTES, 'UTF-8'); ?>"
+                                            data-slug="<?php echo htmlspecialchars((string) $co_k, ENT_QUOTES, 'UTF-8'); ?>"
+                                            style="background:<?php echo htmlspecialchars((string) $co_v['background_color'], ENT_QUOTES, 'UTF-8'); ?>;color:<?php echo htmlspecialchars((string) $co_v['text_color'], ENT_QUOTES, 'UTF-8'); ?>;">
+                                            <p class="mb-sm-2 mb-0"><strong><?php echo htmlspecialchars((string) $co_v['title'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                                            <span><?php echo htmlspecialchars((string) $co_v['sub_title'], ENT_QUOTES, 'UTF-8'); ?></span></p>
                                         </div>
 
                                     </div>

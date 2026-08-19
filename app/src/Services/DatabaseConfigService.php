@@ -45,6 +45,27 @@ final class DatabaseConfigService
     }
 
     /**
+     * Flat site-key => mysql-row map, extracted from the nested `sites.{key}.mysql`
+     * structure. Every reader of per-site DB credentials goes through this so there's one
+     * place that knows the shape of config.php's `sites` tree.
+     *
+     * @param array<string, mixed> $app
+     * @return array<string, array<string, mixed>>
+     */
+    public static function mysqlBySite(array $app): array
+    {
+        $sites = isset($app['sites']) && is_array($app['sites']) ? $app['sites'] : [];
+        $mysql = [];
+        foreach ($sites as $key => $site) {
+            if (is_string($key) && $key !== '' && is_array($site) && is_array($site['mysql'] ?? null)) {
+                $mysql[$key] = $site['mysql'];
+            }
+        }
+
+        return $mysql;
+    }
+
+    /**
      * MySQL config key derived from the current HTTP host (frontend + default).
      */
     public static function hostMysqlKey(): string
@@ -73,7 +94,7 @@ final class DatabaseConfigService
     public static function resolveConfigForKey(string $siteKey): array
     {
         $app = self::loadAppConfig();
-        $mysql = isset($app['mysql']) && is_array($app['mysql']) ? $app['mysql'] : [];
+        $mysql = self::mysqlBySite($app);
 
         $key = trim($siteKey);
         if ($key === '' || !isset($mysql[$key]) || !is_array($mysql[$key])) {
@@ -172,6 +193,12 @@ final class DatabaseConfigService
                 $lastError = $conn->connect_error;
                 continue;
             }
+
+            // Pin the connection charset so mysqli_real_escape_string()'s escaping can't be
+            // bypassed by a multi-byte charset that swallows the escape backslash (the same
+            // class of issue the classic "GBK SQL injection" technique relies on). The PDO
+            // half of this service already pins utf8mb4 via its DSN; mysqli needs it explicitly.
+            @$conn->set_charset('utf8mb4');
 
             return ['conn' => $conn, 'error' => ''];
         }

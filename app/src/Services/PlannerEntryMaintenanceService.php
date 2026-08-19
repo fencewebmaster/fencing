@@ -465,7 +465,7 @@ final class PlannerEntryMaintenanceService
                     continue;
                 }
                 if ($mode === 'remint') {
-                    $newId = self::generateUniquePlannerId();
+                    $newId = self::generateUniquePlannerId((string) ($raw['site_url'] ?? ''));
                     $remapped[] = ['from' => $plannerId, 'to' => $newId];
                     $plannerId = $newId;
                     $existingId = 0;
@@ -650,17 +650,41 @@ final class PlannerEntryMaintenanceService
     }
 
     /**
+     * PID Prefix for the site a remint-imported row actually belongs to — never the admin
+     * panel's own domain, which is a different site entirely.
+     */
+    private static function pidPrefixForSiteUrl(string $siteUrl): string
+    {
+        $siteUrl = trim($siteUrl);
+        if ($siteUrl === '') {
+            return '';
+        }
+
+        $host = parse_url($siteUrl, PHP_URL_HOST);
+        if (!is_string($host) || $host === '') {
+            // No scheme present — treat the whole value as a bare host already.
+            $host = $siteUrl;
+        }
+
+        $key = SiteRegistryService::keyFromDomain($host);
+
+        return $key !== '' ? IntegrationsSettings::pidPrefixForKey($key) : '';
+    }
+
+    /**
      * Generate a unique planner_id for remint imports.
      */
-    private static function generateUniquePlannerId(): string
+    private static function generateUniquePlannerId(string $siteUrl = ''): string
     {
+        // Matches PlannerRecordService::newPlannerId() — keep both mint sites in sync.
+        $prefix = self::pidPrefixForSiteUrl($siteUrl);
         for ($i = 0; $i < 12; $i++) {
-            $candidate = StringHelper::randomId(6);
+            $candidate = $prefix . StringHelper::randomId(6);
             if (PlannerEntryModel::entryIdForPlanner($candidate) === null) {
                 return $candidate;
             }
         }
 
-        return strtoupper(bin2hex(random_bytes(4)));
+        return $prefix . strtoupper(bin2hex(random_bytes(4)));
     }
 }

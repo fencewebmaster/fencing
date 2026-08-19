@@ -35,9 +35,17 @@ final class AppConfigService
 
         $map = [];
         $cfg = self::all();
-        $sectionValue = $cfg->{$section} ?? null;
-        if (is_object($sectionValue) || is_array($sectionValue)) {
-            foreach ((array) $sectionValue as $key => $value) {
+        // Site-level fields (supplier, gtag_id, gtm_id, cloudflare_zone_id, site_logo,
+        // pid_prefix) live nested under sites.{key}.{section} — transpose that into the
+        // same {siteKey: value} shape this method has always returned.
+        $sites = $cfg->sites ?? null;
+        if (is_object($sites) || is_array($sites)) {
+            foreach ((array) $sites as $siteKey => $siteValue) {
+                if (!is_object($siteValue) && !is_array($siteValue)) {
+                    continue;
+                }
+                $siteValue = (array) $siteValue;
+                $value = $siteValue[$section] ?? null;
                 if (!is_scalar($value) && $value !== null) {
                     continue;
                 }
@@ -45,7 +53,7 @@ final class AppConfigService
                 if ($normalized === '') {
                     continue;
                 }
-                $map[(string) $key] = $normalized;
+                $map[(string) $siteKey] = $normalized;
             }
         }
 

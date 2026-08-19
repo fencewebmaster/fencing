@@ -13,7 +13,7 @@ final class LogoutController extends BaseController
     public function index(AdminContext $context): void
     {
         $token = (string) ($_GET['_token'] ?? '');
-        if (AuthService::verifyCsrf($token)) {
+        if (AuthService::consumeOneTimeToken('logout', $token)) {
             AuthService::logout();
         }
 

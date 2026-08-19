@@ -30,7 +30,7 @@ final class UsersPageController extends BaseController
 
     public function loginAs(AdminContext $context, int $userId): void
     {
-        $this->requireCsrfOrRedirect(rtrim($context->adminBase, '/') . '/users');
+        $this->requireCsrfOrRedirect(rtrim($context->adminBase, '/') . '/users', '', 'login-as:' . $userId);
 
         $result = ImpersonationService::switchToUser($userId);
         $redirect = !empty($result['ok']) && !empty($result['redirect'])
@@ -42,7 +42,7 @@ final class UsersPageController extends BaseController
 
     public function switchBack(AdminContext $context): void
     {
-        $this->requireCsrfOrRedirect(rtrim($context->adminBase, '/') . '/users');
+        $this->requireCsrfOrRedirect(rtrim($context->adminBase, '/') . '/users', '', 'switch-back');
 
         $result = ImpersonationService::switchBack();
         $redirect = !empty($result['redirect'])
@@ -74,12 +74,17 @@ final class UsersPageController extends BaseController
 
     /**
      * Verifies the `_token` CSRF query param (falling back to $postToken when given, for
-     * POST-capable routes), redirecting to $fallbackUrl and halting on failure.
+     * POST-capable routes), redirecting to $fallbackUrl and halting on failure. When
+     * $oneTimePurpose is given, checks against a single-use mintOneTimeToken() value
+     * instead of the reusable session-wide CSRF token (see AuthService::mintOneTimeToken()).
      */
-    private function requireCsrfOrRedirect(string $fallbackUrl, string $postToken = ''): void
+    private function requireCsrfOrRedirect(string $fallbackUrl, string $postToken = '', ?string $oneTimePurpose = null): void
     {
         $token = (string) ($_GET['_token'] ?? $postToken);
-        if (!AuthService::verifyCsrf($token)) {
+        $ok = $oneTimePurpose !== null
+            ? AuthService::consumeOneTimeToken($oneTimePurpose, $token)
+            : AuthService::verifyCsrf($token);
+        if (!$ok) {
             Response::redirect($fallbackUrl);
         }
     }

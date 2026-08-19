@@ -1337,10 +1337,10 @@ declare(strict_types=1);
                     ? $fcAuthSwitchFrom['display_name']
                     : ($fcAuthSwitchFrom['login'] ?? 'admin'));
                 $fcSwitchBackUrl = rtrim((string) $fcAdminBase, '/') . '/users/switch-back?_token=' . rawurlencode(
-                    \Fc\Admin\Services\AuthService::csrfToken()
+                    \Fc\Admin\Services\AuthService::mintOneTimeToken('switch-back')
                 );
                 ?>
-                <div class="fc-auth-switch-banner" role="status">
+                <div class="fc-auth-switch-banner<?php echo empty($fcAdminFillLayout) ? ' fc-auth-switch-banner--full-bleed' : ''; ?>" role="status">
                     <span>
                         Logged in as <strong><?php echo htmlspecialchars($fcSwitchAsName, ENT_QUOTES, 'UTF-8'); ?></strong>.
                         Return to <strong><?php echo htmlspecialchars($fcSwitchFromName, ENT_QUOTES, 'UTF-8'); ?></strong>?

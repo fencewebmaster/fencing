@@ -17,18 +17,18 @@
 							<tr>
 								<td width="100">Name</td>
 								<td>
-									<span><?php echo @$info['name']; ?></span>
+									<span><?php echo htmlspecialchars((string) @$info['name'], ENT_QUOTES, 'UTF-8'); ?></span>
 									<div class="fc-form-group has-clear">
-										<input type="text" name="name" value="<?php echo @$info['name']; ?>" class="form-control">
+										<input type="text" name="name" value="<?php echo htmlspecialchars((string) @$info['name'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control">
 									</div>
 								</td>
 							</tr>
 							<tr>
 								<td width="100">Contact</td>
 								<td>
-									<span><?php echo @$info['mobile']; ?></span>
+									<span><?php echo htmlspecialchars((string) @$info['mobile'], ENT_QUOTES, 'UTF-8'); ?></span>
 									<div class="fc-form-group has-clear fc-mobile-group position-relative">
-										<input type="tel" name="mobile" value="<?php echo @$info['mobile']; ?>" class="form-control no-space numeric-only input-mobile" phone-format="9999 999 999" autocomplete="off" minlength="7" required>   
+										<input type="tel" name="mobile" value="<?php echo htmlspecialchars((string) @$info['mobile'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control no-space numeric-only input-mobile" phone-format="9999 999 999" autocomplete="off" minlength="7" required>   
 						                <i class="au-flag-icon"></i>
 									</div>
 								</td>
@@ -36,18 +36,18 @@
 							<tr>
 								<td width="100">Email</td>
 								<td>
-									<span><?php echo @$info['email']; ?></span>
+									<span><?php echo htmlspecialchars((string) @$info['email'], ENT_QUOTES, 'UTF-8'); ?></span>
 									<div class="fc-form-group has-clear">
-										<input type="email" name="email" value="<?php echo @$info['email']; ?>" class="form-control no-space" required>
+										<input type="email" name="email" value="<?php echo htmlspecialchars((string) @$info['email'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control no-space" required>
 									</div>
 								</td>
 							</tr>
 							<tr>
 								<td width="100">Address</td>
 								<td>
-									<span><?php echo @$info['address']; ?></span>
+									<span><?php echo htmlspecialchars((string) @$info['address'], ENT_QUOTES, 'UTF-8'); ?></span>
 									<div class="fc-form-group has-clear">
-										<input type="text" id="address" name="address" value="<?php echo @$info['address']; ?>" class="form-control">
+										<input type="text" id="address" name="address" value="<?php echo htmlspecialchars((string) @$info['address'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control">
 									</div>
 								</td>
 							</tr>
@@ -68,9 +68,9 @@
 							<tr>
 								<td width="100">Post Code</td>
 								<td>
-									<span><?php echo @$info['postcode']; ?></span>
+									<span><?php echo htmlspecialchars((string) @$info['postcode'], ENT_QUOTES, 'UTF-8'); ?></span>
 									<div class="fc-form-group has-clear">
-										<input type="text" id="postcode" name="postcode" value="<?php echo @$info['postcode']; ?>" class="form-control">
+										<input type="text" id="postcode" name="postcode" value="<?php echo htmlspecialchars((string) @$info['postcode'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control">
 									</div>
 								</td>
 							</tr>
@@ -93,9 +93,9 @@
 								<tr>
 									<td>
 										
-										<span><?php echo @$info['notes']; ?></span>
+										<span><?php echo htmlspecialchars((string) @$info['notes'], ENT_QUOTES, 'UTF-8'); ?></span>
 										<div class="fc-form-group has-clear">
-												<textarea name="notes" placeholder="Write your notes here" class="form-control" rows="5"><?php echo @$info['notes']; ?></textarea>
+												<textarea name="notes" placeholder="Write your notes here" class="form-control" rows="5"><?php echo htmlspecialchars((string) @$info['notes'], ENT_QUOTES, 'UTF-8'); ?></textarea>
 										</div>
 									</td>
 								</tr>
@@ -201,12 +201,12 @@
 													<input type="hidden" class="input-fence" name="color[<?php echo htmlspecialchars( (string) $cd_k, ENT_QUOTES, 'UTF-8' ); ?>][fence]" value="<?php echo htmlspecialchars( $_fence_slug, ENT_QUOTES, 'UTF-8' ); ?>">
 													<input type="hidden" class="input-color" name="color[<?php echo htmlspecialchars( (string) $cd_k, ENT_QUOTES, 'UTF-8' ); ?>][color]" value="<?php echo htmlspecialchars( (string) $color_value, ENT_QUOTES, 'UTF-8' ); ?>">
 
-													<div style="background:<?php echo @$color['background_color']; ?>;color:<?php echo @$color['text_color']; ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
-														<div style="color: <?php echo @$color['text_color']; ?>">
+													<div style="background:<?php echo htmlspecialchars((string) @$color['background_color'], ENT_QUOTES, 'UTF-8'); ?>;color:<?php echo htmlspecialchars((string) @$color['text_color'], ENT_QUOTES, 'UTF-8'); ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
+														<div style="color: <?php echo htmlspecialchars((string) @$color['text_color'], ENT_QUOTES, 'UTF-8'); ?>">
 															<div><?php echo htmlspecialchars( (string) $_fence_title, ENT_QUOTES, 'UTF-8' ); ?></div>
 															<hr class="my-2">
-															<strong class="js-color_options-title"><?php echo @$color['title']; ?></strong><br />
-															<span class="js-color_options-subtitle"><?php echo @$color['sub_title']; ?></span>
+															<strong class="js-color_options-title"><?php echo htmlspecialchars((string) @$color['title'], ENT_QUOTES, 'UTF-8'); ?></strong><br />
+															<span class="js-color_options-subtitle"><?php echo htmlspecialchars((string) @$color['sub_title'], ENT_QUOTES, 'UTF-8'); ?></span>
 															<?php if ( $_fence_section_count > 0 ) : ?>
 															<div class="fc-project-plan-color-sections"><?php echo (int) $_fence_section_count; ?> section<?php echo $_fence_section_count === 1 ? '' : 's'; ?></div>
 															<?php endif; ?>

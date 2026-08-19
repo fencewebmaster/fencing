@@ -2,6 +2,16 @@
 require __DIR__ . '/../app/bootstrap.php';
 
 use Fc\Admin\Core\Application;
+use Fc\Admin\Services\ConsoleSettings;
+
+// Fatal errors/uncaught exceptions are controlled by display_errors, not error_reporting() —
+// without this, an unhandled error in the admin panel leaks a full stack trace (absolute
+// server paths, internal class layout) to the browser whenever the server's own php.ini
+// default happens to have display_errors on (common on dev-oriented stacks).
+if (!ConsoleSettings::debugMode()) {
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+}
 
 $fcAdminContext = Application::handleWebRequest();
 extract($fcAdminContext->toLayoutVars(), EXTR_SKIP);

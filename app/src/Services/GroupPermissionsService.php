@@ -31,6 +31,9 @@ final class GroupPermissionsService
         if (!GroupPermissionsPresenter::isManageableRole($slug)) {
             return ['ok' => false, 'error' => 'This role cannot be managed here.'];
         }
+        if ($slug === 'administrator' && !PermissionService::canManageAdministratorPermissions()) {
+            return ['ok' => false, 'error' => 'Only Super Admin may edit Administrator role permissions.'];
+        }
 
         $next = GroupPermissionsModel::normalizeMatrix($matrix);
         $dir = GroupPermissionsModel::dir();

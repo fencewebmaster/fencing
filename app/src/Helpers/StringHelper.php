@@ -21,11 +21,25 @@ final class StringHelper
     }
 
     /**
-     * Short uppercase alphanumeric id (e.g. planner ids).
+     * Uppercase alphanumeric id (e.g. planner ids) generated with a CSPRNG.
+     *
+     * Uses random_int() per character over a fixed alphabet rather than str_shuffle()'s
+     * non-cryptographic RNG. str_shuffle() also only ever produces a *permutation* of the
+     * alphabet — no repeated characters — which silently shrinks the effective keyspace
+     * versus independent per-character draws (36P6 vs 36^6, for example); random_int()
+     * draws independently, so callers get the full 36^length combinations they'd expect.
      */
     public static function randomId(int $length = 10): string
     {
-        return strtoupper(substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyz'), 0, $length));
+        $alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $max = strlen($alphabet) - 1;
+
+        $id = '';
+        for ($i = 0; $i < $length; $i++) {
+            $id .= $alphabet[random_int(0, $max)];
+        }
+
+        return $id;
     }
 
     /**

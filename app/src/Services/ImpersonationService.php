@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
+use Fc\Admin\Models\GroupPermissionsModel;
 use Fc\Admin\Models\UserModel;
 
 /**
@@ -70,6 +71,22 @@ final class ImpersonationService
             }
         }
 
+        // Privilege ceiling: a non-Super-Admin actor may never gain capability via
+        // impersonation. Super Admin itself is a fixed, email-matched identity outside the
+        // permission matrix (PermissionService::can() short-circuits to true for it), so it
+        // can never be represented as "a subset of the target's grants" — it must be an
+        // explicit, unconditional block rather than something the matrix comparison below
+        // could catch on its own.
+        $actorId = (int) $current['id'];
+        if (!PermissionService::isSuperAdmin($actorId)) {
+            if (PermissionService::isSuperAdmin($userId)) {
+                return ['ok' => false, 'message' => 'Cannot Login As the Super Admin account.'];
+            }
+            if (self::targetExceedsActorPermissions($actorId, $userId)) {
+                return ['ok' => false, 'message' => 'Cannot Login As a user with more permissions than your own account.'];
+            }
+        }
+
         AuthService::boot();
         $wasRemembered = RememberTokenService::isRemembered();
         if (!self::isSwitched()) {
@@ -92,6 +109,46 @@ final class ImpersonationService
             'message'  => 'Now logged in as ' . $label . '.',
             'redirect' => AuthService::dashboardUrl(),
         ];
+    }
+
+    /**
+     * True if $targetId holds any permission leaf that $actorId does not — i.e.
+     * impersonating $targetId would grant the actor capabilities beyond their own account.
+     */
+    private static function targetExceedsActorPermissions(int $actorId, int $targetId): bool
+    {
+        $actorGrants = self::grantedLeafKeys($actorId);
+        $targetGrants = self::grantedLeafKeys($targetId);
+
+        foreach ($targetGrants as $key => $true) {
+            if (!isset($actorGrants[$key])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Every permission leaf granted to $userId, unioned across all of their roles.
+     *
+     * @return array<string,true>
+     */
+    private static function grantedLeafKeys(int $userId): array
+    {
+        $granted = [];
+        $leafKeys = GroupPermissionsModel::leafKeys();
+
+        foreach (UserModel::roles($userId) as $role) {
+            $matrix = GroupPermissionsModel::get((string) $role);
+            foreach ($leafKeys as $key) {
+                if (GroupPermissionsModel::getPath($matrix, $key)) {
+                    $granted[$key] = true;
+                }
+            }
+        }
+
+        return $granted;
     }
 
     /**

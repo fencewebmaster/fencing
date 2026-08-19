@@ -29,9 +29,14 @@ final class AjaxController extends BaseFrontendController
      */
     private function getSize(): void
     {
-        $name  = (string) ($_POST['name'] ?? '');
+        $name  = basename((string) ($_POST['name'] ?? ''));
         $key   = (string) ($_POST['key'] ?? '');
         $value = $_POST['value'] ?? null;
+
+        if ($name === '' || !preg_match('/^[A-Za-z0-9_-]+$/', $name)) {
+            echo json_encode([]);
+            exit;
+        }
 
         $rows = FileHelper::loadCsv(FC_ROOT . '/writable/sizes/' . $name . '.csv');
         $data = [];

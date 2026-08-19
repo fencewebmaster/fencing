@@ -92,7 +92,7 @@ include __DIR__ . '/../fields.php';
 		var fc_data  = <?php echo json_encode($fences); ?>;
 		var base_url = '<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl(); ?>';
 		var fc_fence_info = <?php echo json_encode( $fc_fence_info, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>;
-		var planner_id = "<?php echo @$_SESSION['planner_id']; ?>";
+		var planner_id = <?php echo json_encode((string) (@$_SESSION['planner_id'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP); ?>;
 		var planner_share_url = "<?php echo \Fc\Admin\Services\PlannerSessionService::qidShareUrl(); ?>";
 		</script>
 

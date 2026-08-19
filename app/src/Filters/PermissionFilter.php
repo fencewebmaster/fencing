@@ -70,7 +70,7 @@ final class PermissionFilter implements FilterInterface
             $fc403CurrentUser = AuthService::user();
             $fc403SwitchBackUrl = '';
             if ($fc403IsSwitched && $fcAdminBase !== '') {
-                $token = AuthService::csrfToken();
+                $token = AuthService::mintOneTimeToken('switch-back');
                 $fc403SwitchBackUrl = rtrim($fcAdminBase, '/') . '/users/switch-back?_token=' . rawurlencode($token);
             }
             include $view;

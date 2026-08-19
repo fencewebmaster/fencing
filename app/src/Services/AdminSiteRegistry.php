@@ -21,7 +21,7 @@ final class AdminSiteRegistry
     public static function mysqlKeys(): array
     {
         $app = DatabaseConfigService::loadAppConfig();
-        $mysql = isset($app['mysql']) && is_array($app['mysql']) ? $app['mysql'] : [];
+        $mysql = DatabaseConfigService::mysqlBySite($app);
         $keys = [];
         foreach ($mysql as $key => $row) {
             if (!is_string($key) || $key === '' || !is_array($row)) {

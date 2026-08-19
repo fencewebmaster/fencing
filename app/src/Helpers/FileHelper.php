@@ -21,6 +21,15 @@ final class FileHelper
             return false;
         }
 
+        // Defense-in-depth: every current caller already passes a path under writable/, so
+        // this changes nothing for them — it only rejects a path that has traversed outside
+        // it, in case a future caller ever forwards unsanitized request input here directly.
+        $real = realpath($file);
+        $base = realpath(defined('FC_ROOT') ? FC_ROOT . '/writable' : '');
+        if ($real === false || $base === false || !str_starts_with($real, $base . DIRECTORY_SEPARATOR)) {
+            return false;
+        }
+
         $handle = fopen($file, 'r');
 
         $i = 0;

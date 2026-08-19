@@ -77,9 +77,10 @@ class Database {
             $ok = $conn->query($sql);
         } catch (\mysqli_sql_exception $e) {
             $conn->close();
+            error_log('FC Database::insert failed: ' . $sql . ' -- ' . $e->getMessage());
             return [
                 'success' => FALSE,
-                'message' => 'Database error: ' . $e->getMessage(),
+                'message' => 'Database error. See server error log for details.',
             ];
         }
 
@@ -93,9 +94,10 @@ class Database {
 
         $err = $conn->error;
         $conn->close();
+        error_log('FC Database::insert failed: ' . $sql . ' -- ' . $err);
         return [
             'success' => FALSE,
-            'message' => "Error: " . $sql . "<br>" . $err
+            'message' => 'Database error. See server error log for details.',
         ];
     }
 
@@ -162,9 +164,10 @@ class Database {
             $ok = $conn->query($sql);
         } catch (\mysqli_sql_exception $e) {
             $conn->close();
+            error_log('FC Database::update failed: ' . $sql . ' -- ' . $e->getMessage());
             return [
                 'success' => FALSE,
-                'message' => 'Database error: ' . $e->getMessage(),
+                'message' => 'Database error. See server error log for details.',
             ];
         }
 
@@ -178,9 +181,10 @@ class Database {
 
         $err = $conn->error;
         $conn->close();
+        error_log('FC Database::update failed: ' . $sql . ' -- ' . $err);
         return [
             'success' => FALSE,
-            'message' => "Error: " . $sql . "<br>" . $err
+            'message' => 'Database error. See server error log for details.',
         ];
     }
 
@@ -206,9 +210,10 @@ class Database {
             $ok = $conn->query($sql);
         } catch (\mysqli_sql_exception $e) {
             $conn->close();
+            error_log('FC Database::delete failed: ' . $sql . ' -- ' . $e->getMessage());
             return [
                 'success' => FALSE,
-                'message' => 'Database error: ' . $e->getMessage(),
+                'message' => 'Database error. See server error log for details.',
             ];
         }
 
@@ -222,9 +227,10 @@ class Database {
 
         $err = $conn->error;
         $conn->close();
+        error_log('FC Database::delete failed: ' . $sql . ' -- ' . $err);
         return [
             'success' => FALSE,
-            'message' => "Error: " . $sql . "<br>" . $err
+            'message' => 'Database error. See server error log for details.',
         ];
     }
 

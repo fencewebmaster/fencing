@@ -589,7 +589,7 @@ final class PlannerEntryModel extends Model
 
         $search = trim($search);
         if ($search !== '') {
-            $like = '%' . $search . '%';
+            $like = '%' . addcslashes($search, '%_\\') . '%';
             $parts[] = '(planner_id LIKE ? OR name LIKE ? OR email LIKE ? OR mobile LIKE ? OR site_url LIKE ?)';
             $types .= 'sssss';
             $params[] = $like;

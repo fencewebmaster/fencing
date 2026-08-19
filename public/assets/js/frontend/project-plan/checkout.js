@@ -1151,6 +1151,7 @@ $("#paymentFrm").validate({
             setTimeout(function() {
                 $('.fc-loader ul li:first-child').addClass('fc-text-success');
             }, 500);
+   
             $.ajax({
                 url: 'checkout',
                 type: "POST",
@@ -1195,15 +1196,19 @@ $("#paymentFrm").validate({
                     if (typeof clearPlannerLocalStorage === 'function') {
                         clearPlannerLocalStorage();
                     }
-                    var count = 0;
-                    $('.fc-loader ul li:not(.fc-text-success)').each(function(i) {
+                    var $remaining = $('.fc-loader ul li:not(.fc-text-success)');
+                    $remaining.each(function(i) {
                         var _this = $(this);
                         setTimeout(function() {
                             _this.addClass('fc-text-success');
-                            count++;
                         }, 2000 * i);
                     });
-                    location.href = info.url;
+                    // Wait for the last step to actually light up before navigating away —
+                    // firing location.href immediately (as before) meant the browser started
+                    // leaving the page before any of these highlights could ever be seen.
+                    setTimeout(function() {
+                        location.href = info.url;
+                    }, 2000 * Math.max(0, $remaining.length - 1) + 600);
                 },
                 error: function() {
                     $('.fc-loader-overlay').hide();

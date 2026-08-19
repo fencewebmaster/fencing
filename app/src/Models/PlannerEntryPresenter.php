@@ -1370,11 +1370,8 @@ final class PlannerEntryPresenter
     public static function statusClass(string $status): string
     {
         $status = strtolower(trim($status));
-        if ($status === 'planning') {
-            return 'fc-entries-status fc-entries-status--planning';
-        }
-        if ($status === 'duplicate') {
-            return 'fc-entries-status fc-entries-status--duplicate';
+        if (in_array($status, ['planning', 'duplicate', 'reloaded', 'submitted'], true)) {
+            return 'fc-entries-status fc-entries-status--' . $status;
         }
 
         return 'fc-entries-status';

@@ -55,7 +55,7 @@ final class AuthPresenter
      */
     public static function logoutUrl(string $adminBase): string
     {
-        $token = AuthService::csrfToken();
+        $token = AuthService::mintOneTimeToken('logout');
 
         return rtrim($adminBase, '/') . '/logout?_token=' . rawurlencode($token);
     }

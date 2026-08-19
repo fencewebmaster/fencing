@@ -166,7 +166,13 @@ final class CheckoutCartModel
         $cart_items_data = [];
 
         foreach ($_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
-            $quantity = $postedCart['qty'][$cart_item_k] ?? null;
+            $posted = $postedCart['qty'][$cart_item_k] ?? null;
+            // Quantity must be a plain non-negative integer — it's stored in the session and
+            // later rendered back into the cart view, so anything else (including markup) is
+            // rejected outright rather than trying to sanitize it.
+            $quantity = (is_int($posted) || (is_string($posted) && ctype_digit($posted)))
+                ? (int) $posted
+                : (int) ($cart_item['qty'] ?? 0);
 
             $cart_items_data[$cart_item_k] = $cart_item;
 

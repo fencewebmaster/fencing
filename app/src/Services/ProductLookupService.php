@@ -211,6 +211,47 @@ final class ProductLookupService
             . '<figure><figcaption><img><span><div><table><thead><tbody><tfoot><tr><th><td>';
         $html = strip_tags($html, $allowed);
 
+        // strip_tags() only filters tag names — it never touches attributes, so an allowed
+        // tag like <img>/<a> could still carry an onerror=/onclick=/javascript: payload.
+        // Attribute-level pass: drop every on*="..." event handler, and neutralize any
+        // href/src using a dangerous scheme (javascript:, vbscript:, data:, ...).
+        $html = preg_replace('/\s+on[a-z]+\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html) ?? $html;
+        $html = preg_replace_callback(
+            '/\b(href|src)\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))/i',
+            static function (array $m): string {
+                $attr = strtolower($m[1]);
+                $value = $m[2] !== '' ? $m[2] : ($m[3] !== '' ? $m[3] : ($m[4] ?? ''));
+                // Attackers hide "javascript:" behind entities/whitespace (e.g. "jav&#97;script:",
+                // "java\tscript:") to dodge a naive prefix check — decode and collapse both first.
+                $decoded = preg_replace('/\s+/', '', html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                if (preg_match('/^([a-z][a-z0-9+.\-]*):/i', (string) $decoded, $scheme)) {
+                    $allowedSchemes = $attr === 'href' ? ['http', 'https', 'mailto', 'tel'] : ['http', 'https'];
+                    if (!in_array(strtolower($scheme[1]), $allowedSchemes, true)) {
+                        return $attr . '="#"';
+                    }
+                }
+
+                return $m[0];
+            },
+            $html
+        ) ?? $html;
+        // Historical CSS-based vectors (IE expression(), -moz-binding) and javascript: URLs
+        // inside inline style attributes — only strip the attribute if its value actually
+        // contains one of these; a plain "style=color:red" is left untouched.
+        $html = preg_replace_callback(
+            '/\bstyle\s*=\s*(?:"([^"]*)"|\'([^\']*)\')/i',
+            static function (array $m): string {
+                $value = $m[1] !== '' ? $m[1] : ($m[2] ?? '');
+                $decoded = strtolower(preg_replace('/\s+/', '', html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+                if (preg_match('/expression\(|javascript:|vbscript:|-moz-binding/i', (string) $decoded)) {
+                    return '';
+                }
+
+                return $m[0];
+            },
+            $html
+        ) ?? $html;
+
         // Classic editor plain text → paragraphs.
         if ($html !== '' && !preg_match('/<(p|div|h[1-6]|ul|ol|table|blockquote|figure)\b/i', $html)) {
             $parts = preg_split("/\n\s*\n/", $html) ?: [];

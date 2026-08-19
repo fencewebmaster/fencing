@@ -40,21 +40,15 @@ final class IntegrationsSettings
     public static function siteKeys(?array $config = null): array
     {
         $config = $config ?? self::readConfig();
+        $sites = is_array($config['sites'] ?? null) ? $config['sites'] : [];
         $keys = [];
-        foreach (['gtag_id', 'gtm_id', 'cloudflare_zone_id', 'supplier'] as $section) {
-            $sectionValue = $config[$section] ?? null;
-            // Legacy single Zone ID lived under apikey.cloudflare_zone_id (string) — skip that.
-            if ($section === 'cloudflare_zone_id' && !is_array($sectionValue)) {
-                continue;
-            }
-            foreach (array_keys(is_array($sectionValue) ? $sectionValue : []) as $key) {
-                if (is_string($key) && preg_match('/^[a-z0-9.-]+$/', $key)) {
-                    $keys[$key] = true;
-                }
+        foreach (array_keys($sites) as $key) {
+            if (is_string($key) && preg_match('/^[a-z0-9.-]+$/', $key)) {
+                $keys[] = $key;
             }
         }
 
-        return array_keys($keys);
+        return $keys;
     }
 
     public static function siteLabel(string $key): string
@@ -92,6 +86,25 @@ final class IntegrationsSettings
     }
 
     /**
+     * PID Prefix for a site key, prepended to newly-minted planner/quote IDs
+     * (see PlannerRecordService::newPlannerId()). Blank when unset — no site should ever
+     * be treated as having a prefix it wasn't explicitly given.
+     */
+    public static function pidPrefixForKey(string $key, ?array $config = null): string
+    {
+        $key = trim($key);
+        if ($key === '') {
+            return '';
+        }
+
+        $config = $config ?? self::readConfig();
+        $site = is_array($config['sites'][$key] ?? null) ? $config['sites'][$key] : [];
+        $value = strtoupper(trim((string) ($site['pid_prefix'] ?? '')));
+
+        return preg_match('/^[A-Z0-9]{1,10}$/', $value) ? $value : '';
+    }
+
+    /**
      * Resolve supplier for a site key (config override, then built-in default).
      */
     public static function supplierForKey(string $key, ?array $config = null): string
@@ -102,8 +115,8 @@ final class IntegrationsSettings
         }
 
         $config = $config ?? self::readConfig();
-        $stored = is_array($config['supplier'] ?? null) ? $config['supplier'] : [];
-        $fromConfig = self::normalizeSupplier((string) ($stored[$key] ?? ''));
+        $site = is_array($config['sites'][$key] ?? null) ? $config['sites'][$key] : [];
+        $fromConfig = self::normalizeSupplier((string) ($site['supplier'] ?? ''));
         if ($fromConfig !== '') {
             return $fromConfig;
         }
@@ -156,24 +169,23 @@ final class IntegrationsSettings
         $config = self::readConfig();
         $api = is_array($config['apikey'] ?? null) ? $config['apikey'] : [];
         $webhooks = is_array($config['webhook_url'] ?? null) ? $config['webhook_url'] : [];
-        $gtag = is_array($config['gtag_id'] ?? null) ? $config['gtag_id'] : [];
-        $gtm = is_array($config['gtm_id'] ?? null) ? $config['gtm_id'] : [];
-        $zones = is_array($config['cloudflare_zone_id'] ?? null) ? $config['cloudflare_zone_id'] : [];
-        $logos = is_array($config['site_logo'] ?? null) ? $config['site_logo'] : [];
+        $sitesConfig = is_array($config['sites'] ?? null) ? $config['sites'] : [];
         $sites = [];
 
         foreach (self::siteKeys($config) as $key) {
+            $site = is_array($sitesConfig[$key] ?? null) ? $sitesConfig[$key] : [];
             // 'logo' is the raw stored override (blank = no override, use the auto-derived default).
             // 'logoDefault' is always populated so the UI can preview/fall back to it without saving it.
             $sites[] = [
                 'key' => $key,
                 'label' => self::siteLabel($key),
                 'supplier' => self::supplierForKey($key, $config) ?: 'JG',
-                'logo' => trim((string) ($logos[$key] ?? '')),
+                'logo' => trim((string) ($site['site_logo'] ?? '')),
                 'logoDefault' => self::logoForKey($key),
-                'gtagId' => (string) ($gtag[$key] ?? ''),
-                'gtmId' => (string) ($gtm[$key] ?? ''),
-                'cloudflareZoneId' => (string) ($zones[$key] ?? ''),
+                'gtagId' => (string) ($site['gtag_id'] ?? ''),
+                'gtmId' => (string) ($site['gtm_id'] ?? ''),
+                'cloudflareZoneId' => (string) ($site['cloudflare_zone_id'] ?? ''),
+                'pidPrefix' => (string) ($site['pid_prefix'] ?? ''),
             ];
         }
 
@@ -273,6 +285,7 @@ final class IntegrationsSettings
             $gtm = self::cleanValue($site['gtmId'] ?? '', 50);
             $zone = self::cleanValue($site['cloudflareZoneId'] ?? '', 64);
             $logo = self::cleanValue($site['logo'] ?? '', 500);
+            $pidPrefix = self::cleanValue($site['pidPrefix'] ?? '', 10);
             $supplier = self::normalizeSupplier((string) ($site['supplier'] ?? ''));
             if ($supplier === '') {
                 $supplier = self::supplierForKey($key);
@@ -292,6 +305,9 @@ final class IntegrationsSettings
             if ($supplier === '') {
                 return ['ok' => false, 'error' => 'Supplier must be GO or JG for ' . self::siteLabel($key) . '.'];
             }
+            if ($pidPrefix === null || ($pidPrefix !== '' && !preg_match('/^[A-Za-z0-9]+$/', $pidPrefix))) {
+                return ['ok' => false, 'error' => 'PID Prefix must be letters/numbers only for ' . self::siteLabel($key) . '.'];
+            }
             $sitesByKey[$key] = [
                 'key' => $key,
                 'label' => self::siteLabel($key),
@@ -301,6 +317,7 @@ final class IntegrationsSettings
                 'gtagId' => strtoupper($gtag),
                 'gtmId' => strtoupper($gtm),
                 'cloudflareZoneId' => strtolower((string) $zone),
+                'pidPrefix' => strtoupper($pidPrefix),
             ];
         }
 
@@ -360,13 +377,7 @@ final class IntegrationsSettings
             $next = $normalized['integrations'];
             $config['apikey'] = is_array($config['apikey'] ?? null) ? $config['apikey'] : [];
             $config['webhook_url'] = is_array($config['webhook_url'] ?? null) ? $config['webhook_url'] : [];
-            $config['gtag_id'] = is_array($config['gtag_id'] ?? null) ? $config['gtag_id'] : [];
-            $config['gtm_id'] = is_array($config['gtm_id'] ?? null) ? $config['gtm_id'] : [];
-            $config['cloudflare_zone_id'] = is_array($config['cloudflare_zone_id'] ?? null)
-                ? $config['cloudflare_zone_id']
-                : [];
-            $config['supplier'] = is_array($config['supplier'] ?? null) ? $config['supplier'] : [];
-            $config['site_logo'] = is_array($config['site_logo'] ?? null) ? $config['site_logo'] : [];
+            $config['sites'] = is_array($config['sites'] ?? null) ? $config['sites'] : [];
 
             $config['apikey']['google_map'] = (string) $next['googleMapsApiKey'];
             $config['apikey']['chatra'] = (string) $next['chatraApiKey'];
@@ -376,12 +387,18 @@ final class IntegrationsSettings
             $config['webhook_url']['zap'] = (string) $next['webhookUrl'];
             foreach ($next['sites'] as $site) {
                 $key = (string) $site['key'];
-                $config['gtag_id'][$key] = (string) $site['gtagId'];
-                $config['gtm_id'][$key] = (string) $site['gtmId'];
-                $config['cloudflare_zone_id'][$key] = (string) $site['cloudflareZoneId'];
-                $config['supplier'][$key] = (string) ($site['supplier'] ?? '');
+                if (!isset($config['sites'][$key]) || !is_array($config['sites'][$key])) {
+                    $config['sites'][$key] = [];
+                }
+                // Only these six integration fields are ever touched here — 'mysql' (DB
+                // credentials) already living under this site key is left completely alone.
+                $config['sites'][$key]['gtag_id'] = (string) $site['gtagId'];
+                $config['sites'][$key]['gtm_id'] = (string) $site['gtmId'];
+                $config['sites'][$key]['cloudflare_zone_id'] = (string) $site['cloudflareZoneId'];
+                $config['sites'][$key]['supplier'] = (string) ($site['supplier'] ?? '');
                 // Blank = no override; get() falls back to the auto-derived logo (logoForKey()).
-                $config['site_logo'][$key] = (string) ($site['logo'] ?? '');
+                $config['sites'][$key]['site_logo'] = (string) ($site['logo'] ?? '');
+                $config['sites'][$key]['pid_prefix'] = (string) ($site['pidPrefix'] ?? '');
             }
 
             $php = "<?php\n\n\$config = " . var_export($config, true) . ";\n";

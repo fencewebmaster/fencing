@@ -567,8 +567,8 @@ $tab = $fcSettingsPage;
                             </div>
 
                             <div class="overflow-x-auto border border-slate-200 bg-white">
-                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                        <span>Site</span><span>Logo</span><span>Supplier</span><span>Gtag ID</span><span>GTM ID</span><span>Cloudflare Zone ID</span>
+                                    <div class="grid min-w-[68rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)_minmax(8rem,0.6fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                        <span>Site</span><span>Logo</span><span>Supplier</span><span>Gtag ID</span><span>GTM ID</span><span>Cloudflare Zone ID</span><span>PID Prefix</span>
                                     </div>
                                     <?php foreach (($integrations['sites'] ?? []) as $site) : ?>
                                     <?php
@@ -578,7 +578,7 @@ $tab = $fcSettingsPage;
                                         $siteSupplier = '';
                                     }
                                     ?>
-                                    <div class="grid min-w-[60rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0">
+                                    <div class="grid min-w-[68rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)_minmax(8rem,0.6fr)] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0">
                                         <div class="min-w-0 flex items-center gap-2.5">
                                             <span class="fc-settings-site-logo shrink-0" data-fc-integration-site-logo-preview="<?php echo $h((string) ($site['key'] ?? '')); ?>">
                                                 <?php if (!empty($site['logoUrl'])) : ?>
@@ -619,6 +619,10 @@ $tab = $fcSettingsPage;
                                             <input type="text" id="fc-integration-<?php echo $h((string) $siteFieldId); ?>-cfzone" data-fc-integration-site="<?php echo $h((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="cloudflareZoneId" value="<?php echo $h((string) ($site['cloudflareZoneId'] ?? '')); ?>" class="fc-settings-field font-mono" placeholder="32-char zone id" autocomplete="off" spellcheck="false" aria-label="<?php echo $h((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" />
                                             <button type="button" class="fc-settings-field-copy fc-settings-field-verify" data-fc-cloudflare-verify data-fc-cloudflare-site="<?php echo $h((string) ($site['key'] ?? '')); ?>" data-fc-cloudflare-zone-for="fc-integration-<?php echo $h((string) $siteFieldId); ?>-cfzone" aria-label="Verify <?php echo $h((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" title="Verify Cloudflare connection"><i class="fa-solid fa-plug" aria-hidden="true"></i></button>
                                             <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo $h((string) $siteFieldId); ?>-cfzone" aria-label="Copy <?php echo $h((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="text" id="fc-integration-<?php echo $h((string) $siteFieldId); ?>-pidprefix" data-fc-integration-site="<?php echo $h((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="pidPrefix" value="<?php echo $h((string) ($site['pidPrefix'] ?? '')); ?>" class="fc-settings-field font-mono uppercase" placeholder="e.g. PER" maxlength="10" autocomplete="off" spellcheck="false" aria-label="<?php echo $h((string) ($site['label'] ?? 'Site')); ?> PID Prefix" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo $h((string) $siteFieldId); ?>-pidprefix" aria-label="Copy <?php echo $h((string) ($site['label'] ?? 'Site')); ?> PID Prefix" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
                                         </span>
                                     </div>
                                     <?php endforeach; ?>

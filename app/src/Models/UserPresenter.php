@@ -110,7 +110,7 @@ final class UserPresenter
 
     public static function loginAsUrl(string $adminBase, int $userId): string
     {
-        $token = AuthService::csrfToken();
+        $token = AuthService::mintOneTimeToken('login-as:' . $userId);
 
         return rtrim($adminBase, '/') . '/users/login-as/' . $userId
             . '?_token=' . rawurlencode($token);
@@ -118,7 +118,7 @@ final class UserPresenter
 
     public static function switchBackUrl(string $adminBase): string
     {
-        $token = AuthService::csrfToken();
+        $token = AuthService::mintOneTimeToken('switch-back');
 
         return rtrim($adminBase, '/') . '/users/switch-back'
             . '?_token=' . rawurlencode($token);

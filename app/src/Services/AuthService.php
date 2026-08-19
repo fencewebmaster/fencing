@@ -113,6 +113,80 @@ final class AuthService
             && hash_equals($expected, $token);
     }
 
+    /**
+     * Single-use, short-lived token for state-changing actions that render as a plain GET
+     * link (login-as, switch-back, logout) rather than a POST form. Unlike csrfToken() (one
+     * reusable value for the whole session, used by every POST endpoint), this token is
+     * consumed on first use and expires quickly — so a copy that leaks via browser history,
+     * a Referer header on the page the link then navigates to, or a server/proxy access log
+     * is only ever replayable in a narrow window, and never doubles as a way to forge any
+     * of the app's other CSRF-protected requests. Multiple still-valid tokens can coexist
+     * per purpose (capped) so reloading the same page in more than one tab doesn't
+     * invalidate a sibling tab's still-unused link.
+     *
+     * @param string $purpose Scopes the token to one action (e.g. "logout", "login-as:5").
+     */
+    public static function mintOneTimeToken(string $purpose): string
+    {
+        self::boot();
+        $now = time();
+        $token = bin2hex(random_bytes(32));
+
+        $bucket = isset($_SESSION['fc_csrf_once'][$purpose]) && is_array($_SESSION['fc_csrf_once'][$purpose])
+            ? $_SESSION['fc_csrf_once'][$purpose]
+            : [];
+
+        // Prune expired entries and cap how many outstanding tokens one purpose can hold.
+        $bucket = array_values(array_filter($bucket, static function ($entry) use ($now): bool {
+            return is_array($entry) && $now < (int) ($entry['expires'] ?? 0);
+        }));
+        if (count($bucket) >= 20) {
+            array_shift($bucket);
+        }
+
+        $bucket[] = ['token' => $token, 'expires' => $now + 1800];
+        $_SESSION['fc_csrf_once'][$purpose] = $bucket;
+
+        return $token;
+    }
+
+    /**
+     * Verify + consume a one-time token minted by mintOneTimeToken(). Returns true exactly
+     * once per token — a second check with the same value (replay) fails.
+     */
+    public static function consumeOneTimeToken(string $purpose, ?string $token): bool
+    {
+        self::boot();
+        if (!is_string($token) || $token === '') {
+            return false;
+        }
+
+        $bucket = isset($_SESSION['fc_csrf_once'][$purpose]) && is_array($_SESSION['fc_csrf_once'][$purpose])
+            ? $_SESSION['fc_csrf_once'][$purpose]
+            : [];
+
+        $now = time();
+        $matchedIndex = null;
+        foreach ($bucket as $i => $entry) {
+            if (!is_array($entry) || $now >= (int) ($entry['expires'] ?? 0)) {
+                continue;
+            }
+            if (hash_equals((string) ($entry['token'] ?? ''), $token)) {
+                $matchedIndex = $i;
+                break;
+            }
+        }
+
+        if ($matchedIndex === null) {
+            return false;
+        }
+
+        unset($bucket[$matchedIndex]);
+        $_SESSION['fc_csrf_once'][$purpose] = array_values($bucket);
+
+        return true;
+    }
+
     public static function adminBase(): string
     {
         $base = UrlHelper::resolveAdminMountBase();

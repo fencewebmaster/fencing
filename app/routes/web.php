@@ -6,7 +6,6 @@ use Fc\Admin\Controllers\DashboardController;
 use Fc\Admin\Controllers\EntriesPageController;
 use Fc\Admin\Controllers\Frontend\AjaxController;
 use Fc\Admin\Controllers\Frontend\CheckoutController;
-use Fc\Admin\Controllers\Frontend\DevController;
 use Fc\Admin\Controllers\Frontend\HomeController;
 use Fc\Admin\Controllers\Frontend\LookupController;
 use Fc\Admin\Controllers\Frontend\NotFoundController;
@@ -158,10 +157,6 @@ return [
         $router->any('lookup/view/{slug}', static function (Request $request, array $params): void {
             $_GET['view'] = rawurldecode((string) ($params['slug'] ?? ''));
             (new LookupController($request))->index();
-        });
-
-        $router->any('dev', static function (Request $request): void {
-            (new DevController($request))->index();
         });
 
         $router->any('404', static function (Request $request): void {

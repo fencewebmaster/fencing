@@ -97,6 +97,7 @@
     --fc-a-black-78: rgba(0, 0, 0, 0.78);
     --fc-a-black-82: rgba(0, 0, 0, 0.8196078431);
     --fc-a-black-98: rgb(0 0 0 / 98%);
+    --fc-a-white-8: rgb(255 255 255 / 8%);
     --fc-a-white-12: rgba(255, 255, 255, 0.12);
     --fc-a-white-14: rgba(255, 255, 255, 0.14);
     --fc-a-white-22: rgba(255, 255, 255, 0.22);
@@ -2865,10 +2866,37 @@ a.fc-tab-active {
 }
 
 .fc-loader-gif {
-    background: url(../../img/loaders/1.gif) no-repeat center;
     width: 80px;
     height: 80px;
-    background-size: 100%;
+    position: relative;
+}
+
+.fc-loader-gif::before,
+.fc-loader-gif::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 5px solid transparent;
+}
+
+.fc-loader-gif::before {
+    border-top-color: var(--fc-princeton-orange);
+    border-right-color: var(--fc-pumpkin);
+    animation: fc-loader-spin 0.9s linear infinite;
+}
+
+.fc-loader-gif::after {
+    inset: 11px;
+    border-bottom-color: var(--fc-gorse);
+    border-left-color: var(--fc-vivid-tangerine);
+    animation: fc-loader-spin 1.3s linear infinite reverse;
+}
+
+@keyframes fc-loader-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .fc-loader-panel--download-plans {
@@ -3156,25 +3184,76 @@ a.fc-tab-active {
     }
 }
 
+/* Shared base look for every loader status line — single big line
+   ("Creating/Updating/Reloading your plan...", planner/modals.php) and each line of the
+   multi-line checklist ("Preparing:/Checking customer details.../…", checkout.js push_order). */
 .fc-loader ul li {
     font-family: "League Gothic", sans-serif !important;
     list-style: none;
-    color: var(--fc-mine-shaft);
     letter-spacing: 2px;
     font-size: 2em;
     text-transform: uppercase;
+    transition: color 0.3s ease;
 }
 
-.fc-loader ul li.fc-text-success:nth-of-type(2) {
-    color: var(--fc-gorse) !important;
+/* Checklist lines start dim — a low-opacity white reads as "not yet active" against the
+   dark loader background and makes the jump to the solid/rainbow active state below feel
+   far more pronounced than a flat mid-gray did. Only .li-create and an active
+   (.fc-text-success) checklist line get the rainbow treatment below. */
+.fc-loader ul li:not(.li-create) {
+    color: var(--fc-a-white-8);
 }
 
-.fc-loader ul li.fc-text-success:nth-of-type(3) {
-    color: var(--fc-vivid-tangerine) !important;
+.fc-loader ul li:not(.li-create) i {
+    color: var(--fc-a-white-8);
+    -webkit-text-fill-color: var(--fc-a-white-8);
+    transition: color 0.3s ease;
 }
 
-.fc-loader ul li.fc-text-success:nth-of-type(4) {
-    color: var(--fc-malibu) !important;
+.fc-loader ul li.li-create,
+.fc-loader ul li:not(.li-create).fc-text-success {
+    background: linear-gradient(
+        90deg,
+        var(--fc-princeton-orange),
+        var(--fc-gorse),
+        var(--fc-vivid-tangerine),
+        var(--fc-malibu),
+        var(--fc-princeton-orange)
+    );
+    background-size: 300% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: fc-loader-text-shimmer 3.5s linear infinite;
+}
+
+/* The checkmark icon stays a plain, legible white rather than inheriting the
+   text-fill-color: transparent above (which would otherwise make it invisible). */
+.fc-loader ul li:not(.li-create).fc-text-success i {
+    color: var(--fc-white);
+    -webkit-text-fill-color: var(--fc-white);
+}
+
+@keyframes fc-loader-text-shimmer {
+    to {
+        background-position: -300% center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-loader-gif::before,
+    .fc-loader-gif::after {
+        animation: none;
+    }
+
+    .fc-loader ul li.li-create,
+    .fc-loader ul li:not(.li-create).fc-text-success {
+        animation: none;
+        background: none;
+        -webkit-text-fill-color: unset;
+        color: var(--fc-mine-shaft);
+    }
 }
 
 /* Table */
@@ -4617,7 +4696,6 @@ thead.fc-border th:last-child {
 .fencing-modal--v2 .fencing-modal-notes .fc-alert-gray.field-note {
     background-color: var(--fc-cultured);
     border: 1px solid var(--fc-gainsboro);
-    border-left: 4px solid var(--fc-princeton-orange);
     border-radius: 8px;
     padding: 16px 18px;
     box-sizing: border-box;

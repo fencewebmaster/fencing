@@ -102,13 +102,12 @@ final class PlannerPageModel
     public static function reloadSessionQuote(): ?array
     {
         $plannerId = (string) ($_SESSION['planner_id'] ?? '');
-        if ($plannerId === '') {
+        if ($plannerId === '' || !PlannerRecordService::isValidPlannerId($plannerId)) {
             return null;
         }
 
         $db  = new Database();
-        $pid = str_replace('"', '""', $plannerId);
-        $row = $db->select_where('planners', '`planner_id`="' . $pid . '"');
+        $row = $db->select_where('planners', '`planner_id`="' . $plannerId . '"');
 
         if (!$row || !is_object($row)) {
             return null;

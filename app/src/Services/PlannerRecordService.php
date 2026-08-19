@@ -250,7 +250,7 @@ final class PlannerRecordService
     public static function persistSession(array $fences): array
     {
         $planner_id = trim((string) ($_SESSION['planner_id'] ?? ''));
-        if ($planner_id === '') {
+        if ($planner_id === '' || !self::isValidPlannerId($planner_id)) {
             return ['success' => false, 'skipped' => true];
         }
 
@@ -260,8 +260,7 @@ final class PlannerRecordService
         }
 
         $db = new Database();
-        $safe_id = str_replace('"', '""', $planner_id);
-        $existing = $db->select_where('planners', '`planner_id`="' . $safe_id . '"', 'id');
+        $existing = $db->select_where('planners', '`planner_id`="' . $planner_id . '"', 'id');
         if (!$existing) {
             $data_inputs['created_at'] = date('Y-m-d H:i:s');
         }
@@ -370,18 +369,33 @@ final class PlannerRecordService
     }
 
     /**
+     * Current request's site PID Prefix (Settings → Integrations), or '' when unset.
+     * Prepended on top of the random portion of a newly-minted planner id — e.g. a "LH"
+     * prefix turns "ABCDEF" into "LHABCDEF" — never eating into the random length itself.
+     */
+    private static function currentSitePidPrefix(): string
+    {
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+        $key = SiteRegistryService::keyFromDomain($host);
+
+        return $key !== '' ? IntegrationsSettings::pidPrefixForKey($key) : '';
+    }
+
+    /**
      * Mint a planner id that is not taken yet (get_uid() on its own can collide).
      */
     public static function newPlannerId(): string
     {
+        $prefix = self::currentSitePidPrefix();
+
         for ($attempt = 0; $attempt < 12; $attempt++) {
-            $candidate = StringHelper::randomId(6);
+            $candidate = $prefix . StringHelper::randomId(6);
             if (!self::plannerIdState($candidate)['found']) {
                 return $candidate;
             }
         }
 
-        return strtoupper(bin2hex(random_bytes(4)));
+        return $prefix . strtoupper(bin2hex(random_bytes(4)));
     }
 
     /**

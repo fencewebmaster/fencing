@@ -210,7 +210,11 @@ final class GroupPermissionsPresenter
                 'upload' => ['media_library.upload'],
                 default => ['media_library.view_list'],
             },
-            'settings', 'settingsController' => ['settings.settings'],
+            'settings', 'settingsController' => match ($action) {
+                'dev-console', 'git-pull' => ['settings.dev_console'],
+                default => ['settings.settings'],
+            },
+            'cache', 'cacheController' => ['settings.cache'],
             'groupPermissions', 'groupPermissionsController' => ['users.group_permissions'],
             'users', 'usersController' => ['users.view_list'],
             default => [],

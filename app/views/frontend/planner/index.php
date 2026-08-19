@@ -126,7 +126,7 @@
         <script type="text/javascript">
         var fc_data       = <?php echo json_encode($fences); ?>;
         var fc_fence_info = <?php echo json_encode($res); ?>;
-        var planner_id    = "<?php echo @$_SESSION['planner_id']; ?>";
+        var planner_id    = <?php echo json_encode((string) (@$_SESSION['planner_id'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP); ?>;
         var fc_session_project_plans = <?php echo json_encode( $fc_session_project_plans ); ?>;
         var planner_share_url = "<?php echo \Fc\Admin\Services\PlannerSessionService::qidShareUrl(); ?>";
         var fc_load_quote_failed = <?php echo $load_quote_failed ? 'true' : 'false'; ?>;

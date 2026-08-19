@@ -72,17 +72,28 @@ final class AuthController
 
     private static function logout(): void
     {
-        $raw = file_get_contents('php://input');
-        $payload = is_string($raw) ? json_decode($raw, true) : null;
-        $token = isset($_GET['_token'])
-            ? (string) $_GET['_token']
-            : (string) (is_array($payload) ? ($payload['csrf_token'] ?? '') : '');
+        // A GET-carried ?_token= (same "logout" purpose/bucket as the web /logout route's
+        // link — see AuthPresenter::logoutUrl()) is single-use, since it's exposed to
+        // history/Referer/access-log leakage the same way; a POST JSON body isn't, so that
+        // path keeps using the ordinary reusable session CSRF token.
+        if (isset($_GET['_token'])) {
+            if (!AuthService::consumeOneTimeToken('logout', (string) $_GET['_token'])) {
+                JsonResponse::send([
+                    'ok'      => false,
+                    'message' => 'Invalid security token. Please refresh the page.',
+                ], 403);
+            }
+        } else {
+            $raw = file_get_contents('php://input');
+            $payload = is_string($raw) ? json_decode($raw, true) : null;
+            $token = (string) (is_array($payload) ? ($payload['csrf_token'] ?? '') : '');
 
-        if (!AuthService::verifyCsrf($token)) {
-            JsonResponse::send([
-                'ok'      => false,
-                'message' => 'Invalid security token. Please refresh the page.',
-            ], 403);
+            if (!AuthService::verifyCsrf($token)) {
+                JsonResponse::send([
+                    'ok'      => false,
+                    'message' => 'Invalid security token. Please refresh the page.',
+                ], 403);
+            }
         }
 
         AuthService::logout();

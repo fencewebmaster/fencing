@@ -54,7 +54,7 @@
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery-scrollspy.min.js'); ?>"></script>
 
 <!-- Plugins -->
-<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo \Fc\Admin\Services\AppConfigService::all()->apikey->google_map; ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo htmlspecialchars((string) \Fc\Admin\Services\AppConfigService::all()->apikey->google_map, ENT_QUOTES, 'UTF-8'); ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
     async defer></script>
 
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
@@ -82,7 +82,7 @@
 window.addEventListener('load', function() {
     window.setTimeout(function() {
         (function(d, w, c) {
-            w.ChatraID = '<?php echo \Fc\Admin\Services\AppConfigService::all()->apikey->chatra; ?>';
+            w.ChatraID = <?php echo json_encode((string) \Fc\Admin\Services\AppConfigService::all()->apikey->chatra, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
             var s = d.createElement('script');
             w[c] = w[c] || function() {
                 (w[c].q = w[c].q || []).push(arguments);

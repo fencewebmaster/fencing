@@ -2528,6 +2528,16 @@ a.fc-entries-pagination__btn:hover {
     color: #475569;
 }
 
+.fc-entries-status--reloaded {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+}
+
+.fc-entries-status--submitted {
+    background: rgba(22, 163, 74, 0.12);
+    color: #15803d;
+}
+
 .fc-entries-dedupe-modal {
     position: fixed;
     inset: 0;
@@ -2724,6 +2734,21 @@ html[data-fc-admin-theme='dark'] .fc-entries-dedupe-progress__track {
 html[data-fc-admin-theme='dark'] .fc-entries-status--duplicate {
     background: rgba(148, 163, 184, 0.18);
     color: #cbd5e1;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-status--planning {
+    background: rgba(251, 146, 60, 0.18);
+    color: #fdba74;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-status--reloaded {
+    background: rgba(96, 165, 250, 0.18);
+    color: #93c5fd;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-status--submitted {
+    background: rgba(74, 222, 128, 0.18);
+    color: #86efac;
 }
 
 .fc-entries-empty,
@@ -4241,6 +4266,19 @@ html[data-fc-admin-theme='dark'] .fc-entries-cart-table__thumb-placeholder {
     background: #1d2327;
     color: #fff;
     font-size: .8125rem;
+}
+/* Pages like planner-entries render <main> with zero padding (p-0), so the banner already
+   sits flush against the top/left/right edges there. Everywhere else <main> keeps Tailwind's
+   p-4/sm:p-6 padding on every side — this cancels exactly that (top included, so there's no
+   gap above the banner either) so it reaches the same edges on every page. Bottom margin
+   stays 0 either way, so spacing below the banner is unaffected. */
+.fc-auth-switch-banner--full-bleed {
+    margin: -1rem -1rem 0;
+}
+@media (min-width: 640px) {
+    .fc-auth-switch-banner--full-bleed {
+        margin: -1.5rem -1.5rem 0;
+    }
 }
 .fc-auth-switch-banner__action {
     padding: .25rem .65rem;

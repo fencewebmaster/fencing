@@ -97,6 +97,8 @@ final class GroupPermissionsModel
                 'label' => 'Settings',
                 'children' => [
                     ['key' => 'settings', 'label' => 'Settings'],
+                    ['key' => 'dev_console', 'label' => 'Dev Console (git commands)'],
+                    ['key' => 'cache', 'label' => 'Purge Cache'],
                 ],
             ],
         ];
