@@ -431,6 +431,13 @@ final class IntegrationsSettings
             }
             @unlink($backup);
 
+            // Without this, a production server with opcache.validate_timestamps=0 keeps
+            // serving the old compiled config.php after the rename above — the save
+            // "succeeds" but every read (get()/apiPayload()) still returns stale values.
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($path, true);
+            }
+
             return [
                 'ok' => true,
                 'integrations' => $next,
