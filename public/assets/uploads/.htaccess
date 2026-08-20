@@ -1,8 +1,21 @@
 Options -Indexes
 
-<FilesMatch "\.(?i:php|phtml|php3|php4|php5|phar)$">
-    Require all denied
-</FilesMatch>
+# Never execute an uploaded file as PHP, even if upload validation is ever bypassed.
+# Routed to the app's own 404 page (via index.php) rather than a bare 403 when mod_rewrite
+# is available. Require all denied is a fallback for when it isn't — the two can't safely
+# coexist unconditionally: Apache checks Require (access-control phase) before per-directory
+# rewrites (fixups phase), so an always-on Require would silently pre-empt the rewrite below
+# and this would keep showing 403 regardless (confirmed by testing).
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} \.(?i:php|phtml|php3|php4|php5|phar)$
+    RewriteRule ^ ../../../index.php [L]
+</IfModule>
+<IfModule !mod_rewrite.c>
+    <FilesMatch "\.(?i:php|phtml|php3|php4|php5|phar)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
 
 <IfModule mod_headers.c>
     <FilesMatch "\.svg$">

@@ -8,8 +8,12 @@ Options -Indexes
 # Without this, .git/ is a real directory/file on disk so it never reaches the
 # frontend catch-all below (that rule only fires when REQUEST_FILENAME is
 # neither -f nor -d) and Apache serves it — including the full commit history
-# and reflog — directly over HTTP.
-RewriteRule "(^|/)\." - [F,L]
+# and reflog — directly over HTTP. Internally rewritten to index.php: the
+# original request URI is preserved, so the app's own router doesn't recognize
+# it as a valid route and renders its normal 404 page — a 404 also tells a
+# prober "this doesn't exist" rather than "exists but is blocked", unlike a
+# 403 or a redirect.
+RewriteRule "(^|/)\." index.php [L]
 
 # Baseline security headers. Deliberately conservative: no site-wide Content-Security-Policy
 # here, since the frontend legitimately loads cross-origin scripts (Google Maps, Chatra,
@@ -31,14 +35,18 @@ RewriteRule ^backend/(.+)$ public/$1 [L,QSA]
 # Never serve app config or writable data directly.
 # config\.php (unanchored at the end) also covers config.php.lock, config.php.bak.php,
 # and the config.php.tmp.<pid>.<rand>.php files ConsoleSettings::save() writes transiently.
-RewriteRule ^(config\.json|config\.php|writable) - [F,L,NC]
+# Internally rewritten to index.php — same access block as before, but now surfaces as the
+# app's own 404 page instead of a bare 403 (see the .git rule above for why).
+RewriteRule ^(config\.json|config\.php|writable) index.php [L,NC]
 
 # Never serve app/ directly. Nothing legitimate is ever requested from there over HTTP —
 # every real request goes through index.php (frontend) or public/index.php|api.php (admin),
 # which pull app/src|views in via PHP include/autoload, not a direct URL. Without this, a
 # view file hit directly (bypassing routing) can throw an uncaught error that leaks a full
 # stack trace with absolute server paths and internal class names straight into the response.
-RewriteRule ^app(/|$) - [F,L,NC]
+# Internally rewritten to index.php — same access block as before, but now surfaces as the
+# app's own 404 page instead of a bare 403 (see the .git rule above for why).
+RewriteRule ^app(/|$) index.php [L,NC]
 
 # Frontend front controller: every public URL (/planner, /checkout, /lookup/view/{slug},
 # …) is routed by index.php via app/routes/frontend.php. Real files (public/assets/…)
