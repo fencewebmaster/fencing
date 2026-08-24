@@ -669,6 +669,35 @@ body.fc-fs-preview-lightbox-open {
     padding-right: 0.5rem;
 }
 
+/* —— Draft Status (sticky preview sidebar) —— */
+.fc-fs-style-preview__draft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.fc-fs-style-preview__draft .fc-fs-gui-field__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.fc-fs-style-preview__draft .fc-fs-gui-field__hint {
+    margin: 0.15rem 0 0.35rem;
+    font-size: 0.6875rem;
+    color: #94a3b8;
+}
+
+.fc-fs-style-preview__draft .fc-fs-gui-toggle__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
 /* —— GUI tab nav (settings-style pill bar — lives in toolbar) —— */
 .fc-fs-gui-panels {
     padding-top: 0;

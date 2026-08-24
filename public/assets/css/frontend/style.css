@@ -7890,8 +7890,10 @@ thead.fc-border th:last-child {
     inset: 0;
     z-index: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     padding: 10px;
     background: rgba(255, 255, 255, 0.78);
     color: #64748b;
@@ -7901,6 +7903,21 @@ thead.fc-border th:last-child {
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+.fc-planner-page .fencing-style-unavailable__link {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fc-princeton-orange, #f67925);
+    text-decoration: underline;
+    pointer-events: auto;
+}
+
+.fc-planner-page .fencing-style-unavailable__link:hover {
+    color: var(--fc-princeton-orange, #f67925);
+    text-decoration: none;
 }
 
 .fc-planner-page .fencing-style-item.fencing-style-item--unavailable .fencing-style-title {

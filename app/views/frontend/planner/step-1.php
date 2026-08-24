@@ -56,7 +56,20 @@
             <div class="js-fencing-styles-slick">
 
             <?php foreach( $fences as $fence ): ?>
-            <?php $fence_is_live = ! empty( $fence['live'] ); ?>
+            <?php
+            $fence_is_live = ! empty( $fence['live'] );
+            $fence_draft = isset( $fence['draft'] ) && is_array( $fence['draft'] ) ? $fence['draft'] : [];
+            $fence_draft_description = trim( (string) ( $fence_draft['description'] ?? '' ) );
+            if ( $fence_draft_description === '' ) {
+                $fence_draft_description = 'Temporarily Unavailable';
+            }
+            $fence_draft_link = trim( (string) ( $fence_draft['link'] ?? '' ) );
+            $fence_draft_link_text = trim( (string) ( $fence_draft['link_text'] ?? '' ) );
+            if ( $fence_draft_link_text === '' ) {
+                $fence_draft_link_text = 'Learn more';
+            }
+            $fence_draft_new_tab = ! empty( $fence_draft['new_tab'] );
+            ?>
             <div class="fencing-style-item fencing-styles-slide<?php echo $fence_is_live ? '' : ' fencing-style-item--unavailable'; ?>"
                 data-slug="<?php echo htmlspecialchars( (string) $fence['slug'], ENT_QUOTES, 'UTF-8' ); ?>"
                 data-title="<?php echo htmlspecialchars( (string) $fence['title'], ENT_QUOTES, 'UTF-8' ); ?>"
@@ -66,7 +79,16 @@
                     <div class="fencing-style-img">
                         <img src="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl() . $fence['image']; ?>" alt="<?php echo htmlspecialchars( (string) $fence['title'], ENT_QUOTES, 'UTF-8' ); ?>">
                         <?php if ( ! $fence_is_live ) : ?>
-                        <div class="fencing-style-unavailable">Not Available</div>
+                        <div class="fencing-style-unavailable">
+                            <span class="fencing-style-unavailable__text"><?php echo htmlspecialchars( $fence_draft_description, ENT_QUOTES, 'UTF-8' ); ?></span>
+                            <?php if ( $fence_draft_link !== '' ) : ?>
+                            <a
+                                class="fencing-style-unavailable__link"
+                                href="<?php echo htmlspecialchars( $fence_draft_link, ENT_QUOTES, 'UTF-8' ); ?>"
+                                <?php if ( $fence_draft_new_tab ) : ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>
+                            ><?php echo htmlspecialchars( $fence_draft_link_text, ENT_QUOTES, 'UTF-8' ); ?></a>
+                            <?php endif; ?>
+                        </div>
                         <?php endif; ?>
                     </div>
 

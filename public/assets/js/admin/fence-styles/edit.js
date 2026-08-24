@@ -621,6 +621,46 @@
         );
     }
 
+    function renderStylePreviewDraftSection(config) {
+        var draft = config.draft && typeof config.draft === 'object' ? config.draft : {};
+        var description = draft.description || '';
+        var link = draft.link || '';
+        var linkText = draft.link_text || '';
+        var newTab = !!draft.new_tab;
+
+        return (
+            '<div class="fc-fs-style-preview__draft">' +
+            '<span class="fc-fs-style-preview__eyebrow">Draft Status</span>' +
+            '<label class="fc-fs-gui-field">' +
+            '<span class="fc-fs-gui-field__label">Description</span>' +
+            '<span class="fc-fs-gui-field__hint">Shown on the frontend planner when this style is not Live. Defaults to "Temporarily Unavailable".</span>' +
+            '<textarea data-config-path="draft.description" rows="2" class="fc-fs-input" placeholder="Temporarily Unavailable">' +
+            escapeHtml(description) +
+            '</textarea>' +
+            '</label>' +
+            '<label class="fc-fs-gui-field">' +
+            '<span class="fc-fs-gui-field__label">Link (optional)</span>' +
+            '<input type="text" data-config-path="draft.link" value="' +
+            escapeHtml(link) +
+            '" class="fc-fs-input" placeholder="https://…">' +
+            '</label>' +
+            '<label class="fc-fs-gui-field">' +
+            '<span class="fc-fs-gui-field__label">Link text</span>' +
+            '<input type="text" data-config-path="draft.link_text" value="' +
+            escapeHtml(linkText) +
+            '" class="fc-fs-input" placeholder="Learn more">' +
+            '</label>' +
+            '<label class="fc-fs-gui-toggle">' +
+            '<input type="checkbox" data-config-path="draft.new_tab"' +
+            (newTab ? ' checked' : '') +
+            ' class="fc-fs-gui-toggle__input">' +
+            '<span class="fc-fs-gui-toggle__track" aria-hidden="true"></span>' +
+            '<span class="fc-fs-gui-toggle__label">Open link in new tab</span>' +
+            '</label>' +
+            '</div>'
+        );
+    }
+
     function renderStylePreviewCard(style, config, appBase) {
         config = config || {};
         var title = String(config.title || style.title || '').trim() || 'Untitled style';
@@ -642,6 +682,7 @@
             escapeHtml(title) +
             '</p></div>' +
             renderStylePreviewImageField(config, appBase) +
+            renderStylePreviewDraftSection(config) +
             '</div></div>'
         );
     }

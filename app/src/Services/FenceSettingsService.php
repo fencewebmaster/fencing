@@ -6,7 +6,7 @@ namespace Fc\Admin\Services;
 
 /**
  * Assembles the fence catalog from `writable/fences/*.php` (draft styles stay in the
- * catalog — the planner renders them disabled as "Not Available" rather than hiding
+ * catalog — the planner renders them disabled as "Temporarily Unavailable" rather than hiding
  * them, see `$fence_is_live` in app/views/frontend/planner/step-1.php) and loads the
  * legacy `fc_color()` / `fc_state()` / `fc_timeframe()` / `fc_extra_needed()` view
  * helpers (`app/src/Helpers/fc_functions.php`).
@@ -59,7 +59,7 @@ final class FenceSettingsService
     /**
      * Assemble the fence catalog from writable/fences/*.php (previously writable/settings.php).
      * Draft (non-live) styles are kept in the catalog — the planner view decides how to
-     * present them (disabled, "Not Available") rather than this service hiding them outright.
+     * present them (disabled, "Temporarily Unavailable") rather than this service hiding them outright.
      *
      * @return array<string, mixed>
      */
