@@ -195,7 +195,10 @@ final class FenceFileService
     public static function createFile(string $slug, array $config): array
     {
         $dir = FC_ROOT . DIRECTORY_SEPARATOR . 'writable' . DIRECTORY_SEPARATOR . 'fences';
-        if (!is_dir($dir) || !is_writable($dir)) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+            return ['ok' => false, 'error' => 'Could not create the fence styles directory.'];
+        }
+        if (!is_writable($dir)) {
             return ['ok' => false, 'error' => 'Fence styles directory is not writable.'];
         }
 
