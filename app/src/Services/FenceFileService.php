@@ -173,6 +173,14 @@ final class FenceFileService
             return ['ok' => false, 'error' => 'Could not write fence file.'];
         }
 
+        // Without this, a production server with opcache enabled keeps serving the old
+        // compiled fence file for up to opcache.revalidate_freq seconds after this write —
+        // FenceStyleModel::catalog() include()s every writable/fences/*.php on each request,
+        // so a save/live-toggle "succeeds" but reads stay stale until the cache re-validates.
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($filePath, true);
+        }
+
         return ['ok' => true, 'fileType' => $fileType];
     }
 }

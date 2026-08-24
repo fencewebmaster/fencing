@@ -29,16 +29,16 @@ declare(strict_types=1);
     <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($fcFontsHref, ENT_QUOTES, 'UTF-8'); ?>">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/buttons.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/sidebar.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/gallery.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/buttons.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/buttons.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/theme.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/sidebar.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/sidebar.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/gallery.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/gallery.css'); ?>">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/entries.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/entries.css'); ?>">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/group-permissions.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/dashboard.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/lazy.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/fence-styles.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/store-products.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/group-permissions.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/group-permissions.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/dashboard.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/dashboard.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/lazy.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/lazy.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/fence-styles.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/fence-styles.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/store-products.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/store-products.css'); ?>">
     <?php
     $fcFavicon = \Fc\Admin\Services\BrandingSettings::faviconUrl($fcAppBase ?? '');
     if ($fcFavicon !== '') : ?>
