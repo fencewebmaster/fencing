@@ -652,25 +652,18 @@
         var styles = data.styles || [];
         var canEdit = data.canEdit !== false;
 
-        if (!styles.length) {
-            return (
-                '<div class="p-8 text-center text-sm text-slate-500">No fence styles found in writable/fences.</div>'
-            );
-        }
+        var body = !styles.length
+            ? '<div class="p-8 text-center text-sm text-slate-500">No fence styles found in writable/fences.</div>'
+            : '<div class="fc-admin-fence-styles">' +
+              '<div class="fc-admin-fence-styles__grid">' +
+              styles
+                  .map(function (style) {
+                      return renderStyleCard(style, canEdit);
+                  })
+                  .join('') +
+              '</div></div>';
 
-        return (
-            '<div class="fc-fs-styles-page">' +
-            '<div class="fc-admin-fence-styles">' +
-            '<div class="fc-admin-fence-styles__grid">' +
-            styles
-                .map(function (style) {
-                    return renderStyleCard(style, canEdit);
-                })
-                .join('') +
-            '</div></div>' +
-            renderBulkBar(canEdit) +
-            '</div>'
-        );
+        return '<div class="fc-fs-styles-page">' + body + renderBulkBar(canEdit) + '</div>';
     }
 
     function loadFenceStyles(container) {

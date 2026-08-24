@@ -22,7 +22,8 @@ $page = $fcFenceStylesPage;
         <p class="font-semibold">Could not load fence styles</p>
         <p class="mt-1 text-sm"><?php echo $h((string) $page['error']); ?></p>
     </div>
-    <?php elseif (empty($page['has_styles'])) : ?>
+    <?php else : ?>
+    <?php if (empty($page['has_styles'])) : ?>
     <div class="p-8 text-center text-sm text-slate-500">No fence styles found in writable/fences.</div>
     <?php else : ?>
     <div class="fc-admin-fence-styles">
@@ -112,6 +113,7 @@ $page = $fcFenceStylesPage;
             <?php endforeach; ?>
         </div>
     </div>
+    <?php endif; ?>
     <?php if (!empty($page['can_edit'])) : ?>
     <div class="fc-fs-bulk-bar fc-entries-page__footer" data-fc-fs-bulk-bar>
         <div class="fc-entries-page__footer-row">
