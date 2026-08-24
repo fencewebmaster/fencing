@@ -11,6 +11,7 @@ writable/wc-products-*
 writable/products*
 writable/groups-permissions/*.json
 writable/theme.json
+writable/fences/*.php
 
 # Generated storage (keep directory placeholders)
 writable/storage/cache/**/*.json
