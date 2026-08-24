@@ -54,15 +54,16 @@ $bootstrap = [
             <div class="fc-products-download-dropdown" data-fc-gp-download-dropdown>
                 <button
                     type="button"
-                    class="btn btn-sm btn-dark fw-semibold fc-products-download-trigger"
+                    class="btn btn-sm btn-dark fw-semibold fc-products-download-trigger fc-entries-toolbar-menu__toggle"
                     data-fc-gp-download-toggle
                     aria-haspopup="menu"
                     aria-expanded="false"
                     aria-controls="fc-gp-download-menu"
+                    aria-label="Import or export group permissions"
+                    title="Import or export group permissions"
                     id="fc-gp-download-toggle"
                 >
-                    <span>Download</span>
-                    <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                    <i class="fa-solid fa-gear" aria-hidden="true"></i>
                 </button>
                 <div
                     class="fc-products-download-dropdown__panel"

@@ -66,35 +66,6 @@ $page = $fcFenceStylesPage;
             <?php endif; ?>
             <?php if (!empty($card['can_edit'])) : ?>
             <div class="fc-fs-card-controls">
-                <div class="fc-fs-card-gear" data-fc-fs-card-gear data-slug="<?php echo $h((string) ($card['slug'] ?? '')); ?>">
-                    <button
-                        type="button"
-                        class="fc-fs-card-gear__toggle"
-                        data-fc-fs-card-gear-toggle
-                        aria-haspopup="menu"
-                        aria-expanded="false"
-                        aria-label="<?php echo $h('Import or export ' . (string) ($card['title'] ?? '')); ?>"
-                        title="Import or export"
-                    >
-                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
-                    </button>
-                    <div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel" role="menu" hidden>
-                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-export>
-                            <span>Export <?php echo $h((string) ($card['title'] ?? '')); ?></span>
-                        </button>
-                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-import>
-                            <span>Import <?php echo $h((string) ($card['title'] ?? '')); ?></span>
-                        </button>
-                    </div>
-                    <input
-                        type="file"
-                        class="sr-only"
-                        accept="application/json,.json"
-                        data-fc-fs-card-import-input
-                        tabindex="-1"
-                        aria-hidden="true"
-                    >
-                </div>
                 <label class="fc-fs-card-check" title="<?php echo $h('Select ' . (string) ($card['title'] ?? '') . ' (Ctrl+Click a style to select it)'); ?>">
                     <input
                         type="checkbox"
@@ -125,21 +96,37 @@ $page = $fcFenceStylesPage;
                     <option value="mark-draft">Mark as Draft</option>
                     <option value="export">Export as JSON</option>
                 </select>
-                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-apply disabled>Apply</button>
+                <button type="button" class="btn btn-sm btn-dark fw-semibold fc-entries-toolbar-menu__toggle" data-fc-fs-bulk-apply disabled>Apply</button>
+                <div class="fc-fs-card-gear fc-fs-bulk-bar__gear" data-fc-fs-card-gear data-slug="">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-dark fw-semibold fc-products-download-trigger fc-entries-toolbar-menu__toggle"
+                        data-fc-fs-card-gear-toggle
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-label="Import or export fence styles"
+                        title="Import or export fence styles"
+                    >
+                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                    </button>
+                    <div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel" role="menu" hidden>
+                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-bulk-import-trigger>
+                            <span>Import Fence Styles</span>
+                        </button>
+                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-bulk-export-all>
+                            <span>Export Fence Styles</span>
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        class="sr-only"
+                        accept="application/json,.json"
+                        data-fc-fs-bulk-import-input
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
                 <span class="fc-entries-page__bulk-count" data-fc-fs-bulk-count hidden>0 selected</span>
-            </div>
-            <div class="fc-fs-bulk-bar__import">
-                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-import-trigger>
-                    <i class="fa-solid fa-upload me-1" aria-hidden="true"></i>Import
-                </button>
-                <input
-                    type="file"
-                    class="sr-only"
-                    accept="application/json,.json"
-                    data-fc-fs-bulk-import-input
-                    tabindex="-1"
-                    aria-hidden="true"
-                >
             </div>
         </div>
     </div>

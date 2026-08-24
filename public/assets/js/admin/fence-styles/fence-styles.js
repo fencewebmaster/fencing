@@ -7,7 +7,6 @@
     var API_LIST = fcApiUrl('fenceStyles', 'action=list');
     var API_GET = fcApiUrl('fenceStyles', 'action=get');
     var API_SAVE = fcApiUrl('fenceStyles', 'action=save');
-    var API_EXPORT = fcApiUrl('fenceStyles', 'action=export');
     var API_BULK_EXPORT = fcApiUrl('fenceStyles', 'action=bulk-export');
     var API_BULK_STATUS = fcApiUrl('fenceStyles', 'action=bulk-status');
     var API_BULK_IMPORT = fcApiUrl('fenceStyles', 'action=bulk-import');
@@ -61,24 +60,6 @@
 
         return (
             '<div class="fc-fs-card-controls">' +
-            '<div class="fc-fs-card-gear" data-fc-fs-card-gear data-slug="' +
-            escapeHtml(style.slug) +
-            '">' +
-            '<button type="button" class="fc-fs-card-gear__toggle" data-fc-fs-card-gear-toggle ' +
-            'aria-haspopup="menu" aria-expanded="false" aria-label="Import or export ' +
-            escapeHtml(style.title) +
-            '" title="Import or export">' +
-            '<i class="fa-solid fa-gear" aria-hidden="true"></i>' +
-            '</button>' +
-            '<div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel" role="menu" hidden>' +
-            '<button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-export>' +
-            '<span>Export ' + escapeHtml(style.title) + '</span></button>' +
-            '<button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-import>' +
-            '<span>Import ' + escapeHtml(style.title) + '</span></button>' +
-            '</div>' +
-            '<input type="file" class="sr-only" accept="application/json,.json" data-fc-fs-card-import-input ' +
-            'tabindex="-1" aria-hidden="true">' +
-            '</div>' +
             '<label class="fc-fs-card-check" title="Select ' + escapeHtml(style.title) + ' (Ctrl+Click a style to select it)">' +
             '<input type="checkbox" class="fc-fs-card-check-input" data-fc-fs-card-select data-slug="' +
             escapeHtml(style.slug) +
@@ -172,8 +153,6 @@
         });
     }
 
-    var CARD_IO_TOAST_ID = 'fc-fence-style-card-io';
-
     function closeAllCardGearMenus(container) {
         container.querySelectorAll('[data-fc-fs-card-gear].is-open').forEach(function (gear) {
             var panel = gear.querySelector('.fc-fs-card-gear__panel');
@@ -220,67 +199,7 @@
         }
     }
 
-    function exportCardStyle(slug) {
-        var link = document.createElement('a');
-        link.href = API_EXPORT + '&slug=' + encodeURIComponent(slug);
-        link.download = 'fence-style-' + slug + '.json';
-        link.rel = 'noopener';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-    }
-
-    function importCardStyleFile(slug, file, csrf) {
-        if (!file) {
-            return;
-        }
-        var name = String(file.name || '').toLowerCase();
-        if (!name.endsWith('.json')) {
-            toast('error', 'Only .json files can be imported.', CARD_IO_TOAST_ID);
-            return;
-        }
-        if (!csrf) {
-            toast('error', 'Missing security token. Refresh and try again.', CARD_IO_TOAST_ID);
-            return;
-        }
-
-        var reader = new FileReader();
-        reader.onload = function () {
-            var parsed;
-            try {
-                parsed = JSON.parse(String(reader.result || ''));
-            } catch (e) {
-                toast('error', 'That file is not valid JSON.', CARD_IO_TOAST_ID);
-                return;
-            }
-
-            var config =
-                parsed && typeof parsed.config === 'object' && parsed.config
-                    ? parsed.config
-                    : parsed;
-
-            if (!config || typeof config !== 'object' || !config.title) {
-                toast('error', 'That file does not contain a valid fence style config.', CARD_IO_TOAST_ID);
-                return;
-            }
-
-            saveFenceConfig(
-                slug,
-                config,
-                csrf,
-                function () {
-                    global.location.reload();
-                },
-                function () {}
-            );
-        };
-        reader.onerror = function () {
-            toast('error', 'Could not read that file.', CARD_IO_TOAST_ID);
-        };
-        reader.readAsText(file);
-    }
-
-    function bindCardGearMenus(container, getCsrf) {
+    function bindCardGearMenus(container) {
         if (!container || container.dataset.fcFsGearBound === '1') {
             return;
         }
@@ -308,38 +227,6 @@
             if (gear && event.target.closest('.fc-fs-card-gear__panel')) {
                 event.stopPropagation();
             }
-
-            var exportTrigger = event.target.closest('[data-fc-fs-card-export]');
-            if (exportTrigger && gear) {
-                event.preventDefault();
-                event.stopPropagation();
-                closeAllCardGearMenus(container);
-                exportCardStyle(gear.getAttribute('data-slug') || '');
-                return;
-            }
-
-            var importTrigger = event.target.closest('[data-fc-fs-card-import]');
-            if (importTrigger && gear) {
-                event.preventDefault();
-                event.stopPropagation();
-                closeAllCardGearMenus(container);
-                var input = gear.querySelector('[data-fc-fs-card-import-input]');
-                if (input) {
-                    input.click();
-                }
-                return;
-            }
-        });
-
-        container.addEventListener('change', function (event) {
-            var input = event.target.closest('[data-fc-fs-card-import-input]');
-            if (!input) {
-                return;
-            }
-            var gear = input.closest('[data-fc-fs-card-gear]');
-            var file = input.files && input.files[0] ? input.files[0] : null;
-            importCardStyleFile(gear ? gear.getAttribute('data-slug') || '' : '', file, getCsrf());
-            input.value = '';
         });
 
         document.addEventListener('click', function () {
@@ -411,17 +298,36 @@
         return Promise.resolve(global.confirm(message));
     }
 
-    function bulkExportSelected() {
-        if (!bulkSelection.size) {
+    function downloadStylesExport(slugs) {
+        if (!slugs.length) {
             return;
         }
         var link = document.createElement('a');
-        link.href = API_BULK_EXPORT + '&slugs=' + encodeURIComponent(Array.from(bulkSelection).join(','));
+        link.href = API_BULK_EXPORT + '&slugs=' + encodeURIComponent(slugs.join(','));
         link.download = 'fence-styles-export.json';
         link.rel = 'noopener';
         document.body.appendChild(link);
         link.click();
         link.remove();
+    }
+
+    function bulkExportSelected() {
+        downloadStylesExport(Array.from(bulkSelection));
+    }
+
+    function bulkExportAllStyles(container) {
+        var slugs = Array.from(container.querySelectorAll('[data-fc-fs-card-select]'))
+            .map(function (input) {
+                return input.getAttribute('data-slug') || '';
+            })
+            .filter(Boolean);
+
+        if (!slugs.length) {
+            toast('error', 'No fence styles to export.', BULK_TOAST_ID);
+            return;
+        }
+
+        downloadStylesExport(slugs);
     }
 
     function bulkSetStatus(live, csrf) {
@@ -610,10 +516,19 @@
             var importTrigger = event.target.closest('[data-fc-fs-bulk-import-trigger]');
             if (importTrigger) {
                 event.preventDefault();
+                closeAllCardGearMenus(container);
                 var input = container.querySelector('[data-fc-fs-bulk-import-input]');
                 if (input) {
                     input.click();
                 }
+                return;
+            }
+
+            var exportAllTrigger = event.target.closest('[data-fc-fs-bulk-export-all]');
+            if (exportAllTrigger) {
+                event.preventDefault();
+                closeAllCardGearMenus(container);
+                bulkExportAllStyles(container);
             }
         });
     }
@@ -634,15 +549,23 @@
             '<option value="mark-draft">Mark as Draft</option>' +
             '<option value="export">Export as JSON</option>' +
             '</select>' +
-            '<button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-apply disabled>Apply</button>' +
-            '<span class="fc-entries-page__bulk-count" data-fc-fs-bulk-count hidden>0 selected</span>' +
+            '<button type="button" class="btn btn-sm btn-dark fw-semibold fc-entries-toolbar-menu__toggle" data-fc-fs-bulk-apply disabled>Apply</button>' +
+            '<div class="fc-fs-card-gear fc-fs-bulk-bar__gear" data-fc-fs-card-gear data-slug="">' +
+            '<button type="button" class="btn btn-sm btn-dark fw-semibold fc-products-download-trigger fc-entries-toolbar-menu__toggle" ' +
+            'data-fc-fs-card-gear-toggle aria-haspopup="menu" aria-expanded="false" ' +
+            'aria-label="Import or export fence styles" title="Import or export fence styles">' +
+            '<i class="fa-solid fa-gear" aria-hidden="true"></i>' +
+            '</button>' +
+            '<div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel" role="menu" hidden>' +
+            '<button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-bulk-import-trigger>' +
+            '<span>Import Fence Styles</span></button>' +
+            '<button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-bulk-export-all>' +
+            '<span>Export Fence Styles</span></button>' +
             '</div>' +
-            '<div class="fc-fs-bulk-bar__import">' +
-            '<button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-import-trigger>' +
-            '<i class="fa-solid fa-upload me-1" aria-hidden="true"></i>Import</button>' +
             '<input type="file" class="sr-only" accept="application/json,.json" data-fc-fs-bulk-import-input ' +
             'tabindex="-1" aria-hidden="true">' +
             '</div>' +
+            '<span class="fc-entries-page__bulk-count" data-fc-fs-bulk-count hidden>0 selected</span>' +
             '</div>' +
             '</div>'
         );
@@ -702,9 +625,7 @@
                 container.innerHTML = renderListPage(data);
                 bulkSelection.clear();
                 bindListLinks(container);
-                bindCardGearMenus(container, function () {
-                    return data.csrf || '';
-                });
+                bindCardGearMenus(container);
                 bindBulkBar(container, function () {
                     return data.csrf || '';
                 });
@@ -734,10 +655,7 @@
 
         bulkSelection.clear();
         bindListLinks(container);
-        bindCardGearMenus(container, function () {
-            var data = readBootstrapData();
-            return data && data.csrf ? data.csrf : '';
-        });
+        bindCardGearMenus(container);
         bindBulkBar(container, function () {
             var data = readBootstrapData();
             return data && data.csrf ? data.csrf : '';

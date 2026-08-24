@@ -151,7 +151,7 @@
     color: var(--fc-princeton-orange, #f67925);
 }
 
-/* —— Per-card selection + import/export gear —— */
+/* —— Per-card selection —— */
 .fc-admin-fence-style-card {
     position: relative;
 }
@@ -164,10 +164,6 @@
     display: flex;
     align-items: center;
     gap: 0.375rem;
-}
-
-.fc-fs-card-controls:has(.fc-fs-card-gear.is-open) {
-    z-index: 95;
 }
 
 .fc-fs-card-check {
@@ -224,48 +220,12 @@
     outline-offset: 2px;
 }
 
-.fc-fs-card-gear__toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    border: 0;
-    border-radius: 9999px;
-    background: rgba(15, 23, 42, 0.55);
-    color: #fff;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-
-.fc-fs-card-gear__toggle:hover {
-    background: rgba(15, 23, 42, 0.78);
-}
-
-.fc-fs-card-gear__toggle:focus-visible {
-    outline: 2px solid var(--fc-princeton-orange, #f67925);
-    outline-offset: 2px;
-}
-
-.fc-fs-card-gear__toggle i {
+[data-fc-fs-card-gear-toggle] i {
     transition: transform 0.2s ease;
 }
 
-.fc-fs-card-gear.is-open .fc-fs-card-gear__toggle {
-    background: var(--fc-princeton-orange, #f67925);
-}
-
-.fc-fs-card-gear.is-open .fc-fs-card-gear__toggle i {
+.fc-fs-card-gear.is-open [data-fc-fs-card-gear-toggle] i {
     transform: rotate(90deg);
-}
-
-html[data-fc-admin-theme='dark'] .fc-fs-card-gear__toggle {
-    background: rgba(255, 255, 255, 0.18);
-}
-
-html[data-fc-admin-theme='dark'] .fc-fs-card-gear__toggle:hover {
-    background: rgba(255, 255, 255, 0.3);
 }
 
 /* —— Fixed bulk-action footer (visuals reused from .fc-entries-page__footer) —— */

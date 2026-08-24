@@ -39,11 +39,6 @@ final class FenceStylesController extends BaseApiController
             return;
         }
 
-        if ($action === 'export' && $method === 'GET') {
-            $this->exportStyle();
-            return;
-        }
-
         if ($action === 'save' && $method === 'POST') {
             $this->saveStyle();
             return;
@@ -97,41 +92,6 @@ final class FenceStylesController extends BaseApiController
             http_response_code(404);
         }
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
-    }
-
-    private function exportStyle(): void
-    {
-        $slug = trim((string) $this->request->query('slug', ''));
-        if ($slug === '') {
-            http_response_code(400);
-            echo json_encode(['ok' => false, 'error' => 'Missing slug.'], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        $catalog = FenceStyleModel::catalog();
-        if (!isset($catalog['fences'][$slug]) || !is_array($catalog['fences'][$slug])) {
-            http_response_code(404);
-            echo json_encode(['ok' => false, 'error' => 'Fence style not found.'], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        $config = $catalog['fences'][$slug];
-        $title = (string) ($config['title'] ?? $slug);
-        $fileSlug = (string) preg_replace('/[^a-z0-9\-_]+/i', '-', $slug);
-
-        $json = json_encode([
-            'ok' => true,
-            'type' => 'fc-fence-style-export',
-            'version' => 1,
-            'exportedAt' => date('c'),
-            'slug' => $slug,
-            'title' => $title,
-            'config' => $config,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        header('Content-Disposition: attachment; filename="fence-style-' . $fileSlug . '-' . date('Y-m-d') . '.json"');
-        header('X-Content-Type-Options: nosniff');
-        echo $json;
     }
 
     private function saveStyle(): void

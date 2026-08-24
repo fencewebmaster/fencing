@@ -1143,6 +1143,14 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
 }
 
 .fc-entries-toolbar-menu__toggle i {
+    transition: transform 0.2s ease;
+}
+
+.fc-entries-toolbar-menu__toggle[aria-expanded='true'] i {
+    transform: rotate(90deg);
+}
+
+.fc-entries-toolbar-menu__toggle i {
     line-height: inherit;
 }
 
@@ -1439,6 +1447,14 @@ html[data-fc-admin-theme='dark'] .fc-sp-incomplete-toggle.is-active {
 
 .fc-products-download-dropdown.is-open .fc-products-download-dropdown__caret {
     transform: rotate(180deg);
+}
+
+.fc-products-download-trigger .fa-gear {
+    transition: transform 0.2s ease;
+}
+
+.fc-products-download-dropdown.is-open .fc-products-download-trigger .fa-gear {
+    transform: rotate(90deg);
 }
 
 .fc-products-download-dropdown__panel {
