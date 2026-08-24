@@ -17,7 +17,7 @@ final class AuthPresenter
      *
      * @return array<string, mixed>
      */
-    public static function loginViewData(string $adminBase, string $appBase): array
+    public static function loginViewData(string $adminBase, string $appBase, string $redirect): array
     {
         $branding = BrandingSettings::get();
 
@@ -27,7 +27,7 @@ final class AuthPresenter
             $tagline = 'Plan fences, manage products, and keep your catalogue in sync.';
         }
 
-        $redirect = trim((string) ($_GET['redirect'] ?? ''));
+        $redirect = trim($redirect);
         if ($redirect !== '' && (str_contains($redirect, '://') || str_starts_with($redirect, '//'))) {
             $redirect = '';
         }

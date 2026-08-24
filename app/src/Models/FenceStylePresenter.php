@@ -72,6 +72,7 @@ final class FenceStylePresenter
             'canEdit' => PermissionService::can('products.fence_styles.edit'),
             'canView' => PermissionService::can('products.fence_styles.view')
                 || PermissionService::can('products.fence_styles.edit'),
+            'csrf' => AuthService::csrfToken(),
         ];
     }
 
@@ -149,6 +150,7 @@ final class FenceStylePresenter
                 'total'   => count($cards),
                 'canView' => $canView,
                 'canEdit' => $canEdit,
+                'csrf'    => AuthService::csrfToken(),
             ]),
         ];
     }

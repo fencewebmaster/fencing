@@ -7,6 +7,10 @@
     var API_LIST = fcApiUrl('fenceStyles', 'action=list');
     var API_GET = fcApiUrl('fenceStyles', 'action=get');
     var API_SAVE = fcApiUrl('fenceStyles', 'action=save');
+    var API_EXPORT = fcApiUrl('fenceStyles', 'action=export');
+    var API_BULK_EXPORT = fcApiUrl('fenceStyles', 'action=bulk-export');
+    var API_BULK_STATUS = fcApiUrl('fenceStyles', 'action=bulk-status');
+    var API_BULK_IMPORT = fcApiUrl('fenceStyles', 'action=bulk-import');
     var API_FENCE_COLORS = fcApiUrl('settings', 'action=fence-colors');
     var TOAST_SAVE = 'fc-fence-style-save';
 
@@ -50,6 +54,43 @@
         );
     }
 
+    function renderCardControls(style, canEdit) {
+        if (!canEdit) {
+            return '';
+        }
+
+        return (
+            '<div class="fc-fs-card-controls">' +
+            '<div class="fc-fs-card-gear" data-fc-fs-card-gear data-slug="' +
+            escapeHtml(style.slug) +
+            '">' +
+            '<button type="button" class="fc-fs-card-gear__toggle" data-fc-fs-card-gear-toggle ' +
+            'aria-haspopup="menu" aria-expanded="false" aria-label="Import or export ' +
+            escapeHtml(style.title) +
+            '" title="Import or export">' +
+            '<i class="fa-solid fa-gear" aria-hidden="true"></i>' +
+            '</button>' +
+            '<div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel" role="menu" hidden>' +
+            '<button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-export>' +
+            '<span>Export ' + escapeHtml(style.title) + '</span></button>' +
+            '<button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-import>' +
+            '<span>Import ' + escapeHtml(style.title) + '</span></button>' +
+            '</div>' +
+            '<input type="file" class="sr-only" accept="application/json,.json" data-fc-fs-card-import-input ' +
+            'tabindex="-1" aria-hidden="true">' +
+            '</div>' +
+            '<label class="fc-fs-card-check" title="Select ' + escapeHtml(style.title) + ' (Ctrl+Click a style to select it)">' +
+            '<input type="checkbox" class="fc-fs-card-check-input" data-fc-fs-card-select data-slug="' +
+            escapeHtml(style.slug) +
+            '" aria-label="Select ' + escapeHtml(style.title) + '">' +
+            '<span class="fc-fs-card-check-ui" aria-hidden="true">' +
+            '<i class="fa-solid fa-check fc-fs-card-check-icon" aria-hidden="true"></i>' +
+            '</span>' +
+            '</label>' +
+            '</div>'
+        );
+    }
+
     function renderStyleCard(style, canEdit) {
         var liveBadge = style.live
             ? '<span class="fc-admin-fence-style-badge fc-admin-fence-style-badge--live">Live</span>'
@@ -72,12 +113,17 @@
             '</div>' +
             '</div>';
 
+        var controls = renderCardControls(style, canEdit);
+
         if (!canEdit) {
             return (
+                '<div class="fc-admin-fence-style-card">' +
                 '<div class="fencing-style-item fc-admin-fence-style-item" aria-label="' +
                 escapeHtml(style.title) +
                 '">' +
                 inner +
+                '</div>' +
+                controls +
                 '</div>'
             );
         }
@@ -85,6 +131,7 @@
         var route = editRoute(style.slug);
 
         return (
+            '<div class="fc-admin-fence-style-card">' +
             '<a href="' +
             escapeHtml(fcAdminUrl(route)) +
             '" class="fencing-style-item fc-admin-fence-style-item fc-admin-fence-style-link" data-route="' +
@@ -95,17 +142,510 @@
             escapeHtml(style.title) +
             '">' +
             inner +
-            '</a>'
+            '</a>' +
+            controls +
+            '</div>'
         );
+    }
+
+    function toggleCardSelection(link) {
+        var card = link.closest('.fc-admin-fence-style-card');
+        var input = card ? card.querySelector('[data-fc-fs-card-select]') : null;
+        if (!input) {
+            return;
+        }
+        input.checked = !input.checked;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function bindListLinks(container) {
         container.querySelectorAll('.fc-admin-fence-style-link[data-route]').forEach(function (link) {
             link.addEventListener('click', function (e) {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    toggleCardSelection(link);
+                    return;
+                }
                 e.preventDefault();
                 navigate(link.getAttribute('data-route'));
             });
         });
+    }
+
+    var CARD_IO_TOAST_ID = 'fc-fence-style-card-io';
+
+    function closeAllCardGearMenus(container) {
+        container.querySelectorAll('[data-fc-fs-card-gear].is-open').forEach(function (gear) {
+            var panel = gear.querySelector('.fc-fs-card-gear__panel');
+            var toggle = gear.querySelector('[data-fc-fs-card-gear-toggle]');
+            if (panel) {
+                panel.hidden = true;
+                panel.style.position = '';
+                panel.style.left = '';
+                panel.style.top = '';
+                panel.style.right = '';
+            }
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            gear.classList.remove('is-open');
+        });
+    }
+
+    function positionCardGearMenu(gear) {
+        var toggle = gear.querySelector('[data-fc-fs-card-gear-toggle]');
+        var panel = gear.querySelector('.fc-fs-card-gear__panel');
+        if (!toggle || !panel || panel.hidden) {
+            return;
+        }
+        var rect = toggle.getBoundingClientRect();
+        var gap = 6;
+        panel.style.position = 'fixed';
+        panel.style.left = Math.round(rect.left) + 'px';
+        panel.style.top = Math.round(rect.bottom + gap) + 'px';
+        panel.style.right = 'auto';
+
+        var panelRect = panel.getBoundingClientRect();
+        var viewportWidth = global.innerWidth || document.documentElement.clientWidth || 0;
+        var viewportHeight = global.innerHeight || document.documentElement.clientHeight || 0;
+
+        if (panelRect.right > viewportWidth - 8) {
+            panel.style.left = Math.max(8, viewportWidth - panelRect.width - 8) + 'px';
+        }
+        if (panelRect.bottom > viewportHeight - 8) {
+            var aboveTop = rect.top - gap - panelRect.height;
+            if (aboveTop >= 8) {
+                panel.style.top = aboveTop + 'px';
+            }
+        }
+    }
+
+    function exportCardStyle(slug) {
+        var link = document.createElement('a');
+        link.href = API_EXPORT + '&slug=' + encodeURIComponent(slug);
+        link.download = 'fence-style-' + slug + '.json';
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function importCardStyleFile(slug, file, csrf) {
+        if (!file) {
+            return;
+        }
+        var name = String(file.name || '').toLowerCase();
+        if (!name.endsWith('.json')) {
+            toast('error', 'Only .json files can be imported.', CARD_IO_TOAST_ID);
+            return;
+        }
+        if (!csrf) {
+            toast('error', 'Missing security token. Refresh and try again.', CARD_IO_TOAST_ID);
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function () {
+            var parsed;
+            try {
+                parsed = JSON.parse(String(reader.result || ''));
+            } catch (e) {
+                toast('error', 'That file is not valid JSON.', CARD_IO_TOAST_ID);
+                return;
+            }
+
+            var config =
+                parsed && typeof parsed.config === 'object' && parsed.config
+                    ? parsed.config
+                    : parsed;
+
+            if (!config || typeof config !== 'object' || !config.title) {
+                toast('error', 'That file does not contain a valid fence style config.', CARD_IO_TOAST_ID);
+                return;
+            }
+
+            saveFenceConfig(
+                slug,
+                config,
+                csrf,
+                function () {
+                    global.location.reload();
+                },
+                function () {}
+            );
+        };
+        reader.onerror = function () {
+            toast('error', 'Could not read that file.', CARD_IO_TOAST_ID);
+        };
+        reader.readAsText(file);
+    }
+
+    function bindCardGearMenus(container, getCsrf) {
+        if (!container || container.dataset.fcFsGearBound === '1') {
+            return;
+        }
+        container.dataset.fcFsGearBound = '1';
+
+        container.addEventListener('click', function (event) {
+            var toggle = event.target.closest('[data-fc-fs-card-gear-toggle]');
+            var gear = event.target.closest('[data-fc-fs-card-gear]');
+
+            if (toggle && gear) {
+                event.preventDefault();
+                event.stopPropagation();
+                var panel = gear.querySelector('.fc-fs-card-gear__panel');
+                var isOpen = panel && !panel.hidden;
+                closeAllCardGearMenus(container);
+                if (panel && !isOpen) {
+                    panel.hidden = false;
+                    toggle.setAttribute('aria-expanded', 'true');
+                    gear.classList.add('is-open');
+                    positionCardGearMenu(gear);
+                }
+                return;
+            }
+
+            if (gear && event.target.closest('.fc-fs-card-gear__panel')) {
+                event.stopPropagation();
+            }
+
+            var exportTrigger = event.target.closest('[data-fc-fs-card-export]');
+            if (exportTrigger && gear) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeAllCardGearMenus(container);
+                exportCardStyle(gear.getAttribute('data-slug') || '');
+                return;
+            }
+
+            var importTrigger = event.target.closest('[data-fc-fs-card-import]');
+            if (importTrigger && gear) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeAllCardGearMenus(container);
+                var input = gear.querySelector('[data-fc-fs-card-import-input]');
+                if (input) {
+                    input.click();
+                }
+                return;
+            }
+        });
+
+        container.addEventListener('change', function (event) {
+            var input = event.target.closest('[data-fc-fs-card-import-input]');
+            if (!input) {
+                return;
+            }
+            var gear = input.closest('[data-fc-fs-card-gear]');
+            var file = input.files && input.files[0] ? input.files[0] : null;
+            importCardStyleFile(gear ? gear.getAttribute('data-slug') || '' : '', file, getCsrf());
+            input.value = '';
+        });
+
+        document.addEventListener('click', function () {
+            closeAllCardGearMenus(container);
+        });
+        global.addEventListener('resize', function () {
+            container.querySelectorAll('[data-fc-fs-card-gear].is-open').forEach(positionCardGearMenu);
+        });
+        global.addEventListener(
+            'scroll',
+            function () {
+                container.querySelectorAll('[data-fc-fs-card-gear].is-open').forEach(positionCardGearMenu);
+            },
+            true
+        );
+    }
+
+    var BULK_TOAST_ID = 'fc-fence-style-bulk';
+    var bulkSelection = new Set();
+
+    function updateBulkBar(container) {
+        var count = bulkSelection.size;
+        var actionEl = container.querySelector('[data-fc-fs-bulk-action]');
+        var applyBtn = container.querySelector('[data-fc-fs-bulk-apply]');
+        var countEl = container.querySelector('[data-fc-fs-bulk-count]');
+
+        if (actionEl) {
+            actionEl.disabled = count === 0;
+            if (count === 0) {
+                actionEl.value = '';
+            }
+        }
+        if (applyBtn) {
+            applyBtn.disabled = count === 0 || !(actionEl && actionEl.value);
+        }
+        if (countEl) {
+            countEl.hidden = count === 0;
+            countEl.textContent = count + ' selected';
+        }
+    }
+
+    function confirmBulkAction(action, count) {
+        var confirmFn =
+            global.FcAdminModal && typeof global.FcAdminModal.confirm === 'function'
+                ? global.FcAdminModal.confirm.bind(global.FcAdminModal)
+                : null;
+        var noun = count === 1 ? 'fence style' : 'fence styles';
+        var title;
+        var message;
+        var confirmLabel;
+
+        if (action === 'export') {
+            title = 'Export selected fence styles';
+            message = 'Export ' + count + ' selected ' + noun + ' as JSON?';
+            confirmLabel = 'Export JSON';
+        } else if (action === 'mark-live') {
+            title = 'Mark as Live';
+            message = 'Mark ' + count + ' selected ' + noun + ' as Live?';
+            confirmLabel = 'Mark as Live';
+        } else {
+            title = 'Mark as Draft';
+            message = 'Mark ' + count + ' selected ' + noun + ' as Draft?';
+            confirmLabel = 'Mark as Draft';
+        }
+
+        if (confirmFn) {
+            return confirmFn({ title: title, message: message, confirmLabel: confirmLabel, variant: 'info' });
+        }
+        return Promise.resolve(global.confirm(message));
+    }
+
+    function bulkExportSelected() {
+        if (!bulkSelection.size) {
+            return;
+        }
+        var link = document.createElement('a');
+        link.href = API_BULK_EXPORT + '&slugs=' + encodeURIComponent(Array.from(bulkSelection).join(','));
+        link.download = 'fence-styles-export.json';
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function bulkSetStatus(live, csrf) {
+        if (!bulkSelection.size) {
+            return;
+        }
+        if (!csrf) {
+            toast('error', 'Missing security token. Refresh and try again.', BULK_TOAST_ID);
+            return;
+        }
+
+        var slugs = Array.from(bulkSelection);
+        toast(
+            'saving',
+            'Updating ' + slugs.length + ' fence style' + (slugs.length === 1 ? '' : 's') + '…',
+            BULK_TOAST_ID
+        );
+
+        fetch(API_BULK_STATUS, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ slugs: slugs, live: live, csrf: csrf })
+        })
+            .then(function (res) {
+                return res.json().catch(function () {
+                    return { ok: false, error: 'Invalid server response.' };
+                });
+            })
+            .then(function (data) {
+                if (!data || (!data.ok && !data.updated)) {
+                    throw new Error((data && (data.error || data.message)) || 'Could not update fence styles.');
+                }
+                toast(data.ok ? 'ok' : 'error', data.message || 'Fence styles updated.', BULK_TOAST_ID);
+                global.location.reload();
+            })
+            .catch(function (err) {
+                toast('error', (err && err.message) || 'Could not update fence styles.', BULK_TOAST_ID);
+            });
+    }
+
+    function bulkImportFile(file, csrf) {
+        if (!file) {
+            return;
+        }
+        var name = String(file.name || '').toLowerCase();
+        if (!name.endsWith('.json')) {
+            toast('error', 'Only .json files can be imported.', BULK_TOAST_ID);
+            return;
+        }
+        if (!csrf) {
+            toast('error', 'Missing security token. Refresh and try again.', BULK_TOAST_ID);
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function () {
+            var parsed;
+            try {
+                parsed = JSON.parse(String(reader.result || ''));
+            } catch (e) {
+                toast('error', 'That file is not valid JSON.', BULK_TOAST_ID);
+                return;
+            }
+
+            var styles = [];
+            if (parsed && Array.isArray(parsed.styles)) {
+                styles = parsed.styles;
+            } else if (parsed && typeof parsed === 'object' && parsed.slug) {
+                styles = [{ slug: parsed.slug, config: parsed.config || parsed }];
+            }
+
+            styles = styles
+                .filter(function (s) {
+                    return s && typeof s === 'object' && s.slug && s.config && typeof s.config === 'object';
+                })
+                .map(function (s) {
+                    return { slug: s.slug, config: s.config };
+                });
+
+            if (!styles.length) {
+                toast('error', 'That file does not contain any fence style data.', BULK_TOAST_ID);
+                return;
+            }
+
+            toast(
+                'saving',
+                'Importing ' + styles.length + ' fence style' + (styles.length === 1 ? '' : 's') + '…',
+                BULK_TOAST_ID
+            );
+
+            fetch(API_BULK_IMPORT, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ styles: styles, csrf: csrf })
+            })
+                .then(function (res) {
+                    return res.json().catch(function () {
+                        return { ok: false, error: 'Invalid server response.' };
+                    });
+                })
+                .then(function (data) {
+                    if (!data || (!data.ok && !data.updated)) {
+                        throw new Error((data && (data.error || data.message)) || 'Could not import fence styles.');
+                    }
+                    toast(data.ok ? 'ok' : 'error', data.message || 'Fence styles imported.', BULK_TOAST_ID);
+                    global.location.reload();
+                })
+                .catch(function (err) {
+                    toast('error', (err && err.message) || 'Could not import fence styles.', BULK_TOAST_ID);
+                });
+        };
+        reader.onerror = function () {
+            toast('error', 'Could not read that file.', BULK_TOAST_ID);
+        };
+        reader.readAsText(file);
+    }
+
+    function applyBulkAction(container, getCsrf) {
+        var actionEl = container.querySelector('[data-fc-fs-bulk-action]');
+        var action = actionEl ? String(actionEl.value || '').trim() : '';
+        var count = bulkSelection.size;
+        if (!action || !count) {
+            return;
+        }
+
+        confirmBulkAction(action, count).then(function (ok) {
+            if (!ok) {
+                return;
+            }
+            if (action === 'export') {
+                bulkExportSelected();
+                return;
+            }
+            bulkSetStatus(action === 'mark-live', getCsrf());
+        });
+    }
+
+    function bindBulkBar(container, getCsrf) {
+        if (!container || container.dataset.fcFsBulkBound === '1') {
+            return;
+        }
+        container.dataset.fcFsBulkBound = '1';
+
+        container.addEventListener('change', function (event) {
+            var input = event.target.closest('[data-fc-fs-card-select]');
+            if (input) {
+                var slug = input.getAttribute('data-slug') || '';
+                if (input.checked) {
+                    bulkSelection.add(slug);
+                } else {
+                    bulkSelection.delete(slug);
+                }
+                updateBulkBar(container);
+                return;
+            }
+
+            if (event.target.closest('[data-fc-fs-bulk-action]')) {
+                updateBulkBar(container);
+                return;
+            }
+
+            var importInput = event.target.closest('[data-fc-fs-bulk-import-input]');
+            if (importInput) {
+                var file = importInput.files && importInput.files[0] ? importInput.files[0] : null;
+                bulkImportFile(file, getCsrf());
+                importInput.value = '';
+            }
+        });
+
+        container.addEventListener('click', function (event) {
+            var applyBtn = event.target.closest('[data-fc-fs-bulk-apply]');
+            if (applyBtn && !applyBtn.disabled) {
+                event.preventDefault();
+                applyBulkAction(container, getCsrf);
+                return;
+            }
+
+            var importTrigger = event.target.closest('[data-fc-fs-bulk-import-trigger]');
+            if (importTrigger) {
+                event.preventDefault();
+                var input = container.querySelector('[data-fc-fs-bulk-import-input]');
+                if (input) {
+                    input.click();
+                }
+            }
+        });
+    }
+
+    function renderBulkBar(canEdit) {
+        if (!canEdit) {
+            return '';
+        }
+
+        return (
+            '<div class="fc-fs-bulk-bar fc-entries-page__footer" data-fc-fs-bulk-bar>' +
+            '<div class="fc-entries-page__footer-row">' +
+            '<div class="fc-entries-page__bulk" data-fc-fs-bulk>' +
+            '<label class="fc-entries-page__bulk-label" for="fc-fs-bulk-action">Bulk actions</label>' +
+            '<select id="fc-fs-bulk-action" class="fc-entries-page__bulk-select" data-fc-fs-bulk-action disabled>' +
+            '<option value="">Bulk actions</option>' +
+            '<option value="mark-live">Mark as Live</option>' +
+            '<option value="mark-draft">Mark as Draft</option>' +
+            '<option value="export">Export as JSON</option>' +
+            '</select>' +
+            '<button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-apply disabled>Apply</button>' +
+            '<span class="fc-entries-page__bulk-count" data-fc-fs-bulk-count hidden>0 selected</span>' +
+            '</div>' +
+            '<div class="fc-fs-bulk-bar__import">' +
+            '<button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-import-trigger>' +
+            '<i class="fa-solid fa-upload me-1" aria-hidden="true"></i>Import</button>' +
+            '<input type="file" class="sr-only" accept="application/json,.json" data-fc-fs-bulk-import-input ' +
+            'tabindex="-1" aria-hidden="true">' +
+            '</div>' +
+            '</div>' +
+            '</div>'
+        );
     }
 
     function renderListPage(data) {
@@ -127,7 +667,9 @@
                     return renderStyleCard(style, canEdit);
                 })
                 .join('') +
-            '</div></div></div>'
+            '</div></div>' +
+            renderBulkBar(canEdit) +
+            '</div>'
         );
     }
 
@@ -165,7 +707,14 @@
                     throw new Error(data.error || 'Failed to load fence styles');
                 }
                 container.innerHTML = renderListPage(data);
+                bulkSelection.clear();
                 bindListLinks(container);
+                bindCardGearMenus(container, function () {
+                    return data.csrf || '';
+                });
+                bindBulkBar(container, function () {
+                    return data.csrf || '';
+                });
             })
             .catch(function (err) {
                 container.innerHTML = renderError(err.message || 'Unknown error');
@@ -190,7 +739,16 @@
             return Promise.resolve(false);
         }
 
+        bulkSelection.clear();
         bindListLinks(container);
+        bindCardGearMenus(container, function () {
+            var data = readBootstrapData();
+            return data && data.csrf ? data.csrf : '';
+        });
+        bindBulkBar(container, function () {
+            var data = readBootstrapData();
+            return data && data.csrf ? data.csrf : '';
+        });
         container.removeAttribute('aria-busy');
 
         return Promise.resolve(true);

@@ -114,15 +114,16 @@ $fcStoreCsvName = \Fc\Admin\Services\AdminSiteRegistry::currentSiteFilenameSlug(
                 </div>
                 <label
                     class="fc-entries-page__filter fc-sp-incomplete-toggle<?php echo !empty($page['incomplete_sku']) ? ' is-active' : ''; ?>"
-                    title="Show only products missing one or more store SKUs"
+                    title="Show all products — turn off to show only products missing a store SKU"
                 >
+                    <input type="hidden" name="incomplete" value="1">
                     <input
                         type="checkbox"
                         class="fc-sp-incomplete-toggle__input"
                         name="incomplete"
-                        value="1"
+                        value="0"
                         onchange="this.form.submit()"
-                        <?php echo !empty($page['incomplete_sku']) ? ' checked' : ''; ?>
+                        <?php echo empty($page['incomplete_sku']) ? ' checked' : ''; ?>
                     >
                     <span class="fc-sp-incomplete-toggle__track" aria-hidden="true">
                         <span class="fc-sp-incomplete-toggle__thumb"></span>

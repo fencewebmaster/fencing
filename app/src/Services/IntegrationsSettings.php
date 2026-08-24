@@ -162,6 +162,21 @@ final class IntegrationsSettings
     }
 
     /**
+     * Which webhook URL PlannerWebhookService actually posts to: the real one (`live`)
+     * or the separate Test Webhook URL (`test`), for trying changes without notifying
+     * the real Zapier hook.
+     *
+     * @return array<string, string>
+     */
+    public static function webhookModeChoices(): array
+    {
+        return [
+            'live' => 'Live — use the Webhook URL above',
+            'test' => 'Test — use the Test Webhook URL below',
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public static function get(): array
@@ -189,11 +204,32 @@ final class IntegrationsSettings
             ];
         }
 
+        // Migrate the old two-option trigger_point setting: only 'form_submission' meant "fire
+        // the early webhook" — preserves current behavior for existing configs without
+        // requiring anyone to re-toggle the new checkbox.
+        if (array_key_exists('pre_planner_enabled', $webhooks)) {
+            $webhookPrePlannerEnabled = (bool) $webhooks['pre_planner_enabled'];
+        } elseif (array_key_exists('trigger_point', $webhooks)) {
+            $webhookPrePlannerEnabled = ($webhooks['trigger_point'] === 'form_submission');
+        } else {
+            $webhookPrePlannerEnabled = true;
+        }
+        $webhookSameDayDedup = array_key_exists('same_day_only', $webhooks) ? (bool) $webhooks['same_day_only'] : true;
+
+        $webhookMode = (string) ($webhooks['mode'] ?? 'live');
+        if (!array_key_exists($webhookMode, self::webhookModeChoices())) {
+            $webhookMode = 'live';
+        }
+
         return [
             'googleMapsApiKey' => (string) ($api['google_map'] ?? ''),
             'chatraApiKey' => (string) ($api['chatra'] ?? ''),
             'cloudflareApiToken' => (string) ($api['cloudflare_api_token'] ?? ''),
             'webhookUrl' => (string) ($webhooks['zap'] ?? ''),
+            'webhookTestUrl' => (string) ($webhooks['test_zap'] ?? ''),
+            'webhookMode' => $webhookMode,
+            'webhookPrePlannerEnabled' => $webhookPrePlannerEnabled,
+            'webhookSameDayDedup' => $webhookSameDayDedup,
             'sites' => $sites,
         ];
     }
@@ -214,6 +250,7 @@ final class IntegrationsSettings
             'ok' => true,
             'integrations' => self::get(),
             'revision' => self::revision(),
+            'webhookModeChoices' => self::webhookModeChoices(),
         ];
 
         $email = PermissionService::primaryAdminEmail();
@@ -255,6 +292,7 @@ final class IntegrationsSettings
         $chatra = self::cleanValue($input['chatraApiKey'] ?? '', 200);
         $cfToken = self::cleanValue($input['cloudflareApiToken'] ?? '', 200);
         $webhook = self::cleanValue($input['webhookUrl'] ?? '', 1000);
+        $webhookTest = self::cleanValue($input['webhookTestUrl'] ?? '', 1000);
 
         if ($google === null || ($google !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $google))) {
             return ['ok' => false, 'error' => 'Google Maps API key contains invalid characters.'];
@@ -268,6 +306,23 @@ final class IntegrationsSettings
         if ($webhook === null || ($webhook !== '' && !preg_match('#^(?:https?://)?[A-Za-z0-9.-]+(?::\d+)?(?:/[^\\s]*)?$#', $webhook))) {
             return ['ok' => false, 'error' => 'Webhook URL is invalid.'];
         }
+        if ($webhookTest === null || ($webhookTest !== '' && !preg_match('#^(?:https?://)?[A-Za-z0-9.-]+(?::\d+)?(?:/[^\\s]*)?$#', $webhookTest))) {
+            return ['ok' => false, 'error' => 'Test Webhook URL is invalid.'];
+        }
+
+        $webhookModeChoices = self::webhookModeChoices();
+        $webhookMode = trim((string) ($input['webhookMode'] ?? 'live'));
+        if (!array_key_exists($webhookMode, $webhookModeChoices)) {
+            $webhookMode = 'live';
+        }
+
+        $webhookPrePlannerEnabled = array_key_exists('webhookPrePlannerEnabled', $input)
+            ? !empty($input['webhookPrePlannerEnabled'])
+            : true;
+
+        $webhookSameDayDedup = array_key_exists('webhookSameDayDedup', $input)
+            ? !empty($input['webhookSameDayDedup'])
+            : true;
 
         $current = self::get();
         $allowedSites = array_fill_keys(self::siteKeys(), true);
@@ -334,6 +389,10 @@ final class IntegrationsSettings
                 'chatraApiKey' => $chatra,
                 'cloudflareApiToken' => (string) $cfToken,
                 'webhookUrl' => $webhook,
+                'webhookTestUrl' => $webhookTest,
+                'webhookMode' => $webhookMode,
+                'webhookPrePlannerEnabled' => $webhookPrePlannerEnabled,
+                'webhookSameDayDedup' => $webhookSameDayDedup,
                 'sites' => $sites,
             ],
         ];
@@ -385,6 +444,11 @@ final class IntegrationsSettings
             // Zone IDs are per-site; drop legacy global string under apikey.
             unset($config['apikey']['cloudflare_zone_id'], $config['apikey']['cloudflare_account_id']);
             $config['webhook_url']['zap'] = (string) $next['webhookUrl'];
+            $config['webhook_url']['test_zap'] = (string) $next['webhookTestUrl'];
+            $config['webhook_url']['mode'] = (string) $next['webhookMode'];
+            $config['webhook_url']['pre_planner_enabled'] = (bool) $next['webhookPrePlannerEnabled'];
+            $config['webhook_url']['same_day_only'] = (bool) $next['webhookSameDayDedup'];
+            unset($config['webhook_url']['reset_hours'], $config['webhook_url']['trigger_point']);
             foreach ($next['sites'] as $site) {
                 $key = (string) $site['key'];
                 if (!isset($config['sites'][$key]) || !is_array($config['sites'][$key])) {

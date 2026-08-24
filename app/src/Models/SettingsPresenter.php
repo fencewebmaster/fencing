@@ -215,7 +215,7 @@ final class SettingsPresenter
             'show_preview' => $showPreview,
             'layout_class' => $showPreview ? 'lg:grid-cols-2' : '',
             'preview_hidden' => $showPreview ? '' : 'hidden ',
-            'preview_mode' => $initialTab === 'theme' ? 'theme' : ($initialTab === 'branding' ? 'branding' : ''),
+            'preview_mode' => $initialTab === 'branding' ? 'branding' : '',
             'bootstrap_json' => json_encode($bootstrap, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'tabs' => [
                 'theme' => 'Theme',
@@ -250,6 +250,7 @@ final class SettingsPresenter
             'system_date_field_choices' => $systemPayload['dateFieldChoices'] ?? SystemSettings::dateFieldChoices(),
             'system_date_format_choices' => $systemPayload['dateFormatChoices'] ?? SystemSettings::dateFormatChoices(),
             'integrations' => $integrationsData,
+            'integration_webhook_mode_choices' => $integrationsPayload['webhookModeChoices'] ?? IntegrationsSettings::webhookModeChoices(),
             'super_admin' => is_array($integrationsPayload['superAdmin'] ?? null)
                 ? $integrationsPayload['superAdmin']
                 : [],
@@ -433,6 +434,6 @@ final class SettingsPresenter
 
     private static function showPreview(string $activeTab): bool
     {
-        return $activeTab === 'theme' || $activeTab === 'branding';
+        return $activeTab === 'branding';
     }
 }

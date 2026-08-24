@@ -275,10 +275,10 @@ final class DashboardPresenter
     }
 
     /**
-     * @param array<string, mixed>|null $query Optional request query (defaults to $_GET).
+     * @param array<string, mixed> $query Request query vars.
      * @return array<string, mixed>
      */
-    public static function pageData(string $adminBase, string $appBase, ?array $query = null): array
+    public static function pageData(string $adminBase, string $appBase, array $query): array
     {
         // KPIs only on initial HTML — system/health/recent load via charts/API when needed.
         $summary = DashboardModel::summaryStats();
@@ -286,7 +286,7 @@ final class DashboardPresenter
         $entriesBase = PlannerEntryPresenter::listPath($adminBase);
         $today = (new \DateTime('now'))->format('Y-m-d');
 
-        $dashboardFilter = DashboardModel::resolveDateFilterFromQuery($query ?? $_GET);
+        $dashboardFilter = DashboardModel::resolveDateFilterFromQuery($query);
 
         $widgetsVisible = GroupPermissionsPresenter::dashboardWidgetsVisible();
 

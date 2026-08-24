@@ -93,7 +93,7 @@ final class Application
             if (AdminSiteRegistry::isSiteSwitched() && !AdminSiteRegistry::siteSwitchedApiAllowed($module)) {
                 JsonResponse::error('This module is not available while viewing another site.', 403);
             }
-            $action = isset($_GET['action']) ? (string) $_GET['action'] : '';
+            $action = (string) $request->query('action', '');
             $keys = GroupPermissionsPresenter::keysForApi($module, $action);
             if ($keys !== []) {
                 (new PermissionFilter())->before($request, $keys);

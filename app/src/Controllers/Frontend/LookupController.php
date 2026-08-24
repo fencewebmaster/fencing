@@ -16,7 +16,7 @@ final class LookupController extends BaseFrontendController
 {
     public function index(): void
     {
-        $data = LookupPageModel::build($_GET);
+        $data = LookupPageModel::build($this->request->allQuery());
 
         $appBase = $data['appBase'];
 

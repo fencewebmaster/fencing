@@ -18,8 +18,8 @@ final class ProjectPlanController extends BaseFrontendController
         $info = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
         $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
 
-        if (empty($info) && !empty($_GET['qid'])) {
-            $info = ProjectPlanPageModel::restoreFromQuote((string) $_GET['qid']);
+        if (empty($info) && !empty($this->request->query('qid', ''))) {
+            $info = ProjectPlanPageModel::restoreFromQuote((string) $this->request->query('qid', ''));
         }
 
         if (empty($info)) {

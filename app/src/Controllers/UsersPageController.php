@@ -20,7 +20,7 @@ final class UsersPageController extends BaseController
         $context->route     = 'users';
         $context->isUsers   = true;
 
-        $page = UserPresenter::listViewData($context->adminBase, $context->appBase, $_GET);
+        $page = UserPresenter::listViewData($context->adminBase, $context->appBase, $this->request->allQuery());
         if (isset($page['redirect_url'])) {
             Response::redirect((string) $page['redirect_url']);
         }
@@ -55,7 +55,7 @@ final class UsersPageController extends BaseController
     public function switchSite(AdminContext $context): void
     {
         $dashboard = rtrim($context->adminBase, '/') . '/dashboard';
-        $this->requireCsrfOrRedirect($dashboard, (string) ($_POST['_token'] ?? ''));
+        $this->requireCsrfOrRedirect($dashboard, (string) $this->request->post('_token', ''));
 
         // Keep the login/auth DB pinned — never clear or overwrite it on site switch.
         $hostKey = DatabaseConfigService::hostMysqlKey();
@@ -63,7 +63,7 @@ final class UsersPageController extends BaseController
             AdminSiteRegistry::setAuthDbKey($hostKey);
         }
 
-        $siteKey = trim((string) ($_GET['site'] ?? ($_POST['site'] ?? '')));
+        $siteKey = trim((string) $this->request->input('site', ''));
         if ($siteKey === '' || !AdminSiteRegistry::setSiteKey($siteKey)) {
             Response::redirect($dashboard);
         }
@@ -80,7 +80,7 @@ final class UsersPageController extends BaseController
      */
     private function requireCsrfOrRedirect(string $fallbackUrl, string $postToken = '', ?string $oneTimePurpose = null): void
     {
-        $token = (string) ($_GET['_token'] ?? $postToken);
+        $token = (string) $this->request->query('_token', $postToken);
         $ok = $oneTimePurpose !== null
             ? AuthService::consumeOneTimeToken($oneTimePurpose, $token)
             : AuthService::verifyCsrf($token);

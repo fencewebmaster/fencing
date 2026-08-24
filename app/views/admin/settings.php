@@ -46,32 +46,32 @@ $tab = $fcSettingsPage;
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                 <div id="fc-settings-header-actions-theme" class="<?php echo $h((string) $tab['header_actions_class']['theme']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-theme-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
-                    <button type="button" id="fc-theme-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Theme</button>
+                    <button type="button" id="fc-theme-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
+                    <button type="button" id="fc-theme-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Changes</button>
                 </div>
                 <div id="fc-settings-header-actions-branding" class="<?php echo $h((string) $tab['header_actions_class']['branding']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-branding-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
-                    <button type="button" id="fc-branding-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Branding</button>
+                    <button type="button" id="fc-branding-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
+                    <button type="button" id="fc-branding-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Changes</button>
                 </div>
                 <div id="fc-settings-header-actions-fence-colors" class="<?php echo $h((string) $tab['header_actions_class']['fence_colors']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-fence-colors-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
-                    <button type="button" id="fc-fence-colors-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Fence Colors</button>
+                    <button type="button" id="fc-fence-colors-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
+                    <button type="button" id="fc-fence-colors-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Changes</button>
                 </div>
                 <div id="fc-settings-header-actions-catalog" class="<?php echo $h((string) $tab['header_actions_class']['catalog']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-catalog-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
-                    <button type="button" id="fc-catalog-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Catalog</button>
+                    <button type="button" id="fc-catalog-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
+                    <button type="button" id="fc-catalog-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Changes</button>
                 </div>
                 <div id="fc-settings-header-actions-system" class="<?php echo $h((string) $tab['header_actions_class']['system']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-system-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
-                    <button type="button" id="fc-system-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save System</button>
+                    <button type="button" id="fc-system-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
+                    <button type="button" id="fc-system-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Changes</button>
                 </div>
                 <div id="fc-settings-header-actions-integration" class="<?php echo $h((string) $tab['header_actions_class']['integration']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-integration-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Discard Changes</button>
-                    <button type="button" id="fc-integration-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Integrations</button>
+                    <button type="button" id="fc-integration-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
+                    <button type="button" id="fc-integration-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Changes</button>
                 </div>
                 <div id="fc-settings-header-actions-project-plan" class="<?php echo $h((string) $tab['header_actions_class']['project_plan']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-project-plan-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?>">Reset Defaults</button>
-                    <button type="button" id="fc-project-plan-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Project Plan</button>
+                    <button type="button" id="fc-project-plan-reset" class="<?php echo $h((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
+                    <button type="button" id="fc-project-plan-save" class="<?php echo $h((string) $tab['btn_primary']); ?>">Save Changes</button>
                 </div>
                 <div id="fc-settings-header-actions-console" class="<?php echo $h((string) $tab['header_actions_class']['console']); ?> flex-wrap gap-2"></div>
                 <div class="fc-products-download-dropdown" data-fc-settings-io-dropdown>
@@ -118,29 +118,29 @@ $tab = $fcSettingsPage;
             <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
                 <div id="fc-settings-layout" class="grid w-full grid-cols-1 gap-6 p-4 sm:p-6 lg:items-start <?php echo $h((string) $tab['layout_class']); ?>">
                     <div class="min-w-0 space-y-5">
-                        <div id="fc-settings-panel-theme" class="<?php echo $h((string) $tab['panel_class']['theme']); ?>space-y-5">
+                        <div id="fc-settings-panel-theme" class="<?php echo $h((string) $tab['panel_class']['theme']); ?>space-y-5 mt-[1.25rem]">
+                            <div class="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-stretch">
                             <?php if (!empty($tab['presets'])) : ?>
-                            <section class="border border-slate-200 bg-white p-4 sm:p-5">
-                                <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500">Presets</h3>
-                                <p class="mb-4 text-sm text-slate-500">Apply a ready-made palette. You can fine-tune individual colors below.</p>
-                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <section class="flex h-full flex-col border border-slate-200 bg-white p-3 sm:p-4">
+                                <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Presets</h3>
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     <?php foreach ($tab['presets'] as $preset) : ?>
                                     <button
                                         type="button"
                                         data-fc-theme-preset="<?php echo $h((string) $preset['id']); ?>"
-                                        class="fc-theme-preset group flex items-start gap-3 border-2 p-4 text-left transition <?php echo $h((string) $preset['card_class']); ?>"
+                                        class="fc-theme-preset group flex items-start gap-2 border-2 p-2.5 text-left transition <?php echo $h((string) $preset['card_class']); ?>"
                                         aria-pressed="<?php echo !empty($preset['is_selected']) ? 'true' : 'false'; ?>"
                                     >
-                                        <span class="mt-0.5 flex h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm" aria-hidden="true">
+                                        <span class="mt-0.5 flex h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm" aria-hidden="true">
                                             <span class="h-full w-1/2" style="background:<?php echo $h((string) $preset['accent']); ?>"></span>
                                             <span class="h-full w-1/2" style="background:<?php echo $h((string) $preset['brand_primary']); ?>"></span>
                                         </span>
                                         <span class="min-w-0 flex-1">
                                             <span class="block text-sm font-semibold text-slate-900"><?php echo $h((string) $preset['label']); ?></span>
-                                            <span class="mt-0.5 block text-xs leading-relaxed text-slate-500"><?php echo $h((string) $preset['description']); ?></span>
+                                            <span class="mt-0.5 block text-xs leading-snug text-slate-500"><?php echo $h((string) $preset['description']); ?></span>
                                             <span
                                                 data-fc-theme-active-badge
-                                                class="<?php echo !empty($preset['is_active']) ? '' : 'hidden '; ?>mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-sm"
+                                                class="<?php echo !empty($preset['is_active']) ? '' : 'hidden '; ?>mt-1.5 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold shadow-sm"
                                                 style="<?php echo $h((string) $preset['badge_styles']); ?>"
                                             >
                                                 <i class="fa-solid fa-circle-check text-[11px]" aria-hidden="true"></i> Active
@@ -153,13 +153,13 @@ $tab = $fcSettingsPage;
                             <?php endif; ?>
 
                             <?php foreach ($tab['theme_groups'] as $group) : ?>
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
-                                <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500"><?php echo $h((string) $group['label']); ?></h3>
-                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-3 sm:p-4">
+                                <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500"><?php echo $h((string) $group['label']); ?></h3>
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <?php foreach ($group['fields'] as $field) : ?>
                                     <div class="block">
-                                        <span class="mb-1 block text-xs font-medium text-slate-600"><?php echo $h((string) $field['label']); ?></span>
-                                        <code class="mb-2 block text-[11px] text-slate-400"><?php echo $h((string) $field['var']); ?></code>
+                                        <span class="mb-0.5 block text-xs font-medium text-slate-600"><?php echo $h((string) $field['label']); ?></span>
+                                        <code class="mb-1 block text-[11px] text-slate-400"><?php echo $h((string) $field['var']); ?></code>
                                         <div class="flex items-center gap-2">
                                             <input type="color" id="<?php echo $h((string) $field['field_id']); ?>_picker" data-fc-theme-var="<?php echo $h((string) $field['var']); ?>" value="<?php echo $h((string) $field['picker_value']); ?>" class="h-[33px] w-11 shrink-0 cursor-pointer rounded-[3px] border border-[#8c8f94] bg-white p-0.5" aria-label="<?php echo $h((string) $field['label']); ?> color picker" />
                                             <div class="fc-settings-field-input-wrap min-w-0 flex-1">
@@ -174,11 +174,12 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
                             <?php endforeach; ?>
+                            </div>
                         </div>
 
-                        <div id="fc-settings-panel-branding" class="<?php echo $h((string) $tab['panel_class']['branding']); ?>space-y-3">
-                            <section class="border border-slate-200 bg-slate-50/60 p-3 sm:p-3.5">
-                                <div class="grid grid-cols-1 gap-3">
+                        <div id="fc-settings-panel-branding" class="<?php echo $h((string) $tab['panel_class']['branding']); ?>space-y-5">
+                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                                <div class="grid grid-cols-1 gap-4">
                                     <?php foreach ($tab['branding_fields'] as $field) : ?>
                                     <?php if (($field['type'] ?? 'text') === 'image') : ?>
                                     <div class="fc-settings-branding-logo">
@@ -448,8 +449,8 @@ $tab = $fcSettingsPage;
                         </div>
 
                         <div id="fc-settings-panel-system" class="<?php echo $h((string) $tab['panel_class']['system']); ?>space-y-5">
-                            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
+                            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5 lg:items-stretch">
+                            <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
                                     <h3 class="text-sm font-semibold text-slate-800">Dashboard</h3>
                                     <p class="mt-1 text-xs text-slate-500">Default date range for dashboard charts when no <code>?date=</code> is in the URL.</p>
@@ -464,7 +465,7 @@ $tab = $fcSettingsPage;
                                 </label>
                             </section>
 
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
+                            <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
                                     <h3 class="text-sm font-semibold text-slate-800">Planner Entries</h3>
                                     <p class="mt-1 text-xs text-slate-500">Defaults used when opening Planner Entries with no date filter in the URL.</p>
@@ -489,7 +490,7 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
 
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
+                            <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
                                     <h3 class="text-sm font-semibold text-slate-800">Date display</h3>
                                     <p class="mt-1 text-xs text-slate-500">How timestamps are shown across the admin (entries, dashboard, media library).</p>
@@ -504,7 +505,7 @@ $tab = $fcSettingsPage;
                                 </label>
                             </section>
 
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
+                            <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
                                     <h3 class="text-sm font-semibold text-slate-800">Online presence</h3>
                                     <p class="mt-1 text-xs text-slate-500">How often activity is recorded and how online status is shown on the Users page.</p>
@@ -556,8 +557,8 @@ $tab = $fcSettingsPage;
 
                         <?php $integrations = is_array($tab['integrations'] ?? null) ? $tab['integrations'] : []; ?>
                         <div id="fc-settings-panel-integration" class="<?php echo $h((string) $tab['panel_class']['integration']); ?>space-y-5">
-                            <div class="grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-stretch">
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5 lg:items-stretch">
+                            <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
                                 <div class="mb-4">
                                     <h3 class="text-sm font-semibold text-slate-800">API keys</h3>
                                     <p class="mt-1 text-xs text-slate-500">Keys used by the planner for maps, chat, and Cloudflare cache purge.</p>
@@ -590,18 +591,91 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
 
-                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
-                                <div class="mb-4">
+                            <section class="flex h-full flex-col border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-3">
+                                <div>
                                     <h3 class="text-sm font-semibold text-slate-800">Webhook</h3>
                                     <p class="mt-1 text-xs text-slate-500">Zapier webhook destination used by planner submissions.</p>
                                 </div>
-                                <label class="flex min-w-0 flex-col gap-1" for="fc-integration-webhookUrl">
-                                    <span class="text-sm font-medium text-slate-700">Webhook URL</span>
-                                    <span class="fc-settings-field-input-wrap">
-                                        <input type="text" id="fc-integration-webhookUrl" data-fc-integration-field="webhookUrl" value="<?php echo $h((string) ($integrations['webhookUrl'] ?? '')); ?>" class="fc-settings-field font-mono text-xs" placeholder="https://hooks.zapier.com/hooks/catch/…" autocomplete="off" spellcheck="false" />
-                                        <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-webhookUrl" aria-label="Copy webhook URL" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                    </span>
-                                </label>
+
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-webhookUrl">
+                                        <span class="text-sm font-medium text-slate-700">Webhook URL</span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="text" id="fc-integration-webhookUrl" data-fc-integration-field="webhookUrl" value="<?php echo $h((string) ($integrations['webhookUrl'] ?? '')); ?>" class="fc-settings-field font-mono text-xs" placeholder="https://hooks.zapier.com/hooks/catch/…" autocomplete="off" spellcheck="false" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-webhookUrl" aria-label="Copy webhook URL" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                    </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-webhookTestUrl">
+                                        <span class="text-sm font-medium text-slate-700">Test Webhook URL</span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="text" id="fc-integration-webhookTestUrl" data-fc-integration-field="webhookTestUrl" value="<?php echo $h((string) ($integrations['webhookTestUrl'] ?? '')); ?>" class="fc-settings-field font-mono text-xs" placeholder="https://webhook.site/…" autocomplete="off" spellcheck="false" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-webhookTestUrl" aria-label="Copy test webhook URL" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3">
+                                    <span class="text-xs font-medium uppercase tracking-wide text-slate-500">Mode</span>
+                                    <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
+                                        <?php foreach (($tab['integration_webhook_mode_choices'] ?? []) as $value => $label) : ?>
+                                        <label class="relative cursor-pointer" title="<?php echo $h((string) $label); ?>">
+                                            <input
+                                                type="radio"
+                                                name="fc-integration-webhookMode"
+                                                data-fc-integration-field="webhookMode"
+                                                value="<?php echo $h((string) $value); ?>"
+                                                class="peer sr-only"
+                                                <?php echo ((string) $value === (string) ($integrations['webhookMode'] ?? 'live')) ? 'checked' : ''; ?>
+                                            >
+                                            <span class="block rounded-md px-3 py-1 text-slate-600 transition-colors peer-checked:bg-[var(--fc-princeton-orange)] peer-checked:text-white"><?php echo $h(ucfirst((string) $value)); ?></span>
+                                        </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col gap-2.5 border-t border-slate-200 pt-3">
+                                    <label class="flex items-center justify-between gap-3" for="fc-integration-webhookPrePlannerEnabled">
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Enable Pre-Planner</span>
+                                            <span class="block text-xs text-slate-500">Fires when the customer submits the planner form.</span>
+                                        </span>
+                                        <span class="relative inline-flex shrink-0 cursor-pointer items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="fc-integration-webhookPrePlannerEnabled"
+                                                data-fc-integration-field="webhookPrePlannerEnabled"
+                                                class="peer sr-only"
+                                                <?php echo !empty($integrations['webhookPrePlannerEnabled']) ? 'checked' : ''; ?>
+                                            >
+                                            <span class="h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200 peer-checked:bg-[var(--fc-princeton-orange)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-[var(--fc-princeton-orange)]"></span>
+                                            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
+
+                                    <?php $fc_pre_planner_enabled = !empty($integrations['webhookPrePlannerEnabled']); ?>
+                                    <label
+                                        id="fc-integration-webhookSameDayDedup-row"
+                                        class="flex items-center justify-between gap-3<?php echo $fc_pre_planner_enabled ? '' : ' opacity-50 cursor-not-allowed'; ?>"
+                                        for="fc-integration-webhookSameDayDedup"
+                                    >
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Don't re-fire within the same day</span>
+                                            <span class="block text-xs text-slate-500">Prevents duplicate webhook fires for the same quote on the same calendar day.</span>
+                                        </span>
+                                        <span class="relative inline-flex shrink-0 items-center<?php echo $fc_pre_planner_enabled ? ' cursor-pointer' : ' cursor-not-allowed'; ?>">
+                                            <input
+                                                type="checkbox"
+                                                id="fc-integration-webhookSameDayDedup"
+                                                data-fc-integration-field="webhookSameDayDedup"
+                                                class="peer sr-only"
+                                                <?php echo !empty($integrations['webhookSameDayDedup']) ? 'checked' : ''; ?>
+                                                <?php echo $fc_pre_planner_enabled ? '' : 'disabled'; ?>
+                                            >
+                                            <span class="h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200 peer-checked:bg-[var(--fc-princeton-orange)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-[var(--fc-princeton-orange)]"></span>
+                                            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
+                                </div>
                             </section>
                             </div>
 
@@ -787,21 +861,7 @@ $tab = $fcSettingsPage;
                     </div>
 
                     <div class="<?php echo $h((string) $tab['preview_hidden']); ?>sticky top-4 z-10 self-start" id="fc-settings-preview">
-                        <?php if ($tab['preview_mode'] === 'theme') : ?>
-                        <div class="rounded-xl border border-slate-200 bg-white p-4">
-                            <p class="mb-3 text-sm font-semibold text-slate-800">Live preview</p>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white" style="background:var(--fc-princeton-orange)">Primary button</span>
-                                <span class="inline-flex items-center rounded-lg border-2 px-4 py-2 text-sm font-semibold" style="border-color:var(--fc-princeton-orange);color:var(--fc-princeton-orange)">Outline</span>
-                                <span class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white" style="background:var(--fc-brand-primary)">Brand</span>
-                                <span class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white" style="background:var(--fc-green)">Success</span>
-                            </div>
-                            <p class="mt-3 text-sm" style="color:var(--fc-dark-charcoal)">Body text uses dark charcoal.</p>
-                            <p class="text-xs" style="color:var(--fc-dark-medium-gray)">Secondary label text.</p>
-                            <div class="mt-3 rounded-lg border p-3" style="border-color:var(--fc-gray);background:var(--fc-bright-gray)">Surface panel</div>
-                            <p class="mt-3 text-xs text-slate-500">Saved theme applies on the <a class="font-medium text-indigo-600 hover:text-indigo-700" href="../planner" target="_blank" rel="noopener">planner</a> after save (refresh if already open).</p>
-                        </div>
-                        <?php elseif ($tab['preview_mode'] === 'branding') : ?>
+                        <?php if ($tab['preview_mode'] === 'branding') : ?>
                         <div class="rounded-xl border border-slate-200 bg-white p-4">
                             <p class="mb-3 text-sm font-semibold text-slate-800">Live preview</p>
                             <div class="space-y-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-sm">

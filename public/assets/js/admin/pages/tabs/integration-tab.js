@@ -29,7 +29,16 @@
             var state = this.state;
             document.querySelectorAll('[data-fc-integration-field]').forEach(function (input) {
                 var key = input.getAttribute('data-fc-integration-field');
-                input.value = state.integrations[key] || '';
+                var value = state.integrations[key];
+                if (input.type === 'radio') {
+                    input.checked = (input.value === String(value == null ? '' : value));
+                    return;
+                }
+                if (input.type === 'checkbox') {
+                    input.checked = !!value;
+                    return;
+                }
+                input.value = value || '';
             });
 
             var sites = Array.isArray(state.integrations.sites) ? state.integrations.sites : [];
@@ -41,6 +50,26 @@
                 });
                 input.value = site && field ? site[field] || '' : '';
             });
+
+            this.syncPrePlannerDependents();
+        }
+
+        syncPrePlannerDependents() {
+            var enabled = !!this.state.integrations.webhookPrePlannerEnabled;
+            var input = document.getElementById('fc-integration-webhookSameDayDedup');
+            var row = document.getElementById('fc-integration-webhookSameDayDedup-row');
+            if (input) {
+                input.disabled = !enabled;
+            }
+            if (row) {
+                row.classList.toggle('opacity-50', !enabled);
+                row.classList.toggle('cursor-not-allowed', !enabled);
+                var toggleWrap = row.querySelector('.relative.inline-flex');
+                if (toggleWrap) {
+                    toggleWrap.classList.toggle('cursor-pointer', enabled);
+                    toggleWrap.classList.toggle('cursor-not-allowed', !enabled);
+                }
+            }
         }
 
         showVerifyFeedback(btn, ok) {
@@ -161,12 +190,27 @@
             state.integrationFormBound = true;
 
             document.querySelectorAll('[data-fc-integration-field]').forEach(function (input) {
-                input.addEventListener('input', function () {
+                var onFieldChange = function () {
+                    if (input.type === 'radio' && !input.checked) {
+                        return;
+                    }
                     var key = input.getAttribute('data-fc-integration-field');
-                    state.integrations[key] = input.value;
+                    state.integrations[key] = input.type === 'checkbox' ? input.checked : input.value;
                     self.setDirty(true);
-                });
+                };
+                input.addEventListener('input', onFieldChange);
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    input.addEventListener('change', onFieldChange);
+                }
             });
+
+            var prePlannerInput = document.getElementById('fc-integration-webhookPrePlannerEnabled');
+            if (prePlannerInput) {
+                prePlannerInput.addEventListener('change', function () {
+                    self.syncPrePlannerDependents();
+                });
+            }
+            this.syncPrePlannerDependents();
 
             document.querySelectorAll('[data-fc-integration-site]').forEach(function (input) {
                 function syncSiteField() {

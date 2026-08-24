@@ -33,7 +33,7 @@ declare(strict_types=1);
     <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/sidebar.css">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/gallery.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/entries.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/admin/entries.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/entries.css'); ?>">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/group-permissions.css">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/dashboard.css">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/lazy.css">

@@ -224,10 +224,10 @@ final class GroupPermissionsPresenter
     /**
      * @return array<string, mixed>
      */
-    public static function adminViewData(string $adminBase): array
+    public static function adminViewData(string $adminBase, string $role): array
     {
         $roles = self::listRoles();
-        $selected = GroupPermissionsModel::sanitizeRole((string) ($_GET['role'] ?? ''));
+        $selected = GroupPermissionsModel::sanitizeRole($role);
         $roleKeys = [];
         foreach ($roles as $role) {
             $roleKeys[(string) ($role['key'] ?? '')] = true;

@@ -71,6 +71,7 @@ final class PlannerRecordService
             'user_agent' => 'varchar(512) DEFAULT NULL',
             'quote_load_count' => 'int unsigned NOT NULL DEFAULT 0',
             'trashed_at' => 'datetime DEFAULT NULL',
+            'webhook_sent_at' => 'datetime DEFAULT NULL',
         ];
 
         foreach ($columns as $column => $definition) {

@@ -28,6 +28,7 @@ $page = $fcFenceStylesPage;
     <div class="fc-admin-fence-styles">
         <div class="fc-admin-fence-styles__grid">
             <?php foreach ($page['cards'] as $card) : ?>
+            <div class="fc-admin-fence-style-card">
             <?php if (!empty($card['can_view'])) : ?>
             <a
                 href="<?php echo $h((string) ($card['edit_href'] ?? '#')); ?>"
@@ -62,8 +63,84 @@ $page = $fcFenceStylesPage;
             <?php else : ?>
             </div>
             <?php endif; ?>
+            <?php if (!empty($card['can_edit'])) : ?>
+            <div class="fc-fs-card-controls">
+                <div class="fc-fs-card-gear" data-fc-fs-card-gear data-slug="<?php echo $h((string) ($card['slug'] ?? '')); ?>">
+                    <button
+                        type="button"
+                        class="fc-fs-card-gear__toggle"
+                        data-fc-fs-card-gear-toggle
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-label="<?php echo $h('Import or export ' . (string) ($card['title'] ?? '')); ?>"
+                        title="Import or export"
+                    >
+                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                    </button>
+                    <div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel" role="menu" hidden>
+                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-export>
+                            <span>Export <?php echo $h((string) ($card['title'] ?? '')); ?></span>
+                        </button>
+                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-card-import>
+                            <span>Import <?php echo $h((string) ($card['title'] ?? '')); ?></span>
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        class="sr-only"
+                        accept="application/json,.json"
+                        data-fc-fs-card-import-input
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
+                <label class="fc-fs-card-check" title="<?php echo $h('Select ' . (string) ($card['title'] ?? '') . ' (Ctrl+Click a style to select it)'); ?>">
+                    <input
+                        type="checkbox"
+                        class="fc-fs-card-check-input"
+                        data-fc-fs-card-select
+                        data-slug="<?php echo $h((string) ($card['slug'] ?? '')); ?>"
+                        aria-label="<?php echo $h('Select ' . (string) ($card['title'] ?? '')); ?>"
+                    >
+                    <span class="fc-fs-card-check-ui" aria-hidden="true">
+                        <i class="fa-solid fa-check fc-fs-card-check-icon" aria-hidden="true"></i>
+                    </span>
+                </label>
+            </div>
+            <?php endif; ?>
+            </div>
             <?php endforeach; ?>
         </div>
     </div>
+    <?php if (!empty($page['can_edit'])) : ?>
+    <div class="fc-fs-bulk-bar fc-entries-page__footer" data-fc-fs-bulk-bar>
+        <div class="fc-entries-page__footer-row">
+            <div class="fc-entries-page__bulk" data-fc-fs-bulk>
+                <label class="fc-entries-page__bulk-label" for="fc-fs-bulk-action">Bulk actions</label>
+                <select id="fc-fs-bulk-action" class="fc-entries-page__bulk-select" data-fc-fs-bulk-action disabled>
+                    <option value="">Bulk actions</option>
+                    <option value="mark-live">Mark as Live</option>
+                    <option value="mark-draft">Mark as Draft</option>
+                    <option value="export">Export as JSON</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-apply disabled>Apply</button>
+                <span class="fc-entries-page__bulk-count" data-fc-fs-bulk-count hidden>0 selected</span>
+            </div>
+            <div class="fc-fs-bulk-bar__import">
+                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-fs-bulk-import-trigger>
+                    <i class="fa-solid fa-upload me-1" aria-hidden="true"></i>Import
+                </button>
+                <input
+                    type="file"
+                    class="sr-only"
+                    accept="application/json,.json"
+                    data-fc-fs-bulk-import-input
+                    tabindex="-1"
+                    aria-hidden="true"
+                >
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
     <?php endif; ?>
 </div>

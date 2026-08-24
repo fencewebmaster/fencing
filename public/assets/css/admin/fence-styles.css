@@ -131,6 +131,172 @@
     border: 1px solid #e2e8f0;
 }
 
+/* —— Checked cards look hovered, but without the lift shadow —— */
+.fc-admin-fence-style-card:has(.fc-fs-card-check-input:checked) .fc-admin-fence-style-link > div {
+    transform: translateY(-6px);
+    box-shadow: none;
+}
+
+.fc-admin-fence-style-card:has(.fc-fs-card-check-input:checked) .fencing-style-img {
+    border-color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-admin-fence-style-card:has(.fc-fs-card-check-input:checked) .fencing-style-img img {
+    transform: scale(1.06);
+}
+
+.fc-admin-fence-style-card:has(.fc-fs-card-check-input:checked) .fencing-style-title {
+    border-color: var(--fc-princeton-orange, #f67925);
+    background: var(--fc-white, #fff);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+/* —— Per-card selection + import/export gear —— */
+.fc-admin-fence-style-card {
+    position: relative;
+}
+
+.fc-fs-card-controls {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.fc-fs-card-controls:has(.fc-fs-card-gear.is-open) {
+    z-index: 95;
+}
+
+.fc-fs-card-check {
+    display: none;
+}
+
+.fc-fs-card-check-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.fc-fs-card-check-ui {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    border-radius: 0.3125rem;
+    background: rgba(15, 23, 42, 0.42);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.fc-fs-card-check-icon {
+    font-size: 0.625rem;
+    line-height: 1;
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.55);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.fc-fs-card-check-input:checked + .fc-fs-card-check-ui {
+    background: var(--fc-princeton-orange, #f67925);
+    border-color: #fff;
+    box-shadow: 0 2px 6px rgba(246, 121, 37, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.fc-fs-card-check-input:checked + .fc-fs-card-check-ui .fc-fs-card-check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fc-fs-card-check-input:focus-visible + .fc-fs-card-check-ui {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.fc-fs-card-gear__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 0;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, 0.55);
+    color: #fff;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.fc-fs-card-gear__toggle:hover {
+    background: rgba(15, 23, 42, 0.78);
+}
+
+.fc-fs-card-gear__toggle:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange, #f67925);
+    outline-offset: 2px;
+}
+
+.fc-fs-card-gear__toggle i {
+    transition: transform 0.2s ease;
+}
+
+.fc-fs-card-gear.is-open .fc-fs-card-gear__toggle {
+    background: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-fs-card-gear.is-open .fc-fs-card-gear__toggle i {
+    transform: rotate(90deg);
+}
+
+html[data-fc-admin-theme='dark'] .fc-fs-card-gear__toggle {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+html[data-fc-admin-theme='dark'] .fc-fs-card-gear__toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* —— Fixed bulk-action footer (visuals reused from .fc-entries-page__footer) —— */
+.fc-fs-styles-page {
+    padding-bottom: 4rem;
+}
+
+.fc-fs-bulk-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+}
+
+.fc-fs-bulk-bar__import {
+    display: flex;
+    align-items: center;
+}
+
+@media (min-width: 1024px) {
+    .fc-fs-bulk-bar {
+        left: var(--fc-sidebar-width, 16.5rem);
+        transition: left 0.28s ease;
+    }
+
+    html.fc-admin-sidebar-collapsed .fc-fs-bulk-bar {
+        left: var(--fc-sidebar-collapsed-width, 4.25rem);
+    }
+}
+
 @media (max-width: 768px) {
     .fc-admin-fence-styles .fc-admin-fence-style-link .fencing-style-title {
         font-size: 0.875rem;

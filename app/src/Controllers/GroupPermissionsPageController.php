@@ -14,6 +14,9 @@ final class GroupPermissionsPageController extends BaseController
         $context->pageTitle = 'Group Permissions';
         $context->route = 'users/group-permissions';
         $context->isGroupPermissions = true;
-        $context->groupPermissionsPage = GroupPermissionsPresenter::adminViewData($context->adminBase);
+        $context->groupPermissionsPage = GroupPermissionsPresenter::adminViewData(
+            $context->adminBase,
+            (string) $this->request->query('role', '')
+        );
     }
 }

@@ -17,8 +17,8 @@ final class CacheController extends BaseApiController
     {
         (new AuthFilter())->before($this->request);
 
-        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-        $action = isset($_GET['action']) ? (string) $_GET['action'] : ($method === 'GET' ? 'stats' : 'purge');
+        $method = $this->request->method();
+        $action = $this->request->has('action') ? (string) $this->request->query('action', '') : ($method === 'GET' ? 'stats' : 'purge');
 
         if ($method === 'GET') {
             switch ($action) {

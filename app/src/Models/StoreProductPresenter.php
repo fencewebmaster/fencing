@@ -611,7 +611,9 @@ final class StoreProductPresenter
                 'dir'      => strtolower(trim((string) ($overrides['dir'] ?? ''))),
                 'page'     => $isAll ? 1 : (int) ($overrides['page'] ?? 1),
                 'per_page' => $isAll ? 'all' : (int) $perPageRaw,
-                'incomplete' => !empty($overrides['incomplete']) ? '1' : '',
+                'incomplete' => array_key_exists('incomplete', $overrides)
+                    ? (!empty($overrides['incomplete']) ? '1' : '0')
+                    : '',
             ],
             static function ($value, string $key): bool {
                 if ($key === 'page') {
@@ -626,6 +628,9 @@ final class StoreProductPresenter
                 }
                 if ($key === 'dir') {
                     return $value === 'desc';
+                }
+                if ($key === 'incomplete') {
+                    return $value === '1' || $value === '0';
                 }
 
                 return $value !== '' && $value !== null;
@@ -692,11 +697,9 @@ final class StoreProductPresenter
         }
         $sortDir = strtolower(trim((string) ($query['dir'] ?? 'asc'))) === 'desc' ? 'desc' : 'asc';
 
-        $incompleteOnly = in_array(
-            strtolower(trim((string) ($query['incomplete'] ?? ''))),
-            ['1', 'true', 'on', 'yes'],
-            true
-        );
+        $incompleteOnly = array_key_exists('incomplete', $query)
+            ? in_array(strtolower(trim((string) $query['incomplete'])), ['1', 'true', 'on', 'yes'], true)
+            : false;
 
         $filters = [
             'supplier'   => trim((string) ($query['supplier'] ?? '')),

@@ -19,12 +19,10 @@ final class AuthService
     public const SESSION_KEY = 'fc_admin_user';
     public const SWITCH_KEY = 'fc_admin_switch_from';
     public const REMEMBER_SESSION_KEY = 'fc_admin_remember';
-    /** Non–Remember me sessions last 24 hours from login. */
-    public const SESSION_TTL = 86400;
 
     /**
      * Idempotent session bootstrap: starts the session, attempts remember-cookie
-     * restore, and enforces the session TTL.
+     * restore, and keeps the session cookie alive indefinitely.
      */
     public static function boot(): void
     {
@@ -44,14 +42,13 @@ final class AuthService
             return;
         }
 
-        $rememberHint = RememberTokenService::hasCookie();
-        $lifetime = self::sessionTtl($rememberHint);
+        $lifetime = RememberTokenService::TTL;
 
         if (!headers_sent()) {
             session_name('fc_admin_sess');
             self::refreshSessionCookie($lifetime);
         } else {
-            @ini_set('session.gc_maxlifetime', (string) max($lifetime, self::SESSION_TTL));
+            @ini_set('session.gc_maxlifetime', (string) $lifetime);
         }
 
         // Always isolate admin sessions from public PHP session GC.
@@ -215,7 +212,7 @@ final class AuthService
 
         $lifetime = max(0, $lifetime);
         $secure = RequestHelper::isHttps();
-        @ini_set('session.gc_maxlifetime', (string) max($lifetime, self::SESSION_TTL));
+        @ini_set('session.gc_maxlifetime', (string) $lifetime);
 
         // session_set_cookie_params() only works before the session starts.
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -240,11 +237,6 @@ final class AuthService
         ]);
     }
 
-    private static function sessionTtl(bool $remember): int
-    {
-        return $remember ? RememberTokenService::TTL : self::SESSION_TTL;
-    }
-
     /**
      * Dedicated writable directory for admin PHP sessions (isolated from public GC).
      */
@@ -254,7 +246,8 @@ final class AuthService
     }
 
     /**
-     * Expire or keep-alive the logged-in session based on Remember me.
+     * Keep a logged-in session alive indefinitely — no inactivity or absolute
+     * time cutoff. Only AuthService::logout() ends a session.
      */
     private static function enforceSessionTtl(): void
     {
@@ -270,55 +263,16 @@ final class AuthService
         $remember = RememberTokenService::isRemembered();
         $_SESSION[self::REMEMBER_SESSION_KEY] = $remember;
 
+        self::refreshSessionCookie(RememberTokenService::TTL);
+
         if ($remember) {
-            self::refreshSessionCookie(RememberTokenService::TTL);
             if (RememberTokenService::hasCookie()) {
                 RememberTokenService::renewCookie();
             } else {
                 // Upgrade legacy remember=1 sessions to a secure token.
                 RememberTokenService::issue((int) $user['id']);
             }
-
-            return;
         }
-
-        $loggedInAt = (int) ($user['logged_in_at'] ?? 0);
-        if ($loggedInAt <= 0) {
-            $loggedInAt = time();
-            $_SESSION[self::SESSION_KEY]['logged_in_at'] = $loggedInAt;
-        }
-
-        $expiresAt = $loggedInAt + self::SESSION_TTL;
-        if (time() >= $expiresAt) {
-            // Absolute 24h expiry — clear without re-entering boot.
-            PresenceService::forget();
-            AdminSiteRegistry::clearSiteContext();
-            unset(
-                $_SESSION[self::SESSION_KEY],
-                $_SESSION[self::SWITCH_KEY],
-                $_SESSION[self::REMEMBER_SESSION_KEY],
-                $_SESSION['fc_csrf']
-            );
-            RememberTokenService::clearCookie();
-            if (!headers_sent() && ini_get('session.use_cookies')) {
-                $params = session_get_cookie_params();
-                setcookie(session_name(), '', [
-                    'expires'  => time() - 42000,
-                    'path'     => $params['path'] ?: '/',
-                    'secure'   => (bool) ($params['secure'] ?? false),
-                    'httponly' => (bool) ($params['httponly'] ?? true),
-                    'samesite' => 'Lax',
-                ]);
-            }
-            $_SESSION = [];
-            if (session_status() === PHP_SESSION_ACTIVE) {
-                @session_destroy();
-            }
-
-            return;
-        }
-
-        self::refreshSessionCookie(max(60, $expiresAt - time()));
     }
 
     /**
@@ -410,7 +364,7 @@ final class AuthService
             AdminSiteRegistry::setSiteKey($hostKey);
         }
 
-        self::refreshSessionCookie(self::sessionTtl($remember));
+        self::refreshSessionCookie(RememberTokenService::TTL);
 
         $userId = (int) $user['ID'];
         if ($manageRememberTokens) {

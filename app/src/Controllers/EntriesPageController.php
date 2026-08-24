@@ -17,14 +17,14 @@ final class EntriesPageController extends BaseController
         $context->route     = $context->plannerEntriesRoute;
         $context->isEntries = true;
 
-        $detailParam = isset($_GET['detail']) ? (string) $_GET['detail'] : '';
+        $detailParam = (string) $this->request->query('detail', '');
         $redirectUrl = PlannerEntryPresenter::resolveLegacyDetailRedirect($context->adminBase, $detailParam);
         if ($redirectUrl !== null) {
             header('Location: ' . $redirectUrl, true, 301);
             exit;
         }
 
-        $page = PlannerEntryPresenter::listViewData($context->adminBase, $context->appBase, $_GET);
+        $page = PlannerEntryPresenter::listViewData($context->adminBase, $context->appBase, $this->request->allQuery());
         if (isset($page['redirect_url'])) {
             header('Location: ' . $page['redirect_url']);
             exit;
@@ -41,7 +41,7 @@ final class EntriesPageController extends BaseController
         $context->entryId     = $id;
         $context->isEntries   = true;
 
-        $returnParam = isset($_GET['return']) ? (string) $_GET['return'] : '';
+        $returnParam = (string) $this->request->query('return', '');
         $context->entriesDetailPage = PlannerEntryPresenter::detailViewData(
             $context->adminBase,
             $context->appBase,

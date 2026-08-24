@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
+use Fc\Admin\Core\Request;
 use Fc\Admin\Models\StoreProductModel;
 use Fc\Admin\Models\SystemProductModel;
 use Fc\Admin\Services\AdminSiteRegistry;
@@ -15,28 +16,27 @@ use Fc\Admin\Services\StoreProductMaintenanceService;
 use Fc\Admin\Services\WcProductSkuIndex;
 use Fc\Admin\Services\WooCommerceProductExportService;
 
-final class ProductsController
+final class ProductsController extends BaseApiController
 {
-    public static function handleApiRequest(): void
+    public function handleApiRequest(): void
     {
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store');
 
-        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-        $action = isset($_GET['action']) ? (string) $_GET['action'] : '';
+        $method = $this->request->method();
+        $action = (string) $this->request->query('action', '');
 
         if ($method === 'POST') {
             if ($action === 'import-products-csv') {
-                self::importProductsCsv();
+                $this->importProductsCsv();
                 return;
             }
             if ($action === 'import-store-products-csv') {
-                self::importStoreProductsCsv();
+                $this->importStoreProductsCsv();
                 return;
             }
 
-            $raw = file_get_contents('php://input');
-            $payload = is_string($raw) ? json_decode($raw, true) : null;
+            $payload = $this->request->jsonBody();
 
             if (!is_array($payload)) {
                 http_response_code(400);
@@ -153,7 +153,7 @@ final class ProductsController
                 echo json_encode(StoreProductModel::all(), JSON_UNESCAPED_UNICODE);
                 break;
             case 'system-products':
-                $source = isset($_GET['source']) ? (string) $_GET['source'] : '';
+                $source = (string) $this->request->query('source', '');
                 $result = SystemProductModel::all($source);
                 if (!$result['ok']) {
                     http_response_code($source === '' ? 400 : 404);
@@ -161,7 +161,7 @@ final class ProductsController
                 echo json_encode($result, JSON_UNESCAPED_UNICODE);
                 break;
             case 'download-products-status':
-                $source = isset($_GET['source']) ? (string) $_GET['source'] : '';
+                $source = (string) $this->request->query('source', '');
                 $result = WooCommerceProductExportService::status($source);
                 if (empty($result['ok'])) {
                     http_response_code(400);
@@ -170,7 +170,7 @@ final class ProductsController
                 break;
             case 'download-products-csv':
                 self::downloadProductsCsv(
-                    isset($_GET['source']) ? (string) $_GET['source'] : ''
+                    (string) $this->request->query('source', '')
                 );
                 break;
             case 'download-store-products-csv':
@@ -231,11 +231,11 @@ final class ProductsController
         exit;
     }
 
-    private static function importStoreProductsCsv(): void
+    private function importStoreProductsCsv(): void
     {
         header('Content-Type: application/json; charset=utf-8');
 
-        $csrf = isset($_POST['csrf']) ? (string) $_POST['csrf'] : '';
+        $csrf = (string) $this->request->post('csrf', '');
         if (!AuthService::verifyCsrf($csrf)) {
             http_response_code(403);
             echo json_encode([
@@ -465,11 +465,11 @@ final class ProductsController
         exit;
     }
 
-    private static function importProductsCsv(): void
+    private function importProductsCsv(): void
     {
         header('Content-Type: application/json; charset=utf-8');
 
-        $csrf = isset($_POST['csrf']) ? (string) $_POST['csrf'] : '';
+        $csrf = (string) $this->request->post('csrf', '');
         if (!AuthService::verifyCsrf($csrf)) {
             http_response_code(403);
             echo json_encode([
@@ -479,7 +479,7 @@ final class ProductsController
             return;
         }
 
-        $source = strtoupper(trim((string) ($_POST['source'] ?? '')));
+        $source = strtoupper(trim((string) $this->request->post('source', '')));
         if (!in_array($source, ['GO', 'JG'], true)) {
             http_response_code(400);
             echo json_encode([
@@ -667,6 +667,6 @@ final class ProductsController
 
     public static function dispatch(): void
     {
-        self::handleApiRequest();
+        (new self(new Request()))->handleApiRequest();
     }
 }

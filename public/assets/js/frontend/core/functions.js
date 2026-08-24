@@ -4973,16 +4973,17 @@ function fcGoPlannerCompleteIncompleteSections() {
 /**
  * Reliable fence section count from localStorage. Heals custom_fence-section when it
  * drifts from actual custom_fence-0..n-1 keys (e.g. after incomplete-section compaction + cart init).
+ *
+ * Only ever grows the persisted count to match storage, never shrinks it: a freshly
+ * added trailing section is a tab with no saved fields yet (no custom_fence-{n-1} row),
+ * which is normal mid-entry state, not drift — shrinking here would silently orphan that
+ * section (it previously did, when this was called mid-calculation from the Slat BOM's
+ * cross-section pooling before the last-added section had saved anything).
  */
 function fcGetPersistedFenceSectionCount() {
     var raw = localStorage.getItem('custom_fence-section');
     var n = raw === null || raw === '' ? NaN : parseInt(raw, 10);
-    if (Number.isFinite(n) && n >= 1) {
-        var lastIdx = n - 1;
-        if (localStorage.getItem('custom_fence-' + lastIdx) != null) {
-            return n;
-        }
-    }
+
     var count = 0;
     for (var i = 0; i < 64; i++) {
         if (localStorage.getItem('custom_fence-' + i) != null) {
@@ -4991,6 +4992,15 @@ function fcGetPersistedFenceSectionCount() {
             break;
         }
     }
+
+    if (Number.isFinite(n) && n >= 1) {
+        if (count > n) {
+            localStorage.setItem('custom_fence-section', String(count));
+            return count;
+        }
+        return n;
+    }
+
     if (count >= 1) {
         localStorage.setItem('custom_fence-section', String(count));
         return count;
@@ -5639,6 +5649,12 @@ function submit_fence_planner(status = '', options) {
             // Tells /submit not to overwrite the 'reloaded' status this same page load
             // just set server-side (PlannerController -> PlannerRecordService::markReloaded()).
             formData.set('is_quote_reload', options.isQuoteReload ? '1' : '0');
+
+            // Only the Download-Plans modal's final step sets this — lets SubmitController
+            // tell this apart from the ordinary Update button, which also POSTs to /submit.
+            if (options.triggerEarlyWebhook) {
+                formData.set('trigger_early_webhook', '1');
+            }
 
             var uri_success = '';
             if (formStyle == 'barr') {

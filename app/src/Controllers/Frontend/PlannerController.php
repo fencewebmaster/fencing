@@ -17,9 +17,9 @@ final class PlannerController extends BaseFrontendController
     {
         $this->startSession();
 
-        $action = (string) ($_GET['action'] ?? '');
-        $site   = $_GET['site'] ?? '';
-        $sid    = $_GET['sid'] ?? '';
+        $action = (string) $this->request->input('action', '');
+        $site   = $this->request->input('site', '');
+        $sid    = $this->request->input('sid', '');
 
         if ($action === 'clear-all' || $site || $sid) {
             // Clear fence session data
@@ -42,7 +42,7 @@ final class PlannerController extends BaseFrontendController
             'attempt' => '',
         ];
 
-        $qid = $_GET['qid'] ?? '';
+        $qid = $this->request->input('qid', '');
         if ($qid) {
             $quote = PlannerPageModel::loadQuote((string) $qid);
         } elseif (!empty($_SESSION['planner_id'])) {
@@ -99,7 +99,7 @@ final class PlannerController extends BaseFrontendController
             $_SESSION['site'] = $site;
             header('Location: ' . $redirect_to . '?' . http_build_query($new_query_vars));
         } else {
-            header('Location: ' . UrlHelper::toUrl((string) ($_GET['url'] ?? '')));
+            header('Location: ' . UrlHelper::toUrl((string) $this->request->input('url', '')));
         }
 
         exit;

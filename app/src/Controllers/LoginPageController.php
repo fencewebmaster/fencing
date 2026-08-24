@@ -22,6 +22,10 @@ final class LoginPageController extends BaseController
         $context->pageTitle  = 'Sign in';
         $context->route      = 'login';
         $context->isLogin    = true;
-        $context->loginPage  = AuthPresenter::loginViewData($context->adminBase, $context->appBase);
+        $context->loginPage  = AuthPresenter::loginViewData(
+            $context->adminBase,
+            $context->appBase,
+            (string) $this->request->query('redirect', '')
+        );
     }
 }

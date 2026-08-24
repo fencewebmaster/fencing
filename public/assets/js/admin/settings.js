@@ -464,6 +464,13 @@
         var systemDirty = document.getElementById('fc-settings-system-dirty');
         var integrationDirty = document.getElementById('fc-settings-integration-dirty');
         var projectPlanDirty = document.getElementById('fc-settings-project-plan-dirty');
+        var themeReset = document.getElementById('fc-theme-reset');
+        var brandingReset = document.getElementById('fc-branding-reset');
+        var fenceColorsReset = document.getElementById('fc-fence-colors-reset');
+        var catalogReset = document.getElementById('fc-catalog-reset');
+        var systemReset = document.getElementById('fc-system-reset');
+        var integrationReset = document.getElementById('fc-integration-reset');
+        var projectPlanReset = document.getElementById('fc-project-plan-reset');
 
         if (themeActions) {
             themeActions.classList.toggle('hidden', state.activeTab !== 'theme');
@@ -527,6 +534,27 @@
                 state.activeTab !== 'project-plan' || !state.projectPlanItemsDirty
             );
         }
+        if (themeReset) {
+            themeReset.disabled = !state.themeDirty;
+        }
+        if (brandingReset) {
+            brandingReset.disabled = !state.brandingDirty;
+        }
+        if (fenceColorsReset) {
+            fenceColorsReset.disabled = !state.fenceColorsDirty;
+        }
+        if (catalogReset) {
+            catalogReset.disabled = !state.catalogDirty;
+        }
+        if (systemReset) {
+            systemReset.disabled = !state.systemDirty;
+        }
+        if (integrationReset) {
+            integrationReset.disabled = !state.integrationDirty;
+        }
+        if (projectPlanReset) {
+            projectPlanReset.disabled = !state.projectPlanItemsDirty;
+        }
     }
 
     function switchTab(tabId) {
@@ -541,7 +569,7 @@
         var consolePanel = document.getElementById('fc-settings-panel-console');
         var preview = document.getElementById('fc-settings-preview');
         var layout = document.getElementById('fc-settings-layout');
-        var showPreview = tabId === 'theme' || tabId === 'branding';
+        var showPreview = tabId === 'branding';
 
         if (themePanel) {
             themePanel.classList.toggle('hidden', tabId !== 'theme');
@@ -573,10 +601,8 @@
         if (preview) {
             preview.classList.toggle('hidden', !showPreview);
             if (showPreview) {
-                preview.innerHTML = tabId === 'theme' ? global.FC.Settings.tabs.theme.renderPreview() : global.FC.Settings.tabs.branding.renderPreview();
-                if (tabId === 'branding') {
-                    global.FC.Settings.tabs.branding.updatePreview();
-                }
+                preview.innerHTML = global.FC.Settings.tabs.branding.renderPreview();
+                global.FC.Settings.tabs.branding.updatePreview();
             }
         }
 

@@ -7,6 +7,7 @@ namespace Fc\Admin\Controllers\Frontend;
 use Fc\Admin\Models\PlannerSubmissionModel;
 use Fc\Admin\Services\CartBuilderService;
 use Fc\Admin\Services\PlannerRecordService;
+use Fc\Admin\Services\PlannerWebhookService;
 
 /**
  * Planner autosave endpoint (/submit) — writes the posted planner state to the
@@ -20,8 +21,8 @@ final class SubmitController extends BaseFrontendController
 
         $fences = $this->fences();
 
-        if ($_POST) {
-            $_SESSION['fc_data'] = $_POST;
+        if ($this->request->allPost()) {
+            $_SESSION['fc_data'] = $this->request->allPost();
             if (isset($_SESSION['fc_data']['mobile'])) {
                 $_SESSION['fc_data']['mobile'] = CartBuilderService::normalizeMobileForStorage($_SESSION['fc_data']['mobile']);
             }
@@ -29,7 +30,7 @@ final class SubmitController extends BaseFrontendController
 
         PlannerSubmissionModel::syncCartFromSession();
 
-        $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($_POST['planner_id'] ?? null);
+        $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($this->request->post('planner_id'));
         $planner_id  = $planner_ref['planner_id'];
 
         $_SESSION['planner_id'] = $planner_id;
@@ -37,7 +38,7 @@ final class SubmitController extends BaseFrontendController
         // This save fires automatically right after a `?qid=` reload (see p1.js: fcRunQuoteReloadSubmit).
         // The planner page already set status='reloaded' for this same request cycle — don't clobber
         // it back to 'planning'.
-        $is_quote_reload = !empty($_POST['is_quote_reload']);
+        $is_quote_reload = !empty($this->request->post('is_quote_reload'));
 
         $payload = PlannerSubmissionModel::payload($fences, $planner_id, ['status' => !$is_quote_reload]);
         $res     = PlannerSubmissionModel::save($payload, $planner_id, $planner_ref['exists']);
@@ -47,6 +48,10 @@ final class SubmitController extends BaseFrontendController
             http_response_code(500);
             echo 'ERROR';
             exit;
+        }
+
+        if (!empty($this->request->post('trigger_early_webhook'))) {
+            PlannerWebhookService::maybeFireForFormSubmission($planner_id);
         }
 
         echo 'SUCCESS:' . $planner_id;

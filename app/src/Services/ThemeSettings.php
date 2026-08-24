@@ -59,14 +59,14 @@ final class ThemeSettings
             'orange' => [
                 'id' => 'orange',
                 'label' => 'Orange (default)',
-                'description' => 'Princeton orange accents with brand red primary.',
+                'description' => 'A warm, modern, and energetic theme that reflects the brand’s primary orange identity.',
                 'swatch' => '#f67925',
                 'colors' => self::defaults(),
             ],
             'brand-red' => [
                 'id' => 'brand-red',
                 'label' => 'Brand red',
-                'description' => 'Accent palette based on #D4112F — crimson buttons, tabs, and highlights.',
+                'description' => 'A bold, confident, and distinctive theme that delivers a strong all-red brand experience.',
                 'swatch' => '#d4112f',
                 'colors' => array_merge($neutral, [
                     '--fc-brand-primary' => '#d4112f',
@@ -106,6 +106,15 @@ final class ThemeSettings
     public static function schema(): array
     {
         return [
+            'semantic' => [
+                'label' => 'Semantic',
+                'vars' => [
+                    '--fc-green' => 'Success green',
+                    '--fc-texas-green' => 'Texas green',
+                    '--fc-deep-blue' => 'Deep blue',
+                    '--fc-allports' => 'Link blue',
+                ],
+            ],
             'brand' => [
                 'label' => 'Brand & accent',
                 'vars' => [
@@ -114,15 +123,6 @@ final class ThemeSettings
                     '--fc-pumpkin' => 'Pumpkin (hover accent)',
                     '--fc-jaffa' => 'Jaffa',
                     '--fc-fiery-orange' => 'Fiery orange (button border / shadow)',
-                ],
-            ],
-            'semantic' => [
-                'label' => 'Semantic',
-                'vars' => [
-                    '--fc-green' => 'Success green',
-                    '--fc-texas-green' => 'Texas green',
-                    '--fc-deep-blue' => 'Deep blue',
-                    '--fc-allports' => 'Link blue',
                 ],
             ],
             'neutral' => [

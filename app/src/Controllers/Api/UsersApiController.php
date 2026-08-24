@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
+use Fc\Admin\Core\Request;
 use Fc\Admin\Models\UserPresenter;
 use Fc\Admin\Services\PresenceService;
 
-final class UsersApiController
+final class UsersApiController extends BaseApiController
 {
     public static function dispatch(): void
     {
-        $action = isset($_GET['action']) ? (string) $_GET['action'] : 'presence';
-        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        (new self(new Request()))->handle();
+    }
+
+    public function handle(): void
+    {
+        $action = (string) $this->request->query('action', 'presence');
+        $method = $this->request->method();
 
         if (($action === 'presence' || $action === '') && $method === 'GET') {
             $ids = [];
-            $rawIds = isset($_GET['ids']) ? (string) $_GET['ids'] : '';
+            $rawIds = (string) $this->request->query('ids', '');
             if ($rawIds !== '') {
                 foreach (explode(',', $rawIds) as $part) {
                     $id = (int) trim($part);

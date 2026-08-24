@@ -17,6 +17,12 @@ endif;
 <?php $info = $_SESSION; ?>
 <?php $fc_route = \Fc\Admin\Core\FrontendApplication::currentRoute(); ?>
 
+<!-- jQuery must be loaded (not deferred) before Google Tag Manager: GTM's container
+     script is async and can fire tags — including ones that call jQuery(...) — before a
+     deferred jQuery at the bottom of the page has executed, throwing "jQuery is not
+     defined" from the GTM-injected tag. -->
+<script src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery-3.3.1.min.js'); ?>"></script>
+
 <?php if( $gtmID = @$site_info['gtmID'] ): ?>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

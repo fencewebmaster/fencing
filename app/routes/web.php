@@ -155,7 +155,7 @@ return [
 
         // Quick view pretty path — was an .htaccess rewrite to lookup.php?view=$1.
         $router->any('lookup/view/{slug}', static function (Request $request, array $params): void {
-            $_GET['view'] = rawurldecode((string) ($params['slug'] ?? ''));
+            $request->setQuery('view', rawurldecode((string) ($params['slug'] ?? '')));
             (new LookupController($request))->index();
         });
 

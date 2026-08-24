@@ -17,7 +17,7 @@ final class AjaxController extends BaseFrontendController
 
         $this->fences();
 
-        $action = (string) ($_POST['action'] ?? '');
+        $action = (string) $this->request->post('action', '');
 
         if ($action === 'get-size') {
             $this->getSize();
@@ -29,9 +29,9 @@ final class AjaxController extends BaseFrontendController
      */
     private function getSize(): void
     {
-        $name  = basename((string) ($_POST['name'] ?? ''));
-        $key   = (string) ($_POST['key'] ?? '');
-        $value = $_POST['value'] ?? null;
+        $name  = basename((string) $this->request->post('name', ''));
+        $key   = (string) $this->request->post('key', '');
+        $value = $this->request->post('value');
 
         if ($name === '' || !preg_match('/^[A-Za-z0-9_-]+$/', $name)) {
             echo json_encode([]);

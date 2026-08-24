@@ -17,7 +17,7 @@ final class DashboardController extends BaseController
         $context->dashboardPage = DashboardPresenter::pageData(
             $context->adminBase,
             $context->appBase,
-            $_GET
+            $this->request->allQuery()
         );
     }
 }

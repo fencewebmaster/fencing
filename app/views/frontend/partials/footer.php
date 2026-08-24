@@ -15,7 +15,7 @@
             </div>          
         </div>
         <div class="col">
-            <a href="" data-bs-toggle="modal" data-bs-target="#clear-all-data" class="btn btn-sm border text-muted float-end"> Clear All</a>
+            <a href="" data-bs-toggle="modal" data-bs-target="#clear-all-data" class="btn btn-danger btn-sm px-2 fw-bold text-uppercase float-end">Clear All</a>
             
         </div>
     </div>
@@ -46,8 +46,7 @@
     </div>
 </div>
 
-<!-- Required Libraries -->
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery-3.3.1.min.js'); ?>"></script>
+<!-- Required Libraries (jQuery itself now loads early in <head> — see partials/head.php) -->
 <script defer src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js" crossorigin="anonymous"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery.validate.min.js'); ?>"></script>

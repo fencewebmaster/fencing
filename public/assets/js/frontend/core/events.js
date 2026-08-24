@@ -4363,7 +4363,7 @@ $("#fc-planning-form").validate({
             }
             var submitStatus =
                 typeof fcPlannerHasQuoteId === 'function' && fcPlannerHasQuoteId() ? 'update' : 'new';
-            res = submit_fence_planner(submitStatus);
+            res = submit_fence_planner(submitStatus, { triggerEarlyWebhook: true });
         } else {
             $('#submit-modal .fc-form-plan').hide();
             $('#submit-modal .fc-download-footer-actions').hide();

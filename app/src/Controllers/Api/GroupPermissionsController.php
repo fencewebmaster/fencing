@@ -4,38 +4,43 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
+use Fc\Admin\Core\Request;
 use Fc\Admin\Models\GroupPermissionsModel;
 use Fc\Admin\Models\GroupPermissionsPresenter;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\GroupPermissionsService;
 
-final class GroupPermissionsController
+final class GroupPermissionsController extends BaseApiController
 {
     public static function dispatch(): void
     {
-        $action = isset($_GET['action']) ? (string) $_GET['action'] : 'get';
-        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        (new self(new Request()))->handle();
+    }
+
+    public function handle(): void
+    {
+        $action = (string) $this->request->query('action', 'get');
+        $method = $this->request->method();
 
         if ($action === 'get' || $action === '') {
-            $role = isset($_GET['role']) ? (string) $_GET['role'] : '';
+            $role = (string) $this->request->query('role', '');
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(GroupPermissionsPresenter::apiPayload($role), JSON_UNESCAPED_UNICODE);
             return;
         }
 
         if (($action === 'export' || $action === 'export-all') && $method === 'GET') {
-            self::exportJson($action);
+            $this->exportJson($action);
             return;
         }
 
         if ($action === 'import' && $method === 'POST') {
-            self::importJson();
+            $this->importJson();
             return;
         }
 
         if ($action === 'save' && $method === 'POST') {
-            $raw = file_get_contents('php://input');
-            $payload = is_string($raw) ? json_decode($raw, true) : null;
+            $payload = $this->request->jsonBody();
             if (!is_array($payload)) {
                 http_response_code(400);
                 header('Content-Type: application/json; charset=utf-8');
@@ -83,10 +88,10 @@ final class GroupPermissionsController
         echo json_encode(['ok' => false, 'error' => 'Unknown action.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function exportJson(string $action): void
+    private function exportJson(string $action): void
     {
         if ($action === 'export') {
-            $role = isset($_GET['role']) ? (string) $_GET['role'] : '';
+            $role = (string) $this->request->query('role', '');
             $slug = GroupPermissionsModel::sanitizeRole($role);
             if ($slug === '' || $slug === 'super_admin') {
                 $payload = GroupPermissionsPresenter::exportAll();
@@ -124,9 +129,9 @@ final class GroupPermissionsController
         echo $json;
     }
 
-    private static function importJson(): void
+    private function importJson(): void
     {
-        $csrf = (string) ($_POST['csrf'] ?? $_POST['_token'] ?? '');
+        $csrf = (string) ($this->request->post('csrf') ?? $this->request->post('_token') ?? '');
         if (!AuthService::verifyCsrf($csrf)) {
             http_response_code(403);
             header('Content-Type: application/json; charset=utf-8');

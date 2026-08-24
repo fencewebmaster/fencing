@@ -7,32 +7,38 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
+use Fc\Admin\Core\Request;
 use Fc\Admin\Models\GalleryModel;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\GalleryMaintenanceService;
 
-final class GalleryController
+final class GalleryController extends BaseApiController
 {
     public static function dispatch(): void
+    {
+        (new self(new Request()))->handle();
+    }
+
+    public function handle(): void
     {
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store');
 
-        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-        $action = isset($_GET['action']) ? (string) $_GET['action'] : '';
+        $method = $this->request->method();
+        $action = (string) $this->request->query('action', '');
 
         if ($action === 'list') {
-            self::listItems();
+            $this->listItems();
             return;
         }
 
         if ($action === 'upload' && $method === 'POST') {
-            self::upload();
+            $this->upload();
             return;
         }
 
         if ($action === 'delete' && $method === 'POST') {
-            self::delete();
+            $this->delete();
             return;
         }
 
@@ -44,14 +50,15 @@ final class GalleryController
         ], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function listItems(): void
+    private function listItems(): void
     {
         echo json_encode(GalleryModel::listItems(), JSON_UNESCAPED_UNICODE);
     }
 
-    private static function upload(): void
+    private function upload(): void
     {
-        $csrf = isset($_POST['csrf']) ? (string) $_POST['csrf'] : null;
+        $csrfPosted = $this->request->post('csrf');
+        $csrf = $csrfPosted !== null ? (string) $csrfPosted : null;
         if (!AuthService::verifyCsrf($csrf)) {
             http_response_code(403);
             echo json_encode([
@@ -68,10 +75,9 @@ final class GalleryController
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
-    private static function delete(): void
+    private function delete(): void
     {
-        $raw = file_get_contents('php://input');
-        $payload = is_string($raw) ? json_decode($raw, true) : null;
+        $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
         }

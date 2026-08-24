@@ -13,6 +13,9 @@ final class Request
     /** @var array<string, mixed> */
     private array $query;
 
+    /** @var array<string, mixed> */
+    private array $post;
+
     /** @var array<string, mixed>|null */
     private ?array $jsonBody = null;
 
@@ -21,6 +24,7 @@ final class Request
         $this->method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
         $this->path   = (string) (parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH) ?? '/');
         $this->query  = $_GET;
+        $this->post   = $_POST;
     }
 
     public function method(): string
@@ -54,6 +58,53 @@ final class Request
     public function allQuery(): array
     {
         return $this->query;
+    }
+
+    /**
+     * Set/override a query value — for routes that resolve a path segment into a
+     * query-shaped param (e.g. a pretty URL rewritten to ?view=slug) before a
+     * controller reads it via query()/allQuery().
+     *
+     * @param mixed $value
+     */
+    public function setQuery(string $key, $value): void
+    {
+        $this->query[$key] = $value;
+    }
+
+    public function post(string $key, $default = null)
+    {
+        return $this->post[$key] ?? $default;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function allPost(): array
+    {
+        return $this->post;
+    }
+
+    /**
+     * Whether $key is present in the query string (regardless of value) — for code
+     * that branches on presence itself rather than fetching a value.
+     */
+    public function has(string $key): bool
+    {
+        return array_key_exists($key, $this->query);
+    }
+
+    /**
+     * Read $key from the query string first, falling back to POST data. Matches this
+     * app's one existing GET-over-POST fallback convention — use query()/post()
+     * directly instead where a call site's source must stay pinned to one of the two.
+     *
+     * @param mixed $default
+     * @return mixed
+     */
+    public function input(string $key, $default = null)
+    {
+        return $this->query[$key] ?? $this->post[$key] ?? $default;
     }
 
     public function action(): string

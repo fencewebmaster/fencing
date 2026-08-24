@@ -7,6 +7,7 @@ namespace Fc\Admin\Controllers\Frontend;
 use Fc\Admin\Models\CheckoutCartModel;
 use Fc\Admin\Models\PlannerSubmissionModel;
 use Fc\Admin\Services\PlannerRecordService;
+use Fc\Admin\Services\PlannerSessionService;
 use Fc\Admin\Services\SiteRegistryService;
 use Fc\Admin\Services\StorePushService;
 
@@ -23,7 +24,7 @@ final class CheckoutController extends BaseFrontendController
         $this->startSession();
 
         $fences = $this->fences();
-        $action = (string) ($_POST['action'] ?? '');
+        $action = (string) $this->request->post('action', '');
 
         switch ($action) {
             case 'push_order':
@@ -66,7 +67,7 @@ final class CheckoutController extends BaseFrontendController
         $info = $_SESSION;
 
         // Never mint an id here: an order push must attach to the quote that was already saved.
-        $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($_POST['planner_id'] ?? null, false);
+        $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($this->request->post('planner_id'), false);
         $planner_id  = $planner_ref['planner_id'] !== '' ? $planner_ref['planner_id'] : null;
 
         if (!$planner_id) {
@@ -99,14 +100,10 @@ final class CheckoutController extends BaseFrontendController
 
         echo $push['body'];
 
-        // Clear fence session data
-        unset(
-            $_SESSION['fc_data'],
-            $_SESSION['custom_fence_products'],
-            $_SESSION['fc_cart'],
-            $_SESSION['planner_id'],
-            $_SESSION['site']
-        );
+        // Same server-side reset the "Clear All" button uses (PlannerController's
+        // ?action=clear-all) — a successful push starts the next session exactly as
+        // clean as an explicit clear, not a second, separately-maintained unset list.
+        PlannerSessionService::clearPlannerSessions();
 
         exit;
     }
@@ -118,7 +115,7 @@ final class CheckoutController extends BaseFrontendController
      */
     private function savePlanner(array $fences): void
     {
-        $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($_POST['planner_id'] ?? null);
+        $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($this->request->post('planner_id'));
         $planner_id  = $planner_ref['planner_id'];
 
         $_SESSION['planner_id'] = $planner_id;
@@ -150,7 +147,7 @@ final class CheckoutController extends BaseFrontendController
      */
     private function updateProjectDetails(array $fences): void
     {
-        CheckoutCartModel::applyProjectDetails($_POST);
+        CheckoutCartModel::applyProjectDetails($this->request->allPost());
 
         // Render before persisting: persistSession() rewrites fc_data['project_plans'] from
         // the client payload, which must not leak into the markup echoed back for this request.
@@ -166,7 +163,7 @@ final class CheckoutController extends BaseFrontendController
      */
     private function rebuildCartFromPlans(array $fences): void
     {
-        CheckoutCartModel::rebuildFromPlans($_POST);
+        CheckoutCartModel::rebuildFromPlans($this->request->allPost());
 
         PlannerRecordService::persistSession($fences);
 
@@ -180,8 +177,8 @@ final class CheckoutController extends BaseFrontendController
      */
     private function toggleOptionalCart(array $fences): void
     {
-        $optional_key = isset($_POST['optional_key']) ? trim((string) $_POST['optional_key']) : '';
-        $include      = isset($_POST['include']) && (string) $_POST['include'] === '1';
+        $optional_key = trim((string) $this->request->post('optional_key', ''));
+        $include      = (string) $this->request->post('include', '') === '1';
 
         CheckoutCartModel::toggleOptional($optional_key, $include);
 
@@ -197,7 +194,8 @@ final class CheckoutController extends BaseFrontendController
      */
     private function updateCart(array $fences): void
     {
-        CheckoutCartModel::updateQuantities(isset($_POST['cart']) && is_array($_POST['cart']) ? $_POST['cart'] : []);
+        $cart = $this->request->post('cart');
+        CheckoutCartModel::updateQuantities(is_array($cart) ? $cart : []);
 
         PlannerRecordService::persistSession($fences);
 

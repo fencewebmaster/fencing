@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
+use Fc\Admin\Core\Request;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\BrandingSettings;
 use Fc\Admin\Services\CatalogSettings;
@@ -19,79 +20,83 @@ use Fc\Admin\Services\PlannerOptionSettings;
 use Fc\Admin\Services\SystemSettings;
 use Fc\Admin\Services\ThemeSettings;
 
-final class SettingsController
+final class SettingsController extends BaseApiController
 {
     public static function dispatch(): void
     {
+        (new self(new Request()))->handle();
+    }
 
+    public function handle(): void
+    {
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store');
 
-        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-        $action = isset($_GET['action']) ? (string) $_GET['action'] : '';
+        $method = $this->request->method();
+        $action = (string) $this->request->query('action', '');
 
         if ($action === 'theme') {
-            self::handleTheme($method);
+            $this->handleTheme($method);
             return;
         }
 
         if ($action === 'branding') {
-            self::handleBranding($method);
+            $this->handleBranding($method);
             return;
         }
 
         if ($action === 'fence-colors') {
-            self::handleFenceColors($method);
+            $this->handleFenceColors($method);
             return;
         }
 
         if ($action === 'catalog') {
-            self::handleCatalog($method);
+            $this->handleCatalog($method);
             return;
         }
 
         if ($action === 'system') {
-            self::handleSystem($method);
+            $this->handleSystem($method);
             return;
         }
 
         if ($action === 'integrations') {
-            self::handleIntegrations($method);
+            $this->handleIntegrations($method);
             return;
         }
 
         if ($action === 'cloudflare-verify') {
-            self::handleCloudflareVerify($method);
+            $this->handleCloudflareVerify($method);
             return;
         }
 
         if ($action === 'project-plan') {
-            self::handleProjectPlan($method);
+            $this->handleProjectPlan($method);
             return;
         }
 
         if ($action === 'git-pull') {
-            self::handleGitPull($method);
+            $this->handleGitPull($method);
             return;
         }
 
         if ($action === 'console') {
-            self::handleConsole($method);
+            $this->handleConsole($method);
             return;
         }
 
         if ($action === 'export') {
-            self::handleExport($method);
+            $this->handleExport($method);
             return;
         }
 
         if ($action === 'import') {
-            self::handleImport($method);
+            $this->handleImport($method);
             return;
         }
 
         if ($action === 'dev-console') {
-            self::handleDevConsole($method);
+            $this->handleDevConsole($method);
             return;
         }
 
@@ -102,7 +107,7 @@ final class SettingsController
         ], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleTheme(string $method): void
+    private function handleTheme(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(ThemeSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
@@ -110,7 +115,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['colors']) || !is_array($payload['colors'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -145,7 +150,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleBranding(string $method): void
+    private function handleBranding(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(BrandingSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
@@ -153,7 +158,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['branding']) || !is_array($payload['branding'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -188,7 +193,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleFenceColors(string $method): void
+    private function handleFenceColors(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(FenceColorSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
@@ -196,7 +201,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['fenceColors']) || !is_array($payload['fenceColors'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -231,7 +236,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleProjectPlan(string $method): void
+    private function handleProjectPlan(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(PlannerOptionSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
@@ -239,7 +244,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['items']) || !is_array($payload['items'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -273,7 +278,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleCatalog(string $method): void
+    private function handleCatalog(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(CatalogSettings::apiPayload(true), JSON_UNESCAPED_UNICODE);
@@ -281,7 +286,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['catalog']) || !is_array($payload['catalog'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -316,7 +321,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleSystem(string $method): void
+    private function handleSystem(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(SystemSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
@@ -324,7 +329,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['system']) || !is_array($payload['system'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -359,7 +364,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleIntegrations(string $method): void
+    private function handleIntegrations(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(IntegrationsSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
@@ -367,7 +372,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['integrations']) || !is_array($payload['integrations'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -404,7 +409,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleCloudflareVerify(string $method): void
+    private function handleCloudflareVerify(string $method): void
     {
         if ($method !== 'POST') {
             http_response_code(405);
@@ -412,7 +417,7 @@ final class SettingsController
             return;
         }
 
-        $payload = self::jsonBody();
+        $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
         }
@@ -453,7 +458,7 @@ final class SettingsController
         ], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleConsole(string $method): void
+    private function handleConsole(string $method): void
     {
         if ($method === 'GET') {
             echo json_encode(ConsoleSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
@@ -461,7 +466,7 @@ final class SettingsController
         }
 
         if ($method === 'POST') {
-            $payload = self::jsonBody();
+            $payload = $this->request->jsonBody();
             if (!is_array($payload) || !isset($payload['console']) || !is_array($payload['console'])) {
                 http_response_code(400);
                 echo json_encode([
@@ -501,7 +506,7 @@ final class SettingsController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleExport(string $method): void
+    private function handleExport(string $method): void
     {
         if ($method !== 'GET') {
             http_response_code(405);
@@ -535,7 +540,7 @@ final class SettingsController
         echo $json;
     }
 
-    private static function handleImport(string $method): void
+    private function handleImport(string $method): void
     {
         header('Content-Type: application/json; charset=utf-8');
 
@@ -545,7 +550,7 @@ final class SettingsController
             return;
         }
 
-        $csrf = isset($_POST['csrf']) ? (string) $_POST['csrf'] : '';
+        $csrf = (string) $this->request->post('csrf', '');
         if (!AuthService::verifyCsrf($csrf)) {
             http_response_code(403);
             echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
@@ -656,7 +661,7 @@ final class SettingsController
         ], JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleGitPull(string $method): void
+    private function handleGitPull(string $method): void
     {
         if ($method !== 'POST') {
             http_response_code(405);
@@ -664,7 +669,7 @@ final class SettingsController
             return;
         }
 
-        $payload = self::jsonBody();
+        $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
         }
@@ -703,7 +708,7 @@ final class SettingsController
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
-    private static function handleDevConsole(string $method): void
+    private function handleDevConsole(string $method): void
     {
         if ($method !== 'POST') {
             http_response_code(405);
@@ -711,7 +716,7 @@ final class SettingsController
             return;
         }
 
-        $payload = self::jsonBody();
+        $payload = $this->request->jsonBody();
         if (!is_array($payload)) {
             $payload = [];
         }
@@ -743,12 +748,5 @@ final class SettingsController
             http_response_code(!empty($result['forbidden']) ? 403 : 400);
         }
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
-    }
-
-    /** @return mixed */
-    private static function jsonBody()
-    {
-        $raw = file_get_contents('php://input');
-        return is_string($raw) ? json_decode($raw, true) : null;
     }
 }

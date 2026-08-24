@@ -48,6 +48,7 @@ final class PlannerEntryPresenter
             'quote_load_count',
             'created_at',
             'updated_at',
+            'webhook_sent_at',
         ];
     }
 
@@ -2034,6 +2035,7 @@ final class PlannerEntryPresenter
             'quote_load_count' => 'Quote loads',
             'created_at' => 'Created',
             'updated_at' => 'Updated',
+            'webhook_sent_at' => 'Webhook sent',
         ];
 
         $detailRows = [];
@@ -2069,7 +2071,7 @@ final class PlannerEntryPresenter
                     $raw = implode(', ', $extraItems);
                 } elseif ($fieldKey === 'user_agent') {
                     $raw = self::browserName((string) $raw);
-                } elseif (in_array($fieldKey, ['created_at', 'updated_at'], true)) {
+                } elseif (in_array($fieldKey, ['created_at', 'updated_at', 'webhook_sent_at'], true)) {
                     $raw = self::formatDatetime($raw);
                 } elseif ($fieldKey === 'quote_load_count') {
                     $raw = (string) max(0, (int) $raw);

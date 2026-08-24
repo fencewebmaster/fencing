@@ -10,14 +10,19 @@ use Fc\Admin\Filters\AuthFilter;
 use Fc\Admin\Models\DashboardModel;
 use Fc\Admin\Models\PlannerEntryPresenter;
 
-final class DashboardApiController
+final class DashboardApiController extends BaseApiController
 {
     public static function dispatch(): void
     {
-        (new AuthFilter())->before(new Request());
+        (new self(new Request()))->handle();
+    }
 
-        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-        $action = isset($_GET['action']) ? (string) $_GET['action'] : 'summary';
+    public function handle(): void
+    {
+        (new AuthFilter())->before($this->request);
+
+        $method = $this->request->method();
+        $action = (string) $this->request->query('action', 'summary');
 
         if ($method !== 'GET') {
             JsonResponse::error('Method not allowed.', 405);
@@ -31,19 +36,19 @@ final class DashboardApiController
                 JsonResponse::ok(DashboardModel::systemCounts());
                 break;
             case 'charts':
-                $period = isset($_GET['date_period']) ? (string) $_GET['date_period'] : '';
-                $from = isset($_GET['date_from']) ? (string) $_GET['date_from'] : '';
-                $to = isset($_GET['date_to']) ? (string) $_GET['date_to'] : '';
+                $period = (string) $this->request->query('date_period', '');
+                $from = (string) $this->request->query('date_from', '');
+                $to = (string) $this->request->query('date_to', '');
                 JsonResponse::ok(DashboardModel::chartPayload($period, $from, $to));
                 break;
             case 'health':
                 JsonResponse::ok(DashboardModel::health());
                 break;
             case 'recent':
-                $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 8;
-                $period = isset($_GET['date_period']) ? (string) $_GET['date_period'] : '';
-                $from = isset($_GET['date_from']) ? (string) $_GET['date_from'] : '';
-                $to = isset($_GET['date_to']) ? (string) $_GET['date_to'] : '';
+                $limit = (int) $this->request->query('limit', 8);
+                $period = (string) $this->request->query('date_period', '');
+                $from = (string) $this->request->query('date_from', '');
+                $to = (string) $this->request->query('date_to', '');
                 $parsed = PlannerEntryPresenter::parseDateFilter($period, $from, $to);
                 JsonResponse::ok([
                     'ok' => true,
