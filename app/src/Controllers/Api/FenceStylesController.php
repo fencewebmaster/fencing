@@ -11,6 +11,7 @@ use Fc\Admin\Core\Request;
 use Fc\Admin\Models\FenceStyleModel;
 use Fc\Admin\Models\FenceStylePresenter;
 use Fc\Admin\Services\AuthService;
+use Fc\Admin\Services\FenceFileService;
 use Fc\Admin\Services\FenceStyleMaintenanceService;
 
 final class FenceStylesController extends BaseApiController
@@ -297,6 +298,7 @@ final class FenceStylesController extends BaseApiController
 
         $catalog = FenceStyleModel::catalog();
         $updated = 0;
+        $created = 0;
         $failed = [];
 
         foreach ($styles as $entry) {
@@ -307,16 +309,30 @@ final class FenceStylesController extends BaseApiController
 
             $slug = trim((string) ($entry['slug'] ?? ''));
             $config = isset($entry['config']) && is_array($entry['config']) ? $entry['config'] : null;
-            $filePath = $catalog['fileSlugMap'][$slug] ?? '';
 
-            if ($slug === '' || $filePath === '' || $config === null || trim((string) ($config['title'] ?? '')) === '') {
+            if ($slug === '' || $config === null || trim((string) ($config['title'] ?? '')) === '') {
                 $failed[] = $slug;
                 continue;
             }
 
-            $result = FenceStyleMaintenanceService::save($filePath, $slug, $config);
+            $filePath = $catalog['fileSlugMap'][$slug] ?? '';
+
+            if ($filePath !== '') {
+                $result = FenceStyleMaintenanceService::save($filePath, $slug, $config);
+                if (!empty($result['ok'])) {
+                    $updated++;
+                } else {
+                    $failed[] = $slug;
+                }
+                continue;
+            }
+
+            // Slug has no writable/fences/*.php file yet — create one instead of failing,
+            // so importing a backup/export into an empty or partial catalog can bootstrap it.
+            $result = FenceFileService::createFile($slug, $config);
             if (!empty($result['ok'])) {
-                $updated++;
+                $created++;
+                $catalog['fileSlugMap'][$slug] = (string) $result['filePath'];
             } else {
                 $failed[] = $slug;
             }
@@ -327,12 +343,23 @@ final class FenceStylesController extends BaseApiController
             http_response_code(400);
         }
 
+        $imported = $updated + $created;
+        $detail = [];
+        if ($created > 0) {
+            $detail[] = $created . ' created';
+        }
+        if ($updated > 0) {
+            $detail[] = $updated . ' updated';
+        }
+
         echo json_encode([
             'ok' => $ok,
-            'updated' => $updated,
+            'updated' => $imported,
+            'created' => $created,
             'failed' => $failed,
-            'message' => $updated . ' fence style' . ($updated === 1 ? '' : 's') . ' imported'
-                . ($failed !== [] ? ('. ' . count($failed) . ' failed (unmatched slug or invalid config).') : '.'),
+            'message' => $imported . ' fence style' . ($imported === 1 ? '' : 's') . ' imported'
+                . ($detail !== [] ? (' (' . implode(', ', $detail) . ')') : '')
+                . ($failed !== [] ? ('. ' . count($failed) . ' failed (invalid config).') : '.'),
         ], JSON_UNESCAPED_UNICODE);
     }
 }

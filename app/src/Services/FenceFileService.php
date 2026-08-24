@@ -183,4 +183,51 @@ final class FenceFileService
 
         return ['ok' => true, 'fileType' => $fileType];
     }
+
+    /**
+     * Create a brand-new writable/fences/*.php file for a slug that has none yet
+     * (used by bulk import, so restoring an export into an empty/partial catalog
+     * doesn't require the file to already exist).
+     *
+     * @param array<string, mixed> $config
+     * @return array{ok:bool,filePath?:string,error?:string}
+     */
+    public static function createFile(string $slug, array $config): array
+    {
+        $dir = FC_ROOT . DIRECTORY_SEPARATOR . 'writable' . DIRECTORY_SEPARATOR . 'fences';
+        if (!is_dir($dir) || !is_writable($dir)) {
+            return ['ok' => false, 'error' => 'Fence styles directory is not writable.'];
+        }
+
+        $nextOrder = 1;
+        foreach (glob($dir . DIRECTORY_SEPARATOR . '*.php') ?: [] as $existing) {
+            if (preg_match('/^(\d+)-/', basename($existing), $m)) {
+                $nextOrder = max($nextOrder, ((int) $m[1]) + 1);
+            }
+        }
+
+        $baseName = trim((string) preg_replace('/[^a-z0-9]+/i', '-', strtoupper($slug)), '-');
+        if ($baseName === '') {
+            $baseName = 'STYLE';
+        }
+
+        $filePath = $dir . DIRECTORY_SEPARATOR . $nextOrder . '-' . $baseName . '.php';
+        $suffix = 1;
+        while (is_file($filePath)) {
+            $suffix++;
+            $filePath = $dir . DIRECTORY_SEPARATOR . $nextOrder . '-' . $baseName . '-' . $suffix . '.php';
+        }
+
+        $content = "<?php\n\n\$fences['" . $slug . "'] = " . PhpValueExporter::export($config, 0) . ";\n";
+
+        if (file_put_contents($filePath, $content, LOCK_EX) === false) {
+            return ['ok' => false, 'error' => 'Could not create fence file.'];
+        }
+
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($filePath, true);
+        }
+
+        return ['ok' => true, 'filePath' => $filePath];
+    }
 }
