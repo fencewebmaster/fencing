@@ -5,11 +5,15 @@
             require_once dirname(__DIR__, 4) . '/app/src/Services/BrandingSettings.php';
             require_once dirname(__DIR__, 4) . '/app/src/Services/AppConfigService.php';
             require_once dirname(__DIR__, 4) . '/app/src/Services/SiteRegistryService.php';
+            require_once dirname(__DIR__, 4) . '/app/src/Services/IntegrationsSettings.php';
             require_once dirname(__DIR__, 4) . '/app/src/Helpers/UrlHelper.php';
             require_once dirname(__DIR__, 4) . '/app/src/Helpers/AssetHelper.php';
             $fcBranding = \Fc\Admin\Services\BrandingSettings::get();
+            $fcWebhookMode = (string) (\Fc\Admin\Services\IntegrationsSettings::get()['webhookMode'] ?? 'live');
+            $fcWebhookIsLive = $fcWebhookMode !== 'test';
             ?>
             <div class="mb-5 pb-5 text-secondary small">
+                <i class="fa-solid fa-circle fc-footer-webhook-dot <?php echo $fcWebhookIsLive ? 'fc-footer-webhook-dot--live' : 'fc-footer-webhook-dot--test'; ?>" aria-hidden="true" title="<?php echo $fcWebhookIsLive ? 'Live webhook URL' : 'Test webhook URL'; ?>"></i>
                 <?php echo htmlspecialchars($fcBranding['appName'], ENT_QUOTES, 'UTF-8'); ?>
                 <span class="app-version"><?php echo htmlspecialchars($fcBranding['version'], ENT_QUOTES, 'UTF-8'); ?></span>
             </div>
