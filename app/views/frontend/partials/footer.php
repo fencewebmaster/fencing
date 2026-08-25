@@ -48,7 +48,7 @@
 
 <!-- Required Libraries (jQuery itself now loads early in <head> — see partials/head.php) -->
 <script defer src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js" crossorigin="anonymous"></script>
+<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/slick.min.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery.validate.min.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery-scrollspy.min.js'); ?>"></script>
 
