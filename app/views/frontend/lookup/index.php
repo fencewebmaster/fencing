@@ -25,7 +25,7 @@ $adminCssBase = 'public/assets/css/admin/';
     <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
     <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/fonts.css')); ?>">
     <link href="<?php echo $h($asset('public/assets/css/vendor/bootstrap/bootstrap.min.css')); ?>" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/vendor/fontawesome/css/all.min.css')); ?>">
     <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'buttons.css')); ?>">
     <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'theme.css')); ?>">
     <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/frontend/lookup.css')); ?>">

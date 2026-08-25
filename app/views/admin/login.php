@@ -33,8 +33,8 @@ $version = (string) ($page['version'] ?? '');
     <title>Sign in — <?php echo $h($appName); ?></title>
     <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
     <link href="assets/css/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/vendor/tailwind.css">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/login.css">
 </head>

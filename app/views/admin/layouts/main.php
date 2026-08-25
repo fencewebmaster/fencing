@@ -44,24 +44,8 @@ declare(strict_types=1);
     if ($fcFavicon !== '') : ?>
     <link rel="icon" href="<?php echo htmlspecialchars((string) $fcFavicon, ENT_QUOTES, 'UTF-8'); ?>" />
     <?php endif; ?>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        sidebar: {
-                            DEFAULT: '#0f172a',
-                            hover: '#1e293b',
-                            active: '#334155',
-                            border: '#1e293b'
-                        }
-                    }
-                }
-            }
-        };
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" type="text/css" href="assets/css/vendor/tailwind.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/vendor/tailwind.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="assets/css/vendor/fontawesome/css/all.min.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/vendor/fontawesome/css/all.min.css'); ?>">
     <style>
         html,
         body {

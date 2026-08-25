@@ -23,3 +23,6 @@ writable/storage/presence/*.json
 public/assets/uploads/**
 !public/assets/uploads/.htaccess
 !public/assets/uploads/.gitkeep
+
+# Tailwind standalone CLI binary (~40MB, platform-specific — download via build/tailwind/README.md)
+build/tailwind/tailwindcss.exe
