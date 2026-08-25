@@ -314,25 +314,6 @@ declare(strict_types=1);
             gap: 0.5rem;
             margin-left: auto;
         }
-        .fc-fs-dirty-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            font-size: 0.6875rem;
-            font-weight: 700;
-            line-height: 1;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #92400e;
-            background: #fef3c7;
-            border: 1px solid #fcd34d;
-            border-radius: 9999px;
-            padding: 0.3rem 0.65rem;
-            white-space: nowrap;
-        }
-        .fc-fs-dirty-badge i {
-            font-size: 0.625rem;
-        }
         .fc-fs-edit-body {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
@@ -532,12 +513,12 @@ declare(strict_types=1);
             user-select: none;
         }
         .fc-fs-panel-group-tabs__input:focus-visible + .fc-fs-panel-group-tabs__label {
-            outline: 2px solid #6366f1;
+            outline: 2px solid var(--fc-princeton-orange, #f67925);
             outline-offset: 2px;
         }
         .fc-fs-panel-group-tabs__input:checked + .fc-fs-panel-group-tabs__label {
-            background: #fff;
-            color: #0f172a;
+            background: var(--fc-princeton-orange, #f67925);
+            color: #fff;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
         }
         .fc-fs-panel-group-tabs__input:not(:checked) + .fc-fs-panel-group-tabs__label:hover {
@@ -584,13 +565,13 @@ declare(strict_types=1);
             transition: transform 0.2s;
         }
         .fc-fs-gui-toggle__input:checked + .fc-fs-gui-toggle__track {
-            background: #6366f1;
+            background: var(--fc-princeton-orange, #f67925);
         }
         .fc-fs-gui-toggle__input:checked + .fc-fs-gui-toggle__track::after {
             transform: translateX(1rem);
         }
         .fc-fs-style-preview__live-toggle .fc-fs-gui-toggle__input:checked + .fc-fs-gui-toggle__track {
-            background: var(--fc-princeton-orange);
+            background: var(--fc-green, #04a725);
         }
         .fc-fs-gui-toggle__label {
             font-size: 0.8125rem;
@@ -615,7 +596,10 @@ declare(strict_types=1);
             border-radius: 0;
             padding: 0.35rem;
             background: #f8fafc;
-            max-height: 28rem;
+            position: sticky;
+            top: 0;
+            align-self: start;
+            max-height: 100vh;
             overflow: auto;
         }
         .fc-fs-gui-modals-nav__item {

@@ -966,25 +966,6 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-viz-empty--static {
     min-height: 4rem;
 }
 
-.fc-dashboard-badge {
-    display: inline-flex;
-    padding: 0.12rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: lowercase;
-}
-
-.fc-dashboard-badge--success { background: rgba(16, 185, 129, 0.14); color: #059669; }
-.fc-dashboard-badge--muted { background: var(--fc-admin-surface-subtle); color: var(--fc-admin-text-muted); }
-.fc-dashboard-badge--danger { background: rgba(244, 63, 94, 0.14); color: #e11d48; }
-.fc-dashboard-badge--info { background: rgba(99, 102, 241, 0.14); color: #4f46e5; }
-
-html[data-fc-admin-theme='dark'] .fc-dashboard-badge--success { color: #34d399; }
-html[data-fc-admin-theme='dark'] .fc-dashboard-badge--danger { color: #fb7185; }
-html[data-fc-admin-theme='dark'] .fc-dashboard-badge--info { color: #a5b4fc; }
-
 .fc-dashboard-card-slider {
     position: relative;
     display: grid;

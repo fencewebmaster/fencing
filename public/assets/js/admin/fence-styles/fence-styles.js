@@ -42,6 +42,17 @@
         );
     }
 
+    function renderFenceStyleLoader(message) {
+        return (
+            '<div class="fc-fs-loading">' +
+            '<div class="fc-fs-loading__spinner" aria-hidden="true"></div>' +
+            '<p class="fc-fs-loading__text">' +
+            escapeHtml(message || 'Loading…') +
+            '</p>' +
+            '</div>'
+        );
+    }
+
     function renderError(message) {
         return (
             '<div class="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">' +
@@ -733,7 +744,7 @@
             global.FcFenceStyleCodeEditor.preload();
         }
 
-        container.innerHTML = renderLoading('Loading fence style…');
+        container.innerHTML = renderFenceStyleLoader('Loading fence style…');
 
         return Promise.all([
             fetch(API_GET + '&slug=' + encodeURIComponent(slug), {

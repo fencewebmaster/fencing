@@ -627,7 +627,7 @@ $tab = $fcSettingsPage;
                                                 class="peer sr-only"
                                                 <?php echo ((string) $value === (string) ($integrations['webhookMode'] ?? 'live')) ? 'checked' : ''; ?>
                                             >
-                                            <span class="block rounded-md px-3 py-1 text-slate-600 transition-colors peer-checked:bg-[var(--fc-princeton-orange)] peer-checked:text-white"><?php echo $h(ucfirst((string) $value)); ?></span>
+                                            <span class="fc-mode-pill block rounded-md px-3 py-1 text-slate-600 transition-colors peer-checked:text-white"><?php echo $h(ucfirst((string) $value)); ?></span>
                                         </label>
                                         <?php endforeach; ?>
                                     </div>
@@ -806,9 +806,9 @@ $tab = $fcSettingsPage;
                             $debugModeOn = !empty($consoleSettings['debugMode']);
                             $debugOffClass = $debugModeOn
                                 ? 'text-slate-600 hover:text-slate-900'
-                                : 'bg-white text-slate-900 shadow-sm';
+                                : 'fc-debug-toggle--active shadow-sm';
                             $debugOnClass = $debugModeOn
-                                ? 'bg-white text-slate-900 shadow-sm'
+                                ? 'fc-debug-toggle--active shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900';
                             ?>
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">

@@ -608,7 +608,11 @@
         }
 
         return (
-            '<div class="fc-fs-style-preview__controls">' +
+            '<section class="fc-fs-preview-section">' +
+            '<header class="fc-fs-preview-section__head">' +
+            '<span class="fc-fs-preview-section__title">Featured image</span>' +
+            '</header>' +
+            '<div class="fc-fs-preview-section__body fc-fs-style-preview__controls">' +
             Gui.renderImageField('Featured image URL', 'image', config.image || '', {
                 appBase: appBase,
                 compact: true,
@@ -617,7 +621,7 @@
                 pathAttr: 'data-config-path',
                 id: 'fc-fence-style-image-input'
             }) +
-            '</div>'
+            '</div></section>'
         );
     }
 
@@ -629,8 +633,11 @@
         var newTab = !!draft.new_tab;
 
         return (
-            '<div class="fc-fs-style-preview__draft">' +
-            '<span class="fc-fs-style-preview__eyebrow">Draft Status</span>' +
+            '<section class="fc-fs-preview-section">' +
+            '<header class="fc-fs-preview-section__head">' +
+            '<span class="fc-fs-preview-section__title">Draft Status</span>' +
+            '</header>' +
+            '<div class="fc-fs-preview-section__body fc-fs-style-preview__draft">' +
             '<label class="fc-fs-gui-field">' +
             '<span class="fc-fs-gui-field__label">Description</span>' +
             '<span class="fc-fs-gui-field__hint">Shown on the frontend planner when this style is not Live. Defaults to "Temporarily Unavailable".</span>' +
@@ -657,7 +664,7 @@
             '<span class="fc-fs-gui-toggle__track" aria-hidden="true"></span>' +
             '<span class="fc-fs-gui-toggle__label">Open link in new tab</span>' +
             '</label>' +
-            '</div>'
+            '</div></section>'
         );
     }
 
@@ -672,15 +679,18 @@
         return (
             '<div class="fc-admin-fence-style-edit-preview">' +
             '<div class="fc-fs-style-preview">' +
-            '<div class="fc-fs-style-preview__head">' +
-            '<span class="fc-fs-style-preview__eyebrow">Featured preview</span>' +
+            '<section class="fc-fs-preview-section">' +
+            '<header class="fc-fs-preview-section__head">' +
+            '<span class="fc-fs-preview-section__title">Featured preview</span>' +
             renderPreviewLiveToggle(live) +
-            '</div>' +
+            '</header>' +
+            '<div class="fc-fs-preview-section__body">' +
             '<div class="fc-fs-style-preview__card">' +
             renderStylePreviewMedia(imageSrc, title) +
             '<p class="fc-fs-style-preview__name" id="fc-fence-style-preview-title">' +
             escapeHtml(title) +
             '</p></div>' +
+            '</div></section>' +
             renderStylePreviewImageField(config, appBase) +
             renderStylePreviewDraftSection(config) +
             '</div></div>'
@@ -727,9 +737,7 @@
             '<div id="fc-fs-gui-nav" class="fc-fs-edit-toolbar__tabs">' +
             guiNavHtml +
             '</div>' +
-            '<span id="fc-fs-dirty-badge" class="fc-fs-dirty-badge hidden" role="status" aria-live="polite" aria-hidden="true">' +
-            '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>' +
-            '<span>Unsaved changes</span></span></div>' +
+            '<span id="fc-fs-dirty-badge" class="hidden text-xs font-medium text-amber-600" role="status" aria-live="polite">Unsaved changes</span></div>' +
             '<div class="fc-fs-edit-toolbar__actions">' +
             saveHtml +
             '</div></div>' +
@@ -785,7 +793,6 @@
         var badge = state.container.querySelector('#fc-fs-dirty-badge');
         if (badge) {
             badge.classList.toggle('hidden', !dirty);
-            badge.setAttribute('aria-hidden', dirty ? 'false' : 'true');
         }
     }
 

@@ -38,8 +38,7 @@
                 var value = btn.getAttribute('data-fc-debug-mode') === '1';
                 var active = value === enabled;
                 btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-                btn.classList.toggle('bg-white', active);
-                btn.classList.toggle('text-slate-900', active);
+                btn.classList.toggle('fc-debug-toggle--active', active);
                 btn.classList.toggle('shadow-sm', active);
                 btn.classList.toggle('text-slate-600', !active);
                 btn.classList.toggle('hover:text-slate-900', !active);
