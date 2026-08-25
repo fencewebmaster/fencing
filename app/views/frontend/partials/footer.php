@@ -12,7 +12,7 @@
             <div class="mb-5 pb-5 text-secondary small">
                 <?php echo htmlspecialchars($fcBranding['appName'], ENT_QUOTES, 'UTF-8'); ?>
                 <span class="app-version"><?php echo htmlspecialchars($fcBranding['version'], ENT_QUOTES, 'UTF-8'); ?></span>
-            </div>          
+            </div>
         </div>
         <div class="col">
             <a href="" data-bs-toggle="modal" data-bs-target="#clear-all-data" class="btn btn-danger btn-sm px-2 fw-bold text-uppercase float-end">Clear All</a>
@@ -46,11 +46,11 @@
     </div>
 </div>
 
-<!-- Required Libraries (jQuery itself now loads early in <head> — see partials/head.php) -->
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/select2.min.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/slick.min.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery.validate.min.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery-scrollspy.min.js'); ?>"></script>
+<!-- Libraries -->
+<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/select2.min.js'); ?>"></script>
+<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/slick.min.js'); ?>"></script>
+<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery.validate.min.js'); ?>"></script>
+<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery-scrollspy.min.js'); ?>"></script>
 
 <!-- Plugins -->
 <script src="https://maps.googleapis.com/maps/api/js?key=<?php echo htmlspecialchars((string) \Fc\Admin\Services\AppConfigService::all()->apikey->google_map, ENT_QUOTES, 'UTF-8'); ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
@@ -63,7 +63,7 @@
 <!-- Scripts -->
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/helpers.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/main.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery.inputmask.min.js'); ?>"></script>
+<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery.inputmask.min.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/planner-modal.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/functions.js'); ?>"></script>
 <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/events.js'); ?>"></script>

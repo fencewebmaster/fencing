@@ -11,9 +11,7 @@
  * @var object     $fc_fence_info JS `fc_fence_info` payload.
  */
 
-// Field templates are emitted ahead of the document, exactly as the legacy entry script
-// did — p2.js reads them out of the DOM by data-type, so the position is not significant
-// but the presence of every template before the scripts run is.
+// Field templates must be in the DOM before p2.js runs
 include __DIR__ . '/../fields.php';
 ?>
 
@@ -98,9 +96,9 @@ include __DIR__ . '/../fields.php';
 
 		<?php include __DIR__ . '/../partials/footer.php'; ?>
 
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/modern-screenshot.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/html2canvas.min.js'); ?>"></script>
-		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/modern-screenshot.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/html2canvas.min.js'); ?>"></script>
+		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jspdf.umd.min.js'); ?>"></script>
 		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/project-plan/checkout.js'); ?>"></script>
 		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/cart-items.js'); ?>"></script>
 		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/fc-planner-summary.js'); ?>"></script>

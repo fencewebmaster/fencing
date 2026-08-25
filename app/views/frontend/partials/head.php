@@ -17,11 +17,8 @@ endif;
 <?php $info = $_SESSION; ?>
 <?php $fc_route = \Fc\Admin\Core\FrontendApplication::currentRoute(); ?>
 
-<!-- jQuery must be loaded (not deferred) before Google Tag Manager: GTM's container
-     script is async and can fire tags — including ones that call jQuery(...) — before a
-     deferred jQuery at the bottom of the page has executed, throwing "jQuery is not
-     defined" from the GTM-injected tag. -->
-<script src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/vendor/jquery-3.3.1.min.js'); ?>"></script>
+<!-- jQuery loads here, not deferred, so it's ready before GTM tags run -->
+<script src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery-3.3.1.min.js'); ?>"></script>
 
 <?php if( $gtmID = @$site_info['gtmID'] ): ?>
 <!-- Google Tag Manager -->
@@ -71,10 +68,10 @@ echo \Fc\Admin\Services\ThemeSettings::cssBlock();
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <?php endif; ?>
 
-<link rel="stylesheet" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/vendor/slick/slick.css'); ?>"/>
-<?php \Fc\Admin\Helpers\AssetHelper::deferStylesheet(\Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/vendor/slick/slick-theme.css')); ?>
-<link rel="stylesheet" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/vendor/select2/select2.min.css'); ?>"/>
-<?php \Fc\Admin\Helpers\AssetHelper::deferStylesheet(\Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/vendor/select2/select2-bootstrap-5-theme.min.css')); ?>
+<link rel="stylesheet" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/slick/slick.css'); ?>"/>
+<?php \Fc\Admin\Helpers\AssetHelper::deferStylesheet(\Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/slick/slick-theme.css')); ?>
+<link rel="stylesheet" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/select2/select2.min.css'); ?>"/>
+<?php \Fc\Admin\Helpers\AssetHelper::deferStylesheet(\Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/select2/select2-bootstrap-5-theme.min.css')); ?>
 
 <?php if( $gtagID = @$site_info['gtagID'] ): ?>
 <!-- Google tag (gtag.js) -->
