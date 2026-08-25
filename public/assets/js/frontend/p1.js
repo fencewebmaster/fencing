@@ -104,7 +104,12 @@ let Planner = {
                 $selectedTab = $('.fencing-tab.fencing-tab-selected').first();
             }
             if ($selectedTab.length) {
+                // Restoring a prior selection on load — apply the active look instantly,
+                // not via the (user-click-only) fade transition.
+                document.body.classList.add('fc-restoring-selection');
                 $selectedTab.trigger('click');
+                void document.body.offsetHeight; // flush styles while transitions are off
+                document.body.classList.remove('fc-restoring-selection');
             }
             if (typeof window.fcRefreshFencingStylesSlick === 'function') {
                 window.fcRefreshFencingStylesSlick();
@@ -179,7 +184,10 @@ let Planner = {
         }
 
         if (fence) {
+            document.body.classList.add('fc-restoring-selection');
             $('.fencing-style-item[data-slug="' + fence + '"]').trigger('click');
+            void document.body.offsetHeight; // flush styles while transitions are off
+            document.body.classList.remove('fc-restoring-selection');
         }
 
         // Flush Step 2 edits before full page reload so localStorage matches the UI.

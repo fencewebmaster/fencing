@@ -7992,6 +7992,15 @@ thead.fc-border th:last-child {
     border-color: var(--fc-princeton-orange);
 }
 
+/* Suppress the color/opacity transition while the planner restores a previously
+   selected fence style on page load — the "fsi-selected" class lands a beat after
+   first paint, so without this the title/image visibly animate from their default
+   (inactive) look instead of just appearing already-active. */
+body.fc-restoring-selection .fencing-style-item .fencing-style-title,
+body.fc-restoring-selection .fencing-style-item .fencing-style-img {
+    transition: none !important;
+}
+
 /* Step 1 — modern fence style card hover */
 .fc-planner-page .fencing-style-item > div,
 .fc-planner-page .load-quote > div {
@@ -10464,4 +10473,19 @@ input[type="number"] {
 }
 .your-project-details .au-flag-icon {
     top: 1px;
+}
+
+/* Footer app-name indicator — which webhook (live vs test) is currently wired up */
+.fc-footer-webhook-dot {
+    font-size: 8px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.fc-footer-webhook-dot--live {
+    color: var(--fc-green);
+}
+
+.fc-footer-webhook-dot--test {
+    color: var(--fc-red);
 }
