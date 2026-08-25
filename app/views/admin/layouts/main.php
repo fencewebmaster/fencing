@@ -27,7 +27,7 @@ declare(strict_types=1);
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js" as="script">
     <?php endif; ?>
     <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="assets/css/vendor/bootstrap/bootstrap.min.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($fcFontsHref, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/buttons.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/buttons.css'); ?>">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/theme.css'); ?>">

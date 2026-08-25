@@ -32,7 +32,7 @@ $version = (string) ($page['version'] ?? '');
     <base href="<?php echo $h(rtrim((string) $page['admin_base'], '/') . '/'); ?>">
     <title>Sign in — <?php echo $h($appName); ?></title>
     <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="assets/css/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css">
