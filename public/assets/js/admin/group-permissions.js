@@ -328,6 +328,17 @@
         return null;
     }
 
+    function syncExportButtonLabel() {
+        var label = document.querySelector('[data-fc-gp-export-json] span');
+        if (!label) {
+            return;
+        }
+        var role = (state.roles || []).filter(function (item) {
+            return item && item.key === state.selectedRole;
+        })[0];
+        label.textContent = 'Export ' + (role && role.label ? role.label : 'Permission');
+    }
+
     function syncRoleListActive() {
         document.querySelectorAll('[data-fc-gp-role]').forEach(function (btn) {
             var key = btn.getAttribute('data-fc-gp-role') || '';
@@ -380,6 +391,7 @@
                 setDirty(false);
                 syncRoleListActive();
                 syncAdminNotice();
+                syncExportButtonLabel();
                 renderTree();
                 try {
                     var next = new URL(window.location.href);
@@ -721,6 +733,7 @@
         state.apiUrl = boot.apiUrl || state.apiUrl;
         setDirty(false);
         syncAdminNotice();
+        syncExportButtonLabel();
         renderTree();
         bindUi(root);
         showHeaderNotice(root, consumeFlash());

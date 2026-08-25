@@ -1467,7 +1467,8 @@
                     inGroup: true,
                     fenceColorCatalog: fenceColorCatalog,
                     appBase: appBase
-                })
+                }),
+                { bodyClass: 'fc-fs-field-group__body--flush' }
             ) +
             '</div></div>';
 

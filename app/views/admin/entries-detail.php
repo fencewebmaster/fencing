@@ -44,9 +44,6 @@ $item = $page['item'] ?? null;
         <div class="fc-entries-detail-page__grid">
             <section class="fc-entries-detail-panel fc-entries-detail-panel--entry" data-fc-entries-detail-panel="planner">
                 <header class="fc-entries-detail-panel__head fc-entries-detail-panel__head--copyable">
-                    <div class="fc-entries-detail-panel__head-icon" aria-hidden="true">
-                        <i class="fa-solid fa-clipboard-list"></i>
-                    </div>
                     <div class="fc-entries-detail-panel__head-text">
                         <h3 class="fc-entries-detail-panel__title">Planner details</h3>
                         <p class="fc-entries-detail-panel__subtitle">Contact, project, and quote information</p>
@@ -117,9 +114,6 @@ $item = $page['item'] ?? null;
 
             <section class="fc-entries-detail-panel fc-entries-detail-panel--cart">
                 <header class="fc-entries-detail-panel__head">
-                    <div class="fc-entries-detail-panel__head-icon fc-entries-detail-panel__head-icon--cart" aria-hidden="true">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                    </div>
                     <div class="fc-entries-detail-panel__head-text">
                         <h3 class="fc-entries-detail-panel__title">Cart items</h3>
                         <p class="fc-entries-detail-panel__subtitle"><?php echo $h((string) ($page['cart_subtitle'] ?? '')); ?></p>

@@ -3186,24 +3186,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
     background: linear-gradient(180deg, #fafafa 0%, #fff 100%);
 }
 
-.fc-entries-detail-panel__head-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 8px;
-    background: #f0f6fc;
-    color: #2271b1;
-    font-size: 0.9375rem;
-}
-
-.fc-entries-detail-panel__head-icon--cart {
-    background: #fff7ed;
-    color: var(--fc-princeton-orange, #f67925);
-}
-
 .fc-entries-detail-panel__head-text {
     flex: 1 1 auto;
     min-width: 0;
@@ -4072,16 +4054,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-detail-panel {
 html[data-fc-admin-theme='dark'] .fc-entries-detail-panel__head {
     background: var(--fc-admin-surface-muted);
     border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-detail-panel__head-icon {
-    background: rgba(34, 113, 177, 0.15);
-    color: var(--fc-admin-link);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-detail-panel__head-icon--cart {
-    background: rgba(246, 121, 37, 0.15);
-    color: var(--fc-princeton-orange, #f67925);
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-detail-panel__title,

@@ -1,9 +1,6 @@
 <?php require_once dirname(__DIR__, 6) . '/app/src/Helpers/UrlHelper.php'; ?>
 <?php
-// Pre-select from the session so this modal's DOM state always matches the customer's
-// last saved choice — without this, submitting any other form sharing this <form> (e.g.
-// the project-plan "Customer Details" save) would resubmit these fields as unchecked and
-// silently wipe out a previously saved selection.
+// Pre-select from session so other forms sharing this <form> don't wipe saved choices
 $fc_other_items_session = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 $fc_other_items_nothing_extra = isset($fc_other_items_session['nothing_extra']) ? (string) $fc_other_items_session['nothing_extra'] : '';
 $fc_other_items_extra = is_array($fc_other_items_session['extra'] ?? null)

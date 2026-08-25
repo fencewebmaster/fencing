@@ -21,6 +21,13 @@ $tree = is_array($page['tree'] ?? null) ? $page['tree'] : [];
 $selected = (string) ($page['selected_role'] ?? '');
 $isLocked = !empty($page['is_locked']);
 $lockNotice = (string) ($page['lock_notice'] ?? '');
+$selectedRoleLabel = 'Permission';
+foreach ($roles as $roleOption) {
+    if ((string) ($roleOption['key'] ?? '') === $selected) {
+        $selectedRoleLabel = (string) ($roleOption['label'] ?? $selected);
+        break;
+    }
+}
 $bootstrap = [
     'roles' => $roles,
     'selectedRole' => $selected,
@@ -78,7 +85,7 @@ $bootstrap = [
                         role="menuitem"
                         data-fc-gp-export-json
                     >
-                        <span>Export JSON</span>
+                        <span>Export <?php echo $h($selectedRoleLabel); ?></span>
                     </button>
                     <button
                         type="button"
@@ -86,7 +93,7 @@ $bootstrap = [
                         role="menuitem"
                         data-fc-gp-export-all-json
                     >
-                        <span>Export All JSON</span>
+                        <span>Export All Permissions</span>
                     </button>
                     <button
                         type="button"
@@ -94,7 +101,7 @@ $bootstrap = [
                         role="menuitem"
                         data-fc-gp-import-json
                     >
-                        <span>Import JSON</span>
+                        <span>Import Permissions</span>
                     </button>
                 </div>
                 <input
