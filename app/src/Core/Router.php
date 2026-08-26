@@ -6,8 +6,11 @@ namespace Fc\Admin\Core;
 
 final class Router
 {
-    /** @var array<int, array{pattern:string,handler:callable}> */
+    /** @var array<int, array{method:string,pattern:string,handler:callable}> */
     private array $routes = [];
+
+    /** URL prefix applied to every pattern registered while inside a group() call. */
+    private string $groupPrefix = '';
 
     public function get(string $pattern, callable $handler): self
     {
@@ -24,11 +27,36 @@ final class Router
         return $this->add('*', $pattern, $handler);
     }
 
+    /**
+     * Register routes under a shared URL prefix (Laravel-style grouping, prefix only).
+     *
+     * Only the pattern is affected: auth and permission filters stay with the
+     * dispatchers (Core\Application / Core\FrontendApplication), which run them from
+     * the resolved route tail, so a group carries no middleware/namespace options.
+     * Groups nest; an empty pattern inside a group registers the bare prefix itself.
+     */
+    public function group(string $prefix, callable $routes): self
+    {
+        $previous          = $this->groupPrefix;
+        $this->groupPrefix = trim($previous . '/' . trim($prefix, '/'), '/');
+
+        $routes($this);
+
+        $this->groupPrefix = $previous;
+
+        return $this;
+    }
+
     private function add(string $method, string $pattern, callable $handler): self
     {
+        $pattern = trim($pattern, '/');
+        if ($this->groupPrefix !== '') {
+            $pattern = $pattern === '' ? $this->groupPrefix : $this->groupPrefix . '/' . $pattern;
+        }
+
         $this->routes[] = [
             'method'  => strtoupper($method),
-            'pattern' => trim($pattern, '/'),
+            'pattern' => $pattern,
             'handler' => $handler,
         ];
 

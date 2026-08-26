@@ -656,6 +656,9 @@ final class UserPresenter
         return [
             'redirect_url' => null,
             'request' => $request,
+            // Trimmed role filter for the view's active-state checks — the view
+            // aliases this rather than re-deriving it from request.role.
+            'active_role' => trim((string) ($request['role'] ?? '')),
             'admin_base' => $adminBase,
             'app_base' => $appBase,
             'current_page' => $currentPage,

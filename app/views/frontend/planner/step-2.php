@@ -1,4 +1,6 @@
-<?php require_once dirname(__DIR__, 4) . '/app/src/Services/AppConfigService.php'; ?>
+<?php
+use Fc\Admin\Services\AppConfigService;
+?>
 <!-- [START] MEASUREMENT -->
 <div class="fencing-section fencing-section--has-border js-fc-form-step fc-d-none" data-section="2" style="display: none;">
     
@@ -41,7 +43,7 @@
                                     <i class="fa fa-minus"></i>
                                 </div>
                                 
-                                <input type="number" class="measurement-box-number numeric text-center py-1" data-min="<?php echo \Fc\Admin\Services\AppConfigService::all()->overall->min; ?>" data-max="<?php echo \Fc\Admin\Services\AppConfigService::all()->overall->max; ?>" value="">
+                                <input type="number" class="measurement-box-number numeric text-center py-1" data-min="<?php echo AppConfigService::all()->overall->min; ?>" data-max="<?php echo AppConfigService::all()->overall->max; ?>" value="">
                                 
                                 <span>mm</span>   
 

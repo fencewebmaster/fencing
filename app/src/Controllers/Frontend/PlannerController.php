@@ -70,7 +70,7 @@ final class PlannerController extends BaseFrontendController
 
         $_SESSION['live_mode'] = PlannerPageModel::isLiveMode();
 
-        $this->view('planner/index.php', [
+        view('frontend.planner.index', [
             'fences'                   => $fences,
             'info'                     => $info,
             'res'                      => $res,

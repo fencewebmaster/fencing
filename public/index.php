@@ -14,22 +14,26 @@ if (!ConsoleSettings::debugMode()) {
 }
 
 $fcAdminContext = Application::handleWebRequest();
-extract($fcAdminContext->toLayoutVars(), EXTR_SKIP);
 
-$fcAdminFillLayout = !empty($fcAdminIsEntries)
-    || !empty($fcAdminIsUsers)
-    || !empty($fcAdminIsGroupPermissions)
-    || !empty($fcAdminIsSettings)
-    || !empty($fcAdminIsGallery)
-    || !empty($fcAdminIsProductsPage);
+// The layout's variable set: everything AdminContext exposes, plus the two values
+// this front controller adds. Views receive it via view()'s extract() — the same
+// names the old top-level extract() + include put in scope.
+$fcAdminVars = $fcAdminContext->toLayoutVars();
 
-$fcCan = static function (string $key): bool {
+$fcAdminVars['fcAdminFillLayout'] = !empty($fcAdminVars['fcAdminIsEntries'])
+    || !empty($fcAdminVars['fcAdminIsUsers'])
+    || !empty($fcAdminVars['fcAdminIsGroupPermissions'])
+    || !empty($fcAdminVars['fcAdminIsSettings'])
+    || !empty($fcAdminVars['fcAdminIsGallery'])
+    || !empty($fcAdminVars['fcAdminIsProductsPage']);
+
+$fcAdminVars['fcCan'] = static function (string $key): bool {
     return \Fc\Admin\Services\PermissionService::can($key);
 };
 
-if (!empty($fcAdminIsLogin) && is_array($fcLoginPage ?? null)) {
-    include __DIR__ . '/../app/views/admin/login.php';
+if (!empty($fcAdminVars['fcAdminIsLogin']) && is_array($fcAdminVars['fcLoginPage'] ?? null)) {
+    view('admin.login', $fcAdminVars);
     return;
 }
 
-include __DIR__ . '/../app/views/admin/layouts/main.php';
+view('admin.layouts.main', $fcAdminVars);

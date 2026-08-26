@@ -266,17 +266,17 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-kpi:hover {
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 1rem 1.05rem 0.85rem;
-    border-bottom: 1px solid var(--fc-admin-border-subtle);
+    padding: 0.65rem 1.05rem;
+    border-bottom: 1px solid var(--fc-dash-section-border, #c3c4c7);
 }
 
 .fc-dashboard-card__head--rich {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.85rem;
-    padding: 1.1rem 1.15rem 0.95rem;
-    background: var(--fc-admin-surface);
-    border-bottom-color: var(--fc-admin-border-subtle);
+    gap: 0.4rem;
+    padding: 0.65rem 1.1rem;
+    background: var(--fc-admin-surface-muted);
+    border-bottom-color: var(--fc-dash-section-border, #c3c4c7);
 }
 
 .fc-dashboard-card__head-top {
@@ -348,7 +348,7 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-kpi:hover {
 
 .fc-dashboard-card__title {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.2;
@@ -356,10 +356,10 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-kpi:hover {
 }
 
 .fc-dashboard-card__desc {
-    margin: 0.25rem 0 0;
-    font-size: 0.78rem;
+    margin: 0.1rem 0 0;
+    font-size: 0.74rem;
     color: var(--fc-admin-text-muted);
-    line-height: 1.4;
+    line-height: 1.35;
     max-width: 34rem;
 }
 
@@ -407,18 +407,8 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-kpi:hover {
     transform: translateX(2px);
 }
 
-.fc-dashboard-viz-summary--header {
-    margin: 0;
-}
-
-.fc-dashboard-viz-summary--header .fc-dashboard-viz-summary__item {
-    background: var(--fc-admin-surface);
-    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 16%, var(--fc-admin-border-subtle));
-    box-shadow: none;
-}
-
 html[data-fc-admin-theme='dark'] .fc-dashboard-card__head--rich {
-    background: var(--fc-admin-surface);
+    background: var(--fc-admin-surface-muted);
 }
 
 html[data-fc-admin-theme='dark'] .fc-dashboard-card__link--btn {
@@ -432,6 +422,7 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-card__link--btn {
     flex: 1 1 auto;
     flex-direction: column;
     min-height: 0;
+    gap: 0.85rem;
     padding: 1rem;
 }
 

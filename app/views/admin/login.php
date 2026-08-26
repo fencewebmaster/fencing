@@ -2,24 +2,18 @@
 /**
  * FC Admin — Login page (loan-inspired UI, WordPress auth).
  *
+ * Read-only template: AuthPresenter::loginViewData() guarantees every key here as
+ * a string. Escaping via the global e() helper; public/index.php's is_array()
+ * check on fcLoginPage is the render gate.
+ *
  * @var array<string, mixed> $fcLoginPage
  */
 
-declare(strict_types=1);
-
-if (!isset($fcLoginPage) || !is_array($fcLoginPage)) {
-    return;
-}
-
-$h = static function (string $value): string {
-    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-};
-
-$page = $fcLoginPage;
-$appName = (string) ($page['app_name'] ?? 'Fencing Calculator');
-$logoUrl = (string) ($page['logo_url'] ?? '');
-$appBase = (string) ($page['app_base'] ?? '..');
-$version = (string) ($page['version'] ?? '');
+$page    = $fcLoginPage;
+$appName = $page['app_name'];
+$logoUrl = $page['logo_url'];
+$appBase = $page['app_base'];
+$version = $page['version'];
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-full" data-fc-admin-theme="light">
@@ -29,8 +23,8 @@ $version = (string) ($page['version'] ?? '');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="<?php echo $h(rtrim((string) $page['admin_base'], '/') . '/'); ?>">
-    <title>Sign in — <?php echo $h($appName); ?></title>
+    <base href="<?php echo e(rtrim((string) $page['admin_base'], '/') . '/'); ?>">
+    <title>Sign in — <?php echo e($appName); ?></title>
     <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
     <link href="assets/css/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/vendor/fontawesome/css/all.min.css">
@@ -61,12 +55,12 @@ $version = (string) ($page['version'] ?? '');
         <div class="login-panel-brand">
             <div class="login-brand-content">
                 <h2>Design fences with clarity and confidence</h2>
-                <p><?php echo $h((string) ($page['tagline'] ?? '')); ?></p>
+                <p><?php echo e((string) ($page['tagline'] ?? '')); ?></p>
                 <div class="login-features">
                     <?php foreach (($page['features'] ?? []) as $feature) : ?>
                     <div class="login-feature">
-                        <i class="fas <?php echo $h((string) ($feature['icon'] ?? 'fa-check')); ?>"></i>
-                        <?php echo $h((string) ($feature['label'] ?? '')); ?>
+                        <i class="fas <?php echo e((string) ($feature['icon'] ?? 'fa-check')); ?>"></i>
+                        <?php echo e((string) ($feature['label'] ?? '')); ?>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -80,13 +74,13 @@ $version = (string) ($page['version'] ?? '');
                         <?php echo \Fc\Admin\Services\BrandingSettings::logoMarkup($appBase, null, ['img_class' => 'login-logo__img']); ?>
                     </div>
                     <h1>Welcome back</h1>
-                    <p>Sign in to <?php echo $h($appName); ?></p>
+                    <p>Sign in to <?php echo e($appName); ?></p>
                 </div>
 
                 <div class="login-form-card">
                     <form id="login-form" method="post" action="" novalidate autocomplete="on">
-                        <input type="hidden" name="csrf_token" value="<?php echo $h((string) ($page['csrf'] ?? '')); ?>">
-                        <input type="hidden" name="redirect" value="<?php echo $h((string) ($page['redirect'] ?? '')); ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo e((string) ($page['csrf'] ?? '')); ?>">
+                        <input type="hidden" name="redirect" value="<?php echo e((string) ($page['redirect'] ?? '')); ?>">
 
                         <div id="login-error" class="alert alert-error hidden mb-5" role="alert">
                             <i class="fas fa-circle-exclamation"></i>
@@ -147,7 +141,7 @@ $version = (string) ($page['version'] ?? '');
                 </div>
 
                 <p class="login-footer-note">
-                    &copy; <?php echo date('Y'); ?> <?php echo $h($appName); ?><?php echo $version !== '' ? ' &middot; ' . $h($version) : ''; ?>
+                    &copy; <?php echo date('Y'); ?> <?php echo e($appName); ?><?php echo $version !== '' ? ' &middot; ' . e($version) : ''; ?>
                 </p>
             </div>
         </div>

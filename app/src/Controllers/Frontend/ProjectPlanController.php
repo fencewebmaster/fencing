@@ -34,7 +34,7 @@ final class ProjectPlanController extends BaseFrontendController
         $cart = ProjectPlanPageModel::refreshCartFromPlan($info, $cart);
         ProjectPlanPageModel::ensureCartImages($cart);
 
-        $this->view('project-plan/index.php', [
+        view('frontend.project-plan.index', [
             'fences'        => $fences,
             'info'          => $info,
             'cart'          => $cart,

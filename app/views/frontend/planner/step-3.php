@@ -14,7 +14,7 @@
                 
                 <?php if( @$_SESSION['planner_id'] ): ?>
                 <div class="btn-copy-link badge border text-muted float-end" data-id="quote-id-1">
-                    <span id="quote-id-1"><?php echo htmlspecialchars((string) @$_SESSION['planner_id'], ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span id="quote-id-1"><?php echo e((string) @$_SESSION['planner_id']); ?></span>
                 </div>
                 <?php endif; ?>
 

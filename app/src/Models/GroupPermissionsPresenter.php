@@ -238,20 +238,50 @@ final class GroupPermissionsPresenter
 
         $canEdit = self::canEditRole($selected);
 
+        $selectedRoleLabel = 'Permission';
+        foreach ($roles as $roleOption) {
+            if ((string) ($roleOption['key'] ?? '') === $selected) {
+                $selectedRoleLabel = (string) ($roleOption['label'] ?? $selected);
+                break;
+            }
+        }
+
+        $tree = GroupPermissionsModel::permissionTree();
+        $permissions = GroupPermissionsModel::get($selected);
+        $csrf = AuthService::csrfToken();
+        $lockNotice = $selected === 'super_admin' ? 'Super Admin always has full system access.' : '';
+        $apiUrl = rtrim($adminBase, '/') . '/api.php?module=groupPermissions';
+
         return [
             'admin_base' => rtrim($adminBase, '/'),
             'roles' => $roles,
             'selected_role' => $selected,
+            'selected_role_label' => $selectedRoleLabel,
             'is_super_admin_role' => $selected === 'super_admin',
             'is_administrator_role' => $selected === 'administrator',
             'is_locked' => !$canEdit,
             'can_edit' => $canEdit,
-            'lock_notice' => $selected === 'super_admin' ? 'Super Admin always has full system access.' : '',
-            'tree' => GroupPermissionsModel::permissionTree(),
-            'permissions' => GroupPermissionsModel::get($selected),
-            'csrf' => AuthService::csrfToken(),
-            'api_url' => rtrim($adminBase, '/') . '/api.php?module=groupPermissions',
+            'lock_notice' => $lockNotice,
+            'tree' => $tree,
+            'permissions' => $permissions,
+            'csrf' => $csrf,
+            'api_url' => $apiUrl,
             'form_action' => 'users/group-permissions',
+            // JS bootstrap payload the view embeds verbatim — assembled here so the
+            // template stays read-only (it used to build this array itself).
+            'bootstrap' => [
+                'roles' => $roles,
+                'selectedRole' => $selected,
+                'isSuperAdminRole' => $selected === 'super_admin',
+                'isAdministratorRole' => $selected === 'administrator',
+                'isLocked' => !$canEdit,
+                'canEdit' => $canEdit,
+                'lockNotice' => $lockNotice,
+                'tree' => $tree,
+                'permissions' => $permissions,
+                'csrf' => $csrf,
+                'apiUrl' => $apiUrl,
+            ],
         ];
     }
 

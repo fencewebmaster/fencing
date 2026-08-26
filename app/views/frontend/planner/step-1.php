@@ -1,4 +1,3 @@
-<?php require_once dirname(__DIR__, 4) . '/app/src/Helpers/UrlHelper.php'; ?>
 <div class="fencing-section fencing-section--has-border fencing-section--no-radius-top" data-section="1">
 
     <!-- [START] STYLES AREA -->
@@ -71,22 +70,22 @@
             $fence_draft_new_tab = ! empty( $fence_draft['new_tab'] );
             ?>
             <div class="fencing-style-item fencing-styles-slide<?php echo $fence_is_live ? '' : ' fencing-style-item--unavailable'; ?>"
-                data-slug="<?php echo htmlspecialchars( (string) $fence['slug'], ENT_QUOTES, 'UTF-8' ); ?>"
-                data-title="<?php echo htmlspecialchars( (string) $fence['title'], ENT_QUOTES, 'UTF-8' ); ?>"
+                data-slug="<?php echo e((string) $fence['slug']); ?>"
+                data-title="<?php echo e((string) $fence['title']); ?>"
                 <?php if ( ! $fence_is_live ) : ?>data-live="0" aria-disabled="true"<?php endif; ?>>
                 <div>
 
                     <div class="fencing-style-img">
-                        <img src="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl() . $fence['image']; ?>" alt="<?php echo htmlspecialchars( (string) $fence['title'], ENT_QUOTES, 'UTF-8' ); ?>">
+                        <img src="<?php echo url() . $fence['image']; ?>" alt="<?php echo e((string) $fence['title']); ?>">
                         <?php if ( ! $fence_is_live ) : ?>
                         <div class="fencing-style-unavailable">
-                            <span class="fencing-style-unavailable__text"><?php echo htmlspecialchars( $fence_draft_description, ENT_QUOTES, 'UTF-8' ); ?></span>
+                            <span class="fencing-style-unavailable__text"><?php echo e($fence_draft_description); ?></span>
                             <?php if ( $fence_draft_link !== '' ) : ?>
                             <a
                                 class="fencing-style-unavailable__link"
-                                href="<?php echo htmlspecialchars( $fence_draft_link, ENT_QUOTES, 'UTF-8' ); ?>"
+                                href="<?php echo e($fence_draft_link); ?>"
                                 <?php if ( $fence_draft_new_tab ) : ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>
-                            ><?php echo htmlspecialchars( $fence_draft_link_text, ENT_QUOTES, 'UTF-8' ); ?></a>
+                            ><?php echo e($fence_draft_link_text); ?></a>
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>
@@ -107,7 +106,7 @@
                 <div>
 
                     <div class="fencing-style-img">
-                        <img src="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl(); ?>public/assets/img/webp/plain-white.webp">  
+                        <img src="<?php echo url(); ?>public/assets/img/webp/plain-white.webp">  
                         <div class="lq-mid-desc">
                             <div class="lq-icon">
                                 <i class="fa-solid fa-file-circle-plus"></i>                                         

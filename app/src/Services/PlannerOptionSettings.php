@@ -91,7 +91,7 @@ final class PlannerOptionSettings
             $items[] = [
                 'slug' => $slug,
                 'label' => $label,
-                'image' => 'public/assets/img/plans/webp/' . $slug . '.webp',
+                'image' => '',
             ];
         }
 

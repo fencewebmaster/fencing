@@ -11,25 +11,28 @@
  * @var object     $fc_fence_info JS `fc_fence_info` payload.
  */
 
+use Fc\Admin\Services\ConsoleSettings;
+use Fc\Admin\Services\PlannerSessionService;
+
 // Field templates must be in the DOM before p2.js runs
-include __DIR__ . '/../fields.php';
+include view_path('frontend.partials.fields.index');
 ?>
 
 <!DOCTYPE html>
-<html data-fc-debug="<?php echo \Fc\Admin\Services\ConsoleSettings::debugMode() ? '1' : '0'; ?>">
+<html data-fc-debug="<?php echo ConsoleSettings::debugMode() ? '1' : '0'; ?>">
 	<head>
-	<?php include __DIR__ . '/../partials/head.php'; ?>
+	<?php include view_path('frontend.partials.head'); ?>
 	<script>window.FC_DEBUG = document.documentElement.getAttribute('data-fc-debug') === '1';</script>
 	</head>
 	<body class="fc-project-plan-page fc-project-plan-page-loading">
 
-		<?php include __DIR__ . '/../partials/body-before.php'; ?>
+		<?php include view_path('frontend.partials.body-before'); ?>
 
 		<!-- [START] FENCING CONTAINER -->
 		<div id="place_order-section" class="fencing-container container-lg fc-project-plan fc-position-relative mt-5" data-tab="1">
 
 			<!-- [START] CHECKOUT FORM -->
-			<form method="POST" id="paymentFrm" action="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl('checkout'); ?>">
+			<form method="POST" id="paymentFrm" action="<?php echo url('checkout'); ?>">
 
 				<input type="hidden" name="action" value="">
 
@@ -39,14 +42,14 @@ include __DIR__ . '/../fields.php';
 
 		                <div class="col-sm">
 		                	<div class="mb-3 mb-sm-0">
-		                		<?php include __DIR__ . '/../partials/header-left.php'; ?>
+		                		<?php include view_path('frontend.partials.header-left'); ?>
 		                	</div>
 		                </div>
 		                <div class="col-sm-auto col-auto">
 							<?php
 							$quote_id_dom_id = 'quote-id-1';
 							$quote_card_class = 'float-end';
-							include __DIR__ . '/../partials/quote-id-card.php';
+							include view_path('frontend.partials.quote-id-card');
 							?>
 		                </div>
 
@@ -54,7 +57,7 @@ include __DIR__ . '/../fields.php';
 		        </div>
 				<!-- [END] PAGE HEADER TITLE -->
 
-				<?php include __DIR__ . '/header-tabs.php'; ?>
+				<?php include view_path('frontend.project-plan.header-tabs'); ?>
 
 				<!-- [START] FENCING CONTENT -->
 				<div class="fencing-content fc-font-1">
@@ -63,18 +66,18 @@ include __DIR__ . '/../fields.php';
 
 				        <div>
 
-				        	<?php include __DIR__ . '/project-details.php'; ?>
+				        	<?php include view_path('frontend.project-plan.project-details'); ?>
 
-				        	<?php include __DIR__ . '/project-plans.php'; ?>
+				        	<?php include view_path('frontend.project-plan.project-plans'); ?>
 
-				        	<?php include __DIR__ . '/item-list-cart.php'; ?>
+				        	<?php include view_path('frontend.project-plan.item-list-cart'); ?>
 
 				        </div>
 				    </div>
 				</div>
 				<!-- [END] FENCING CONTENT -->
 
-		    	<?php include __DIR__ . '/../modal/submit/view-2.php'; ?>
+		    	<?php include view_path('frontend.partials.modal.submit.view-2'); ?>
 
 
 			</form>
@@ -83,27 +86,27 @@ include __DIR__ . '/../fields.php';
 		</div>
 		<!-- [END] FENCING CONTAINER -->
 
-		<?php include __DIR__ . '/modals.php'; ?>
+		<?php include view_path('frontend.project-plan.modals'); ?>
 
 		<!-- Config -->
 		<script type="text/javascript">
 		var fc_data  = <?php echo json_encode($fences); ?>;
-		var base_url = '<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl(); ?>';
+		var base_url = '<?php echo url(); ?>';
 		var fc_fence_info = <?php echo json_encode( $fc_fence_info, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>;
 		var planner_id = <?php echo json_encode((string) (@$_SESSION['planner_id'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP); ?>;
-		var planner_share_url = "<?php echo \Fc\Admin\Services\PlannerSessionService::qidShareUrl(); ?>";
+		var planner_share_url = "<?php echo PlannerSessionService::qidShareUrl(); ?>";
 		</script>
 
-		<?php include __DIR__ . '/../partials/footer.php'; ?>
+		<?php include view_path('frontend.partials.footer'); ?>
 
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/modern-screenshot.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/html2canvas.min.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jspdf.umd.min.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/project-plan/checkout.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/cart-items.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/fc-planner-summary.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/project-plan/p2.js'); ?>"></script>
-		<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/project-plan/fc-project-plan-color-slick.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/vendor/modern-screenshot.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/vendor/html2canvas.min.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/vendor/jspdf.umd.min.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/frontend/project-plan/checkout.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/frontend/shared/cart-items.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/frontend/shared/fc-planner-summary.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/frontend/project-plan/p2.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/frontend/project-plan/fc-project-plan-color-slick.js'); ?>"></script>
 
 		<script type="text/javascript">
 		(function() {

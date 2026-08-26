@@ -1,24 +1,27 @@
+<?php
+use Fc\Admin\Core\FrontendApplication;
+use Fc\Admin\Helpers\AssetHelper;
+use Fc\Admin\Services\AppConfigService;
+use Fc\Admin\Services\BrandingSettings;
+use Fc\Admin\Services\ThemeSettings;
+?>
 <meta charset="UTF-8">
 <?php
-require_once dirname(__DIR__, 4) . '/app/src/Services/BrandingSettings.php';
-require_once dirname(__DIR__, 4) . '/app/src/Services/AppConfigService.php';
-require_once dirname(__DIR__, 4) . '/app/src/Helpers/UrlHelper.php';
-require_once dirname(__DIR__, 4) . '/app/src/Helpers/AssetHelper.php';
-$fcBranding = \Fc\Admin\Services\BrandingSettings::get();
+$fcBranding = BrandingSettings::get();
 ?>
-<title><?php echo htmlspecialchars($fcBranding['appName'], ENT_QUOTES, 'UTF-8'); ?></title>
+<title><?php echo e($fcBranding['appName']); ?></title>
 
 <?php
-if( !\Fc\Admin\Services\AppConfigService::all()->app->debug ):
+if( !AppConfigService::all()->app->debug ):
 	error_reporting(0);
 endif;
 ?>
 
 <?php $info = $_SESSION; ?>
-<?php $fc_route = \Fc\Admin\Core\FrontendApplication::currentRoute(); ?>
+<?php $fc_route = FrontendApplication::currentRoute(); ?>
 
 <!-- jQuery loads here, not deferred, so it's ready before GTM tags run -->
-<script src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery-3.3.1.min.js'); ?>"></script>
+<script src="<?php echo asset('public/assets/js/vendor/jquery-3.3.1.min.js'); ?>"></script>
 
 <?php if( $gtmID = @$site_info['gtmID'] ): ?>
 <!-- Google Tag Manager -->
@@ -32,17 +35,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <?php
 // Dynamic favicon: prefer branding favicon when set, fallback to bundled fav.ico
-$fcFavicon = \Fc\Admin\Services\BrandingSettings::faviconUrl('');
+$fcFavicon = BrandingSettings::faviconUrl('');
 
 if ($fcFavicon !== '') {
     $faviconHref = $fcFavicon;
     if (!preg_match('/^https?:\\/\\//i', $faviconHref) && strpos($faviconHref, '//') !== 0 && !preg_match('/^data:/i', $faviconHref)) {
         // make absolute URL relative to current host/path
-        $faviconHref = \Fc\Admin\Helpers\UrlHelper::baseUrl(ltrim($faviconHref, '/'));
+        $faviconHref = url(ltrim($faviconHref, '/'));
     }
-    echo '<link rel="icon" href="' . htmlspecialchars($faviconHref, ENT_QUOTES, 'UTF-8') . '">';
+    echo '<link rel="icon" href="' . e($faviconHref) . '">';
 } else {
-    echo '<link rel="icon" type="image/x-icon" href="' . htmlspecialchars(\Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/img/fav.ico'), ENT_QUOTES, 'UTF-8') . '">';
+    echo '<link rel="icon" type="image/x-icon" href="' . e(asset('public/assets/img/fav.ico')) . '">';
 }
 ?>
 
@@ -52,26 +55,25 @@ if ($fcFavicon !== '') {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
-<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/fonts.css'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/fonts.css'); ?>">
 
-<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/style.css'); ?>">
-<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/frontend/style-v2.css'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/frontend/style.css'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/frontend/style-v2.css'); ?>">
 <?php
-require_once dirname(__DIR__, 4) . '/app/src/Services/ThemeSettings.php';
-echo \Fc\Admin\Services\ThemeSettings::cssBlock();
+echo ThemeSettings::cssBlock();
 ?>
-<link rel="stylesheet" type="text/css" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/fonts/fa/css/all.min.css'); ?>">
+<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/fonts/fa/css/all.min.css'); ?>">
 
-<link href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
+<link href="<?php echo asset('public/assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
 
 <?php if ($fc_route === 'project-plan') : ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <?php endif; ?>
 
-<link rel="stylesheet" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/slick/slick.css'); ?>"/>
-<?php \Fc\Admin\Helpers\AssetHelper::deferStylesheet(\Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/slick/slick-theme.css')); ?>
-<link rel="stylesheet" href="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/select2/select2.min.css'); ?>"/>
-<?php \Fc\Admin\Helpers\AssetHelper::deferStylesheet(\Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/css/vendor/select2/select2-bootstrap-5-theme.min.css')); ?>
+<link rel="stylesheet" href="<?php echo asset('public/assets/css/vendor/slick/slick.css'); ?>"/>
+<?php AssetHelper::deferStylesheet(asset('public/assets/css/vendor/slick/slick-theme.css')); ?>
+<link rel="stylesheet" href="<?php echo asset('public/assets/css/vendor/select2/select2.min.css'); ?>"/>
+<?php AssetHelper::deferStylesheet(asset('public/assets/css/vendor/select2/select2-bootstrap-5-theme.min.css')); ?>
 
 <?php if( $gtagID = @$site_info['gtagID'] ): ?>
 <!-- Google tag (gtag.js) -->

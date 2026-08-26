@@ -6,6 +6,7 @@ namespace Fc\Admin\Models;
 
 use Fc\Admin\Helpers\StringHelper;
 use Fc\Admin\Helpers\ViewHelper;
+use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\FenceColorSettings;
 use Fc\Admin\Services\PermissionService;
@@ -809,6 +810,10 @@ final class StoreProductPresenter
 
         return [
             'error'              => $error,
+            // CSV download affordances — derived here so the view stays read-only
+            // (it used to compute the ready flag and call AdminSiteRegistry itself).
+            'csv_ready'          => $error === '',
+            'csv_name'           => AdminSiteRegistry::currentSiteFilenameSlug() . '-system-products.csv',
             'columns'            => $columns,
             'filters'            => $filters,
             'has_active_filters' => $hasActiveFilters,

@@ -7,7 +7,6 @@ namespace Fc\Admin\Models;
 use Fc\Admin\Services\CartBuilderService;
 use Fc\Admin\Services\Database;
 use Fc\Admin\Services\FenceCatalogService;
-use Fc\Admin\Services\FenceSettingsService;
 use Fc\Admin\Services\PlannerRecordService;
 use Fc\Admin\Services\PlannerSessionService;
 use Fc\Admin\Services\SiteRegistryService;
@@ -132,15 +131,5 @@ final class ProjectPlanPageModel
         }
 
         return $fc_fence_info;
-    }
-
-    /**
-     * Fence catalog from FenceSettingsService.
-     *
-     * @return array<string, mixed>
-     */
-    public static function fences(): array
-    {
-        return FenceSettingsService::fences();
     }
 }

@@ -20,9 +20,16 @@ final class LookupController extends BaseFrontendController
 
         $appBase = $data['appBase'];
 
-        $this->view('lookup/index.php', [
+        view('frontend.lookup.index', [
             'page'             => $data['page'],
             'catalog'          => $data['catalog'],
+            'toolbar'          => $data['toolbar'],
+            'shell'            => $data['shell'],
+            'filters'          => $data['filters'],
+            'results'          => $data['results'],
+            'pager'            => $data['pager'],
+            'quickView'        => $data['quickView'],
+            'emptyState'       => $data['emptyState'],
             'fcLookupPageTitle' => $data['title'],
             'fcLookupAppBase'  => $appBase,
             'fcLookupLogoUrl'  => $data['logoUrl'],

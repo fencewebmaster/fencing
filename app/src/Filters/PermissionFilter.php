@@ -61,19 +61,46 @@ final class PermissionFilter implements FilterInterface
             http_response_code(403);
         }
 
+        // Full view-model for errors/403.php, assembled here — this filter is the
+        // page's only producer, so the template stays read-only. The is_readable
+        // check keeps the plain-HTML fallback below working when the view file is
+        // missing, where view() would throw instead of degrading.
         $view = dirname(__DIR__, 2) . '/views/errors/403.php';
         if (is_readable($view)) {
-            $fc403Message = $message;
             $fcAdminBase = AuthService::adminBase();
-            $fc403IsSwitched = ImpersonationService::isSwitched();
-            $fc403SwitchFrom = $fc403IsSwitched ? ImpersonationService::switchFrom() : null;
-            $fc403CurrentUser = AuthService::user();
-            $fc403SwitchBackUrl = '';
-            if ($fc403IsSwitched && $fcAdminBase !== '') {
+            $base        = rtrim($fcAdminBase, '/');
+            $isSwitched  = ImpersonationService::isSwitched();
+            $switchFrom  = $isSwitched ? ImpersonationService::switchFrom() : null;
+            $currentUser = AuthService::user();
+
+            $switchBackUrl = '';
+            if ($isSwitched && $fcAdminBase !== '') {
                 $token = AuthService::mintOneTimeToken('switch-back');
-                $fc403SwitchBackUrl = rtrim($fcAdminBase, '/') . '/users/switch-back?_token=' . rawurlencode($token);
+                $switchBackUrl = $base . '/users/switch-back?_token=' . rawurlencode($token);
             }
-            include $view;
+
+            $asName = '';
+            if (is_array($currentUser)) {
+                $asName = (string) (($currentUser['display_name'] ?? '') !== ''
+                    ? $currentUser['display_name']
+                    : ($currentUser['login'] ?? ''));
+            }
+
+            $fromName = '';
+            if (is_array($switchFrom)) {
+                $fromName = (string) (($switchFrom['display_name'] ?? '') !== ''
+                    ? $switchFrom['display_name']
+                    : ($switchFrom['login'] ?? 'admin'));
+            }
+
+            view('errors.403', [
+                'message'       => $message,
+                'home'          => $base !== '' ? $base . '/dashboard' : '/',
+                'isSwitched'    => $isSwitched,
+                'switchBackUrl' => $switchBackUrl,
+                'asName'        => $asName,
+                'fromName'      => $fromName,
+            ]);
             exit;
         }
 

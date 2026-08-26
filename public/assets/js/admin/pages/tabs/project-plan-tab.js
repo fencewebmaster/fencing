@@ -95,7 +95,7 @@
                                 var url = global.FC.Settings.tabs.fenceColors.previewUrl({ image: path }, self.getAppBase());
                                 preview.innerHTML = url
                                     ? global.FC.Settings.buildViewableImgHtml(url, (item && item.label) || key)
-                                    : '';
+                                    : global.FC.Settings.buildImagePlaceholderHtml();
                             }
                             self.setDirty(true);
                         }
@@ -133,7 +133,9 @@
                 '</span>' +
                 '<span class="fc-settings-site-logo shrink-0" data-fc-project-plan-item-preview="' +
                 key +
-                '"></span>' +
+                '">' +
+                global.FC.Settings.buildImagePlaceholderHtml() +
+                '</span>' +
                 '<span class="fc-settings-field-input-wrap">' +
                 '<input type="text" id="' +
                 slugId +
@@ -381,7 +383,7 @@
                             : '';
                         preview.innerHTML = url
                             ? '<img src="' + escapeHtml(url) + '" alt="" loading="lazy" decoding="async" />'
-                            : '';
+                            : global.FC.Settings.buildImagePlaceholderHtml();
                     });
                     self.setDirty(true);
                 });

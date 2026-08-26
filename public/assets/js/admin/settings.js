@@ -170,6 +170,11 @@
         });
     }
 
+    /** Fallback markup for a settings preview thumbnail when no image is set. */
+    function buildImagePlaceholderHtml() {
+        return '<i class="fa-solid fa-image" aria-hidden="true"></i>';
+    }
+
     /** <img> markup for a settings preview thumbnail, clickable to view larger (project plan items, integration logos). */
     function buildViewableImgHtml(url, label) {
         var safeLabel = escapeHtml(String(label || ''));
@@ -774,6 +779,7 @@
     global.FC.Settings.updateHeaderActions = updateHeaderActions;
     global.FC.Settings.buildFieldCopyButton = buildFieldCopyButton;
     global.FC.Settings.buildViewableImgHtml = buildViewableImgHtml;
+    global.FC.Settings.buildImagePlaceholderHtml = buildImagePlaceholderHtml;
     global.FC.Settings.tabs = global.FC.Settings.tabs || {};
 
     class SettingsPage extends global.FC.PageController {

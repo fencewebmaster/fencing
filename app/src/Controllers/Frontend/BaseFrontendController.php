@@ -43,22 +43,14 @@ abstract class BaseFrontendController extends BaseController
     }
 
     /**
-     * Render a view from app/views/frontend/.
-     *
-     * @param array<string, mixed> $data
-     */
-    protected function view(string $template, array $data = []): void
-    {
-        View::render('frontend/' . ltrim($template, '/'), $data);
-    }
-
-    /**
-     * Render a view from app/views/frontend/ and capture it.
+     * Render a view by its full dot name and capture it as a string — for the
+     * HTML fragments the AJAX endpoints echo (e.g. 'frontend.partials.sections.cart-table').
+     * Full pages render via the global view() helper instead.
      *
      * @param array<string, mixed> $data
      */
     protected function renderToString(string $template, array $data = []): string
     {
-        return View::partial('frontend/' . ltrim($template, '/'), $data);
+        return View::partial($template, $data);
     }
 }

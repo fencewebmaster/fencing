@@ -1,31 +1,27 @@
 <?php
 /**
+ * Read-only template: LookupPageModel::filtersData() supplies every value —
+ * price-slider math, selected filters, group open/count state and all clear
+ * URLs. Only the two rendering closures below ($renderCats/$groupHead, which
+ * echo markup) stay template-side.
+ *
  * @var array<string, mixed> $page
+ * @var array<string, mixed> $filters
  * @var callable $h
  */
 
-declare(strict_types=1);
-
-$req = is_array($page['request'] ?? null) ? $page['request'] : [];
-$facets = is_array($page['facets'] ?? null) ? $page['facets'] : [];
-$price = is_array($facets['price'] ?? null) ? $facets['price'] : ['min' => 0, 'max' => 0];
-$priceMinBound = (float) ($price['min'] ?? 0);
-$priceMaxBound = (float) ($price['max'] ?? 0);
-if ($priceMaxBound <= $priceMinBound) {
-    $priceMaxBound = $priceMinBound + 1;
-}
-$minPriceVal = $req['min_price'] !== null ? (string) $req['min_price'] : '';
-$maxPriceVal = $req['max_price'] !== null ? (string) $req['max_price'] : '';
-$colorFacet = is_array($facets['color'] ?? null) ? $facets['color'] : ['terms' => []];
-$selectedColors = array_map('intval', $req['color'] ?? []);
-$selectedCats = array_map('intval', $req['cat'] ?? []);
-$selectedTags = array_map('intval', $req['tag'] ?? []);
-$selectedStock = array_map('strval', $req['stock'] ?? []);
-$selectedAttrs = is_array($req['attr'] ?? null) ? $req['attr'] : [];
-
-$priceActive = ($req['min_price'] !== null || $req['max_price'] !== null) ? 1 : 0;
-$saleActive = (($req['sale'] ?? '') !== '') ? 1 : 0;
-$featuredActive = !empty($req['featured']) ? 1 : 0;
+$req            = $page['request'];
+$facets         = $filters['facets'];
+$price          = $filters['price'];
+$priceMinBound  = $price['min_bound'];
+$priceMaxBound  = $price['max_bound'];
+$minPriceVal    = $price['min_val'];
+$maxPriceVal    = $price['max_val'];
+$selectedCats   = $filters['selected_cats'];
+$selectedColors = $filters['selected_colors'];
+$selectedTags   = $filters['selected_tags'];
+$selectedStock  = $filters['selected_stock'];
+$colorTerms     = $filters['color_terms'];
 
 /**
  * @param list<array<string, mixed>> $nodes
@@ -85,21 +81,15 @@ $groupHead = static function (
     <?php
 };
 
-$clearOverrides = static function (array $overrides) use ($req): string {
-    $overrides['page'] = null;
-    $overrides['view'] = null;
-
-    return \Fc\Admin\Services\ProductLookupService::url($req, $overrides);
-};
 ?>
-<form class="fc-lookup-filters" method="get" action="<?php echo $h(\Fc\Admin\Services\ProductLookupService::basePath()); ?>" data-fc-lookup-filters>
+<form class="fc-lookup-filters" method="get" action="<?php echo $h($filters['action_url']); ?>" data-fc-lookup-filters>
     <input type="hidden" name="layout" value="<?php echo $h((string) ($req['layout'] ?? 'grid')); ?>">
     <input type="hidden" name="orderby" value="<?php echo $h((string) ($req['orderby'] ?? 'default')); ?>">
     <?php
-        $catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : [];
-        $defaultPerPage = (int) ($catalog['resultsPerPage'] ?? 12);
+    // Same emitted bytes as the removed inline block: its open-tag line contributed
+    // four leading spaces to the hidden input's rendered line.
     ?>
-    <input type="hidden" name="per_page" value="<?php echo (int) ($req['per_page'] ?? $defaultPerPage); ?>">
+    <input type="hidden" name="per_page" value="<?php echo (int) $filters['per_page_hidden']; ?>">
 
     <div class="fc-lookup-filters__head">
         <h2 class="fc-lookup-filters__title">Filters</h2>
@@ -118,13 +108,13 @@ $clearOverrides = static function (array $overrides) use ($req): string {
             </span>
         </label>
         <?php if (($req['q'] ?? '') !== '') : ?>
-        <a class="fc-lookup-filters__search-clear" href="<?php echo $h($clearOverrides(['q' => null])); ?>">Clear</a>
+        <a class="fc-lookup-filters__search-clear" href="<?php echo $h($filters['clear_urls']['q']); ?>">Clear</a>
         <?php endif; ?>
     </div>
 
     <div class="fc-lookup-filters__stack">
         <div class="fc-lookup-filter-group is-open" data-fc-lookup-filter-group>
-            <?php $groupHead('Categories', count($selectedCats), $clearOverrides(['cat' => null]), true); ?>
+            <?php $groupHead('Categories', $filters['cats_count'], $filters['clear_urls']['cats'], true); ?>
             <div class="fc-lookup-filter-group__body">
                 <label class="fc-lookup-field">
                     <input type="search" class="fc-settings-field" placeholder="Find category…" data-fc-lookup-cat-search autocomplete="off">
@@ -143,25 +133,14 @@ $clearOverrides = static function (array $overrides) use ($req): string {
         </div>
 
         <div class="fc-lookup-filter-group is-open" data-fc-lookup-filter-group>
-            <?php $groupHead('Price', $priceActive, $clearOverrides(['min_price' => null, 'max_price' => null]), true); ?>
+            <?php $groupHead('Price', $filters['price_active_count'], $filters['clear_urls']['price'], true); ?>
             <div class="fc-lookup-filter-group__body">
                 <?php
-                    $currency = \Fc\Admin\Services\ProductLookupService::currencySymbol();
-                    $sliderMin = $minPriceVal !== '' ? (float) $minPriceVal : $priceMinBound;
-                    $sliderMax = $maxPriceVal !== '' ? (float) $maxPriceVal : $priceMaxBound;
-                    $sliderMin = max($priceMinBound, min($priceMaxBound, $sliderMin));
-                    $sliderMax = max($priceMinBound, min($priceMaxBound, $sliderMax));
-                    if ($sliderMin > $sliderMax) {
-                        $tmp = $sliderMin;
-                        $sliderMin = $sliderMax;
-                        $sliderMax = $tmp;
-                    }
-                    $span = max(1.0, $priceMaxBound - $priceMinBound);
-                    $pctMin = (($sliderMin - $priceMinBound) / $span) * 100;
-                    $pctMax = (($sliderMax - $priceMinBound) / $span) * 100;
-                    $fmtPrice = static function (float $n) use ($currency): string {
-                        return $currency . number_format($n, 0);
-                    };
+                    $currency = $price['currency'];
+                    $sliderMin = $price['slider_min'];
+                    $sliderMax = $price['slider_max'];
+                    $pctMin = $price['pct_min'];
+                    $pctMax = $price['pct_max'];
                 ?>
                 <div class="fc-lookup-price" data-fc-lookup-price
                     data-min="<?php echo $h((string) (int) $priceMinBound); ?>"
@@ -169,9 +148,9 @@ $clearOverrides = static function (array $overrides) use ($req): string {
                     data-currency="<?php echo $h($currency); ?>"
                     style="--price-min: <?php echo $h(number_format($pctMin, 2, '.', '')); ?>%; --price-max: <?php echo $h(number_format($pctMax, 2, '.', '')); ?>%;">
                     <div class="fc-lookup-price__display" aria-live="polite">
-                        <span class="fc-lookup-price__display-val" data-fc-lookup-price-selected-min><?php echo $h($fmtPrice($sliderMin)); ?></span>
+                        <span class="fc-lookup-price__display-val" data-fc-lookup-price-selected-min><?php echo $h($price['display_min']); ?></span>
                         <span class="fc-lookup-price__display-sep" aria-hidden="true">–</span>
-                        <span class="fc-lookup-price__display-val" data-fc-lookup-price-selected-max><?php echo $h($fmtPrice($sliderMax)); ?></span>
+                        <span class="fc-lookup-price__display-val" data-fc-lookup-price-selected-max><?php echo $h($price['display_max']); ?></span>
                     </div>
 
                     <div class="fc-lookup-price__slider" data-fc-lookup-price-range>
@@ -197,8 +176,8 @@ $clearOverrides = static function (array $overrides) use ($req): string {
                     </div>
 
                     <div class="fc-lookup-price__bounds" aria-hidden="true">
-                        <span><?php echo $h($fmtPrice($priceMinBound)); ?></span>
-                        <span><?php echo $h($fmtPrice($priceMaxBound)); ?></span>
+                        <span><?php echo $h($price['bound_min_label']); ?></span>
+                        <span><?php echo $h($price['bound_max_label']); ?></span>
                     </div>
 
                     <div class="fc-lookup-price__inputs">
@@ -239,13 +218,13 @@ $clearOverrides = static function (array $overrides) use ($req): string {
             </div>
         </div>
 
-        <?php if (!empty($colorFacet['terms'])) : ?>
-        <?php $colorOpen = $selectedColors !== []; ?>
+        <?php if ($colorTerms !== []) : ?>
+        <?php $colorOpen = $filters['color_open']; ?>
         <div class="fc-lookup-filter-group<?php echo $colorOpen ? ' is-open' : ''; ?>" data-fc-lookup-filter-group>
-            <?php $groupHead('Color', count($selectedColors), $clearOverrides(['color' => null]), $colorOpen); ?>
+            <?php $groupHead('Color', $filters['colors_count'], $filters['clear_urls']['color'], $colorOpen); ?>
             <div class="fc-lookup-filter-group__body"<?php echo $colorOpen ? '' : ' hidden'; ?>>
                 <div class="fc-lookup-swatches">
-                    <?php foreach ($colorFacet['terms'] as $term) : ?>
+                    <?php foreach ($colorTerms as $term) : ?>
                     <?php
                         $tid = (int) ($term['id'] ?? 0);
                         $checked = in_array($tid, $selectedColors, true);
@@ -263,30 +242,16 @@ $clearOverrides = static function (array $overrides) use ($req): string {
         </div>
         <?php endif; ?>
 
-        <?php foreach (($facets['attributes'] ?? []) as $attrGroup) : ?>
-        <?php
-            if (!is_array($attrGroup)) {
-                continue;
-            }
-            $attrName = (string) ($attrGroup['name'] ?? '');
-            $attrLabel = (string) ($attrGroup['label'] ?? $attrName);
-            $terms = is_array($attrGroup['terms'] ?? null) ? $attrGroup['terms'] : [];
-            if ($attrName === '' || $terms === []) {
-                continue;
-            }
-            $sel = array_map('intval', $selectedAttrs[$attrName] ?? []);
-            $attrOpen = $sel !== [];
-            $attrsWithout = $selectedAttrs;
-            unset($attrsWithout[$attrName]);
-        ?>
+        <?php foreach ($filters['attr_groups'] as $attrGroup) : ?>
+        <?php $attrOpen = $attrGroup['open']; ?>
         <div class="fc-lookup-filter-group<?php echo $attrOpen ? ' is-open' : ''; ?>" data-fc-lookup-filter-group>
-            <?php $groupHead($attrLabel, count($sel), $clearOverrides(['attr' => $attrsWithout !== [] ? $attrsWithout : null]), $attrOpen); ?>
+            <?php $groupHead($attrGroup['label'], $attrGroup['count'], $attrGroup['clear_url'], $attrOpen); ?>
             <div class="fc-lookup-filter-group__body"<?php echo $attrOpen ? '' : ' hidden'; ?>>
                 <div class="fc-lookup-options">
-                    <?php foreach ($terms as $term) : ?>
+                    <?php foreach ($attrGroup['terms'] as $term) : ?>
                     <?php $tid = (int) ($term['id'] ?? 0); ?>
                     <label class="fc-lookup-check">
-                        <input type="checkbox" name="attr[<?php echo $h($attrName); ?>][]" value="<?php echo $tid; ?>" <?php echo in_array($tid, $sel, true) ? 'checked' : ''; ?>>
+                        <input type="checkbox" name="attr[<?php echo $h($attrGroup['name']); ?>][]" value="<?php echo $tid; ?>" <?php echo in_array($tid, $attrGroup['selected'], true) ? 'checked' : ''; ?>>
                         <span class="fc-lookup-check__label"><?php echo $h((string) ($term['name'] ?? '')); ?></span>
                         <span class="fc-lookup-check__count"><?php echo number_format((int) ($term['count'] ?? 0)); ?></span>
                     </label>
@@ -296,9 +261,9 @@ $clearOverrides = static function (array $overrides) use ($req): string {
         </div>
         <?php endforeach; ?>
 
-        <?php $availCount = count($selectedStock) + $saleActive + $featuredActive; $availOpen = $availCount > 0; ?>
+        <?php $availOpen = $filters['avail_open']; ?>
         <div class="fc-lookup-filter-group<?php echo $availOpen ? ' is-open' : ''; ?>" data-fc-lookup-filter-group>
-            <?php $groupHead('Availability', $availCount, $clearOverrides(['stock' => null, 'sale' => null, 'featured' => null]), $availOpen); ?>
+            <?php $groupHead('Availability', $filters['avail_count'], $filters['clear_urls']['avail'], $availOpen); ?>
             <div class="fc-lookup-filter-group__body"<?php echo $availOpen ? '' : ' hidden'; ?>>
                 <p class="fc-lookup-section-label">Stock</p>
                 <div class="fc-lookup-inline-checks">
@@ -338,9 +303,9 @@ $clearOverrides = static function (array $overrides) use ($req): string {
         </div>
 
         <?php if (!empty($facets['tags'])) : ?>
-        <?php $tagsOpen = $selectedTags !== []; ?>
+        <?php $tagsOpen = $filters['tags_open']; ?>
         <div class="fc-lookup-filter-group<?php echo $tagsOpen ? ' is-open' : ''; ?>" data-fc-lookup-filter-group>
-            <?php $groupHead('Tags', count($selectedTags), $clearOverrides(['tag' => null]), $tagsOpen); ?>
+            <?php $groupHead('Tags', $filters['tags_count'], $filters['clear_urls']['tags'], $tagsOpen); ?>
             <div class="fc-lookup-filter-group__body"<?php echo $tagsOpen ? '' : ' hidden'; ?>>
                 <label class="fc-lookup-field">
                     <input type="search" class="fc-settings-field" placeholder="Find tag…" data-fc-lookup-tag-search autocomplete="off">
@@ -363,8 +328,8 @@ $clearOverrides = static function (array $overrides) use ($req): string {
     <div class="fc-lookup-filters__actions">
         <button type="submit" class="btn btn-sm btn-orange fw-semibold w-100">Apply</button>
         <?php
-        $hasActive = !empty($page['has_active_filters']);
-        $clearUrl = (string) ($page['clear_url'] ?? \Fc\Admin\Services\ProductLookupService::basePath());
+        $hasActive = $filters['has_active'];
+        $clearUrl = $filters['clear_all_url'];
         ?>
         <?php if ($hasActive) : ?>
         <a class="btn btn-sm btn-dark fw-semibold w-100 fc-lookup-filters__clear-all" href="<?php echo $h($clearUrl); ?>">Clear all</a>

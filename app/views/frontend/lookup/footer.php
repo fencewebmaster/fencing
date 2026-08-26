@@ -2,18 +2,17 @@
 /**
  * Sticky footer: result summary + pagination.
  *
- * @var array<string, mixed> $page
+ * Read-only template: LookupPageModel::pagerData() supplies the summary numbers
+ * and the fully resolved pagination link set.
+ *
+ * @var array<string, mixed> $pager
  * @var callable $h
  */
 
-declare(strict_types=1);
-
-$req = is_array($page['request'] ?? null) ? $page['request'] : [];
-$from = (int) ($page['from'] ?? 0);
-$to = (int) ($page['to'] ?? 0);
-$total = (int) ($page['total'] ?? 0);
-$pages = (int) ($page['pages'] ?? 0);
-$current = (int) ($req['page'] ?? 1);
+$from  = $pager['from'];
+$to    = $pager['to'];
+$total = $pager['total'];
+$pages = $pager['pages'];
 ?>
 <footer class="fc-lookup__footer">
     <div class="fc-lookup__footer-summary" aria-live="polite">
@@ -27,35 +26,30 @@ $current = (int) ($req['page'] ?? 1);
     <?php if ($pages > 1) : ?>
     <nav class="fc-lookup-pagination" aria-label="Product pagination">
         <?php
-        $window = 2;
-        $start = max(1, $current - $window);
-        $end = min($pages, $current + $window);
-        if ($current > 1) {
-            $prev = \Fc\Admin\Services\ProductLookupService::url($req, ['page' => $current - 1, 'view' => null]);
-            echo '<a class="fc-lookup-pagination__btn" href="' . $h($prev) . '">Previous</a>';
+        if ($pager['prev_url'] !== '') {
+            echo '<a class="fc-lookup-pagination__btn" href="' . $h($pager['prev_url']) . '">Previous</a>';
         }
-        if ($start > 1) {
-            echo '<a class="fc-lookup-pagination__page" href="' . $h(\Fc\Admin\Services\ProductLookupService::url($req, ['page' => 1, 'view' => null])) . '">1</a>';
-            if ($start > 2) {
+        if ($pager['show_first']) {
+            echo '<a class="fc-lookup-pagination__page" href="' . $h($pager['first_url']) . '">1</a>';
+            if ($pager['first_ellipsis']) {
                 echo '<span class="fc-lookup-pagination__ellipsis">…</span>';
             }
         }
-        for ($p = $start; $p <= $end; $p++) {
-            if ($p === $current) {
-                echo '<span class="fc-lookup-pagination__page is-current" aria-current="page">' . $p . '</span>';
+        foreach ($pager['window'] as $link) {
+            if ($link['current']) {
+                echo '<span class="fc-lookup-pagination__page is-current" aria-current="page">' . $link['num'] . '</span>';
             } else {
-                echo '<a class="fc-lookup-pagination__page" href="' . $h(\Fc\Admin\Services\ProductLookupService::url($req, ['page' => $p, 'view' => null])) . '">' . $p . '</a>';
+                echo '<a class="fc-lookup-pagination__page" href="' . $h($link['url']) . '">' . $link['num'] . '</a>';
             }
         }
-        if ($end < $pages) {
-            if ($end < $pages - 1) {
+        if ($pager['show_last']) {
+            if ($pager['last_ellipsis']) {
                 echo '<span class="fc-lookup-pagination__ellipsis">…</span>';
             }
-            echo '<a class="fc-lookup-pagination__page" href="' . $h(\Fc\Admin\Services\ProductLookupService::url($req, ['page' => $pages, 'view' => null])) . '">' . $pages . '</a>';
+            echo '<a class="fc-lookup-pagination__page" href="' . $h($pager['last_url']) . '">' . $pager['pages'] . '</a>';
         }
-        if ($current < $pages) {
-            $next = \Fc\Admin\Services\ProductLookupService::url($req, ['page' => $current + 1, 'view' => null]);
-            echo '<a class="fc-lookup-pagination__btn" href="' . $h($next) . '">Next</a>';
+        if ($pager['next_url'] !== '') {
+            echo '<a class="fc-lookup-pagination__btn" href="' . $h($pager['next_url']) . '">Next</a>';
         }
         ?>
     </nav>

@@ -1,20 +1,17 @@
 <?php
 /**
+ * Read-only template: LookupPageModel::shellData() supplies layout and the
+ * sidebar heading; $catalog is the same normalized array build() computes.
+ *
  * @var array<string, mixed> $page
+ * @var array<string, mixed> $shell
  * @var callable $h
  */
 
-declare(strict_types=1);
-
-$req = is_array($page['request'] ?? null) ? $page['request'] : [];
-$layout = (($req['layout'] ?? 'grid') === 'list') ? 'list' : 'grid';
-$logoUrl = isset($fcLookupLogoUrl) ? (string) $fcLookupLogoUrl : '';
-$catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : \Fc\Admin\Services\CatalogSettings::get();
-$sidebarTitle = trim((string) ($catalog['sidebarTitle'] ?? 'Product Lookup'));
-if ($sidebarTitle === '') {
-    $sidebarTitle = 'Product Lookup';
-}
-$sidebarSubtitle = trim((string) ($catalog['sidebarSubtitle'] ?? 'Search the live catalog'));
+$layout          = $shell['layout'];
+$logoUrl         = $fcLookupLogoUrl;
+$sidebarTitle    = $shell['sidebar_title'];
+$sidebarSubtitle = $shell['sidebar_subtitle'];
 ?>
 <div class="fc-lookup" data-fc-lookup data-fc-lookup-layout="<?php echo $h($layout); ?>">
     <?php if (empty($page['ok'])) : ?>
@@ -37,7 +34,7 @@ $sidebarSubtitle = trim((string) ($catalog['sidebarSubtitle'] ?? 'Search the liv
                 </div>
             </header>
             <main class="fc-lookup__main">
-                <?php require __DIR__ . '/empty.php'; ?>
+                <?php require view_path('frontend.lookup.empty'); ?>
             </main>
         </div>
     <?php else : ?>
@@ -59,27 +56,27 @@ $sidebarSubtitle = trim((string) ($catalog['sidebarSubtitle'] ?? 'Search the liv
                     </div>
                 </div>
             </div>
-            <?php require __DIR__ . '/filters.php'; ?>
+            <?php require view_path('frontend.lookup.filters'); ?>
         </aside>
 
         <div class="fc-lookup__content">
             <header class="fc-lookup__topbar">
-                <?php require __DIR__ . '/toolbar.php'; ?>
+                <?php require view_path('frontend.lookup.toolbar'); ?>
             </header>
 
             <main class="fc-lookup__main">
                 <?php if (($page['total'] ?? 0) < 1) : ?>
-                    <?php require __DIR__ . '/empty.php'; ?>
+                    <?php require view_path('frontend.lookup.empty'); ?>
                 <?php else : ?>
-                    <?php require __DIR__ . '/results.php'; ?>
+                    <?php require view_path('frontend.lookup.results'); ?>
                 <?php endif; ?>
             </main>
 
-            <?php require __DIR__ . '/footer.php'; ?>
+            <?php require view_path('frontend.lookup.footer'); ?>
         </div>
 
         <?php if (!empty($page['quick_view'])) : ?>
-            <?php require __DIR__ . '/quick-view.php'; ?>
+            <?php require view_path('frontend.lookup.quick-view'); ?>
         <?php endif; ?>
     <?php endif; ?>
 

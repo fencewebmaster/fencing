@@ -9,5 +9,5 @@
 ?>
 <?php $files = glob(dirname(__DIR__, 4) . '/public/assets/js/frontend/fences/*.js') ?: []; ?>
 <?php foreach ( $files as $file ) : ?>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/fences/' . basename($file)); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/fences/' . basename($file)); ?>"></script>
 <?php endforeach; ?>

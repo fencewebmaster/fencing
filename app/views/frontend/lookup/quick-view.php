@@ -1,48 +1,31 @@
 <?php
 /**
- * @var array<string, mixed> $page
+ * Read-only template: LookupPageModel::quickViewData() supplies every derived
+ * value here, including related products decorated with their quick-view URLs.
+ * Only the $renderRow rendering closure below stays template-side.
+ *
+ * @var array<string, mixed> $quickView
  * @var callable $h
  */
 
-declare(strict_types=1);
-
-$qv = is_array($page['quick_view'] ?? null) ? $page['quick_view'] : [];
-$req = is_array($page['request'] ?? null) ? $page['request'] : [];
-$closeUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['view' => null]);
-$gallery = is_array($qv['gallery'] ?? null) ? $qv['gallery'] : [];
-$permalink = (string) ($qv['permalink'] ?? '');
-$sku = (string) ($qv['sku'] ?? '');
-$name = (string) ($qv['name'] ?? '');
-$categories = is_array($qv['categories'] ?? null) ? $qv['categories'] : [];
-$tags = is_array($qv['tags'] ?? null) ? $qv['tags'] : [];
-$attributes = is_array($qv['attributes'] ?? null) ? $qv['attributes'] : [];
-$qvDescription = trim((string) ($qv['description'] ?? ''));
-$rating = (float) ($qv['rating'] ?? 0);
-$stockStatus = (string) ($qv['stock_status'] ?? '');
-$stockLabel = (string) ($qv['stock_label'] ?? '');
-$priceHtml = (string) ($qv['price_html'] ?? '');
-
-$pricePlain = '';
-if (($qv['sale_price'] ?? '') !== '') {
-    $pricePlain = (string) $qv['sale_price'];
-} elseif (($qv['regular_price'] ?? '') !== '') {
-    $pricePlain = (string) $qv['regular_price'];
-} else {
-    $pricePlain = trim(html_entity_decode(strip_tags($priceHtml), ENT_QUOTES, 'UTF-8'));
-}
-
-$categoryNames = array_values(array_filter(array_map(static function ($c) {
-    return is_array($c) ? trim((string) ($c['name'] ?? '')) : '';
-}, $categories)));
-$tagNames = array_values(array_filter(array_map(static function ($t) {
-    return is_array($t) ? trim((string) ($t['name'] ?? '')) : '';
-}, $tags)));
-
-$descriptionPlain = trim(preg_replace(
-    '/\s+/u',
-    ' ',
-    html_entity_decode(strip_tags($qvDescription), ENT_QUOTES | ENT_HTML5, 'UTF-8')
-) ?? '');
+$qv               = $quickView['qv'];
+$closeUrl         = $quickView['close_url'];
+$gallery          = $quickView['gallery'];
+$permalink        = $quickView['permalink'];
+$sku              = $quickView['sku'];
+$name             = $quickView['name'];
+$categories       = $quickView['categories'];
+$tags             = $quickView['tags'];
+$attributes       = $quickView['attributes'];
+$qvDescription    = $quickView['description'];
+$rating           = $quickView['rating'];
+$stockStatus      = $quickView['stock_status'];
+$stockLabel       = $quickView['stock_label'];
+$priceHtml        = $quickView['price_html'];
+$pricePlain       = $quickView['price_plain'];
+$categoryNames    = $quickView['category_names'];
+$tagNames         = $quickView['tag_names'];
+$descriptionPlain = $quickView['description_plain'];
 
 /**
  * @param callable $h
@@ -221,19 +204,14 @@ $renderRow = static function (
             </div>
         </div>
 
-        <?php if (!empty($qv['related'])) : ?>
+        <?php if ($quickView['related'] !== []) : ?>
         <div class="fc-lookup-qv__related">
             <h3 class="fc-lookup-qv__section-title">Related products</h3>
             <div class="fc-lookup-qv__related-grid">
-                <?php foreach ($qv['related'] as $related) : ?>
+                <?php foreach ($quickView['related'] as $related) : ?>
                 <?php
-                    if (!is_array($related)) {
-                        continue;
-                    }
-                    $rid = (int) ($related['id'] ?? 0);
-                    $rSlug = (string) ($related['slug'] ?? '');
                     $rImg = (string) (($related['images'][0] ?? '') ?: '');
-                    $rQuick = \Fc\Admin\Services\ProductLookupService::url($req, ['view' => $rSlug !== '' ? $rSlug : (string) $rid]);
+                    $rQuick = (string) ($related['quick_url'] ?? '');
                 ?>
                 <a class="fc-lookup-related" href="<?php echo $h($rQuick); ?>" title="<?php echo $h((string) ($related['name'] ?? '')); ?>">
                     <?php if ($rImg !== '') : ?>

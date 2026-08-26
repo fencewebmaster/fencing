@@ -6,7 +6,6 @@ namespace Fc\Admin\Models;
 
 use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Services\Database;
-use Fc\Admin\Services\FenceSettingsService;
 use Fc\Admin\Services\PlannerRecordService;
 use Fc\Admin\Services\PlannerSessionService;
 use Fc\Admin\Services\SiteRegistryService;
@@ -188,15 +187,5 @@ final class PlannerPageModel
     public static function isLiveMode(): bool
     {
         return !UrlHelper::inUriSegment(SiteRegistryService::demoStages());
-    }
-
-    /**
-     * Fence catalog from FenceSettingsService.
-     *
-     * @return array<string, mixed>
-     */
-    public static function fences(): array
-    {
-        return FenceSettingsService::fences();
     }
 }

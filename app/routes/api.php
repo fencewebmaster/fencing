@@ -14,28 +14,51 @@ use Fc\Admin\Controllers\Api\SettingsController;
 use Fc\Admin\Controllers\Api\UsersApiController;
 
 /**
- * API module registry.
+ * API module registry for the unified admin JSON API
+ * (public/api.php?module={module}&action={action}, dispatched by Core\Application).
+ *
+ * Modules map to callables rather than instances so a request only ever loads the
+ * one controller it needs.
  *
  * @return array<string, callable>
  */
-return [
-    'auth'                  => static function (): void { AuthController::dispatch(); },
-    'cache'                 => static function (): void { CacheController::dispatch(); },
-    'cacheController'       => static function (): void { CacheController::dispatch(); },
-    'dashboard'             => static function (): void { DashboardApiController::dispatch(); },
-    'dashboardController'   => static function (): void { DashboardApiController::dispatch(); },
-    'entries'               => static function (): void { EntriesApiController::dispatch(); },
-    'entriesController'     => static function (): void { EntriesApiController::dispatch(); },
-    'products'              => static function (): void { ProductsController::dispatch(); },
-    'productsController'    => static function (): void { ProductsController::dispatch(); },
-    'gallery'               => static function (): void { GalleryController::dispatch(); },
-    'galleryController'     => static function (): void { GalleryController::dispatch(); },
-    'settings'              => static function (): void { SettingsController::dispatch(); },
-    'settingsController'    => static function (): void { SettingsController::dispatch(); },
-    'fenceStyles'           => static function (): void { FenceStylesController::dispatch(); },
-    'fenceStylesController' => static function (): void { FenceStylesController::dispatch(); },
-    'groupPermissions'      => static function (): void { GroupPermissionsController::dispatch(); },
-    'groupPermissionsController' => static function (): void { GroupPermissionsController::dispatch(); },
-    'users'                 => static function (): void { UsersApiController::dispatch(); },
-    'usersController'       => static function (): void { UsersApiController::dispatch(); },
+$fcApiModules = [
+    'auth'             => static function (): void { AuthController::dispatch(); },
+    'cache'            => static function (): void { CacheController::dispatch(); },
+    'dashboard'        => static function (): void { DashboardApiController::dispatch(); },
+    'entries'          => static function (): void { EntriesApiController::dispatch(); },
+    'fenceStyles'      => static function (): void { FenceStylesController::dispatch(); },
+    'gallery'          => static function (): void { GalleryController::dispatch(); },
+    'groupPermissions' => static function (): void { GroupPermissionsController::dispatch(); },
+    'products'         => static function (): void { ProductsController::dispatch(); },
+    'settings'         => static function (): void { SettingsController::dispatch(); },
+    'users'            => static function (): void { UsersApiController::dispatch(); },
 ];
+
+/*
+ * Legacy '{module}Controller' aliases — required, not redundant. public/.htaccess
+ * still rewrites the old {module}Controller.php URLs onto api.php, and
+ * Core\Application::detectApiModule() derives the module from the executing script's
+ * basename when no ?module= is given. GroupPermissionsPresenter::keysForApi() gates
+ * both spellings identically.
+ *
+ * 'auth' deliberately has no alias: no authController.php ever shipped, and the auth
+ * module skips AuthFilter — an alias would only widen the unauthenticated surface.
+ */
+foreach ([
+    'cache',
+    'dashboard',
+    'entries',
+    'fenceStyles',
+    'gallery',
+    'groupPermissions',
+    'products',
+    'settings',
+    'users',
+] as $fcApiModule) {
+    $fcApiModules[$fcApiModule . 'Controller'] = $fcApiModules[$fcApiModule];
+}
+
+unset($fcApiModule);
+
+return $fcApiModules;

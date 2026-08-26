@@ -1,4 +1,6 @@
-<?php require_once dirname(__DIR__, 4) . '/app/src/Services/AppConfigService.php'; ?>
+<?php
+use Fc\Admin\Services\AppConfigService;
+?>
 <!-- [START] FORM SUBMISSION LOADER -->
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
@@ -142,7 +144,7 @@
                                 <i class="fa fa-minus"></i>
                             </div>
                             
-                            <input type="text" class="measurement-box-number numeric text-center py-1 valid" data-min="<?php echo \Fc\Admin\Services\AppConfigService::all()->overall->min; ?>" data-max="<?php echo \Fc\Admin\Services\AppConfigService::all()->overall->max; ?>" maxlength="<?php echo \Fc\Admin\Services\AppConfigService::all()->overall->length; ?>" value="" data-last="" aria-invalid="false">
+                            <input type="text" class="measurement-box-number numeric text-center py-1 valid" data-min="<?php echo AppConfigService::all()->overall->min; ?>" data-max="<?php echo AppConfigService::all()->overall->max; ?>" maxlength="<?php echo AppConfigService::all()->overall->length; ?>" value="" data-last="" aria-invalid="false">
                             
                             <span>mm</span>   
 

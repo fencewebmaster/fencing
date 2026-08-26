@@ -151,7 +151,7 @@ final class CheckoutController extends BaseFrontendController
 
         // Render before persisting: persistSession() rewrites fc_data['project_plans'] from
         // the client payload, which must not leak into the markup echoed back for this request.
-        $html = $this->renderToString('sections/your-project-details.php', ['fences' => $fences]);
+        $html = $this->renderToString('frontend.partials.sections.your-project-details', ['fences' => $fences]);
 
         PlannerRecordService::persistSession($fences);
 
@@ -167,7 +167,7 @@ final class CheckoutController extends BaseFrontendController
 
         PlannerRecordService::persistSession($fences);
 
-        echo $this->renderToString('sections/cart-table.php', ['fences' => $fences]);
+        echo $this->renderToString('frontend.partials.sections.cart-table', ['fences' => $fences]);
 
         exit;
     }
@@ -182,7 +182,7 @@ final class CheckoutController extends BaseFrontendController
 
         CheckoutCartModel::toggleOptional($optional_key, $include);
 
-        echo $this->renderToString('sections/cart-table.php', ['fences' => $fences]);
+        echo $this->renderToString('frontend.partials.sections.cart-table', ['fences' => $fences]);
 
         PlannerRecordService::persistSession($fences);
 
@@ -199,7 +199,7 @@ final class CheckoutController extends BaseFrontendController
 
         PlannerRecordService::persistSession($fences);
 
-        echo $this->renderToString('sections/cart-table.php', ['fences' => $fences]);
+        echo $this->renderToString('frontend.partials.sections.cart-table', ['fences' => $fences]);
     }
 
     /**

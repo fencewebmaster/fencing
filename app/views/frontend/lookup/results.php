@@ -1,21 +1,15 @@
 <?php
 /**
- * @var array<string, mixed> $page
+ * Read-only template: LookupPageModel::resultsData() supplies layout, badge
+ * labels, and products already decorated with their quick-view URL.
+ *
+ * @var array<string, mixed> $results
  * @var callable $h
  */
 
-declare(strict_types=1);
-
-$req = is_array($page['request'] ?? null) ? $page['request'] : [];
-$products = is_array($page['products'] ?? null) ? $page['products'] : [];
-$layout = (($req['layout'] ?? 'grid') === 'list') ? 'list' : 'grid';
-
-$badgeLabels = [
-    'sale' => 'Sale',
-    'featured' => 'Featured',
-    'new' => 'New',
-    'outofstock' => 'Out of stock',
-];
+$products    = $results['products'];
+$layout      = $results['layout'];
+$badgeLabels = $results['badge_labels'];
 ?>
 <div class="fc-lookup-results fc-lookup-results--<?php echo $h($layout); ?>" data-fc-lookup-results>
     <?php foreach ($products as $product) : ?>
@@ -23,11 +17,9 @@ $badgeLabels = [
         if (!is_array($product)) {
             continue;
         }
-        $id = (int) ($product['id'] ?? 0);
-        $slug = (string) ($product['slug'] ?? '');
         $images = is_array($product['images'] ?? null) ? $product['images'] : [];
         $primary = (string) ($images[0] ?? '');
-        $quickUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['view' => $slug !== '' ? $slug : (string) $id]);
+        $quickUrl = (string) ($product['quick_url'] ?? '');
         $sku = (string) ($product['sku'] ?? '');
         $stock = (string) ($product['stock_status'] ?? '');
         $rating = (float) ($product['rating'] ?? 0);

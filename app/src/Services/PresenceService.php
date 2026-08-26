@@ -279,16 +279,6 @@ final class PresenceService
         return $map;
     }
 
-    public static function isOnline(int $userId, ?int $windowSeconds = null): bool
-    {
-        if ($userId <= 0) {
-            return false;
-        }
-        $map = self::onlineMap($windowSeconds);
-
-        return isset($map[$userId]);
-    }
-
     /**
      * Persist an FC timestamp in WordPress usermeta.
      */

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Core;
 
-require_once __DIR__ . '/../Services/AuthService.php';
-
 use Fc\Admin\Services\AuthService;
 
 /**
@@ -18,7 +16,7 @@ final class NotFoundHandler
      */
     public static function view404Path(): string
     {
-        return dirname(__DIR__, 2) . '/views/frontend/errors/404.php';
+        return dirname(__DIR__, 2) . '/views/errors/404.php';
     }
 
     /**
@@ -104,20 +102,26 @@ final class NotFoundHandler
         }
 
         $fc404Message = $message !== '' ? $message : $defaultMessage;
-        $fc404HomeUrl = $homeUrl;
-        $fc404HomeLabel = $homeLabel;
-        $fc404Context = $area;
 
+        // Full view-model for errors/404.php, assembled here — this handler is the
+        // page's only producer, so the template stays read-only. The is_readable
+        // check keeps the plain-HTML fallback below working when the view file is
+        // missing, where view() would throw instead of degrading.
         $view = self::view404Path();
         if (is_readable($view)) {
-            include $view;
+            view('errors.404', [
+                'title'     => $area === 'admin' ? '404 Not Found — FC Admin' : '404 Not Found',
+                'message'   => $fc404Message,
+                'homeUrl'   => $homeUrl,
+                'homeLabel' => $homeLabel,
+            ]);
             exit;
         }
 
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>404 Not Found</title></head><body>';
         echo '<h1>404 Not Found</h1><p>' . htmlspecialchars($fc404Message, ENT_QUOTES, 'UTF-8') . '</p>';
-        echo '<p><a href="' . htmlspecialchars($fc404HomeUrl, ENT_QUOTES, 'UTF-8') . '">'
-            . htmlspecialchars($fc404HomeLabel, ENT_QUOTES, 'UTF-8') . '</a></p>';
+        echo '<p><a href="' . htmlspecialchars($homeUrl, ENT_QUOTES, 'UTF-8') . '">'
+            . htmlspecialchars($homeLabel, ENT_QUOTES, 'UTF-8') . '</a></p>';
         echo '</body></html>';
         exit;
     }

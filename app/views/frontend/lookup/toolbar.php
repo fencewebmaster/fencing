@@ -2,31 +2,24 @@
 /**
  * Header controls: sort, layout, per page.
  *
+ * Read-only template: LookupPageModel::toolbarData() assembles every control
+ * value ($toolbar) and ProductLookupService::buildPage() guarantees 'request',
+ * so these are pure aliases — no guards, clamping, or URL building here.
+ *
  * @var array<string, mixed> $page
+ * @var array<string, mixed> $toolbar
  * @var callable $h
  */
 
-declare(strict_types=1);
-
-$req = is_array($page['request'] ?? null) ? $page['request'] : [];
-$layout = (($req['layout'] ?? 'grid') === 'list') ? 'list' : 'grid';
-$orderbyOptions = is_array($page['orderby_options'] ?? null) ? $page['orderby_options'] : [];
-$catalog = is_array($page['catalog'] ?? null) ? $page['catalog'] : [];
-$defaultPerPage = \Fc\Admin\Services\CatalogSettings::clampResultsPerPage($catalog['resultsPerPage'] ?? 12);
-$perPageOptions = is_array($page['per_page_options'] ?? null) ? $page['per_page_options'] : \Fc\Admin\Services\CatalogSettings::resultsPerPageChoices($defaultPerPage);
-$perPageOptions = array_values(array_filter(
-    $perPageOptions,
-    static fn($opt): bool => (int) $opt !== \Fc\Admin\Services\CatalogSettings::ALL_PER_PAGE
-));
-$currentPerPage = (int) ($req['per_page'] ?? $defaultPerPage);
-if (!in_array($currentPerPage, array_map('intval', $perPageOptions), true)) {
-    $currentPerPage = $defaultPerPage;
-}
-
-$gridUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['layout' => 'grid', 'view' => null, 'page' => null]);
-$listUrl = \Fc\Admin\Services\ProductLookupService::url($req, ['layout' => 'list', 'view' => null, 'page' => null]);
+$req            = $page['request'];
+$layout         = $toolbar['layout'];
+$orderbyOptions = $toolbar['orderby_options'];
+$perPageOptions = $toolbar['per_page_options'];
+$currentPerPage = $toolbar['current_per_page'];
+$gridUrl        = $toolbar['grid_url'];
+$listUrl        = $toolbar['list_url'];
 ?>
-<form class="fc-lookup-toolbar__controls" method="get" action="<?php echo $h(\Fc\Admin\Services\ProductLookupService::basePath()); ?>">
+<form class="fc-lookup-toolbar__controls" method="get" action="<?php echo $h($toolbar['action_url']); ?>">
     <?php
     if (($req['q'] ?? '') !== '') {
         echo '<input type="hidden" name="q" value="' . $h((string) $req['q']) . '">';

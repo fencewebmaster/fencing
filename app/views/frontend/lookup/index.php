@@ -6,6 +6,7 @@
  *
  * @var array    $page              ProductLookupService::buildPage() result.
  * @var array    $catalog           Catalog display settings.
+ * @var array    $toolbar           LookupPageModel::toolbarData() — sort/layout/per-page controls.
  * @var string   $fcLookupPageTitle
  * @var string   $fcLookupAppBase   Web path the page is mounted at.
  * @var string   $fcLookupLogoUrl
@@ -15,6 +16,8 @@
 
 declare(strict_types=1);
 
+use Fc\Admin\Services\ThemeSettings;
+
 $adminCssBase = 'public/assets/css/admin/';
 ?><!DOCTYPE html>
 <html lang="en" data-fc-admin-theme="light">
@@ -22,7 +25,7 @@ $adminCssBase = 'public/assets/css/admin/';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $h($fcLookupPageTitle); ?></title>
-    <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
+    <?php echo ThemeSettings::cssBlock(); ?>
     <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/fonts.css')); ?>">
     <link href="<?php echo $h($asset('public/assets/css/vendor/bootstrap/bootstrap.min.css')); ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/vendor/fontawesome/css/all.min.css')); ?>">
@@ -39,7 +42,7 @@ $adminCssBase = 'public/assets/css/admin/';
     </style>
 </head>
 <body class="fc-lookup-page fc-admin-page">
-<?php require __DIR__ . '/page.php'; ?>
+<?php require view_path('frontend.lookup.page'); ?>
 <script src="<?php echo $h($asset('public/assets/js/frontend/lookup.js')); ?>" defer></script>
 </body>
 </html>

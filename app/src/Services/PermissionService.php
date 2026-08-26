@@ -108,24 +108,6 @@ final class PermissionService
     }
 
     /**
-     * @param list<string>|string $keys
-     */
-    public static function canAll(array|string $keys): bool
-    {
-        $list = is_array($keys) ? $keys : [$keys];
-        if ($list === []) {
-            return true;
-        }
-        foreach ($list as $key) {
-            if (!self::can((string) $key)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * Admin access: Super Admin, role with FC grants, or Login As from an authorized admin.
      */
     public static function canAccessAdmin(): bool

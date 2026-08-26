@@ -14,31 +14,33 @@
  * @var string       $load_quote_error
  * @var string       $load_quote_attempt
  */
+
+use Fc\Admin\Services\PlannerSessionService;
 ?>
 <!DOCTYPE html>
 <html>
     <head>
-        <?php include __DIR__ . '/../partials/head.php'; ?>
+        <?php include view_path('frontend.partials.head'); ?>
     </head>
     <body class="fc-planner-page">
 
-        <?php include __DIR__ . '/../partials/body-before.php'; ?>
+        <?php include view_path('frontend.partials.body-before'); ?>
 
         <div class="fencing-container container-lg w-side-section mt-5" data-tab="1">
-            <form method="POST" id="fc-planning-form" action="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl('project-plan'); ?>" novalidate>
+            <form method="POST" id="fc-planning-form" action="<?php echo url('project-plan'); ?>" novalidate>
 
                 <div class="fencing-container__header">
                     <div class="row align-items-center">
 
                         <div class="col col-sm">
-                            <?php include __DIR__ . '/../partials/header-left.php'; ?>
+                            <?php include view_path('frontend.partials.header-left'); ?>
                         </div>
 
                         <div class="col-md-6 col-sm-auto">
                             <div class="d-sm-block d-none">
                                 <div class="fc-flex-end">
                                     <?php if ( $fc_site_logo_url !== '' ) : ?>
-                                    <img src="<?php echo htmlspecialchars($fc_site_logo_url, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars((string) @$site_info['name'], ENT_QUOTES, 'UTF-8'); ?>" style="max-width: 200px;" decoding="async">
+                                    <img src="<?php echo e($fc_site_logo_url); ?>" alt="<?php echo e((string) @$site_info['name']); ?>" style="max-width: 200px;" decoding="async">
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -100,45 +102,45 @@
                                 <span class="fc-tab-subtitle"></span>
                             </div>
 
-                            <?php include __DIR__ . '/step-1.php'; ?>
+                            <?php include view_path('frontend.planner.step-1'); ?>
 
-                            <?php include __DIR__ . '/step-2.php'; ?>
+                            <?php include view_path('frontend.planner.step-2'); ?>
 
-                            <?php include __DIR__ . '/step-3.php'; ?>
+                            <?php include view_path('frontend.planner.step-3'); ?>
 
                         </div>
 
-                        <?php include __DIR__ . '/step-4.php'; ?>
+                        <?php include view_path('frontend.planner.step-4'); ?>
 
                     </div>
                 </div>
 
-                <?php include __DIR__ . '/../modal.php'; ?>
+                <?php include view_path('frontend.partials.modal.index'); ?>
 
             </form>
 
         </div>
 
-        <?php include __DIR__ . '/modals.php'; ?>
+        <?php include view_path('frontend.planner.modals'); ?>
 
-        <?php include __DIR__ . '/../fields.php'; ?>
+        <?php include view_path('frontend.partials.fields.index'); ?>
 
         <script type="text/javascript">
         var fc_data       = <?php echo json_encode($fences); ?>;
         var fc_fence_info = <?php echo json_encode($res); ?>;
         var planner_id    = <?php echo json_encode((string) (@$_SESSION['planner_id'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP); ?>;
         var fc_session_project_plans = <?php echo json_encode( $fc_session_project_plans ); ?>;
-        var planner_share_url = "<?php echo \Fc\Admin\Services\PlannerSessionService::qidShareUrl(); ?>";
+        var planner_share_url = "<?php echo PlannerSessionService::qidShareUrl(); ?>";
         var fc_load_quote_failed = <?php echo $load_quote_failed ? 'true' : 'false'; ?>;
         var fc_load_quote_error = <?php echo json_encode( $load_quote_error ); ?>;
         var fc_load_quote_attempt = <?php echo json_encode( $load_quote_attempt ); ?>;
         </script>
 
-        <?php include __DIR__ . '/../partials/footer.php'; ?>
+        <?php include view_path('frontend.partials.footer'); ?>
 
-        <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/cart-items.js'); ?>"></script>
-        <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/fc-planner-summary.js'); ?>"></script>
-        <script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/p1.js'); ?>"></script>
+        <script defer src="<?php echo asset('public/assets/js/frontend/shared/cart-items.js'); ?>"></script>
+        <script defer src="<?php echo asset('public/assets/js/frontend/shared/fc-planner-summary.js'); ?>"></script>
+        <script defer src="<?php echo asset('public/assets/js/frontend/p1.js'); ?>"></script>
 
     </body>
 </html>

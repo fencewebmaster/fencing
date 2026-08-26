@@ -2,36 +2,17 @@
 /**
  * FC Admin — 403 Forbidden.
  *
- * @var string $fc403Message
- * @var string $fcAdminBase
- * @var bool $fc403IsSwitched
- * @var array{id?:int,login?:string,display_name?:string}|null $fc403SwitchFrom
- * @var array{id?:int,login?:string,display_name?:string}|null $fc403CurrentUser
- * @var string $fc403SwitchBackUrl
+ * Read-only template: PermissionFilter::abort403() assembles the complete
+ * view-model and renders view('errors.403', $data), so every variable arrives
+ * ready — no prep block at all. Escaping via the global e() helper.
+ *
+ * @var string $message
+ * @var string $home
+ * @var bool   $isSwitched
+ * @var string $switchBackUrl
+ * @var string $asName
+ * @var string $fromName
  */
-
-declare(strict_types=1);
-
-$message = isset($fc403Message) ? (string) $fc403Message : 'You do not have permission to access this page.';
-$base = isset($fcAdminBase) ? rtrim((string) $fcAdminBase, '/') : '';
-$home = $base !== '' ? $base . '/dashboard' : '/';
-$isSwitched = !empty($fc403IsSwitched);
-$switchBackUrl = isset($fc403SwitchBackUrl) ? (string) $fc403SwitchBackUrl : '';
-$switchFrom = is_array($fc403SwitchFrom ?? null) ? $fc403SwitchFrom : null;
-$currentUser = is_array($fc403CurrentUser ?? null) ? $fc403CurrentUser : null;
-
-$asName = '';
-if ($currentUser !== null) {
-    $asName = (string) (($currentUser['display_name'] ?? '') !== ''
-        ? $currentUser['display_name']
-        : ($currentUser['login'] ?? ''));
-}
-$fromName = '';
-if ($switchFrom !== null) {
-    $fromName = (string) (($switchFrom['display_name'] ?? '') !== ''
-        ? $switchFrom['display_name']
-        : ($switchFrom['login'] ?? 'admin'));
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,14 +55,14 @@ if ($switchFrom !== null) {
 <body>
     <div class="wrap">
         <h1>403 Forbidden</h1>
-        <p><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></p>
+        <p><?php echo e($message); ?></p>
         <?php if ($isSwitched && $switchBackUrl !== '') : ?>
         <div class="switch-note" role="status">
             <?php if ($asName !== '') : ?>
-            Logged in as <strong><?php echo htmlspecialchars($asName, ENT_QUOTES, 'UTF-8'); ?></strong>.
+            Logged in as <strong><?php echo e($asName); ?></strong>.
             <?php endif; ?>
             <?php if ($fromName !== '') : ?>
-            Return to <strong><?php echo htmlspecialchars($fromName, ENT_QUOTES, 'UTF-8'); ?></strong>?
+            Return to <strong><?php echo e($fromName); ?></strong>?
             <?php else : ?>
             Return to your original admin account?
             <?php endif; ?>
@@ -89,9 +70,9 @@ if ($switchFrom !== null) {
         <?php endif; ?>
         <div class="actions">
             <?php if ($isSwitched && $switchBackUrl !== '') : ?>
-            <a class="btn" href="<?php echo htmlspecialchars($switchBackUrl, ENT_QUOTES, 'UTF-8'); ?>">Switch back</a>
+            <a class="btn" href="<?php echo e($switchBackUrl); ?>">Switch back</a>
             <?php endif; ?>
-            <a class="btn<?php echo ($isSwitched && $switchBackUrl !== '') ? ' btn-secondary' : ''; ?>" href="<?php echo htmlspecialchars($home, ENT_QUOTES, 'UTF-8'); ?>">Back to Dashboard</a>
+            <a class="btn<?php echo ($isSwitched && $switchBackUrl !== '') ? ' btn-secondary' : ''; ?>" href="<?php echo e($home); ?>">Back to Dashboard</a>
         </div>
     </div>
 </body>

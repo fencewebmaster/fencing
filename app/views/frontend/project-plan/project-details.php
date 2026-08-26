@@ -8,7 +8,7 @@
 	<!-- [END] Step 5 | Edit Controls -->
 
 	<div class="your-project-details">
-		<?php include __DIR__ . '/../sections/your-project-details.php'; ?>						
+		<?php include view_path('frontend.partials.sections.your-project-details'); ?>						
 	</div>
 
 	<!-- [END] PROJECT DETAILS -->

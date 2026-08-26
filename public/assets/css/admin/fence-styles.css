@@ -1741,6 +1741,11 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
     display: block;
 }
 
+.fc-settings-site-logo i {
+    color: #a7aaad;
+    font-size: 0.85rem;
+}
+
 .fc-settings-site-logo img[data-fc-settings-image-view] {
     cursor: zoom-in;
 }
@@ -1757,6 +1762,10 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
 html[data-fc-admin-theme='dark'] .fc-settings-site-logo {
     background: var(--fc-admin-surface-muted);
     border-color: var(--fc-admin-border);
+}
+
+html[data-fc-admin-theme='dark'] .fc-settings-site-logo i {
+    color: var(--fc-admin-text-faint);
 }
 
 .fc-project-plan-grip {

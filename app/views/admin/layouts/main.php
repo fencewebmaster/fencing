@@ -1,8 +1,10 @@
 <?php
 /**
  * FC Admin -- main layout (shell chrome: head/styles, sidebar, topbar, page-content
- * slot, scripts). Included by public/index.php with $fcAdminContext::toLayoutVars()
- * already extracted, plus $fcAdminFillLayout and $fcCan set by the front controller.
+ * slot, scripts). Rendered by public/index.php via view('admin.layouts.main', $vars):
+ * the extracted $vars are AdminContext::toLayoutVars() plus $fcAdminFillLayout and
+ * $fcCan added by the front controller. The content slot renders the page view with
+ * view('admin.<page>', get_defined_vars()) so pages keep seeing this full scope.
  */
 
 declare(strict_types=1);
@@ -1175,9 +1177,10 @@ declare(strict_types=1);
                 <div class="fc-admin-topbar__actions shrink-0">
                     <?php if (!empty($fcAdminIsDashboard) && is_array($fcDashboardPage ?? null)) : ?>
                     <?php
-                    $h = static fn(string $v): string => \Fc\Admin\Helpers\StringHelper::escapeHtml($v);
+                    // Pure reads: DashboardPresenter::pageData() guarantees the key;
+                    // the partial escapes via the global e() helper.
                     $page = $fcDashboardPage;
-                    $datePeriodOptions = is_array($page['date_period_options'] ?? null) ? $page['date_period_options'] : [];
+                    $datePeriodOptions = $page['date_period_options'];
                     $fcDashboardDateDropdownContext = 'topbar';
                     require __DIR__ . '/../partials/dashboard-date-dropdown.php';
                     ?>
@@ -1351,26 +1354,33 @@ declare(strict_types=1);
                     <?php endif; ?>
                     aria-live="polite"
                 >
-                <?php if ($fcAdminIsDashboard && is_array($fcDashboardPage)) : ?>
-                    <?php include __DIR__ . '/../dashboard.php'; ?>
+                <?php
+                // Page views render via the global view() helper (dot names under
+                // app/views/admin/). get_defined_vars() hands each page the full
+                // layout scope, exactly what the old same-scope include gave it.
+                // The two products branches are deliberately cross-wired (view
+                // filename says the opposite of the route it serves) — see
+                // ProductsPageController before "fixing" either line.
+                if ($fcAdminIsDashboard && is_array($fcDashboardPage)) : ?>
+                    <?php view('admin.dashboard.index', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === $fcPlannerEntriesRoute && is_array($fcEntriesDetailPage)) : ?>
-                    <?php include __DIR__ . '/../entries-detail.php'; ?>
+                    <?php view('admin.entries.detail', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === $fcPlannerEntriesRoute && is_array($fcEntriesPage)) : ?>
-                    <?php include __DIR__ . '/../entries.php'; ?>
+                    <?php view('admin.entries.index', get_defined_vars()); ?>
                 <?php elseif (!empty($fcAdminIsUsers) && is_array($fcUsersPage)) : ?>
-                    <?php include __DIR__ . '/../users.php'; ?>
+                    <?php view('admin.users.index', get_defined_vars()); ?>
                 <?php elseif (!empty($fcAdminIsGroupPermissions) && is_array($fcGroupPermissionsPage)) : ?>
-                    <?php include __DIR__ . '/../group-permissions.php'; ?>
+                    <?php view('admin.users.group-permissions', get_defined_vars()); ?>
                 <?php elseif ($fcAdminIsSettings && is_array($fcSettingsPage)) : ?>
-                    <?php include __DIR__ . '/../settings.php'; ?>
+                    <?php view('admin.settings.index', get_defined_vars()); ?>
                 <?php elseif ($fcAdminIsGallery && is_array($fcGalleryPage)) : ?>
-                    <?php include __DIR__ . '/../gallery.php'; ?>
+                    <?php view('admin.gallery.index', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/fence-styles' && is_array($fcFenceStylesPage)) : ?>
-                    <?php include __DIR__ . '/../products-fence-styles.php'; ?>
+                    <?php view('admin.products.fence-styles', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
-                    <?php include __DIR__ . '/../products-system-products.php'; ?>
+                    <?php view('admin.products.system-products', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/system-products' && is_array($fcStoreProductsPage)) : ?>
-                    <?php include __DIR__ . '/../products-store-products.php'; ?>
+                    <?php view('admin.products.store-products', get_defined_vars()); ?>
                 <?php endif; ?>
                 </div>
             </main>

@@ -1,21 +1,22 @@
+<?php
+use Fc\Admin\Helpers\UrlHelper;
+use Fc\Admin\Services\AppConfigService;
+use Fc\Admin\Services\BrandingSettings;
+use Fc\Admin\Services\IntegrationsSettings;
+use Fc\Admin\Services\SiteRegistryService;
+?>
 <div class="container-lg">
     <div class="row row align-items-middle">
         <div class="col">
             <?php
-            require_once dirname(__DIR__, 4) . '/app/src/Services/BrandingSettings.php';
-            require_once dirname(__DIR__, 4) . '/app/src/Services/AppConfigService.php';
-            require_once dirname(__DIR__, 4) . '/app/src/Services/SiteRegistryService.php';
-            require_once dirname(__DIR__, 4) . '/app/src/Services/IntegrationsSettings.php';
-            require_once dirname(__DIR__, 4) . '/app/src/Helpers/UrlHelper.php';
-            require_once dirname(__DIR__, 4) . '/app/src/Helpers/AssetHelper.php';
-            $fcBranding = \Fc\Admin\Services\BrandingSettings::get();
-            $fcWebhookMode = (string) (\Fc\Admin\Services\IntegrationsSettings::get()['webhookMode'] ?? 'live');
+            $fcBranding = BrandingSettings::get();
+            $fcWebhookMode = (string) (IntegrationsSettings::get()['webhookMode'] ?? 'live');
             $fcWebhookIsLive = $fcWebhookMode !== 'test';
             ?>
             <div class="mb-5 pb-5 text-secondary small">
                 <i class="fa-solid fa-circle fc-footer-webhook-dot <?php echo $fcWebhookIsLive ? 'fc-footer-webhook-dot--live' : 'fc-footer-webhook-dot--test'; ?>" aria-hidden="true" title="<?php echo $fcWebhookIsLive ? 'Live webhook URL' : 'Test webhook URL'; ?>"></i>
-                <?php echo htmlspecialchars($fcBranding['appName'], ENT_QUOTES, 'UTF-8'); ?>
-                <span class="app-version"><?php echo htmlspecialchars($fcBranding['version'], ENT_QUOTES, 'UTF-8'); ?></span>
+                <?php echo e($fcBranding['appName']); ?>
+                <span class="app-version"><?php echo e($fcBranding['version']); ?></span>
             </div>
         </div>
         <div class="col">
@@ -26,7 +27,7 @@
 </div>
 
 
-<?php if( \Fc\Admin\Helpers\UrlHelper::inUriSegment(\Fc\Admin\Services\SiteRegistryService::demoStages()) ): ?>
+<?php if( UrlHelper::inUriSegment(SiteRegistryService::demoStages()) ): ?>
 <span class="badge bg-danger text-white text-uppercase p-1 is-demo">Test<br> Version</span>
 <?php endif; ?>
 
@@ -41,7 +42,7 @@
                 Are you sure you want to clear all data and reset the form?
             </div>
 			<div class="modal-footer">
-				<a href="<?php echo \Fc\Admin\Helpers\UrlHelper::baseUrl('?action=clear-all'); ?>" class="btn btn-orange text-uppercase px-3">
+				<a href="<?php echo url('?action=clear-all'); ?>" class="btn btn-orange text-uppercase px-3">
 				    <i class="fa fa-check me-1"></i>
 				    <strong>Confirm</strong>
 				</a>
@@ -51,41 +52,41 @@
 </div>
 
 <!-- Libraries -->
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/select2.min.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/slick.min.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery.validate.min.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery-scrollspy.min.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/vendor/select2.min.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/vendor/slick.min.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/vendor/jquery.validate.min.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/vendor/jquery-scrollspy.min.js'); ?>"></script>
 
 <!-- Plugins -->
-<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo htmlspecialchars((string) \Fc\Admin\Services\AppConfigService::all()->apikey->google_map, ENT_QUOTES, 'UTF-8'); ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
+<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo e((string) AppConfigService::all()->apikey->google_map); ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
     async defer></script>
 
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/bootstrap.bundle.min.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/vendor/bootstrap.bundle.min.js'); ?>"></script>
 
 
 
 <!-- Scripts -->
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/helpers.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/main.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/vendor/jquery.inputmask.min.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/shared/planner-modal.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/functions.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/events.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/fencing-styles-slick.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/fc-color-options-slick.js'); ?>"></script>
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/calc.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/helpers.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/main.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/vendor/jquery.inputmask.min.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/planner-modal.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/functions.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/events.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/fencing-styles-slick.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/fc-color-options-slick.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/calc.js'); ?>"></script>
 
-<script defer src="<?php echo \Fc\Admin\Helpers\AssetHelper::assetUrl('public/assets/js/frontend/core/glass_calculator.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/core/glass_calculator.js'); ?>"></script>
 
-<?php include __DIR__ . '/fence-scripts.php'; ?>
+<?php include view_path('frontend.partials.fence-scripts'); ?>
 
-<?php if( !\Fc\Admin\Helpers\UrlHelper::inUriSegment(\Fc\Admin\Services\SiteRegistryService::demoStages()) ): ?>
+<?php if( !UrlHelper::inUriSegment(SiteRegistryService::demoStages()) ): ?>
 <!-- Chatra {literal} -->
 <script>
 window.addEventListener('load', function() {
     window.setTimeout(function() {
         (function(d, w, c) {
-            w.ChatraID = <?php echo json_encode((string) \Fc\Admin\Services\AppConfigService::all()->apikey->chatra, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+            w.ChatraID = <?php echo json_encode((string) AppConfigService::all()->apikey->chatra, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
             var s = d.createElement('script');
             w[c] = w[c] || function() {
                 (w[c].q = w[c].q || []).push(arguments);

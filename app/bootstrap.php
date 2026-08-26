@@ -22,3 +22,7 @@ if (!defined('FC_ROOT')) {
 
 require_once FC_ADMIN_ROOT . '/src/Core/Autoloader.php';
 Fc\Admin\Core\Autoloader::register();
+
+// Global view() helper — a bare function is not autoloadable, and every entry
+// point's controllers may render views, so it loads with the autoloader.
+require_once FC_ADMIN_ROOT . '/src/Helpers/view_functions.php';

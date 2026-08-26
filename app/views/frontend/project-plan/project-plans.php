@@ -18,7 +18,7 @@
 				$quote_id_dom_id = 'quote-id';
 				$quote_card_class = '';
 				$quote_card_hide_head = true;
-				include __DIR__ . '/../partials/quote-id-card.php';
+				include view_path('frontend.partials.quote-id-card');
 				?>
 
 			</div>

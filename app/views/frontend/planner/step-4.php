@@ -47,7 +47,7 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group has-clear position-relative">
-                                    <textarea name="notes" placeholder="Write your notes here" class="form-control fc-form-control--textarea w-100" rows="7"><?php echo htmlspecialchars((string) @$info['notes'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                    <textarea name="notes" placeholder="Write your notes here" class="form-control fc-form-control--textarea w-100" rows="7"><?php echo e((string) @$info['notes']); ?></textarea>
                                 </div>
                             </div>
                         </div>

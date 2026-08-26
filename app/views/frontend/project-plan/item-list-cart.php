@@ -39,7 +39,7 @@
 					    <!-- [END] Label -->
 
 					    <div class="fc-card fc-table-items">
-					        <?php include __DIR__ . '/../sections/cart-table.php'; ?>
+					        <?php include view_path('frontend.partials.sections.cart-table'); ?>
 					    </div>
 
 						<div class="fc-view-total-cost-bar">
