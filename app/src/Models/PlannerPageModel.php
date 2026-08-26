@@ -130,7 +130,7 @@ final class PlannerPageModel
             'res'     => (object) [],
             'failed'  => true,
             'error'   => 'This quote is no longer available.',
-            'attempt' => $pid,
+            'attempt' => $plannerId,
         ];
     }
 
