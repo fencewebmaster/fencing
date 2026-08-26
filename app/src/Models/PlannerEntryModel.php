@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Models;
 
 use Fc\Admin\Core\Model;
+use Fc\Admin\Presenters\PlannerEntryPresenter;
 use Fc\Admin\Services\PlannerRecordService;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-use Fc\Admin\Services\BrandingSettings;
+use Fc\Admin\Settings\BrandingSettings;
 
 $fcBranding = BrandingSettings::get();
 ?>

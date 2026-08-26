@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Core\JsonResponse;
-use Fc\Admin\Core\Request;
 use Fc\Admin\Models\PlannerEntryModel;
-use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PlannerEntryMaintenanceService;
 
 final class EntriesApiController extends BaseApiController
@@ -117,7 +115,7 @@ final class EntriesApiController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -151,7 +149,7 @@ final class EntriesApiController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -182,7 +180,7 @@ final class EntriesApiController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -215,7 +213,7 @@ final class EntriesApiController extends BaseApiController
             JsonResponse::error('Invalid JSON body.', 400);
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -247,7 +245,7 @@ final class EntriesApiController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -279,7 +277,7 @@ final class EntriesApiController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -311,7 +309,7 @@ final class EntriesApiController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -333,10 +331,5 @@ final class EntriesApiController extends BaseApiController
             'updated' => $updated,
             'message' => $updated . ' ' . $noun . ' restored to All.',
         ]);
-    }
-
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
     }
 }

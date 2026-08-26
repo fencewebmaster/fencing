@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers;
 
 use Fc\Admin\Core\NotFoundHandler;
-use Fc\Admin\Models\FenceStylePresenter;
-use Fc\Admin\Models\StoreProductPresenter;
-use Fc\Admin\Models\SystemProductPresenter;
+use Fc\Admin\Presenters\FenceStylePresenter;
+use Fc\Admin\Presenters\StoreProductPresenter;
+use Fc\Admin\Presenters\SystemProductPresenter;
 use Fc\Admin\Services\AdminContext;
 
 final class ProductsPageController extends BaseController

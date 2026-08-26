@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
+use Fc\Admin\Settings\IntegrationsSettings;
+
 /**
  * Cloudflare CDN helpers (zone purge via Integration settings credentials).
  */

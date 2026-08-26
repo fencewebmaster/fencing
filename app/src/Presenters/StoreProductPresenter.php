@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Helpers\StringHelper;
 use Fc\Admin\Helpers\ViewHelper;
+use Fc\Admin\Models\StoreProductModel;
 use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
-use Fc\Admin\Services\FenceColorSettings;
+use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PermissionService;
+use Fc\Admin\Settings\FenceColorSettings;
 
 /**
- * Store products (writable/products.csv) row shaping — pure, DB-free formatting/view-model
- * helpers, plus the page-level viewData() orchestrator. No dependency on StoreProductModel
- * (kept one-directional: Model depends on this class, not the other way around).
+ * Store products (writable/products.csv) row shaping — formatting/view-model helpers,
+ * plus the page-level viewData() orchestrator, which reads through StoreProductModel
+ * (and the Model calls back into this class — a documented two-way legacy coupling).
  */
 final class StoreProductPresenter
 {
@@ -26,18 +28,6 @@ final class StoreProductPresenter
     public static function listColumns(): array
     {
         return ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE', 'Colors'];
-    }
-
-    public static function csvStyleForFence(string $fenceSlug): string
-    {
-        if ($fenceSlug === 'slat_fence_infill') {
-            return 'slat_infill';
-        }
-        if ($fenceSlug === 'slat_fence') {
-            return 'slat';
-        }
-
-        return $fenceSlug;
     }
 
     /**
@@ -56,7 +46,7 @@ final class StoreProductPresenter
                 continue;
             }
             $plannerSlug = (string) ($info['slug'] ?? $fenceKey);
-            $styleKey = self::csvStyleForFence($plannerSlug);
+            $styleKey = FenceCatalogService::productsCsvStyleForFence($plannerSlug);
             $title = trim((string) ($info['title'] ?? ''));
             if ($title === '') {
                 $title = ViewHelper::formatHeader($styleKey);
@@ -99,7 +89,7 @@ final class StoreProductPresenter
             }
 
             $plannerSlug = (string) ($info['slug'] ?? $fenceKey);
-            $styleKey = self::csvStyleForFence($plannerSlug);
+            $styleKey = FenceCatalogService::productsCsvStyleForFence($plannerSlug);
             $columns = [];
             foreach ($info['color'] as $colorSlug) {
                 $columns[] = self::colorSlugToCsvColumn((string) $colorSlug);
@@ -219,17 +209,7 @@ final class StoreProductPresenter
             $labels[] = $labelsByColumn[strtoupper($column)] ?? self::colorLabel($column);
         }
 
-        if ($labels === []) {
-            return 'All colors';
-        }
-        if (count($labels) === 1) {
-            return $labels[0];
-        }
-        if (count($labels) === 2) {
-            return $labels[0] . ', ' . $labels[1];
-        }
-
-        return $labels[0] . ', ' . $labels[1] . ' (+' . (count($labels) - 2) . ')';
+        return ViewHelper::multiSelectSummaryLabel($labels, 'All colors');
     }
 
     /**
@@ -661,24 +641,14 @@ final class StoreProductPresenter
         int $currentPage,
         array $pages
     ): array {
-        $links = [];
-        foreach ($pages as $pageNum) {
-            if ($pageNum === '…') {
-                $links[] = ['type' => 'ellipsis', 'label' => '…', 'url' => ''];
-                continue;
-            }
-            $num = (int) $pageNum;
-            $links[] = [
-                'type'  => $num === $currentPage ? 'current' : 'link',
-                'label' => (string) $num,
-                'url'   => self::url($adminBase, array_merge($filters, [
-                    'page'     => $num,
-                    'per_page' => $perPage,
-                ])),
-            ];
-        }
-
-        return $links;
+        return ViewHelper::paginationLinks(
+            $pages,
+            $currentPage,
+            static fn (int $num): string => self::url($adminBase, array_merge($filters, [
+                'page'     => $num,
+                'per_page' => $perPage,
+            ]))
+        );
     }
 
     /**
@@ -718,29 +688,23 @@ final class StoreProductPresenter
             || $incompleteOnly;
 
         $perPageOptions = [50, 100, 250, 500];
-        $perPageRaw = strtolower(trim((string) ($query['per_page'] ?? '50')));
-        $isAll = $perPageRaw === 'all';
-        $perPage = $isAll
-            ? 0
-            : (in_array((int) $perPageRaw, $perPageOptions, true) ? (int) $perPageRaw : 50);
-        $page = $isAll ? 1 : max(1, (int) ($query['page'] ?? 1));
-        $perPageUrlValue = $isAll ? 'all' : $perPage;
+        $paging = ViewHelper::parseListPagination($query, $perPageOptions, 50);
+        $isAll = $paging['is_all'];
+        $perPage = $paging['per_page'];
+        $page = $paging['page_or_first'];
+        $perPageUrlValue = $paging['per_page_value'];
 
         $supplierValues = is_array($filterMeta['suppliers'] ?? null) ? $filterMeta['suppliers'] : [];
         $styleValues = is_array($filterMeta['styles'] ?? null) ? $filterMeta['styles'] : [];
         $colorOptions = self::colorOptions($colorColumnValues, $selectedColors);
 
         $payload = StoreProductModel::query($filters, $page, $isAll ? 50 : $perPage, $isAll);
-        if (
-            !$isAll
-            && !empty($payload['ok'])
-            && $page > 1
-            && (int) ($payload['total_pages'] ?? 1) >= 1
-            && $page > (int) $payload['total_pages']
-        ) {
-            $page = max(1, (int) $payload['total_pages']);
-            $payload = StoreProductModel::query($filters, $page, $perPage, false);
-        }
+        [$payload, $page] = ViewHelper::clampPageRequery(
+            $payload,
+            $page,
+            $isAll,
+            static fn (int $clamped): array => StoreProductModel::query($filters, $clamped, $perPage, false)
+        );
 
         $error = !empty($payload['ok']) ? '' : (string) ($payload['error'] ?? 'Could not load system products.');
         $columns = is_array($payload['columns'] ?? null) ? $payload['columns'] : [];

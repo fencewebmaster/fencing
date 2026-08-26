@@ -16,7 +16,7 @@
 
 declare(strict_types=1);
 
-use Fc\Admin\Services\ThemeSettings;
+use Fc\Admin\Settings\ThemeSettings;
 
 $adminCssBase = 'public/assets/css/admin/';
 ?><!DOCTYPE html>

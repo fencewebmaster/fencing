@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
 
 /**
  * FC branding — app name, tagline, version (saved to writable/theme.json).
@@ -68,8 +68,7 @@ final class BrandingSettings
     public static function get(): array
     {
         $defaults = self::defaults();
-        $file = ThemeSettings::readFile();
-        $saved = isset($file['branding']) && is_array($file['branding']) ? $file['branding'] : [];
+        $saved = ThemeSettings::section('branding');
 
         $merged = $defaults;
         foreach ($saved as $key => $value) {
@@ -158,23 +157,7 @@ final class BrandingSettings
      */
     public static function faviconUrl(string $appBase, ?array $branding = null): string
     {
-        if ($branding === null) {
-            $branding = self::get();
-        }
-
-        $path = trim((string) ($branding['favicon'] ?? ''));
-        if ($path === '') {
-            return '';
-        }
-
-        if (preg_match('/^https?:\/\//i', $path) || preg_match('/^data:/i', $path) || str_starts_with($path, '//')) {
-            return $path;
-        }
-
-        $base = rtrim(str_replace('\\', '/', $appBase), '/');
-        $rel = ltrim(str_replace('\\', '/', $path), '/');
-
-        return $base !== '' ? $base . '/' . $rel : $rel;
+        return self::brandingAssetUrl('favicon', $appBase, $branding);
     }
 
     /**
@@ -182,11 +165,21 @@ final class BrandingSettings
      */
     public static function logoUrl(string $appBase, ?array $branding = null): string
     {
+        return self::brandingAssetUrl('logo', $appBase, $branding);
+    }
+
+    /**
+     * Resolve a stored branding asset path ('favicon' or 'logo') to a browser URL.
+     *
+     * @param array<string, string>|null $branding
+     */
+    private static function brandingAssetUrl(string $key, string $appBase, ?array $branding): string
+    {
         if ($branding === null) {
             $branding = self::get();
         }
 
-        $path = trim((string) ($branding['logo'] ?? ''));
+        $path = trim((string) ($branding[$key] ?? ''));
         if ($path === '') {
             return '';
         }
@@ -302,14 +295,12 @@ final class BrandingSettings
      */
     public static function apiPayload(): array
     {
-        $file = ThemeSettings::readFile();
-
         return [
             'ok' => true,
             'branding' => self::get(),
             'defaults' => self::defaults(),
             'schema' => self::schema(),
-            'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
+            'updatedAt' => ThemeSettings::updatedAt(),
         ];
     }
 }

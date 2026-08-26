@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Filters;
 
 use Fc\Admin\Core\Request;
+use Fc\Admin\Helpers\RequestHelper;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
 
@@ -24,10 +25,7 @@ final class AuthFilter implements FilterInterface
             AuthService::logout();
         }
 
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-        $accept = (string) ($_SERVER['HTTP_ACCEPT'] ?? '');
-        $wantsJson = $isAjax || str_contains($accept, 'application/json');
+        $wantsJson = RequestHelper::wantsJson();
 
         if ($wantsJson) {
             if (!headers_sent()) {

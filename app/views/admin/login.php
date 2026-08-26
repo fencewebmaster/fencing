@@ -25,7 +25,7 @@ $version = $page['version'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="<?php echo e(rtrim((string) $page['admin_base'], '/') . '/'); ?>">
     <title>Sign in — <?php echo e($appName); ?></title>
-    <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
+    <?php echo \Fc\Admin\Settings\ThemeSettings::cssBlock(); ?>
     <link href="assets/css/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="assets/css/vendor/tailwind.css">
@@ -71,7 +71,7 @@ $version = $page['version'];
             <div class="login-card">
                 <div class="login-card-header">
                     <div class="login-logo<?php echo $logoUrl !== '' ? ' login-logo--image' : ''; ?>" aria-hidden="true">
-                        <?php echo \Fc\Admin\Services\BrandingSettings::logoMarkup($appBase, null, ['img_class' => 'login-logo__img']); ?>
+                        <?php echo \Fc\Admin\Settings\BrandingSettings::logoMarkup($appBase, null, ['img_class' => 'login-logo__img']); ?>
                     </div>
                     <h1>Welcome back</h1>
                     <p>Sign in to <?php echo e($appName); ?></p>

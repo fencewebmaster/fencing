@@ -1,7 +1,7 @@
 <?php
 
 use Fc\Admin\Services\CartBuilderService;
-use Fc\Admin\Services\PlannerOptionSettings;
+use Fc\Admin\Settings\PlannerOptionSettings;
 
 // Pre-select from session so other forms sharing this <form> don't wipe saved choices
 $fc_other_items_session = isset($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];

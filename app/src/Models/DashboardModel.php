@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Models;
 
+use Fc\Admin\Presenters\DashboardPresenter;
+use Fc\Admin\Presenters\PlannerEntryPresenter;
 use Fc\Admin\Services\CacheStorageService;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PlannerRecordService;
-use Fc\Admin\Services\SystemSettings;
+use Fc\Admin\Settings\SystemSettings;
 
 /**
  * Dashboard analytics data access (wp_planners + products/fence CSV & file counts).

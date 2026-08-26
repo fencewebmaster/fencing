@@ -5,18 +5,12 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Core\JsonResponse;
-use Fc\Admin\Core\Request;
 use Fc\Admin\Filters\AuthFilter;
 use Fc\Admin\Models\DashboardModel;
-use Fc\Admin\Models\PlannerEntryPresenter;
+use Fc\Admin\Presenters\PlannerEntryPresenter;
 
 final class DashboardApiController extends BaseApiController
 {
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
-    }
-
     public function handle(): void
     {
         (new AuthFilter())->before($this->request);

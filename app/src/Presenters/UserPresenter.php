@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
+use Fc\Admin\Helpers\StringHelper;
+use Fc\Admin\Helpers\ViewHelper;
+use Fc\Admin\Models\UserModel;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\ImpersonationService;
 use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Services\PresenceService;
-use Fc\Admin\Services\SystemSettings;
+use Fc\Admin\Settings\SystemSettings;
 
 /**
  * Users list — pure formatting + page orchestration (config/users_admin.php migration).
@@ -33,14 +36,9 @@ final class UserPresenter
         return 'users';
     }
 
-    private static function escapeAttr(string $value): string
-    {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
     public static function listPath(string $adminBase): string
     {
-        return rtrim($adminBase, '/') . '/' . self::routeSlug();
+        return ViewHelper::adminUrl($adminBase, self::routeSlug());
     }
 
     /**
@@ -227,38 +225,6 @@ final class UserPresenter
     }
 
     /**
-     * @return list<int|string>
-     */
-    public static function paginationWindow(int $current, int $total): array
-    {
-        if ($total <= 7) {
-            $pages = [];
-            for ($i = 1; $i <= $total; $i++) {
-                $pages[] = $i;
-            }
-
-            return $pages;
-        }
-
-        $pages = [1];
-        $start = max(2, $current - 1);
-        $end = min($total - 1, $current + 1);
-
-        if ($start > 2) {
-            $pages[] = '…';
-        }
-        for ($p = $start; $p <= $end; $p++) {
-            $pages[] = $p;
-        }
-        if ($end < $total - 1) {
-            $pages[] = '…';
-        }
-        $pages[] = $total;
-
-        return $pages;
-    }
-
-    /**
      * @param array<string, mixed> $query
      * @return array{q:string,role:string,online:bool,page:int,per_page:int|string,is_all:bool,offset:int}
      */
@@ -268,32 +234,20 @@ final class UserPresenter
         $role = strtolower(trim((string) ($query['role'] ?? '')));
         $onlineRaw = strtolower(trim((string) ($query['online'] ?? '')));
         $online = in_array($onlineRaw, ['1', 'true', 'yes', 'on'], true);
-        $page = max(1, (int) ($query['page'] ?? 1));
-        $perPageRaw = strtolower(trim((string) ($query['per_page'] ?? (string) self::DEFAULT_PER_PAGE)));
+        $paging = ViewHelper::parseListPagination($query, self::PER_PAGE_OPTIONS, self::DEFAULT_PER_PAGE);
 
         if ($role !== '' && !self::isValidRoleSlug($role)) {
             $role = '';
         }
 
-        $isAll = ($perPageRaw === 'all');
-        $perPage = self::DEFAULT_PER_PAGE;
-
-        if ($isAll) {
-            $perPage = 0;
-        } elseif (in_array((int) $perPageRaw, self::PER_PAGE_OPTIONS, true)) {
-            $perPage = (int) $perPageRaw;
-        }
-
-        $offset = $isAll ? 0 : ($page - 1) * $perPage;
-
         return [
             'q' => $q,
             'role' => $role,
             'online' => $online,
-            'page' => $page,
-            'per_page' => $isAll ? 'all' : $perPage,
-            'is_all' => $isAll,
-            'offset' => $offset,
+            'page' => $paging['page'],
+            'per_page' => $paging['per_page_value'],
+            'is_all' => $paging['is_all'],
+            'offset' => $paging['offset'],
         ];
     }
 
@@ -384,10 +338,10 @@ final class UserPresenter
         $role = trim((string) ($req['role'] ?? ''));
 
         if ($q !== '') {
-            $html .= '<input type="hidden" name="q" value="' . self::escapeAttr($q) . '">';
+            $html .= '<input type="hidden" name="q" value="' . StringHelper::escapeHtml($q) . '">';
         }
         if ($role !== '') {
-            $html .= '<input type="hidden" name="role" value="' . self::escapeAttr($role) . '">';
+            $html .= '<input type="hidden" name="role" value="' . StringHelper::escapeHtml($role) . '">';
         }
         if (!empty($req['online'])) {
             $html .= '<input type="hidden" name="online" value="1">';
@@ -635,23 +589,15 @@ final class UserPresenter
         $currentPage = (int) $request['page'];
         $pagination = [
             'show' => !$request['is_all'] && $totalPagesInt > 1,
-            'pages' => self::paginationWindow($currentPage, $totalPagesInt),
+            'pages' => ViewHelper::paginationWindow($currentPage, $totalPagesInt),
             'prev_url' => $currentPage > 1 ? $url(['page' => $currentPage - 1]) : '',
             'next_url' => $currentPage < $totalPagesInt ? $url(['page' => $currentPage + 1]) : '',
         ];
-        $paginationLinks = [];
-        foreach ($pagination['pages'] as $pageNum) {
-            if ($pageNum === '…') {
-                $paginationLinks[] = ['type' => 'ellipsis'];
-                continue;
-            }
-            $num = (int) $pageNum;
-            $paginationLinks[] = [
-                'type' => $num === $currentPage ? 'current' : 'link',
-                'label' => (string) $num,
-                'url' => $url(['page' => $num]),
-            ];
-        }
+        $paginationLinks = ViewHelper::paginationLinks(
+            $pagination['pages'],
+            $currentPage,
+            static fn (int $num): string => $url(['page' => $num])
+        );
 
         return [
             'redirect_url' => null,

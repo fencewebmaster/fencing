@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
+use Fc\Admin\Helpers\ColorHelper;
 use Fc\Admin\Services\AuthService;
-use Fc\Admin\Services\BrandingSettings;
-use Fc\Admin\Services\CatalogSettings;
-use Fc\Admin\Services\ConsoleSettings;
-use Fc\Admin\Services\FenceColorSettings;
-use Fc\Admin\Services\IntegrationsSettings;
-use Fc\Admin\Services\PlannerOptionSettings;
-use Fc\Admin\Services\SystemSettings;
-use Fc\Admin\Services\ThemeSettings;
+use Fc\Admin\Settings\BrandingSettings;
+use Fc\Admin\Settings\CatalogSettings;
+use Fc\Admin\Settings\ConsoleSettings;
+use Fc\Admin\Settings\FenceColorSettings;
+use Fc\Admin\Settings\IntegrationsSettings;
+use Fc\Admin\Settings\PlannerOptionSettings;
+use Fc\Admin\Settings\SystemSettings;
+use Fc\Admin\Settings\ThemeSettings;
 
 /**
  * Settings page — pure formatting + page orchestration (config/settings_admin.php migration).
@@ -335,24 +336,9 @@ final class SettingsPresenter
         );
     }
 
-    private static function normalizeHex(string $color): ?string
-    {
-        $value = trim($color);
-        if (preg_match('/^#[0-9a-fA-F]{6}$/', $value)) {
-            return strtolower($value);
-        }
-        if (preg_match('/^#[0-9a-fA-F]{3}$/', $value)) {
-            return strtolower(
-                '#' . $value[1] . $value[1] . $value[2] . $value[2] . $value[3] . $value[3]
-            );
-        }
-
-        return null;
-    }
-
     private static function fencePickerValue(string $color): string
     {
-        return self::normalizeHex($color) ?? '#cccccc';
+        return ColorHelper::normalizeHex($color) ?? '#cccccc';
     }
 
     /**

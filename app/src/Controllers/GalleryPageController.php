@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers;
 
-use Fc\Admin\Models\GalleryPresenter;
+use Fc\Admin\Presenters\GalleryPresenter;
 use Fc\Admin\Services\AdminContext;
 
 final class GalleryPageController extends BaseController
@@ -25,8 +25,6 @@ final class GalleryPageController extends BaseController
 
     private function resolveInitialTab(): string
     {
-        $tab = strtolower(trim((string) $this->request->query('tab', 'library')));
-
-        return in_array($tab, self::TABS, true) ? $tab : 'library';
+        return $this->resolveTabParam(self::TABS, 'library');
     }
 }

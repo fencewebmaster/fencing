@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
-use Fc\Admin\Core\Request;
-use Fc\Admin\Models\UserPresenter;
+use Fc\Admin\Presenters\UserPresenter;
 use Fc\Admin\Services\PresenceService;
 
 final class UsersApiController extends BaseApiController
 {
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
-    }
-
     public function handle(): void
     {
         $action = (string) $this->request->query('action', 'presence');

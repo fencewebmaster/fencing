@@ -7,6 +7,7 @@ namespace Fc\Admin\Services;
 use PDO;
 use RuntimeException;
 use Throwable;
+use Fc\Admin\Models\SystemProductModel;
 
 /**
  * Exports WooCommerce products from the WordPress MySQL database into
@@ -917,10 +918,7 @@ final class WooCommerceProductExportService
             return self::error('Unable to replace the products CSV file.');
         }
         @unlink($backup);
-        @unlink(
-            CacheStorageService::cacheDir('products')
-            . DIRECTORY_SEPARATOR . 'wc-products-' . $source . '-count.json'
-        );
+        SystemProductModel::invalidateCache($source);
         WcProductSkuIndex::invalidate($source);
 
         return ['ok' => true];

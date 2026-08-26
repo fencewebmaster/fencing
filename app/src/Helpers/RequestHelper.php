@@ -10,6 +10,18 @@ namespace Fc\Admin\Helpers;
 final class RequestHelper
 {
     /**
+     * Whether the caller wants a JSON response: an XHR request, or an Accept header
+     * that mentions application/json. Shared by AuthFilter and PermissionFilter.
+     */
+    public static function wantsJson(): bool
+    {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        $accept = (string) ($_SERVER['HTTP_ACCEPT'] ?? '');
+
+        return $isAjax || str_contains($accept, 'application/json');
+    }
+    /**
      * Whether the current request is over HTTPS (direct or via a trusted proxy header).
      */
     public static function isHttps(): bool

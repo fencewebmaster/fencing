@@ -44,18 +44,22 @@ final class UserModel extends Model
 
     public static function usersTable(): string
     {
-        $cfg = DatabaseConfigService::resolveAuthConfig();
-        $prefix = preg_replace('/[^a-zA-Z0-9_]/', '', (string) ($cfg['prefix'] ?? 'wp_')) ?: 'wp_';
-
-        return $prefix . 'users';
+        return self::authPrefix() . 'users';
     }
 
     public static function usermetaTable(): string
     {
-        $cfg = DatabaseConfigService::resolveAuthConfig();
-        $prefix = preg_replace('/[^a-zA-Z0-9_]/', '', (string) ($cfg['prefix'] ?? 'wp_')) ?: 'wp_';
+        return self::authPrefix() . 'usermeta';
+    }
 
-        return $prefix . 'usermeta';
+    /**
+     * Sanitized WP table prefix from the auth DB config (falls back to wp_).
+     */
+    private static function authPrefix(): string
+    {
+        $cfg = DatabaseConfigService::resolveAuthConfig();
+
+        return preg_replace('/[^a-zA-Z0-9_]/', '', (string) ($cfg['prefix'] ?? 'wp_')) ?: 'wp_';
     }
 
     /**
@@ -486,10 +490,7 @@ final class UserModel extends Model
      */
     private static function capabilitiesMetaKey(): string
     {
-        $cfg = DatabaseConfigService::resolveAuthConfig();
-        $prefix = preg_replace('/[^a-zA-Z0-9_]/', '', (string) ($cfg['prefix'] ?? 'wp_')) ?: 'wp_';
-
-        return $prefix . 'capabilities';
+        return self::authPrefix() . 'capabilities';
     }
 
     /**

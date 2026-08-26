@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
+use Fc\Admin\Models\GalleryModel;
 use Fc\Admin\Services\AuthService;
 
 /**

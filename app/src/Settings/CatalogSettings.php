@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
+
+use Fc\Admin\Services\ProductLookupService;
 
 /**
  * FC Catalog settings — Product Lookup configuration (saved to writable/theme.json as catalog).
@@ -58,15 +60,7 @@ final class CatalogSettings
      */
     public static function clampResultsPerPage($value): int
     {
-        $n = (int) $value;
-        if ($n < 1) {
-            $n = 1;
-        }
-        if ($n > 100) {
-            $n = 100;
-        }
-
-        return $n;
+        return self::clampInt($value, 1, 100);
     }
 
     /**
@@ -74,12 +68,20 @@ final class CatalogSettings
      */
     public static function clampResultsPerPageListSize($value): int
     {
+        return self::clampInt($value, 1, 10);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private static function clampInt($value, int $min, int $max): int
+    {
         $n = (int) $value;
-        if ($n < 1) {
-            $n = 1;
+        if ($n < $min) {
+            $n = $min;
         }
-        if ($n > 10) {
-            $n = 10;
+        if ($n > $max) {
+            $n = $max;
         }
 
         return $n;
@@ -128,8 +130,7 @@ final class CatalogSettings
     public static function get(): array
     {
         $defaults = self::defaults();
-        $file = ThemeSettings::readFile();
-        $saved = isset($file['catalog']) && is_array($file['catalog']) ? $file['catalog'] : [];
+        $saved = ThemeSettings::section('catalog');
 
         return self::normalize(array_merge($defaults, $saved));
     }
@@ -361,7 +362,6 @@ final class CatalogSettings
      */
     public static function apiPayload(bool $includeOptions = true): array
     {
-        $file = ThemeSettings::readFile();
         $catalog = self::get();
         $payload = [
             'ok' => true,
@@ -373,7 +373,7 @@ final class CatalogSettings
                 !empty($catalog['resultsPerPageAllEnabled']),
                 (int) ($catalog['resultsPerPageListSize'] ?? 5)
             ),
-            'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
+            'updatedAt' => ThemeSettings::updatedAt(),
             'categories' => [],
             'attributes' => [],
             'optionsError' => '',

@@ -1,8 +1,8 @@
 <?php
 use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Services\AppConfigService;
-use Fc\Admin\Services\BrandingSettings;
-use Fc\Admin\Services\IntegrationsSettings;
+use Fc\Admin\Settings\BrandingSettings;
+use Fc\Admin\Settings\IntegrationsSettings;
 use Fc\Admin\Services\SiteRegistryService;
 ?>
 <div class="container-lg">

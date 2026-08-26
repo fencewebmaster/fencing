@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Fc\Admin\Models;
 
 use Fc\Admin\Core\FrontendApplication;
-use Fc\Admin\Services\BrandingSettings;
-use Fc\Admin\Services\CatalogSettings;
+use Fc\Admin\Settings\BrandingSettings;
+use Fc\Admin\Settings\CatalogSettings;
 use Fc\Admin\Services\ProductLookupService;
 
 /**

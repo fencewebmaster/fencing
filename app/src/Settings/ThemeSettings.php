@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
 
 use Fc\Admin\Helpers\ColorHelper;
+use Fc\Admin\Helpers\FileHelper;
 
 /**
  * FC theme — editable CSS custom properties (saved to writable/theme.json).
@@ -149,18 +150,29 @@ final class ThemeSettings
      */
     public static function readFile(): array
     {
-        $path = self::filePath();
-        if (!is_readable($path)) {
-            return [];
-        }
+        return FileHelper::readJsonFile(self::filePath()) ?? [];
+    }
 
-        $raw = file_get_contents($path);
-        if (!is_string($raw) || trim($raw) === '') {
-            return [];
-        }
+    /**
+     * One top-level section of theme.json ([] when absent or not an array).
+     *
+     * @return array<mixed>
+     */
+    public static function section(string $key): array
+    {
+        $file = self::readFile();
 
-        $data = json_decode($raw, true);
-        return is_array($data) ? $data : [];
+        return isset($file[$key]) && is_array($file[$key]) ? $file[$key] : [];
+    }
+
+    /**
+     * The file-level updatedAt stamp, or null when theme.json has none.
+     */
+    public static function updatedAt(): ?string
+    {
+        $file = self::readFile();
+
+        return isset($file['updatedAt']) ? (string) $file['updatedAt'] : null;
     }
 
     /**
@@ -169,8 +181,7 @@ final class ThemeSettings
     public static function get(): array
     {
         $defaults = self::defaults();
-        $file = self::readFile();
-        $saved = isset($file['colors']) && is_array($file['colors']) ? $file['colors'] : [];
+        $saved = self::section('colors');
 
         $merged = $defaults;
         foreach ($saved as $var => $value) {
@@ -311,8 +322,6 @@ final class ThemeSettings
      */
     public static function apiPayload(): array
     {
-        $file = self::readFile();
-
         return [
             'ok' => true,
             'colors' => self::get(),
@@ -320,7 +329,7 @@ final class ThemeSettings
             'schema' => self::schema(),
             'presets' => array_values(self::presets()),
             'activePreset' => self::detectPreset(self::get()),
-            'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
+            'updatedAt' => self::updatedAt(),
         ];
     }
 }

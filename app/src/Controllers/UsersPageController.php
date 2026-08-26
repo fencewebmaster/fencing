@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers;
 
 use Fc\Admin\Core\Response;
-use Fc\Admin\Models\UserPresenter;
+use Fc\Admin\Presenters\UserPresenter;
 use Fc\Admin\Services\AdminContext;
 use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;

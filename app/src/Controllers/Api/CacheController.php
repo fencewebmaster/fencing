@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Core\JsonResponse;
-use Fc\Admin\Core\Request;
 use Fc\Admin\Filters\AuthFilter;
-use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\CacheStorageService;
 use Fc\Admin\Services\CloudflareService;
 
@@ -53,7 +51,7 @@ final class CacheController extends BaseApiController
             JsonResponse::error('Invalid JSON body.', 400);
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             JsonResponse::error('Invalid security token. Refresh and try again.', 403);
         }
 
@@ -71,10 +69,5 @@ final class CacheController extends BaseApiController
 
         $result['stats'] = CacheStorageService::cacheStats();
         JsonResponse::ok($result);
-    }
-
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
     }
 }

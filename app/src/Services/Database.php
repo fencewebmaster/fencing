@@ -9,8 +9,6 @@ use Fc\Admin\Helpers\UrlHelper;
 class Database {
 
     // Properties
-    public $name;
-    public $color;
     /** @var string Last connection error for diagnostics */
     public $last_connect_error = '';
 
@@ -49,8 +47,54 @@ class Database {
 
     //----------------------------------------------------------------------------------
 
+    /**
+     * Fully-qualified table name: prefix + table, with a '_demo' suffix on demo/staging.
+     */
+    function tableName($table): string {
+        return implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+    }
+
+    //----------------------------------------------------------------------------------
+
+    /**
+     * Run one write and map the mysqli outcome to the shared success/error envelope.
+     * $op names the operation in the error_log line; $successMessage is echoed on success.
+     *
+     * @return array{success:bool,message:string}
+     */
+    private function execWrite(\mysqli $conn, string $sql, string $successMessage, string $op): array {
+        try {
+            $ok = $conn->query($sql);
+        } catch (\mysqli_sql_exception $e) {
+            $conn->close();
+            error_log('FC Database::' . $op . ' failed: ' . $sql . ' -- ' . $e->getMessage());
+            return [
+                'success' => FALSE,
+                'message' => 'Database error. See server error log for details.',
+            ];
+        }
+
+        if ($ok === TRUE) {
+            $conn->close();
+            return [
+                'success' => TRUE,
+                'message' => $successMessage
+            ];
+        }
+
+        $err = $conn->error;
+        $conn->close();
+        error_log('FC Database::' . $op . ' failed: ' . $sql . ' -- ' . $err);
+        return [
+            'success' => FALSE,
+            'message' => 'Database error. See server error log for details.',
+        ];
+    }
+
+    //----------------------------------------------------------------------------------
+
     function insert($table, $data) {
-        $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+        $table = $this->tableName($table);
 
         $conn = $this->connect();
 
@@ -73,32 +117,7 @@ class Database {
 
         $sql = "INSERT INTO ".$table." (".$columns.") VALUES (".$values.")";
 
-        try {
-            $ok = $conn->query($sql);
-        } catch (\mysqli_sql_exception $e) {
-            $conn->close();
-            error_log('FC Database::insert failed: ' . $sql . ' -- ' . $e->getMessage());
-            return [
-                'success' => FALSE,
-                'message' => 'Database error. See server error log for details.',
-            ];
-        }
-
-        if ($ok === TRUE) {
-            $conn->close();
-            return [
-                'success' => TRUE,
-                'message' => "New record created successfully"
-            ];
-        }
-
-        $err = $conn->error;
-        $conn->close();
-        error_log('FC Database::insert failed: ' . $sql . ' -- ' . $err);
-        return [
-            'success' => FALSE,
-            'message' => 'Database error. See server error log for details.',
-        ];
+        return $this->execWrite($conn, $sql, "New record created successfully", 'insert');
     }
 
     //----------------------------------------------------------------------------------
@@ -132,7 +151,7 @@ class Database {
     //----------------------------------------------------------------------------------
 
     function update($table = '', $data  = array(), $where  = array()) {
-        $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+        $table = $this->tableName($table);
 
         $conn = $this->connect();
 
@@ -160,38 +179,13 @@ class Database {
 
         $sql = "UPDATE ".$table." SET $set_data WHERE $where_data;";
 
-        try {
-            $ok = $conn->query($sql);
-        } catch (\mysqli_sql_exception $e) {
-            $conn->close();
-            error_log('FC Database::update failed: ' . $sql . ' -- ' . $e->getMessage());
-            return [
-                'success' => FALSE,
-                'message' => 'Database error. See server error log for details.',
-            ];
-        }
-
-        if ($ok === TRUE) {
-            $conn->close();
-            return [
-                'success' => TRUE,
-                'message' => "Record is updated successfully"
-            ];
-        }
-
-        $err = $conn->error;
-        $conn->close();
-        error_log('FC Database::update failed: ' . $sql . ' -- ' . $err);
-        return [
-            'success' => FALSE,
-            'message' => 'Database error. See server error log for details.',
-        ];
+        return $this->execWrite($conn, $sql, "Record is updated successfully", 'update');
     }
 
     //----------------------------------------------------------------------------------
 
     function delete($table = '', $where = array()) {
-        $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+        $table = $this->tableName($table);
 
         $conn = $this->connect();
 
@@ -206,32 +200,7 @@ class Database {
 
         $sql = "DELETE FROM ".$table." WHERE $where_data;";
 
-        try {
-            $ok = $conn->query($sql);
-        } catch (\mysqli_sql_exception $e) {
-            $conn->close();
-            error_log('FC Database::delete failed: ' . $sql . ' -- ' . $e->getMessage());
-            return [
-                'success' => FALSE,
-                'message' => 'Database error. See server error log for details.',
-            ];
-        }
-
-        if ($ok === TRUE) {
-            $conn->close();
-            return [
-                'success' => TRUE,
-                'message' => "Record is deleted successfully"
-            ];
-        }
-
-        $err = $conn->error;
-        $conn->close();
-        error_log('FC Database::delete failed: ' . $sql . ' -- ' . $err);
-        return [
-            'success' => FALSE,
-            'message' => 'Database error. See server error log for details.',
-        ];
+        return $this->execWrite($conn, $sql, "Record is deleted successfully", 'delete');
     }
 
     //----------------------------------------------------------------------------------
@@ -253,7 +222,7 @@ class Database {
     //----------------------------------------------------------------------------------
 
     function select_where($table, $where, $select = '*') {
-        $table = implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
+        $table = $this->tableName($table);
 
         $sql = "SELECT $select FROM ".$table." WHERE ".$where .' ORDER BY id DESC';
 

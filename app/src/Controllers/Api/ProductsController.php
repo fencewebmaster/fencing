@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
-use Fc\Admin\Core\Request;
 use Fc\Admin\Models\StoreProductModel;
 use Fc\Admin\Models\SystemProductModel;
 use Fc\Admin\Services\AdminSiteRegistry;
@@ -18,10 +17,9 @@ use Fc\Admin\Services\WooCommerceProductExportService;
 
 final class ProductsController extends BaseApiController
 {
-    public function handleApiRequest(): void
+    public function handle(): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-        header('Cache-Control: no-store');
+        $this->sendJsonHeaders();
 
         $method = $this->request->method();
         $action = (string) $this->request->query('action', '');
@@ -53,7 +51,7 @@ final class ProductsController extends BaseApiController
                 'download-products-cancel',
             ], true)) {
                 if (
-                    !AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)
+                    !self::csrfOk($payload)
                 ) {
                     http_response_code(403);
                     echo json_encode([
@@ -84,7 +82,7 @@ final class ProductsController extends BaseApiController
 
             if ($action === 'reorder-store-products' || $action === 'update-store-product') {
                 if (
-                    !AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)
+                    !self::csrfOk($payload)
                 ) {
                     http_response_code(403);
                     echo json_encode([
@@ -191,17 +189,19 @@ final class ProductsController extends BaseApiController
         }
     }
 
-    private static function downloadStoreProductsCsv(): void
+    /**
+     * Stream a CSV file as an attachment — shared by the two (inverted) download handlers.
+     * $label names the file in the 404/500 JSON errors; $downloadFilename is the browser save-as
+     * name (for the store download that is deliberately '{site}-system-products.csv' — the inversion).
+     */
+    private static function streamCsvAttachment(string $path, string $downloadFilename, string $label): void
     {
-        $filename = 'products.csv';
-        $downloadFilename = AdminSiteRegistry::currentSiteFilenameSlug() . '-system-products.csv';
-        $path = StoreProductModel::csvPath();
         if (!is_readable($path) || !is_file($path)) {
             http_response_code(404);
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'ok' => false,
-                'error' => $filename . ' not found or not readable.',
+                'error' => $label . ' not found or not readable.',
             ], JSON_UNESCAPED_UNICODE);
             return;
         }
@@ -221,7 +221,7 @@ final class ProductsController extends BaseApiController
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'ok' => false,
-                'error' => 'Unable to open ' . $filename . '.',
+                'error' => 'Unable to open ' . $label . '.',
             ], JSON_UNESCAPED_UNICODE);
             return;
         }
@@ -229,6 +229,12 @@ final class ProductsController extends BaseApiController
         fpassthru($handle);
         fclose($handle);
         exit;
+    }
+
+    private static function downloadStoreProductsCsv(): void
+    {
+        $downloadFilename = AdminSiteRegistry::currentSiteFilenameSlug() . '-system-products.csv';
+        self::streamCsvAttachment(StoreProductModel::csvPath(), $downloadFilename, 'products.csv');
     }
 
     private function importStoreProductsCsv(): void
@@ -429,40 +435,7 @@ final class ProductsController extends BaseApiController
         }
 
         $filename = 'wc-products-' . $source . '.csv';
-        $path = SystemProductModel::csvPath($source);
-        if (!is_readable($path) || !is_file($path)) {
-            http_response_code(404);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode([
-                'ok' => false,
-                'error' => $filename . ' not found or not readable.',
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        $size = @filesize($path);
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('X-Content-Type-Options: nosniff');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        if (is_int($size) && $size >= 0) {
-            header('Content-Length: ' . $size);
-        }
-
-        $handle = fopen($path, 'rb');
-        if ($handle === false) {
-            http_response_code(500);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode([
-                'ok' => false,
-                'error' => 'Unable to open ' . $filename . '.',
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        fpassthru($handle);
-        fclose($handle);
-        exit;
+        self::streamCsvAttachment(SystemProductModel::csvPath($source), $filename, $filename);
     }
 
     private function importProductsCsv(): void
@@ -663,10 +636,5 @@ final class ProductsController extends BaseApiController
             'file' => $filename,
             'total' => $rowCount,
         ], JSON_UNESCAPED_UNICODE);
-    }
-
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handleApiRequest();
     }
 }

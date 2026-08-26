@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
 
 use Fc\Admin\Helpers\ColorHelper;
 
@@ -188,8 +188,7 @@ final class FenceColorSettings
     public static function get(): array
     {
         $defaults = self::defaults();
-        $file = ThemeSettings::readFile();
-        $saved = isset($file['fenceColors']) && is_array($file['fenceColors']) ? $file['fenceColors'] : [];
+        $saved = ThemeSettings::section('fenceColors');
 
         if ($saved === []) {
             return $defaults;
@@ -466,13 +465,11 @@ final class FenceColorSettings
      */
     public static function apiPayload(): array
     {
-        $file = ThemeSettings::readFile();
-
         return [
             'ok' => true,
             'fenceColors' => self::get(),
             'defaults' => self::defaults(),
-            'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
+            'updatedAt' => ThemeSettings::updatedAt(),
         ];
     }
 }

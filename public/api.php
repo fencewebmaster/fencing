@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../app/bootstrap.php';
 
-if (!Fc\Admin\Services\ConsoleSettings::debugMode()) {
+if (!Fc\Admin\Settings\ConsoleSettings::debugMode()) {
     ini_set('display_errors', '0');
     ini_set('log_errors', '1');
 }

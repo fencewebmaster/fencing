@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
 
 /**
  * FC System settings — date defaults (saved to writable/theme.json as system).
@@ -43,7 +43,7 @@ final class SystemSettings
         $choices = [
             'all' => 'All dates',
         ];
-        foreach (\Fc\Admin\Models\PlannerEntryPresenter::datePeriodOptions() as $key => $label) {
+        foreach (\Fc\Admin\Presenters\PlannerEntryPresenter::datePeriodOptions() as $key => $label) {
             if ($key === 'custom') {
                 continue;
             }
@@ -58,7 +58,7 @@ final class SystemSettings
      */
     public static function dateFieldChoices(): array
     {
-        return \Fc\Admin\Models\PlannerEntryPresenter::dateFieldOptions();
+        return \Fc\Admin\Presenters\PlannerEntryPresenter::dateFieldOptions();
     }
 
     /**
@@ -136,8 +136,7 @@ final class SystemSettings
     public static function get(): array
     {
         $defaults = self::defaults();
-        $file = ThemeSettings::readFile();
-        $saved = isset($file['system']) && is_array($file['system']) ? $file['system'] : [];
+        $saved = ThemeSettings::section('system');
         $saved = self::migrateLegacyKeys($saved);
 
         return self::normalize(array_merge($defaults, $saved));
@@ -350,8 +349,6 @@ final class SystemSettings
      */
     public static function apiPayload(): array
     {
-        $file = ThemeSettings::readFile();
-
         return [
             'ok' => true,
             'system' => self::get(),
@@ -359,7 +356,7 @@ final class SystemSettings
             'datePeriodChoices' => self::datePeriodChoices(),
             'dateFieldChoices' => self::dateFieldChoices(),
             'dateFormatChoices' => self::dateFormatChoices(),
-            'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
+            'updatedAt' => ThemeSettings::updatedAt(),
         ];
     }
 }

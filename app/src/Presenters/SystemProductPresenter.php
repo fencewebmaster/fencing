@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Helpers\StringHelper;
 use Fc\Admin\Helpers\ViewHelper;
+use Fc\Admin\Models\SystemProductModel;
 use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
@@ -255,26 +256,16 @@ final class SystemProductPresenter
         int $currentPage,
         array $pages
     ): array {
-        $links = [];
-        foreach ($pages as $pageNum) {
-            if ($pageNum === '…') {
-                $links[] = ['type' => 'ellipsis', 'label' => '…', 'url' => ''];
-                continue;
-            }
-            $num = (int) $pageNum;
-            $links[] = [
-                'type'  => $num === $currentPage ? 'current' : 'link',
-                'label' => (string) $num,
-                'url'   => self::url($adminBase, [
-                    'source'   => $source,
-                    'q'        => $search,
-                    'page'     => $num,
-                    'per_page' => $perPage,
-                ]),
-            ];
-        }
-
-        return $links;
+        return ViewHelper::paginationLinks(
+            $pages,
+            $currentPage,
+            static fn (int $num): string => self::url($adminBase, [
+                'source'   => $source,
+                'q'        => $search,
+                'page'     => $num,
+                'per_page' => $perPage,
+            ])
+        );
     }
 
     /**
@@ -289,12 +280,10 @@ final class SystemProductPresenter
         }
         $search = trim((string) ($query['q'] ?? ''));
         $perPageOptions = [25, 50, 100, 200];
-        $perPageRaw = strtolower(trim((string) ($query['per_page'] ?? '50')));
-        $isAll = $perPageRaw === 'all';
-        $perPage = $isAll
-            ? 0
-            : (in_array((int) $perPageRaw, $perPageOptions, true) ? (int) $perPageRaw : 50);
-        $page = $isAll ? 1 : max(1, (int) ($query['page'] ?? 1));
+        $paging = ViewHelper::parseListPagination($query, $perPageOptions, 50);
+        $isAll = $paging['is_all'];
+        $perPage = $paging['per_page'];
+        $page = $paging['page_or_first'];
 
         $displayColumns = ['Images', 'SKU', 'Name'];
         // 'Slug' rides along on each row (for the SKU cell's "View Product" link) without
@@ -322,16 +311,12 @@ final class SystemProductPresenter
         // Counts first (cached), then stream only the visible page from CSV.
         $queryPerPage = $isAll ? PHP_INT_MAX : $perPage;
         $payload = SystemProductModel::query($source, $search, $page, $queryPerPage, $fetchColumns);
-        if (
-            !$isAll
-            && !empty($payload['ok'])
-            && $page > 1
-            && (int) ($payload['total_pages'] ?? 1) >= 1
-            && $page > (int) $payload['total_pages']
-        ) {
-            $page = max(1, (int) $payload['total_pages']);
-            $payload = SystemProductModel::query($source, $search, $page, $queryPerPage, $fetchColumns);
-        }
+        [$payload, $page] = ViewHelper::clampPageRequery(
+            $payload,
+            $page,
+            $isAll,
+            static fn (int $clamped): array => SystemProductModel::query($source, $search, $clamped, $queryPerPage, $fetchColumns)
+        );
 
         $error = !empty($payload['ok']) ? '' : (string) ($payload['error'] ?? 'Could not load store products.');
         $columns = self::orderColumns(

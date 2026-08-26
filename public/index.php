@@ -2,7 +2,7 @@
 require __DIR__ . '/../app/bootstrap.php';
 
 use Fc\Admin\Core\Application;
-use Fc\Admin\Services\ConsoleSettings;
+use Fc\Admin\Settings\ConsoleSettings;
 
 // Fatal errors/uncaught exceptions are controlled by display_errors, not error_reporting() —
 // without this, an unhandled error in the admin panel leaks a full stack trace (absolute

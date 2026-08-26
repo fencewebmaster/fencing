@@ -4,19 +4,13 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
-use Fc\Admin\Core\Request;
 use Fc\Admin\Models\GroupPermissionsModel;
-use Fc\Admin\Models\GroupPermissionsPresenter;
+use Fc\Admin\Presenters\GroupPermissionsPresenter;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\GroupPermissionsService;
 
 final class GroupPermissionsController extends BaseApiController
 {
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
-    }
-
     public function handle(): void
     {
         $action = (string) $this->request->query('action', 'get');

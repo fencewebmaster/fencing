@@ -2,19 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
+use Fc\Admin\Helpers\StringHelper;
+use Fc\Admin\Helpers\ViewHelper;
+use Fc\Admin\Models\PlannerEntryModel;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PermissionService;
-use Fc\Admin\Services\PlannerOptionSettings;
-use Fc\Admin\Services\SystemSettings;
 use Fc\Admin\Services\WcProductCsvService;
+use Fc\Admin\Settings\PlannerOptionSettings;
+use Fc\Admin\Settings\SystemSettings;
 
 /**
- * Planner entry row shaping — pure, DB-free formatting/view-model helpers for wp_planners rows.
- * No dependency on PlannerEntryModel (kept one-directional: Model depends on this class, not
- * the other way around) so both can be lazily loaded in either order without a circular require.
+ * Planner entry row shaping — formatting/view-model helpers for wp_planners rows.
+ * Calls into PlannerEntryModel for list/detail data (and the Model calls back into
+ * this class for row presentation — a documented two-way legacy coupling, tolerated
+ * because the PSR-4 autoloader resolves either order without a circular require).
  */
 final class PlannerEntryPresenter
 {
@@ -616,14 +620,9 @@ final class PlannerEntryPresenter
         return 'planner-entries';
     }
 
-    private static function escapeAttr(string $value): string
-    {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
     public static function listPath(string $adminBase): string
     {
-        return rtrim($adminBase, '/') . '/' . self::routeSlug();
+        return ViewHelper::adminUrl($adminBase, self::routeSlug());
     }
 
     /**
@@ -650,19 +649,7 @@ final class PlannerEntryPresenter
             $labels[] = $namesBySlug[$slug] ?? (string) $slug;
         }
 
-        if ($labels === []) {
-            return 'All fence types';
-        }
-
-        if (count($labels) === 1) {
-            return $labels[0];
-        }
-
-        if (count($labels) === 2) {
-            return $labels[0] . ', ' . $labels[1];
-        }
-
-        return $labels[0] . ', ' . $labels[1] . ' (+' . (count($labels) - 2) . ')';
+        return ViewHelper::multiSelectSummaryLabel($labels, 'All fence types');
     }
 
     public static function defaultPerPage(): int
@@ -1134,9 +1121,7 @@ final class PlannerEntryPresenter
             (string) ($query['date_from'] ?? ''),
             (string) ($query['date_to'] ?? '')
         );
-        $page = max(1, (int) ($query['page'] ?? 1));
-        $defaultPerPage = self::defaultPerPage();
-        $perPageRaw = strtolower(trim((string) ($query['per_page'] ?? (string) $defaultPerPage)));
+        $paging = ViewHelper::parseListPagination($query, self::perPageOptions(), self::defaultPerPage());
 
         if ($timeframe !== '' && !array_key_exists($timeframe, PlannerOptionSettings::timeframes())) {
             $timeframe = '';
@@ -1144,17 +1129,6 @@ final class PlannerEntryPresenter
         if ($state !== '' && !array_key_exists($state, PlannerOptionSettings::states())) {
             $state = '';
         }
-
-        $isAll = ($perPageRaw === 'all');
-        $perPage = $defaultPerPage;
-
-        if ($isAll) {
-            $perPage = 0;
-        } elseif (in_array((int) $perPageRaw, self::perPageOptions(), true)) {
-            $perPage = (int) $perPageRaw;
-        }
-
-        $offset = $isAll ? 0 : ($page - 1) * $perPage;
 
         return [
             'q' => $q,
@@ -1175,10 +1149,10 @@ final class PlannerEntryPresenter
             'date_to' => $dateFilter['to'],
             'date_field' => $dateField,
             'date_bounds' => $dateFilter['bounds'],
-            'page' => $page,
-            'per_page' => $isAll ? 'all' : $perPage,
-            'is_all' => $isAll,
-            'offset' => $offset,
+            'page' => $paging['page'],
+            'per_page' => $paging['per_page_value'],
+            'is_all' => $paging['is_all'],
+            'offset' => $paging['offset'],
         ];
     }
 
@@ -1334,38 +1308,6 @@ final class PlannerEntryPresenter
         $qs = self::buildQueryString($query);
 
         return $qs === '' ? $base : $base . '?' . $qs;
-    }
-
-    /**
-     * @return list<int|string>
-     */
-    private static function paginationWindow(int $current, int $total): array
-    {
-        if ($total <= 7) {
-            $pages = [];
-            for ($i = 1; $i <= $total; $i++) {
-                $pages[] = $i;
-            }
-
-            return $pages;
-        }
-
-        $pages = [1];
-        $start = max(2, $current - 1);
-        $end = min($total - 1, $current + 1);
-
-        if ($start > 2) {
-            $pages[] = '…';
-        }
-        for ($p = $start; $p <= $end; $p++) {
-            $pages[] = $p;
-        }
-        if ($end < $total - 1) {
-            $pages[] = '…';
-        }
-        $pages[] = $total;
-
-        return $pages;
     }
 
     public static function statusClass(string $status): string
@@ -1804,26 +1746,18 @@ final class PlannerEntryPresenter
 
         $currentPage = (int) ($request['page'] ?? 1);
         $perPageUrlValue = $request['is_all'] ? 'all' : $perPage;
-        $paginationPages = self::paginationWindow($currentPage, $totalPages);
+        $paginationPages = ViewHelper::paginationWindow($currentPage, $totalPages);
         $pagination = [
             'show' => !$request['is_all'] && $totalPages > 1,
             'pages' => $paginationPages,
             'prev_url' => ($currentPage > 1) ? self::url($adminBase, $request, ['page' => $currentPage - 1]) : '',
             'next_url' => ($currentPage < $totalPages) ? self::url($adminBase, $request, ['page' => $currentPage + 1]) : '',
         ];
-        $paginationLinks = [];
-        foreach ($paginationPages as $pageNum) {
-            if ($pageNum === '…') {
-                $paginationLinks[] = ['type' => 'ellipsis'];
-                continue;
-            }
-            $num = (int) $pageNum;
-            $paginationLinks[] = [
-                'type' => $num === $currentPage ? 'current' : 'link',
-                'label' => (string) $num,
-                'url' => self::url($adminBase, $request, ['page' => $num]),
-            ];
-        }
+        $paginationLinks = ViewHelper::paginationLinks(
+            $paginationPages,
+            $currentPage,
+            static fn (int $num): string => self::url($adminBase, $request, ['page' => $num])
+        );
 
         return [
             'redirect_url' => null,
@@ -1888,16 +1822,16 @@ final class PlannerEntryPresenter
     {
         $parts = [];
         if (!in_array('q', $exclude, true) && ($req['q'] ?? '') !== '') {
-            $parts[] = '<input type="hidden" name="q" value="' . self::escapeAttr((string) $req['q']) . '">';
+            $parts[] = '<input type="hidden" name="q" value="' . StringHelper::escapeHtml((string) $req['q']) . '">';
         }
         if (!in_array('status', $exclude, true) && ($req['status'] ?? '') !== '') {
-            $parts[] = '<input type="hidden" name="status" value="' . self::escapeAttr((string) $req['status']) . '">';
+            $parts[] = '<input type="hidden" name="status" value="' . StringHelper::escapeHtml((string) $req['status']) . '">';
         }
         if (!in_array('timeframe', $exclude, true) && ($req['timeframe'] ?? '') !== '') {
-            $parts[] = '<input type="hidden" name="timeframe" value="' . self::escapeAttr((string) $req['timeframe']) . '">';
+            $parts[] = '<input type="hidden" name="timeframe" value="' . StringHelper::escapeHtml((string) $req['timeframe']) . '">';
         }
         if (!in_array('state', $exclude, true) && ($req['state'] ?? '') !== '') {
-            $parts[] = '<input type="hidden" name="state" value="' . self::escapeAttr((string) $req['state']) . '">';
+            $parts[] = '<input type="hidden" name="state" value="' . StringHelper::escapeHtml((string) $req['state']) . '">';
         }
         foreach ([
             'postcode',
@@ -1909,7 +1843,7 @@ final class PlannerEntryPresenter
             $value = $req[$field] ?? null;
             if (!in_array($field, $exclude, true) && $value !== null && $value !== '') {
                 $parts[] = '<input type="hidden" name="' . $field . '" value="'
-                    . self::escapeAttr((string) $value) . '">';
+                    . StringHelper::escapeHtml((string) $value) . '">';
             }
         }
         foreach (['device', 'browser'] as $field) {
@@ -1918,33 +1852,33 @@ final class PlannerEntryPresenter
             }
             foreach ($req[$field] as $value) {
                 $parts[] = '<input type="hidden" name="' . $field . '[]" value="'
-                    . self::escapeAttr((string) $value) . '">';
+                    . StringHelper::escapeHtml((string) $value) . '">';
             }
         }
         if (!in_array('view', $exclude, true) && in_array(($req['view'] ?? 'all'), ['trash', 'duplicates'], true)) {
             $parts[] = '<input type="hidden" name="view" value="'
-                . self::escapeAttr((string) $req['view']) . '">';
+                . StringHelper::escapeHtml((string) $req['view']) . '">';
         }
         if (!in_array('date_period', $exclude, true) && ($req['date_period'] ?? '') !== '') {
-            $parts[] = '<input type="hidden" name="date_period" value="' . self::escapeAttr((string) $req['date_period']) . '">';
+            $parts[] = '<input type="hidden" name="date_period" value="' . StringHelper::escapeHtml((string) $req['date_period']) . '">';
         }
         if (!in_array('date_from', $exclude, true) && ($req['date_from'] ?? '') !== '') {
-            $parts[] = '<input type="hidden" name="date_from" value="' . self::escapeAttr((string) $req['date_from']) . '">';
+            $parts[] = '<input type="hidden" name="date_from" value="' . StringHelper::escapeHtml((string) $req['date_from']) . '">';
         }
         if (!in_array('date_to', $exclude, true) && ($req['date_to'] ?? '') !== '') {
-            $parts[] = '<input type="hidden" name="date_to" value="' . self::escapeAttr((string) $req['date_to']) . '">';
+            $parts[] = '<input type="hidden" name="date_to" value="' . StringHelper::escapeHtml((string) $req['date_to']) . '">';
         }
         if (
             !in_array('date_field', $exclude, true)
             && self::normalizeDateField((string) ($req['date_field'] ?? self::defaultDateField())) !== self::defaultDateField()
         ) {
-            $parts[] = '<input type="hidden" name="date_field" value="' . self::escapeAttr(
+            $parts[] = '<input type="hidden" name="date_field" value="' . StringHelper::escapeHtml(
                 self::normalizeDateField((string) ($req['date_field'] ?? self::defaultDateField()))
             ) . '">';
         }
         if (!in_array('fence_type', $exclude, true)) {
             foreach ($selectedFenceTypes as $fenceSlug) {
-                $parts[] = '<input type="hidden" name="fence_type[]" value="' . self::escapeAttr((string) $fenceSlug) . '">';
+                $parts[] = '<input type="hidden" name="fence_type[]" value="' . StringHelper::escapeHtml((string) $fenceSlug) . '">';
             }
         }
 

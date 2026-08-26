@@ -26,13 +26,13 @@ $fcSiteLogoUrl = static function (string $logo) use ($fcAppBaseUrl): string {
         return '';
     }
 
-    return \Fc\Admin\Services\BrandingSettings::logoUrl($fcAppBaseUrl, ['logo' => $logo]);
+    return \Fc\Admin\Settings\BrandingSettings::logoUrl($fcAppBaseUrl, ['logo' => $logo]);
 };
 
 $fcSiteCurrentLogo = is_array($fcAdminCurrentSite) ? (string) ($fcAdminCurrentSite['logo'] ?? '') : '';
 $fcSiteCurrentLogoUrl = $fcSiteLogoUrl($fcSiteCurrentLogo);
 $fcBrandingLogoUrl = isset($fcAppBase)
-    ? \Fc\Admin\Services\BrandingSettings::logoUrl((string) $fcAppBase, is_array($fcBranding ?? null) ? $fcBranding : null)
+    ? \Fc\Admin\Settings\BrandingSettings::logoUrl((string) $fcAppBase, is_array($fcBranding ?? null) ? $fcBranding : null)
     : '';
 // Show the active site's logo in the header mark; fall back to the admin branding logo.
 $fcHeaderLogoUrl = $fcSiteCurrentLogoUrl !== '' ? $fcSiteCurrentLogoUrl : $fcBrandingLogoUrl;

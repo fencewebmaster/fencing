@@ -9,6 +9,9 @@ namespace Fc\Admin\Services;
  */
 final class WcProductSkuIndex
 {
+    /** Bump to invalidate previously written SKU index cache files. */
+    private const CACHE_VERSION = 3;
+
     /**
      * @return list<string>
      */
@@ -74,7 +77,7 @@ final class WcProductSkuIndex
         if ((int) ($cached['mtime'] ?? 0) !== $mtime) {
             return false;
         }
-        if ((int) ($cached['version'] ?? 0) < 3) {
+        if ((int) ($cached['version'] ?? 0) < self::CACHE_VERSION) {
             return false;
         }
         if (!is_array($cached['products'] ?? null)) {
@@ -188,7 +191,7 @@ final class WcProductSkuIndex
 
         $payload = json_encode(
             [
-                'version' => 3,
+                'version' => self::CACHE_VERSION,
                 'mtime' => $mtime,
                 'products' => $products,
                 'skus' => array_column($products, 'sku'),

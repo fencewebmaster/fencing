@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers;
 
-use Fc\Admin\Models\DashboardPresenter;
+use Fc\Admin\Presenters\DashboardPresenter;
 use Fc\Admin\Services\AdminContext;
 
 final class DashboardController extends BaseController

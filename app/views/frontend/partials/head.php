@@ -2,8 +2,8 @@
 use Fc\Admin\Core\FrontendApplication;
 use Fc\Admin\Helpers\AssetHelper;
 use Fc\Admin\Services\AppConfigService;
-use Fc\Admin\Services\BrandingSettings;
-use Fc\Admin\Services\ThemeSettings;
+use Fc\Admin\Settings\BrandingSettings;
+use Fc\Admin\Settings\ThemeSettings;
 ?>
 <meta charset="UTF-8">
 <?php

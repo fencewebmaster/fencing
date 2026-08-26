@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
+use Fc\Admin\Helpers\FileHelper;
 use Fc\Admin\Helpers\RequestHelper;
 use Fc\Admin\Models\UserModel;
+use Fc\Admin\Settings\SystemSettings;
 
 /**
  * FC Admin — near-realtime online presence (file-backed session heartbeats).
@@ -193,16 +195,7 @@ final class PresenceService
      */
     public static function readFile(string $path): ?array
     {
-        if (!is_readable($path)) {
-            return null;
-        }
-        $raw = @file_get_contents($path);
-        if (!is_string($raw) || $raw === '') {
-            return null;
-        }
-        $data = json_decode($raw, true);
-
-        return is_array($data) ? $data : null;
+        return FileHelper::readJsonFile($path);
     }
 
     /**
@@ -239,42 +232,17 @@ final class PresenceService
     public static function onlineMap(?int $windowSeconds = null): array
     {
         $windowSeconds = $windowSeconds ?? self::onlineWindowSeconds();
-        $dir = self::dir();
-        $now = time();
-        $cutoff = $now - max(30, $windowSeconds);
-        $staleCutoff = $now - self::STALE_MAX_AGE;
+        $cutoff = time() - max(30, $windowSeconds);
         $map = [];
 
-        foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $file) {
-            if (!is_string($file) || !is_file($file)) {
-                continue;
-            }
-
-            $mtime = (int) @filemtime($file);
-            if ($mtime > 0 && $mtime < $staleCutoff) {
-                @unlink($file);
-                continue;
-            }
-
-            $data = self::readFile($file);
-            if ($data === null) {
-                continue;
-            }
-
-            $userId = (int) ($data['user_id'] ?? 0);
-            if ($userId <= 0) {
-                continue;
-            }
-
-            $last = strtotime((string) ($data['last_activity_at'] ?? '')) ?: $mtime;
+        self::scanPresence(static function (int $userId, int $last, array $data) use ($cutoff, &$map): void {
             if ($last < $cutoff) {
-                continue;
+                return;
             }
-
             if (!isset($map[$userId]) || $last > $map[$userId]) {
                 $map[$userId] = $last;
             }
-        }
+        });
 
         return $map;
     }
@@ -401,10 +369,36 @@ final class PresenceService
      */
     public static function latestClientMap(): array
     {
-        $dir = self::dir();
-        $now = time();
-        $staleCutoff = $now - self::STALE_MAX_AGE;
         $map = [];
+
+        self::scanPresence(static function (int $userId, int $last, array $data) use (&$map): void {
+            if ($last <= 0) {
+                return;
+            }
+            if (isset($map[$userId]) && $last <= (int) ($map[$userId]['last_activity'] ?? 0)) {
+                return;
+            }
+            $map[$userId] = [
+                'device' => trim((string) ($data['device'] ?? '')),
+                'user_agent' => trim((string) ($data['user_agent'] ?? '')),
+                'last_activity' => $last,
+            ];
+        });
+
+        return $map;
+    }
+
+    /**
+     * Scan the presence dir once: prune files older than STALE_MAX_AGE, decode each, and
+     * hand every valid entry (user_id > 0) to $onEntry as (userId, last, data). The
+     * stale-prune @unlink fires exactly once per file, as in the two original inline loops.
+     *
+     * @param callable(int, int, array<string, mixed>): void $onEntry
+     */
+    private static function scanPresence(callable $onEntry): void
+    {
+        $dir = self::dir();
+        $staleCutoff = time() - self::STALE_MAX_AGE;
 
         foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $file) {
             if (!is_string($file) || !is_file($file)) {
@@ -428,22 +422,8 @@ final class PresenceService
             }
 
             $last = strtotime((string) ($data['last_activity_at'] ?? '')) ?: $mtime;
-            if ($last <= 0) {
-                continue;
-            }
-
-            if (isset($map[$userId]) && $last <= (int) ($map[$userId]['last_activity'] ?? 0)) {
-                continue;
-            }
-
-            $map[$userId] = [
-                'device' => trim((string) ($data['device'] ?? '')),
-                'user_agent' => trim((string) ($data['user_agent'] ?? '')),
-                'last_activity' => $last,
-            ];
+            $onEntry($userId, $last, $data);
         }
-
-        return $map;
     }
 
     /**

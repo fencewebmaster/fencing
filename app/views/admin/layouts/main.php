@@ -11,7 +11,7 @@ declare(strict_types=1);
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-full" data-fc-admin-theme="light" data-fc-debug="<?php
-    echo \Fc\Admin\Services\ConsoleSettings::debugMode() ? '1' : '0';
+    echo \Fc\Admin\Settings\ConsoleSettings::debugMode() ? '1' : '0';
 ?>">
 <head>
     <script>
@@ -28,7 +28,7 @@ declare(strict_types=1);
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" as="style">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js" as="script">
     <?php endif; ?>
-    <?php echo \Fc\Admin\Services\ThemeSettings::cssBlock(); ?>
+    <?php echo \Fc\Admin\Settings\ThemeSettings::cssBlock(); ?>
     <link href="assets/css/vendor/bootstrap/bootstrap.min.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($fcFontsHref, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/buttons.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/buttons.css'); ?>">
@@ -42,7 +42,7 @@ declare(strict_types=1);
     <link rel="stylesheet" type="text/css" href="assets/css/admin/fence-styles.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/fence-styles.css'); ?>">
     <link rel="stylesheet" type="text/css" href="assets/css/admin/store-products.css?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/css/admin/store-products.css'); ?>">
     <?php
-    $fcFavicon = \Fc\Admin\Services\BrandingSettings::faviconUrl($fcAppBase ?? '');
+    $fcFavicon = \Fc\Admin\Settings\BrandingSettings::faviconUrl($fcAppBase ?? '');
     if ($fcFavicon !== '') : ?>
     <link rel="icon" href="<?php echo htmlspecialchars((string) $fcFavicon, ENT_QUOTES, 'UTF-8'); ?>" />
     <?php endif; ?>
@@ -1123,7 +1123,7 @@ declare(strict_types=1);
                         </a>
                         <a
                             href="<?php echo htmlspecialchars(
-                                \Fc\Admin\Models\AuthPresenter::logoutUrl($fcAdminBase),
+                                \Fc\Admin\Presenters\AuthPresenter::logoutUrl($fcAdminBase),
                                 ENT_QUOTES,
                                 'UTF-8'
                             ); ?>"

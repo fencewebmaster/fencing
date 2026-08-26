@@ -7,6 +7,7 @@ namespace Fc\Admin\Services;
 use Fc\Admin\Helpers\ArrayHelper;
 use Fc\Admin\Helpers\ColorHelper;
 use Fc\Admin\Helpers\StringHelper;
+use Fc\Admin\Settings\CatalogSettings;
 
 /**
  * FC Product Lookup — PDO catalog helpers (no WordPress bootstrap).

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers;
 
-use Fc\Admin\Models\GroupPermissionsPresenter;
+use Fc\Admin\Presenters\GroupPermissionsPresenter;
 use Fc\Admin\Services\AdminContext;
 
 final class GroupPermissionsPageController extends BaseController

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers;
 
 use Fc\Admin\Models\PlannerEntryModel;
-use Fc\Admin\Models\PlannerEntryPresenter;
+use Fc\Admin\Presenters\PlannerEntryPresenter;
 use Fc\Admin\Services\AdminContext;
 
 final class EntriesPageController extends BaseController

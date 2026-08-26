@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
+use Fc\Admin\Helpers\UrlHelper;
+use Fc\Admin\Models\DashboardModel;
 use Fc\Admin\Services\FenceCatalogService;
-use Fc\Admin\Services\FenceColorSettings;
+use Fc\Admin\Settings\FenceColorSettings;
 
 /**
  * Dashboard row shaping — pure, DB-free formatting/view-model helpers, plus the
@@ -35,9 +37,7 @@ final class DashboardPresenter
      */
     public static function resolveAppBase(): string
     {
-        $adminBase = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/admin')), '/');
-
-        return rtrim(str_replace('\\', '/', dirname($adminBase)), '/');
+        return UrlHelper::plannerAppBaseFromAdminScript();
     }
 
     /**

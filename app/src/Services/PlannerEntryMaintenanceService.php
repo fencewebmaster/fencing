@@ -6,7 +6,8 @@ namespace Fc\Admin\Services;
 
 use Fc\Admin\Helpers\StringHelper;
 use Fc\Admin\Models\PlannerEntryModel;
-use Fc\Admin\Models\PlannerEntryPresenter;
+use Fc\Admin\Presenters\PlannerEntryPresenter;
+use Fc\Admin\Settings\IntegrationsSettings;
 
 /**
  * Admin bulk-mutation / export / import operations for wp_planners.

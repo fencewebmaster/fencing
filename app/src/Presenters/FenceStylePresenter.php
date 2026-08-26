@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Helpers\ViewHelper;
+use Fc\Admin\Models\FenceStyleModel;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
 

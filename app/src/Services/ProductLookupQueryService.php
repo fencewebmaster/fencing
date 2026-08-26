@@ -8,6 +8,7 @@ use Fc\Admin\Helpers\ColorHelper;
 use Fc\Admin\Helpers\FormatHelper;
 use Fc\Admin\Helpers\RequestHelper;
 use Fc\Admin\Helpers\StringHelper;
+use Fc\Admin\Settings\CatalogSettings;
 
 /**
  * Product Lookup — PDO data access against WooCommerce MySQL tables.

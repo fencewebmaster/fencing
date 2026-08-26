@@ -6,7 +6,7 @@ namespace Fc\Admin\Core;
 
 use Fc\Admin\Filters\AuthFilter;
 use Fc\Admin\Filters\PermissionFilter;
-use Fc\Admin\Models\GroupPermissionsPresenter;
+use Fc\Admin\Presenters\GroupPermissionsPresenter;
 use Fc\Admin\Services\AdminContext;
 use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\ImpersonationService;

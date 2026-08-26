@@ -7,19 +7,19 @@
  * ArrayHelper::mapCallable(), so it cannot simply become a method call. They stay as
  * global shims; every one of them now delegates to the service that owns the data:
  *
- *   fc_color()        -> Services\FenceColorSettings
- *   fc_state()        -> Services\PlannerOptionSettings
- *   fc_timeframe()    -> Services\PlannerOptionSettings
- *   fc_extra_needed() -> Services\PlannerOptionSettings
+ *   fc_color()        -> Settings\FenceColorSettings
+ *   fc_state()        -> Settings\PlannerOptionSettings
+ *   fc_timeframe()    -> Settings\PlannerOptionSettings
+ *   fc_extra_needed() -> Settings\PlannerOptionSettings
  *
- * PHP class code should call those services directly rather than these functions.
+ * PHP class code should call those settings classes directly rather than these functions.
  * Loaded by Services\FenceSettingsService::boot(); not autoloadable (functions, not classes).
  */
 
 declare(strict_types=1);
 
-use Fc\Admin\Services\FenceColorSettings;
-use Fc\Admin\Services\PlannerOptionSettings;
+use Fc\Admin\Settings\FenceColorSettings;
+use Fc\Admin\Settings\PlannerOptionSettings;
 
 if (!function_exists('fc_color')) {
     /**

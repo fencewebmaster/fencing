@@ -7,24 +7,17 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
-use Fc\Admin\Core\Request;
+use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Models\FenceStyleModel;
-use Fc\Admin\Models\FenceStylePresenter;
-use Fc\Admin\Services\AuthService;
+use Fc\Admin\Presenters\FenceStylePresenter;
 use Fc\Admin\Services\FenceFileService;
 use Fc\Admin\Services\FenceStyleMaintenanceService;
 
 final class FenceStylesController extends BaseApiController
 {
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
-    }
-
     public function handle(): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-        header('Cache-Control: no-store');
+        $this->sendJsonHeaders();
 
         $method = $this->request->method();
         $action = (string) $this->request->query('action', '');
@@ -68,9 +61,7 @@ final class FenceStylesController extends BaseApiController
 
     private static function appBase(): string
     {
-        $adminBase = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/admin')), '/');
-
-        return rtrim(str_replace('\\', '/', dirname($adminBase)), '/');
+        return UrlHelper::plannerAppBaseFromAdminScript();
     }
 
     private function listStyles(): void
@@ -103,7 +94,7 @@ final class FenceStylesController extends BaseApiController
             return;
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             http_response_code(403);
             echo json_encode([
                 'ok' => false,
@@ -183,7 +174,7 @@ final class FenceStylesController extends BaseApiController
             return;
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             http_response_code(403);
             echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
             return;
@@ -243,7 +234,7 @@ final class FenceStylesController extends BaseApiController
             return;
         }
 
-        if (!AuthService::verifyCsrf(isset($payload['csrf']) ? (string) $payload['csrf'] : null)) {
+        if (!self::csrfOk($payload)) {
             http_response_code(403);
             echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
             return;

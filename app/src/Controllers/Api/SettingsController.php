@@ -7,30 +7,23 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
-use Fc\Admin\Core\Request;
 use Fc\Admin\Services\AuthService;
-use Fc\Admin\Services\BrandingSettings;
-use Fc\Admin\Services\CatalogSettings;
+use Fc\Admin\Settings\BrandingSettings;
+use Fc\Admin\Settings\CatalogSettings;
 use Fc\Admin\Services\CloudflareService;
-use Fc\Admin\Services\ConsoleSettings;
+use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Services\DevConsoleService;
-use Fc\Admin\Services\FenceColorSettings;
-use Fc\Admin\Services\IntegrationsSettings;
-use Fc\Admin\Services\PlannerOptionSettings;
-use Fc\Admin\Services\SystemSettings;
-use Fc\Admin\Services\ThemeSettings;
+use Fc\Admin\Settings\FenceColorSettings;
+use Fc\Admin\Settings\IntegrationsSettings;
+use Fc\Admin\Settings\PlannerOptionSettings;
+use Fc\Admin\Settings\SystemSettings;
+use Fc\Admin\Settings\ThemeSettings;
 
 final class SettingsController extends BaseApiController
 {
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
-    }
-
     public function handle(): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-        header('Cache-Control: no-store');
+        $this->sendJsonHeaders();
 
         $method = $this->request->method();
         $action = (string) $this->request->query('action', '');
@@ -125,9 +118,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -168,9 +159,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -211,9 +200,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -254,9 +241,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -296,9 +281,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -339,9 +322,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -382,9 +363,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -422,9 +401,7 @@ final class SettingsController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(
-            isset($payload['csrf']) ? (string) $payload['csrf'] : null
-        )) {
+        if (!self::csrfOk($payload)) {
             http_response_code(403);
             echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
             return;
@@ -476,9 +453,7 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            if (!AuthService::verifyCsrf(
-                isset($payload['csrf']) ? (string) $payload['csrf'] : null
-            )) {
+            if (!self::csrfOk($payload)) {
                 http_response_code(403);
                 echo json_encode([
                     'ok' => false,
@@ -674,9 +649,7 @@ final class SettingsController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(
-            isset($payload['csrf']) ? (string) $payload['csrf'] : null
-        )) {
+        if (!self::csrfOk($payload)) {
             http_response_code(403);
             echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
             return;
@@ -721,9 +694,7 @@ final class SettingsController extends BaseApiController
             $payload = [];
         }
 
-        if (!AuthService::verifyCsrf(
-            isset($payload['csrf']) ? (string) $payload['csrf'] : null
-        )) {
+        if (!self::csrfOk($payload)) {
             http_response_code(403);
             echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
             return;

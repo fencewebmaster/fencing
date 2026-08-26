@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
+
+use Fc\Admin\Services\AdminSiteRegistry;
+use Fc\Admin\Services\PermissionService;
+use Fc\Admin\Services\SiteRegistryService;
 
 /**
  * FC third-party integrations stored in the root config.php file.

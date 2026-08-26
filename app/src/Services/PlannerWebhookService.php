@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Fc\Admin\Services;
 
 use Fc\Admin\Helpers\UrlHelper;
+use Fc\Admin\Settings\IntegrationsSettings;
+use Fc\Admin\Settings\PlannerOptionSettings;
 
 /**
  * Early Zapier notification — fires before checkout, independent of the WooCommerce cart

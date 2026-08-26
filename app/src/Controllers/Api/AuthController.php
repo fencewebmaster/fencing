@@ -5,22 +5,15 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Core\JsonResponse;
-use Fc\Admin\Core\Request;
 use Fc\Admin\Services\AuthService;
 
 final class AuthController extends BaseApiController
 {
-    public static function dispatch(): void
-    {
-        (new self(new Request()))->handle();
-    }
-
     public function handle(): void
     {
         AuthService::boot();
 
-        header('Content-Type: application/json; charset=utf-8');
-        header('Cache-Control: no-store');
+        $this->sendJsonHeaders();
 
         $method = $this->request->method();
         $action = (string) $this->request->query('action', '');

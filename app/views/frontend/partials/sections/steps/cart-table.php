@@ -1,6 +1,6 @@
 <?php
 
-use Fc\Admin\Services\ConsoleSettings;
+use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\WcProductCsvService;
 

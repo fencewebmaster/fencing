@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
 
 /**
  * Fixed option lists for the planner quote form — delivery state, project timeframe
@@ -139,10 +139,7 @@ final class PlannerOptionSettings
             $defaultsBySlug[$default['slug']] = $default;
         }
 
-        $file = ThemeSettings::readFile();
-        $saved = isset($file['plannerExtraOptions']) && is_array($file['plannerExtraOptions'])
-            ? $file['plannerExtraOptions']
-            : [];
+        $saved = ThemeSettings::section('plannerExtraOptions');
 
         $items = [];
         $seen = [];
@@ -277,13 +274,11 @@ final class PlannerOptionSettings
      */
     public static function apiPayload(): array
     {
-        $file = ThemeSettings::readFile();
-
         return [
             'ok' => true,
             'extraItems' => self::extraItems(),
             'defaults' => self::defaultExtraItems(),
-            'updatedAt' => isset($file['updatedAt']) ? (string) $file['updatedAt'] : null,
+            'updatedAt' => ThemeSettings::updatedAt(),
         ];
     }
 

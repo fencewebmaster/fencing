@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Services;
+namespace Fc\Admin\Settings;
 
 /**
  * FC Console settings — developer toggles (stored in the root config.php `console` section).

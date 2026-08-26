@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Services\AuthService;
-use Fc\Admin\Services\BrandingSettings;
+use Fc\Admin\Settings\BrandingSettings;
 
 /**
  * Login/logout page formatting (config/auth.php's login-specific migration).

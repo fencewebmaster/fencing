@@ -78,4 +78,25 @@ final class FileHelper
 
         file_put_contents($minFile, $css);
     }
+
+    /**
+     * Read and json-decode a file; null when missing, unreadable, empty, or not an array payload.
+     *
+     * @return array<mixed>|null
+     */
+    public static function readJsonFile(string $path): ?array
+    {
+        if (!is_readable($path)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($path);
+        if (!is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+
+        $data = json_decode($raw, true);
+
+        return is_array($data) ? $data : null;
+    }
 }

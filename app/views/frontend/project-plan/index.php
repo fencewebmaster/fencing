@@ -11,7 +11,7 @@
  * @var object     $fc_fence_info JS `fc_fence_info` payload.
  */
 
-use Fc\Admin\Services\ConsoleSettings;
+use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Services\PlannerSessionService;
 
 // Field templates must be in the DOM before p2.js runs

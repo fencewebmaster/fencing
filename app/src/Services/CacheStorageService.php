@@ -47,12 +47,7 @@ final class CacheStorageService
      */
     public static function sessionsDir(): string
     {
-        $dir = self::root() . DIRECTORY_SEPARATOR . 'sessions';
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0775, true);
-        }
-
-        return $dir;
+        return self::ensureStorageDir('sessions');
     }
 
     /**
@@ -60,7 +55,15 @@ final class CacheStorageService
      */
     public static function presenceDir(): string
     {
-        $dir = self::root() . DIRECTORY_SEPARATOR . 'presence';
+        return self::ensureStorageDir('presence');
+    }
+
+    /**
+     * Absolute path to writable/storage/<name>, created on first use.
+     */
+    private static function ensureStorageDir(string $name): string
+    {
+        $dir = self::root() . DIRECTORY_SEPARATOR . $name;
         if (!is_dir($dir)) {
             @mkdir($dir, 0775, true);
         }

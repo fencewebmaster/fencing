@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Fc\Admin\Services;
 
 use Fc\Admin\Helpers\UrlHelper;
+use Fc\Admin\Settings\BrandingSettings;
+use Fc\Admin\Settings\SystemSettings;
 
 /**
  * Shared admin request context for layout and page controllers.

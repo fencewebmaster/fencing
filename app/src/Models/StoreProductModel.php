@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Models;
 
+use Fc\Admin\Presenters\StoreProductPresenter;
 use Fc\Admin\Services\CacheStorageService;
 
 /**

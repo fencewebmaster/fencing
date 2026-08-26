@@ -128,4 +128,19 @@ final class UrlHelper
 
         return $mtime !== false ? (string) $mtime : '0';
     }
+
+    /**
+     * Fifth base-URL builder: the planner app base derived from the ADMIN front controller's
+     * SCRIPT_NAME by climbing two directories (admin mount -> app root). Distinct from the other
+     * four — baseUrl()/AssetHelper::assetUrl() use dirname(REQUEST_URI); FrontendApplication::basePath()
+     * uses a single dirname(SCRIPT_NAME); resolveAdminMountBase() is REQUEST_URI-based;
+     * GalleryPresenter::assetUrl()/BrandingSettings::logoUrl() are cache-bust-free media paths. Used by
+     * the two admin API endpoints (fence styles, dashboard) that resolve planner asset URLs from /backend.
+     */
+    public static function plannerAppBaseFromAdminScript(): string
+    {
+        $adminBase = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/admin')), '/');
+
+        return rtrim(str_replace('\\', '/', dirname($adminBase)), '/');
+    }
 }

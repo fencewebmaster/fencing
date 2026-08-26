@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fc\Admin\Models;
+namespace Fc\Admin\Presenters;
 
+use Fc\Admin\Models\GroupPermissionsModel;
+use Fc\Admin\Models\UserModel;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
 

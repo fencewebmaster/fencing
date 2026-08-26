@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Services;
 
 use Fc\Admin\Models\GroupPermissionsModel;
-use Fc\Admin\Models\GroupPermissionsPresenter;
+use Fc\Admin\Presenters\GroupPermissionsPresenter;
 
 /**
  * Group permissions mutations (save / import). CSRF checks stay in the Controller.

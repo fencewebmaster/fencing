@@ -6,13 +6,14 @@ namespace Fc\Admin\Services;
 
 use Fc\Admin\Helpers\RequestHelper;
 use Fc\Admin\Helpers\StringHelper;
+use Fc\Admin\Settings\IntegrationsSettings;
 
 /**
  * FC planners table (wp_planners) — public-site quote lifecycle.
  *
  * Session hydration, planner-ID resolution, client-metadata capture, and the
  * shared request-scoped DB connection used by both this file and the admin
- * OOP classes (Fc\Admin\Models\PlannerEntryModel / PlannerEntryPresenter,
+ * OOP classes (Fc\Admin\Models\PlannerEntryModel, Fc\Admin\Presenters\PlannerEntryPresenter,
  * Fc\Admin\Services\PlannerEntryMaintenanceService). Admin list/filter/search,
  * duplicate detection, bulk actions, import/export, and row presentation
  * formatting live in those classes now, not here.
@@ -324,7 +325,7 @@ final class PlannerRecordService
             return $state;
         }
 
-        $table = implode('_', array_filter([$db->prefix . 'planners', $db->is_demo]));
+        $table = $db->tableName('planners');
         $select = self::plannersHasTrashedColumn($conn, $table) ? '`id`, `trashed_at`' : '`id`';
 
         try {
@@ -532,7 +533,7 @@ final class PlannerRecordService
         }
 
         $db = new Database();
-        $table = implode('_', array_filter([$db->prefix . 'planners', $db->is_demo]));
+        $table = $db->tableName('planners');
         $conn  = $db->connect();
 
         if (!$conn instanceof \mysqli) {
