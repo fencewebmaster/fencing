@@ -242,28 +242,9 @@ final class PlannerOptionSettings
             }
         }
 
-        $path = ThemeSettings::filePath();
-        $dir = dirname($path);
-
-        if (!is_writable($dir)) {
-            return ['ok' => false, 'error' => 'writable/ directory is not writable.'];
-        }
-        if (file_exists($path) && !is_writable($path)) {
-            return ['ok' => false, 'error' => 'theme.json is not writable.'];
-        }
-
-        $existing = ThemeSettings::readFile();
-        $payload = $existing;
-        $payload['plannerExtraOptions'] = $bySlug;
-        $payload['updatedAt'] = gmdate('c');
-
-        $tmp = $path . '.tmp.' . getmypid() . '.' . bin2hex(random_bytes(4));
-        if (file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
-            return ['ok' => false, 'error' => 'Unable to write settings file.'];
-        }
-        if (!rename($tmp, $path)) {
-            @unlink($tmp);
-            return ['ok' => false, 'error' => 'Unable to save theme.json.'];
+        $result = ThemeSettings::writeSection('plannerExtraOptions', $bySlug);
+        if (!$result['ok']) {
+            return $result;
         }
 
         return ['ok' => true, 'extraItems' => self::extraItems()];

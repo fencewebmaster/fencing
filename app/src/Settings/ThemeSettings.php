@@ -198,6 +198,43 @@ final class ThemeSettings
     }
 
     /**
+     * Carry-all section writer: replaces one top-level theme.json section (plus updatedAt)
+     * and preserves every other key in the file — including sections this code has never
+     * heard of. The old per-writer fixed-key-list rebuilds are what silently dropped
+     * plannerExtraOptions (the Settings trap in CLAUDE.md); every theme.json writer must
+     * go through here. Writes stay tmp+rename, no lock (unchanged).
+     *
+     * @return array{ok:bool,error?:string}
+     */
+    public static function writeSection(string $section, mixed $value): array
+    {
+        $path = self::filePath();
+        $dir = dirname($path);
+
+        if (!is_writable($dir)) {
+            return ['ok' => false, 'error' => 'writable/ directory is not writable.'];
+        }
+        if (file_exists($path) && !is_writable($path)) {
+            return ['ok' => false, 'error' => 'theme.json is not writable.'];
+        }
+
+        $payload = self::readFile();
+        $payload[$section] = $value;
+        $payload['updatedAt'] = gmdate('c');
+
+        $tmp = $path . '.tmp.' . getmypid() . '.' . bin2hex(random_bytes(4));
+        if (file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
+            return ['ok' => false, 'error' => 'Unable to write settings file.'];
+        }
+        if (!rename($tmp, $path)) {
+            @unlink($tmp);
+            return ['ok' => false, 'error' => 'Unable to save theme.json.'];
+        }
+
+        return ['ok' => true];
+    }
+
+    /**
      * @param array<string, mixed> $colors
      * @return array{ok:bool,colors?:array<string,string>,error?:string}
      */
@@ -220,56 +257,9 @@ final class ThemeSettings
             $next[$var] = $normalized;
         }
 
-        $path = self::filePath();
-        $dir = dirname($path);
-
-        if (!is_writable($dir)) {
-            return [
-                'ok' => false,
-                'error' => 'writable/ directory is not writable.',
-            ];
-        }
-
-        if (file_exists($path) && !is_writable($path)) {
-            return [
-                'ok' => false,
-                'error' => 'theme.json is not writable.',
-            ];
-        }
-
-        $existing = self::readFile();
-        $payload = [
-            'colors' => $next,
-            'updatedAt' => gmdate('c'),
-        ];
-        if (isset($existing['branding']) && is_array($existing['branding'])) {
-            $payload['branding'] = $existing['branding'];
-        }
-        if (isset($existing['fenceColors']) && is_array($existing['fenceColors'])) {
-            $payload['fenceColors'] = $existing['fenceColors'];
-        }
-        if (isset($existing['catalog']) && is_array($existing['catalog'])) {
-            $payload['catalog'] = $existing['catalog'];
-        }
-        if (isset($existing['system']) && is_array($existing['system'])) {
-            $payload['system'] = $existing['system'];
-        }
-
-        $tmp = $path . '.tmp.' . getmypid() . '.' . bin2hex(random_bytes(4));
-        $written = file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        if ($written === false) {
-            return [
-                'ok' => false,
-                'error' => 'Unable to write theme file.',
-            ];
-        }
-
-        if (!rename($tmp, $path)) {
-            @unlink($tmp);
-            return [
-                'ok' => false,
-                'error' => 'Unable to save theme.json.',
-            ];
+        $result = self::writeSection('colors', $next);
+        if (!$result['ok']) {
+            return $result;
         }
 
         return [

@@ -234,54 +234,9 @@ final class BrandingSettings
             $next[$key] = $normalized;
         }
 
-        $path = ThemeSettings::filePath();
-        $dir = dirname($path);
-
-        if (!is_writable($dir)) {
-            return [
-                'ok' => false,
-                'error' => 'writable/ directory is not writable.',
-            ];
-        }
-
-        if (file_exists($path) && !is_writable($path)) {
-            return [
-                'ok' => false,
-                'error' => 'theme.json is not writable.',
-            ];
-        }
-
-        $existing = ThemeSettings::readFile();
-        $payload = [
-            'colors' => isset($existing['colors']) && is_array($existing['colors']) ? $existing['colors'] : ThemeSettings::get(),
-            'branding' => $next,
-            'updatedAt' => gmdate('c'),
-        ];
-        if (isset($existing['fenceColors']) && is_array($existing['fenceColors'])) {
-            $payload['fenceColors'] = $existing['fenceColors'];
-        }
-        if (isset($existing['catalog']) && is_array($existing['catalog'])) {
-            $payload['catalog'] = $existing['catalog'];
-        }
-        if (isset($existing['system']) && is_array($existing['system'])) {
-            $payload['system'] = $existing['system'];
-        }
-
-        $tmp = $path . '.tmp.' . getmypid() . '.' . bin2hex(random_bytes(4));
-        $written = file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        if ($written === false) {
-            return [
-                'ok' => false,
-                'error' => 'Unable to write settings file.',
-            ];
-        }
-
-        if (!rename($tmp, $path)) {
-            @unlink($tmp);
-            return [
-                'ok' => false,
-                'error' => 'Unable to save theme.json.',
-            ];
+        $result = ThemeSettings::writeSection('branding', $next);
+        if (!$result['ok']) {
+            return $result;
         }
 
         return [

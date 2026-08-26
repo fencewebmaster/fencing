@@ -247,41 +247,9 @@ final class CatalogSettings
     {
         $next = self::normalize($catalog);
 
-        $path = ThemeSettings::filePath();
-        $dir = dirname($path);
-
-        if (!is_writable($dir)) {
-            return ['ok' => false, 'error' => 'writable/ directory is not writable.'];
-        }
-        if (file_exists($path) && !is_writable($path)) {
-            return ['ok' => false, 'error' => 'theme.json is not writable.'];
-        }
-
-        $existing = ThemeSettings::readFile();
-        $payload = [
-            'colors' => isset($existing['colors']) && is_array($existing['colors']) ? $existing['colors'] : ThemeSettings::get(),
-            'catalog' => $next,
-            'updatedAt' => gmdate('c'),
-        ];
-        if (isset($existing['branding']) && is_array($existing['branding'])) {
-            $payload['branding'] = $existing['branding'];
-        }
-        if (isset($existing['fenceColors']) && is_array($existing['fenceColors'])) {
-            $payload['fenceColors'] = $existing['fenceColors'];
-        }
-        if (isset($existing['system']) && is_array($existing['system'])) {
-            $payload['system'] = $existing['system'];
-        }
-
-        $tmp = $path . '.tmp.' . getmypid() . '.' . bin2hex(random_bytes(4));
-        $written = file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        if ($written === false) {
-            return ['ok' => false, 'error' => 'Unable to write settings file.'];
-        }
-        if (!rename($tmp, $path)) {
-            @unlink($tmp);
-
-            return ['ok' => false, 'error' => 'Unable to save theme.json.'];
+        $result = ThemeSettings::writeSection('catalog', $next);
+        if (!$result['ok']) {
+            return $result;
         }
 
         // Bust lookup facet cache so category/attribute visibility updates promptly.
