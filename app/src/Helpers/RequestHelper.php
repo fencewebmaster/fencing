@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Generic HTTP-request inspection utilities consolidated out of config/.
+ * Generic HTTP-request inspection utilities.
  */
 final class RequestHelper
 {

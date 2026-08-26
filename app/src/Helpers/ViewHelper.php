@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Generic server-rendered-view formatting utilities consolidated out of config/.
+ * Generic server-rendered-view formatting utilities.
  */
 final class ViewHelper
 {

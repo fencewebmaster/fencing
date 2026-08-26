@@ -200,9 +200,9 @@ final class ThemeSettings
     /**
      * Carry-all section writer: replaces one top-level theme.json section (plus updatedAt)
      * and preserves every other key in the file — including sections this code has never
-     * heard of. The old per-writer fixed-key-list rebuilds are what silently dropped
-     * plannerExtraOptions (the Settings trap in CLAUDE.md); every theme.json writer must
-     * go through here. Writes stay tmp+rename, no lock (unchanged).
+     * heard of. Per-writer fixed-key-list rebuilds silently dropped any section they did
+     * not know about (plannerExtraOptions was lost that way), so every theme.json writer
+     * must go through here. Writes are tmp+rename with no lock.
      *
      * @return array{ok:bool,error?:string}
      */

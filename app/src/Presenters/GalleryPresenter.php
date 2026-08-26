@@ -8,9 +8,8 @@ use Fc\Admin\Models\GalleryModel;
 use Fc\Admin\Services\AuthService;
 
 /**
- * Media library row shaping — pure, filesystem-I/O-free formatting/view-model helpers, plus
- * the page-level viewData() orchestrator, which calls GalleryModel to fetch data before
- * shaping it (mirrors StoreProductPresenter::viewData() calling StoreProductModel::query()).
+ * Media library row shaping — pure formatting/view-model helpers plus the page-level
+ * viewData() orchestrator, which fetches data through GalleryModel before shaping it.
  */
 final class GalleryPresenter
 {

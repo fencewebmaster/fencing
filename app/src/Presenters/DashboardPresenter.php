@@ -10,9 +10,8 @@ use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Settings\FenceColorSettings;
 
 /**
- * Dashboard row shaping — pure, DB-free formatting/view-model helpers, plus the
- * page-level pageData() orchestrator. Mirrors StoreProductPresenter / FenceStylePresenter:
- * pure computation lives here, all I/O lives in DashboardModel.
+ * Dashboard row shaping — pure, DB-free formatting/view-model helpers plus the
+ * page-level pageData() orchestrator; all I/O lives in DashboardModel.
  */
 final class DashboardPresenter
 {

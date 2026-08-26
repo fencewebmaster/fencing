@@ -28,7 +28,7 @@ final class Router
     }
 
     /**
-     * Register routes under a shared URL prefix (Laravel-style grouping, prefix only).
+     * Register routes under a shared URL prefix.
      *
      * Only the pattern is affected: auth and permission filters stay with the
      * dispatchers (Core\Application / Core\FrontendApplication), which run them from

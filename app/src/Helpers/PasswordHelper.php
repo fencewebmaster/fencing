@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * WordPress password-hash verification consolidated out of config/auth.php.
+ * WordPress password-hash verification.
  */
 final class PasswordHelper
 {

@@ -11,7 +11,7 @@ use Fc\Admin\Services\DatabaseConfigService;
 /**
  * WordPress admin users data access ({prefix}users / {prefix}usermeta, pinned auth DB).
  *
- * Extends Core\Model for the CodeIgniter-4-like base-Model contract (find/insert/update/delete) —
+ * Extends Core\Model for the shared base-Model contract (find/insert/update/delete) —
  * currently inert/additive: every existing static method below is unchanged, nothing yet calls
  * the inherited instance methods. connectionConfig() MUST return the pinned auth DB config
  * (mirroring db() below exactly), not the switchable site DB, or the inherited methods would

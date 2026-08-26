@@ -3,7 +3,7 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Legacy *Controller.php URLs → unified api.php (backward compatible)
+    # Old *Controller.php URLs are mapped to api.php.
     RewriteRule ^entriesController\.php$ api.php?module=entries [QSA,L]
     RewriteRule ^productsController\.php$ api.php?module=products [QSA,L]
     RewriteRule ^galleryController\.php$ api.php?module=gallery [QSA,L]

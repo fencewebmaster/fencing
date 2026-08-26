@@ -11,8 +11,7 @@ use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Models\UserModel;
 
 /**
- * Session bootstrap, CSRF, current-user accessors, and login/logout mutations
- * (config/auth.php migration).
+ * Session bootstrap, CSRF, current-user accessors, and login/logout mutations.
  */
 final class AuthService
 {

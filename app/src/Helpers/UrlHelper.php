@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Pure $_SERVER-derived URL utilities (config/helpers.php migration).
+ * Pure $_SERVER-derived URL utilities.
  */
 final class UrlHelper
 {
@@ -105,7 +105,7 @@ final class UrlHelper
         }
 
         // Fallback for contexts with no REQUEST_URI (e.g. CLI): derive from the
-        // actually-executed script, same as before this method existed.
+        // actually-executed script.
         $script = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/fc/public/index.php'));
 
         return rtrim(dirname($script), '/');

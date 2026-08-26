@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Services;
 
 /**
- * Root config.php accessor (config/helpers.php migration). Re-includes the file on
- * every call to `all()` — no caching — matching the original `config()` semantics.
+ * Root config.php accessor. Re-includes the file on every call to `all()` — no caching.
  */
 final class AppConfigService
 {

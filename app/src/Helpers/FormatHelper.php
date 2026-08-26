@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Generic display-formatting utilities consolidated out of config/.
+ * Generic display-formatting utilities.
  */
 final class FormatHelper
 {

@@ -1,6 +1,5 @@
 <div class="fencing-section fencing-section--has-border fencing-section--no-radius-top" data-section="1">
 
-    <!-- [START] STYLES AREA -->
     <div class="fencing-section__cmp fencing-section-step fencing-section--step1">
 
         <div class="row align-items-center">

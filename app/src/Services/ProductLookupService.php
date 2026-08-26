@@ -109,9 +109,8 @@ final class ProductLookupService
     /**
      * Base path for this page (e.g. /wp/fencing/fc/lookup).
      *
-     * The lookup page used to be its own script, so stripping ".php" off SCRIPT_NAME gave
-     * the right URL. It is a route on the shared front controller now, so the path is the
-     * app mount plus the route name.
+     * /lookup is a nested route, so it must use the depth-independent
+     * FrontendApplication::basePath(); the one-segment-deep URL helpers resolve it wrongly.
      */
     public static function basePath(): string
     {

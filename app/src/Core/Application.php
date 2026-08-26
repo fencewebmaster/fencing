@@ -75,7 +75,6 @@ final class Application
             return $context;
         }
 
-        // Unknown admin route.
         NotFoundHandler::abort('admin');
     }
 

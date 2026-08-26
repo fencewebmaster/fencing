@@ -8,11 +8,9 @@ namespace Fc\Admin\Settings;
  * Fixed option lists for the planner quote form — delivery state, project timeframe
  * and the "other items needed" extras.
  *
- * These used to be inline arrays inside three global functions in writable/settings.php,
- * which is a data directory. The data lives here now; the legacy `fc_state()`,
- * `fc_timeframe()` and `fc_extra_needed()` functions still exist as thin shims over this
- * class (app/src/Helpers/fc_functions.php) because the planner views call them by name —
- * including indirectly through ArrayHelper::mapCallable().
+ * The global `fc_state()`, `fc_timeframe()` and `fc_extra_needed()` shims
+ * (app/src/Helpers/fc_functions.php) delegate to this class and must stay: planner views
+ * call them by name — including indirectly through ArrayHelper::mapCallable().
  */
 final class PlannerOptionSettings
 {
@@ -67,8 +65,8 @@ final class PlannerOptionSettings
     }
 
     /**
-     * Hardcoded seed for the fixed set of extra-item slugs (never derived from saved
-     * overrides — this is what defines which slugs exist at all).
+     * Hardcoded seed of the required extra-item slugs — membership is defined here,
+     * never derived from saved overrides.
      *
      * @return array<string, string>
      */

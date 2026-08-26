@@ -12,11 +12,10 @@ use Fc\Admin\Services\PresenceService;
 /**
  * Admin-area boot: session, auth restore, DB/site context and the presence heartbeat.
  *
- * This used to sit at the top of app/app_bootstrap.php. It runs from Core\Application's
- * entry points instead, so app/bootstrap.php can be shared with the public side, which
- * must not start an admin session.
+ * Runs from Core\Application's entry points rather than app/bootstrap.php, which is
+ * shared with the public side and must not start an admin session.
  *
- * Must still run before anything is echoed — AuthService::boot() sets the fc_admin_sess
+ * Must run before anything is echoed — AuthService::boot() sets the fc_admin_sess
  * cookie and silently degrades to an ini_set() once headers are sent.
  */
 final class AdminBootstrap

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Services;
 
 /**
- * Fence style/color/height-tier resolution against the planner catalog
- * (config/helpers.php migration).
+ * Fence style/color/height-tier resolution against the planner catalog.
  */
 final class FenceCatalogService
 {

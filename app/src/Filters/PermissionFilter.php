@@ -11,7 +11,7 @@ use Fc\Admin\Services\ImpersonationService;
 use Fc\Admin\Services\PermissionService;
 
 /**
- * Route-level "must have permission" gate (renamed+converted from Middleware\PermissionMiddleware).
+ * Route-level "must have permission" gate.
  */
 final class PermissionFilter implements FilterInterface
 {

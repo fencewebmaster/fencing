@@ -8,7 +8,7 @@ use Fc\Admin\Models\GroupPermissionsModel;
 use Fc\Admin\Models\UserModel;
 
 /**
- * Admin "Login As" another user (config/auth.php migration).
+ * Admin "Login As" another user.
  */
 final class ImpersonationService
 {

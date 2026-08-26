@@ -8,7 +8,7 @@ use Fc\Admin\Helpers\ArrayHelper;
 use Fc\Admin\Helpers\FileHelper;
 
 /**
- * Core BOM/SKU resolution + cart assembly (config/helpers.php migration).
+ * Core BOM/SKU resolution + cart assembly.
  */
 final class CartBuilderService
 {
@@ -295,7 +295,7 @@ final class CartBuilderService
     }
 
     /**
-     * Normalize JSON / dates / scalars for planner form data (FC-prefixed; do not clash with WP plugins).
+     * Normalize JSON / dates / scalars for planner form data.
      */
     public static function convertInputs(mixed $val = ''): mixed
     {

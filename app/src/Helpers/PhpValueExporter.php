@@ -6,7 +6,7 @@ namespace Fc\Admin\Helpers;
 
 /**
  * Serializes a PHP value back into formatted PHP source (used by fence config
- * file writers). Consolidated out of config/fence_php_io.php.
+ * file writers).
  */
 final class PhpValueExporter
 {

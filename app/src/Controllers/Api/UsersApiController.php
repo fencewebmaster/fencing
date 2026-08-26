@@ -28,7 +28,6 @@ final class UsersApiController extends BaseApiController
 
             $payload = PresenceService::apiPayload($ids);
 
-            // Format last_login for display using users admin formatter.
             $formatted = [];
             foreach (($payload['last_login'] ?? []) as $userId => $ts) {
                 $formatted[(string) $userId] = UserPresenter::formatActivityDatetime((string) (int) $ts);

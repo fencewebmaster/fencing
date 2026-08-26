@@ -14,8 +14,10 @@ use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Settings\FenceColorSettings;
 
 /**
- * Store products (writable/products.csv) row shaping — formatting/view-model helpers,
- * plus the page-level viewData() orchestrator, which reads through StoreProductModel
+ * Serves the System Products admin page (route products/system-products, data
+ * writable/products.csv) — the class name is deliberately inverted relative to the
+ * route/UI; do not rename either side to "match". Formatting/view-model helpers plus
+ * the page-level viewData() orchestrator, which reads through StoreProductModel
  * (and the Model calls back into this class — a documented two-way legacy coupling).
  */
 final class StoreProductPresenter
@@ -774,8 +776,7 @@ final class StoreProductPresenter
 
         return [
             'error'              => $error,
-            // CSV download affordances — derived here so the view stays read-only
-            // (it used to compute the ready flag and call AdminSiteRegistry itself).
+            // CSV download affordances — derived here so the view stays read-only.
             'csv_ready'          => $error === '',
             'csv_name'           => AdminSiteRegistry::currentSiteFilenameSlug() . '-system-products.csv',
             'columns'            => $columns,

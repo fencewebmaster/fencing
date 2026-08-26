@@ -8,7 +8,6 @@ use Fc\Admin\Helpers\UrlHelper;
 
 class Database {
 
-    // Properties
     /** @var string Last connection error for diagnostics */
     public $last_connect_error = '';
 
@@ -30,8 +29,6 @@ class Database {
         }
     }
 
-    //----------------------------------------------------------------------------------
-
     function connect() {
         $result = DatabaseConfigService::connectMysqli([
             'host'     => $this->host,
@@ -45,16 +42,12 @@ class Database {
         return $result['conn'] instanceof \mysqli ? $result['conn'] : null;
     }
 
-    //----------------------------------------------------------------------------------
-
     /**
      * Fully-qualified table name: prefix + table, with a '_demo' suffix on demo/staging.
      */
     function tableName($table): string {
         return implode('_', array_filter([$this->prefix.$table, $this->is_demo]));
     }
-
-    //----------------------------------------------------------------------------------
 
     /**
      * Run one write and map the mysqli outcome to the shared success/error envelope.
@@ -91,8 +84,6 @@ class Database {
         ];
     }
 
-    //----------------------------------------------------------------------------------
-
     function insert($table, $data) {
         $table = $this->tableName($table);
 
@@ -120,8 +111,6 @@ class Database {
         return $this->execWrite($conn, $sql, "New record created successfully", 'insert');
     }
 
-    //----------------------------------------------------------------------------------
-
     /**
      * Build a WHERE clause with every string value quoted.
      *
@@ -147,8 +136,6 @@ class Database {
 
         return implode(' AND ', $parts);
     }
-
-    //----------------------------------------------------------------------------------
 
     function update($table = '', $data  = array(), $where  = array()) {
         $table = $this->tableName($table);
@@ -182,8 +169,6 @@ class Database {
         return $this->execWrite($conn, $sql, "Record is updated successfully", 'update');
     }
 
-    //----------------------------------------------------------------------------------
-
     function delete($table = '', $where = array()) {
         $table = $this->tableName($table);
 
@@ -203,8 +188,6 @@ class Database {
         return $this->execWrite($conn, $sql, "Record is deleted successfully", 'delete');
     }
 
-    //----------------------------------------------------------------------------------
-
     function updateOrCreate($table, $data, $where) {
         $where_data = $this->where_clause($where);
 
@@ -218,8 +201,6 @@ class Database {
 
         return $q;
     }
-
-    //----------------------------------------------------------------------------------
 
     function select_where($table, $where, $select = '*') {
         $table = $this->tableName($table);
@@ -246,7 +227,5 @@ class Database {
 
         return $data->fetch_object();
     }
-
-    //----------------------------------------------------------------------------------
 
 }

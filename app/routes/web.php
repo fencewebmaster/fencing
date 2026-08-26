@@ -182,7 +182,8 @@ return [
                 (new LookupController($request))->index();
             });
 
-            // Quick view pretty path — was an .htaccess rewrite to lookup.php?view=$1.
+            // Quick view pretty path — a published URL shape that must keep resolving;
+            // the slug reaches LookupController as its 'view' query param.
             $router->any('view/{slug}', static function (Request $request, array $params): void {
                 $request->setQuery('view', rawurldecode((string) ($params['slug'] ?? '')));
                 (new LookupController($request))->index();

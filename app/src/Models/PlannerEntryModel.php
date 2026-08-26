@@ -11,7 +11,7 @@ use Fc\Admin\Services\PlannerRecordService;
 /**
  * Planner entries data access (wp_planners).
  *
- * Extends Core\Model for the CodeIgniter-4-like base-Model contract (find/insert/update/delete) —
+ * Extends Core\Model for the shared base-Model contract (find/insert/update/delete) —
  * currently inert/additive: every existing static method below is unchanged, nothing yet calls
  * the inherited instance methods. $primaryKey is 'id' (Core\Model's own default) and
  * connectionConfig() returns null (Database's own default), matching PlannerRecordService::openDb()'s

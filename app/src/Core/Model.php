@@ -7,7 +7,7 @@ namespace Fc\Admin\Core;
 use Fc\Admin\Services\Database;
 
 /**
- * Base data-access model (CodeIgniter 4 convention — the CodeIgniter\Model analog).
+ * Base data-access model.
  *
  * Table/connection resolution here is dynamic per-request (multi-site switching, demo
  * suffixing) rather than knowable at class-definition time, so subclasses override the

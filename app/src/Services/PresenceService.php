@@ -391,7 +391,7 @@ final class PresenceService
     /**
      * Scan the presence dir once: prune files older than STALE_MAX_AGE, decode each, and
      * hand every valid entry (user_id > 0) to $onEntry as (userId, last, data). The
-     * stale-prune @unlink fires exactly once per file, as in the two original inline loops.
+     * stale-prune @unlink fires exactly once per file.
      *
      * @param callable(int, int, array<string, mixed>): void $onEntry
      */

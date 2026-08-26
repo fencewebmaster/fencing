@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Generic array utilities consolidated out of config/.
+ * Generic array utilities.
  */
 final class ArrayHelper
 {
@@ -24,7 +24,7 @@ final class ArrayHelper
         $i = 0;
 
         foreach ($rows as $val) {
-            // Loose comparison preserved verbatim from the original unique_multidim_array().
+            // Loose comparison is deliberate: key values may arrive as int or numeric string and must still match.
             if (!in_array($val[$key], $keyValues)) {
                 $keyValues[$i] = $val[$key];
                 $out[$i] = $val;
@@ -91,7 +91,7 @@ final class ArrayHelper
     }
 
     /**
-     * Map a callable over one value or a list (FC-prefixed to avoid WP plugin collisions).
+     * Map a callable over one value or a list.
      *
      * @return string|array<int, mixed>
      */

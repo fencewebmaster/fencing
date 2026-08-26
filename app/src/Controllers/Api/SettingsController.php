@@ -1,6 +1,7 @@
 <?php
 /**
- * FC Admin — settings API (theme colors + branding).
+ * FC Admin — settings API (the settings groups, settings import/export, Cloudflare verify,
+ * and the dev console).
  */
 
 declare(strict_types=1);

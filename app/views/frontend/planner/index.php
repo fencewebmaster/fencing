@@ -81,7 +81,6 @@ use Fc\Admin\Services\PlannerSessionService;
 
                 <div class="fc-section-details">
 
-                    <!-- [START] TABS -->
                     <div class="fc-header-tab fc-section-step fc-d-none fc-font-2" data-tab="2" data-section="4" style="display:none;">
                         <div class="fc-header-tab__area">
                             <a href="#" class="fc-btn-step" data-tab="2" data-move="1">

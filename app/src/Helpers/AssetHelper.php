@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Cache-busted asset URLs + deferred stylesheet tags (config/helpers.php migration).
+ * Cache-busted asset URLs + deferred stylesheet tags.
  */
 final class AssetHelper
 {

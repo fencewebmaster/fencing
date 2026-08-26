@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Services;
 
 /**
- * Planner/cart $_SESSION read-write + DB-row↔session hydration
- * (config/helpers.php migration).
+ * Planner/cart $_SESSION read-write + DB-row↔session hydration.
  */
 final class PlannerSessionService
 {

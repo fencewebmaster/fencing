@@ -7,7 +7,7 @@ namespace Fc\Admin\Services;
 use Fc\Admin\Helpers\UrlHelper;
 
 /**
- * Public-facing site catalog + environment helpers (config/helpers.php migration).
+ * Public-facing site catalog + environment helpers.
  */
 final class SiteRegistryService
 {

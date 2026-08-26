@@ -2,10 +2,10 @@
 /**
  * Legacy global helpers used by the planner views.
  *
- * These four functions have been called by name from the templates since long before the
- * app had a service layer — and `fc_extra_needed` is also invoked dynamically through
- * ArrayHelper::mapCallable(), so it cannot simply become a method call. They stay as
- * global shims; every one of them now delegates to the service that owns the data:
+ * The planner templates call these four functions by name — and `fc_extra_needed` is
+ * also invoked dynamically through ArrayHelper::mapCallable(), so it cannot simply
+ * become a method call. They stay as global shims; every one of them delegates to the
+ * service that owns the data:
  *
  *   fc_color()        -> Settings\FenceColorSettings
  *   fc_state()        -> Settings\PlannerOptionSettings

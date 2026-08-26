@@ -4,9 +4,9 @@
  * Used on /products/system-products after the store/system swap.
  *
  * Read-only template: StoreProductPresenter::viewData() guarantees every shape
- * here, including the precomputed 'csv_ready' flag and 'csv_name' download name
- * (the view used to derive both itself). Escaping via the global e() helper;
- * the layout's is_array() check is the render gate.
+ * here, including the precomputed 'csv_ready' flag and 'csv_name' download name.
+ * Escaping via the global e() helper; the layout's is_array() check is the
+ * render gate.
  *
  * @var array<string, mixed> $fcStoreProductsPage
  */

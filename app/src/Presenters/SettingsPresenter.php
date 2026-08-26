@@ -16,10 +16,10 @@ use Fc\Admin\Settings\SystemSettings;
 use Fc\Admin\Settings\ThemeSettings;
 
 /**
- * Settings page — pure formatting + page orchestration (config/settings_admin.php migration).
- * The underlying theme/branding/fence-colors/catalog/system/integrations/console config files
- * are shared, cross-cutting infrastructure (used far beyond this page) and stay untouched;
- * this class calls their existing *_api_payload()/defaults()/choices() functions unchanged.
+ * Settings page — pure formatting + page orchestration. The underlying settings groups
+ * (theme/branding/fence-colors/catalog/system/integrations/console) are shared,
+ * cross-cutting infrastructure used far beyond this page; this class only calls their
+ * apiPayload()/defaults()/choices() methods and never mutates them.
  */
 final class SettingsPresenter
 {

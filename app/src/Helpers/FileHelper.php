@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Generic file utilities consolidated out of config/helpers.php.
+ * Generic file utilities.
  */
 final class FileHelper
 {

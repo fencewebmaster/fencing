@@ -1,9 +1,5 @@
-# Deny web access to PHP session files. Routed to the app's own 404 page (via index.php)
-# rather than a bare 403 when mod_rewrite is available; the legacy deny directives are a
-# fallback for when it isn't — the two can't safely coexist unconditionally, since Apache
-# checks access-control directives (Require / Order+Deny) before per-directory rewrites,
-# so an always-on deny would silently pre-empt the rewrite and this would keep showing 403
-# regardless (confirmed by testing the same pattern in public/assets/uploads/.htaccess).
+# Block web access to session files. The rewrite shows the app's 404 page; the deny
+# fallback is for servers without mod_rewrite (both on would always give a 403).
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^ ../../../index.php [L]

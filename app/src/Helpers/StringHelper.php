@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Generic string utilities (slugs, escaping, random ids) consolidated out of config/.
+ * Generic string utilities (slugs, escaping, random ids).
  */
 final class StringHelper
 {

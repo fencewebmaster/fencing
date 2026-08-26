@@ -8,7 +8,7 @@ use Fc\Admin\Helpers\RequestHelper;
 use Fc\Admin\Models\UserModel;
 
 /**
- * Persistent "remember me" login cookie lifecycle (config/auth.php migration).
+ * Persistent "remember me" login cookie lifecycle.
  */
 final class RememberTokenService
 {

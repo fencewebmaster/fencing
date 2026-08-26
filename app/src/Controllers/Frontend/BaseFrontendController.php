@@ -24,9 +24,6 @@ abstract class BaseFrontendController extends BaseController
         parent::__construct($request ?? new Request());
     }
 
-    /**
-     * Start the public PHP session.
-     */
     protected function startSession(): void
     {
         SessionBootstrap::start();

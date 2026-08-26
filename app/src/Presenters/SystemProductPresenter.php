@@ -13,10 +13,11 @@ use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Services\SiteRegistryService;
 
 /**
- * System products (writable/wc-products-GO.csv, writable/wc-products-JG.csv) row shaping — pure,
- * DB-free formatting/view-model helpers, plus the page-level viewData() orchestrator.
- * No dependency on SystemProductModel (kept one-directional: Model depends on this class,
- * not the other way around) — mirrors StoreProductModel / StoreProductPresenter.
+ * Serves the Store Products admin page (route products/store-products, data
+ * writable/wc-products-GO.csv and writable/wc-products-JG.csv) — the class name is
+ * deliberately inverted relative to the route/UI; do not rename either side to "match".
+ * Formatting/view-model helpers plus the page-level viewData() orchestrator, which
+ * reads through SystemProductModel.
  */
 final class SystemProductPresenter
 {

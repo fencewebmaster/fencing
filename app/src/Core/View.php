@@ -9,7 +9,7 @@ final class View
     /**
      * Render a view from app/views/.
      *
-     * Accepts a Laravel-style dot name ('frontend.planner.index' ->
+     * Accepts a dot name ('frontend.planner.index' ->
      * views/frontend/planner/index.php) or a legacy slash path ending in .php
      * ('frontend/planner/index.php') — the extension is what disambiguates the
      * two forms, since every dot in a dot name is a directory separator.

@@ -11,7 +11,7 @@ use Fc\Admin\Services\PlannerWebhookService;
 
 /**
  * Planner autosave endpoint (/submit) — writes the posted planner state to the
- * `planners` table and answers with a bare `SUCCESS:<id>` / `ERROR` string.
+ * wp_planners table and answers with a bare `SUCCESS:<id>` / `ERROR` string.
  */
 final class SubmitController extends BaseFrontendController
 {

@@ -9,11 +9,11 @@ use Fc\Admin\Core\Request;
 use Fc\Admin\Services\AuthService;
 
 /**
- * Base for the instance-based API controllers (CodeIgniter 4 convention). Owns the shared
- * dispatch entry point, the standard JSON response headers, and the CSRF-verification helper;
- * each concrete controller implements handle() and keeps its own action routing, field names,
- * and response idiom (the API's CSRF fields and exit-vs-return emission are deliberately
- * non-uniform — see CLAUDE.md).
+ * Base for the instance-based API controllers. Owns the shared dispatch entry point, the
+ * standard JSON response headers, and the CSRF-verification helper; each concrete controller
+ * implements handle() and keeps its own action routing, field names, and response idiom.
+ * The API's CSRF field names and exit-vs-return emission are deliberately non-uniform —
+ * copy the neighbouring action instead of standardizing.
  */
 abstract class BaseApiController extends BaseController
 {
@@ -25,9 +25,6 @@ abstract class BaseApiController extends BaseController
         (new static(new Request()))->handle();
     }
 
-    /**
-     * The five controllers that emit a plain JSON + no-store header pair at handle() entry.
-     */
     protected function sendJsonHeaders(): void
     {
         header('Content-Type: application/json; charset=utf-8');

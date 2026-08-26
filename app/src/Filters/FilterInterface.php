@@ -7,12 +7,12 @@ namespace Fc\Admin\Filters;
 use Fc\Admin\Core\Request;
 
 /**
- * CodeIgniter 4 convention for cross-cutting request gating (replaces the old Middleware/ classes).
+ * Contract for cross-cutting request gating around dispatch.
  *
- * Narrower than CI4's real interface: before()/after() here are void — implementations still
- * exit()/header()+exit() internally exactly as the code they replace did. Reproducing CI4's
- * "return a Response to short-circuit" pattern would be a real control-flow change to
- * Application.php, out of scope for this pass.
+ * before()/after() are deliberately void: an implementation that needs to short-circuit
+ * a request does so internally via exit()/header()+exit(). There is no
+ * "return a Response to stop dispatch" mechanism — adding one would be a real
+ * control-flow change to Application.php.
  */
 interface FilterInterface
 {

@@ -86,8 +86,8 @@ $groupHead = static function (
     <input type="hidden" name="layout" value="<?php echo $h((string) ($req['layout'] ?? 'grid')); ?>">
     <input type="hidden" name="orderby" value="<?php echo $h((string) ($req['orderby'] ?? 'default')); ?>">
     <?php
-    // Same emitted bytes as the removed inline block: its open-tag line contributed
-    // four leading spaces to the hidden input's rendered line.
+    // Deliberate empty block: the four spaces before its open tag are emitted onto
+    // the hidden input's rendered line; deleting the block changes the emitted bytes.
     ?>
     <input type="hidden" name="per_page" value="<?php echo (int) $filters['per_page_hidden']; ?>">
 

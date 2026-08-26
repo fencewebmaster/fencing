@@ -176,7 +176,6 @@ final class CheckoutCartModel
 
             $cart_items_data[$cart_item_k] = $cart_item;
 
-            // UPDATE CART ITEM QTY
             $cart_items_data[$cart_item_k]['qty'] = $quantity;
         }
 

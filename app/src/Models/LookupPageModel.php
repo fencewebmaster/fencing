@@ -361,10 +361,9 @@ final class LookupPageModel
     }
 
     /**
-     * View-model for lookup/toolbar.php (sort / layout / per-page controls) — the
-     * derivations that used to sit at the top of the template. Kept here rather
-     * than in ProductLookupService::buildPage(): that payload's shape is cached
-     * under schema-versioned keys, and presentation-only values don't belong in it.
+     * View-model for lookup/toolbar.php (sort / layout / per-page controls). Kept
+     * here rather than in ProductLookupService::buildPage(): that payload's shape is
+     * cached under schema-versioned keys, and presentation-only values don't belong in it.
      *
      * @param array<string, mixed> $page ProductLookupService::buildPage() result.
      * @return array<string, mixed>

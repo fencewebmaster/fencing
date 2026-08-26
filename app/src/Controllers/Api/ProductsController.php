@@ -1,6 +1,6 @@
 <?php
 /**
- * FC Admin — products API (reads/writes fc/writable/products.csv).
+ * FC Admin — products API (writable/products.csv and writable/wc-products-{GO,JG}.csv).
  */
 
 declare(strict_types=1);

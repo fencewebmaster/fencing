@@ -36,6 +36,12 @@ final class ProductsPageController extends BaseController
         $context->isProductsPage = true;
     }
 
+    /**
+     * Store Products page. The class/property names are deliberately inverted vs the
+     * route: this route is served by SystemProductPresenter over wc-products-{GO,JG}.csv,
+     * and systemProducts() below by StoreProductPresenter over products.csv. The
+     * inversion is consistent end-to-end; never "fix" one layer.
+     */
     public function storeProducts(AdminContext $context): void
     {
         $context->pageTitle          = 'Store Products';

@@ -22,7 +22,6 @@ final class PlannerController extends BaseFrontendController
         $sid    = $this->request->input('sid', '');
 
         if ($action === 'clear-all' || $site || $sid) {
-            // Clear fence session data
             PlannerSessionService::clearPlannerSessions();
         }
 

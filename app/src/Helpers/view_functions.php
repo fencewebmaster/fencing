@@ -1,9 +1,9 @@
 <?php
 /**
- * FC — global view helper (Laravel-style).
+ * FC — global view helpers.
  *
  * Loaded by app/bootstrap.php: a bare function cannot be autoloaded, and the
- * helper must exist before any controller runs (same precedent as the fc_*()
+ * helpers must exist before any controller runs (same precedent as the fc_*()
  * helpers in fc_functions.php, which FenceSettingsService loads explicitly).
  */
 
@@ -13,7 +13,7 @@ use Fc\Admin\Core\View;
 
 if (!function_exists('e')) {
     /**
-     * HTML-escape a value for output (Laravel's escape helper name).
+     * HTML-escape a value for output.
      *
      * Replaces the `$h = static fn(...) => StringHelper::escapeHtml(...)` closure
      * each view used to declare for itself — templates read, they don't define.
@@ -42,19 +42,32 @@ if (!function_exists('view_path')) {
 
 if (!function_exists('asset')) {
     /**
-     * Cache-busted asset URL (Laravel's helper name) — AssetHelper::assetUrl().
-     * The path stays relative to the app root, e.g. asset('public/assets/js/frontend/p1.js').
-     * Like url(), REQUEST_URI-derived: correct only on routes one segment deep.
+     * Cache-busted asset URL. The path shape picks the contract:
+     *
+     *   asset('public/assets/…')  frontend: absolute URL via AssetHelper::assetUrl() —
+     *                             REQUEST_URI-derived like url(), so correct only on
+     *                             routes one segment deep.
+     *   asset('assets/…')         admin: the bare path plus its ?v= stamp, resolved by
+     *                             the browser against the layout's <base href>.
+     *
+     * The two outputs are NOT interchangeable — the app has five deliberately distinct
+     * base-URL builders, and pasting a frontend call into an admin view (or vice versa)
+     * produces a silently wrong URL. The dispatch is deterministic: same argument, same
+     * output, everywhere.
      */
     function asset(string $file): string
     {
-        return \Fc\Admin\Helpers\AssetHelper::assetUrl($file);
+        if (str_starts_with($file, 'public/')) {
+            return \Fc\Admin\Helpers\AssetHelper::assetUrl($file);
+        }
+
+        return $file . '?v=' . \Fc\Admin\Helpers\UrlHelper::assetVersion($file);
     }
 }
 
 if (!function_exists('url')) {
     /**
-     * Absolute URL off the app base (Laravel's helper name) — UrlHelper::baseUrl().
+     * Absolute URL off the app base — UrlHelper::baseUrl().
      * dirname(REQUEST_URI)-derived: correct only on frontend routes one segment
      * deep (/planner, /checkout); nested routes must use
      * FrontendApplication::basePath() instead.
@@ -83,9 +96,9 @@ if (!function_exists('view')) {
      *
      *     view('frontend.planner.index', $data);
      *
-     * Void rather than Laravel's returnable view object: this app's route
-     * handlers are declared `: void` and echo directly, so the helper is
-     * called as a statement, never with `return`.
+     * Void by design: this app's route handlers are declared `: void` and
+     * echo directly, so the helper is called as a statement, never with
+     * `return`.
      *
      * @param array<string, mixed> $data
      */

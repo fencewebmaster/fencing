@@ -14,7 +14,7 @@ use Fc\Admin\Services\PresenceService;
 use Fc\Admin\Settings\SystemSettings;
 
 /**
- * Users list — pure formatting + page orchestration (config/users_admin.php migration).
+ * Users list — pure formatting + page orchestration.
  */
 final class UserPresenter
 {

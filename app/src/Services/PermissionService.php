@@ -8,7 +8,7 @@ use Fc\Admin\Models\GroupPermissionsModel;
 use Fc\Admin\Models\UserModel;
 
 /**
- * Role/permission-matrix checks (config/auth.php migration).
+ * Role/permission-matrix checks.
  */
 final class PermissionService
 {

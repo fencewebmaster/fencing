@@ -27,9 +27,6 @@ $categoryNames    = $quickView['category_names'];
 $tagNames         = $quickView['tag_names'];
 $descriptionPlain = $quickView['description_plain'];
 
-/**
- * @param callable $h
- */
 $renderRow = static function (
     string $label,
     string $copyValue,

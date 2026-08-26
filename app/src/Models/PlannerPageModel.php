@@ -62,7 +62,6 @@ final class PlannerPageModel
             : [];
 
         if ($res && is_object($res) && !PlannerRecordService::rowIsTrashed($res)) {
-            // Clear fence session data
             PlannerSessionService::clearPlannerSessions();
 
             $_SESSION['planner_id'] = $qid;

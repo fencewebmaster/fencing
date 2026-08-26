@@ -7,7 +7,7 @@ namespace Fc\Admin\Services;
 use Fc\Admin\Helpers\FileHelper;
 
 /**
- * WooCommerce product CSV row lookups for cart images (config/helpers.php migration).
+ * WooCommerce product CSV row lookups for cart images.
  */
 final class WcProductCsvService
 {

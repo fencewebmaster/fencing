@@ -81,7 +81,7 @@ use Fc\Admin\Services\SiteRegistryService;
 <?php include view_path('frontend.partials.fence-scripts'); ?>
 
 <?php if( !UrlHelper::inUriSegment(SiteRegistryService::demoStages()) ): ?>
-<!-- Chatra {literal} -->
+<!-- Chatra -->
 <script>
 window.addEventListener('load', function() {
     window.setTimeout(function() {
@@ -98,5 +98,5 @@ window.addEventListener('load', function() {
     }, 2500);
 });
 </script>
-<!-- /Chatra {/literal} -->
+<!-- /Chatra -->
 <?php endif; ?>

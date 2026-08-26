@@ -40,7 +40,7 @@ $fcFavicon = BrandingSettings::faviconUrl('');
 if ($fcFavicon !== '') {
     $faviconHref = $fcFavicon;
     if (!preg_match('/^https?:\\/\\//i', $faviconHref) && strpos($faviconHref, '//') !== 0 && !preg_match('/^data:/i', $faviconHref)) {
-        // make absolute URL relative to current host/path
+        // Stored favicon paths are app-relative; resolve them to a full URL
         $faviconHref = url(ltrim($faviconHref, '/'));
     }
     echo '<link rel="icon" href="' . e($faviconHref) . '">';

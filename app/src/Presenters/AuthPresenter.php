@@ -8,7 +8,7 @@ use Fc\Admin\Services\AuthService;
 use Fc\Admin\Settings\BrandingSettings;
 
 /**
- * Login/logout page formatting (config/auth.php's login-specific migration).
+ * Login/logout page formatting.
  */
 final class AuthPresenter
 {

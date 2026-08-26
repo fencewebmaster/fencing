@@ -1,23 +1,14 @@
 RewriteEngine on
 
-# Never expose directory listings (app/, public/assets/, etc. are otherwise
-# browsable because the XAMPP default vhost turns Indexes on for all of htdocs).
+# Never show directory listings.
 Options -Indexes
 
-# Deny-by-default for .git and any other dotfile/dotdir (.env, .htpasswd, ...).
-# Without this, .git/ is a real directory/file on disk so it never reaches the
-# frontend catch-all below (that rule only fires when REQUEST_FILENAME is
-# neither -f nor -d) and Apache serves it — including the full commit history
-# and reflog — directly over HTTP. Internally rewritten to index.php: the
-# original request URI is preserved, so the app's own router doesn't recognize
-# it as a valid route and renders its normal 404 page — a 404 also tells a
-# prober "this doesn't exist" rather than "exists but is blocked", unlike a
-# 403 or a redirect.
+# Block .git and all other dotfiles (.env, .htpasswd, ...) — otherwise the .git
+# history would be downloadable. Rewriting to index.php shows the app's 404 page.
 RewriteRule "(^|/)\." index.php [L]
 
-# Baseline security headers. Deliberately conservative: no site-wide Content-Security-Policy
-# here, since the frontend legitimately loads cross-origin scripts (Google Maps, Chatra,
-# jsDelivr) that a generic CSP would need careful per-resource allowlisting to avoid breaking.
+# Baseline security headers. No site-wide CSP: it would break the external
+# scripts the frontend uses (Google Maps, Chatra, jsDelivr).
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
@@ -25,33 +16,21 @@ RewriteRule "(^|/)\." index.php [L]
     Header unset X-Powered-By
 </IfModule>
 
-# /backend -> public/ (internal only; the browser URL stays /backend)
-# Bare "/backend" or "/backend/" must target index.php explicitly, not a bare
-# directory reference — otherwise mod_dir's trailing-slash canonicalization
-# redirects to the *rewritten* target (/public/), leaking it into the URL bar.
+# /backend -> public/ (the browser URL stays /backend). Bare "/backend" must target
+# index.php directly, or Apache leaks the real /public/ path into the address bar.
 RewriteRule ^backend/?$ public/index.php [L,QSA]
 RewriteRule ^backend/(.+)$ public/$1 [L,QSA]
 
-# Never serve app config or writable data directly.
-# config\.php (unanchored at the end) also covers config.php.lock, config.php.bak.php,
-# and the config.php.tmp.<pid>.<rand>.php files ConsoleSettings::save() writes transiently.
-# Internally rewritten to index.php — same access block as before, but now surfaces as the
-# app's own 404 page instead of a bare 403 (see the .git rule above for why).
+# Never serve the app config or writable/ data. The pattern also covers the
+# config.php.lock/.bak/.tmp variants. Rewriting to index.php shows the 404 page.
 RewriteRule ^(config\.json|config\.php|writable) index.php [L,NC]
 
-# Never serve app/ directly. Nothing legitimate is ever requested from there over HTTP —
-# every real request goes through index.php (frontend) or public/index.php|api.php (admin),
-# which pull app/src|views in via PHP include/autoload, not a direct URL. Without this, a
-# view file hit directly (bypassing routing) can throw an uncaught error that leaks a full
-# stack trace with absolute server paths and internal class names straight into the response.
-# Internally rewritten to index.php — same access block as before, but now surfaces as the
-# app's own 404 page instead of a bare 403 (see the .git rule above for why).
+# Never serve app/ directly — a direct hit could print a stack trace with server
+# paths. Rewriting to index.php shows the 404 page.
 RewriteRule ^app(/|$) index.php [L,NC]
 
-# Frontend front controller: every public URL (/planner, /checkout, /lookup/view/{slug},
-# …) is routed by index.php via app/routes/frontend.php. Real files (public/assets/…)
-# and the admin mounts are left alone; anything else — including unknown paths, which
-# the router answers with the 404 view — goes to index.php.
+# Front controller: all public URLs go to index.php (routed via app/routes/web.php).
+# Real files and the admin mounts are left alone; unknown paths get the 404 page.
 RewriteCond %{REQUEST_URI} !(/backend|/public)(/|$)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

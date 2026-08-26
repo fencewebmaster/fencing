@@ -270,7 +270,7 @@ final class GroupPermissionsPresenter
             'api_url' => $apiUrl,
             'form_action' => 'users/group-permissions',
             // JS bootstrap payload the view embeds verbatim — assembled here so the
-            // template stays read-only (it used to build this array itself).
+            // template stays read-only.
             'bootstrap' => [
                 'roles' => $roles,
                 'selectedRole' => $selected,

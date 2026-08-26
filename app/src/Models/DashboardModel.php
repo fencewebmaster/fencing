@@ -361,7 +361,7 @@ final class DashboardModel
         $storeTotal = (int) StoreProductModel::all()['total'];
         $systemTotal = (int) SystemProductModel::all('GO')['total'] + (int) SystemProductModel::all('JG')['total'];
 
-        // data/ was renamed writable/ (Aug 2026); the old path made this count silently 0.
+        // A wrong directory here fails silently — glob() returns nothing and the count reads 0.
         $fenceStyles = count(glob(FC_ROOT . DIRECTORY_SEPARATOR . 'writable' . DIRECTORY_SEPARATOR . 'fences' . DIRECTORY_SEPARATOR . '*.php') ?: []);
 
         $galleryItems = 0;

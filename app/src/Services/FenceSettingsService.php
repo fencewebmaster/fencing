@@ -11,10 +11,9 @@ namespace Fc\Admin\Services;
  * legacy `fc_color()` / `fc_state()` / `fc_timeframe()` / `fc_extra_needed()` view
  * helpers (`app/src/Helpers/fc_functions.php`).
  *
- * The frontend entry scripts used to `include 'writable/settings.php'` at global
- * scope, which is what made `$fences` a true global. Controllers run inside a
- * method, so boot() has to publish `$fences` into `$GLOBALS` explicitly —
- * CartBuilderService and FenceCatalogService both read it via `global $fences`.
+ * Controllers run inside a method, so boot() has to publish `$fences` into
+ * `$GLOBALS` explicitly — CartBuilderService and FenceCatalogService both read
+ * it via `global $fences`.
  */
 final class FenceSettingsService
 {
@@ -57,7 +56,7 @@ final class FenceSettingsService
     }
 
     /**
-     * Assemble the fence catalog from writable/fences/*.php (previously writable/settings.php).
+     * Assemble the fence catalog from writable/fences/*.php.
      * Draft (non-live) styles are kept in the catalog — the planner view decides how to
      * present them (disabled, "Temporarily Unavailable") rather than this service hiding them outright.
      *

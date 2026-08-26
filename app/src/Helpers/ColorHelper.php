@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Helpers;
 
 /**
- * Generic hex/RGB color utilities consolidated out of config/theme.php and config/lookup.php.
+ * Generic hex/RGB color utilities.
  */
 final class ColorHelper
 {

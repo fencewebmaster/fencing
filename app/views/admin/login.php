@@ -1,6 +1,6 @@
 <?php
 /**
- * FC Admin — Login page (loan-inspired UI, WordPress auth).
+ * FC Admin — Login page (WordPress auth).
  *
  * Read-only template: AuthPresenter::loginViewData() guarantees every key here as
  * a string. Escaping via the global e() helper; public/index.php's is_array()
@@ -8,6 +8,9 @@
  *
  * @var array<string, mixed> $fcLoginPage
  */
+
+use Fc\Admin\Settings\BrandingSettings;
+use Fc\Admin\Settings\ThemeSettings;
 
 $page    = $fcLoginPage;
 $appName = $page['app_name'];
@@ -25,12 +28,12 @@ $version = $page['version'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="<?php echo e(rtrim((string) $page['admin_base'], '/') . '/'); ?>">
     <title>Sign in — <?php echo e($appName); ?></title>
-    <?php echo \Fc\Admin\Settings\ThemeSettings::cssBlock(); ?>
-    <link href="assets/css/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/vendor/tailwind.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/theme.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/admin/login.css">
+    <?php echo ThemeSettings::cssBlock(); ?>
+    <link href="<?php echo asset('assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?php echo asset('assets/css/vendor/fontawesome/css/all.min.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/vendor/tailwind.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/theme.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/login.css'); ?>">
 </head>
 <body class="h-full fc-login-body">
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2"></div>
@@ -71,7 +74,7 @@ $version = $page['version'];
             <div class="login-card">
                 <div class="login-card-header">
                     <div class="login-logo<?php echo $logoUrl !== '' ? ' login-logo--image' : ''; ?>" aria-hidden="true">
-                        <?php echo \Fc\Admin\Settings\BrandingSettings::logoMarkup($appBase, null, ['img_class' => 'login-logo__img']); ?>
+                        <?php echo BrandingSettings::logoMarkup($appBase, null, ['img_class' => 'login-logo__img']); ?>
                     </div>
                     <h1>Welcome back</h1>
                     <p>Sign in to <?php echo e($appName); ?></p>
@@ -155,8 +158,8 @@ $version = $page['version'];
             redirect: <?php echo json_encode((string) ($page['redirect'] ?? ''), JSON_UNESCAPED_SLASHES); ?>
         };
     </script>
-    <script src="assets/js/admin/core/namespace.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/namespace.js'); ?>"></script>
-    <script src="assets/js/admin/core/admin-appearance.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/core/admin-appearance.js'); ?>"></script>
-    <script src="assets/js/admin/login.js?v=<?php echo \Fc\Admin\Helpers\UrlHelper::assetVersion('assets/js/admin/login.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/core/namespace.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/core/admin-appearance.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/login.js'); ?>"></script>
 </body>
 </html>

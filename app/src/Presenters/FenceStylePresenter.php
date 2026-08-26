@@ -10,10 +10,8 @@ use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
 
 /**
- * Fence style row shaping — pure, DB-free formatting/view-model helpers, plus the
- * page-level viewData() orchestrator. No dependency on FenceStyleModel (kept
- * one-directional: Model depends on this class, not the other way around) —
- * mirrors StoreProductModel / StoreProductPresenter.
+ * Fence style row shaping — formatting/view-model helpers plus the page-level
+ * payload builders, which read catalog data through FenceStyleModel.
  */
 final class FenceStylePresenter
 {

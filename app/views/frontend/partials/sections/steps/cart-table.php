@@ -86,10 +86,6 @@ $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : [];
                         </div>
 
                     </td>
-                    <!-- <td><?php echo @$cart_item['sku']; ?></td>
-                    <td><s>$<?php echo @$cart_item['rrp']; ?></s></td>
-                    <td>$<?php echo @$cart_item['trade_price']; ?></td>
-                    <td>$<?php echo number_format(@$cart_item['subtotal'], 2); ?></td> -->
                     <td width="90" class="px-1 align-middle text-center text-center d-md-table-cell d-none">
 
                         <div class="fw-bold d-flex align-items-center justify-content-center">

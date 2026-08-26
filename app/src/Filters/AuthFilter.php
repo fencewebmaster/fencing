@@ -10,7 +10,7 @@ use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
 
 /**
- * Route-level "must be logged in" gate (renamed+converted from Middleware\AuthMiddleware).
+ * Route-level "must be logged in" gate.
  */
 final class AuthFilter implements FilterInterface
 {
