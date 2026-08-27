@@ -11,3 +11,12 @@
 <?php foreach ( $files as $file ) : ?>
 <script defer src="<?php echo asset('public/assets/js/frontend/fences/' . basename($file)); ?>"></script>
 <?php endforeach; ?>
+<?php
+// Per-fence calculation modules (fences/calc/*.js) attach onto the hook-bag objects above
+// (calc/slat_fence.js extends SlatFence), so they must load AFTER the whole main glob —
+// appending a second pass keeps them behind z_fence.js too.
+$calcFiles = glob(dirname(__DIR__, 4) . '/public/assets/js/frontend/fences/calc/*.js') ?: [];
+?>
+<?php foreach ( $calcFiles as $file ) : ?>
+<script defer src="<?php echo asset('public/assets/js/frontend/fences/calc/' . basename($file)); ?>"></script>
+<?php endforeach; ?>

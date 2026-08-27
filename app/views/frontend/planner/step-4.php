@@ -1,4 +1,4 @@
-<div class="fc-section-step fc-step-4 mb-5" data-tab="2" style="display: none;">
+<div class="fc-section-step fc-step-4" data-tab="2" style="display: none;">
     <div class="fencing-section fencing-section--no-padding fencing-section--has-border br-tl-0">
         
         <div class="fencing-section__top">

@@ -1067,51 +1067,6 @@ SlatFence = {
 
     //----------------------------------------------------------------------------------
 
-    /**
-     * Number of packs to order: ceil(requiredPieces / itemsPerPack). Minimum 1 when requiredPieces > 0.
-     * Use for any pack-sized material (spacers, future stock with pack_qty in fc_data).
-     */
-    ceilPackQuantity: function(requiredPieces, itemsPerPack) {
-        var r = typeof requiredPieces === 'number' ? requiredPieces : parseFloat(requiredPieces);
-        if (!Number.isFinite(r) || r <= 0) return 0;
-        var n = parseInt(itemsPerPack, 10);
-        if (!Number.isFinite(n) || n <= 0) {
-            n = 50;
-        }
-        return Math.max(1, Math.ceil(r / n));
-    },
-
-    /**
-     * Items per pack for a catalog slug (e.g. slat_spacer+20) from fc_data[fence].pack_qty, then settings.pack_qty_defaults.
-     */
-    getPackItemsForSlug: function(fenceSlug, materialSlug) {
-        var raw = String(fenceSlug || '');
-        var canon =
-            typeof normalizeFenceStyleSlug === 'function' ? normalizeFenceStyleSlug(raw) : raw;
-        if (canon === 'slat_fence') {
-            canon = 'slat';
-        }
-        var map =
-            typeof fc_data !== 'undefined' && fc_data[canon] && fc_data[canon].pack_qty
-                ? fc_data[canon].pack_qty
-                : null;
-        if (map && materialSlug != null && map[materialSlug] != null && map[materialSlug] !== '') {
-            var fromData = parseInt(map[materialSlug], 10);
-            if (Number.isFinite(fromData) && fromData > 0) {
-                return fromData;
-            }
-        }
-        var defMap = this.settings.pack_qty_defaults || {};
-        if (materialSlug != null && defMap[materialSlug] != null) {
-            var d = parseInt(defMap[materialSlug], 10);
-            if (Number.isFinite(d) && d > 0) {
-                return d;
-            }
-        }
-        return 50;
-    },
-
-    //----------------------------------------------------------------------------------
 
     /**
      * Slat count for one section, read only from Step 2 storage (`custom_fence-{i}`).
@@ -1121,10 +1076,16 @@ SlatFence = {
      * tab is currently rendered. Pooling needs every section to see the same inputs no matter which
      * tab is being rebuilt, so this never touches the DOM.
      *
-     * @return {{style: string, gapKey: (number|null), slats: number}}
+     * Besides the slat count it also carries the section's FSQ metre quantities so
+     * pooledSlatMetreQtyForSection() can round them once per job: `slatM` (cut slat metres —
+     * fence and raked panels only; gate blades are a piece-count SKU) and `sfsM` (side-frame
+     * metres over the SFS-framed panels, cut at panel height − sfs_length_deduction_mm).
+     *
+     * @return {{style: string, gapKey: (number|null), sizeKey: (number|null), slats: number,
+     *           slatM: number, sfsM: number}}
      */
     slatSectionSlatCountFromStorage: function(sectionIndex) {
-        var out = { style: '', gapKey: null, slats: 0 };
+        var out = { style: '', gapKey: null, sizeKey: null, slats: 0, slatM: 0, sfsM: 0 };
 
         var tabRow0 = null;
         try {
@@ -1148,7 +1109,7 @@ SlatFence = {
         };
 
         var gapRaw = read('slat_gap');
-        var gapPitch = this.gapSlugToPitchMm(gapRaw);
+        var gapPitch = this.gapSlugToPitchMm(gapRaw, style);
         if (!Number.isFinite(gapPitch)) return out;
         out.gapKey = this.gapMmToSpacerCatalogKey(parseFloat(gapRaw));
 
@@ -1156,6 +1117,7 @@ SlatFence = {
         if (!Number.isFinite(sizePitch) || sizePitch <= 0) {
             sizePitch = 65.3;
         }
+        out.sizeKey = sizePitch >= 80 ? 90 : 65;
 
         var heightMm = parseInt(String(read('max_fence_height')).replace(/,/g, ''), 10);
         if (!Number.isFinite(heightMm) || heightMm <= 0) return out;
@@ -1163,9 +1125,35 @@ SlatFence = {
         var rows = this.countSlatPanelRowsFromMaxHeightMm(heightMm, sizePitch, gapPitch);
         if (rows < 1) return out;
 
+        var slatDeduct = this.getSlatLengthDeductionMm(style);
+        var sfsLenMm = Math.max(
+            0,
+            this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch) -
+                this.getSfsLengthDeductionMm(style)
+        );
+        var cutM = 0;
+        var addCutM = function(count, len) {
+            count = parseInt(count, 10) || 0;
+            len = parseFloat(len) || 0;
+            if (count > 0 && len > slatDeduct) {
+                cutM += (count * (len - slatDeduct) * rows) / 1000;
+            }
+        };
+
         var panels = 0;
         if (style === 'slat_fence_infill') {
             panels = parseInt(String(read('panel_count')), 10) || 0;
+            if (panels >= 1) {
+                var openW = NaN;
+                if (typeof fcReadCalculateValueForStyle === 'function') {
+                    openW = parseInt(
+                        String(fcReadCalculateValueForStyle(tabRow0, style)).replace(/,/g, ''),
+                        10
+                    );
+                }
+                addCutM(panels, openW);
+                out.sfsM = (2 * panels * sfsLenMm) / 1000;
+            }
         } else {
             // calculate_fences() is pure and storage-first for widths; gate leaves are counted at the
             // fence row count (per-section gate height lives in the modal DOM, not storage).
@@ -1175,84 +1163,30 @@ SlatFence = {
                     calc = calculate_fences({ tab: sectionIndex, item: style });
                 }
             } catch (e2) {}
-            panels = this.slatPanelCountFromCalc(calc);
-            if (calc?.left_raked?.width) panels += 1;
-            if (calc?.right_raked?.width) panels += 1;
+            var framedPanels = this.slatPanelCountFromCalc(calc);
+            panels = framedPanels;
+            addCutM(calc?.long_panel?.count, calc?.long_panel?.length);
+            addCutM(calc?.short_panel?.count, calc?.short_panel?.length);
+            if (calc?.left_raked?.width) {
+                panels += 1;
+                addCutM(1, calc.left_raked.width);
+            }
+            if (calc?.right_raked?.width) {
+                panels += 1;
+                addCutM(1, calc.right_raked.width);
+            }
             if (calc?.gate?.count && calc?.gate?.width) {
                 panels += Math.max(1, parseInt(calc.gate.count, 10) || 1);
             }
+            out.sfsM = (2 * framedPanels * sfsLenMm) / 1000;
         }
         if (panels < 1) return out;
 
+        out.slatM = cutM;
         out.slats = rows * panels;
         return out;
     },
 
-    /**
-     * Split `total` packs across sections in proportion to their slat counts (largest remainder), so
-     * the per-section lines still add up to exactly `total`. Ties go to the lower section index, so a
-     * job needing 1 pack puts it on the first section.
-     */
-    allocatePooledPacks: function(weights, total) {
-        var out = [];
-        var i;
-        for (i = 0; i < weights.length; i++) out.push(0);
-
-        var sum = 0;
-        for (i = 0; i < weights.length; i++) sum += weights[i];
-        if (!(total > 0) || !(sum > 0)) return out;
-
-        var remainders = [];
-        var used = 0;
-        for (i = 0; i < weights.length; i++) {
-            var exact = (total * weights[i]) / sum;
-            var base = Math.floor(exact);
-            out[i] = base;
-            used += base;
-            remainders.push({ i: i, frac: exact - base });
-        }
-        remainders.sort(function(a, b) {
-            return b.frac - a.frac || a.i - b.i;
-        });
-        for (var k = 0; used < total && k < remainders.length; k++, used++) {
-            out[remainders[k].i] += 1;
-        }
-        return out;
-    },
-
-    /**
-     * Spacers are a job-level consumable, so the CEILING is taken once over the slat count pooled
-     * across every section sharing this fence style and spacer size — not per section, which never
-     * ordered fewer than one pack per section (4 sections × 8 slats ordered 4 packs, not 1).
-     *
-     * Returns this section's share of the pooled packs, or null when the pool cannot be resolved
-     * (single-section planner, storage not written yet) so the caller can fall back to per-section.
-     */
-    pooledSlatSpacerPacksForSection: function(sectionIndex, styleNorm, gapKey, itemsPerPack) {
-        if (!Number.isFinite(sectionIndex) || typeof fcGetPersistedFenceSectionCount !== 'function') {
-            return null;
-        }
-        var count = fcGetPersistedFenceSectionCount();
-        if (!Number.isFinite(count) || count < 1) return null;
-
-        var indexes = [];
-        var weights = [];
-        for (var i = 0; i < count; i++) {
-            var s = this.slatSectionSlatCountFromStorage(i);
-            if (s.style !== styleNorm || s.gapKey !== gapKey || s.slats <= 0) continue;
-            indexes.push(i);
-            weights.push(s.slats);
-        }
-
-        var pos = indexes.indexOf(sectionIndex);
-        if (pos < 0) return null;
-
-        var totalSlats = 0;
-        for (var w = 0; w < weights.length; w++) totalSlats += weights[w];
-
-        var totalPacks = this.ceilPackQuantity(totalSlats, itemsPerPack);
-        return this.allocatePooledPacks(weights, totalPacks)[pos];
-    },
 
     //----------------------------------------------------------------------------------
 
@@ -1396,29 +1330,6 @@ SlatFence = {
         return Number.isFinite(n) ? n : 3;
     },
 
-    /** Panel / bottom-gap math (Slat Planner V6): 3 mm top + 3 mm bottom in panel height. */
-    getSlatPanelEndAllowanceMm: function() {
-        return 6;
-    },
-
-    /**
-     * Gap pitch mm for panel row/height formulas (Slat Planner V6 M6 in F80/F81).
-     * Planner slugs 9 / 20 map to legacy option nums 9.3 / 21.1 used in pitch math.
-     */
-    gapSlugToPitchMm: function(slug) {
-        if (slug === undefined || slug === null || String(slug).trim() === '') {
-            return null;
-        }
-        var raw = String(slug).trim();
-        if (raw === '9') {
-            return 9.3;
-        }
-        if (raw === '20') {
-            return 21.1;
-        }
-        var n = parseFloat(raw);
-        return Number.isFinite(n) && n >= 0 ? n : null;
-    },
 
     /** Raw slat gap slug from Step 2 or segment storage (for pitch math). */
     getSlatGapSlugRaw: function(custom_fence, info) {
@@ -1483,9 +1394,9 @@ SlatFence = {
         } catch (eInfo) {}
         var sizePitch = this.getSlatSizePitchMm(fenceInfo, tabRow0, slugNorm);
         var gapSlugRaw = this.getSlatGapSlugRaw(fenceInfo, infoMeta);
-        var gapPitch = this.gapSlugToPitchMm(gapSlugRaw);
+        var gapPitch = this.gapSlugToPitchMm(gapSlugRaw, slugNorm);
         if (!Number.isFinite(gapPitch)) {
-            gapPitch = this.gapSlugToPitchMm(String(this.getGapMm(fenceInfo, infoMeta)));
+            gapPitch = this.gapSlugToPitchMm(String(this.getGapMm(fenceInfo, infoMeta)), slugNorm);
         }
         if (!Number.isFinite(gapPitch)) {
             gapPitch = 9.3;
@@ -1496,61 +1407,6 @@ SlatFence = {
         };
     },
 
-    /**
-     * Slat row count for panel height (F81).
-     * floor((MaxHeight − (6 + sizePitch)) / (sizePitch + gapPitch)) + 1
-     */
-    countSlatPanelRowsFromMaxHeightMm: function(maxHMm, sizePitch, gapPitch) {
-        var h = Number(maxHMm);
-        var s = Number(sizePitch);
-        var g = Number(gapPitch);
-        var pitch = s + g;
-        var clearance = this.getSlatPanelEndAllowanceMm() + s;
-        if (
-            !Number.isFinite(h) ||
-            h <= 0 ||
-            !Number.isFinite(s) ||
-            !Number.isFinite(g) ||
-            g < 0 ||
-            !Number.isFinite(pitch) ||
-            pitch <= 0
-        ) {
-            return 0;
-        }
-        var rows = Math.floor((h - clearance) / pitch) + 1;
-        return rows < 1 ? 0 : rows;
-    },
-
-    /**
-     * Panel height (mm) from max fence height (F80).
-     * (rows × (sizePitch + gapPitch)) − gapPitch + 6
-     */
-    computeSlatPanelHeightMmFromMaxHeight: function(maxHMm, sizePitch, gapPitch) {
-        var rows = this.countSlatPanelRowsFromMaxHeightMm(maxHMm, sizePitch, gapPitch);
-        if (rows < 1) {
-            return 0;
-        }
-        var s = Number(sizePitch);
-        var g = Number(gapPitch);
-        var pitch = s + g;
-        if (!Number.isFinite(pitch) || pitch <= 0) {
-            return 0;
-        }
-        return Math.round(rows * pitch - g + this.getSlatPanelEndAllowanceMm());
-    },
-
-    /** Bottom gap (mm) = Max Height − Panel Height (F77 − F80). */
-    computeSlatBottomGapMm: function(maxHMm, sizePitch, gapPitch) {
-        var maxH = Math.round(Number(maxHMm));
-        if (!Number.isFinite(maxH) || maxH <= 0) {
-            return 0;
-        }
-        var panel = this.computeSlatPanelHeightMmFromMaxHeight(maxH, sizePitch, gapPitch);
-        if (!Number.isFinite(panel) || panel <= 0) {
-            return 0;
-        }
-        return Math.max(0, maxH - panel);
-    },
 
     /**
      * @deprecated Use resolveSlatPanelPitchInputs — kept for callers expecting gap/size ints.
@@ -4774,120 +4630,6 @@ SlatFence = {
         return NaN;
     },
 
-    /**
-     * Panel qty from overall span: midPosts = floor(span / maxSpan), panels = midPosts + 1 (Slat Planner V6 F82 + 1).
-     * `maxPanelSpanMm` from `getMaxPanelSpanMmFromInfo()` / `4-SLAT.php` `max_panel_span_mm`.
-     */
-    countEvenPanelsFromOverallSpan: function(spanMm, maxPanelSpanMm, postWidthMm, info, removedPostsMm) {
-        var span = parseInt(spanMm, 10);
-        var maxSpan = parseInt(maxPanelSpanMm, 10);
-        if (!Number.isFinite(maxSpan) || maxSpan <= 0) {
-            maxSpan = this.getMaxPanelSpanMmFromInfo(info);
-        }
-        if (!Number.isFinite(span) || span <= 0) {
-            return 1;
-        }
-        if (!Number.isFinite(maxSpan) || maxSpan <= 0) {
-            return 1;
-        }
-        var midPosts = Math.floor(span / maxSpan);
-        var count = Math.max(1, midPosts + 1);
-
-        // A bay can still land over `max_panel_width_mm` once interior posts are removed
-        // from the span — add posts until every even panel fits the widest stock panel.
-        var maxWidth = this.getMaxPanelWidthMmFromInfo(info);
-        var postW = parseInt(postWidthMm, 10);
-        if (!Number.isFinite(postW) || postW <= 0) {
-            postW = 50;
-        }
-        if (Number.isFinite(maxWidth) && maxWidth > 0) {
-            while (
-                count < 500 &&
-                this.computeSlatEvenPanelWidthMm(span, count, postW, removedPostsMm) > maxWidth
-            ) {
-                count += 1;
-            }
-        }
-
-        return count;
-    },
-
-    /**
-     * End posts removed via left/right "no-post" (mm). Same as `FENCE.minus_posts()`.
-     */
-    getRemovedEndPostsMm: function(custom_fence) {
-        if (typeof FENCE !== 'undefined' && typeof FENCE.minus_posts === 'function') {
-            var removed = parseInt(FENCE.minus_posts(custom_fence || []), 10);
-            return (Number.isFinite(removed) && removed > 0) ? removed : 0;
-        }
-        return 0;
-    },
-
-    /**
-     * Total post width (mm) for N panels: (N+1)×post minus removed end posts.
-     */
-    computeSlatTotalPostsMm: function(panelCount, postWidthMm, removedPostsMm) {
-        var n = parseInt(panelCount, 10);
-        var postW = parseInt(postWidthMm, 10);
-        var removed = parseInt(removedPostsMm, 10);
-        if (!Number.isFinite(n) || n <= 0) {
-            return 0;
-        }
-        if (!Number.isFinite(postW) || postW <= 0) {
-            postW = 50;
-        }
-        if (!Number.isFinite(removed) || removed < 0) {
-            removed = 0;
-        }
-        return Math.max(0, (n + 1) * postW - removed);
-    },
-
-    /**
-     * Total panel material (mm) inside a clear span: only the N−1 interior posts.
-     *
-     * `spanMm` comes from `getSlatInfillSpanMm()`, which has already applied the
-     * "Width Dimension From" offset (−1×post center-line, −2×post outside) and so
-     * excludes both end posts. Deducting `(N+1)×post` here as well would remove the
-     * end posts twice. `removedPostsMm` is added back because that offset assumed
-     * both end posts were present.
-     */
-    computeSlatPanelSpanMm: function(spanMm, panelCount, postWidthMm, removedPostsMm) {
-        var span = parseInt(spanMm, 10);
-        var n = parseInt(panelCount, 10);
-        var postW = parseInt(postWidthMm, 10);
-        var removed = parseInt(removedPostsMm, 10);
-        if (!Number.isFinite(span) || !Number.isFinite(n) || n <= 0) {
-            return 0;
-        }
-        if (!Number.isFinite(postW) || postW <= 0) {
-            postW = 50;
-        }
-        if (!Number.isFinite(removed) || removed < 0) {
-            removed = 0;
-        }
-        return Math.max(0, span + removed - (n - 1) * postW);
-    },
-
-    /**
-     * Even panel width (mm): ceil(panelSpan / N) where panelSpan excludes interior posts only.
-     * `removedPostsMm` from `getRemovedEndPostsMm()` when left/right end is no-post.
-     */
-    computeSlatEvenPanelWidthMm: function(overallMm, panelCount, postWidthMm, removedPostsMm) {
-        var ov = parseInt(overallMm, 10);
-        var n = parseInt(panelCount, 10);
-        var postW = parseInt(postWidthMm, 10);
-        if (!Number.isFinite(ov) || ov <= 0 || !Number.isFinite(n) || n <= 0) {
-            return 0;
-        }
-        if (!Number.isFinite(postW) || postW <= 0) {
-            postW = 50;
-        }
-        var avail = this.computeSlatPanelSpanMm(ov, n, postW, removedPostsMm);
-        if (avail <= 0) {
-            return 0;
-        }
-        return Math.ceil(avail / n);
-    },
 
     /**
      * Raw Step 2 overall (measurement box) before width-dimension offset — used for Slat panel layout.
@@ -4974,7 +4716,8 @@ SlatFence = {
      * - GROUT: F423+F344 (cement-in fence + gate cement)
      * - XPL-EP: F239+F523 → F239 = 4 end caps per panel (2 side frames × 2 ends), ordered as
      *   ceil(4 × panelCount / pack_qty[sfs+end_caps]); pack is 2PK, so 2 packs per panel
-     * - XPL-6000-SF: F238+F524 → F238 ≈ 2×panelCount×SFS length(mm)/1000 (single-segment proxy)
+     * - XPL-6000-SF: F238+F524 = 2×panelCount×(panel height − sfs_length_deduction_mm)/1000
+     *   metres, rounded once on the job total (pooled via pooledSlatMetreQtyForSection)
      */
     applySlatFormulaFixings: function(array, context, calc, addOrInc) {
         var fenceKind = context?.tabInfo?.[0]?.fence;
@@ -5053,14 +4796,41 @@ SlatFence = {
         }
         var panelCount = panelCountFence + panelCountGate;
         if (panelCount > 0) {
-            var railM = 0;
-            if (panelCountFence > 0) {
-                railM += (2 * panelCountFence * fenceHm) / 1000;
+            // FSQ F238/F524 cut side frames at (panel height − 6), not the entered fence height,
+            // and round the metres ONCE on the job total — so fence rails pool across sections
+            // (same largest-remainder split as spacer packs). Gate frames keep the per-section
+            // ceil: the old form never framed gates in SFS, so there is no legacy total to match.
+            var pitchForSfs = this.resolveSlatPanelPitchInputs(context, fenceKind);
+            var sfsLenMm = Math.max(
+                0,
+                this.computeSlatPanelHeightMmFromMaxHeight(
+                    fenceHm,
+                    pitchForSfs.sizePitch,
+                    pitchForSfs.gapPitch
+                ) - this.getSfsLengthDeductionMm(fenceKind)
+            );
+            var railFenceQty = 0;
+            if (panelCountFence > 0 && sfsLenMm > 0) {
+                var railFenceM = (2 * panelCountFence * sfsLenMm) / 1000;
+                var styleNormForRail =
+                    typeof normalizeFenceStyleSlug === 'function'
+                        ? normalizeFenceStyleSlug(fenceKind)
+                        : fenceKind;
+                // 0 dp: the old form's side-frame subtotals (F238, F524) already display as
+                // whole metres, so rounding again at the cart line changes nothing here — unlike
+                // the cut-slat line, whose subtotal carries a decimal.
+                var pooledRailQty = this.pooledSlatMetreQtyForSection(
+                    context?.tabIndex,
+                    styleNormForRail,
+                    'sfsM',
+                    null,
+                    0
+                );
+                railFenceQty = pooledRailQty === null ? Math.round(railFenceM) : pooledRailQty;
             }
-            if (panelCountGate > 0) {
-                railM += (2 * panelCountGate * gateHm) / 1000;
-            }
-            var railQty = railM > 0 ? Math.max(1, Math.ceil(railM)) : 0;
+            var railGateQty =
+                panelCountGate > 0 ? Math.ceil((2 * panelCountGate * gateHm) / 1000) : 0;
+            var railQty = railFenceQty + railGateQty;
 
             // End caps close both ends of the two side frames on every panel — 4 pieces per panel —
             // ordered in packs (XPL-EP-*-2PK = 2 pieces). Same rule for Slat and Slat Infill; the old
@@ -5265,11 +5035,58 @@ SlatFence = {
             }
         };
 
+        var styleNorm =
+            typeof normalizeFenceStyleSlug === 'function'
+                ? normalizeFenceStyleSlug(fenceSlug)
+                : fenceSlug;
+
         // Fence infill slats vs gate leaf: only 65mm has a distinct gate-blade SKU in catalog (slat_gate+blade_65).
-        var slatQtyFence =
+        var slatPiecesFence =
             rowCountFence > 0 && panelCountFence > 0 ? rowCountFence * panelCountFence : 0;
         var slatQtyGateLeaf =
             rowCountGate > 0 && panelCountGate > 0 ? rowCountGate * panelCountGate : 0;
+
+        // FSQ sells fence slats by the METRE of cut slat, not by piece: F214/F5 sum
+        // (panel width − slat_length_deduction_mm) × rows over the panels, and the colour line
+        // (F575) rounds the job total — so the metres pool across sections like spacer packs do.
+        // The subtotal is rounded to the old form's display precision first (see
+        // slat_metre_rounding_dp): F575 re-reads F214's already-rounded text, so 18.472 m is
+        // 18.5 by the time the cart line rounds it, and ships 19 rather than 18.
+        // Gate leaves stay a piece count; their blades are a separate SKU below.
+        var slatDeduct = this.getSlatLengthDeductionMm(fenceSlug);
+        var slatMetreDp = this.getSlatMetreRoundingDp(fenceSlug);
+        var slatMSection = 0;
+        if (rowCountFence > 0) {
+            var addCutM = function(count, len) {
+                count = parseInt(count, 10) || 0;
+                len = parseFloat(len) || 0;
+                if (count > 0 && len > slatDeduct) {
+                    slatMSection += (count * (len - slatDeduct) * rowCountFence) / 1000;
+                }
+            };
+            if (isSlatInfillOpenings) {
+                addCutM(panelCountFence, calc?.long_panel?.length);
+            } else {
+                addCutM(calc?.long_panel?.count, calc?.long_panel?.length);
+                addCutM(calc?.short_panel?.count, calc?.short_panel?.length);
+                if (calc?.left_raked?.width) addCutM(1, calc.left_raked.width);
+                if (calc?.right_raked?.width) addCutM(1, calc.right_raked.width);
+            }
+        }
+        var slatQtyFence = 0;
+        if (slatMSection > 0) {
+            var pooledSlatQty = this.pooledSlatMetreQtyForSection(
+                context?.tabIndex,
+                styleNorm,
+                'slatM',
+                sizeKey,
+                slatMetreDp
+            );
+            slatQtyFence =
+                pooledSlatQty === null
+                    ? Math.round(this.applySlatMetreRoundingDp(slatMSection, slatMetreDp))
+                    : pooledSlatQty;
+        }
         if (slatQtyFence > 0) {
             setQty('slat+' + sizeKey, slatQtyFence);
         }
@@ -5281,18 +5098,15 @@ SlatFence = {
             }
         }
 
-        // One spacer per slat (gate-leaf blades included), ordered in packs:
-        // packs = ceil(slat count / spacers per pack). Pooled across sections — see
-        // pooledSlatSpacerPacksForSection() — so the CEILING is taken once for the whole job.
+        // FSQ consumes spacers_per_slat (2) spacers per slat (F235/F522; gate-leaf blades
+        // included), ordered in packs: packs = ceil(slats × per-slat / spacers per pack).
+        // Pooled across sections — see pooledSlatSpacerPacksForSection() — so the CEILING is
+        // taken once for the whole job.
         var spacerSlug = 'slat_spacer+' + gapKey;
         var fenceSlugForPack = context?.tabInfo?.[0]?.fence || 'slat';
         var itemsPerPack = this.getPackItemsForSlug(fenceSlugForPack, spacerSlug);
         var spacerPacks = 0;
         if (gapKey > 0) {
-            var styleNorm =
-                typeof normalizeFenceStyleSlug === 'function'
-                    ? normalizeFenceStyleSlug(fenceSlug)
-                    : fenceSlug;
             var pooledPacks = this.pooledSlatSpacerPacksForSection(
                 context?.tabIndex,
                 styleNorm,
@@ -5301,7 +5115,10 @@ SlatFence = {
             );
             spacerPacks =
                 pooledPacks === null
-                    ? this.ceilPackQuantity(slatQtyFence + slatQtyGateLeaf, itemsPerPack)
+                    ? this.ceilPackQuantity(
+                          (slatPiecesFence + slatQtyGateLeaf) * this.getSpacersPerSlat(fenceSlug),
+                          itemsPerPack
+                      )
                     : pooledPacks;
         }
         if (spacerPacks > 0) {
@@ -5429,4 +5246,42 @@ SlatFence = {
 
     //----------------------------------------------------------------------------------
 
-}
+};
+
+// The calculation half of this module lives in fences/calc/slat_fence.js and is attached onto
+// SlatFence after all fences/*.js load. If that file goes missing the planner would fail
+// SILENTLY — HELPER.call_fence_func swallows exceptions and unknown cart slugs are dropped
+// without warning — so fail loudly here instead. The check must run on DOMContentLoaded, not
+// setTimeout(0): a macrotask queued from this (deferred) script can run BEFORE a later deferred
+// script executes, which made the guard report a false failure on every load. The spec runs all
+// deferred scripts before DOMContentLoaded, so that is the earliest safe point.
+(function () {
+    var checkCalcModule = function () {
+        var required = [
+            'ceilPackQuantity', 'getPackItemsForSlug', 'getSlatConfigNumber',
+            'getSlatGapPitchConfigMm', 'getSlatLengthDeductionMm', 'getSfsLengthDeductionMm',
+            'getSpacersPerSlat', 'getSlatMetreRoundingDp', 'applySlatMetreRoundingDp',
+            'allocatePooledPacks', 'pooledSlatSpacerPacksForSection', 'pooledSlatMetreQtyForSection',
+            'getSlatPanelEndAllowanceMm', 'gapSlugToPitchMm', 'countSlatPanelRowsFromMaxHeightMm',
+            'computeSlatPanelHeightMmFromMaxHeight', 'computeSlatBottomGapMm',
+            'countEvenPanelsFromOverallSpan', 'getRemovedEndPostsMm', 'computeSlatTotalPostsMm',
+            'computeSlatPanelSpanMm', 'computeSlatEvenPanelWidthMm'
+        ];
+        var missing = required.filter(function (name) {
+            return typeof SlatFence[name] !== 'function';
+        });
+        if (missing.length) {
+            console.error(
+                'SlatFence calc module not loaded (public/assets/js/frontend/fences/calc/slat_fence.js) — ' +
+                'slat quantities WILL be wrong. Missing: ' + missing.join(', ')
+            );
+        }
+    };
+    // Deferred scripts run while readyState is already 'interactive' — DOMContentLoaded has NOT
+    // fired yet at that point — so only 'complete' means it is safe to check immediately.
+    if (document.readyState === 'complete') {
+        checkCalcModule();
+    } else {
+        document.addEventListener('DOMContentLoaded', checkCalcModule);
+    }
+}());

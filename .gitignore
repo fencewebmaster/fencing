@@ -14,6 +14,7 @@ writable/products*
 writable/groups-permissions/*.json
 writable/theme.json
 writable/fences/*.php
+tests
 
 # Generated storage (keep directory placeholders)
 writable/storage/cache/**/*.json

@@ -3256,6 +3256,111 @@ a.fc-tab-active {
     }
 }
 
+/* Submit loader on mobile (project-plan push_order checklist, project-plan/modals.php).
+   The default panel floats the spinner beside the list via the .fc-row/.fc-col-auto grid,
+   which collapses under ~768px: the spinner detaches to the corner, and because each line is
+   `<i> TEXT` inline, a wrapped line slides underneath its own checkmark. Stack the two
+   columns, scale the spinner and type down, and give each line its own icon column so wraps
+   stay aligned. Scoped to .fc-loader-panel--default so the planner's own loader (Bootstrap
+   .row/.col-auto, no panel wrapper) is untouched. */
+@media (max-width: 768px) {
+    .fc-loader-container {
+        padding: 1.5rem 1.25rem;
+        box-sizing: border-box;
+    }
+
+    .fc-loader-panel--default .fc-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .fc-loader-panel--default .fc-col-auto {
+        float: none;
+        padding: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .fc-loader-panel--default .fc-loader-gif {
+        width: 56px;
+        height: 56px;
+    }
+
+    .fc-loader-panel--default .fc-loader-gif::before,
+    .fc-loader-panel--default .fc-loader-gif::after {
+        border-width: 4px;
+    }
+
+    .fc-loader-panel--default .fc-loader-gif::after {
+        inset: 8px;
+    }
+
+    .fc-loader-panel--default ul {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-width: 20rem;
+    }
+
+    .fc-loader-panel--default ul li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 1.4em;
+        letter-spacing: 1px;
+        line-height: 1.2;
+    }
+
+    .fc-loader-panel--default ul li + li {
+        margin-top: 0.55rem;
+    }
+
+    /* gap replaces the utility margin, and the tick is nudged onto the cap-height of the
+       first line rather than its full line-box. */
+    .fc-loader-panel--default ul li i {
+        flex: 0 0 auto;
+        margin-right: 0 !important;
+        margin-top: 0.12em;
+    }
+
+    /* Download panel: 24rem is wider than a 375px viewport once padding is added. */
+    .fc-loader-panel--download-plans {
+        max-width: 100%;
+        gap: 1rem;
+    }
+
+    .fc-loader-panel--download-plans .fc-loader-gif {
+        width: 56px;
+        height: 56px;
+    }
+
+    .fc-loader-download-message {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .fc-loader-panel--default ul li {
+        font-size: 1.2em;
+        letter-spacing: 0.5px;
+    }
+
+    .fc-loader-panel--default .fc-loader-gif,
+    .fc-loader-panel--download-plans .fc-loader-gif {
+        width: 48px;
+        height: 48px;
+    }
+
+    .fc-loader-panel--default .fc-loader-gif::after {
+        inset: 7px;
+    }
+}
+
+
 /* Table */
 .fc-table {
     border-collapse: collapse;
@@ -6639,6 +6744,17 @@ thead.fc-border th:last-child {
 }
 
 /* Display Result */
+/* Step 3 paints its panels, posts and centre-point markers with their own z-indexes (up to 9
+   on .fc-center-point:before). The "Calculating …" overlay sat at z-index 1 — the same level as
+   .panel-post, which comes later in the DOM and therefore won: the posts showed through the
+   spinner and the translucent backdrop never dimmed the preview, at every viewport width.
+   Isolating step 3's content keeps those panel z-indexes from competing outside the section, so
+   the overlay can sit above all of them while the fixed .fc-sticky tab bar (z-index 10 in the
+   root stacking context) still paints over the section as before. */
+[data-section="3"] .fencing-section__top {
+    isolation: isolate;
+}
+
 .fencing-calculating {
     display: none;
     text-align: center;
@@ -6648,7 +6764,7 @@ thead.fc-border th:last-child {
     top: 0;
     right: 0;
     left: 0;
-    z-index: 1;
+    z-index: 10;
 }
 
 .fc-calculating-loader {
