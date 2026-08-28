@@ -189,6 +189,7 @@ final class IntegrationsSettings
         $api = is_array($config['apikey'] ?? null) ? $config['apikey'] : [];
         $webhooks = is_array($config['webhook_url'] ?? null) ? $config['webhook_url'] : [];
         $sitesConfig = is_array($config['sites'] ?? null) ? $config['sites'] : [];
+        $customCode = is_array($config['custom_code'] ?? null) ? $config['custom_code'] : [];
         $sites = [];
 
         foreach (self::siteKeys($config) as $key) {
@@ -227,13 +228,14 @@ final class IntegrationsSettings
 
         return [
             'googleMapsApiKey' => (string) ($api['google_map'] ?? ''),
-            'chatraApiKey' => (string) ($api['chatra'] ?? ''),
             'cloudflareApiToken' => (string) ($api['cloudflare_api_token'] ?? ''),
             'webhookUrl' => (string) ($webhooks['zap'] ?? ''),
             'webhookTestUrl' => (string) ($webhooks['test_zap'] ?? ''),
             'webhookMode' => $webhookMode,
             'webhookPrePlannerEnabled' => $webhookPrePlannerEnabled,
             'webhookSameDayDedup' => $webhookSameDayDedup,
+            'headerCode' => (string) ($customCode['header'] ?? ''),
+            'footerCode' => (string) ($customCode['footer'] ?? ''),
             'sites' => $sites,
         ];
     }
@@ -287,22 +289,45 @@ final class IntegrationsSettings
     }
 
     /**
+     * Multi-line sibling of cleanValue() for the header/footer code blocks.
+     *
+     * cleanValue() rejects any value containing a newline, which is precisely what a
+     * script snippet is made of, so custom code needs its own cleaner. NUL bytes are
+     * still refused - one would truncate the string when it is written into config.php.
+     * Line endings are normalised to LF so the value round-trips through var_export()
+     * identically whichever platform saved it.
+     */
+    public static function cleanCode($value, int $maxLength = 20000): ?string
+    {
+        if ($value === null) {
+            return '';
+        }
+        if (!is_scalar($value)) {
+            return null;
+        }
+        $value = trim(str_replace(["\r\n", "\r"], "\n", (string) $value));
+        if (str_contains($value, "\0")) {
+            return null;
+        }
+
+        return mb_strlen($value) <= $maxLength ? $value : null;
+    }
+
+    /**
      * @param array<string, mixed> $input
      * @return array{ok:bool,integrations?:array<string,mixed>,error?:string}
      */
     public static function normalize(array $input): array
     {
         $google = self::cleanValue($input['googleMapsApiKey'] ?? '', 200);
-        $chatra = self::cleanValue($input['chatraApiKey'] ?? '', 200);
         $cfToken = self::cleanValue($input['cloudflareApiToken'] ?? '', 200);
         $webhook = self::cleanValue($input['webhookUrl'] ?? '', 1000);
         $webhookTest = self::cleanValue($input['webhookTestUrl'] ?? '', 1000);
+        $headerCode = self::cleanCode($input['headerCode'] ?? '');
+        $footerCode = self::cleanCode($input['footerCode'] ?? '');
 
         if ($google === null || ($google !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $google))) {
             return ['ok' => false, 'error' => 'Google Maps API key contains invalid characters.'];
-        }
-        if ($chatra === null || ($chatra !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $chatra))) {
-            return ['ok' => false, 'error' => 'Chatra API key contains invalid characters.'];
         }
         if ($cfToken === null || ($cfToken !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $cfToken))) {
             return ['ok' => false, 'error' => 'Cloudflare API token contains invalid characters.'];
@@ -312,6 +337,13 @@ final class IntegrationsSettings
         }
         if ($webhookTest === null || ($webhookTest !== '' && !preg_match('#^(?:https?://)?[A-Za-z0-9.-]+(?::\d+)?(?:/[^\\s]*)?$#', $webhookTest))) {
             return ['ok' => false, 'error' => 'Test Webhook URL is invalid.'];
+        }
+
+        if ($headerCode === null) {
+            return ['ok' => false, 'error' => 'Header code is invalid or longer than 20,000 characters.'];
+        }
+        if ($footerCode === null) {
+            return ['ok' => false, 'error' => 'Footer code is invalid or longer than 20,000 characters.'];
         }
 
         $webhookModeChoices = self::webhookModeChoices();
@@ -390,13 +422,14 @@ final class IntegrationsSettings
             'ok' => true,
             'integrations' => [
                 'googleMapsApiKey' => $google,
-                'chatraApiKey' => $chatra,
                 'cloudflareApiToken' => (string) $cfToken,
                 'webhookUrl' => $webhook,
                 'webhookTestUrl' => $webhookTest,
                 'webhookMode' => $webhookMode,
                 'webhookPrePlannerEnabled' => $webhookPrePlannerEnabled,
                 'webhookSameDayDedup' => $webhookSameDayDedup,
+                'headerCode' => $headerCode,
+                'footerCode' => $footerCode,
                 'sites' => $sites,
             ],
         ];
@@ -443,15 +476,23 @@ final class IntegrationsSettings
             $config['sites'] = is_array($config['sites'] ?? null) ? $config['sites'] : [];
 
             $config['apikey']['google_map'] = (string) $next['googleMapsApiKey'];
-            $config['apikey']['chatra'] = (string) $next['chatraApiKey'];
             $config['apikey']['cloudflare_api_token'] = (string) $next['cloudflareApiToken'];
-            // Zone IDs are per-site; drop legacy global string under apikey.
-            unset($config['apikey']['cloudflare_zone_id'], $config['apikey']['cloudflare_account_id']);
+            // Zone IDs are per-site; drop legacy global string under apikey. Chatra joined them
+            // when its hardcoded footer script was retired - the widget is now pasted into the
+            // Custom code field with its ID inline, so nothing reads apikey.chatra any more.
+            unset(
+                $config['apikey']['cloudflare_zone_id'],
+                $config['apikey']['cloudflare_account_id'],
+                $config['apikey']['chatra']
+            );
             $config['webhook_url']['zap'] = (string) $next['webhookUrl'];
             $config['webhook_url']['test_zap'] = (string) $next['webhookTestUrl'];
             $config['webhook_url']['mode'] = (string) $next['webhookMode'];
             $config['webhook_url']['pre_planner_enabled'] = (bool) $next['webhookPrePlannerEnabled'];
             $config['webhook_url']['same_day_only'] = (bool) $next['webhookSameDayDedup'];
+            $config['custom_code'] = is_array($config['custom_code'] ?? null) ? $config['custom_code'] : [];
+            $config['custom_code']['header'] = (string) $next['headerCode'];
+            $config['custom_code']['footer'] = (string) $next['footerCode'];
             unset($config['webhook_url']['reset_hours'], $config['webhook_url']['trigger_point']);
             foreach ($next['sites'] as $site) {
                 $key = (string) $site['key'];

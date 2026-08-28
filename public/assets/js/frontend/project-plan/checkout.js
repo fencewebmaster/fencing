@@ -1,6 +1,6 @@
 var _doc = $(document);
 
-/** After AJAX replaces `.your-project-details`, Slick must bind to the new DOM (fc-project-plan-color-slick.js). */
+/** After AJAX replaces `.your-project-details`, Slick must bind to the new DOM (slick/project-plan-color.js). */
 function fcAfterProjectDetailsSectionReloaded() {
     if (typeof window.fcRefreshProjectPlanColorSlick !== 'function') {
         return;
@@ -339,11 +339,11 @@ function fcProjectPlanDownloadBusy($dropdown, isBusy, format) {
         $toggle.prop('disabled', true);
         $icon.data('fcPrevClass', $icon.attr('class'));
         $icon.attr('class', 'fas fa-spinner fa-spin me-sm-1');
-        fcProjectPlanDownloadOverlay(
+        fcProjectPlanDownloadToast(
             true,
             format === 'pdf'
-                ? 'Please wait while we prepare your section PDF for download.'
-                : 'Please wait while we prepare your section image for download.'
+                ? 'Building the PDF for this section.'
+                : 'Building the image for this section.'
         );
         return;
     }
@@ -351,7 +351,7 @@ function fcProjectPlanDownloadBusy($dropdown, isBusy, format) {
     $toggle.prop('disabled', false);
     var prevClass = $icon.data('fcPrevClass');
     $icon.attr('class', prevClass || 'fa-solid fa-download me-sm-1');
-    fcProjectPlanDownloadOverlay(false);
+    fcProjectPlanDownloadToast(false);
 }
 
 function fcProjectPlanDownloadPng(e) {
@@ -662,14 +662,22 @@ function fcCaptureAllProjectPlanSections(indices) {
     }, Promise.resolve([]));
 }
 
-function fcProjectPlanDownloadOverlay(show, message) {
-    var overlay = document.querySelector('.fc-loader-overlay');
-    if (!overlay) {
+/** In-flight downloads. Two can overlap — a section PNG started while the full plan builds. */
+var fcProjectPlanDownloadCount = 0;
+
+/**
+ * Show/hide the bottom-left download progress toast.
+ *
+ * Downloads used to raise `.fc-loader-overlay`, the full-screen submission loader. Capturing
+ * a plan takes seconds and blocks nothing, so it gets a status toast instead of a blackout.
+ */
+function fcProjectPlanDownloadToast(show, message) {
+    var toast = document.querySelector('.fc-download-toast');
+    if (!toast) {
         return;
     }
 
-    var downloadPanel = overlay.querySelector('.fc-loader-panel--download-plans');
-    var messageEl = overlay.querySelector('.fc-loader-download-message');
+    var messageEl = toast.querySelector('.js-fc-download-toast-message');
     var defaultMessage = messageEl ? messageEl.getAttribute('data-default-message') : '';
 
     if (messageEl && !defaultMessage) {
@@ -678,38 +686,37 @@ function fcProjectPlanDownloadOverlay(show, message) {
     }
 
     if (show) {
+        fcProjectPlanDownloadCount += 1;
         if (messageEl) {
             messageEl.textContent = message || defaultMessage;
         }
-        overlay.classList.add('fc-loader-overlay--download-plans');
-        if (downloadPanel) {
-            downloadPanel.hidden = false;
-        }
-        overlay.style.display = '';
+        toast.classList.add('is-visible');
         return;
     }
 
-    overlay.classList.remove('fc-loader-overlay--download-plans');
-    if (downloadPanel) {
-        downloadPanel.hidden = true;
+    // Only the last download finishing takes the toast away.
+    fcProjectPlanDownloadCount = Math.max(0, fcProjectPlanDownloadCount - 1);
+    if (fcProjectPlanDownloadCount > 0) {
+        return;
     }
+
+    toast.classList.remove('is-visible');
     if (messageEl && defaultMessage) {
         messageEl.textContent = defaultMessage;
     }
-    overlay.style.display = 'none';
 }
 
 function fcBtnDownloadFenceBusy($button, isBusy) {
     if (isBusy) {
         $button.find('i').removeAttr('class').addClass('fas fa-spinner fa-spin');
         $button.attr('disabled', true).find('span').html('Preparing Plans...');
-        fcProjectPlanDownloadOverlay(true);
+        fcProjectPlanDownloadToast(true);
         return;
     }
 
     $button.find('i').removeAttr('class').addClass('fa-solid fa-download');
     $button.removeAttr('disabled').find('span').html('Download Plans');
-    fcProjectPlanDownloadOverlay(false);
+    fcProjectPlanDownloadToast(false);
 }
 
 function fcBtnDownloadFence(e) {

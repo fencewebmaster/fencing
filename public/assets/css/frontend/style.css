@@ -255,6 +255,20 @@ html:has(body.fc-planner-page) {
         text-align: center;
     }
 }
+
+/* Step 3 bottom bar on phones: Add / Reset / Delete are hidden (d-none d-md-block on their
+   columns in step-3.php), leaving Next to own the whole row. The icon-collapse rules that
+   used to squeeze all four onto one row went with them. */
+@media (max-width: 767.98px) {
+    /* Next owns the leftover width - keep it on a single line rather than wrapping to two. */
+    .fc-planner-page .fc-step3-bottom [data-tab="1"] .fc-btn-next-step {
+        white-space: nowrap;
+    }
+
+    .fc-planner-page .fc-step3-bottom [data-tab="1"] .fc-btn-next-step > b {
+        white-space: nowrap;
+    }
+}
 .fc-planner-page .btn.btn-sm:not(.btn-close) {
     font-size: 0.75rem;
     padding: 0.3rem 0.5rem !important;
@@ -1017,7 +1031,7 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     transition: opacity 0.12s ease-out;
 }
 
-/* Project plan — Color Options slick (2 mobile / 4 tablet+; fc-project-plan-color-slick.js) */
+/* Project plan — Color Options slick (2 mobile / 4 tablet+; slick/project-plan-color.js) */
 
 /* Tablet / iPad: stack Your Project Details (customer + fence summary vs Color Options) full width; two columns from lg */
 @media (max-width: 991.98px) {
@@ -1985,29 +1999,79 @@ a.fc-tab-active {
     border-color: var(--fc-princeton-orange);
 }
 
+/* The modals' orange circle with the spinning X (.modal .modal-header .btn-close,
+   .fencing-modal-close), scaled down so it does not take over a 22rem toast. Bootstrap's
+   own glyph is dropped — the X is the two pseudo-element bars that do the rotating. */
 .toast-header .btn-close {
-    width: 2.125rem;
-    height: 2.125rem;
+    position: relative;
+    width: 1.75rem;
+    height: 1.75rem;
     padding: 0;
-    margin-left: 0.35rem;
+    margin: -0.15rem -0.15rem -0.15rem 0.5rem;
+    border: 2px solid var(--fc-princeton-orange);
     border-radius: 50%;
     opacity: 1;
-    border: 2px solid var(--fc-a-white-45);
-    background-color: var(--fc-a-black-35);
-    box-shadow: 0 2px 6px var(--fc-a-black-35);
-    transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-    background-size: 0.9em;
+    background-color: var(--fc-princeton-orange);
+    background-image: none;
+    box-shadow: 0 2px 8px var(--fc-a-orange-20);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.toast-header .btn-close::before,
+.toast-header .btn-close::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 2px;
+    margin-top: -1px;
+    margin-left: -6px;
+    border-radius: 1px;
+    background-color: var(--fc-white);
+    transition: background-color 0.2s ease, transform 0.45s ease;
+}
+
+.toast-header .btn-close::before {
+    transform: rotate(45deg);
+}
+
+.toast-header .btn-close::after {
+    transform: rotate(-45deg);
 }
 
 .toast-header .btn-close:hover {
     opacity: 1;
-    background-color: var(--fc-a-black-55);
-    border-color: var(--fc-a-white-85);
+    background-color: var(--fc-pumpkin);
+    border-color: var(--fc-pumpkin);
+    box-shadow: 0 4px 12px var(--fc-a-orange-35);
+}
+
+.toast-header .btn-close:hover::before {
+    transform: rotate(405deg);
+}
+
+.toast-header .btn-close:hover::after {
+    transform: rotate(315deg);
+}
+
+.toast-header .btn-close:focus {
+    outline: none;
+    box-shadow: 0 2px 8px var(--fc-a-orange-20);
 }
 
 .toast-header .btn-close:focus-visible {
-    outline: 2px solid var(--fc-white);
-    outline-offset: 2px;
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 3px;
+    opacity: 1;
+    border-color: var(--fc-princeton-orange);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast-header .btn-close::before,
+    .toast-header .btn-close::after {
+        transition: background-color 0.2s ease;
+    }
 }
 
 .fencing-modal-title {
@@ -2899,32 +2963,6 @@ a.fc-tab-active {
     }
 }
 
-.fc-loader-panel--download-plans {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 1.25rem;
-    max-width: 24rem;
-    padding: 0 1.5rem;
-}
-
-.fc-loader-overlay--download-plans .fc-loader-panel--default {
-    display: none;
-}
-
-.fc-loader-overlay--download-plans .fc-loader-panel--download-plans {
-    display: flex;
-}
-
-.fc-loader-download-message {
-    margin: 0;
-    color: #fff;
-    font-size: 1.125rem;
-    font-weight: 600;
-    line-height: 1.5;
-}
 
 /* Project plan page — skeleton while diagram panels load */
 .fc-project-plan-page .fc-project-plan-skeleton {
@@ -3326,21 +3364,6 @@ a.fc-tab-active {
         margin-right: 0 !important;
         margin-top: 0.12em;
     }
-
-    /* Download panel: 24rem is wider than a 375px viewport once padding is added. */
-    .fc-loader-panel--download-plans {
-        max-width: 100%;
-        gap: 1rem;
-    }
-
-    .fc-loader-panel--download-plans .fc-loader-gif {
-        width: 56px;
-        height: 56px;
-    }
-
-    .fc-loader-download-message {
-        font-size: 1rem;
-    }
 }
 
 @media (max-width: 400px) {
@@ -3349,8 +3372,7 @@ a.fc-tab-active {
         letter-spacing: 0.5px;
     }
 
-    .fc-loader-panel--default .fc-loader-gif,
-    .fc-loader-panel--download-plans .fc-loader-gif {
+    .fc-loader-panel--default .fc-loader-gif {
         width: 48px;
         height: 48px;
     }
@@ -5127,7 +5149,7 @@ thead.fc-border th:last-child {
 }
 
 /**
- * Project-plan submit modal — Colour options Slick (2 mobile / 4 tablet+; fc-color-options-slick.js)
+ * Project-plan submit modal — Colour options Slick (2 mobile / 4 tablet+; slick/color-options.js)
  */
 #submit-modal.fencing-modal--project-plans .fc-form-field.fc-color-options.js-fc-color-options-slick {
     display: block !important;
@@ -7879,7 +7901,7 @@ thead.fc-border th:last-child {
     }
 }
 
-/* Fallback grid before / without Slick (2 / 4 / 6 per fencing-styles-slick.js) */
+/* Fallback grid before / without Slick (2 / 4 / 6 per slick/styles.js) */
 .fc-planner-page .js-fencing-styles-slick:not(.slick-initialized) .fencing-styles-slide {
     float: left;
     width: 50%;
@@ -8189,12 +8211,12 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     }
 }
 
-/* Step 1 — Slick carousel (2 / 4 / 6 per viewport; see fencing-styles-slick.js) */
+/* Step 1 — Slick carousel (2 / 4 / 6 per viewport; see slick/styles.js) */
 .fc-planner-page .js-fencing-styles-slick.slick-initialized .slick-slide > div {
     height: 100%;
 }
 
-/* Floating prev/next — Font Awesome chevrons (custom arrows in fencing-styles-slick.js) */
+/* Floating prev/next — Font Awesome chevrons (custom arrows in slick/styles.js) */
 .fc-planner-page .js-fencing-styles-slick.slick-slider {
     position: relative;
     padding-bottom: 58px;
@@ -8420,7 +8442,7 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     }
 }
 
-/* Step 4 — Colour options Slick (2 / 4 / 6; fc-color-options-slick.js) — mirrors fencing-styles carousel chrome */
+/* Step 4 — Colour options Slick (2 / 4 / 6; slick/color-options.js) — mirrors fencing-styles carousel chrome */
 .fc-planner-page .fc-color-options-slick-area.fc-color-options-slick-pending:not(.fc-color-options-slick-ready) {
     position: relative;
     min-height: 0;
@@ -10555,12 +10577,6 @@ body.fc-cart-image-modal-open {
     margin-top: -12px;
 }
 
-@media (max-width: 600px) {
-    .toast-container, .toast-container .toast {
-        width: 100% !important;
-    }
-}
-
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -10604,4 +10620,1130 @@ input[type="number"] {
 
 .fc-footer-webhook-dot--test {
     color: var(--fc-red);
+}
+
+/* ---------------------------------------------------------------------------
+   fc-modal — shared shell for the planner's dialog modals (Clear All, Overall
+   Length, Incomplete Sections, Load Quote, Popup Alert). Each of these used to
+   ship bare Bootstrap chrome next to the Fence Summary modal's card, so they
+   read as five unrelated dialogs; this is that card, generalised.
+
+   Selectors are compound (.fc-modal .fc-modal__x) on purpose: bootstrap.min.css
+   loads AFTER style.css, so a lone .fc-modal__x class loses to .modal-content
+   and friends on specificity, not on order.
+   --------------------------------------------------------------------------- */
+.fc-modal {
+    font-family: "Poppins", sans-serif;
+}
+
+.fc-modal .fc-modal__dialog {
+    max-width: 480px;
+}
+
+.fc-modal .fc-modal__dialog--sm {
+    max-width: 420px;
+}
+
+.fc-modal .fc-modal__content {
+    border: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+}
+
+.fc-modal .fc-modal__header {
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--fc-platinum);
+    background: linear-gradient(180deg, var(--fc-white) 0%, var(--fc-alabaster) 100%);
+}
+
+/* Severity badge: red for destructive/failed, orange for "fix this", blue for a task. */
+.fc-modal .fc-modal__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    font-size: 1.0625rem;
+    background: var(--fc-lavender-blush);
+    color: var(--fc-brand-primary);
+}
+
+.fc-modal .fc-modal__icon--warning {
+    background: var(--fc-fair-pink);
+    color: var(--fc-fiery-orange);
+}
+
+.fc-modal .fc-modal__icon--info {
+    background: var(--fc-pattens-blue);
+    color: var(--fc-allports);
+}
+
+.fc-modal .fc-modal__header-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fc-modal .fc-modal__title {
+    margin: 0;
+    font-size: 1.125rem;
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+    color: var(--fc-shark);
+}
+
+.fc-modal .fc-modal__subtitle {
+    margin-top: 0.15rem;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: var(--fc-dove-gray);
+}
+
+.fc-modal .fc-modal__body {
+    padding: 1.125rem 1.5rem 1.25rem;
+    background: #f4f6f8;
+}
+
+.fc-modal .fc-modal__lead {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--fc-cod-gray);
+}
+
+.fc-modal .fc-modal__lead:last-child {
+    margin-bottom: 0;
+}
+
+.fc-modal .fc-modal__lead strong {
+    font-weight: 600;
+    color: var(--fc-shark);
+}
+
+/* White card floated on the washed body — lists, stat pairs and form fields all use it. */
+.fc-modal .fc-modal__panel,
+.fc-modal .fc-modal__list,
+.fc-modal .fc-modal__stat {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.fc-modal .fc-modal__panel {
+    padding: 0.85rem 1rem;
+}
+
+.fc-modal .fc-modal__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.fc-modal .fc-modal__list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--fc-cod-gray);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.fc-modal .fc-modal__list li:last-child {
+    border-bottom: 0;
+}
+
+.fc-modal .fc-modal__list i {
+    flex: 0 0 1rem;
+    margin-top: 0.15rem;
+    font-size: 0.8125rem;
+    text-align: center;
+    color: var(--fc-princeton-orange);
+}
+
+/* Stat pair — "you entered X, the limit is Y" lands faster side by side than
+   the same two numbers buried in a sentence. */
+.fc-modal .fc-modal__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.fc-modal .fc-modal__stat {
+    flex: 1 1 8rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.85rem 1rem;
+}
+
+.fc-modal .fc-modal__stat-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fc-dove-gray);
+}
+
+.fc-modal .fc-modal__stat-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--fc-shark);
+    overflow-wrap: anywhere;
+}
+
+.fc-modal .fc-modal__stat--over .fc-modal__stat-value {
+    color: var(--fc-brand-primary);
+}
+
+.fc-modal .fc-modal__field-label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fc-dove-gray);
+}
+
+.fc-modal .fc-modal__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.875rem 0 0;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--fc-dove-gray);
+}
+
+.fc-modal .fc-modal__note i {
+    margin-top: 0.1rem;
+    color: var(--fc-spanish-gray);
+}
+
+.fc-modal .fc-modal__footer {
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem 1.125rem;
+    border-top: 1px solid var(--fc-platinum);
+    background: var(--fc-white);
+}
+
+/* Two opposed choices (go back vs. carry on) rather than cancel + confirm. */
+.fc-modal .fc-modal__footer--split {
+    justify-content: space-between;
+}
+
+/* Bootstrap puts .25rem on every footer child; the gap owns the spacing here. */
+.fc-modal .fc-modal__footer > * {
+    margin: 0;
+}
+
+/* A link styled as a button cannot go :disabled — this class is the only guard
+   against a second click firing a second navigation before the first unloads. */
+.fc-modal .fc-modal__busy-btn.is-busy {
+    pointer-events: none;
+    opacity: 0.75;
+}
+
+@media (max-width: 575.98px) {
+    .fc-modal .fc-modal__header {
+        padding: 1rem 1.125rem 0.875rem;
+    }
+
+    .fc-modal .fc-modal__body {
+        padding: 1rem 1.125rem 1.125rem;
+    }
+
+    /* column-reverse keeps the safe action first in the DOM (so tab order and screen
+       readers reach it first) while the primary one sits away from the bottom edge
+       where thumbs rest. */
+    .fc-modal .fc-modal__footer {
+        flex-direction: column-reverse;
+        flex-wrap: nowrap;
+        padding: 0.875rem 1.125rem 1rem;
+    }
+
+    .fc-modal .fc-modal__footer .btn {
+        width: 100%;
+    }
+}
+
+/* Load Quote keeps its oversized League Gothic entry field; it just gets the card
+   treatment and loses the placeholder that used to overflow the dialog. */
+/* !important throughout: .fc-planner-page .form-control already carries an !important
+   border, so a plain declaration here never lands. */
+#load-quote [name="qid"] {
+    margin-bottom: 0;
+    border: 1px solid rgba(15, 23, 42, 0.14) !important;
+    border-radius: 12px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* .form-control:focus has box-shadow: unset !important app-wide, so the focus ring
+   has to be an outline. */
+#load-quote [name="qid"]:focus-visible {
+    border-color: var(--fc-princeton-orange) !important;
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+/* Bootstrap's is-invalid glyph lands at 3em here and reads as a character in the ID. */
+#load-quote [name="qid"].is-invalid {
+    border-color: var(--fc-brand-primary) !important;
+    background-image: none;
+}
+
+/* ---------------------------------------------------------------------------
+   "Download Your Project Plans" wizard (partials/modal/submit/view.php).
+
+   Scoped to .fencing-modal--download-plans throughout: .fc-form-plan-action,
+   .fc-form-check and the timeframe partial are all shared with the project-plan
+   #submit-modal, which must keep its current look.
+   --------------------------------------------------------------------------- */
+
+/* Header — title + subtitle. */
+.fencing-modal--download-plans .fencing-modal-head--sticky {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+
+.fencing-modal--download-plans .fc-download-head-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#submit-modal.fencing-modal--download-plans .fencing-modal-title h4 {
+    font-size: 30px;
+    line-height: 1.1;
+    text-align: left;
+}
+
+/* .fencing-modal-title uppercases the whole block for the League Gothic h4. */
+.fencing-modal--download-plans .fc-download-subtitle {
+    margin: 0.15rem 0 0;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    text-transform: none;
+    color: var(--fc-dove-gray);
+}
+
+/* Stepper — the old indicator was three anonymous bars and a "1/3", so there was
+   no way to tell what the remaining steps would ask for. */
+.fencing-modal--download-plans .fc-download-steps {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0 0 1.15rem;
+    padding: 0;
+}
+
+.fencing-modal--download-plans .fc-download-steps__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 1 auto;
+    min-width: 0;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--fc-spanish-gray);
+}
+
+.fencing-modal--download-plans .fc-download-steps__item:not(:last-child) {
+    flex: 1 1 auto;
+}
+
+.fencing-modal--download-plans .fc-download-steps__item:not(:last-child)::after {
+    content: "";
+    flex: 1 1 auto;
+    min-width: 0.75rem;
+    height: 2px;
+    margin: 0 0.6rem;
+    border-radius: 2px;
+    background: var(--fc-platinum);
+}
+
+.fencing-modal--download-plans .fc-download-steps__marker {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--fc-platinum);
+    color: var(--fc-dove-gray);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.fencing-modal--download-plans .fc-download-steps__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Announced by screen readers, invisible on screen — the check mark and the colour
+   change carry the same information visually. */
+.fencing-modal--download-plans .fc-download-steps__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.fencing-modal--download-plans .fc-download-steps__item.is-complete {
+    color: var(--fc-dove-gray);
+}
+
+.fencing-modal--download-plans .fc-download-steps__item.is-complete .fc-download-steps__marker,
+.fencing-modal--download-plans .fc-download-steps__item.is-current .fc-download-steps__marker {
+    background: var(--fc-princeton-orange);
+    color: var(--fc-white);
+}
+
+.fencing-modal--download-plans .fc-download-steps__item.is-complete::after {
+    background: var(--fc-princeton-orange);
+}
+
+.fencing-modal--download-plans .fc-download-steps__item.is-current {
+    color: var(--fc-shark);
+}
+
+.fencing-modal--download-plans .fc-download-steps__item.is-current .fc-download-steps__marker {
+    box-shadow: 0 0 0 3px var(--fc-a-orange-20);
+}
+
+/* Step 1 promise, moved inside the first pane — it used to sit above every step,
+   repeating itself through the whole wizard. */
+.fencing-modal--download-plans .fc-download-intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1.15rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    background: var(--fc-alabaster);
+    font-family: "Poppins", sans-serif;
+}
+
+.fencing-modal--download-plans .fc-download-intro__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    font-size: 0.875rem;
+    background: var(--fc-fair-pink);
+    color: var(--fc-fiery-orange);
+}
+
+.fencing-modal--download-plans .fc-download-intro__title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fc-shark);
+}
+
+.fencing-modal--download-plans .fc-download-intro__text {
+    margin-top: 0.15rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--fc-dove-gray);
+}
+
+.fencing-modal--download-plans .fc-download-step-hint {
+    margin: 0 0 0.9rem;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--fc-dove-gray);
+}
+
+/* Timeframe — full-width rows instead of a bare radio list, so the whole row is the
+   target rather than the 13px dot. Both #submit-modal variants (the planner wizard and
+   the project-plan editor) include the same partial, so both get it. */
+#submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check {
+    display: grid;
+    gap: 0.5rem;
+}
+
+#submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 12px;
+    background: var(--fc-white);
+    font-family: "Poppins", sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--fc-cod-gray);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label:hover {
+    border-color: var(--fc-princeton-orange);
+    background: var(--fc-a-orange-3);
+}
+
+/* The radio itself stays visible, so a browser without :has() still shows the
+   selection — the row highlight is an enhancement, not the only cue. */
+#submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label:has(input:checked) {
+    border-color: var(--fc-princeton-orange);
+    background: var(--fc-a-orange-3);
+}
+
+/* On the input rather than the row, and :focus-visible rather than :focus-within — a
+   mouse click would otherwise draw a focus ring outside the selected row's border. */
+#submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check input:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+/* .fc-form-check input[type=radio] scales the native control 1.5x, which blew its
+   1px UA ring up into a heavy black outline. Drawn by hand instead. */
+#submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check input {
+    flex: 0 0 auto;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: 0;
+    transform: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 1px solid var(--fc-light-gray);
+    border-radius: 50%;
+    background: var(--fc-white);
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check input:checked {
+    border-color: var(--fc-princeton-orange);
+    background: var(--fc-princeton-orange);
+    box-shadow: inset 0 0 0 3px var(--fc-white);
+}
+
+/* Windows High Contrast drops box-shadow, so a hand-drawn radio loses its checked
+   state entirely — hand it back to the UA there. */
+@media (forced-colors: active) {
+    #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check input {
+        -webkit-appearance: auto;
+        appearance: auto;
+    }
+}
+
+/* Back sat to the RIGHT of Next because .fc-form-plan-action is row-reverse, so both
+   arrows pointed away from the button that moved you that way. Desktop only — the
+   mobile column-reverse stack (primary on top) is already correct. */
+@media (min-width: 768px) {
+    .fencing-modal--download-plans .fc-form-plan-action--modal-footer {
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    .fencing-modal--download-plans .fc-form-plan-action--modal-footer button:not(.fc-btn-next) {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* Three labels will not fit; keep the one that says where you are. */
+    .fencing-modal--download-plans .fc-download-steps__item:not(.is-current) .fc-download-steps__label {
+        display: none;
+    }
+
+    .fencing-modal--download-plans .fencing-modal-head--sticky {
+        gap: 0.75rem;
+    }
+}
+/* ---------------------------------------------------------------------------
+   Project-plan editor modal (partials/modal/submit/view-2.php).
+
+   It used to open with no title at all — just an orange X floating over the
+   first section — so nothing said what the dialog was for.
+   --------------------------------------------------------------------------- */
+#submit-modal.fencing-modal--project-plans .fencing-modal-head--project-plans {
+    flex: 0 0 auto;
+    position: relative;
+    margin-bottom: 0;
+    padding: 1rem 3.75rem 0.85rem 1.5rem;
+    border-bottom: 1px solid var(--fc-gainsboro);
+    background: linear-gradient(180deg, var(--fc-white) 0%, var(--fc-alabaster) 100%);
+    z-index: 4;
+}
+
+#submit-modal.fencing-modal--project-plans .fc-pp-modal-head-text {
+    min-width: 0;
+}
+
+#submit-modal.fencing-modal--project-plans .fencing-modal-title h4 {
+    margin: 0;
+    font-family: "League Gothic", sans-serif !important;
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.1;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+/* .fencing-modal-title uppercases the whole block for the League Gothic h4. */
+#submit-modal.fencing-modal--project-plans .fc-pp-modal-subtitle {
+    margin: 0.15rem 0 0;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    text-transform: none;
+    color: var(--fc-dove-gray);
+}
+
+/* Close was anchored to .fencing-modal-content, which parked it over the first
+   section heading; it belongs to the header now. */
+#submit-modal.fencing-modal--project-plans .fencing-modal-close--project-plans {
+    top: 50%;
+    right: 12px;
+    margin-top: -23px;
+}
+
+/* Section rhythm — replaces the <hr class="my-2"> rules between the three panes. */
+#submit-modal.fencing-modal--project-plans .fc-pp-modal-section__title {
+    margin: 0 0 0.75rem;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fc-dove-gray);
+}
+
+#submit-modal.fencing-modal--project-plans .fc-form-plan + .fc-form-plan {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--fc-platinum);
+}
+
+@media (max-width: 600px) {
+    #submit-modal.fencing-modal--project-plans .fencing-modal-head--project-plans {
+        padding: 0.85rem 3.25rem 0.75rem 1rem;
+    }
+
+    #submit-modal.fencing-modal--project-plans .fencing-modal-title h4 {
+        font-size: 24px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Cart item gallery (project-plan/modals.php)
+   --------------------------------------------------------------------------- */
+
+/* The body used to be flex:1, stretching the dialog to 1200px so the prev/next
+   buttons and the close sat at the viewport edges, hundreds of pixels from a
+   product shot only a few hundred wide. Hug the image instead. */
+#fc-cart-image-modal .fc-cart-image-modal__dialog {
+    width: auto;
+    gap: 0.85rem;
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__body {
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+/* A white plate behind the shot: product cutouts are transparent PNGs that
+   disappeared into the backdrop. */
+#fc-cart-image-modal .fc-cart-image-modal__img {
+    padding: 0.75rem;
+    border-radius: 12px;
+    background: var(--fc-white);
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__caption {
+    font-weight: 500;
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__counter {
+    bottom: -2.15rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--fc-a-white-12);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 12% white on a dark backdrop reads as "disabled"; these are the only controls. */
+#fc-cart-image-modal .fc-cart-image-modal__close,
+#fc-cart-image-modal .fc-cart-image-modal__nav {
+    background: var(--fc-a-white-22);
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close:hover,
+#fc-cart-image-modal .fc-cart-image-modal__nav:hover {
+    background: var(--fc-a-white-45);
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close:focus-visible,
+#fc-cart-image-modal .fc-cart-image-modal__nav:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+/* ---------------------------------------------------------------------------
+   Download progress toast (project-plan/modals.php)
+
+   Capturing a plan takes seconds and blocks nothing, so it reports from the
+   bottom-left instead of raising .fc-loader-overlay over the whole page. Bottom
+   LEFT specifically: the quote-id card sits top-right and the support widget
+   sits bottom-centre.
+   --------------------------------------------------------------------------- */
+.fc-download-toast {
+    position: fixed;
+    left: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 10060;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    max-width: min(22rem, calc(100vw - 2.5rem));
+    padding: 0.85rem 1.15rem 0.85rem 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 14px;
+    background: var(--fc-white);
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
+    font-family: "Poppins", sans-serif;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-12px);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+
+.fc-download-toast.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+
+/* Same dual-ring spinner as the submission loader, sized for a toast. */
+.fc-download-toast .fc-download-toast__spinner {
+    flex: 0 0 auto;
+    display: block;
+    width: 30px;
+    height: 30px;
+}
+
+.fc-download-toast .fc-download-toast__spinner::before {
+    border-width: 3px;
+}
+
+.fc-download-toast .fc-download-toast__spinner::after {
+    inset: 6px;
+    border-width: 3px;
+}
+
+.fc-download-toast__text {
+    min-width: 0;
+}
+
+.fc-download-toast__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fc-shark);
+}
+
+.fc-download-toast__message {
+    margin: 0.1rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--fc-dove-gray);
+}
+
+@media (max-width: 575.98px) {
+    .fc-download-toast {
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        max-width: none;
+    }
+}
+
+/* The spinner still turns — it is the only signal that work is in progress — but
+   the entrance slide goes away. */
+@media (prefers-reduced-motion: reduce) {
+    .fc-download-toast {
+        transition: opacity 0.18s ease, visibility 0.18s;
+        transform: none;
+    }
+
+    .fc-download-toast .fc-download-toast__spinner::before,
+    .fc-download-toast .fc-download-toast__spinner::after {
+        animation-duration: 2.4s;
+    }
+}
+/* ---------------------------------------------------------------------------
+   Planner notice toast, #liveToast (planner/modals.php)
+
+   Same card as .fc-download-toast and the dialog family, so the app has one
+   notification language. It used to be a dark Bootstrap bar jammed into the
+   viewport corner at z-index 11 — under every modal on the page.
+   --------------------------------------------------------------------------- */
+/* Positioned here rather than with Bootstrap's .top-0/.end-0 utilities: those carry
+   !important at the same specificity and bootstrap.min.css loads after this file, so they
+   always won and the toast sat flush in the corner. */
+.fc-toast-container {
+    top: 1rem;
+    right: 1rem;
+    padding: 0;
+    z-index: 10070;
+}
+
+.fc-toast {
+    width: min(22rem, calc(100vw - 2rem));
+    max-width: none;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 14px;
+    background: var(--fc-white);
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
+    font-family: "Poppins", sans-serif;
+    overflow: hidden;
+}
+
+.fc-toast .fc-toast__header {
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.85rem 0.6rem;
+    border-bottom: 1px solid var(--fc-platinum);
+    background: linear-gradient(180deg, var(--fc-white) 0%, var(--fc-alabaster) 100%);
+    color: var(--fc-shark);
+}
+
+.fc-toast .fc-toast__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    font-size: 0.8125rem;
+    background: var(--fc-fair-pink);
+    color: var(--fc-fiery-orange);
+}
+
+.fc-toast .fc-toast__title {
+    min-width: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fc-shark);
+}
+
+.fc-toast .fc-toast__body {
+    padding: 0.7rem 0.85rem 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--fc-dove-gray);
+    background: #f4f6f8;
+}
+
+/* Debug only — see popupToast(). */
+.fc-toast .fc-toast__code {
+    display: block;
+    margin: 0;
+    padding: 0.3rem 0.85rem 0.55rem;
+    background: #f4f6f8;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fc-spanish-gray);
+}
+
+/* Bootstrap fades the toast; slide it in from the edge it lives on as well. */
+.fc-toast.toast {
+    transform: translateX(12px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fc-toast.toast.show,
+.fc-toast.toast.showing {
+    transform: none;
+}
+
+@media (max-width: 600px) {
+    .fc-toast-container {
+        top: 0.75rem;
+        right: 0.75rem;
+        left: 0.75rem;
+    }
+
+    .fc-toast {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-toast.toast {
+        transform: none;
+        transition: opacity 0.2s ease;
+    }
+}
+/* Glass pool minimum layouts: adjacent gap strips (latch + end gap) fused their mm labels
+   into one number - the second label of a touching pair steps down instead. Set by
+   fcStaggerGlassPoolAdjacentGapLabels() at render time. */
+.fencing-panel-container[data-type="glass_pool"] .fencing-panel-spacing-number.fc-gap-label-stagger > span:not(.fs-clamp) {
+    bottom: -16px;
+}
+
+/* ---------------------------------------------------------------------------
+   Download-plans wizard: floating field labels. Hidden inside the field while
+   it is empty (the placeholder carries the hint), slide up to the border notch
+   on focus, and stay up while the field holds a value. `.is-filled` is kept in
+   sync by fcSyncDownloadPlansFloatingLabels() - programmatic fills (session
+   restore, Google address autocomplete, inputmask) never fire input events.
+   --------------------------------------------------------------------------- */
+.fencing-modal--download-plans .fc-label-group .fc-form-label {
+    opacity: 0;
+    transform: translateY(24px);
+    pointer-events: none;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+    will-change: transform, opacity;
+}
+
+.fencing-modal--download-plans .fc-label-group:focus-within .fc-form-label,
+.fencing-modal--download-plans .fc-label-group.is-filled .fc-form-label {
+    opacity: 1;
+    transform: none;
+}
+
+/* While the label floats up on focus, soften the placeholder so the two hints
+   don't compete; it stays fully readable before the field is touched. */
+.fencing-modal--download-plans .fc-label-group:focus-within .form-control::placeholder {
+    color: var(--fc-silver-chalice);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fencing-modal--download-plans .fc-label-group .fc-form-label {
+        transition: opacity 0.18s ease;
+        transform: none;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Step 3 buttons.
+
+   Panel option controls (.fencing-panel-controls): the JS-built row read as
+   seven near-identical text pills, with a two-tone label ("Gate" orange,
+   "Options" charcoal) doing the only differentiating work. Each control now
+   leads with a function icon (pure CSS ::before glyphs, so the dynamically
+   re-rendered buttons need no JS changes), the two-tone label is retired, and
+   hover/active/focus states are consistent. Buttons stay inline-block - flex
+   would collapse the space between the "Edit " text node and its <span>.
+   --------------------------------------------------------------------------- */
+.fencing-panel-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.fencing-panel-controls .btn-fc {
+    background: var(--fc-white);
+    border: 1px solid rgba(15, 23, 42, 0.16);
+    border-radius: 8px;
+    color: var(--fc-dark-charcoal);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+        box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* Legacy inline-block margins replaced by the row gap. */
+.fencing-panel-controls .btn-fc.fc-mb-1 {
+    margin-bottom: 0 !important;
+    margin-right: 0;
+}
+
+/* One label color; the icon carries the accent. */
+.fencing-panel-controls .btn-fc span {
+    color: inherit;
+}
+
+/* Function icon per control (FA solid glyphs; sliders as the fallback). */
+.fencing-panel-controls .btn-fc::before {
+    display: inline-block;
+    content: "\f1de";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 0.8125rem;
+    line-height: 1;
+    vertical-align: -1px;
+    margin-right: 8px;
+    color: var(--fc-princeton-orange);
+    transition: color 0.15s ease;
+}
+
+.fencing-panel-controls #btn-gate::before { content: "\f52b"; }              /* door-open */
+.fencing-panel-controls #btn-edit_spacing::before { content: "\f07e"; }      /* arrows-left-right */
+.fencing-panel-controls #btn-panel_options::before,
+.fencing-panel-controls #btn-panel_options_custom::before { content: "\f0db"; } /* table-columns */
+.fencing-panel-controls #btn-post_options::before { content: "\f7a5"; }      /* grip-lines-vertical */
+.fencing-panel-controls #btn-rail_options::before { content: "\f7a4"; }      /* grip-lines */
+.fencing-panel-controls #btn-spigot_options::before { content: "\f0ad"; }    /* wrench */
+.fencing-panel-controls #btn-planner-summary::before { content: "\f46d"; }   /* clipboard-list */
+
+/* Side controls keep their directional arrows, now as glyphs instead of the
+   webp images (background cleared so the legacy image rules cannot bleed in). */
+.fencing-panel-controls #btn-left_side::before {
+    content: "\f060";
+    background: none;
+    width: auto;
+    height: auto;
+    top: auto;
+}
+
+.fencing-panel-controls #btn-right_side::before {
+    content: none;
+}
+
+.fencing-panel-controls #btn-right_side::after {
+    display: inline-block;
+    content: "\f061";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 0.8125rem;
+    line-height: 1;
+    vertical-align: -1px;
+    margin-left: 8px;
+    background: none;
+    width: auto;
+    height: auto;
+    transform: none;
+    top: auto;
+    color: var(--fc-princeton-orange);
+    transition: color 0.15s ease;
+}
+
+@media (min-width: 1024px) {
+    .fencing-panel-controls .btn-fc:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px var(--fc-a-orange-22);
+    }
+
+    .fencing-panel-controls .btn-fc:hover::before,
+    .fencing-panel-controls #btn-right_side:hover::after {
+        color: var(--fc-white);
+    }
+}
+
+.fencing-panel-controls .btn-fc.fc-btn-active {
+    background-color: var(--fc-princeton-orange);
+}
+
+.fencing-panel-controls .btn-fc.fc-btn-active::before,
+.fencing-panel-controls #btn-right_side.fc-btn-active::after {
+    color: var(--fc-white);
+}
+
+.fencing-panel-controls .btn-fc:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+.fencing-panel-controls .fencing-btn-modal:disabled::before,
+.fencing-panel-controls .fencing-btn-modal.fc-panel-control--gate-only-disabled::before,
+.fencing-panel-controls #btn-right_side:disabled::after,
+.fencing-panel-controls #btn-right_side.fc-panel-control--gate-only-disabled::after {
+    color: var(--fc-gray-chateau);
+}
+
+/* The legacy width/margin overrides at these breakpoints predate the gap row. */
+@media (max-width: 992px) {
+    .fencing-panel-controls .btn-fc {
+        width: auto;
+        margin-right: 0;
+    }
+}
+
+/* Mobile: a strict two-column grid. Grid tracks keep the columns exact regardless of
+   label length or padding; long labels ellipsize inside their cell. Summary spans its
+   own full row - margin-left:auto has nothing to push against in a grid. */
+@media (max-width: 768px) {
+    .fencing-panel-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .fencing-panel-controls .btn-fc {
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .fencing-panel-controls .fc-planner-summary-btn {
+        grid-column: 1 / -1;
+        margin-left: 0 !important;
+    }
+
+    /* The hidden helper <div>s the renderer inserts must not occupy grid cells. */
+    .fencing-panel-controls div {
+        display: none;
+    }
+}
+
+/* Bottom action row: shared hover lift + focus rings; colors already carry the
+   hierarchy (orange primary, dark secondary, red destructive). */
+.fc-step3-bottom .btn {
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+@media (min-width: 1024px) {
+    .fc-step3-bottom .btn:not(:disabled):not(.disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+    }
+}
+
+.fc-step3-bottom .btn:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fencing-panel-controls .btn-fc,
+    .fc-step3-bottom .btn {
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .fencing-panel-controls .btn-fc:hover,
+    .fc-step3-bottom .btn:not(:disabled):not(.disabled):hover {
+        transform: none;
+    }
 }

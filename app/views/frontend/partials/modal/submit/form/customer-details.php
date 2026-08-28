@@ -9,7 +9,7 @@
         <div class="col-12 col-md mb-3">
             <div class="fc-label-group has-clear position-relative">
                 <label class="fc-form-label">Mobile <span class="fc-text-danger">*</span></label>
-                <input type="tel" name="mobile" id="mobile" phone-format="9999 999 999" class="form-control p-3 no-space numeric-only input-mobile" minlength="7" autocomplete="off" required>       
+                <input type="tel" name="mobile" id="mobile" phone-format="9999 999 999" class="form-control p-3 no-space numeric-only input-mobile" placeholder="Mobile Number" minlength="7" autocomplete="off" required>       
                 <i class="au-flag-icon"></i>
             </div>
         </div>

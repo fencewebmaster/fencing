@@ -568,14 +568,6 @@ $tab = $fcSettingsPage;
                                             <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-googleMapsApiKey" aria-label="Copy Google Maps API key" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
                                         </span>
                                     </label>
-                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-chatraApiKey">
-                                        <span class="text-sm font-medium text-slate-700">Chatra API key</span>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="password" id="fc-integration-chatraApiKey" data-fc-integration-field="chatraApiKey" value="<?php echo e((string) ($integrations['chatraApiKey'] ?? '')); ?>" class="fc-settings-field font-mono" autocomplete="off" spellcheck="false" />
-                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-reveal="fc-integration-chatraApiKey" aria-label="Show Chatra API key" title="Show or hide"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
-                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-chatraApiKey" aria-label="Copy Chatra API key" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                        </span>
-                                    </label>
                                     <label class="flex min-w-0 flex-col gap-1" for="fc-integration-cloudflareApiToken">
                                         <span class="text-sm font-medium text-slate-700">Cloudflare API token</span>
                                         <span class="fc-settings-field-input-wrap">
@@ -674,6 +666,25 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
                             </div>
+
+                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                                <div class="mb-4">
+                                    <h3 class="text-sm font-semibold text-slate-800">Custom code</h3>
+                                    <p class="mt-1 text-xs text-slate-500">Markup injected into every planner and project plan page &mdash; tracking pixels, verification tags, or extra scripts. Output exactly as written, so a broken tag here breaks the page.</p>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-headerCode">
+                                        <span class="text-sm font-medium text-slate-700">Header code</span>
+                                        <span class="block text-xs text-slate-500">Added at the end of &lt;head&gt;, after the Google tag block.</span>
+                                        <textarea id="fc-integration-headerCode" data-fc-integration-field="headerCode" rows="8" class="fc-settings-field font-mono text-xs" spellcheck="false" autocomplete="off" placeholder="&lt;!-- e.g. verification meta tags, pixel scripts --&gt;"><?php echo e((string) ($integrations['headerCode'] ?? '')); ?></textarea>
+                                    </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-footerCode">
+                                        <span class="text-sm font-medium text-slate-700">Footer code</span>
+                                        <span class="block text-xs text-slate-500">Added at the end of the page, after every script has loaded.</span>
+                                        <textarea id="fc-integration-footerCode" data-fc-integration-field="footerCode" rows="8" class="fc-settings-field font-mono text-xs" spellcheck="false" autocomplete="off" placeholder="&lt;!-- e.g. chat widgets, conversion snippets --&gt;"><?php echo e((string) ($integrations['footerCode'] ?? '')); ?></textarea>
+                                    </label>
+                                </div>
+                            </section>
 
                             <div class="overflow-x-auto border border-slate-200 bg-white">
                                     <div class="grid min-w-[68rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)_minmax(8rem,0.6fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">

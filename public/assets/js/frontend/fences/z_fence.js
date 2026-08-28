@@ -515,8 +515,13 @@ FENCE = {
             return item.control_key == 'gate';
         })[0];
         if (!_gateRowForMsg || !_gateRowForMsg.settings || !_gateRowForMsg.settings.gateOnly) {
-            var _calcUiMsg = (calc.selected_values && calc.selected_values.message) ? calc.selected_values.message : '';
-            $('.err-message').html(_calcUiMsg);
+            // Auto-fits a failed glass solve to the nearest buildable Overall Length (with a
+            // toast) instead of printing the raw solver error; core/functions.js.
+            if (typeof fcApplyCalcSolutionMessage === 'function') {
+                fcApplyCalcSolutionMessage(calc);
+            } else {
+                $('.err-message').html((calc.selected_values && calc.selected_values.message) || '');
+            }
         } else {
             $('.err-message').html('');
         }

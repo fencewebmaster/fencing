@@ -1,5 +1,5 @@
 /**
- * Project plan (/fc/project-plan) — Color Options carousel (Slick).
+ * Project plan (/project-plan) — Color Options carousel (Slick).
  * mobileFirst: 2 slides; width > 767 → 4 slides (tablet / iPad / desktop).
  * Infinite loop for continuous prev/next.
  */

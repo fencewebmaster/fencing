@@ -12,14 +12,20 @@
                     </div>
                 </div>
             </div>
-            <div class="fc-loader-panel fc-loader-panel--download-plans" hidden>
-                <div class="fc-loader-gif" aria-hidden="true"></div>
-                <p class="fc-loader-download-message">Please wait while we prepare your plans for download.</p>
-            </div>
         </div>
     </div>
 </div>
 <!-- [END] FORM SUBMISSION LOADER -->
+
+<!-- Download progress toast. Downloads used to raise the full-screen submission loader, which
+     blacked out the page for something the user can happily keep scrolling past. -->
+<div class="fc-download-toast" role="status" aria-live="polite">
+    <span class="fc-loader-gif fc-download-toast__spinner" aria-hidden="true"></span>
+    <div class="fc-download-toast__text">
+        <div class="fc-download-toast__title">Preparing your download</div>
+        <p class="fc-download-toast__message js-fc-download-toast-message">Building the full project plan PDF.</p>
+    </div>
+</div>
 
 <!-- [START] Cart item image gallery (project plan) -->
 <div id="fc-cart-image-modal" class="fc-cart-image-modal" aria-hidden="true">

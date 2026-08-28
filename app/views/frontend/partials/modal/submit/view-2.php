@@ -1,18 +1,25 @@
 <?php
 use Fc\Admin\Services\CartBuilderService;
 ?>
-<div id="submit-modal" class="fencing-modal fencing-modal--v2 fencing-modal--project-plans">
+<div id="submit-modal" class="fencing-modal fencing-modal--v2 fencing-modal--project-plans" role="dialog" aria-modal="true" aria-labelledby="fcProjectPlansModalTitle">
     
     <div class="fc-modal-frame">
 
         <div class="fencing-modal-content fencing-modal-md fencing-modal--scroll-layout fencing-modal-content--project-plans">
-            <button type="button" class="fencing-modal-close js-fencing-modal-close fencing-modal-close--project-plans" aria-label="Close"></button>
+
+            <header class="fencing-modal-section fencing-modal-head fencing-modal-head--project-plans">
+                <div class="fencing-modal-title fc-pp-modal-head-text">
+                    <h4 id="fcProjectPlansModalTitle">Edit Project Options</h4>
+                    <p class="fc-pp-modal-subtitle">Colours, timing and extras for this quote</p>
+                </div>
+                <button type="button" class="fencing-modal-close js-fencing-modal-close fencing-modal-close--project-plans" aria-label="Close"></button>
+            </header>
 
             <div class="fencing-modal-section fencing-modal-body fencing-modal-body--scroll fencing-modal-body--project-plans">
 
                 <div class="fc-form-plan" data-formtab="1">
                     
-                    <div class="text-uppercase mb-2 fw-bold">Color Options</div>
+                    <h5 class="fc-pp-modal-section__title">Color Options</h5>
 
                     <?php
                     $colors = CartBuilderService::convertInputs($info['color']);
@@ -93,20 +100,16 @@ use Fc\Admin\Services\CartBuilderService;
 
                 </div>
 
-                <hr class="my-2">
-
                 <div class="fc-form-plan" data-formtab="2">
-                    <div class="text-uppercase mb-2 fw-bold">When Do You Need The Materials?</div>
+                    <h5 class="fc-pp-modal-section__title">When Do You Need The Materials?</h5>
 
                     <?php include view_path('frontend.partials.modal.submit.form.timeframe'); ?>
 
                 </div>
 
-                <hr class="my-2">
-
                 <div class="fc-form-plan" data-formtab="3">
                     
-                    <div class="text-uppercase mb-2 fw-bold">Anything Else We Can Help You With?</div>
+                    <h5 class="fc-pp-modal-section__title">Anything Else We Can Help You With?</h5>
 
                     <?php include view_path('frontend.partials.modal.submit.form.other-items-needed'); ?>                        
 

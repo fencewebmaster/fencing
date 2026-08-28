@@ -87,3 +87,13 @@ echo ThemeSettings::cssBlock();
 </script>
 <?php endif; ?>
 
+<?php
+// Custom header code from Settings -> Integration. Emitted raw and unescaped on purpose:
+// the field exists to inject third-party markup (verification tags, pixels), so escaping
+// it would defeat it. Only admins holding the settings permission can write the value.
+$fcHeaderCode = trim((string) (AppConfigService::all()->custom_code->header ?? ''));
+if ($fcHeaderCode !== '') :
+?>
+<!-- Custom header code -->
+<?php echo $fcHeaderCode; ?>
+<?php endif; ?>

@@ -172,6 +172,21 @@ SlatFenceInfill = {
             </div>
         `;
 
+        // The cart counts [data-cart-key] nodes, so the panels this tile stands in for have to be
+        // billed by something. Fold their quantity onto the last rendered panel and its paired post
+        // rather than emitting hidden nodes: extra .fencing-panel-item / .panel-post elements would
+        // capture `.panel-post:last` (diagram scroll-centering, events.js) and the .last-item /
+        // .last() display logic. The paired post is the one preceding the panel in panel_item-b.
+        var $container = $(containerSelector);
+        var $lastPanel = $container.find('.fencing-panel-item.long-panel-item').last();
+        if ($lastPanel.length) {
+            $lastPanel.attr('data-cart-qty', hiddenCount + 1);
+            var $pairedPost = $lastPanel.prevAll('.panel-post').first();
+            if ($pairedPost.length) {
+                $pairedPost.attr('data-cart-qty', hiddenCount + 1);
+            }
+        }
+
         $(containerSelector).append(hiddenTpl);
     },
 

@@ -97,27 +97,29 @@
         <div class="fencing-section__bottom py-3 fc-step3-bottom">
             <div class="">
 
-                <div class="row flex-wrap flex-xl-nowrap align-items-stretch align-items-xl-center g-2" data-tab="1">
+                <div class="row flex-nowrap flex-md-wrap flex-xl-nowrap align-items-stretch align-items-xl-center g-2" data-tab="1">
 
-                    <div class="col-6 col-md-4 col-lg-4 col-xl-auto order-md-1 order-xl-1">
+                    <div class="d-none d-md-block col-auto col-md-4 col-lg-4 col-xl-auto order-md-1 order-xl-1">
                         <button type="button" 
-                            class="btn btn-dark fc-tab-add fencing-tab-add p-3 w-100 w-xl-auto">
-                            <b class="d-md-none"><i class="fa-solid fa-plus me-1"></i> Add Section</b>
+                            aria-label="Add section"
+                            class="btn btn-dark fc-tab-add fencing-tab-add fc-step3-icon-btn p-3 w-100 w-xl-auto">
+                            <b class="d-md-none"><i class="fa-solid fa-plus" aria-hidden="true"></i></b>
                             <b class="d-none d-md-inline"><i class="fa-solid fa-plus me-1"></i> Add Another Section</b>
                         </button>
                     </div>
 
-                    <div class="col-6 col-md-4 col-lg-4 col-xl-auto order-md-2 order-xl-2">
+                    <div class="d-none d-md-block col-auto col-md-4 col-lg-4 col-xl-auto order-md-2 order-xl-2">
                         <button type="button" 
-                            class="btn btn-danger fc-fence-reset-all fc-fence-reset text-uppercase p-3 w-100 w-xl-auto">
+                            aria-label="Reset section"
+                            class="btn btn-danger fc-fence-reset-all fc-fence-reset fc-step3-icon-btn text-uppercase p-3 w-100 w-xl-auto">
                             <b>
-                                <i class="fa-solid fa-rotate-left me-1"></i>
-                                Reset
+                                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                                <span class="d-none d-md-inline ms-1">Reset</span>
                             </b>
                         </button>
                     </div>
 
-                    <div class="col-12 col-md-4 col-lg-4 col-xl-auto order-md-3 order-xl-4 ms-xl-auto">
+                    <div class="col col-md-4 col-lg-4 col-xl-auto order-md-3 order-xl-4 ms-xl-auto">
                         <button type="button" 
                             class="btn btn-orange fc-btn-next-step fc-btn-step p-3 text-uppercase w-100 w-xl-auto" 
                             data-tab="1" 
@@ -125,16 +127,17 @@
                             data-section="4"
                             data-offset="0"
                             disabled>
-                            <b class="d-xl-none">NEXT <i class="fa-solid fa-angle-right mx-1"></i> PLAN OPTIONS</b>
+                            <b class="d-xl-none">NEXT <i class="fa-solid fa-angle-right mx-1" aria-hidden="true"></i> PLAN OPTIONS</b>
                             <b class="d-none d-xl-inline">NEXT <i class="fa-solid fa-angle-right mx-2"></i> Select PLAN OPTIONS</b>
                         </button>
                     </div>
 
-                    <div class="col-12 col-md-12 col-lg-12 col-xl-auto order-md-4 order-xl-3">
+                    <div class="d-none d-md-block col-auto col-md-12 col-lg-12 col-xl-auto order-md-4 order-xl-3">
                         <button type="button" 
-                            class="btn btn-danger btn-fc-sm btn-delete-fence js-btn-delete-fence fw-bold text-uppercase p-3 w-100 w-xl-auto" 
+                            aria-label="Delete section"
+                            class="btn btn-danger btn-fc-sm btn-delete-fence js-btn-delete-fence fc-step3-icon-btn fw-bold text-uppercase p-3 w-100 w-xl-auto" 
                             >
-                            <span><i class="fa fa-trash-can me-1"></i> Delete <span>Section</span></span>
+                            <span><i class="fa fa-trash-can" aria-hidden="true"></i><span class="d-none d-md-inline ms-1">Delete <span>Section</span></span></span>
                         </button>
                     </div>
 

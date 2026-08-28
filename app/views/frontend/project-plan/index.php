@@ -106,7 +106,7 @@ include view_path('frontend.partials.fields.index');
 		<script defer src="<?php echo asset('public/assets/js/frontend/shared/cart-items.js'); ?>"></script>
 		<script defer src="<?php echo asset('public/assets/js/frontend/shared/fc-planner-summary.js'); ?>"></script>
 		<script defer src="<?php echo asset('public/assets/js/frontend/project-plan/p2.js'); ?>"></script>
-		<script defer src="<?php echo asset('public/assets/js/frontend/project-plan/fc-project-plan-color-slick.js'); ?>"></script>
+		<script defer src="<?php echo asset('public/assets/js/frontend/slick/project-plan-color.js'); ?>"></script>
 
 		<script type="text/javascript">
 		(function() {

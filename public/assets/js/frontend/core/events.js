@@ -116,20 +116,123 @@ _doc.on('show.bs.modal', '#load-quote', function() {
 
 //----------------------------------------------------------------------------------
 
+// Shared behaviour for every .fc-modal dialog. Two jobs: put focus on the marked control so
+// Enter cannot land on whatever the browser happened to focus (on Clear All that means the
+// destructive button), and restore data-fc-role, because Bootstrap stamps role="dialog" over
+// the markup's alertdialog on show and strips the attribute again on hide.
+_doc.on('shown.bs.modal', '.fc-modal', fcModalShown);
+
+function fcModalShown() {
+    var $modal = $(this);
+    var role = $modal.attr('data-fc-role');
+
+    if (role) {
+        $modal.attr('role', role);
+    }
+
+    $modal.find('[data-fc-autofocus]').first().trigger('focus');
+}
+
+//----------------------------------------------------------------------------------
+
+// Name the sections that still need work. "One or more fence sections are incomplete" left
+// people opening every tab to find them.
+_doc.on('show.bs.modal', '#fc-incomplete-sections-modal', fcIncompleteSectionsModalShow);
+
+function fcIncompleteSectionsModalShow() {
+    var $modal = $(this);
+    var $list = $modal.find('.js-fc-incomplete-sections-list');
+    var sections = [];
+
+    if (typeof fcFenceSectionIncompleteFromStorage === 'function') {
+        var count = parseInt(localStorage.getItem('custom_fence-section'), 10);
+        if (!Number.isFinite(count) || count < 1) {
+            count = 0;
+        }
+        for (var i = 0; i < count; i++) {
+            if (fcFenceSectionIncompleteFromStorage(i)) {
+                sections.push(i + 1);
+            }
+        }
+    }
+
+    $list.empty();
+    $.each(sections, function(_, n) {
+        $list.append(
+            $('<li>').append(
+                $('<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>'),
+                $('<span>').text('Section ' + n)
+            )
+        );
+    });
+
+    // The check that opened this modal (fcPlannerTabRowHasPlanData) is not the one used here,
+    // so an empty list is possible — keep the generic sentence rather than show an empty box.
+    var named = sections.length > 0;
+    $list.toggleClass('d-none', !named);
+    $modal.find('.js-fc-incomplete-sections-lead').toggleClass('d-none', !named);
+    $modal.find('.js-fc-incomplete-sections-fallback').toggleClass('d-none', named);
+}
+
+//----------------------------------------------------------------------------------
+
+// Reopening after a back-navigation restores the DOM mid-confirm; reset the button so it is
+// not stuck on the spinner.
+_doc.on('show.bs.modal', '#clear-all-data', fcClearAllModalShow);
+
+function fcClearAllModalShow() {
+    var $confirm = $('#clear-all-data .js-fc-clear-all-confirm');
+
+    $confirm.removeClass('is-busy').removeAttr('aria-disabled');
+    $confirm.find('.js-fc-clear-all-confirm-icon').attr('class', 'fa-solid fa-trash-can me-2 js-fc-clear-all-confirm-icon');
+    $confirm.find('.js-fc-clear-all-confirm-label').text('Yes, clear all');
+}
+
+// Confirm is a link, so an impatient second click fires a second navigation before the first
+// unloads. Lock it and show progress instead.
+_doc.on('click', '#clear-all-data .js-fc-clear-all-confirm', fcClearAllModalConfirm);
+
+function fcClearAllModalConfirm(e) {
+    var $confirm = $(this);
+
+    if ($confirm.hasClass('is-busy')) {
+        e.preventDefault();
+        return;
+    }
+
+    $confirm.addClass('is-busy').attr('aria-disabled', 'true');
+    $confirm.find('.js-fc-clear-all-confirm-icon').attr('class', 'fa-solid fa-spinner fa-spin me-2 js-fc-clear-all-confirm-icon');
+    $confirm.find('.js-fc-clear-all-confirm-label').text('Clearing...');
+}
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.popup-toast', popupToast);
 
 function popupToast(title, message, code) {
     const _lt = $('#liveToast');
     const toastBootstrap = bootstrap.Toast.getOrCreateInstance(_lt);
 
-    var _this = $(this),
-        title = title || _this.attr('data-title'),
-        body = body || _this.attr('data-message');
+    var _this = $(this);
 
-    toastBootstrap.show();
+    title = title || _this.attr('data-title');
+    message = message || _this.attr('data-message');
+
+    // Fill before show(): the toast is aria-live, and showing the empty shell first meant
+    // screen readers announced nothing.
     _lt.find('.toast-title').html(title);
     _lt.find('.toast-body').html(message);
-    _lt.find('.toast-code').html(code);
+
+    // `code` is the internal rule that fired (STD, R+G, SU, …) — a developer breadcrumb a
+    // customer can do nothing with, so it only renders in debug mode.
+    var $code = _lt.find('.toast-code');
+    if (window.FC_DEBUG) {
+        $code.html(code).removeClass('d-none');
+    } else {
+        $code.empty().addClass('d-none');
+    }
+
+    toastBootstrap.show();
 }
 
 //----------------------------------------------------------------------------------
@@ -3091,6 +3194,55 @@ function submitModal_jsFencingModalClose() {
 
 //----------------------------------------------------------------------------------
 
+// FCModal is a hand-rolled fadeIn/fadeOut, not a Bootstrap modal, so Escape does not close
+// #submit-modal for free — neither the planner download wizard nor the project-plan editor.
+// Routed through the close button so the history push in submitModal_jsFencingModalClose
+// still runs.
+_doc.on('keydown', fcSubmitModalKeydown);
+
+function fcSubmitModalKeydown(e) {
+    if (e.key !== 'Escape' && e.key !== 'Esc') {
+        return;
+    }
+
+    var $modal = $('#submit-modal:visible');
+    if (!$modal.length) {
+        return;
+    }
+
+    $modal.find('.js-fencing-modal-close').first().trigger('click');
+}
+
+//----------------------------------------------------------------------------------
+
+/**
+ * Download-plans wizard floating labels: `.is-filled` on the field group keeps the label
+ * floated for fields that hold a value. Runs on load, on modal open, and after programmatic
+ * fills (restoreFormData, Google address autocomplete) - none of which fire input events.
+ */
+function fcSyncDownloadPlansFloatingLabels() {
+    $('.fencing-modal--download-plans .fc-label-group').each(function() {
+        var $group = $(this);
+        var value = String($group.find('.form-control').first().val() || '').trim();
+        $group.toggleClass('is-filled', value !== '');
+    });
+}
+
+_doc.on(
+    'input change keyup',
+    '.fencing-modal--download-plans .fc-label-group .form-control',
+    fcDownloadPlansFloatingLabelInput
+);
+
+function fcDownloadPlansFloatingLabelInput() {
+    var $group = $(this).closest('.fc-label-group');
+    $group.toggleClass('is-filled', String($(this).val() || '').trim() !== '');
+}
+
+$(fcSyncDownloadPlansFloatingLabels);
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.fc-btn-form-step', fcBtnFormStep);
 
 function fcBtnFormStep() {
@@ -3286,6 +3438,19 @@ function fcBtnCreatePlan() {
 
     // Show the first step of the form
     $('#submit-modal [data-formtab="1"]').show();
+
+    if (typeof fcSyncDownloadPlansFloatingLabels === 'function') {
+        fcSyncDownloadPlansFloatingLabels();
+    }
+
+    // Land the caret in the first field instead of leaving focus on the page behind.
+    // Pointer-coarse layouts are skipped: focusing there springs the keyboard open over
+    // a modal that is already full height.
+    if (window.matchMedia && window.matchMedia('(min-width: 992px)').matches) {
+        setTimeout(function() {
+            $('#submit-modal.fencing-modal--download-plans [data-formtab="1"] [name="name"]').trigger('focus');
+        }, 260);
+    }
 }
 
 //----------------------------------------------------------------------------------

@@ -760,6 +760,16 @@ FENCES.cartItems = {
             let found = false;
             let qty = 1;
 
+            // A node can stand in for more than itself. Slat Infill caps how many panels it
+            // renders (SlatFenceInfill.appendHiddenPanelsTile) while the cart is a raw count of
+            // [data-cart-key] nodes, so the capped panels were calculated, summarised in the
+            // "N more panels" tile, and then never billed. The renderer folds their quantity onto
+            // the last rendered node instead. No attribute = qty 1, so this is inert everywhere else.
+            let declaredQty = parseInt(el.getAttribute('data-cart-qty'), 10);
+            if (Number.isFinite(declaredQty) && declaredQty > 0) {
+                qty = declaredQty;
+            }
+
             //additional condition for some cart items
             if (cartKey === "gate") {
                 //Since `gate_kit` shares the same value with `gate`
@@ -912,10 +922,26 @@ FENCES.cartItems = {
      * @param {*} array 
      * @returns 
      */
+    /**
+     * Node count that honours data-cart-qty. Slat Infill caps how many panels it renders and folds
+     * the hidden panels' quantity onto the last rendered node, so a raw .length here under-counts
+     * the bracket line by exactly the panels the preview hides.
+     */
+    countNodesWithCartQty: function(nodes) {
+        var total = 0;
+        Array.prototype.forEach.call(nodes || [], function (el) {
+            var q = parseInt(el.getAttribute('data-cart-qty'), 10);
+            total += (Number.isFinite(q) && q > 0) ? q : 1;
+        });
+        return total;
+    },
+
+    //----------------------------------------------------------------------------------
+
     apply_panel_options_even: function(array, context) {
         //Get offcut size
         let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
-        let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
+        let getPanelItems = FENCES.cartItems.countNodesWithCartQty(document.querySelectorAll('.panel-item:not(.fencing-raked-panel)'));
         if (context && FENCES.cartItems.isBarrFence(context)) {
             getPanelItems = FENCES.cartItems.countBarrPanelItemsForBracket(document, context, array);
         }
@@ -938,7 +964,7 @@ FENCES.cartItems = {
     apply_panel_options_full: function(array, context) {
         //Get all short panel item
         let noOfShortPanel = document.querySelectorAll('.short-panel-item').length;
-        let getPanelItems = document.querySelectorAll('.panel-item:not(.fencing-raked-panel)').length;
+        let getPanelItems = FENCES.cartItems.countNodesWithCartQty(document.querySelectorAll('.panel-item:not(.fencing-raked-panel)'));
         let getRakedPanelItems = document.querySelectorAll('.panel-item.fencing-raked-panel').length;
         if (context && FENCES.cartItems.isBarrFence(context)) {
             getPanelItems = FENCES.cartItems.countBarrPanelItemsForBracket(document, context, array);

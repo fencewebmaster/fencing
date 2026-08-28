@@ -725,6 +725,11 @@ function restoreFormData() {
     }
 
     fcRestoreOtherProductsFromProjectPlans();
+
+    // Values above were set without events; float the labels of now-filled fields.
+    if (typeof fcSyncDownloadPlansFloatingLabels === 'function') {
+        fcSyncDownloadPlansFloatingLabels();
+    }
 }
 
 //----------------------------------------------------------------------------------
@@ -1382,6 +1387,91 @@ function fcApplyGlassPoolPanelSpacingWidths(tab, spacingMm, $root) {
 }
 
 /**
+ * Glass pool: minimum-length (zero regular panel) layouts render the hinge panel hard
+ * against the gate with no spacing strip between them, so the hinge-side gap (e.g. 10mm)
+ * vanished from the diagram while its width was still counted in the overall - reached
+ * routinely now that an under-entered Overall Length auto-adjusts to the assembly minimum.
+ * Recreate the strip; near_gate_spacing() then classes it and the hinge-type labelers keep
+ * its value current like any other gate-adjacent strip.
+ */
+function fcEnsureGlassPoolHingeGateGapLabel($fc, tab) {
+    if (!$fc || !$fc.length || String($fc.attr('data-type') || '') !== 'glass_pool') {
+        return;
+    }
+
+    var $gate = $fc.find('.fencing-panel-gate');
+    var $hinge = $fc.find('.extra-panel-item.hinge-panel, .extra-panel-item.hinge-panel-alt').first();
+    if (!$gate.length || !$hinge.length) {
+        return;
+    }
+
+    var gateIsLeft = $gate.hasClass('panel-gate-left');
+    var $from = gateIsLeft ? $hinge : $gate;
+    var $to = gateIsLeft ? $gate : $hinge;
+    if ($from.index() < 0 || $to.index() < 0 || $from.index() >= $to.index()) {
+        return;
+    }
+
+    var hingeMm = 10;
+    try {
+        var fd = typeof getSelectedFenceData === 'function' ? getSelectedFenceData(undefined, tab) : null;
+        var gateRows = (fd && fd.info ? fd.info : []).filter(function(r) {
+            return r && r.control_key === 'gate';
+        });
+        var gaps =
+            typeof FENCE !== 'undefined' && typeof FENCE.resolveGlassPoolHingeGapsMm === 'function'
+                ? FENCE.resolveGlassPoolHingeGapsMm(fd, gateRows)
+                : null;
+        if (gaps && Number(gaps.hinge) > 0) {
+            hingeMm = Number(gaps.hinge);
+        }
+    } catch (eGap) {}
+
+    // This junction is always the hinge gap. Re-assert the value even when a strip already
+    // exists: a re-render (e.g. the auto-adjust's second calculate) can rebuild it with the
+    // generic panel-gap label.
+    var $junction = $from.nextUntil($to).filter('.fencing-panel-spacing-number').first();
+    if ($junction.length) {
+        var $span = $junction.find('span:not(.fs-clamp)').first();
+        if ($span.length) {
+            $span.html(hingeMm);
+        } else {
+            $junction.append('<span>' + hingeMm + '</span>');
+        }
+        return;
+    }
+
+    $('<div class="fencing-panel-spacing-number fc-glass-hinge-gap-label"><span>' + hingeMm + '</span></div>')
+        .insertBefore($to);
+}
+
+/**
+ * Glass pool: two gap strips with no panel between them (latch gap + end gap on minimum
+ * layouts) sit a few px apart, so their mm labels fused into one number ("9" + "50" read
+ * as "950"). Drop every second label of an adjacent run one step down so both stay legible.
+ */
+function fcStaggerGlassPoolAdjacentGapLabels($fc) {
+    var $strips = $fc.find('.fencing-panel-spacing-number');
+    $strips.removeClass('fc-gap-label-stagger');
+
+    var prevRect = null;
+    var prevStaggered = false;
+    $strips.each(function() {
+        var rect = this.getBoundingClientRect();
+        if (!rect.width) {
+            return; // hidden container - geometry unknown, leave labels alone
+        }
+        if (prevRect && !prevStaggered && rect.left - prevRect.right < 14) {
+            $(this).addClass('fc-gap-label-stagger');
+            prevStaggered = true;
+        } else {
+            prevStaggered = false;
+        }
+        prevRect = rect;
+    });
+}
+
+/**
  * Glass pool: run hinge adjacency, uniform gap widths, and gate post cleanup after render.
  */
 function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab) {
@@ -1391,8 +1481,10 @@ function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab) {
     }
 
     fcEnsureGlassPoolHingeAdjacentToGate($fc);
+    fcEnsureGlassPoolHingeGateGapLabel($fc, tab);
     fcApplyGlassPoolPanelSpacingWidths(tab, spacingMm, $fc);
     fcNormalizeGlassPoolGateAdjacentPosts($fc);
+    fcStaggerGlassPoolAdjacentGapLabels($fc);
 }
 
 /**
@@ -6508,6 +6600,127 @@ function loadClearForm() {
     });
 }
 
+/**
+ * Glass-solver auto-fit state. `pending` dedupes the two render sites that both report the
+ * same failed calc in one pass; `setTo`/`attempts` stop a loop if a solver-suggested length
+ * ever fails on the retry (it should not - candidates are solver-verified).
+ */
+var fcGlassOalAutoFit = { pending: false, setTo: null, attempts: 0 };
+
+/**
+ * Render the calc solver message ('.err-message', Step 3).
+ *
+ * When the glass solver fails but reports a verified buildable length (selected_values
+ * .closest_lengths), the planner no longer shows the red error: it snaps Overall Length to
+ * the nearest working value, re-runs the normal Calculate flow, and announces the change in
+ * the top-right toast. The red error remains the fallback for failures with no known fix.
+ * Calculation logic is untouched - this is the same correction the customer used to type in
+ * by hand.
+ */
+function fcApplyCalcSolutionMessage(calc) {
+    var msg = (calc && calc.selected_values && calc.selected_values.message) || '';
+
+    if (!msg) {
+        $('.err-message').html('');
+        fcGlassOalAutoFit.setTo = null;
+        fcGlassOalAutoFit.attempts = 0;
+        return;
+    }
+
+    // An auto-fit is already scheduled for this pass - keep the error hidden, the retry decides.
+    if (fcGlassOalAutoFit.pending) {
+        $('.err-message').html('');
+        return;
+    }
+
+    var $box = $('.measurement-box-number').first();
+    var entered = parseInt(String($box.val() || '').replace(/,/g, ''), 10);
+
+    // Manual edit since our last fix - the guard belongs to the old value.
+    if (fcGlassOalAutoFit.setTo !== null && entered !== fcGlassOalAutoFit.setTo) {
+        fcGlassOalAutoFit.setTo = null;
+        fcGlassOalAutoFit.attempts = 0;
+    }
+
+    var target = fcPickClosestBuildableLength(calc.selected_values.closest_lengths, entered, $box);
+
+    if (!target || fcGlassOalAutoFit.attempts >= 1) {
+        $('.err-message').html(msg);
+        return;
+    }
+
+    fcGlassOalAutoFit.pending = true;
+    fcGlassOalAutoFit.setTo = target;
+    fcGlassOalAutoFit.attempts += 1;
+    $('.err-message').html('');
+
+    // Deferred so the failing calculate pass finishes rendering before the corrected one starts.
+    setTimeout(function() {
+        fcGlassOalAutoFit.pending = false;
+
+        $('.measurement-box-number').val(target).attr('data-last', String(target));
+
+        if (typeof popupToast === 'function') {
+            popupToast(
+                'Overall Length adjusted',
+                'Glass panels can\'t be cut to fit <b>' + fcFormatMm(entered) + ' mm</b> exactly, so ' +
+                    'Overall Length was set to <b>' + fcFormatMm(target) + ' mm</b> — the closest ' +
+                    'length that works.',
+                'GP-FIT'
+            );
+        }
+
+        if (typeof btnCalculate === 'function') {
+            btnCalculate();
+        } else {
+            $('.btn-fc-calculate').first().trigger('click');
+        }
+    }, 0);
+}
+
+/**
+ * Nearest of the solver's shortenTo/extendTo to what the customer entered, respecting the
+ * input's data-min/data-max. Tie prefers shortening - never silently plans past the space
+ * the customer measured.
+ */
+function fcPickClosestBuildableLength(closest, entered, $box) {
+    if (!closest || !Number.isFinite(entered)) {
+        return 0;
+    }
+
+    var min = parseInt($box.attr('data-min') || '', 10);
+    var max = parseInt($box.attr('data-max') || '', 10);
+
+    var candidates = [closest.shortenTo, closest.extendTo].filter(function(mm) {
+        if (!Number.isFinite(mm) || mm <= 0 || mm === entered) {
+            return false;
+        }
+        if (Number.isFinite(min) && mm < min) {
+            return false;
+        }
+        if (Number.isFinite(max) && mm > max) {
+            return false;
+        }
+        return true;
+    });
+
+    if (!candidates.length) {
+        return 0;
+    }
+
+    candidates.sort(function(a, b) {
+        var d = Math.abs(entered - a) - Math.abs(entered - b);
+        return d !== 0 ? d : a - b; // tie: smaller (shorten) first
+    });
+
+    return candidates[0];
+}
+
+/** 1234567 -> "1,234,567" for toast copy. */
+function fcFormatMm(mm) {
+    return String(mm).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
 //----------------------------------------------------------------------------------
 
 function updateOverAllLength(data) {
@@ -6895,7 +7108,7 @@ function updateOverAllLength(data) {
 */
 	
 	if( !gateOnly ) {
-		$('.err-message').html(calc.selected_values.message || '');
+		fcApplyCalcSolutionMessage(calc);
 	} else {
 		$('.err-message').html('');
 	}
@@ -7769,6 +7982,10 @@ function fillInAddress() {
         }
     }
     document.querySelector("#address").value = address1.join(', ');
+
+    if (typeof fcSyncDownloadPlansFloatingLabels === 'function') {
+        fcSyncDownloadPlansFloatingLabels();
+    }
 }
 
 //----------------------------------------------------------------------------------
