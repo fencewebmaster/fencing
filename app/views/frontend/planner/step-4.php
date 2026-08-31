@@ -16,30 +16,39 @@
                 </div>
             </div>
 
-            <template id="fc-planner-color-options-skeleton-card">
-                <div class="fc-card fc-mb-2 fc-color-options-skeleton" aria-hidden="true">
-                    <div class="fc-card-header fc-bg-dark fc-border-top fc-color-options-skeleton__header">
-                        <span class="fc-color-options-skeleton__header-bar" aria-hidden="true"></span>
-                    </div>
-                    <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
-                        <div class="fc-color-options-skeleton__track">
-                            <?php for ($i = 0; $i < 6; $i++) : ?>
-                            <div class="fc-color-options-skeleton__cell">
-                                <div class="fc-color-options-skeleton__tile">
-                                    <span class="fc-color-options-skeleton__line fc-color-options-skeleton__line--title"></span>
-                                    <span class="fc-color-options-skeleton__line fc-color-options-skeleton__line--sub"></span>
-                                </div>
-                            </div>
-                            <?php endfor; ?>
+        </div>
+
+    </div>
+
+    <template id="fc-planner-color-options-skeleton-card">
+        <div class="fc-card fc-mb-2 fc-color-options-skeleton" aria-hidden="true">
+            <div class="fc-card-header fc-bg-dark fc-border-top fc-color-options-skeleton__header">
+                <span class="fc-color-options-skeleton__header-bar" aria-hidden="true"></span>
+            </div>
+            <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
+                <div class="fc-color-options-skeleton__track">
+                    <?php for ($i = 0; $i < 6; $i++) : ?>
+                    <div class="fc-color-options-skeleton__cell">
+                        <div class="fc-color-options-skeleton__tile">
+                            <span class="fc-color-options-skeleton__line fc-color-options-skeleton__line--title"></span>
+                            <span class="fc-color-options-skeleton__line fc-color-options-skeleton__line--sub"></span>
                         </div>
                     </div>
+                    <?php endfor; ?>
                 </div>
-            </template>
+            </div>
+        </div>
+    </template>
+
+    <div class="fencing-section fencing-section--no-padding fencing-section--has-border fc-step4-notes">
+
+        <div class="fencing-section__top">
 
             <div class="fc-card">
                 
-                <div class="fc-card-header fc-bg-dark fc-border-top">
-                    Project Notes & Additional Details
+                <div class="fc-card-header fc-bg-dark fc-border-top fc-notes-header">
+                    <span class="fc-notes-header__title">Project Notes &amp; Additional Details</span>
+                    <span class="fc-notes-header__badge">Optional</span>
                 </div>
 
                 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border">
@@ -55,7 +64,7 @@
                 </div>
 
             </div>
-        
+
         </div>
 
         <div class="fencing-section__bottom py-3">
@@ -64,7 +73,7 @@
 
                     <div class="d-flex flex-wrap align-items-stretch gap-2 fc-step4-bottom-btns">
                         <?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>
-                        <div class="flex-shrink-0 d-flex order-1">
+                        <div class="flex-shrink-0 d-flex order-2">
                             <button type="submit" class="btn btn-orange fc-btn-update py-3 px-3 px-sm-4 text-uppercase align-self-stretch fc-step4-btn-update" disabled>
                                 <i class="fa-regular fa-pen-to-square me-1"></i>
                                 <b>UPDATE</b>
@@ -73,7 +82,7 @@
                             </button>
                         </div>
                         <?php endif; ?>
-                        <div class="flex-grow-1 d-flex order-2" style="min-width: 0;">
+                        <div class="flex-grow-1 d-flex justify-content-end order-3" style="min-width: 0;">
                             <?php $fc_step4_plan_btn_outline = @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name']; ?>
                             <button type="button"
                                 class="btn <?php echo $fc_step4_plan_btn_outline ? 'btn-orange-outline' : 'btn-orange'; ?> fc-btn-create-plan fencing-btn-modal h-100 py-3 px-3 px-sm-4 text-uppercase align-self-stretch"
@@ -88,7 +97,7 @@
                                 <small>View Costing, Plan & Materials List</small>
                             </button>
                         </div>
-                        <div class="flex-shrink-0 d-flex order-3 ms-auto">
+                        <div class="flex-shrink-0 d-flex order-1">
                             <button type="button"
                                 class="btn fc-btn-step btn-dark text-uppercase py-3 px-3 px-sm-4 align-self-stretch fc-step4-btn-back"
                                 data-tab="2"

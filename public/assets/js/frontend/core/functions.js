@@ -3042,15 +3042,24 @@ function fcSyncPlannerStep4ColorRowMarkers($scope) {
                     );
                 }
 
+                // Separator and trailing value are their own elements, not bare text nodes, so the
+                // fence name can lead and the colour read as a value beside it. The separator glyph
+                // is drawn in CSS; this element stays empty.
                 $titleText.empty();
                 if (fenceLabel) {
                     $titleText.append($('<strong>').text(fenceLabel));
                 }
-                if (has && colorTitle) {
-                    $titleText.append(document.createTextNode(' - ')).append(document.createTextNode(colorTitle));
-                } else {
-                    $titleText.append(document.createTextNode(' - Colour Options'));
-                }
+                $titleText.append(
+                    $('<span>', {
+                        class: 'fc-color-options-planner-title-sep',
+                        'aria-hidden': 'true'
+                    })
+                );
+                $titleText.append(
+                    $('<span>', { class: 'fc-color-options-planner-title-value' }).text(
+                        has && colorTitle ? colorTitle : 'Choose a Colour'
+                    )
+                );
             }
         }
     });

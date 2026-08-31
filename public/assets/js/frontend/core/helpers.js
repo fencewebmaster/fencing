@@ -661,7 +661,11 @@ HELPER = {
 
         if (step >= 1) {
             $items.css({ 'padding-top': raked_panel_mt, 'zoom': step });
-            $result.css({ 'margin-top': 'auto', 'overflow-y': 'auto' });
+            // raked_panel_mt, not 'auto': margin-top: auto resolves to 0 outside a flex or grid
+            // parent, so zooming in pulled the result panel flush against the section heading and
+            // its zoom controls. This is the same value the step == 1 branch below restores, so the
+            // gap now holds steady across zoom in, zoom out and Reset.
+            $result.css({ 'margin-top': raked_panel_mt, 'overflow-y': 'auto' });
         } else {
             $items.css({ 'zoom': step });
             $result.css({ 'overflow-y': 'auto' });

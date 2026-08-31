@@ -1545,6 +1545,147 @@ function fencingTabAdd(e) {
 
 //----------------------------------------------------------------------------------
 
+/* Reset and Delete Section discard work the same way Clear All does, so they get the same
+   confirm dialog (planner/modals.php).
+
+   Gated in the capture phase rather than inside each handler: the Step 3 Reset button carries
+   both .fc-fence-reset-all and .fc-fence-reset, so one click runs two separate delegated
+   handlers, and a guard inside either one would let the other through. Capturing on document
+   stops the event before it ever reaches them. */
+var FC_CONFIRM_ACTIONS = [
+    { selector: '.js-btn-delete-fence', modal: '#fc-delete-section-confirm', needsConfirm: fcSectionHasFenceStyle },
+    { selector: '.fc-fence-reset-all, .fc-fence-reset', modal: '#fc-reset-section-confirm', needsConfirm: fcSectionIsCalculated }
+];
+
+var fcConfirmPendingEl = null;
+
+/** The active section's stored record, or null. Same shape the tab strip reads for its own labels. */
+function fcActiveSectionData() {
+    var tab = $('.fencing-tab.fencing-tab-selected').index(),
+        raw = tab > -1 ? localStorage.getItem('custom_fence-' + tab) : null,
+        data = [];
+
+    if (raw) {
+        try {
+            data = JSON.parse(raw);
+        } catch (e) {
+            data = [];
+        }
+    }
+
+    return (data && data[0]) ? data[0] : null;
+}
+
+// An empty section has nothing to lose, so deleting it needs no confirming. The DOM check covers
+// a style picked but not yet written to storage.
+function fcSectionHasFenceStyle() {
+    var data = fcActiveSectionData();
+
+    return !!(data && data.style) || $('.fencing-style-item.fsi-selected').length > 0;
+}
+
+// Until Step 2 is calculated the section holds no measurements, so Reset discards nothing worth
+// warning about. calculateValue is the same field the tab strip uses to show "9,000 mm".
+function fcSectionIsCalculated() {
+    var data = fcActiveSectionData();
+
+    return !!(data && data.calculateValue);
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target || typeof e.target.closest !== 'function') {
+        return;
+    }
+
+    for (var i = 0; i < FC_CONFIRM_ACTIONS.length; i++) {
+        var el = e.target.closest(FC_CONFIRM_ACTIONS[i].selector);
+
+        if (!el) {
+            continue;
+        }
+
+        // The re-fire from the confirm button. Clear the pass and let it through untouched.
+        if (el.getAttribute('data-fc-confirmed') === '1') {
+            el.removeAttribute('data-fc-confirmed');
+            return;
+        }
+
+        // Nothing destructive to warn about yet — let the action run straight through.
+        if (typeof FC_CONFIRM_ACTIONS[i].needsConfirm === 'function' && !FC_CONFIRM_ACTIONS[i].needsConfirm()) {
+            return;
+        }
+
+        var modal = document.querySelector(FC_CONFIRM_ACTIONS[i].modal);
+
+        // No dialog on the page (project-plan includes these controls without modals.php) —
+        // fall through to the original behaviour rather than blocking the button outright.
+        if (!modal || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+        fcConfirmPendingEl = el;
+        bootstrap.Modal.getOrCreateInstance(modal).show();
+        return;
+    }
+}, true);
+
+_doc.on('click', '.js-fc-confirm-proceed', fcConfirmProceed);
+
+function fcConfirmProceed() {
+    var el = fcConfirmPendingEl,
+        modal = this.closest ? this.closest('.modal') : null;
+
+    fcConfirmPendingEl = null;
+
+    if (!el) {
+        return;
+    }
+
+    // Closing is left to data-bs-dismiss on the button so it never depends on this handler.
+    // Re-fire only once the dialog has finished closing: the reset and delete handlers tear down
+    // the DOM the modal is measuring against, and Bootstrap leaves a stuck backdrop if it is
+    // mid-transition when that happens.
+    //
+    // Native listener rather than $.one(): jQuery reads the dots in "hidden.bs.modal" as
+    // namespaces, so it binds type "hidden" and the callback is at the mercy of Bootstrap's
+    // jQuery bridge. The timeout is the backstop for a modal that never emits the event.
+    if (!modal) {
+        fcConfirmRefire(el);
+        return;
+    }
+
+    var done = false,
+        finish = function() {
+            if (done) {
+                return;
+            }
+            done = true;
+            modal.removeEventListener('hidden.bs.modal', finish);
+
+            // Yield a turn before acting. Bootstrap is still inside its own hidden handling here
+            // — removing the backdrop and the body class — and Delete Section rebuilds the tab
+            // strip, which interrupts that and leaves the dialog and backdrop stuck on screen.
+            setTimeout(function() {
+                fcConfirmRefire(el);
+            }, 0);
+        };
+
+    modal.addEventListener('hidden.bs.modal', finish);
+
+    // Backstop for a dialog that never emits the event. Comfortably past Bootstrap's 300ms fade
+    // so it does not pre-empt the real one.
+    setTimeout(finish, 800);
+}
+
+function fcConfirmRefire(el) {
+    el.setAttribute('data-fc-confirmed', '1');
+    el.click();
+}
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.fc-fence-reset-all', fcFenceResetAll);
 
 function fcFenceResetAll(e) {
@@ -3839,13 +3980,21 @@ _doc.on('keydown', function(e) {
     [START] KEYUP EVENT
     ---------------------------------------------------------------- */
 
-_doc.on('keyup', '.has-clear .form-control', hasClear_formControl);
+_doc.on('keyup input change', '.has-clear .form-control', hasClear_formControl);
 
 function hasClear_formControl() {
     var _this = $(this),
-        clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`;
-    _this.siblings('.form-control-clear').remove();
-    if (_this.val()) _this.after(clear);
+        clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`,
+        shown = _this.siblings('.form-control-clear').length > 0,
+        wanted = !!_this.val();
+
+    if (shown === wanted) return;
+
+    if (wanted) {
+        _this.after(clear);
+    } else {
+        _this.siblings('.form-control-clear').remove();
+    }
 }
 
 //----------------------------------------------------------------------------------

@@ -5,7 +5,7 @@
             <span class="fc-color-options-planner-status-icon fc-color-options-planner-status-icon--bad" aria-hidden="true">
                 <i class="fa-solid fa-exclamation fc-color-options-planner-status-icon__inner"></i>
             </span>
-            <span class="fc-color-options-planner-title-text"><strong>{{title}}</strong> - Colour Options</span>
+            <span class="fc-color-options-planner-title-text"><strong>{{title}}</strong><span class="fc-color-options-planner-title-sep" aria-hidden="true"></span><span class="fc-color-options-planner-title-value">Choose a Colour</span></span>
         </div>
         <span class="fc-color-options-section-count text-nowrap" aria-label="Number of fence sections">{{section_count_label}}</span>
     </div>

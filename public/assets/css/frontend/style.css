@@ -121,6 +121,9 @@
     --fc-fiery-orange: #cb6520;
     --fc-trout: #4b5156;
     --fc-matterhorn: #414141;
+
+    /* Action-button hover shadow, shared so the pages cannot drift apart. */
+    --fc-btn-hover-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
 }
 
 html {
@@ -222,7 +225,7 @@ html:has(body.fc-planner-page) {
     padding: 6px 20px !important;
 }
 .fc-planner-page .fencing-section__bottom.fc-step3-bottom .btn {
-    padding: 15px 20px !important;
+    padding: 10px 18px !important;
 }
 
 /* Step 3 bottom bar: phones + tablet/iPad until xl (stack or 3-col row); single strip from xl */
@@ -364,13 +367,6 @@ html:has(body.fc-planner-page) {
 .fc-planner-page [data-load="color-options"] .fc-card-header {
     padding: 6px 10px;
     font-size: 0.875rem;
-}
-
-.fc-planner-page [data-load="color-options"] .fc-color-options-section-count {
-    margin-left: auto;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    opacity: 0.9;
 }
 
 .fc-planner-page [data-load="color-options"] .fc-color-options-section-count:empty {
@@ -682,20 +678,84 @@ html:has(body.fc-planner-page) {
     }
 }
 
+/* A solid bootstrap-red disc ringed in white was the loudest thing on a dark header, and it shouted
+   equally whether the row was done or not. A tinted disc with a ring and a coloured glyph carries
+   the same state at a fraction of the volume: the fence name leads, the badge qualifies it.
+   rgba first as the fallback, then color-mix for browsers that have it. */
 .fc-planner-page .fc-step-4 .fc-color-options-planner-status-icon--good {
-    background-color: #198754;
-    border: 1px solid #fff;
+    background-color: rgba(25, 195, 125, 0.18);
+    background-color: color-mix(in srgb, var(--fc-green, #04a725) 22%, transparent);
+    border: 1px solid rgba(25, 195, 125, 0.55);
+    border-color: color-mix(in srgb, var(--fc-green, #04a725) 55%, transparent);
+    color: #3ddc97;
 }
 
 .fc-planner-page .fc-step-4 .fc-color-options-planner-status-icon--bad {
-    background-color: #dc3545;
-    border: 1px solid #fff;
+    background-color: rgba(246, 121, 37, 0.2);
+    background-color: color-mix(in srgb, var(--fc-princeton-orange) 24%, transparent);
+    border: 1px solid rgba(246, 121, 37, 0.6);
+    border-color: color-mix(in srgb, var(--fc-princeton-orange) 60%, transparent);
+    color: #ffb37a;
 }
 
 .fc-planner-page .fc-step-4 .fc-color-options-planner-status-icon__inner {
-    color: #fff;
-    font-size: 12px;
+    color: inherit;
+    font-size: 10px;
     line-height: 1;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Step 4 colour-option card header: "Flat Top - Monument".
+   The fence name and the colour were one undifferentiated run of text, so the thing that changes
+   (the colour) read no differently from the thing that labels it.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .fc-step-4 .fc-color-options-planner-title-text {
+    display: inline-flex;
+    align-items: baseline;
+    min-width: 0;
+    font-size: 14px;
+}
+
+.fc-planner-page .fc-step-4 .fc-color-options-planner-title-text > strong {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+/* Drawn here rather than in the markup so the JS re-render cannot lose it. */
+.fc-planner-page .fc-step-4 .fc-color-options-planner-title-sep::before {
+    content: "–";
+    margin: 0 8px;
+    opacity: 0.45;
+}
+
+.fc-planner-page .fc-step-4 .fc-color-options-planner-title-value {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.88);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Unpicked rows carry a prompt, not a value — lighter, so a real colour name stands out. */
+.fc-planner-page .fc-step-4 .fc-planner-color-options-row--unselected .fc-color-options-planner-title-value {
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* The section count keeps its pill but takes the step subtitle's type (.fencing-content-title:
+   16px / normal, untracked, no transform). Colour stays white — that rule's black is written for
+   a white card, and this pill sits on the dark header. */
+.fc-planner-page [data-load="color-options"] .fc-color-options-section-count {
+    margin-left: auto;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.12);
+    font-size: 16px;
+    font-weight: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    opacity: 1;
 }
 
 .fc-planner-page .fc-step-4 .fc-color-options-planner-title-text {
@@ -1254,6 +1314,11 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     max-width: 100%;
 }
 
+/* Project plan Colour Options on phones: one slide per view with dots and no arrows
+   (see slick/project-plan-color.js). The tile carries an inline max-width:250px from
+   your-project-details.php, which outranks any selector here — !important is the only way to
+   let the card use the full slide it now owns. The dot row drops the 96px it reserved for the
+   arrows that are no longer rendered. */
 .fc-project-plan-page .fc-project-plan-color-slick-area .fencing-styles-arrow.slick-disabled {
     opacity: 0.28;
     pointer-events: none;
@@ -1275,7 +1340,20 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     display: none !important;
 }
 
+/* Shared carousel pager — project plan Colour Options, planner Step 4 Colour Options and the
+   submit modal's copy. One definition, every breakpoint. Retune the three custom properties
+   rather than adding per-breakpoint overrides; only the width/clearance genuinely differs by
+   size, and those deltas live in the two media queries further down.
+   The dot is the button itself: Slick's "•" glyph is suppressed because a drawn shape stays
+   crisp at any DPI and lets the current slide widen into a pill, which reads far faster than
+   an opacity change across identical dots. The li carries the touch target so the visible dot
+   can stay small without being hard to hit. */
+#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots,
+.fc-planner-page .js-fc-color-options-slick .slick-dots,
 .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots {
+    --fc-dot-size: 9px;
+    --fc-dot-active-width: 26px;
+    --fc-dot-idle: rgba(0, 0, 0, 0.24);
     position: absolute;
     left: 50%;
     bottom: 8px;
@@ -1289,59 +1367,64 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    gap: 8px;
 }
 
+#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li,
+.fc-planner-page .js-fc-color-options-slick .slick-dots li,
 .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li {
     position: relative;
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin: 0;
-    width: auto;
-    height: auto;
     padding: 0;
+    width: auto;
+    min-height: 40px;
 }
 
+#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button:before,
+.fc-planner-page .js-fc-color-options-slick .slick-dots li button:before,
+.fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li button:before {
+    display: none;
+}
+
+#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button,
+.fc-planner-page .js-fc-color-options-slick .slick-dots li button,
 .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li button {
-    width: 22px;
-    height: 22px;
+    width: var(--fc-dot-size);
+    height: var(--fc-dot-size);
     padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--fc-dot-idle);
     font-size: 0;
     line-height: 0;
+    transition: width 0.2s ease, background-color 0.2s ease;
 }
 
-.fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li button:before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-    line-height: 18px;
-    opacity: 0.45;
-    color: var(--fc-black);
+#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li.slick-active button,
+.fc-planner-page .js-fc-color-options-slick .slick-dots li.slick-active button,
+.fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li.slick-active button {
+    width: var(--fc-dot-active-width);
+    background: var(--fc-princeton-orange);
 }
 
-.fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li.slick-active button:before {
-    opacity: 1;
-    color: var(--fc-princeton-orange);
+#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button:focus-visible,
+.fc-planner-page .js-fc-color-options-slick .slick-dots li button:focus-visible,
+.fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li button:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 3px;
 }
 
-@media (max-width: 767.98px) {
-
-    /* Project plan Slick: arrows only on mobile — no bullet pager */
-    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots {
-        display: none !important;
-    }
-
-    .fc-project-plan-page .js-fc-project-plan-color-slick.slick-slider,
-    .fc-project-plan-page .fc-table--colour.project-details--editable .fc-project-plan-color-slick-area .js-fc-project-plan-color-slick.slick-slider {
-        padding-bottom: 22px;
-    }
-
-    .fc-project-plan-page .fc-project-plan-color-slick-area.fc-project-plan-color-slick-single-page .js-fc-project-plan-color-slick.slick-slider {
-        padding-bottom: 0;
+@media (prefers-reduced-motion: reduce) {
+    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li button,
+    .fc-planner-page .js-fc-color-options-slick .slick-dots li button,
+    #submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button {
+        transition: none;
     }
 }
+
 
 @media (min-width: 768px) and (max-width: 991.98px) {
     .fc-project-plan-page .js-fc-project-plan-color-slick.slick-slider {
@@ -1372,50 +1455,55 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
         right: -36px;
     }
 
+    /* Arrows sit closer in at this size, so the pager keeps a little less width clear. */
     .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots {
         max-width: calc(100% - 88px);
-        gap: 10px;
         bottom: 6px;
-    }
-
-    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li button {
-        width: 20px;
-        height: 20px;
-    }
-
-    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li button:before {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-        line-height: 16px;
-    }
-
-    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li.slick-active button:before {
-        opacity: 1;
-        color: var(--fc-princeton-orange);
     }
 }
 
-@media (max-width: 575.98px) {
-    .fc-project-plan-page .fc-project-plan-color-slick-area {
-        padding-left: 40px;
-        padding-right: 40px;
-        box-sizing: border-box;
+/* Phone rules sit AFTER the <=991.98px block on purpose: both are max-width media queries of
+   equal specificity, so the later one wins, and the tablet block would otherwise re-impose
+   arrow-era dot sizing (20px dots, gap 10px, max-width calc(100% - 88px)) on phones. */
+@media (max-width: 767.98px) {
+
+    /* Project plan Slick on phones: the bullet pager IS the affordance now that the arrows are
+       gone (slick/project-plan-color.js turns them off below 768). Padding is back up from the
+       old 22px so the dot row has somewhere to sit. */
+    .fc-project-plan-page .js-fc-project-plan-color-slick.slick-slider,
+    .fc-project-plan-page .fc-table--colour.project-details--editable .fc-project-plan-color-slick-area .js-fc-project-plan-color-slick.slick-slider {
+        padding-bottom: 38px;
     }
 
-    .fc-project-plan-page .fc-table--colour.project-details--editable .fc-project-plan-color-slick-area {
+    .fc-project-plan-page .fc-project-plan-color-slick-area.fc-project-plan-color-slick-single-page .js-fc-project-plan-color-slick.slick-slider {
+        padding-bottom: 0;
+    }
+
+    /* The tile carries an inline max-width:250px from your-project-details.php, which
+       outranks any selector here — !important is the only way to let it fill the slide. */
+    .fc-project-plan-page .fc-project-plan-color__slide .fc-colour-item {
+        max-width: 100% !important;
+    }
+
+    /* Card runs the full width of its cell — nothing sits beside it any more. */
+    .fc-project-plan-page .fc-project-plan-color-slick-area {
         padding-left: 0;
         padding-right: 0;
     }
 
-    .fc-project-plan-page .fc-project-plan-color-slick-area .slick-prev.fencing-styles-arrow {
+    /* No arrows down here, so the pager spans the row instead of hugging the centre. */
+    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots {
         left: 0;
-    }
-
-    .fc-project-plan-page .fc-project-plan-color-slick-area .slick-next.fencing-styles-arrow {
-        right: 0;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        padding: 0 8px;
+        box-sizing: border-box;
     }
 }
+/* The 40px side padding that used to sit here reserved room for the carousel arrows on small
+   phones. Phones render no arrows now (slick/project-plan-color.js), so the padding was pure
+   white space either side of the card and the arrow-repositioning rules beside it were dead. */
 
 /* Project plan: primary cart CTA (overrides compact .btn rules) */
 .fc-project-plan-page .fc-cart-items .btn-submit.btn-green.btn-lg {
@@ -2571,7 +2659,8 @@ a.fc-tab-active {
     width: auto;
     max-width: none;
     box-sizing: border-box;
-    background-color: var(--fc-white);
+    background-color: var(--fc-cultured);
+    border-top: 1px solid var(--fc-princeton-orange);
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
     transition:
         padding-top 0.2s ease,
@@ -5499,58 +5588,6 @@ thead.fc-border th:last-child {
     display: none !important;
 }
 
-#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots {
-    position: absolute;
-    left: 50%;
-    bottom: 8px;
-    transform: translateX(-50%);
-    width: auto;
-    max-width: calc(100% - 120px);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex !important;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-}
-
-#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li {
-    position: relative;
-    display: inline-flex;
-    margin: 0;
-    width: auto;
-    height: auto;
-    padding: 0;
-}
-
-#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    font-size: 0;
-    line-height: 0;
-}
-
-#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button:before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-    line-height: 18px;
-    opacity: 0.45;
-    color: var(--fc-black);
-}
-
-#submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li.slick-active button:before {
-    opacity: 1;
-    color: var(--fc-princeton-orange);
-}
-
 @media (max-width: 991.98px) {
     #submit-modal.fencing-modal--project-plans .js-fc-color-options-slick.slick-slider {
         padding-bottom: 40px;
@@ -5580,43 +5617,13 @@ thead.fc-border th:last-child {
 
     #submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots {
         max-width: calc(100% - 96px);
-        gap: 12px;
         bottom: 6px;
     }
-
-    #submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button {
-        width: 20px;
-        height: 20px;
-    }
-
-    #submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li button:before {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-        line-height: 16px;
-    }
-
-    #submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots li.slick-active button:before {
-        opacity: 1;
-        color: var(--fc-princeton-orange);
-    }
 }
 
-@media (max-width: 575.98px) {
-    #submit-modal.fencing-modal--project-plans .fc-color-options-slick-area {
-        padding-left: 44px;
-        padding-right: 44px;
-        box-sizing: border-box;
-    }
-
-    #submit-modal.fencing-modal--project-plans .fc-color-options-slick-area .slick-prev.fencing-styles-arrow {
-        left: 0;
-    }
-
-    #submit-modal.fencing-modal--project-plans .fc-color-options-slick-area .slick-next.fencing-styles-arrow {
-        right: 0;
-    }
-}
+/* The 44px side gutters that used to sit here reserved room for the carousel arrows on narrow
+   screens. The modal renders no arrows below 768 (slick/color-options.js), so they were 88px of
+   white space either side of the track, and the two arrow-offset rules beside them were dead. */
 
 /**
  * Project-plan submit modal — larger Update button.
@@ -5823,7 +5830,6 @@ thead.fc-border th:last-child {
 
 .btn-green {
     background: var(--fc-green) !important;
-    border-bottom: 4px solid var(--fc-forest-green) !important;
     color: var(--fc-white) !important;
 }
 
@@ -5833,7 +5839,6 @@ thead.fc-border th:last-child {
 
 .btn-fc-blue {
     background: var(--fc-allports) !important;
-    border-bottom: 4px solid var(--fc-deep-blue) !important;
     color: var(--fc-white) !important;
 }
 
@@ -6487,7 +6492,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__bottom.fc-step3-bottom {
-    padding-top: 1.25rem !important;
+    padding-top: 0.75rem !important;
 }
 
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-panel-solution-msg:not(:empty) {
@@ -6803,7 +6808,7 @@ thead.fc-border th:last-child {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0;
+    gap: 5px;
 }
 
 .fc-planner-summary-btn {
@@ -7362,7 +7367,7 @@ thead.fc-border th:last-child {
     }
 }
 
-@media (min-width: 1024px) {
+@media (hover: hover) {
     .fencing-panel-controls .btn-fc:hover {
         border-color: var(--fc-princeton-orange);
         background-color: var(--fc-princeton-orange);
@@ -8369,16 +8374,17 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
 @media (max-width: 767.98px) {
 
-    /* Planner Slick: arrows only on mobile — no bullet pager */
-    .fc-planner-page .js-fencing-styles-slick .slick-dots,
-    .fc-planner-page .js-fc-color-options-slick .slick-dots {
+    /* Step 1 fence styles still navigate by arrows on a phone, so their pager stays hidden.
+       Step 4 colour options no longer does (slick/color-options.js) — its pager is the
+       affordance now, and it needs room below the track to sit in. */
+    .fc-planner-page .js-fencing-styles-slick .slick-dots {
         display: none !important;
     }
 
-    .fc-planner-page .js-fencing-styles-slick.slick-slider,
-    .fc-planner-page .js-fc-color-options-slick.slick-slider {
+    .fc-planner-page .js-fencing-styles-slick.slick-slider {
         padding-bottom: 26px;
     }
+
 
     .fc-planner-page .fencing-styles__area.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
     .fc-planner-page .fencing-styles.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
@@ -8608,58 +8614,6 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     display: none !important;
 }
 
-.fc-planner-page .js-fc-color-options-slick .slick-dots {
-    position: absolute;
-    left: 50%;
-    bottom: 8px;
-    transform: translateX(-50%);
-    width: auto;
-    max-width: calc(100% - 120px);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex !important;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-}
-
-.fc-planner-page .js-fc-color-options-slick .slick-dots li {
-    position: relative;
-    display: inline-flex;
-    margin: 0;
-    width: auto;
-    height: auto;
-    padding: 0;
-}
-
-.fc-planner-page .js-fc-color-options-slick .slick-dots li button {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    font-size: 0;
-    line-height: 0;
-}
-
-.fc-planner-page .js-fc-color-options-slick .slick-dots li button:before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-    line-height: 18px;
-    opacity: 0.45;
-    color: var(--fc-black);
-}
-
-.fc-planner-page .js-fc-color-options-slick .slick-dots li.slick-active button:before {
-    opacity: 1;
-    color: var(--fc-princeton-orange);
-}
-
 .slick-dotted.slick-slider {
     margin-bottom: 0 !important;
 }
@@ -8697,44 +8651,226 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
     .fc-planner-page .js-fc-color-options-slick .slick-dots {
         max-width: calc(100% - 96px);
-        gap: 12px;
         bottom: 6px;
     }
-
-    .fc-planner-page .js-fc-color-options-slick .slick-dots li button {
-        width: 20px;
-        height: 20px;
-    }
-
-    .fc-planner-page .js-fc-color-options-slick .slick-dots li button:before {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-        line-height: 16px;
-    }
-
-    .fc-planner-page .js-fc-color-options-slick .slick-dots li.slick-active button:before {
-        opacity: 1;
-        color: var(--fc-princeton-orange);
-    }
 }
 
-/* Narrow screens: keep arrows in side gutters so they stay visible (no negative offset past viewport) */
-@media (max-width: 575.98px) {
-    .fc-planner-page .fc-color-options-slick-area {
-        padding-left: 44px;
-        padding-right: 44px;
+/* Phone pager for Step 4 colour options. It has to follow the <=991.98px block above: both are
+   max-width queries of equal specificity, so the later one wins, and that block would otherwise
+   re-impose the arrow-era max-width on phones that no longer render arrows. */
+@media (max-width: 767.98px) {
+    /* Clear the pager: the dot row is 40px tall and sits 8px off the bottom, so anything
+       under 48px lets it overlap the track. A later base rule sets 40px, which is why this
+       lives here rather than in the earlier phone block. */
+    .fc-planner-page .js-fc-color-options-slick.slick-slider {
+        padding-bottom: 52px;
+    }
+
+    .fc-planner-page .js-fc-color-options-slick .slick-dots {
+        left: 0;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        padding: 0 8px;
         box-sizing: border-box;
     }
+}
 
-    .fc-planner-page .fc-color-options-slick-area .slick-prev.fencing-styles-arrow {
-        left: 0;
+/* Phone peek for both Colour Options carousels: the first card sits full width and the next one
+   is deliberately clipped and faded at the right edge, so it reads as "there is more, swipe" the
+   moment the carousel appears — a pager alone only tells you that after you have looked down.
+   Slick derives slide width from the CONTENT width of .slick-list, so padding-right narrows the
+   slides and the following one shows through in the padding. The fade is a mask rather than a
+   gradient overlay, so it needs no knowledge of whatever colour sits behind the carousel and
+   costs no extra element. Placed last: earlier phone rules for these two carousels would
+   otherwise win on source order. */
+@media (max-width: 767.98px) {
+    .fc-planner-page .js-fc-color-options-slick .slick-list,
+    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-list {
+        padding-right: 64px;
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 72px), transparent 100%);
+        mask-image: linear-gradient(to right, #000 calc(100% - 72px), transparent 100%);
     }
 
-    .fc-planner-page .fc-color-options-slick-area .slick-next.fencing-styles-arrow {
-        right: 0;
+    /* A single slide has nothing to peek at, so drop both the reserved strip and the fade. */
+    .fc-planner-page .fc-color-options-slick-area.fc-color-options-slick-single-page .js-fc-color-options-slick .slick-list,
+    .fc-project-plan-page .fc-project-plan-color-slick-area.fc-project-plan-color-slick-single-page .js-fc-project-plan-color-slick .slick-list {
+        padding-right: 0;
+        -webkit-mask-image: none;
+        mask-image: none;
     }
 }
+
+/* Phones: give the carousels the full width of the cell they sit in. The generic
+   .fc-table-rounded-border table td rule pads every cell by 10px, which is right for text rows
+   but just crops the track here — the cards carry their own internal padding already. Vertical
+   padding is kept so the rows above and below still breathe. */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page .fc-table-rounded-border table td.fc-table--colour__slick-cell {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .fc-planner-page .fc-color-options-slick-area,
+    #submit-modal.fencing-modal--project-plans .fc-color-options-slick-area {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Pager spans the row rather than keeping the old arrow clearance. */
+    #submit-modal.fencing-modal--project-plans .js-fc-color-options-slick .slick-dots {
+        left: 0;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        padding: 0 8px;
+        box-sizing: border-box;
+    }
+}
+
+/* Project details on phones: label above value instead of beside it. Fixed label columns (100px
+   for customer details, 180px for the fence rows) left the value a fraction of a 315px table, so
+   long emails, addresses and fence-type lists wrapped hard while a third of the row sat empty.
+   Stacking gives both the full width and reads as a list of facts rather than a squeezed grid.
+   Two tables share this: the customer one, and the Fence Type / When Needed / Other Items one,
+   which is a plain .fc-table reached through its wrapper. The Colour Options table carries
+   project-details--edit on the <table> rather than the wrapper, so it stays out of this.
+   The generic .fc-table-rounded-border rule borders every cell, which would box the label and
+   the value separately once they are block-level — so cell borders come off and one rule
+   separates each pair instead. */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page .fc-table.fc-table-customer,
+    .fc-project-plan-page .fc-table.fc-table-customer tbody,
+    .fc-project-plan-page .fc-table.fc-table-customer tr,
+    .fc-project-plan-page .fc-table.fc-table-customer td,
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table,
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tbody,
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr,
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .fc-project-plan-page .fc-table-rounded-border table.fc-table-customer td,
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table td {
+        border: 0;
+        padding: 0;
+    }
+
+    /* Only genuine label/value rows get the separator — the notes row is a lone cell and would
+       otherwise pick up padding it does not need. */
+    .fc-project-plan-page .fc-table.fc-table-customer tr:has(td + td),
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr:has(td + td) {
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--fc-gainsboro);
+    }
+
+    .fc-project-plan-page .fc-table.fc-table-customer tr:last-child,
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr:last-child {
+        border-bottom: 0;
+    }
+
+    /* Label: quieter and smaller than the value, so the eye lands on the answer first.
+       Overrides both the 100px width rule and the width="100" / width="180" attributes. */
+    .fc-project-plan-page .fc-table.fc-table-customer tbody tr td:first-child:not(:last-child),
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td:first-child:not(:last-child) {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 2px;
+        font-size: 0.75rem;
+        line-height: 1.35;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--fc-boulder);
+        font-weight: 600;
+    }
+
+    /* Value: the thing being read. Long emails break rather than force a scrollbar. */
+    .fc-project-plan-page .fc-table.fc-table-customer tbody tr td + td,
+    .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td + td {
+        font-size: 0.9375rem;
+        line-height: 1.45;
+        color: var(--fc-cod-gray);
+        overflow-wrap: anywhere;
+    }
+
+    /* Edit mode puts an input in the value cell — give it the same full width. */
+    .fc-project-plan-page .fc-table.fc-table-customer tbody tr td + td .fc-form-group {
+        width: 100%;
+    }
+
+    /* Multi-value rows (fence types, extras) keep their bullets but sit tight to the label. */
+    .fc-project-plan-page .fc-project-details-value-list {
+        padding-left: 1.1rem;
+        margin-top: 1px;
+    }
+}
+
+/* An unanswered field rendered as nothing at all: the value span collapsed to 0px, leaving a
+   label with dead space under it that reads as broken rather than "not provided". A dash is the
+   conventional stand-in and keeps the row's rhythm. Applies at every width — the gap is not a
+   phone-only problem. */
+.fc-project-plan-page .fc-project-details .fc-table-customer td + td > span:empty::after {
+    content: "\2014";
+    color: var(--fc-spanish-gray);
+}
+
+/* Edit affordance on phones. The trigger was a 109x30 button floated right at the end of a long
+   scroll — under the ~44px touch guideline and easy to miss. Full width puts it where a thumb
+   lands and makes the action obvious; the same applies to the Cancel/Save/Reset bar it swaps in. */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page .js-project-details-footer {
+        text-align: left;
+    }
+
+    .fc-project-plan-page .js-project-details-footer > .btn.btn-sm.fc-btn-edit {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 44px;
+        font-size: 0.875rem;
+    }
+
+    /* Guarded like every other rule for these controls: the bar is hidden with the
+       fc-d-none class, and an unqualified display here would outrank it and leave
+       Save/Cancel showing before Edit is ever pressed. */
+    .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .project-details-controls__right {
+        display: flex;
+        flex: 1 1 auto;
+        gap: 8px;
+    }
+
+    /* Cancel sits apart from the confirming actions so the destructive-ish choice is not the one
+       a thumb reaches first. */
+    .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .fc-btn-cancel-project-details {
+        order: 2;
+        flex: 1 1 100%;
+    }
+
+    .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .project-details-controls__right {
+        order: 1;
+    }
+
+    .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .btn.btn-sm {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1 1 0;
+        min-height: 44px;
+        font-size: 0.875rem;
+    }
+
+}
+/* The 44px side gutters that used to sit here reserved room for the carousel arrows on narrow
+   screens. Step 4 renders no arrows below 768 (slick/color-options.js), so they were 88px of
+   white space either side of the track, and the two arrow-offset rules beside them were dead. */
 
 .fencing-measurement .fc-step-2-alert.fc-alert-gray {
     max-width: 431px;
@@ -8845,14 +8981,245 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 /* Project details */
 .fc-project-plan-page .fc-project-details-edit-hint {
     color: var(--fc-princeton-orange);
+    font-size: 12.25px;
+    line-height: 1.4;
 }
 
 .fc-project-plan-page .fc-edit-zone:has(.project-details--editable) .fc-project-details-edit-hint {
     display: block !important;
 }
 
+/* The hint now sits inside the card body rather than above the header, so it takes the same
+   10px the cells beside it take instead of carrying a utility margin. Keyed off the wrapper, not
+   project-details--edit: that class is swapped for project-details--editable the moment edit mode
+   opens, which is the only time this is on screen. */
+.fc-project-details .fc-table-rounded-border > .fc-project-details-edit-hint {
+    margin: 0;
+    /* 8px below matches the mb-2 the Color Options copy carries, so the two clear the content
+       under them by the same amount. */
+    padding: 10px 10px 8px;
+}
+
+/* Notes field fills its card. The block is stretched by the grid, so a rows="5" textarea left a
+   pool of dead card under it. Height has to be handed down the whole chain — card body, the m-3
+   wrapper, the table, its one row and cell — because each link resolves its own height against
+   the one above; a height on the textarea alone has nothing to measure against. Grid only: below
+   992 the card is its own height and rows="5" is the right size. */
+@media (min-width: 992px) {
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body > div {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+    }
+
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body table.fc-table-customer,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body table.fc-table-customer tbody,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body table.fc-table-customer tr,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body table.fc-table-customer td {
+        height: 100%;
+    }
+
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body td > .fc-form-group {
+        height: 100%;
+    }
+
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body td > .fc-form-group > textarea.form-control {
+        height: 100%;
+        min-height: 120px;
+        resize: none;
+    }
+}
 .fc-project-details .fc-form-group {
     display: none;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Edit-mode fields (Customer Details, Project Notes).
+   Two of these are not cosmetic. The controls had no focus state at all — outline:none, no ring,
+   border unchanged — so a keyboard user had no way to tell which field they were in. And the
+   State control carries appearance:none with no background image, which left a <select> looking
+   exactly like a text input, with nothing to say it opens a list.
+   The rest is sizing: 32px tall at 13px is tight for a form people type an address into.
+   -------------------------------------------------------------------------------------------- */
+.fc-project-details .fc-form-group .form-control {
+    min-height: 40px;
+    /* The page sets border and font-size on every .form-control with !important, so
+       matching that weight is the only way these land. Scoped to the edit fields. */
+    font-size: 14px !important;
+    padding: 8px 12px;
+    border-color: var(--fc-alto) !important;
+    border-radius: 6px;
+    color: var(--fc-cod-gray);
+    box-shadow: none;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.fc-project-details .fc-form-group .form-control::placeholder {
+    color: var(--fc-spanish-gray);
+    opacity: 1;
+}
+
+.fc-project-details .fc-form-group .form-control:hover:not(:focus) {
+    border-color: var(--fc-boulder) !important;
+}
+
+/* .form-control:focus carries box-shadow: unset !important app-wide, so the marker has to be an
+   outline — the same conclusion already reached for #load-quote's field further down. */
+.fc-project-details .fc-form-group .form-control:focus {
+    border-color: var(--fc-princeton-orange) !important;
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+/* Something has to say this opens a list. */
+.fc-project-details .fc-form-group select.form-control {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23757575' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6.5l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+/* The flag was pinned to the top of a 32px field; it has to ride the middle of whatever height
+   the field ends up. */
+.fc-project-details .fc-mobile-group .au-flag-icon {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.fc-project-details .fc-form-group textarea.form-control {
+    line-height: 1.55 !important;
+    padding: 10px 12px;
+}
+
+/* Customer Details in edit mode: the field is the cell. No inset around it, no border of its
+   own, no radius — the row rules already draw the grid, so the input's own box was a second one
+   inside it.
+   Gated on .project-details--editable, which appears on the section the moment edit mode opens
+   (the same signal the edit hints use) — without it the padding would come off the displayed
+   values too. Scoped through .fc-table-rounded-border because the notes table carries
+   fc-table-customer as well, and its textarea keeps its box. */
+.fc-project-details:has(.project-details--editable) .fc-table-rounded-border > table.fc-table-customer tbody tr td + td {
+    padding: 0;
+}
+
+/* The label rides the middle of the field rather than the top of a cell that no longer has one. */
+.fc-project-details:has(.project-details--editable) .fc-table-rounded-border > table.fc-table-customer tbody tr td:first-child:not(:last-child) {
+    vertical-align: middle;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.fc-project-details .fc-table-rounded-border > table.fc-table-customer .fc-form-group .form-control {
+    border: 0 !important;
+    border-radius: 0;
+    background-color: transparent;
+    /* 10px matches the cell padding the displayed value sits on, so the text does not shift
+       sideways when the section flips between reading and editing. */
+    padding: 8px 10px;
+}
+
+/* With no border of its own an empty field is invisible at rest, so hover gives it an edge —
+   enough to say the row is editable before it is clicked. An outline rather than a border for
+   the same reason focus uses one: a border would add a pixel and shift the text sideways on
+   hover. :not(:focus) keeps it out of the way of the orange focus ring. */
+.fc-project-details .fc-table-rounded-border > table.fc-table-customer .fc-form-group .form-control:hover:not(:focus) {
+    outline: 1px solid var(--fc-alto);
+    outline-offset: -1px;
+}
+
+/* Flush to the cell edges, an outline drawn outside the field would sit on the row rules above
+   and below it, so it is drawn inside instead. */
+.fc-project-details .fc-table-rounded-border > table.fc-table-customer .fc-form-group .form-control:focus {
+    outline-offset: -2px;
+}
+
+/* The clear icon keeps out of the way until you are on the field. "Not empty" needs no rule
+   here — events.js only puts the node in the DOM when the field has a value — so hover is the
+   only condition left to add. Faded rather than hidden: opacity leaves the row height alone,
+   and pointer-events follows it so the invisible icon cannot swallow a click meant for the
+   text under it. focus-within comes along so the control is still reachable from the keyboard,
+   where there is no hover to give. */
+.fc-project-details .fc-table-rounded-border > table.fc-table-customer .fc-form-group .form-control-clear {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.fc-project-details .fc-table-rounded-border > table.fc-table-customer .fc-form-group:hover .form-control-clear,
+.fc-project-details .fc-table-rounded-border > table.fc-table-customer .fc-form-group:focus-within .form-control-clear {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-project-details .fc-table-rounded-border > table.fc-table-customer .fc-form-group .form-control-clear {
+        transition: none;
+    }
+}
+
+/* Project Notes gets the same field as Customer Details: it fills its card, draws no box of its
+   own, and shows an edge only on hover or focus.
+   The inset it loses is given back as the field's own padding — 17px matches where the displayed
+   note sits (16px from the m-3 wrapper plus the cell's 1px), so the text does not jump sideways
+   when the section flips between reading and editing.
+   Gated on .project-details--editable so the displayed note keeps its inset. */
+.fc-project-details:has(.project-details--editable) .fc-card-body > div {
+    margin: 0 !important;
+}
+
+.fc-project-details:has(.project-details--editable) .fc-card-body td {
+    padding: 0;
+}
+
+.fc-project-details .fc-card-body td {
+    vertical-align: top;
+}
+
+.fc-project-details .fc-card-body .fc-form-group textarea.form-control {
+    border: 0 !important;
+    border-radius: 0;
+    background-color: transparent;
+    padding: 17px !important;
+}
+
+.fc-project-details .fc-card-body .fc-form-group textarea.form-control:hover:not(:focus) {
+    outline: 1px solid var(--fc-alto);
+    outline-offset: -1px;
+}
+
+.fc-project-details .fc-card-body .fc-form-group textarea.form-control:focus {
+    outline-offset: -2px;
+}
+
+/* On a field this tall the icon's usual vertical centring would strand it halfway down an empty
+   box, so it sits with the first line instead. */
+.fc-project-details .fc-card-body .fc-form-group .form-control-clear {
+    top: 14px;
+    right: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.fc-project-details .fc-card-body .fc-form-group:hover .form-control-clear,
+.fc-project-details .fc-card-body .fc-form-group:focus-within .form-control-clear {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-project-details .fc-card-body .fc-form-group .form-control-clear {
+        transition: none;
+    }
 }
 
 .fc-project-details .fc-col-half {
@@ -8899,6 +9266,1215 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
 .fc-project-details .fc-table--colour .fc-colour-item {
     box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Your Project Details — one card grammar across both columns.
+   The section is read as two columns of cards, so the cards have to agree, and three things
+   stopped them: .fc-border-top rounds a header's top corners onto a .fc-table-rounded-border
+   whose own radius is 0 (round top, square bottom), the body redraws a border directly under
+   the header, and the two tables were authored to different label widths (width="100" on the
+   left, width="180" on the right) so the left and right grids never lined up across the fold.
+   -------------------------------------------------------------------------------------------- */
+
+/* A header reads as the card's label, not as a line of body copy. */
+.fc-project-details .fc-card-header {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Square corners. Scoped here so .fc-border-top / .fc-bg-dark / .fc-border-bottom keep their
+   10px everywhere else they are used (step 4, the colour options partial).
+   The body's own top border is left alone: the header already drops its bottom border, so that
+   is the single line at the seam, and it is load-bearing beyond the line it draws. Strip it and
+   the .m-3 wrapper inside the notes card collapses its 16px top margin straight through the
+   body, opening a gap that detaches the body from the header. */
+.fc-project-details .fc-card-header,
+.fc-project-details .fc-card-body,
+.fc-project-details .fc-table-rounded-border,
+.fc-project-details .fc-card-header + .fc-table-rounded-border,
+.fc-project-details .fc-card-header + .fc-edit-zone > .fc-table-rounded-border,
+.fc-project-details .fc-card-header + .fc-card-body {
+    border-radius: 0;
+}
+
+/* Nothing was rendered for a value the customer never gave, leaving a label over dead space
+   that reads as broken rather than as "not provided". */
+.fc-project-details .fc-project-details-empty {
+    margin: 0;
+    color: var(--fc-boulder);
+    font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Item List & Cart — same section chrome as the two sections above it.
+   Last of the three to still pad its whole box, so its content sat 20px inside the border while
+   theirs ran to it. Its two panes also opened at different heights: the left header carried an
+   8px bottom margin and the right one 21px, so the cart table started 13px above the delivery
+   text beside it. One header band across both fixes that by construction.
+   Everything that makes it a panel applies at every width, matching the other two sections;
+   only the two-pane rules below are desktop-only, since the panes stack under 768 (Stock &
+   Delivery first, per its order-1).
+   -------------------------------------------------------------------------------------------- */
+#update_cart-section {
+    padding: 0;
+}
+
+/* One header band: same padding, same rule underneath, so both panes open on the same line. */
+#update_cart-list > .row:first-of-type,
+#update_stock-delivery .fencing-section__step-label {
+    margin: 0;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--fc-gainsboro);
+    box-sizing: border-box;
+}
+
+/* The right pane is prose and buttons, so it keeps a gutter of its own. Its header is pulled
+   back out to the edges so the rule under it runs the full width — the same trick the plan
+   card's sticky toolbar uses against its p-3. */
+#update_stock-delivery > [data-spy="scroll"] {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#update_stock-delivery .fencing-section__step-label {
+    margin-left: -20px;
+    margin-right: -20px;
+}
+
+/* The cart table runs to the border like the panels above it; only the count badge above it and
+   the action bar below need holding off the edge. */
+#update_cart-list .fc-card.fc-table-items > .badge {
+    margin: 14px 0 8px 20px;
+}
+
+#update_cart-list > .fc-view-total-cost-bar {
+    padding: 0 20px 20px;
+}
+
+@media (min-width: 576px) {
+    #update_cart-list > .row > .col-sm.col:first-child {
+        flex: 0 0 auto;
+        width: auto;
+    }
+}
+
+/* Item List & Cart / Stock & Delivery — compact.
+   The cart is a scanning list, so the savings come from row rhythm rather than type: the
+   thumbnail above drives the row height, and the cell padding adds to every one of them.
+   On the right, the two coloured panels each carried 16px of padding and 16px beneath. */
+#update_cart-list .fc-table-rounded-border table.table-cart td,
+#update_cart-list .fc-table-rounded-border table.table-cart th {
+    border-left: 0;
+    border-right: 0;
+}
+
+#update_cart-list .table-cart .fw-boldx {
+    font-size: 13px;
+}
+
+#update_cart-list .table-cart .fw-boldx i {
+    font-size: 15px !important;
+    margin-right: 6px !important;
+}
+
+#update_cart-list .table-cart tbody td {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+#update_cart-list .table-cart tbody td:not(:nth-child(3)),
+#update_cart-list .table-cart thead th:not(:nth-child(2)) {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+#update_cart-list .table-cart tbody td,
+#update_cart-list .table-cart thead th {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#update_cart-list .table-cart tbody td:first-child,
+#update_cart-list .table-cart thead th:first-child {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Stock reads left. Its contents are a flex row, so justify-content does the work text-align
+   cannot; the heading is moved with it so the column stays in register. */
+#update_cart-list .table-cart tbody td:last-child,
+#update_cart-list .table-cart thead th:last-child {
+    text-align: left;
+    vertical-align: middle;
+}
+
+#update_cart-list .table-cart .fw-boldx {
+    justify-content: flex-start;
+}
+
+/* The toolbar is the first child of a padding-less .fc-card, so without this the badge and the
+   filter sit with nothing above them. Vertical only — the horizontal edges line up with the
+   table and the section heading instead. Asymmetric bottom: the markup's mb-2 already supplies
+   8px of the gap down to the table. */
+.fc-cart-list-toolbar {
+    padding: 12px 0 4px 16px;
+}
+
+/* The heading buttons and the style filter both end where the Stock & Delivery panel begins, so
+   flush right leaves them touching it. Right edge only — the left edges stay on the section
+   gutter with the title, table and total bar. */
+#update_cart-list > .row.align-items-center > [class*="col"]:last-child {
+    padding-right: 16px;
+}
+
+/* Title and items badge take the gutter the table deliberately does not: the table's rules run to
+   the section border, but floating text sitting on it reads as a mistake. */
+#update_cart-list > .row.align-items-center > [class*="col"]:first-child {
+    padding-left: 16px;
+}
+
+/* Margin, not padding: the select's 26px right padding is the room its caret sits in. */
+.fc-cart-list-toolbar .fc-cart-style-filter {
+    margin-right: 16px;
+}
+
+/* Item List & Cart heading row: 20px of row padding plus a 12px column gutter held the title and
+   its buttons 32px inside a section whose table, toolbar and total bar all run edge to edge.
+   Stripped on this row only, so the Bootstrap grid keeps its gutters everywhere else. */
+#update_cart-list > .row.align-items-center,
+#update_cart-list > .row.align-items-center > [class*="col"] {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* One gutter for the whole section rather than per-element padding: #update_cart-section draws a
+   1px border and carried no padding, so every child — heading, filter, table, total bar and the
+   Stock & Delivery panel — sat hard against it. Setting it here keeps them all on the same edge.
+   Left stays at zero on purpose: the cart table's own rules meet the section border there, and a
+   gutter would leave its horizontal lines stopping short of it. */
+#update_cart-section {
+    padding-right: 16px;
+}
+
+/* Fence-style filter beside the item count. Compact: sized to the badge it sits next to
+   rather than to a form row, and only as wide as its longest option. */
+.fc-cart-list-toolbar .fc-cart-style-filter {
+    width: auto;
+    min-width: 150px;
+    max-width: 220px;
+    height: 30px;
+    padding: 2px 26px 2px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--fc-cod-gray);
+    background-position: right 8px center;
+    background-size: 12px 9px;
+}
+
+/* Optional badge sits at the right edge of the description rather than trailing the name, so the
+   flag reads down the column instead of landing at a different x on every row. The name is a bare
+   text node, which flex wraps in an anonymous item — space-between then does the work without
+   fighting Bootstrap's !important ms-1. */
+#update_cart-list .table-cart .fc-cart-item-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+#update_cart-list .table-cart .fc-cart-item-title .badge {
+    flex: 0 0 auto;
+}
+
+/* Hidden by the filter, not removed — the row keeps posting its quantities. */
+.fc-table-items .table-cart tbody tr.fc-cart-row--filtered {
+    display: none;
+}
+
+/* Cart table type, matched to Your Project Details.
+   Mapped by role rather than copied wholesale: that section's header, label and value each have
+   a counterpart here, but its labels are uppercase because they name a field — the SKU and fence
+   style are content, so they take the label's colour and weight without the transform. */
+
+/* Column headings = the section's card header: 13px, 600, uppercase, tracked. */
+#update_cart-list .table-cart thead th {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.78px;
+}
+
+/* Product name and quantity = the section's value: 14px, 500, cod gray. */
+#update_cart-list .table-cart tbody td,
+#update_cart-list .table-cart .fw-bold.text-dark {
+    font-size: 14px;
+    font-weight: 500 !important;
+    color: var(--fc-cod-gray) !important;
+}
+
+/* SKU and fence style = the label's colour and weight, minus the uppercase. */
+#update_cart-list .table-cart tbody .text-muted,
+#update_cart-list .table-cart .fc-cart-fence-style {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fc-boulder) !important;
+    letter-spacing: 0.48px;
+}
+
+/* The stock label stays at the compact size but joins the same weight and colour. */
+#update_cart-list .table-cart .fw-boldx {
+    font-weight: 500;
+    color: var(--fc-cod-gray);
+}
+
+/* The thumbnail cell was offset 20px from the top to sit level with the description text;
+   with the row now sized to the image itself that gap only pushes it off centre. */
+#update_cart-list .table-cart .product-image {
+    padding-top: 0 !important;
+    vertical-align: middle;
+}
+
+#update_stock-delivery .fc-cart-stock-area {
+    padding-top: 16px;
+}
+
+#update_stock-delivery .fc-stock-delivery-actions .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#update_stock-delivery .fc-stock-delivery-actions .row > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+#update_stock-delivery .fc-stock-delivery-actions .row > [class*="col-"] {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* The countdown is the panel's headline number, so it takes as much of the column as it can.
+   25px is the ceiling: at 26px the worst-case string "23hrs 59mins 59secs" measures 279px
+   against 283px of inner width and wraps to two lines on any font-metric drift. */
+#update_stock-delivery .fc-cart-countdown p {
+    font-size: 25px !important;
+    line-height: 30px !important;
+}
+
+/* countDownTimer() emits hrs / mins / secs as three labelled tiles. Equal flex basis rather than
+   space-between so the tiles are the same width whatever the digits say. */
+#fc-countdown-timer {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.fc-countdown-unit {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    padding: 5px 4px 6px;
+    border-radius: 6px;
+    background-color: var(--fc-white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+}
+
+/* tabular-nums holds the digits on a fixed advance width — proportional figures make the number
+   twitch as it counts, which is the tell that separates a cheap countdown from a considered one. */
+.fc-countdown-unit__value {
+    font-size: 26px !important;
+    line-height: 30px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    color: var(--fc-princeton-orange);
+}
+
+.fc-countdown-unit__label {
+    font-size: 10px !important;
+    line-height: 12px;
+    font-weight: 600;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: var(--fc-dove-gray);
+}
+
+/* Chasing highlight around the countdown border, to pull the eye to the one time-sensitive
+   number on the page. A conic-gradient square spins behind the box; an inset ::after repaints
+   the fill so only a 2px rim of the sweep is ever visible. Rotating a pseudo-element rather
+   than animating an @property angle keeps this working outside Chromium.
+   Width is 140% with a square aspect so the spinner always covers the box's diagonal. */
+#update_stock-delivery .fc-cart-countdown {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+#update_stock-delivery .fc-cart-countdown::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 140%;
+    aspect-ratio: 1;
+    z-index: -2;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 250deg,
+        rgba(246, 121, 37, 0.35) 300deg,
+        var(--fc-princeton-orange) 340deg,
+        rgba(246, 121, 37, 0.35) 20deg,
+        transparent 70deg,
+        transparent 360deg
+    );
+    animation: fc-countdown-border-sweep 3.5s linear infinite;
+}
+
+/* Repaints the fill inside the rim. Radius is 2px under the box's 8px so the corners stay true. */
+#update_stock-delivery .fc-cart-countdown::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: 6px;
+    background-color: var(--fc-fair-pink);
+}
+
+@keyframes fc-countdown-border-sweep {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #update_stock-delivery .fc-cart-countdown::before {
+        animation: none;
+        background: var(--fc-princeton-orange);
+    }
+}
+
+/* Skeleton for the timer itself. countDownTimer() writes on a setInterval of 1000ms, so the span
+   is genuinely empty for the first full second of every page load — long enough to read as a
+   broken panel. :empty does the state detection with no JS change: the placeholder disappears the
+   moment innerHTML is written, including the loader div swapped in when the countdown expires.
+   Reuses the Step 1 shimmer keyframes; tinted orange rather than grey to sit on the pink fill. */
+/* Pinned to the filled line box. Without this the empty span's line box collapses to the 25px
+   placeholder rather than the 30px line-height, and the whole panel jumps 5px the instant the
+   first tick lands — the exact shift a skeleton exists to prevent. */
+#fc-countdown-timer:empty {
+    /* Block, not inline-block: the placeholder's width: 100% has to resolve against the paragraph.
+       On a shrink-to-fit inline-block the span sizes to its own ::before, the percentage resolves
+       against nothing, and the skeleton collapses to zero width.
+       54px is the rendered height of a .fc-countdown-unit tile, so the panel does not resize when
+       the first tick replaces the placeholder. */
+    display: block;
+    width: 100%;
+    height: 54px;
+}
+
+#fc-countdown-timer:empty::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(
+        90deg,
+        rgba(246, 121, 37, 0.16) 25%,
+        rgba(246, 121, 37, 0.34) 37%,
+        rgba(246, 121, 37, 0.16) 63%
+    );
+    background-size: 400% 100%;
+    animation: fc-fencing-skeleton-shimmer 1.4s ease infinite;
+    /* Three bars — hrs / mins / secs — carved out of the one shimmering surface by a static mask,
+       so a single sweep runs across all three rather than three animations drifting out of phase.
+       Equal thirds across the full width, with the gaps matching the tiles' own 8px. */
+    -webkit-mask-image: linear-gradient(
+        90deg,
+        #000 0 31.45%,
+        transparent 31.45% 34.28%,
+        #000 34.28% 65.72%,
+        transparent 65.72% 68.55%,
+        #000 68.55% 100%
+    );
+    mask-image: linear-gradient(
+        90deg,
+        #000 0 31.45%,
+        transparent 31.45% 34.28%,
+        #000 34.28% 65.72%,
+        transparent 65.72% 68.55%,
+        #000 68.55% 100%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #fc-countdown-timer:empty::before {
+        animation: none;
+    }
+}
+
+/* Glint across the buttons on the planner and project-plan pages, driven by hover rather than a
+   loop. A transition rather than an animation is what makes the return leg free: leaving the
+   button reverses the same property back to its resting position, so the highlight travels out
+   the way it came in. At rest the bar sits fully outside the button and overflow: hidden clips
+   it, so no opacity handling is needed.
+
+   Exclusions mirror the hover-lift rule above, plus .dropdown-toggle: Bootstrap draws that
+   button's caret with its own ::after, and this would replace it. .fc-btn-shine stays in the
+   list as an explicit opt-in for anything outside these two pages.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle),
+.fc-project-plan-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle),
+.fc-btn-shine {
+    position: relative;
+    overflow: hidden;
+}
+
+.fc-planner-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle)::after,
+.fc-project-plan-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle)::after,
+.fc-btn-shine::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    bottom: -50%;
+    left: 0;
+    width: 60%;
+    pointer-events: none;
+    will-change: transform;
+    /* Feathered over five stops rather than three: the wider, softer falloff stops the band
+       reading as an edge crossing the button. */
+    background: linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.08) 28%,
+        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0.08) 72%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-180%) skewX(-18deg);
+    /* linear, not ease-in-out: constant velocity is what reads as a smooth pass. Easing
+       accelerates through the middle of the button, which is the part the eye tracks. */
+    transition: transform 0.5s linear;
+}
+
+/* hover: hover only — on touch the state latches after a tap and the glint would sit parked
+   off the right edge until something else took the hover. */
+@media (hover: hover) {
+    .fc-planner-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle):hover::after,
+    .fc-project-plan-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle):hover::after,
+    .fc-btn-shine:hover::after,
+    .fc-planner-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle):focus-visible::after,
+    .fc-project-plan-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle):focus-visible::after,
+    .fc-btn-shine:focus-visible::after {
+        transform: translateX(320%) skewX(-18deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-planner-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle)::after,
+    .fc-project-plan-page .btn:not(:disabled):not(.disabled):not(.btn-close):not(.dropdown-toggle)::after,
+    .fc-btn-shine::after {
+        transition: none;
+    }
+}
+
+#update_stock-delivery .fc-alert-gray--low-stock {
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+#update_stock-delivery .fc-cart-countdown {
+    margin-bottom: 12px !important;
+}
+/* Item List & Cart footers — compact, matching Steps 3 and 4.
+   Two of them: the cart's View Total Cost bar and Stock & Delivery's action group.
+   The three delivery buttons were 36 / 58 / 36 rather than a set: "Order Items Now!" wrapped to
+   two lines inside its 208px half-column at 16px while its neighbours fitted on one. Dropping
+   these to 14px lets it sit on one line, so a shared min-height then makes all three match
+   instead of one standing 22px taller than the others. */
+#update_cart-section .fc-stock-delivery-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px !important;
+    min-height: 40px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+/* The cart's primary action keeps its 18px label — it is the conversion button — and gives up
+   only the padding around it. */
+#update_cart-list > .fc-view-total-cost-bar {
+    padding-bottom: 12px;
+}
+
+#update_cart-list > .fc-view-total-cost-bar .btn {
+    padding-top: 11px;
+    padding-bottom: 11px;
+}
+
+/* Touch targets stay whole below xl, the same floor Steps 3 and 4 use. */
+@media (max-width: 1199.98px) {
+    #update_cart-section .fc-stock-delivery-actions .btn,
+    #update_cart-list > .fc-view-total-cost-bar .btn {
+        min-height: 44px;
+    }
+}
+/* Same as the details blocks: the table drew a box whose left and right edges sat directly
+   inside the section border as a second line. The section border is that edge. */
+#update_cart-list .fc-card.fc-table-items .fc-table-rounded-border {
+    border-left: 0;
+    border-right: 0;
+}
+
+@media (max-width: 992px) {
+    #update_cart-list > .row:first-of-type,
+    #update_stock-delivery .fencing-section__step-label {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    #update_stock-delivery > [data-spy="scroll"] {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    #update_stock-delivery .fencing-section__step-label {
+        margin-left: -16px;
+        margin-right: -16px;
+    }
+
+    #update_cart-list .fc-card.fc-table-items > .badge {
+        margin-left: 16px;
+    }
+
+    #update_cart-list > .fc-view-total-cost-bar {
+        padding: 0 16px 16px;
+    }
+}
+
+/* Two-pane rules only — under 768 these stack. */
+@media (min-width: 768px) {
+    #update_cart-section > .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    @media (min-width: 992px) {
+        #update_cart-section > .row > #update_cart-list {
+            flex: 0 0 68%;
+            max-width: 68%;
+        }
+
+        #update_cart-section > .row > #update_stock-delivery {
+            flex: 0 0 32%;
+            max-width: 32%;
+        }
+    }
+
+    #update_cart-section > .row > #update_cart-list,
+    #update_cart-section > .row > #update_stock-delivery {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Seam between the panes, matching the details section's. */
+    #update_cart-section > .row > #update_stock-delivery {
+        border-left: 1px solid var(--fc-gainsboro);
+    }
+}
+/* --------------------------------------------------------------------------------------------
+   Planner Step 3 — brought in line with Step 4 and the plan-page sections.
+   Its two dividers were 2px --fc-bright-gray while every other section rule on the journey is
+   1px --fc-gainsboro, and its action row sat on no ground at all, so the same panel read
+   differently from one step to the next.
+   The diagram keeps the full-bleed treatment it already had: it cancels .fencing-section__top's
+   20px with negative margins, which is exactly why that padding stays here rather than being
+   zeroed the way Step 4's was.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__cmp.fencing-display-result {
+    border-top: 1px solid var(--fc-gainsboro);
+    /* 14px between the title and the rule, the same gap Step 4 opens with. It was 32px: 20px of
+       fc-mb-2 under the title row plus 12px of margin here. */
+    margin-top: 14px;
+}
+
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section--step3 > div:has(> .fencing-content-title) {
+    margin-bottom: 0 !important;
+}
+
+/* The action row closes the section the way it does on Step 4. */
+.fc-planner-page .fencing-section__bottom.fc-step3-bottom {
+    border-top: 1px solid var(--fc-gainsboro);
+    background: var(--fc-cultured);
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Planner Step 4 — the chrome the project-plan sections now use, applied to the step the
+   customer reaches just before them: header band with a rule under it, cards running to the
+   section border, one continuous stack, and the action row as a closing bar.
+   The section already carries fencing-section--no-padding; it was .fencing-section__top's own
+   20px holding the cards off the border. Scoped to .fc-step-4 because __top and __bottom are
+   shared with steps 1-3.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .fc-step-4 .fencing-section__top {
+    padding: 0;
+}
+
+.fc-planner-page .fc-step-4 .fencing-section__top > .step-label {
+    padding: 16px 20px 0;
+    margin-bottom: 2px;
+}
+
+.fc-planner-page .fc-step-4 .fencing-section__top > .fencing-content-title {
+    margin-bottom: 0 !important;
+    padding: 0 20px 14px;
+    border-bottom: 1px solid var(--fc-gainsboro);
+}
+
+/* Card headers read as section labels, square against a square panel. */
+.fc-planner-page .fc-step-4 .fc-card-header {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.fc-planner-page .fc-step-4 .fc-card-body {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+}
+
+.fc-planner-page .fc-step-4 .fencing-section__top > .fc-planner-color-options-wrap .fc-card {
+    margin-bottom: 0 !important;
+}
+
+/* One colour block per fence, each its own thing to decide, so consecutive blocks are given air.
+   Adjacent-sibling on purpose: it puts a gap only between blocks, never above the first, which
+   stays flush under the step header. */
+.fc-planner-page .fc-step-4 .fc-planner-color-options-wrap .fc-card[data-fc-planner-fence-title] + .fc-card[data-fc-planner-fence-title] {
+    margin-top: 20px;
+}
+
+/* The last block closes the panel, so its body follows the section border rather than running
+   square corners past it. */
+.fc-planner-page .fc-step-4 .fc-planner-color-options-wrap .fc-card[data-fc-planner-fence-title]:last-child .fc-card-body {
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+.fc-planner-page .fc-step-4 .fencing-section__top > .fc-card {
+    margin-bottom: 0 !important;
+}
+
+/* Notes field: fills its card, draws no box, shows an edge only on hover or focus — the same
+   field as Project Notes on the plan page. 17px of its own padding replaces the p-3 inset it
+   gives up, so the text sits where it did. */
+.fc-planner-page .fc-step-4 .fc-card-body > .p-3 {
+    padding: 0 !important;
+}
+
+.fc-planner-page .fc-step-4 .fc-card-body .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.fc-planner-page .fc-step-4 .fc-card-body .row > [class*="col-"] {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.fc-planner-page .fc-step-4 textarea[name="notes"] {
+    border: 0 !important;
+    border-radius: 0;
+    background-color: transparent;
+    padding: 17px !important;
+    line-height: 1.55 !important;
+}
+
+/* No ring on focus — the orange one framed the whole panel interior and read as an error state.
+   The quiet hover edge is kept and no longer steps aside for focus: excluding it there would make
+   the edge vanish the instant the field was clicked. */
+.fc-planner-page .fc-step-4 textarea[name="notes"]:hover,
+.fc-planner-page .fc-step-4 textarea[name="notes"]:focus {
+    outline: 1px solid var(--fc-alto);
+    outline-offset: -1px;
+}
+
+/* The clear icon keeps out of the way until you are on the field; it only exists when the field
+   has a value, so hover is the only condition left. */
+.fc-planner-page .fc-step-4 .has-clear .form-control-clear {
+    top: 14px;
+    right: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.fc-planner-page .fc-step-4 .has-clear:hover .form-control-clear,
+.fc-planner-page .fc-step-4 .has-clear:focus-within .form-control-clear {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Project Notes header: title on the left, status on the right. The panel never said the note
+   was optional, so the only way to find out was to try leaving it blank. */
+.fc-planner-page .fc-step-4 .fc-notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.fc-planner-page .fc-step-4 .fc-notes-header__title {
+    min-width: 0;
+}
+
+/* Quiet enough to stay a label rather than compete with the title beside it. */
+.fc-planner-page .fc-step-4 .fc-notes-header__badge {
+    flex: 0 0 auto;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Quiet enough to read as a prompt rather than as a value already entered. */
+.fc-planner-page .fc-step-4 textarea[name="notes"]::placeholder {
+    color: var(--fc-spanish-gray);
+    opacity: 1;
+}
+
+/* Project Notes is its own section now, so its header is the first thing inside a rounded
+   border — square top corners sat outside it. The rest of the step keeps square headers,
+   which is why this is scoped to that section rather than lifting the blanket rule. */
+.fc-planner-page .fc-step-4 .fc-step4-notes .fc-card-header {
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Buttons across the customer journey — flat.
+   Hover lifts the button 1px and casts a shadow; both come from one shared token so the two
+   pages cannot drift. The masthead back-to-site link is in the set too. The raised bottom borders these buttons used to carry were removed from
+   style-v2.css — the shadow is what gives them depth now, rather than a painted edge.
+   The app-wide press (scale + inset shadow) is left alone — it is this app's existing
+   convention and applies far beyond these two pages. Hover steps aside for it via :not(:active),
+   which is load-bearing: without the guard the two fight and the press is never seen.
+   -------------------------------------------------------------------------------------------- */
+@media (hover: hover) {
+    .fc-planner-page .btn:not(:disabled):not(.disabled):not(.btn-close):hover:not(:active),
+    .fc-planner-page .btn-fc:not([disabled]):not(.disabled):hover:not(:active),
+    .fc-project-plan-page .btn:not(:disabled):not(.disabled):not(.btn-close):hover:not(:active),
+    .fc-project-plan-page .btn-fc:not([disabled]):not(.disabled):hover:not(:active) {
+        transform: translateY(-1px);
+        box-shadow: var(--fc-btn-hover-shadow);
+    }
+}
+
+/* Nothing to invite a press when the action is not available yet. */
+.fc-planner-page .btn:disabled,
+.fc-planner-page .btn.disabled,
+.fc-planner-page .btn-fc[disabled],
+.fc-planner-page .btn-fc.disabled,
+.fc-project-plan-page .btn:disabled,
+.fc-project-plan-page .btn.disabled {
+    box-shadow: none;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-planner-page .btn:not(:disabled):not(.disabled):hover:not(:active),
+    .fc-planner-page .btn-fc:not([disabled]):not(.disabled):hover:not(:active),
+    .fc-project-plan-page .btn:not(:disabled):not(.disabled):hover:not(:active),
+    .fc-project-plan-page .btn-fc:not([disabled]):not(.disabled):hover:not(:active) {
+        transform: none;
+    }
+}
+
+.fc-planner-page .btn:not(.btn-close),
+.fc-planner-page .btn-fc:not(.btn-close),
+.fc-project-plan-page .btn:not(.btn-close),
+.fc-project-plan-page .btn-fc:not(.btn-close) {
+    border-radius: 3px !important;
+}
+
+.fc-planner-page [data-section="2"] .btn-fc-calculate {
+    border-radius: 3px !important;
+}
+
+/* The measurement input carries width: 100% inside a flex row, so it claims the whole box and
+   leaves Calculate to be shrunk — down to 76px against the ~102px the label needs, which wraps
+   or clips it. Pinning the button to its content width makes the input absorb the difference,
+   which is the shrink the input was always meant to take. */
+.fc-planner-page [data-section="2"] .fencing-measurement-box .btn-fc-calculate {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.fc-planner-page [data-section="2"] .fencing-measurement-box .fencing-mb-input {
+    min-width: 0;
+}
+
+/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. The offset
+   puts the surface behind the button between it and the ring, which is what keeps the ring
+   legible on a filled button rather than blending into it. */
+.fc-planner-page .btn:focus-visible,
+.fc-planner-page .btn-fc:focus-visible,
+.fc-project-plan-page .btn:focus-visible,
+.fc-project-plan-page .btn-fc:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+/* Filled brand buttons take the dark ring: orange on orange, and orange on the red destructive
+   ones, are too close in value to read as a ring. */
+.fc-planner-page .btn-orange:focus-visible,
+.fc-planner-page .btn-danger:focus-visible,
+.fc-project-plan-page .btn-orange:focus-visible,
+.fc-project-plan-page .btn-danger:focus-visible {
+    outline-color: var(--fc-cod-gray);
+}
+
+/* The action row closes the section the way the header opens it. */
+.fc-planner-page .fc-step-4 .fencing-section__bottom {
+    border-top: 1px solid var(--fc-gainsboro);
+    background: var(--fc-cultured);
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+/* Compact, matching Step 3's action bar. Both paddings need !important: the bar carries
+   Bootstrap's py-3 and bootstrap.min.css is loaded after this file, so nothing here reaches it
+   otherwise. */
+.fc-planner-page .fc-step-4 .fencing-section__bottom {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+}
+
+/* The button's height comes from its two-line label — 13px over an 11px caption — not from its
+   padding, so the lines are tightened rather than the padding squeezed. That keeps the caption
+   legible and brings the control down to the 40px Step 3 uses. */
+.fc-planner-page .fc-step-4 .fencing-section__bottom .btn {
+    line-height: 1.15;
+}
+
+.fc-planner-page .fc-step-4 .fencing-section__bottom .btn small {
+    display: block;
+    line-height: 1.2;
+    font-size: 0.6875rem;
+}
+
+@media (max-width: 1199.98px) {
+    .fc-planner-page .fc-step-4 .fencing-section__bottom .btn {
+        min-height: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-planner-page .fc-step-4 .has-clear .form-control-clear {
+        transition: none;
+    }
+}
+
+@media (max-width: 992px) {
+    .fc-planner-page .fc-step-4 .fencing-section__top > .step-label {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .fc-planner-page .fc-step-4 .fencing-section__top > .fencing-content-title {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------
+   Project Plans — same section chrome as Your Project Details.
+   The two sit one above the other and were built to different rules: this one padded its whole
+   box and inset each plan card a further 8px, so its content started 24px in while the details
+   panel beside it ran to the border. Header and cards now carry their own spacing instead.
+   The card keeps p-3: its sticky toolbar cancels exactly 1rem of it with negative margins, and
+   the rule that makes that toolbar sticky keys off .border.p-3.
+   -------------------------------------------------------------------------------------------- */
+
+#project-plans-section {
+    padding: 0;
+}
+
+/* Title bar, matching the details section's. */
+.fc-project-plan-page #project-plans-section > .fc-card > .fc-row-flex {
+    align-items: center;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--fc-gainsboro);
+    margin: 0;
+}
+
+.fc-project-plan-page #project-plans-section > .fc-card > .fc-row-flex > .fc-col-6 {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.fc-project-plan-page #project-plans-section .fencing-section__step-label {
+    margin-bottom: 0;
+}
+
+/* Plan cards span the section, so the section's own border is their outer edge and the stack
+   reads as one run of plans rather than a set of floating cards. Only the line between two
+   consecutive plans is kept. The !important is forced: the card carries Bootstrap's .border
+   utility, which is itself !important, so nothing else reaches these. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section {
+    border: 0 !important;
+    border-radius: 0;
+    margin-bottom: 0 !important;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section + .fc-project-plan-section {
+    border-top: 1px solid var(--fc-gainsboro) !important;
+}
+
+.fc-project-plan-page #fc-fence-list {
+    padding-bottom: 0 !important;
+}
+
+@media (max-width: 992px) {
+    .fc-project-plan-page #project-plans-section > .fc-card > .fc-row-flex {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------
+   Item List & Cart — columns close on the same line.
+   The two columns were already equal boxes; Stock & Delivery's content ran out 374px short of
+   the cart table beside it, leaving the section looking half-finished. Distributing that column
+   pushes its buttons to the bottom, where they line up with the cart's own action bar.
+   The :not(.sticky-roll) guard is load-bearing: events.js gives that div position:fixed once you
+   scroll past the cart, and a stretched fixed panel would stand 856px tall over the page. When
+   the class lands the stretch drops with it and the panel goes back to its own height.
+   -------------------------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+    #update_cart-section > .row > #update_stock-delivery {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #update_cart-section > .row > #update_stock-delivery > [data-spy="scroll"]:not(.sticky-roll) {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+    }
+
+    /* Deliberately NOT margin-top:auto. Pushing these to the foot of the column lined them up
+       with the cart action bar opposite, but the right column is much shorter than the cart, so
+       it stranded Download Plans / Order Items / Call ~400px below the delivery information and
+       off the first screen. They sit with their content instead; the columns no longer close on
+       the same line, which is the right trade. */
+    #update_cart-section > .row > #update_stock-delivery > [data-spy="scroll"]:not(.sticky-roll) .fc-stock-delivery-actions {
+        margin-top: 0;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------
+   Your Project Details — section chrome.
+   The section's 20px padding was the only thing holding the panel off the border. With it gone
+   the panel runs edge to edge and the section's own border frames it, so the header and footer
+   carry that padding themselves and each is closed by a rule of its own.
+   -------------------------------------------------------------------------------------------- */
+#project-details-section {
+    padding: 0;
+}
+
+/* Header reads as the panel's title bar rather than a heading floating above it. */
+#project-details-section > .fencing-section__step-label {
+    margin-bottom: 0;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--fc-gainsboro);
+}
+
+#project-details-section .step-label {
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+/* Footer closes the section the way the header opens it, on the same 20px margin. It is the
+   section's last element now that the padding is gone, so it carries the bottom radius or its
+   square corners would sit outside the section's rounded border. */
+.fc-project-plan-page #project-details-section .js-project-details-footer {
+    padding: 14px 20px;
+    background: var(--fc-cultured);
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.fc-project-plan-page #project-details-section .js-project-details-footer > .fc-btn-edit {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+@media (max-width: 992px) {
+    #project-details-section > .fencing-section__step-label,
+    .fc-project-plan-page #project-details-section .js-project-details-footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+@media (min-width: 768px) {
+    .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area .slick-prev.fencing-styles-arrow {
+        left: 2px;
+    }
+
+    .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area .slick-next.fencing-styles-arrow {
+        right: 2px;
+    }
+}
+
+/* Two-column layout proper. Below 992 the columns stack (the rule further up sets them to
+   100%), so none of this applies there and the DOM order is what phones see.
+   The columns are laid out as a 2x2 grid rather than two independent stacks. As stacks, each
+   side sized itself: Customer Details ran 318px against Color Options' 110px, so the second
+   header started 208px lower on the left than on the right and the two halves never lined up.
+   A grid row is as tall as its tallest cell, so pairing the blocks off row by row makes the
+   first two equal and drops the second pair onto one line for free.
+   display:contents lifts the four blocks out of their column wrappers to become grid items
+   themselves; grid-auto-flow:column then fills top-to-bottom before moving across, which is
+   the order they are authored in. Each column must hold exactly two blocks for this to pair
+   correctly — Customer Details is wrapped as a card in the view for that reason. */
+@media (min-width: 992px) {
+    .fc-project-details #update_details-section > .row {
+        display: grid;
+        grid-template-rows: auto auto;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .fc-project-details #update_details-section > .row > .col-md {
+        display: contents;
+    }
+
+    /* Each block fills the row it landed in, and its body takes up the slack so the stretch
+       shows as panel rather than as space under one. */
+    .fc-project-details #update_details-section > .row > .col-md > * {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-table-rounded-border,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-edit-zone,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-edit-zone > .fc-table-rounded-border {
+        flex: 1 1 auto;
+    }
+
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-edit-zone {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* With the columns flush, the 20px gaps between cards became white notches punched into
+       the seam at a different height on each side. Closing them makes the panel continuous and
+       the dark headers do the separating, which they already do. !important is not decoration
+       here: fc-mb-1/fc-mb-2 are !important utilities, so nothing else reaches them. Phones keep
+       their gaps — cards stacked in one column need the separation. */
+    .fc-project-details #update_details-section > .row > .col-md > .fc-mb-1,
+    .fc-project-details #update_details-section > .row > .col-md > .fc-mb-2,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-mb-2,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-edit-zone > .fc-mb-2 {
+        margin-bottom: 0 !important;
+    }
+
+    /* The blocks draw no box of their own. Every edge they outlined is already drawn by
+       something else — the section's border down the outside, the dark headers across the top of
+       each block — so their outlines only doubled those lines: 2px where a block met the section
+       border, 2px again where two blocks met down the middle. What is left is the section
+       border, one seam, and the row rules inside each table. */
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-header,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-card-body,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-table-rounded-border,
+    .fc-project-details #update_details-section > .row > .col-md > * > .fc-edit-zone > .fc-table-rounded-border {
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+    }
+
+    /* The one line worth keeping: without it the two columns' rows run together as single wide
+       rows and the panel stops reading as two. */
+    .fc-project-details #update_details-section > .row > .col-md + .col-md > * > .fc-card-header,
+    .fc-project-details #update_details-section > .row > .col-md + .col-md > * > .fc-card-body,
+    .fc-project-details #update_details-section > .row > .col-md + .col-md > * > .fc-table-rounded-border,
+    .fc-project-details #update_details-section > .row > .col-md + .col-md > * > .fc-edit-zone > .fc-table-rounded-border {
+        border-left: 1px solid var(--fc-gainsboro);
+    }
+}
+/* The controls act on every field in the section, so they close it rather than hanging off the
+   foot of one column. */
+.fc-project-plan-page .js-project-details-footer {
+    border-top: 1px solid var(--fc-gainsboro);
+    padding-top: 14px;
+}
+
+/* Below 768 these rows stack label-over-value, which has its own block further down; this is
+   the side-by-side treatment only. */
+@media (min-width: 768px) {
+    /* One label column for both tables, so the two columns share a rhythm. max-width has to
+       come with it: the base rule at the top of the file pins the customer labels to a 100px
+       max, which clamps any width set here on its own. */
+    .fc-project-details .fc-table.fc-table-customer tbody tr td:first-child:not(:last-child),
+    .fc-project-details .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td:first-child:not(:last-child) {
+        width: 170px;
+        max-width: 170px;
+        vertical-align: top;
+        color: var(--fc-boulder);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1.5;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    /* The value is the thing being read, so it carries the weight the label gives up. */
+    .fc-project-details .fc-table.fc-table-customer tbody tr td + td,
+    .fc-project-details .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td + td {
+        color: var(--fc-cod-gray);
+        font-weight: 500;
+        overflow-wrap: anywhere;
+        line-height: 20px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
 }
 
 .ally {
@@ -9677,7 +11253,9 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 }
 
 .fc-cart-countdown {
-    padding: 8px 16px;
+    /* Even on all four sides. The 16px sides were wider than the 8px top and bottom, which read
+       as the tiles being inset from the box rather than filling it. */
+    padding: 10px;
     background-color: var(--fc-fair-pink);
     border-radius: 8px;
 }
@@ -9693,6 +11271,9 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 .fc-cart-countdown p strong {
     font-size: 14px;
     line-height: 25px;
+    /* strong resolves to 500 here, not bold — a global rule overrides the element default.
+       700 is a real Poppins face (fonts.css loads 400-800), so this is not a synthesised bold. */
+    font-weight: 700;
     color: var(--fc-princeton-orange);
 }
 
@@ -10169,10 +11750,6 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     }
 }
 
-.btn.btn-secondary {
-    border-bottom: 2px solid var(--fc-cod-gray);
-}
-
 .sticky-roll {
     top: 0;
     position: fixed;
@@ -10228,10 +11805,12 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     font-weight: 700;
 }
 
+/* !important only because the unstuck tab title is itself !important at 20px; without it the
+   compact sticky size loses to a rule with lower specificity. */
 .fc-planner-page .sticky-roll .fencing-tab-number {
     font-family: "Poppins", sans-serif;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 16px !important;
+    font-weight: 700 !important;
 }
 
 .fc-planner-page .sticky-roll .ftm-fence-style {
@@ -10265,8 +11844,10 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     vertical-align: middle;
 }
 
+/* 0.75rem left the status dot reading as a stray mark beside 16px "S1"; 0.95rem carries the
+   same weight as the label it qualifies without a circle out-sizing the letters. */
 .fc-planner-page .sticky-roll .fc-section-tab-status__icon {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
 }
 
 .fc-planner-page .sticky-roll .fencing-tab-add {
@@ -10342,9 +11923,9 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 img.fc-cart-product-thumb,
 .product-image .fc-cart-product-thumb {
     display: block;
-    width: 100px;
-    height: 100px;
-    max-width: 100px;
+    width: 72px;
+    height: 72px;
+    max-width: 72px;
     object-fit: contain;
     object-position: top center;
 }
@@ -11087,7 +12668,15 @@ input[type="number"] {
    the project-plan editor) include the same partial, so both get it. */
 #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
+}
+
+/* One per row once two would be too narrow to read comfortably. */
+@media (max-width: 575.98px) {
+    #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check {
+        grid-template-columns: 1fr;
+    }
 }
 
 #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label {
@@ -11566,7 +13155,7 @@ input[type="number"] {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
 }
 
 .fencing-panel-controls .btn-fc {
@@ -11646,7 +13235,7 @@ input[type="number"] {
     transition: color 0.15s ease;
 }
 
-@media (min-width: 1024px) {
+@media (hover: hover) {
     .fencing-panel-controls .btn-fc:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 10px var(--fc-a-orange-22);
@@ -11718,32 +13307,452 @@ input[type="number"] {
 
 /* Bottom action row: shared hover lift + focus rings; colors already carry the
    hierarchy (orange primary, dark secondary, red destructive). */
+.fc-planner-page .fencing-section__bottom.fc-step3-bottom {
+    /* The buttons carry their own padding, so the bar only needs enough to sit them off the
+       rule above and the section border below. padding-bottom needs !important because the bar
+       carries Bootstrap's py-3 and bootstrap.min.css is loaded after this file. */
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 12px !important;
+}
+
 .fc-step3-bottom .btn {
     transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
         transform 0.15s ease;
 }
 
-@media (min-width: 1024px) {
-    .fc-step3-bottom .btn:not(:disabled):not(.disabled):hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+
+/* ------------------------------------------------------------------------------------------------
+   Planner type, matched to Your Project Details.
+   Mapped by role rather than copied wholesale, the same way the cart table was: that section has a
+   card header, a field label and a value, and each has a counterpart here.
+     header  13px / 600 / uppercase / 0.78px
+     label   12px / 600 / boulder   / 0.48px
+     value   14px / 500 / cod gray
+   Excluded on purpose: .step-label ("Step 01") per the request; the page masthead; every .btn and
+   .btn-fc, which carry their own sizing; and the measurement input, whose 18px is the one figure
+   the customer types into.
+   ------------------------------------------------------------------------------------------------ */
+
+/* The section-tab strip label takes the card-header role. The step subtitles ("Choose Your
+   Fencing Style", "Enter your measurements") are deliberately NOT in here: they sit directly
+   under the 40px step number as its second line, so the header role's 13px uppercase read as a
+   third heading rather than part of the same block. They keep their own 16px/400. */
+.fc-planner-page .fc-tab-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.78px;
+    color: var(--fc-cod-gray);
+}
+
+/* Field labels name a field, so they keep the label role's uppercase. */
+.fc-planner-page .fencing-section .fc-input-container > .fw-bold,
+.fc-planner-page .fencing-section .js-step-2-measurement-label,
+.fc-planner-page .js-overall-label,
+.fc-planner-page .ftm-fence-style {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.48px;
+    color: var(--fc-boulder) !important;
+    text-transform: uppercase;
+}
+
+/* Fence style names and the tab measurement are content, so they take the value role. The style
+   name carries the label role's 600 instead: on a picker the name is the thing being chosen, and
+   500 reads as secondary against the tile it belongs to. */
+.fc-planner-page .ftm-measurement {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--fc-cod-gray) !important;
+}
+
+.fc-planner-page .fencing-style-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--fc-cod-gray) !important;
+}
+
+/* The selected tile turns the title bar itself princeton orange, so the value role's cod gray
+   sits dark-on-orange there. White is the only legible pairing on that fill. */
+.fc-planner-page .fsi-selected .fencing-style-title {
+    color: var(--fc-white) !important;
+}
+
+/* The section tab heads its own card, so it sits a step above the header role rather than on it.
+   The number takes the brand red so the section you are on is findable at a glance across the
+   strip; the word stays neutral so only the changing part carries colour. */
+.fc-planner-page .ftm-title,
+.fc-planner-page .fencing-tab-number {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px;
+}
+
+.fc-planner-page .ftm-title {
+    color: var(--fc-cod-gray) !important;
+}
+
+.fc-planner-page .fencing-tab-number {
+    color: var(--fc-brand-primary) !important;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Section context bar (below the tabs): "SECTION 1 > Flat Top > 9,000 mm".
+   The header role applied to .fc-tab-title set cod gray on the princeton orange fill, so the
+   label it names was the least legible thing on the bar. Everything here is white; the label
+   holds full strength and the values step back slightly, so the eye lands on the section number
+   first and reads the summary after it.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .fc-content-tab-title .fc-tab-title {
+    color: var(--fc-white) !important;
+    font-weight: 700 !important;
+}
+
+.fc-planner-page .fc-content-tab-title .fc-tab-subtitle {
+    /* inline-flex so the carets centre on the line box. As inline glyphs they sit on the text
+       baseline, which drops them below the middle of the lowercase values beside them. */
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+/* The carets carried Bootstrap's ms-3 and no right margin, so each separator sat hard against
+   the value after it. Even margins on both sides. */
+.fc-planner-page .fc-content-tab-title .fc-tab-subtitle .fa-caret-right {
+    margin-left: 12px !important;
+    margin-right: 12px;
+    font-size: 11px;
+    color: var(--fc-white);
+    line-height: 1;
+}
+
+/* me-2 on the label plus a 12px caret margin double up into an uneven first gap. */
+.fc-planner-page .fc-content-tab-title .fc-tab-title.me-2 {
+    margin-right: 0 !important;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Clear All (footer).
+   A solid red button sat permanently at the foot of every page, giving a rarely-used destructive
+   action the loudest treatment on screen and pulling the eye away from the quote above it. Quiet
+   by default and emphatic only under the pointer: the danger is real, so it is signalled where it
+   matters — at the moment of reaching for it — rather than at all times.
+   float-end went with it; the parent is already a flex row. Selectors carry .btn because
+   bootstrap.min.css loads after this file, so a lone class loses colour and border to .btn.
+   -------------------------------------------------------------------------------------------- */
+.btn.fc-clear-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border: 1px solid var(--fc-gainsboro);
+    background-color: transparent;
+    color: var(--fc-dove-gray);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.btn.fc-clear-all-btn i {
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+@media (hover: hover) {
+    .btn.fc-clear-all-btn:hover:not(:active) {
+        border-color: var(--fc-bootstrap-danger);
+        background-color: var(--fc-bootstrap-danger);
+        color: var(--fc-white);
     }
 }
 
-.fc-step3-bottom .btn:focus-visible {
-    outline: 2px solid var(--fc-princeton-orange);
+/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. */
+.btn.fc-clear-all-btn:focus-visible {
+    outline: 2px solid var(--fc-bootstrap-danger);
     outline-offset: 2px;
-    box-shadow: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .fencing-panel-controls .btn-fc,
-    .fc-step3-bottom .btn {
-        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+/* --------------------------------------------------------------------------------------------
+   Footer app name + version.
+   This line was rendering in system-ui — the only text on either page not in the brand face —
+   at the same size and colour for both the name and the version, so the two read as one string.
+   Poppins at the label role, with the version stepped back so the name leads. Selectors carry
+   the element type and the colour !important: .small and .text-secondary tie on specificity and
+   bootstrap.min.css loads after this file, so a bare class loses both size and colour.
+   -------------------------------------------------------------------------------------------- */
+div.fc-footer-app {
+    font-family: "Poppins", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.48px;
+    color: var(--fc-boulder) !important;
+}
+
+div.fc-footer-app .app-version {
+    margin-left: 2px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+    color: var(--fc-spanish-gray);
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Back to site (masthead).
+   A solid near-black block sat directly under the page title, making the one control that leaves
+   the planner the heaviest thing in the header. It is an exit, not a call to action, so it reads
+   as a quiet outline and fills only under the pointer.
+   It now takes the same interaction set as every other button - hover lift, shadow and glint -
+   on top of the fill. Selectors carry .btn because bootstrap.min.css loads after this file.
+   -------------------------------------------------------------------------------------------- */
+.btn.fc-back-to-site {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border: 1px solid var(--fc-gainsboro);
+    background-color: transparent;
+    color: var(--fc-cod-gray);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.btn.fc-back-to-site i {
+    font-size: 11px;
+    opacity: 0.75;
+}
+
+/* The site name is the useful half of the label, so it keeps a step of extra weight. */
+.btn.fc-back-to-site b {
+    font-weight: 700;
+}
+
+@media (hover: hover) {
+    .btn.fc-back-to-site:hover:not(:active) {
+        border-color: var(--fc-cod-gray);
+        background-color: var(--fc-cod-gray);
+        color: var(--fc-white);
     }
 
-    .fencing-panel-controls .btn-fc:hover,
-    .fc-step3-bottom .btn:not(:disabled):not(.disabled):hover {
-        transform: none;
+    .btn.fc-back-to-site:hover:not(:active) i {
+        opacity: 1;
     }
+}
+
+/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. */
+.btn.fc-back-to-site:focus-visible {
+    outline: 2px solid var(--fc-cod-gray);
+    outline-offset: 2px;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Step 1 header actions (Delete Section / Reset).
+   Two solid red buttons sat in the header of a section whose whole job is picking a style, so the
+   loudest things in it were the two ways to throw work away. Same treatment as Clear All and the
+   masthead link: quiet until reached for, emphatic under the pointer.
+   Scoped to .btn-delete-fence so Step 3's own Reset, which shares .fc-fence-reset-all, is left
+   alone. Selectors carry .btn-danger because bootstrap.min.css loads after this file.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .btn-delete-fence .btn.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--fc-gainsboro);
+    background-color: transparent;
+    color: var(--fc-dove-gray);
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.fc-planner-page .btn-delete-fence .btn.btn-danger i {
+    margin-right: 0 !important;
+    opacity: 0.85;
+}
+
+@media (hover: hover) {
+    .fc-planner-page .btn-delete-fence .btn.btn-danger:hover:not(:active) {
+        border-color: var(--fc-bootstrap-danger);
+        background-color: var(--fc-bootstrap-danger);
+        color: var(--fc-white);
+    }
+
+    .fc-planner-page .btn-delete-fence .btn.btn-danger:hover:not(:active) i {
+        opacity: 1;
+    }
+}
+
+/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. */
+.fc-planner-page .btn-delete-fence .btn.btn-danger:focus-visible {
+    outline: 2px solid var(--fc-bootstrap-danger);
+    outline-offset: 2px;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Step 3 footer destructive actions (Reset / Delete Section).
+   Same treatment as the Step 1 header pair. In that footer row the four buttons were Add Section,
+   Reset, Delete Section and Next: two of the four were solid red, so the destructive pair carried
+   more weight than the primary action beside them. Quiet at rest restores the order — orange
+   leads, dark supports, red waits.
+   Colours only: padding, w-100 and the row's own hover transform are left as they are.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .fc-step3-bottom .btn.btn-danger {
+    border: 1px solid var(--fc-gainsboro);
+    background-color: transparent;
+    color: var(--fc-dove-gray);
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.fc-planner-page .fc-step3-bottom .btn.btn-danger i {
+    opacity: 0.85;
+}
+
+@media (hover: hover) {
+    .fc-planner-page .fc-step3-bottom .btn.btn-danger:hover:not(:active) {
+        border-color: var(--fc-bootstrap-danger);
+        background-color: var(--fc-bootstrap-danger);
+        color: var(--fc-white);
+    }
+
+    .fc-planner-page .fc-step3-bottom .btn.btn-danger:hover:not(:active) i {
+        opacity: 1;
+    }
+}
+
+/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. */
+.fc-planner-page .fc-step3-bottom .btn.btn-danger:focus-visible {
+    outline: 2px solid var(--fc-bootstrap-danger);
+    outline-offset: 2px;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Zoom controls (Step 3).
+   Zoom in / out / Reset sit over the fence diagram as a utility cluster, but were two solid dark
+   blocks and a solid red one — heavier than the drawing they operate on. Same quiet treatment as
+   the other chrome: zoom keeps the neutral dark on hover, Reset stays in the destructive family.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .btn.fc-zoom-fence,
+.fc-planner-page .btn.fc-zoom-reset {
+    /* stretch, not a fixed height: the buttons were 28px against the 35px zoom readout beside
+       them. Taking the flex line's cross size keeps them level with it whatever the readout's
+       type ends up being. justify-content because stretch alone would leave the label top-aligned. */
+    align-self: stretch;
+    justify-content: center;
+    border: 1px solid var(--fc-gainsboro);
+    background-color: transparent;
+    color: var(--fc-dove-gray);
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.fc-planner-page .btn.fc-zoom-fence i,
+.fc-planner-page .btn.fc-zoom-reset i {
+    opacity: 0.85;
+}
+
+@media (hover: hover) {
+    .fc-planner-page .btn.fc-zoom-fence:hover:not(:active) {
+        border-color: var(--fc-cod-gray);
+        background-color: var(--fc-cod-gray);
+        color: var(--fc-white);
+    }
+
+    .fc-planner-page .btn.fc-zoom-reset:hover:not(:active) {
+        border-color: var(--fc-bootstrap-danger);
+        background-color: var(--fc-bootstrap-danger);
+        color: var(--fc-white);
+    }
+
+    .fc-planner-page .btn.fc-zoom-fence:hover:not(:active) i,
+    .fc-planner-page .btn.fc-zoom-reset:hover:not(:active) i {
+        opacity: 1;
+    }
+}
+
+/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. */
+.fc-planner-page .btn.fc-zoom-fence:focus-visible {
+    outline: 2px solid var(--fc-cod-gray);
+    outline-offset: 2px;
+}
+
+.fc-planner-page .btn.fc-zoom-reset:focus-visible {
+    outline: 2px solid var(--fc-bootstrap-danger);
+    outline-offset: 2px;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Zoom stepper (Step 3 header).
+   Minus / value / plus as one segmented control: the readout is what the two buttons change, so
+   it belongs between them rather than floating beside them as a third loose item. One border
+   around the group and hairlines between the segments; the buttons keep their own hover fill.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .fc-zoom-stepper {
+    display: inline-flex;
+    align-self: stretch;
+    align-items: stretch;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 3px;
+    overflow: hidden;
+    background-color: var(--fc-white);
+}
+
+/* The group draws the outline now, so the buttons drop their own and square off. Their colour,
+   hover fill and stretch still come from the shared .fc-zoom-fence rule above. */
+.fc-planner-page .fc-zoom-stepper .btn.fc-zoom-fence {
+    width: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 0;
+    font-size: 12px;
+}
+
+.fc-planner-page .fc-zoom-stepper .fc-zoom-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    margin: 0;
+    padding: 0 6px;
+    /* The base .fc-zoom-progress rule rounds it 4px and fills it grey for when it stood alone.
+       Inside the group the rounded corners pull it away from the dividers either side, and the
+       fill made the readout look like a third button rather than the value between two. */
+    border-radius: 0;
+    background-color: transparent;
+    border-left: 1px solid var(--fc-gainsboro);
+    border-right: 1px solid var(--fc-gainsboro);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--fc-cod-gray);
+    /* tabular figures stop the group resizing as the value steps 100 -> 110 -> 90 */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    user-select: none;
 }

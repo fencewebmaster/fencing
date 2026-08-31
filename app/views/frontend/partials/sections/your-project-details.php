@@ -11,6 +11,7 @@ use Fc\Admin\Services\FenceCatalogService;
 
 		<div class="row">
 			<div class="col-md">
+				<div class="fc-card">
 				<div class="fc-card-header fc-bg-dark fc-border-top">
 					Customer Details
 				</div>
@@ -82,8 +83,9 @@ use Fc\Admin\Services\FenceCatalogService;
 					</table>
 
 				</div>
+				</div>
 
-				<div class="fc-card fc-mb-1">
+				<div class="fc-card fc-mb-2">
 				
 					<div class="fc-card-header fc-bg-dark fc-border-top">
 						Project Notes & Additional Details
@@ -97,7 +99,7 @@ use Fc\Admin\Services\FenceCatalogService;
 								<tr>
 									<td>
 										
-										<span><?php echo e((string) @$info['notes']); ?></span>
+										<span><?php echo trim((string) @$info['notes']) !== '' ? e((string) $info['notes']) : '<span class="text-muted">No notes added.</span>'; ?></span>
 										<div class="fc-form-group has-clear">
 												<textarea name="notes" placeholder="Write your notes here" class="form-control" rows="5"><?php echo e((string) @$info['notes']); ?></textarea>
 										</div>
@@ -110,29 +112,6 @@ use Fc\Admin\Services\FenceCatalogService;
 
 				</div>
 
-				<div class="mb-2 text-end js-project-details-footer">
-					<button type="button" data-action="edit" class="btn btn-sm fc-btn-edit btn-orange text-uppercase" aria-label="Edit details">
-						<i class="fa-regular fa-pen-to-square me-sm-1" aria-hidden="true"></i>
-						<b class="">Edit Details</b>
-					</button>
-
-					<div class="js-project-details-controls project-details-controls project-details-controls--edit-bar fc-d-none mt-2">
-						<button type="button" class="btn btn-sm btn-secondary text-uppercase fc-btn-cancel-project-details">
-							<i class="fa-solid fa-xmark me-1" aria-hidden="true"></i>
-							Cancel
-						</button>
-						<div class="project-details-controls__right">
-							<button type="button" data-action="update" class="btn btn-sm fc-btn-edit btn-orange text-uppercase btn-orange fc-w-700">
-								<i class="fa-regular fa-pen-to-square me-1"></i>
-								<b>Save</b>
-							</button>
-
-							<button type="button" class="btn btn-sm fc-btn-reset btn-dark text-uppercase" style="display:none;">
-								<i class="fa-solid fa-rotate-left me-1"></i> <b>Reset</b>
-							</button>
-						</div>
-					</div>
-				</div>
 
 			</div>
 
@@ -223,6 +202,10 @@ use Fc\Admin\Services\FenceCatalogService;
 										</div>
 									</div>
 
+									<?php if ( empty( $colors ) ) : ?>
+									<p class="fc-project-details-empty">No colour selections yet.</p>
+									<?php endif; ?>
+
 									</td>
 								</tr>
 							</tbody>
@@ -234,8 +217,13 @@ use Fc\Admin\Services\FenceCatalogService;
 				</div>
 
 				<div class="fc-edit-zone">
-					<p class="fc-project-details-edit-hint small mb-2 fc-d-none" role="status">Click items below to edit</p>
+					<div class="fc-card-header fc-bg-dark fc-border-top">
+						Fence Details
+					</div>
+
 				<div class="fc-table-rounded-border fc-mb-2 project-details--edit"> 
+
+					<p class="fc-project-details-edit-hint small fc-d-none" role="status">Click items below to edit</p>
 
 					<table class="fc-table">
 						<tr>
@@ -257,7 +245,7 @@ use Fc\Admin\Services\FenceCatalogService;
 						</tr>
 						<tr>
 							<td>When Needed</td>
-							<td><?php echo @$info['timeframe'] ? fc_timeframe(@$info['timeframe']) : ''; ?></td>
+							<td><?php echo @$info['timeframe'] ? fc_timeframe(@$info['timeframe']) : '<span class="text-muted">&mdash;</span>'; ?></td>
 						</tr>
 						<tr>
 							<td>Other Items Needed</td>
@@ -291,5 +279,29 @@ use Fc\Admin\Services\FenceCatalogService;
 
 			</div>
 		</div>
+
+			<div class="text-end js-project-details-footer">
+				<button type="button" data-action="edit" class="btn btn-sm fc-btn-edit btn-orange text-uppercase" aria-label="Edit details">
+					<i class="fa-regular fa-pen-to-square me-sm-1" aria-hidden="true"></i>
+					<b class="">Edit Details</b>
+				</button>
+
+				<div class="js-project-details-controls project-details-controls project-details-controls--edit-bar fc-d-none mt-2">
+					<button type="button" class="btn btn-sm btn-secondary text-uppercase fc-btn-cancel-project-details">
+						<i class="fa-solid fa-xmark me-1" aria-hidden="true"></i>
+						Cancel
+					</button>
+					<div class="project-details-controls__right">
+						<button type="button" data-action="update" class="btn btn-sm fc-btn-edit btn-orange text-uppercase btn-orange fc-w-700">
+							<i class="fa-regular fa-pen-to-square me-1"></i>
+							<b>Save</b>
+						</button>
+
+						<button type="button" class="btn btn-sm fc-btn-reset btn-dark text-uppercase" style="display:none;">
+							<i class="fa-solid fa-rotate-left me-1"></i> <b>Reset</b>
+						</button>
+					</div>
+				</div>
+			</div>
 	</div>
 </div>

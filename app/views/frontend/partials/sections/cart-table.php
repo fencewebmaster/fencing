@@ -15,20 +15,47 @@ $edited = FALSE;
 $cart_included_count = CartBuilderService::cartIncludedItemCount(
     isset( $cart['items'] ) && is_array( $cart['items'] ) ? $cart['items'] : array()
 );
+
+// Distinct fence styles in this cart, for the filter beside the item count. Built with the
+// same helper each row labels itself with, so the options cannot drift from the rows.
+$fc_cart_fence_styles = array();
+if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
+    foreach ( $cart['items'] as $fc_style_item ) {
+        $fc_style_label = FenceCatalogService::cartItemFenceStyleLabel(
+            is_array( $fc_style_item ) ? $fc_style_item : array(),
+            isset( $fences ) ? $fences : array()
+        );
+        if ( $fc_style_label !== '' && ! in_array( $fc_style_label, $fc_cart_fence_styles, true ) ) {
+            $fc_cart_fence_styles[] = $fc_style_label;
+        }
+    }
+    sort( $fc_cart_fence_styles );
+}
 ?>
 
-<span class="badge bg-danger mb-2 text-uppercase p-2"><?php echo (int) $cart_included_count; ?> Items</span>
+<div class="fc-cart-list-toolbar d-flex align-items-center justify-content-between gap-2 mb-2">
+    <span class="badge bg-danger text-uppercase p-2"><?php echo (int) $cart_included_count; ?> Items</span>
+
+    <?php if ( ! empty( $fc_cart_fence_styles ) ) : ?>
+    <select class="form-select fc-cart-style-filter js-fc-cart-style-filter" aria-label="Show items for one fence style">
+        <option value="">All Fence Styles</option>
+        <?php foreach ( $fc_cart_fence_styles as $fc_style_option ) : ?>
+        <option value="<?php echo e( (string) $fc_style_option ); ?>"><?php echo e( (string) $fc_style_option ); ?></option>
+        <?php endforeach; ?>
+    </select>
+    <?php endif; ?>
+</div>
 
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
     <div class="fc-table-rounded-border mb-3">
         
 
-        <table class="table-cart table table-hover fc-table-bordered table-striped">
+        <table class="table-cart table table-hover">
             <thead class="table-dark">
                 <tr>
                     <th class="d-none d-md-table-cell">QTY</th>
                     <th colspan="2">Description</th>
-                    <th class="text-center d-md-table-cell d-none">Stock</th>
+                    <th class="d-md-table-cell d-none">Stock</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,7 +65,7 @@ $cart_included_count = CartBuilderService::cartIncludedItemCount(
 
                 <input name="cart[original_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['original_qty']; ?>" class="fc-form-control" min="1" required>
 
-                <tr class="fc-position-relative<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' fc-cart-item--optional-pending' : ''; ?>" data-original="<?php echo $cart_item['original_qty']; ?>" data-cart-slug="<?php echo e((string) (@$cart_item['slug'] ?? '')); ?>"<?php echo ! empty( $cart_item['optional'] ) ? ' data-fc-cart-optional="1"' : ''; ?>>
+                <tr class="fc-position-relative<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' fc-cart-item--optional-pending' : ''; ?>" data-original="<?php echo $cart_item['original_qty']; ?>" data-cart-slug="<?php echo e((string) (@$cart_item['slug'] ?? '')); ?>" data-fc-fence-style="<?php echo e( (string) FenceCatalogService::cartItemFenceStyleLabel( $cart_item, isset( $fences ) ? $fences : array() ) ); ?>"<?php echo ! empty( $cart_item['optional'] ) ? ' data-fc-cart-optional="1"' : ''; ?>>
 
                     <td class="d-none d-md-table-cell align-middle text-center">
 
@@ -86,7 +113,7 @@ $cart_included_count = CartBuilderService::cartIncludedItemCount(
                         <?php endif; ?>
                     </td>
                     <td class="align-top" style="width: max-content;">
-                        <div class="fw-bold text-dark mb-2">
+                        <div class="fw-bold text-dark fc-cart-item-title">
                             <?php echo @$cart_item['name']; ?>
                             <?php if ( ! empty( $cart_item['optional'] ) ) : ?>
                             <span class="badge rounded-pill bg-secondary ms-1 align-middle">Optional</span>
@@ -103,7 +130,7 @@ $cart_included_count = CartBuilderService::cartIncludedItemCount(
                         $fence_style_label = FenceCatalogService::cartItemFenceStyleLabel( $cart_item, isset( $fences ) ? $fences : array() );
                         if ( $fence_style_label !== '' ) :
                         ?>
-                        <div class="small text-muted mb-2 fc-cart-fence-style"><?php echo e($fence_style_label); ?></div>
+                        <div class="small text-muted fc-cart-fence-style"><?php echo e($fence_style_label); ?></div>
                         <?php endif; ?>
 
                         <div class="d-block d-md-none">
@@ -165,7 +192,7 @@ $cart_included_count = CartBuilderService::cartIncludedItemCount(
 
 
                     </td>
-                    <td width="120" class="px-1 align-middle d-md-table-cell d-none">
+                    <td width="120" class="align-middle d-md-table-cell d-none">
 
                         <div class="fw-boldx d-flex align-items-center">
                         <?php if(@$cart_item['stock'] == 'yes'): ?>

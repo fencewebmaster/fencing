@@ -13,15 +13,17 @@ use Fc\Admin\Services\SiteRegistryService;
             $fcWebhookMode = (string) (IntegrationsSettings::get()['webhookMode'] ?? 'live');
             $fcWebhookIsLive = $fcWebhookMode !== 'test';
             ?>
-            <div class="text-secondary small">
+            <div class="text-secondary small fc-footer-app">
                 <i class="fa-solid fa-circle fc-footer-webhook-dot <?php echo $fcWebhookIsLive ? 'fc-footer-webhook-dot--live' : 'fc-footer-webhook-dot--test'; ?>" aria-hidden="true" title="<?php echo $fcWebhookIsLive ? 'Live webhook URL' : 'Test webhook URL'; ?>"></i>
                 <?php echo e($fcBranding['appName']); ?>
                 <span class="app-version"><?php echo e($fcBranding['version']); ?></span>
             </div>
         </div>
         <div class="col-auto">
-            <button type="button" data-bs-toggle="modal" data-bs-target="#clear-all-data" class="btn btn-danger btn-sm px-2 fw-bold text-uppercase float-end">Clear All</button>
-            
+            <button type="button" data-bs-toggle="modal" data-bs-target="#clear-all-data" class="btn btn-sm fw-bold text-uppercase fc-clear-all-btn" aria-label="Clear all sections and start a new quote">
+                <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                <span>Clear All</span>
+            </button>
         </div>
     </div>
 </div>

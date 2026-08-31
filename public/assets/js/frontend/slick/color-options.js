@@ -1,6 +1,9 @@
 /**
  * Colour options carousel (Slick) — planner Step 4 + project-plan submit modal (#submit-modal).
  * Planner: mobileFirst 2 / >767 → 4 / >990 → 6.
+ * Phones get a pager and no arrows, in the planner and the submit modal alike: the arrows need
+ * 44px side gutters to sit in at that width, which cost more room than they earn when a
+ * swipe and a pager already do the job.
  * Project-plan modal: 2 mobile / 4 tablet & desktop (matches project-plan colour carousel).
  */
 (function($) {
@@ -224,7 +227,8 @@
                 settings: {
                     slidesToShow: 4,
                     slidesToScroll: 4,
-                    dots: true
+                    dots: true,
+                    arrows: true
                 }
             },
             {
@@ -232,7 +236,8 @@
                 settings: {
                     slidesToShow: 6,
                     slidesToScroll: 6,
-                    dots: true
+                    dots: true,
+                    arrows: true
                 }
             }
         ];
@@ -243,7 +248,8 @@
                 settings: {
                     slidesToShow: 4,
                     slidesToScroll: 4,
-                    infinite: true
+                    infinite: true,
+                    arrows: true
                 }
             }
         ];
@@ -251,10 +257,10 @@
         $el.slick({
             mobileFirst: true,
             infinite: true,
-            slidesToShow: 2,
-            slidesToScroll: 2,
-            dots: isModal,
-            arrows: true,
+            slidesToShow: isModal ? 2 : 1,
+            slidesToScroll: isModal ? 2 : 1,
+            dots: true,
+            arrows: false,
             appendArrows: $wrap,
             prevArrow: arrowPrev,
             nextArrow: arrowNext,

@@ -9,7 +9,7 @@
 
 					<div class="col-lg-7 col-md-8 col-sm-12 fc-position-relative order-md-1 order-2" id="update_cart-list">
 					    <!-- [START] Label -->
-				        <div class="row align-items-center mb-2">
+				        <div class="row align-items-center">
 				        	<div class="col-sm col">
 				        		<div class="step-label">Item List & <span>Cart</span></div>
 
@@ -46,7 +46,7 @@
 							<div class="fc-view-total-cost-bar__inner">
 								<div class="d-grid gap-2">
 									<div class="animate__animated" animation-type="animate__bounce">
-										<button type="submit" class="btn btn-lg btn-submit btn-green js-fc-view-total-cost text-uppercase w-100 text fw-bold animate__animated  animate__delay-1s" animation-type="animate__shakeX">
+										<button type="submit" class="btn btn-lg btn-submit btn-green js-fc-view-total-cost text-uppercase w-100 text fw-bold fc-btn-shine">
 											<i class="fa-solid fa-cart-shopping me-1"></i>
 											View Total Cost!
 										</button>
@@ -98,7 +98,7 @@
 
 								<div class="row g-2">
 									<div class="col-lg col-md-12 col-sm">
-								        <button type="submit" class="btn btn-submit btn-lg btn-dark text-uppercase w-100 fs-6 text fw-bold">
+								        <button type="submit" class="btn btn-submit btn-lg btn-dark text-uppercase w-100 fs-6 text fw-bold fc-btn-shine">
 								            <i class="fa-solid fa-cart-shopping me-2"></i>
 								            Order Items Now!
 								        </button>

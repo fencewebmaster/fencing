@@ -24,22 +24,24 @@
                     <h4 class="fencing-content-title mb-0">Configure this fence section</h4>
 
                     <div class="fencing-section__controls d-flex align-items-center flex-wrap ms-auto gap-1">
-                        
+
                         <button type="button" style="display: none;">
                             <i class="fc-icon fc-rectangle"></i>
                         </button>
 
-                        <button type="button" class="fc-zoom-fence btn btn-sm btn-dark d-flex align-items-center text-uppercase px-2" data-zoom="in">
-                            <i class="fa fa-magnifying-glass-plus"></i>
-                            <span class="d-none d-sm-inline-block ms-2">Zoom in</span>
-                        </button>
+                        <!-- Stepper: minus / value / plus reads small-to-large. The buttons lost
+                             their labels, so each carries an aria-label instead. -->
+                        <div class="fc-zoom-stepper" role="group" aria-label="Zoom the fence drawing">
+                            <button type="button" class="fc-zoom-fence btn btn-sm btn-dark" data-zoom="out" aria-label="Zoom out">
+                                <i class="fa fa-magnifying-glass-minus" aria-hidden="true"></i>
+                            </button>
 
-                        <div class="fc-zoom-progress js-fc-zoom-progress mx-1">100%</div>
+                            <div class="fc-zoom-progress js-fc-zoom-progress" aria-live="polite">100%</div>
 
-                        <button type="button" class="fc-zoom-fence btn btn-sm btn-dark d-flex align-items-center text-uppercase px-2" data-zoom="out">
-                            <i class="fa fa-magnifying-glass-minus"></i>
-                            <span class="d-none d-sm-inline-block ms-2">Zoom out</span>
-                        </button>
+                            <button type="button" class="fc-zoom-fence btn btn-sm btn-dark" data-zoom="in" aria-label="Zoom in">
+                                <i class="fa fa-magnifying-glass-plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
 
                         <button type="button" href="#" class="fc-zoom-reset js-fc-zoom-reset btn btn-sm btn-danger align-items-center text-uppercase px-2" data-zoom="reset">
                             <i class="fa-solid fa-rotate-left"></i>

@@ -1,5 +1,5 @@
 <!-- [START] PROJECT PLAN -->
-<div id="project-plans-section" class="fencing-section fencing-section--has-border p-3 pb-0">
+<div id="project-plans-section" class="fencing-section fencing-section--has-border">
 	<div class="fc-card">
 
 		<div class="fc-row-flex">

@@ -8,6 +8,6 @@ $fcBranding = BrandingSettings::get();
 
 <p class="mb-2"><?php echo e($fcBranding['tagline']); ?></p>
 
-<a href="<?php echo $_SESSION["site"]['url']; ?>" class="btn btn-sm btn-dark px-3">
+<a href="<?php echo $_SESSION["site"]['url']; ?>" class="btn btn-sm btn-dark px-3 fc-back-to-site">
 	<i class="fa fa-arrow-left"></i> Back to <b><?php echo $_SESSION["site"]['name']; ?></b> Site
 </a>

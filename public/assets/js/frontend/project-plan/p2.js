@@ -131,7 +131,7 @@ let ProjectPlan = {
                 ? `<div class="fc-project-plan-section-style">${fcProjectPlanEscapeHtml(fenceStyleTitle)}</div>`
                 : '';
 
-            var section = `<div class="border p-3 mb-4 mx-2 fc-project-plan-section fc-project-plan-section--pending" data-section-index="${i}" aria-busy="true">
+            var section = `<div class="border p-3 mb-4 fc-project-plan-section fc-project-plan-section--pending" data-section-index="${i}" aria-busy="true">
                 <div class="fc-project-plan-section-sticky-sentinel" aria-hidden="true"></div>
                 <div class="fc-project-plan-section-head">
                     <div class="row align-items-center gx-2 mb-0">
@@ -1543,8 +1543,20 @@ let ProjectPlan = {
             var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            // Display the result in the element with id="demo"
-            document.getElementById(cont).innerHTML = hours + "hrs " + minutes + "mins " + seconds + "secs ";
+            // Display the result in the element with id="demo", as three labelled tiles.
+            // Values are zero-padded: an unpadded number changes width as it crosses 10, which
+            // makes the whole row shuffle sideways once a second.
+            var parts = [[hours, 'Hrs'], [minutes, 'Mins'], [seconds, 'Secs']],
+                markup = '';
+
+            for (var p = 0; p < parts.length; p++) {
+                markup += '<span class="fc-countdown-unit">' +
+                    '<span class="fc-countdown-unit__value">' + (parts[p][0] < 10 ? '0' : '') + parts[p][0] + '</span>' +
+                    '<span class="fc-countdown-unit__label">' + parts[p][1] + '</span>' +
+                    '</span>';
+            }
+
+            document.getElementById(cont).innerHTML = markup;
 
             // If the count down is finished, write some text
             if (distance <= 1) {

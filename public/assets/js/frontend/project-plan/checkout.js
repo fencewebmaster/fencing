@@ -1283,3 +1283,21 @@ $("#paymentFrm").validate({
 
     window.addEventListener('resize', updateBarHeightVar);
 })();
+//----------------------------------------------------------------------------------
+
+/**
+ * Item List & Cart — show one fence style at a time.
+ *
+ * Display only: rows are hidden with a class, never detached, so the per-row hidden inputs
+ * (cart[qty][i], cart[original_qty][i]) still post and the cart submits whole whatever is
+ * on screen. Matching is on the row's data-fc-fence-style, stamped server-side from the same
+ * helper that builds the options, rather than on the label text read back out of the DOM.
+ */
+_doc.on('change', '.js-fc-cart-style-filter', function() {
+    var style = $(this).val() || '';
+
+    $('.fc-table-items .table-cart tbody tr[data-fc-fence-style]').each(function() {
+        var row = $(this);
+        row.toggleClass('fc-cart-row--filtered', style !== '' && row.attr('data-fc-fence-style') !== style);
+    });
+});

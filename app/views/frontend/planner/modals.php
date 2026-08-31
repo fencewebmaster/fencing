@@ -135,9 +135,6 @@ use Fc\Admin\Services\AppConfigService;
         <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
             <div class="modal-content fc-modal__content">
                 <div class="modal-header fc-modal__header">
-                    <span class="fc-modal__icon fc-modal__icon--info" aria-hidden="true">
-                        <i class="fa-solid fa-file-invoice"></i>
-                    </span>
                     <div class="fc-modal__header-text">
                         <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcLoadQuoteModalLabel">Load <span class="text-danger">Quote</span></h5>
                         <p class="fc-modal__subtitle mb-0">Pick up a saved plan where you left off</p>
@@ -234,6 +231,85 @@ use Fc\Admin\Services\AppConfigService;
             <div class="modal-footer fc-modal__footer">
                 <button type="button" class="btn btn-orange text-uppercase px-3" data-bs-dismiss="modal" data-fc-autofocus>
                     <strong>OK</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset / Delete Section — destructive confirms, same shape and copy discipline as the Clear All
+     dialog in partials/footer.php: name what disappears rather than asking "are you sure?".
+     Gated in core/events.js, which re-fires the original click once confirmed. -->
+<div class="modal fade fc-modal" id="fc-reset-section-confirm" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcResetSectionTitle" aria-describedby="fcResetSectionDesc" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
+        <div class="modal-content fc-modal__content">
+            <div class="modal-header fc-modal__header">
+                <span class="fc-modal__icon" aria-hidden="true">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </span>
+                <div class="fc-modal__header-text">
+                    <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcResetSectionTitle">Reset section</h5>
+                    <p class="fc-modal__subtitle mb-0">Start this section again from the fencing style</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fc-modal__body">
+                <p class="fc-modal__lead" id="fcResetSectionDesc">This section will be cleared:</p>
+                <ul class="fc-modal__list">
+                    <li><i class="fa-solid fa-swatchbook" aria-hidden="true"></i>The fencing style you picked</li>
+                    <li><i class="fa-solid fa-ruler-horizontal" aria-hidden="true"></i>Its measurements</li>
+                    <li><i class="fa-solid fa-sliders" aria-hidden="true"></i>Gates, colours and panel options</li>
+                </ul>
+                <p class="fc-modal__note">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <span>Your other sections are not affected. This cannot be undone.</span>
+                </p>
+            </div>
+            <div class="modal-footer fc-modal__footer">
+                <button type="button" class="btn btn-outline-secondary text-uppercase px-3" data-bs-dismiss="modal" data-fc-autofocus>
+                    <strong>Cancel</strong>
+                </button>
+                <button type="button" class="btn btn-danger text-uppercase px-3 js-fc-confirm-proceed" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-rotate-left me-2" aria-hidden="true"></i>
+                    <strong>Yes, reset section</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade fc-modal" id="fc-delete-section-confirm" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcDeleteSectionTitle" aria-describedby="fcDeleteSectionDesc" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
+        <div class="modal-content fc-modal__content">
+            <div class="modal-header fc-modal__header">
+                <span class="fc-modal__icon" aria-hidden="true">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </span>
+                <div class="fc-modal__header-text">
+                    <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcDeleteSectionTitle">Delete section</h5>
+                    <p class="fc-modal__subtitle mb-0">Remove this section from your quote</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fc-modal__body">
+                <p class="fc-modal__lead" id="fcDeleteSectionDesc">This section and everything in it will be removed:</p>
+                <ul class="fc-modal__list">
+                    <li><i class="fa-solid fa-swatchbook" aria-hidden="true"></i>Its fencing style and measurements</li>
+                    <li><i class="fa-solid fa-sliders" aria-hidden="true"></i>Its gates, colours and panel options</li>
+                    <li><i class="fa-solid fa-list-check" aria-hidden="true"></i>Its lines in the materials list</li>
+                </ul>
+                <p class="fc-modal__note">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <span>Your remaining sections are renumbered. This cannot be undone.</span>
+                </p>
+            </div>
+            <div class="modal-footer fc-modal__footer">
+                <button type="button" class="btn btn-outline-secondary text-uppercase px-3" data-bs-dismiss="modal" data-fc-autofocus>
+                    <strong>Cancel</strong>
+                </button>
+                <button type="button" class="btn btn-danger text-uppercase px-3 js-fc-confirm-proceed" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-trash-can me-2" aria-hidden="true"></i>
+                    <strong>Yes, delete section</strong>
                 </button>
             </div>
         </div>

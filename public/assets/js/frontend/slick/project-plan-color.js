@@ -1,6 +1,9 @@
 /**
  * Project plan (/project-plan) — Color Options carousel (Slick).
- * mobileFirst: 2 slides; width > 767 → 4 slides (tablet / iPad / desktop).
+ * mobileFirst: 1 full-width slide, dots only; width > 767 → 4 slides with arrows.
+ * Phones get no arrows: they sit outside the track (left/right: -30px) so they overhang a
+ * narrow viewport, and a swipe plus dots is the expected affordance on touch. Dropping them
+ * also frees the 96px the dot row reserved for them.
  * Infinite loop for continuous prev/next.
  */
 (function($) {
@@ -106,10 +109,10 @@
         $el.slick({
             mobileFirst: true,
             infinite: true,
-            slidesToShow: 2,
-            slidesToScroll: 2,
-            dots: false,
-            arrows: true,
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            dots: true,
+            arrows: false,
             appendArrows: $wrap,
             prevArrow: arrowPrev,
             nextArrow: arrowNext,
@@ -124,7 +127,8 @@
                         slidesToShow: 4,
                         slidesToScroll: 4,
                         infinite: true,
-                        dots: true
+                        dots: true,
+                        arrows: true
                     }
                 }
             ]

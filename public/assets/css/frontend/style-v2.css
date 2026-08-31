@@ -287,24 +287,19 @@
 }
 
 .btn-orange {
-    border-bottom: 3px solid var(--fc-fiery-orange) !important;
 }
 
 .btn-outline-secondary {
-    border-bottom: 3px solid var(--fc-trout) !important;
 }
 
 .btn-danger,
 .btn-outline-danger {
-    border-bottom: 3px solid var(--fc-bright-maroon) !important;
 }
 
 .btn-fc-outline-default {
-    border-bottom: 3px solid var(--fc-matterhorn) !important;
 }
 
 .btn-dark {
-    border-bottom: 3px solid var(--fc-black) !important;
 }
 
 /* Slat Gate ONLY + STD: Overall Length is computed and read-only */
