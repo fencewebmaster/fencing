@@ -11800,9 +11800,12 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     display: none;
 }
 
+/* The S names the thing and the number identifies it, so only the number carries the brand red -
+   the same split as the unstuck tab, where SECTION is neutral and the number is red. */
 .fc-planner-page .sticky-roll .fencing-tab-number::before {
     content: 'S';
     font-weight: 700;
+    color: var(--fc-cod-gray);
 }
 
 /* !important only because the unstuck tab title is itself !important at 20px; without it the
@@ -13385,8 +13388,7 @@ input[type="number"] {
 .fc-planner-page .ftm-title,
 .fc-planner-page .fencing-tab-number {
     font-size: 20px !important;
-    font-weight: 600 !important;
-    letter-spacing: 1px;
+    font-weight: 400 !important;
 }
 
 .fc-planner-page .ftm-title {
