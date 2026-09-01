@@ -568,6 +568,15 @@ $tab = $fcSettingsPage;
                                             <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-googleMapsApiKey" aria-label="Copy Google Maps API key" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
                                         </span>
                                     </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-chatraId">
+                                        <span class="text-sm font-medium text-slate-700">Chatra ID</span>
+                                        <span class="fc-settings-field-input-wrap">
+                                            <input type="password" id="fc-integration-chatraId" data-fc-integration-field="chatraId" value="<?php echo e((string) ($integrations['chatraId'] ?? '')); ?>" class="fc-settings-field font-mono" autocomplete="off" spellcheck="false" placeholder="e.g. zyiAwfgBp6aaDnXK2" />
+                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-reveal="fc-integration-chatraId" aria-label="Show Chatra ID" title="Show or hide"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-chatraId" aria-label="Copy Chatra ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                        </span>
+                                        <span class="text-xs text-slate-500">Public widget ID from Chatra &rarr; Setup. Leave blank to disable the chat widget.</span>
+                                    </label>
                                     <label class="flex min-w-0 flex-col gap-1" for="fc-integration-cloudflareApiToken">
                                         <span class="text-sm font-medium text-slate-700">Cloudflare API token</span>
                                         <span class="fc-settings-field-input-wrap">

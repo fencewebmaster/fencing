@@ -228,6 +228,7 @@ final class IntegrationsSettings
 
         return [
             'googleMapsApiKey' => (string) ($api['google_map'] ?? ''),
+            'chatraId' => (string) ($api['chatra'] ?? ''),
             'cloudflareApiToken' => (string) ($api['cloudflare_api_token'] ?? ''),
             'webhookUrl' => (string) ($webhooks['zap'] ?? ''),
             'webhookTestUrl' => (string) ($webhooks['test_zap'] ?? ''),
@@ -321,6 +322,8 @@ final class IntegrationsSettings
     {
         $google = self::cleanValue($input['googleMapsApiKey'] ?? '', 200);
         $cfToken = self::cleanValue($input['cloudflareApiToken'] ?? '', 200);
+        // Chatra public IDs are short alphanumeric strings, e.g. zyiAwfgBp6aaDnXK2.
+        $chatra = self::cleanValue($input['chatraId'] ?? '', 64);
         $webhook = self::cleanValue($input['webhookUrl'] ?? '', 1000);
         $webhookTest = self::cleanValue($input['webhookTestUrl'] ?? '', 1000);
         $headerCode = self::cleanCode($input['headerCode'] ?? '');
@@ -331,6 +334,9 @@ final class IntegrationsSettings
         }
         if ($cfToken === null || ($cfToken !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $cfToken))) {
             return ['ok' => false, 'error' => 'Cloudflare API token contains invalid characters.'];
+        }
+        if ($chatra === null || ($chatra !== '' && !preg_match('/^[A-Za-z0-9]+$/', $chatra))) {
+            return ['ok' => false, 'error' => 'Chatra ID contains invalid characters.'];
         }
         if ($webhook === null || ($webhook !== '' && !preg_match('#^(?:https?://)?[A-Za-z0-9.-]+(?::\d+)?(?:/[^\\s]*)?$#', $webhook))) {
             return ['ok' => false, 'error' => 'Webhook URL is invalid.'];
@@ -422,6 +428,7 @@ final class IntegrationsSettings
             'ok' => true,
             'integrations' => [
                 'googleMapsApiKey' => $google,
+                'chatraId' => $chatra,
                 'cloudflareApiToken' => (string) $cfToken,
                 'webhookUrl' => $webhook,
                 'webhookTestUrl' => $webhookTest,
@@ -477,13 +484,13 @@ final class IntegrationsSettings
 
             $config['apikey']['google_map'] = (string) $next['googleMapsApiKey'];
             $config['apikey']['cloudflare_api_token'] = (string) $next['cloudflareApiToken'];
-            // Zone IDs are per-site; drop legacy global string under apikey. Chatra joined them
-            // when its hardcoded footer script was retired - the widget is now pasted into the
-            // Custom code field with its ID inline, so nothing reads apikey.chatra any more.
+            $config['apikey']['chatra'] = (string) $next['chatraId'];
+            // Zone IDs are per-site, so the legacy global string under apikey is dropped.
+            // apikey.chatra is written again: the widget has its own ID field, and the loader
+            // is emitted from partials/footer.php rather than pasted into Custom code.
             unset(
                 $config['apikey']['cloudflare_zone_id'],
-                $config['apikey']['cloudflare_account_id'],
-                $config['apikey']['chatra']
+                $config['apikey']['cloudflare_account_id']
             );
             $config['webhook_url']['zap'] = (string) $next['webhookUrl'];
             $config['webhook_url']['test_zap'] = (string) $next['webhookTestUrl'];

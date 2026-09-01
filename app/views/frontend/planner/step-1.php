@@ -13,14 +13,16 @@
 
                     <button type="button" 
                         class="btn btn-danger btn-sm js-btn-delete-fence px-2 fw-bold text-uppercase" 
+                        aria-label="Delete section"
                         style="display:none;">
-                        <i class="fa fa-trash-can me-1"></i> Delete <span>Section</span>
+                        <i class="fa fa-trash-can" aria-hidden="true"></i><span class="fc-btn-label"> Delete <span>Section</span></span>
                     </button>
 
                     <button type="button" 
                         class="btn btn-danger btn-sm fc-fence-reset-all px-2 fw-bold text-uppercase" 
+                        aria-label="Reset section"
                         style="display:none;">
-                        <i class="fa-solid fa-rotate-left me-1"></i> Reset
+                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span class="fc-btn-label"> Reset</span>
                     </button>
 
                 </div>

@@ -3076,6 +3076,34 @@ function firPlus() {
 
 //----------------------------------------------------------------------------------
 
+/* Step 2 "Important" dialog (mobile). The notice copy is per fence style and is rewritten in
+   place as the style changes, so the dialog reads it from the live panel on every show rather
+   than holding its own copy that would drift. The panel's own IMPORTANT heading is dropped -
+   the dialog header already says it. */
+_doc.on('show.bs.modal', '#fc-step2-important-modal', fcStep2ImportantModalShow);
+
+function fcStep2ImportantModalShow() {
+    var $body = $(this).find('.js-fc-step2-important-body'),
+        $source = $('[data-section="2"]').find('.alert-gray').first();
+
+    if (!$body.length) {
+        return;
+    }
+
+    if (!$source.length) {
+        $body.html('<p class="fc-modal__lead mb-0">No notes for this fence style.</p>');
+        return;
+    }
+
+    var $copy = $source.clone();
+
+    // The heading is the first child; the dialog header carries it instead.
+    $copy.children('.text-uppercase').first().remove();
+    $body.html($copy.html());
+}
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.fc-zoom-fence', fcZoomFence);
 
 function fcZoomFence(e) {

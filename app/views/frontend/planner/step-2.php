@@ -10,7 +10,22 @@ use Fc\Admin\Services\AppConfigService;
             
             <div class="col-lg-5 col-md-6 mb-3">
                 
-                <div class="step-label mb-2" data-action="scroll" data-target="[data-section=2]" data-offset="54">Step <span>02</span></div>
+                <!-- Step number and its mobile Important trigger share a row, so the chip sits
+                     opposite "Step 02" rather than beside the subtitle. Below md the IMPORTANT
+                     panel opposite is hidden and its content moves behind this button; the dialog
+                     body is filled from that panel on show, since the copy changes with the fence
+                     style. -->
+                <div class="fc-step2-title-row d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <div class="step-label" data-action="scroll" data-target="[data-section=2]" data-offset="54">Step <span>02</span></div>
+
+                    <button type="button"
+                        class="btn btn-sm fc-step2-important-btn d-md-none js-fc-step2-important-open"
+                        data-bs-toggle="modal"
+                        data-bs-target="#fc-step2-important-modal"
+                        aria-label="Important notice for this step">
+                        <i class="fa-solid fa-question" aria-hidden="true"></i>
+                    </button>
+                </div>
 
                 <h4 class="fencing-content-title mb-2 js-step-2-title">Enter your measurements</h4>
 
@@ -56,7 +71,7 @@ use Fc\Admin\Services\AppConfigService;
                         </div>
 
                         <button type="button" class="btn btn-dark text-uppercase btn-fc-calculate px-3 fw-bold">
-                            <small>Calculate</small>
+                            Calculate
                         </button>
 
                     </div>

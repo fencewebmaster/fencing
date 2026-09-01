@@ -1,6 +1,9 @@
-/* Step 2 — consistent corner radius on fields, selects, and buttons */
+/* Step 2 — consistent corner radius on fields, selects, and buttons.
+   3px matches the site-wide button radius, so the measurement field, its qty controls and
+   Calculate all close on the same corner instead of the field being rounder than the button
+   attached to it. */
 [data-section="2"] {
-    --fc-step2-radius: 8px;
+    --fc-step2-radius: 3px;
 }
 
 [data-section="2"] .form-control,

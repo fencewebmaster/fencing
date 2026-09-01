@@ -2023,6 +2023,13 @@ a.fc-tab-active {
 
 /* Bootstrap modal close — orange circle + white X */
 .modal .modal-header .btn-close {
+    /* Two Bootstrap defaults conspire to make this an ellipse rather than a circle:
+       .btn-close sets box-sizing: content-box, so the 2px border below is added outside the 2rem
+       box on both axes unevenly once padding differs, and as a flex item in the header it shrinks
+       when the title takes the space (measured 30.38 x 36). border-box plus flex: 0 0 auto pins
+       both axes to the same 2rem. */
+    box-sizing: border-box;
+    flex: 0 0 auto;
     width: 2rem;
     height: 2rem;
     padding: 0;
@@ -6202,7 +6209,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-planner-page .fc-section-tab-status__icon {
-    font-size: 0.85em;
+    font-size: 0.8em;
     line-height: 1;
 }
 
@@ -7894,14 +7901,15 @@ thead.fc-border th:last-child {
         padding-bottom: 2px;
     }
 
+    /* Layout only. This block used to set border-radius: 8px, font-size: 0.8125rem and
+       letter-spacing: 0.03em as well; the first two were already being overridden by the
+       site-wide 3px radius and the 44px mobile sizing, and the tracking was the last survivor —
+       the one thing making this button read differently from Calculate beside it. */
     .fc-planner-page .fencing-styles-load-quote-mobile .fencing-styles-load-quote-btn {
         width: 100%;
         max-width: 340px;
         margin-left: auto;
         margin-right: auto;
-        border-radius: 8px;
-        font-size: 0.8125rem;
-        letter-spacing: 0.03em;
         box-sizing: border-box;
     }
 }
@@ -10121,7 +10129,11 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     border-radius: 3px !important;
 }
 
-.fc-planner-page [data-section="2"] .btn-fc-calculate {
+/* style-v2.css rounds this 8px via [data-section="2"] .fencing-measurement-box .btn, which ties
+   this selector on specificity and loads later — hence the extra .fencing-measurement-box here,
+   to put Calculate on the same 3px as every other button. */
+.fc-planner-page [data-section="2"] .btn-fc-calculate,
+.fc-planner-page [data-section="2"] .fencing-measurement-box .btn-fc-calculate {
     border-radius: 3px !important;
 }
 
@@ -12447,17 +12459,27 @@ input[type="number"] {
         padding: 1rem 1.125rem 1.125rem;
     }
 
-    /* column-reverse keeps the safe action first in the DOM (so tab order and screen
-       readers reach it first) while the primary one sits away from the bottom edge
-       where thumbs rest. */
+    /* Single row on mobile. The buttons share the width evenly rather than stacking, so the
+       dialog stays short enough that the footer is on screen without scrolling.
+       DOM order is unchanged, so the safe action is still first for tab order and screen
+       readers — and now it also reads first left to right, which is the convention the rest
+       of the app follows. */
     .fc-modal .fc-modal__footer {
-        flex-direction: column-reverse;
+        flex-direction: row;
         flex-wrap: nowrap;
+        align-items: stretch;
         padding: 0.875rem 1.125rem 1rem;
     }
 
+    /* Equal basis with min-width: 0 so a long label ("Yes, delete section") shrinks its own
+       button instead of pushing the pair wider than the dialog. */
     .fc-modal .fc-modal__footer .btn {
-        width: 100%;
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        font-size: 13px;
     }
 }
 
@@ -13757,4 +13779,410 @@ div.fc-footer-app .app-version {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
     user-select: none;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Section context bar - single row on mobile.
+   Below 992px the bar was set to display: block with the title and subtitle both block-level, so
+   "SECTION 1" and "Flat Top > 9,000 mm" stacked and the bar stood 59px tall. It is one line of
+   context, so it stays one line: nowrap, with overflow-x on the bar itself so a long fence name
+   scrolls rather than wrapping or being clipped. Separators tighten to buy back the width.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+    .fc-planner-page .fc-content-tab-title {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .fc-planner-page .fc-content-tab-title::-webkit-scrollbar {
+        display: none;
+    }
+
+    .fc-planner-page .fc-content-tab-title .fc-tab-title,
+    .fc-planner-page .fc-content-tab-title .fc-tab-subtitle {
+        flex: 0 0 auto;
+    }
+
+    .fc-planner-page .fc-content-tab-title .fc-tab-title {
+        display: flex;
+    }
+
+    .fc-planner-page .fc-content-tab-title .fc-tab-subtitle {
+        display: inline-flex;
+        font-size: 13px;
+        line-height: 1.2;
+    }
+
+    .fc-planner-page .fc-content-tab-title .fc-tab-subtitle .fa-caret-right {
+        margin-left: 8px !important;
+        margin-right: 8px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Mobile touch targets - Calculate and Load Quote.
+   Both sat at 32px on a phone, under the 44px minimum, and Calculate was shorter than the 38px
+   measurement field it submits. Raising it alone would leave that row uneven, so the field comes
+   with it; the two now match at 44px and the row reads as one control.
+   Selectors carry .btn because bootstrap.min.css loads after this file.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-planner-page .btn.btn-fc-calculate {
+        min-height: 44px;
+        padding-left: 16px;
+        padding-right: 16px;
+        font-size: 14px;
+    }
+
+    .fc-planner-page [data-section="2"] .fencing-measurement-box .fencing-mb-input {
+        min-height: 44px;
+    }
+
+    .fc-planner-page .btn.fencing-styles-load-quote-btn {
+        min-height: 44px;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    /* Label only on a phone: the button is full width with nothing to disambiguate it, so the
+       icon is decoration competing with the word. me-2 goes with it or it leaves a gap. */
+    .fc-planner-page .btn.fencing-styles-load-quote-btn i {
+        display: none;
+    }
+
+    /* Only the size differed from Calculate and Load Quote — the visible text is already 700,
+       carried by the <b> inside rather than the button. */
+    .fc-planner-page .btn.fc-btn-next-step,
+    .fc-planner-page .btn.fc-btn-next-step b {
+        font-size: 14px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Step 1 mobile rhythm - space above Load Quote.
+   The gap above the button was three spacings stacked: the tile's 12px margin, the slick list's
+   14px bottom padding, and the wrapper's own 14px margin — 40px in total, against 23px below the
+   button. The wrapper's margin goes (the carousel already provides separation) and the list's
+   padding trims to 8px, which lands the gap on the section's own 20px padding so the button sits
+   evenly between the tiles and the bottom of the card.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-planner-page [data-section="1"] .slick-list {
+        padding-bottom: 8px;
+    }
+
+    .fc-planner-page .fencing-styles-load-quote-mobile {
+        margin-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Step 1 mobile carousel arrows.
+   On a phone the 42px arrows sat over the first and last tile, covering the fence image you are
+   trying to look at. They move to the top right of the section heading, where they read as the
+   carousel's controls without standing on its content, and the tiles get their full width back.
+
+   Re-anchoring takes two rules, not one: slick makes .slick-slider relative AND the
+   .fencing-styles wrapper around it is relative too, and both start at the same y as the
+   carousel. Releasing both lets the arrows fall to [data-section="1"] itself, so the offsets
+   below are measured from the section card. top matches its 20px padding and right its 16px, so
+   the pair lines up with RESET's right edge. slick-list and slick-track position statically
+   anyway, so nothing in the carousel depends on what is released here.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    /* The long first selector is deliberate: .fencing-styles__area.fencing-styles-slick-ready
+       .js-fencing-styles-slick sets relative at (0,4,0), so anything shorter loses to it. */
+    .fc-planner-page [data-section="1"] .fencing-styles__area.fencing-styles-slick-ready .js-fencing-styles-slick.slick-slider,
+    .fc-planner-page [data-section="1"] .fencing-section__cmp.fencing-styles {
+        position: static;
+    }
+
+    .fc-planner-page [data-section="1"] .fencing-styles-arrow.slick-arrow {
+        top: 20px;
+        bottom: auto;
+        transform: none;
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--fc-gainsboro);
+        border-radius: 3px;
+        background-color: var(--fc-white);
+        color: var(--fc-dove-gray);
+        box-shadow: none;
+        /* Under the floating tab bars, which sit at 2 (.sticky-roll) and 10 (.fc-sticky), so the
+           arrows pass behind them on scroll instead of over them. Still above the tiles, which
+           are static and so paint below any positioned sibling regardless of this value. */
+        z-index: 1;
+    }
+
+    .fc-planner-page [data-section="1"] .fencing-styles-arrow.slick-prev {
+        left: auto;
+        right: 56px;
+    }
+
+    .fc-planner-page [data-section="1"] .fencing-styles-arrow.slick-next {
+        left: auto;
+        right: 16px;
+    }
+
+    /* Delete Section and Reset join the arrows as one control cluster: same 34px square, icon
+       only, sitting immediately to their left. The wrapper goes absolute into the same band, so
+       the row it used to occupy collapses and the carousel moves up.
+       Labels are hidden via .fc-btn-label rather than font-size: 0 — "Delete" and "Reset" are
+       bare text nodes in the markup, so there was nothing for CSS to target until they were
+       wrapped. Each button carries an aria-label now that its text is gone. */
+    .fc-planner-page [data-section="1"] .btn-delete-fence {
+        position: absolute;
+        /* 0/80, not 20/96 like the arrows: this wrapper anchors to .fencing-section--step1, which
+           already starts inside the section's 20px padding, while the arrows anchor to the section
+           itself. Same two offsets measured from two different boxes. */
+        top: 0;
+        right: 80px;
+        /* left/width are explicit: the wrapper was taking the column's full 317px and hanging
+           off the left edge of the card rather than shrink-wrapping to its two buttons. */
+        left: auto;
+        width: auto;
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-bottom: 0 !important;
+        z-index: 1;
+    }
+
+    .fc-planner-page [data-section="1"] .btn-delete-fence .btn {
+        width: 34px;
+        height: 34px;
+        padding: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 12px;
+    }
+
+    .fc-planner-page [data-section="1"] .btn-delete-fence .fc-btn-label {
+        display: none;
+    }
+
+    /* slick greys a disabled arrow to 25% by default, which on a bordered button reads as broken
+       rather than unavailable. */
+    .fc-planner-page [data-section="1"] .fencing-styles-arrow.slick-arrow.slick-disabled {
+        opacity: 1;
+        color: var(--fc-silver-chalice);
+        border-color: var(--fc-bright-gray);
+    }
+
+    @media (hover: hover) {
+        .fc-planner-page [data-section="1"] .fencing-styles-arrow.slick-arrow:not(.slick-disabled):hover {
+            border-color: var(--fc-cod-gray);
+            background-color: var(--fc-cod-gray);
+            color: var(--fc-white);
+        }
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Step 2 Important — mobile.
+   The notice panel sits beside the measurement field on desktop, but below md it drops under it
+   and pushes Calculate off the first screen. It is hidden there and reached through a chip beside
+   the step title instead, which opens the same copy in a dialog.
+   The panel itself stays in the DOM: the dialog reads its content on open, and the copy is
+   rewritten in place as the fence style changes.
+   -------------------------------------------------------------------------------------------- */
+/* The chip must not be squeezed by the heading beside it, and the heading wraps rather than
+   pushing the chip off the row. */
+.fc-planner-page .fc-step2-title-row > .fencing-content-title {
+    min-width: 0;
+}
+
+.fc-planner-page .fc-step2-important-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* Square and neutral, matching the Step 1 arrow buttons exactly: same 34px box, same white
+       ground, same gainsboro border and dove-gray glyph. Icon only, so the label lives in the
+       aria-label instead. */
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 3px;
+    background-color: var(--fc-white);
+    color: var(--fc-dove-gray);
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.fc-planner-page .fc-step2-important-btn i {
+    font-size: 12px;
+}
+
+@media (hover: hover) {
+    .fc-planner-page .fc-step2-important-btn:hover:not(:active) {
+        border-color: var(--fc-cod-gray);
+        background-color: var(--fc-cod-gray);
+        color: var(--fc-white);
+    }
+}
+
+.fc-planner-page .fc-step2-important-btn:focus-visible {
+    outline: 2px solid var(--fc-cod-gray);
+    outline-offset: 2px;
+}
+
+@media (max-width: 767.98px) {
+    /* The column, not just the alert — leaving the column would keep its row gutter. */
+    .fc-planner-page [data-section="2"] .alert.alert-gray {
+        display: none;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Gate ONLY row — mobile.
+   The row stood 34px against the 44px measurement field and Calculate below it, so the three
+   stacked controls stepped in height. Flex centring replaces the asymmetric 6px/6px padding, and
+   the radio marker moves off its fixed top: 8px — that offset only centred the dot at the old
+   34px, and would have left it riding high once the row grew.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-planner-page [data-section="2"] .fc-step2-gate-only .fc-select-2 {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .fc-planner-page [data-section="2"] .fc-step2-gate-only .fc-select-2::after {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Step 3 zoom controls — mobile.
+   The header row wraps below md, so the zoom stepper and Reset dropped to a third line under the
+   title and pushed the fence drawing further down. They move to the top-right corner instead,
+   level with "Step 03", matching the arrow cluster in Step 1.
+   Anchored to .fencing-section--step3, the nearest positioned ancestor, which starts exactly at
+   the step label — hence 0/0 rather than the section's own 20px/16px padding.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-planner-page [data-section="3"] .fencing-section__controls {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: auto;
+        width: auto;
+        margin: 0 !important;
+        flex-wrap: nowrap;
+        z-index: 1;
+    }
+
+    /* The title keeps the row to itself now, so it no longer needs to share the width. */
+    .fc-planner-page [data-section="3"] .fencing-section--step3 > .d-flex:has(> .fencing-section__controls) {
+        padding-right: 0;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Chatra launcher.
+   Replaces Chatra's own wide "Live chat" pill with a compact circle in the bottom-right corner.
+   Chatra hides its default button and drives this one via ChatraSetup.customWidgetButton, so the
+   markup only has to exist and be clickable — no open/close state is tracked here.
+   -------------------------------------------------------------------------------------------- */
+.fc-chat-launcher {
+    /* Hidden until Chatra reports in — the loader waits 2.5s after window load, and a button that
+       is visible before then is one that swallows clicks. .is-ready is added by the footer script
+       once Chatra's iframe exists. visibility, not display, so the fade has something to animate. */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.85);
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    /* Above the planner's own fixed chrome (sticky tabs sit at 10) but below Bootstrap's modal
+       backdrop at 1050, so a dialog still covers it. */
+    z-index: 1040;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background-color: var(--fc-princeton-orange);
+    color: var(--fc-white);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.24);
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        visibility 0.2s ease,
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.fc-chat-launcher.is-ready {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+}
+
+@media (hover: hover) {
+    .fc-chat-launcher.is-ready:hover:not(:active) {
+        background-color: var(--fc-deep-orange, #d9631a);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.3);
+    }
+}
+
+.fc-chat-launcher.is-ready:active {
+    transform: scale(0.96);
+}
+
+/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. */
+.fc-chat-launcher:focus-visible {
+    outline: 3px solid var(--fc-princeton-orange);
+    outline-offset: 3px;
+}
+
+/* Clear of the iOS home indicator and any browser chrome at the foot of the viewport. */
+@media (max-width: 767.98px) {
+    .fc-chat-launcher {
+        right: 16px;
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        width: 44px;
+        height: 44px;
+        font-size: 17px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-chat-launcher {
+        transition: none;
+    }
+
+    .fc-chat-launcher,
+    .fc-chat-launcher.is-ready:hover:not(:active),
+    .fc-chat-launcher.is-ready:active {
+        transform: none;
+    }
 }

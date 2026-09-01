@@ -112,3 +112,93 @@ if ($fcFooterCode !== '') :
 <!-- Custom footer code -->
 <?php echo $fcFooterCode; ?>
 <?php endif; ?>
+
+<?php
+// Chatra live chat, from Settings -> Integration -> Chatra ID.
+//
+// Skipped when the Custom code above already loads Chatra: that field is the user's and is never
+// rewritten, so a pasted widget stays authoritative and the page cannot end up with two loaders
+// racing for the same window.Chatra global.
+$fcChatraId = trim((string) (AppConfigService::all()->apikey->chatra ?? ''));
+$fcChatraInCustomCode = stripos($fcFooterCode, 'chatra') !== false
+    || stripos((string) (AppConfigService::all()->custom_code->header ?? ''), 'chatra') !== false;
+
+if ($fcChatraId !== '' && !$fcChatraInCustomCode) :
+?>
+<!-- Chatra -->
+<script>
+window.addEventListener('load', function() {
+    window.setTimeout(function() {
+        (function(d, w, c) {
+            w.ChatraID = <?php echo json_encode($fcChatraId, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+            var s = d.createElement('script');
+            w[c] = w[c] || function() {
+                (w[c].q = w[c].q || []).push(arguments);
+            };
+            s.async = true;
+            s.src = 'https://call.chatra.io/chatra.js';
+            if (d.head) d.head.appendChild(s);
+        })(document, window, 'Chatra');
+    }, 2500);
+});
+</script>
+<!-- /Chatra -->
+<?php endif; ?>
+
+<?php
+// Custom Chatra launcher. Emitted whenever Chatra is active by either route - the ID field
+// above or a pasted Custom code block - so it works without the user having to migrate.
+//
+// ChatraSetup.customWidgetButton is Chatra's own hook: it suppresses the default launcher and
+// treats this element as the opener, so there is no hide/open dance to keep in sync and the
+// unread badge still lands on it. It only has to be set before chatra.js runs, which is 2.5s
+// after window load in both loaders.
+if ($fcChatraId !== '' || $fcChatraInCustomCode) :
+?>
+<button type="button" id="fc-chat-launcher" class="fc-chat-launcher" aria-label="Open live chat">
+    <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
+</button>
+<script>
+    window.ChatraSetup = window.ChatraSetup || {};
+    window.ChatraSetup.customWidgetButton = '#fc-chat-launcher';
+
+    // The loader waits 2.5s after window load before it even requests chatra.js, so the button
+    // would sit there un-bound and do nothing if it were shown straight away. It stays hidden
+    // until Chatra has actually initialised, which is signalled by its iframe appearing.
+    //
+    // Deliberately no timeout fallback: if Chatra never loads - blocked, offline, bad ID - the
+    // button should stay hidden rather than appear and swallow clicks.
+    (function () {
+        var btn = document.getElementById('fc-chat-launcher');
+
+        if (!btn) {
+            return;
+        }
+
+        var reveal = function () {
+            btn.classList.add('is-ready');
+        };
+
+        if (document.getElementById('chatra__iframe')) {
+            reveal();
+            return;
+        }
+
+        if (typeof MutationObserver !== 'function') {
+            // No observer to lean on; fall back to the loader's own delay plus a margin.
+            window.setTimeout(reveal, 4000);
+            return;
+        }
+
+        var observer = new MutationObserver(function () {
+            if (!document.getElementById('chatra__iframe')) {
+                return;
+            }
+            observer.disconnect();
+            reveal();
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
+</script>
+<?php endif; ?>

@@ -271,7 +271,7 @@ use Fc\Admin\Services\AppConfigService;
                 </button>
                 <button type="button" class="btn btn-danger text-uppercase px-3 js-fc-confirm-proceed" data-bs-dismiss="modal">
                     <i class="fa-solid fa-rotate-left me-2" aria-hidden="true"></i>
-                    <strong>Yes, reset section</strong>
+                    <strong>Yes, reset</strong>
                 </button>
             </div>
         </div>
@@ -309,7 +309,33 @@ use Fc\Admin\Services\AppConfigService;
                 </button>
                 <button type="button" class="btn btn-danger text-uppercase px-3 js-fc-confirm-proceed" data-bs-dismiss="modal">
                     <i class="fa-solid fa-trash-can me-2" aria-hidden="true"></i>
-                    <strong>Yes, delete section</strong>
+                    <strong>Yes, delete</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step 2 "Important" notice, mobile only. The body is empty in the markup on purpose: the
+     notice copy changes with the fence style, so it is copied from the live panel in Step 2 each
+     time the dialog opens (see fcStep2ImportantModalShow in core/events.js). -->
+<div class="modal fade fc-modal" id="fc-step2-important-modal" tabindex="-1" aria-labelledby="fcStep2ImportantTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
+        <div class="modal-content fc-modal__content">
+            <div class="modal-header fc-modal__header">
+                <span class="fc-modal__icon fc-modal__icon--info" aria-hidden="true">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </span>
+                <div class="fc-modal__header-text">
+                    <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcStep2ImportantTitle">Important</h5>
+                    <p class="fc-modal__subtitle mb-0">Before you enter your measurements</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fc-modal__body js-fc-step2-important-body"></div>
+            <div class="modal-footer fc-modal__footer">
+                <button type="button" class="btn btn-orange text-uppercase px-3" data-bs-dismiss="modal" data-fc-autofocus>
+                    <strong>Got it</strong>
                 </button>
             </div>
         </div>
