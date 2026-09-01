@@ -37,6 +37,9 @@ $fc_other_items_is_nothing = $fc_other_items_nothing_extra === 'nothing'
             ? ($extra_image_is_remote ? $extra_image : url() . $extra_image)
             : '';
         $extra_checked = !$fc_other_items_is_nothing && in_array($extra_k, $fc_other_items_extra, true);
+        // The tile caption is a <label for>, so the input needs an id; slugs are unique per item
+        // but are author-entered, hence the scrub.
+        $extra_id = 'fc-extra-' . preg_replace('/[^A-Za-z0-9_-]/', '-', $extra_k);
         ?>
         <div class="col-md-3 col-sm-4 col-6">
             <div class="fc-form-check-img fc-rounded mb-3">
@@ -46,9 +49,9 @@ $fc_other_items_is_nothing = $fc_other_items_nothing_extra === 'nothing'
                 <?php else : ?>
                 <div class="fc-empty-img fc-rounded"><span>No image</span></div>
                 <?php endif; ?>
-                <input type="checkbox" name="extra[]" value="<?php echo e($extra_k); ?>"<?php echo $extra_checked ? ' checked' : ''; ?>>
+                <input type="checkbox" id="<?php echo e($extra_id); ?>" name="extra[]" value="<?php echo e($extra_k); ?>"<?php echo $extra_checked ? ' checked' : ''; ?>>
                 </label>
-                <div class="text-center fw-bold py-2 small"><?php echo e($extra_v); ?></div>
+                <label class="d-block text-center fw-bold py-2 small" for="<?php echo e($extra_id); ?>"><?php echo e($extra_v); ?></label>
             </div>
         </div>
         <?php endforeach; ?>
@@ -60,9 +63,9 @@ $fc_other_items_is_nothing = $fc_other_items_nothing_extra === 'nothing'
                         <span>Nothing Extra<br>
                         Just Fencing</span>
                     </div>
-                    <input type="radio" name="nothing_extra" value="nothing"<?php echo $fc_other_items_is_nothing ? ' checked' : ''; ?>>
+                    <input type="radio" id="fc-extra-nothing" name="nothing_extra" value="nothing"<?php echo $fc_other_items_is_nothing ? ' checked' : ''; ?>>
                 </label>
-                <div class="text-center fw-bold py-2 small">NIL - Just Looking</div>
+                <label class="d-block text-center fw-bold py-2 small" for="fc-extra-nothing">NIL - Just Looking</label>
             </div>
         </div>
 

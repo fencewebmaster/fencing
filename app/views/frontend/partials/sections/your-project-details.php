@@ -56,7 +56,9 @@ use Fc\Admin\Services\FenceCatalogService;
 									</div>
 								</td>
 							</tr>
-							<tr>
+							<!-- State and Post Code pair up into one row on mobile; the class is the
+							     hook, the 50% split is in the stylesheet. -->
+							<tr class="fc-cd-row--half">
 								<td width="100">State</td>
 								<td>
 									<span><?php echo @$info['state'] ? fc_state(@$info['state']) : ''; ?></span>
@@ -70,7 +72,7 @@ use Fc\Admin\Services\FenceCatalogService;
 									</div>
 								</td>
 							</tr>
-							<tr>
+							<tr class="fc-cd-row--half">
 								<td width="100">Post Code</td>
 								<td>
 									<span><?php echo e((string) @$info['postcode']); ?></span>
@@ -282,7 +284,7 @@ use Fc\Admin\Services\FenceCatalogService;
 
 			<div class="text-end js-project-details-footer">
 				<button type="button" data-action="edit" class="btn btn-sm fc-btn-edit btn-orange text-uppercase" aria-label="Edit details">
-					<i class="fa-regular fa-pen-to-square me-sm-1" aria-hidden="true"></i>
+					<i class="fa-regular fa-pen-to-square me-1" aria-hidden="true"></i>
 					<b class="">Edit Details</b>
 				</button>
 

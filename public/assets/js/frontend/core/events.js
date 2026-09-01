@@ -1104,12 +1104,16 @@ function fcCopyQuoteLink(e) {
         } else {
             $btn.text('Copied!');
         }
+        /* The label is the only confirmation, and it is hidden where the button is icon-only —
+           the class lets CSS show the result some other way there (see .is-copied). */
+        $btn.addClass('is-copied');
         setTimeout(function() {
             if ($label.length) {
                 $label.text(label);
             } else {
                 $btn.text(label);
             }
+            $btn.removeClass('is-copied');
         }, 2000);
     });
 }

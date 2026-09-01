@@ -18,7 +18,7 @@ $qic_head_class = strpos( $quote_card_class, 'float-end' ) !== false ? 'qic-head
 			<div id="<?php echo e($quote_id_dom_id); ?>"><?php echo e($quote_id_val); ?></div>
 		</div>
 		<?php if ( $quote_share_url !== '' ) : ?>
-		<button type="button" class="fc-copy-quote-link" data-copy-url="<?php echo e($quote_share_url); ?>" title="Copy quote link">
+		<button type="button" class="fc-copy-quote-link" data-copy-url="<?php echo e($quote_share_url); ?>" title="Copy quote link" aria-label="Copy quote link">
 			<i class="fa-solid fa-link" aria-hidden="true"></i>
 			<span class="fc-copy-quote-link__label">Copy Link</span>
 		</button>

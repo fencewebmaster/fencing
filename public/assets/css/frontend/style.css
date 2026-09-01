@@ -1628,7 +1628,11 @@ a div {
     /* Hidden by default */
     position: fixed;
     /* Stay in place */
-    z-index: 13;
+    /* Above the floating chat launcher at 1040, which used to sit over the modal — its bubble
+       covered the Update button on the fullscreen mobile panel. Still below Bootstrap's backdrop
+       (1050) and dialog (1055), so the confirm/notice dialogs opened from inside these modals
+       keep covering them, and below the toasts and image lightbox at 10050+. */
+    z-index: 1045;
     /* Sit on top */
     left: 0;
     top: 0;
@@ -8825,10 +8829,40 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
 /* Edit affordance on phones. The trigger was a 109x30 button floated right at the end of a long
    scroll — under the ~44px touch guideline and easy to miss. Full width puts it where a thumb
-   lands and makes the action obvious; the same applies to the Cancel/Save/Reset bar it swaps in. */
+   lands and makes the action obvious; the same applies to the Cancel/Save/Reset bar it swaps in.
+   The footer itself is the action bar and carries the chrome, so view mode (Edit Details) and
+   edit mode (Cancel/Save) are the same bar with different contents rather than two that have to
+   be kept in sync.
+   Sticky rather than fixed: it is the last child of a ~1170px section, so bottom: 0 floats it at
+   the foot of the screen for the whole of the details card and then settles into place as you
+   reach the end — a permanently fixed bar would go on covering the plan sections and cart far
+   below, which are nothing to do with this action. */
 @media (max-width: 767.98px) {
-    .fc-project-plan-page .js-project-details-footer {
+    /* Both ids are in the selector to outrank #project-details-section .js-project-details-footer
+       further down the file, which sets padding: 14px 20px. Matching its specificity is not
+       enough — it comes later, so it would still win and the bar would keep the taller,
+       panel-like proportions. */
+    .fc-project-plan-page #project-details-section #update_details-section .js-project-details-footer {
         text-align: left;
+        position: sticky;
+        bottom: 0;
+        /* Above the chat launcher (1040) so its bubble cannot cover Save; below the modals
+           (1045) so Edit Project Options still covers the bar. */
+        z-index: 1041;
+        /* One value on all four sides. 16px sides against 8px top and bottom read as a button
+           pushed to the foot of a wide strip; 10px is the card's own rhythm (its header text and
+           the edit hints all sit 10px in) and keeps the bar a strip rather than a panel. The
+           top is 9 because the 1px border sits outside it — 9 + 1 lands on the same 10. */
+        padding: 9px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid var(--fc-gainsboro);
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Icon off: at this size the four labels are unambiguous on their own, and dropping the glyph
+       is what lets the buttons sit in a shorter bar without crowding. Markup keeps them for the
+       wider layout. */
+    .fc-project-plan-page #project-details-section #update_details-section .js-project-details-footer .btn > i {
+        display: none;
     }
 
     .fc-project-plan-page .js-project-details-footer > .btn.btn-sm.fc-btn-edit {
@@ -8842,28 +8876,36 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
     /* Guarded like every other rule for these controls: the bar is hidden with the
        fc-d-none class, and an unqualified display here would outrank it and leave
-       Save/Cancel showing before Edit is ever pressed. */
+       Save/Cancel showing before Edit is ever pressed. A plain row now — the footer around it
+       carries the bar chrome and the sticky positioning. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) {
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+        flex-wrap: nowrap;
+        /* Same 10px as the padding around it, so the bar has one gap size throughout. */
+        gap: 10px;
+        /* The markup carries mt-2; !important is the only thing that takes a Bootstrap spacing
+           utility back off, and without it edit mode's bar stands 8px taller than view mode's. */
+        margin-top: 0 !important;
     }
 
-    .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .project-details-controls__right {
-        display: flex;
-        flex: 1 1 auto;
-        gap: 8px;
-    }
-
-    /* Cancel sits apart from the confirming actions so the destructive-ish choice is not the one
-       a thumb reaches first. */
+    /* Cancel left, Save right — the confirming action sits under the thumb that is already on
+       that side of the screen, and the way out is never the closer target. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .fc-btn-cancel-project-details {
-        order: 2;
-        flex: 1 1 100%;
+        order: 1;
+        flex: 1 1 0;
     }
 
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .project-details-controls__right {
-        order: 1;
+        order: 2;
+        display: flex;
+        flex: 1 1 0;
+        gap: 8px;
+    }
+
+    /* Reset is a third choice in a two-choice bar, and fcBtnEdit() shows it with an inline
+       display, so only !important takes it back off. It stays available on wider screens. */
+    .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .fc-btn-reset {
+        display: none !important;
     }
 
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .btn.btn-sm {
@@ -9349,7 +9391,12 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
 #update_stock-delivery .fencing-section__step-label {
     margin-left: -20px;
-    margin-right: -20px;
+    /* -20 cancels this pane's own gutter, the extra -16 cancels #update_cart-section's
+       padding-right. Without the second part the rule under the header stopped 16px short of the
+       section border while the cart pane's header opposite ran all the way to it. The padding
+       puts back what the margin takes, so the heading text does not move. */
+    margin-right: -36px;
+    padding-right: 36px;
 }
 
 /* The cart table runs to the border like the panels above it; only the count badge above it and
@@ -9862,7 +9909,10 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
     #update_stock-delivery .fencing-section__step-label {
         margin-left: -16px;
-        margin-right: -16px;
+        /* Same reach as the wider layout, at this block's 16px gutter: -16 cancels the pane's own
+           padding, the extra -16 cancels #update_cart-section's padding-right. */
+        margin-right: -32px;
+        padding-right: 32px;
     }
 
     #update_cart-list .fc-card.fc-table-items > .badge {
@@ -14336,4 +14386,422 @@ div.fc-footer-app .app-version {
    pushing the chip off the row. */
 .fencing-modal--download-plans .fc-download-title-row > h2 {
     min-width: 0;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Project details, Customer Details — State + Post Code share a row on mobile.
+   Both answers are short (three letters, four digits) and each was taking a full stacked row of
+   its own, so the card ran longer than it needed to. Floats rather than flex/grid: the mobile
+   rule above already flattens table/tbody/tr/td to blocks, and a display change on tbody would
+   catch every other row with it.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page .fc-table.fc-table-customer tr.fc-cd-row--half {
+        float: left;
+        width: 50%;
+        /* The pair is the last thing in the table, so neither half draws the separator — only
+           the row above them does. Without this the left half would rule and the right would
+           not, since :last-child only clears the second one. */
+        border-bottom: 0;
+    }
+
+    /* Floated rows leave the tbody with no height; the rounded border would close above them. */
+    .fc-project-plan-page .fc-table.fc-table-customer tbody::after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Project plan section head — Summary / Download / Edit as one set of equal buttons on mobile.
+   Below sm all three drop their labels and become icon-only, but they did not end up the same
+   box: Summary and Edit sized to the 12px icon (30x24) while Download stayed inline-block and
+   took the 16.2px line box plus its dropdown caret (42x28), so the row read as three different
+   controls. A fixed square with the icon centred settles all three; the caret goes with the
+   label it belonged to.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 575.98px) {
+    .fc-project-plan-page .fc-project-plan-section-actions .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+    }
+
+    .fc-project-plan-page .fc-project-plan-section-actions .dropdown-toggle::after {
+        display: none;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Item List & Cart — both edges meet the section border on mobile.
+   Stacked, the cart pane is the full width of the section, so #update_cart-section's 16px
+   padding-right left its header rule, table lines and total bar all stopping short on the right
+   while sitting hard against the border on the left. The gutter comes off the section and goes
+   back on the children that actually need it — the same arrangement the left edge already uses
+   (header row and total bar carry their own 16px, the style filter its own margin-right; the
+   table deliberately carries none, so its horizontal rules reach the border).
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    #update_cart-section {
+        padding-right: 0;
+    }
+
+    /* With the section gutter gone the header only has this pane's own 16px to cancel; the extra
+       -16 it carries above 767 would now push it past the border. */
+    #update_stock-delivery .fencing-section__step-label {
+        margin-right: -16px;
+        padding-right: 16px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Your Project Details — sticky sub-section headers on mobile.
+   Stacked, the four blocks (Customer Details, Project Notes, Color Options, Fence Details) run
+   one long column, so by the time you are reading a value you have lost the band that says what
+   you are reading. Each header sticks inside its own card, so it holds the top until its block
+   is scrolled past and the next one takes over — the same behaviour, and the same offset, as
+   the plan section toolbars further down the page.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page .fc-project-details .fc-card-header {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 10;
+        /* The band is opaque already; the hairline is what separates it from the row passing
+           underneath it. */
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Edit Project Options modal — fullscreen on mobile, header and footer fixed, body scrolls.
+   Two things were in the way. The panel's mobile cap was max-height/height: 100% against
+   .fc-modal-frame, which that same breakpoint sets to height: auto — a percentage against an
+   auto-height parent resolves to nothing, so the panel grew to its full 1406px of content and
+   the overlay itself (.fencing-modal, overflow: auto) did the scrolling, carrying the header and
+   footer off screen. Giving the frame a definite height fixes that and is also what lets the
+   panel fill the screen. The rest is undoing the floating-card treatment: the frame's 30px
+   gutters, the 90%/688px width and the corner radius.
+   env() on the frame keeps the header out from under a notch and the footer off the home
+   indicator; it resolves to 0 on hardware without either.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+    #submit-modal.fencing-modal--v2.fencing-modal--project-plans .fc-modal-frame {
+        height: 100%;
+        padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+        box-sizing: border-box;
+    }
+
+    #submit-modal.fencing-modal--project-plans.fencing-modal--v2 .fencing-modal-content.fencing-modal--scroll-layout.fencing-modal-content--project-plans {
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   "Click items below to edit" — same inset in Color Options as in Fence Details (mobile).
+   The Fence Details copy is a direct child of .fc-table-rounded-border and picks up the 10px
+   padding rule above; the Color Options one sits in a table cell instead, and below 768 that
+   cell loses its side padding, so the hint ran to the card's edge — 1px in against the other's
+   11px. Sides only: the cell already supplies the 10px above and the copy's own mb-2 the 8px
+   below, so padding either would double the gap (and mb-2 is a !important utility that a plain
+   margin here cannot reset anyway).
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-details .fc-table--colour__slick-cell > .fc-project-details-edit-hint {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Project plan page — the four section bands hold the top on mobile.
+   Stacked, each section is hundreds of pixels of scroll, so by the time you are reading a row
+   there is nothing on screen saying which section it belongs to. Each band sticks inside its own
+   section and hands over to the next, the same way the Your Project Details sub-headers already
+   do inside theirs.
+   The bands are transparent in the flow, so each one needs an opaque ground before it can have
+   content pass under it.
+   Two levels now stick at once (band, then the sub-header inside it), so every existing sticky
+   child is pushed down by the height of the band above it. Those heights are literals because
+   there is nothing to measure them against in CSS — if a band's contents change, its offset here
+   has to change with it.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #project-details-section > .fencing-section__step-label,
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex,
+    .fc-project-plan-page #update_cart-list > .row:first-of-type,
+    .fc-project-plan-page #update_stock-delivery .fencing-section__step-label {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        /* Over the sub-headers at 10, under the sticky action bar and the modals. */
+        z-index: 12;
+        background-color: var(--fc-white);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+        /* 16/14 was fine for a band that scrolled away; pinned, those 30px are taken off every
+           screen for the length of the section, and two of them stack. 10 top and bottom keeps
+           the same 10px rhythm as the action bar and takes 11px off each band. Sides stay at 16
+           so the titles keep their line with the content below. */
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    /* Your Project Details band is 45 tall (24 of type, 20 of padding, 1 of border). */
+    .fc-project-plan-page .fc-project-details .fc-card-header {
+        top: calc(45px + env(safe-area-inset-top, 0px));
+    }
+
+    /* Project Plans band is 59, the same as the cart and stock bands, once its quote-id card
+       sits on one row (see the block that does that further down). */
+    .fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head {
+        top: calc(59px + env(safe-area-inset-top, 0px));
+    }
+
+    /* Item List & Cart band is 59. Full selector because the rule that makes this head sticky
+       is .fc-project-plan-page #update_cart-list .table-cart thead.table-dark th — anything
+       shorter loses to it and the Description row pins underneath the band, out of sight. */
+    .fc-project-plan-page #update_cart-list .table-cart thead.table-dark th {
+        top: calc(59px + env(safe-area-inset-top, 0px));
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Project Plans band — shorter on mobile.
+   It was the tallest of the four pinned bands by 25px, and none of that came from the title: the
+   quote-id card stacks the id over Copy Link, so the card alone stood 63 against the title's 38.
+   Side by side the card is the height of one row and the band drops to the same 59 as the cart
+   and stock bands. Below sm the copy button loses its label to make room — its icon, its title
+   and its aria-label carry it at that width; wider, the label stays.
+   The row layout applies at every width: stacked, the card was 75 tall on desktop too, and it
+   was the only reason that band stood 106 against the others.
+   -------------------------------------------------------------------------------------------- */
+/* 2px of border around a 32px control is heavy, and it was what made the copy button look cut
+   off: the fill stopped 2px short of the outline on three sides and its inner radius could not
+   follow the outer one, so a sliver of white showed through the corner. 1px, and the button's
+   radius is the card's 7 less that 1. */
+.fc-project-plan-page #project-plans-section .quote-id-card {
+    border-width: 1px;
+    /* The card's fixed 160 was sized for the stacked layout, where the id had the full width to
+       itself. Side by side it has to hold the id and the button on one line — and above 600 the
+       id is 24px type, wider on its own than the whole card was. Auto lets it take what the row
+       needs; the column it sits in is nowhere near full. Below 600 the id drops to 16px and the
+       card lands back at its old width anyway. */
+    width: auto;
+}
+
+.fc-project-plan-page #project-plans-section .qic-row {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.fc-project-plan-page #project-plans-section .quote-id-card .qic-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 2px 10px;
+    white-space: nowrap;
+}
+
+.fc-project-plan-page #project-plans-section .quote-id-card .fc-copy-quote-link {
+    flex: 0 0 auto;
+    width: auto;
+    /* The divider turns with the layout — a top border between two side-by-side cells would
+       draw across the id rather than between the two. */
+    border-top: 0;
+    border-left: 1px solid var(--fc-black);
+    /* And so do the rounded corners. Stacked, this was the bottom cell and carried the bottom
+       radius; on a row it is the right-hand cell, and the old value left a square corner biting
+       into the card's rounded one. 6 is the card's 7 less its 1px border. */
+    border-radius: 0 6px 6px 0;
+    padding: 4px 14px;
+    /* Icon only below sm, so the box has to hold the target the label used to give it. */
+    min-width: 52px;
+}
+
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #project-plans-section .quote-id-card .fc-copy-quote-link__label {
+        display: none;
+    }
+
+    /* With the label hidden, "Copied!" had nowhere to appear and the tap gave no feedback at
+       all. The glyph becomes a tick for the two seconds fcCopyQuoteLink() holds .is-copied —
+       a swap rather than a reveal, so the button does not change width mid-press. */
+    .fc-project-plan-page #project-plans-section .quote-id-card .fc-copy-quote-link.is-copied i::before {
+        content: "\f00c";
+    }
+
+    .fc-project-plan-page #project-plans-section .quote-id-card .fc-copy-quote-link.is-copied {
+        color: var(--fc-jewel, #1a7f37);
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Section header titles start on one line (mobile).
+   All four bands carry the same 16px gutter, but two of them wrap their title in a column that
+   adds its own padding on top of it — 10px in Project Plans, 16px in Item List & Cart — so those
+   two titles sat 10 and 16px right of Your Project Details, Stock & Delivery and every dark
+   sub-header. The column padding comes off inside the band; the band's own gutter is the one
+   that positions the title. The last column loses its padding for the same reason, so what sits
+   at the right end of those bands lines up with the band edge too.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex > .fc-col-6:first-child {
+        padding-left: 0;
+    }
+
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex > .fc-col-6:last-child {
+        padding-right: 0;
+    }
+
+    /* The SECTION n toolbar breaks out of its card with margin-left: -16 and pays it back with
+       padding-left, but only 14 of it — so its label sat 2px left of every other title. The
+       margin is untouched; the band still runs the full width of the card. */
+    .fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head {
+        padding-left: 16px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Section header titles on one line — the wider layout.
+   The same misalignment as on phones, from the same two causes but different amounts: the
+   Project Plans title sits in a column that adds 10px on top of its band's gutter, and both that
+   band and Your Project Details carry a 20px gutter where everything else down the left rail —
+   the dark sub-headers, the SECTION n toolbars, the Item List & Cart title — sits on 16. That
+   put the two section titles 4 and 14px right of every card beneath them.
+   Item List & Cart is left alone: its band has no gutter of its own and the 16px comes from its
+   column, so it is already on the rail. Stock & Delivery is left alone too — it is the right
+   pane here, not the left rail, and its title already lines up with its own pane's copy.
+   -------------------------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+    .fc-project-plan-page #project-details-section > .fencing-section__step-label,
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex {
+        padding-left: 16px;
+    }
+
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex > .fc-col-6:first-child {
+        padding-left: 0;
+    }
+}
+
+
+/* The Item List & Cart band takes a 16px gutter of its own at 992 and below, on top of the 16 its
+   column already has, which put that title 16px right of the rail at every width in that range.
+   The column's padding comes off wherever the band carries the gutter; above 992 the band has
+   none and the column's 16 is the only inset, so it stays. */
+@media (max-width: 992px) {
+    .fc-project-plan-page #update_cart-list > .row:first-of-type > [class*="col"]:first-child {
+        padding-left: 0;
+    }
+
+    .fc-project-plan-page #update_cart-list > .row:first-of-type > [class*="col"]:last-child {
+        padding-right: 0;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Your Project Details — body copy starts where its header does.
+   The dark header band pads its title 15px in from the card; everything under it was on 10 (the
+   table cells and the edit hints) or on the m-3 utility's 16 (the notes body), so each card read
+   as three slightly different left edges. One value, and it is the header's, because that is the
+   line the section titles above already sit on.
+   Both table layouts are covered: side by side the inset is on the cell, stacked it moves to the
+   row (see the block that flattens these tables below 768).
+   -------------------------------------------------------------------------------------------- */
+.fc-project-plan-page .fc-project-details .fc-table-rounded-border > table > tbody > tr > td:first-child {
+    padding-left: 15px;
+}
+
+.fc-project-plan-page .fc-project-details .fc-project-details-edit-hint {
+    padding-left: 15px;
+}
+
+/* m-3 is a Bootstrap utility, so only !important takes its 16px back to the header's 15. The
+   notes cell adds a stray 1px of its own on top of that; the wrapper is the inset here. */
+.fc-project-plan-page .fc-project-details .fc-card-body > .m-3 {
+    margin-left: 15px !important;
+}
+
+.fc-project-plan-page .fc-project-details .fc-card-body > .m-3 > table td {
+    padding-left: 0;
+}
+
+@media (max-width: 767.98px) {
+    .fc-project-plan-page .fc-project-details .fc-table.fc-table-customer tr:has(td + td),
+    .fc-project-plan-page .fc-project-details .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr:has(td + td) {
+        padding-left: 15px;
+    }
+
+    /* Stacked, the row carries the inset and the cell must not add a second one — label over
+       value, so the cell's own padding would step the label 15px right of the value under it. */
+    .fc-project-plan-page .fc-project-details .fc-table-rounded-border > table > tbody > tr > td:first-child {
+        padding-left: 0;
+    }
+
+    .fc-project-plan-page .fc-project-details .fc-table--colour__slick-cell > .fc-project-details-edit-hint {
+        padding-left: 15px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   The plan page's sections run the full width of the screen on mobile.
+   They sat in the container's 12px gutter with a 1px border and a 7px radius either side — the
+   card look that suits the desktop layout. On a phone that is 26px of the width spent on framing,
+   and it is what made the pinned header bands read as floating strips with the page showing past
+   them. Out to the edges, no side border, no radius: the bands are now full width because their
+   sections are, and nothing has to detect whether they are stuck.
+   Top and bottom borders stay — they are what still separates one section from the next.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    /* The tab strip is deliberately not in this list: its row is laid out to the width it is
+       given, and widening it pushed the third tab past the screen and put a horizontal scroll on
+       the document. It keeps the 12px inset. */
+    .fc-project-plan-page #project-details-section,
+    .fc-project-plan-page #project-plans-section,
+    .fc-project-plan-page #update_cart-section {
+        /* -12 is .fencing-container's own padding, which is the whole gutter here and holds at
+           every mobile width. Not a vw calculation: where a scrollbar is present 100vw is wider
+           than the page, and the overshoot put a horizontal scroll on the document. */
+        margin-left: -12px;
+        margin-right: -12px;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+    }
+
+    /* The grids inside them carry Bootstrap's -12px gutters, cancelled by +12px on the columns.
+       That balanced while the section was inset by the same 12; now that it starts at the screen
+       edge the negative half hangs 12px past the right of it and puts the document into
+       horizontal scroll. Both halves come off — the sum was zero, so nothing moves. */
+    .fc-project-plan-page #project-details-section .row,
+    .fc-project-plan-page #update_cart-section > .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .fc-project-plan-page #project-details-section .row > [class*="col"],
+    .fc-project-plan-page #update_cart-section > .row > [class*="col"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
 }
