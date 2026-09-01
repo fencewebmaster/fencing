@@ -14451,24 +14451,38 @@ div.fc-footer-app .app-version {
 
 
 /* --------------------------------------------------------------------------------------------
-   Add Section: + stays full size when the tab strip sticks (mobile).
-   The sticky block compacts the whole strip - .sticky-roll .fencing-tab-add drops to 12px with
-   8px/12px padding - which is right for the labelled desktop button but leaves the phone with a
-   tiny glyph, since the "Add Section" text is already hidden there and the + is the whole control.
-   Restated at the mobile size so it reads the same stuck or not, and covers both sticky classes
-   because the strip is given .sticky-roll in one path and .fc-sticky in another.
+   Add Section: a smaller + on phones, stuck or not.
+   The "Add Section" label is already hidden at this width, so the + is the whole control — but at
+   30px in an 80px box it was the loudest thing in the strip and took a fifth of its width from
+   the section tabs, which are what the reader is actually scanning. 48px wide is enough for it.
+   The glyph itself is matched to the + on the Overall Length stepper — 16px, line-height 1,
+   black — so the two pluses on the page read as the same control rather than two sizes of one
+   idea. Both are already Font Awesome solid, so weight and family need no restating.
+   Height is left to the flex row rather than set here: .fencing-tabs stretches its items, so the
+   button matches the tab it sits beside and keeps a 44px-tall target whatever the glyph measures.
+   That is also why the padding is 7px and not the 17px it carried — at 17px this button stood
+   64px against tabs of 58 and was setting the height of the whole strip.
+   Both sticky classes are covered because the strip is given .sticky-roll in one path and
+   .fc-sticky in another; the bare .fencing-tabs-area selector covers it unstuck.
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
+    .fc-planner-page .fencing-tabs-area .fencing-tab-add,
+    .fc-planner-page .fencing-tabs-area .fencing-tab-add i,
     .fc-planner-page .sticky-roll .fencing-tab-add,
     .fc-planner-page .fc-sticky .fencing-tab-add,
     .fc-planner-page .sticky-roll .fencing-tab-add i,
     .fc-planner-page .fc-sticky .fencing-tab-add i {
-        font-size: 30px;
+        font-size: 16px;
+        line-height: 1;
+        color: var(--fc-black);
     }
 
+    .fc-planner-page .fencing-tabs-area .fencing-tab-add,
     .fc-planner-page .sticky-roll .fencing-tab-add,
     .fc-planner-page .fc-sticky .fencing-tab-add {
-        padding: 17px 8px;
+        width: 48px;
+        min-width: 0;
+        padding: 7px;
     }
 }
 
@@ -15206,20 +15220,25 @@ div.fc-footer-app .app-version {
    317px box), and the drawing simply stopped at the border with nothing to say it continued.
    A mask rather than an overlay: the plan sits on the card's white, but the fade has to move
    with the box and not with the content, and a mask does that without a positioned ancestor.
-   The classes come from initProjectPlanHScrollFade() in checkout.js — CSS cannot read a scroll
-   position. Both are set while the plan is scrolled to neither end.
+   The classes come from shared/hscroll-fade.js — CSS cannot read a scroll position. Both are set
+   while the strip is scrolled to neither end.
+   The planner's Step 3 drawing is the same strip and scrolls the same way — 622px of fence in a
+   317px box on a phone — so it takes the same treatment.
    -------------------------------------------------------------------------------------------- */
-.fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-end {
+.fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-end,
+.fc-planner-page .fc-project-plan-hscroll.fc-hscroll-fade-end {
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent 100%);
             mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent 100%);
 }
 
-.fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-start {
+.fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-start,
+.fc-planner-page .fc-project-plan-hscroll.fc-hscroll-fade-start {
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 44px);
             mask-image: linear-gradient(to right, transparent 0, #000 44px);
 }
 
-.fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-start.fc-hscroll-fade-end {
+.fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-start.fc-hscroll-fade-end,
+.fc-planner-page .fc-project-plan-hscroll.fc-hscroll-fade-start.fc-hscroll-fade-end {
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);
             mask-image: linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);
 }
@@ -15465,10 +15484,52 @@ div.fc-footer-app .app-version {
     /* The tiles carry Bootstrap's mb-1, which stacks on top of the grid gap. */
     #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label {
         align-items: center;
-        gap: 0.35rem;
+        gap: 0.3rem;
         margin-bottom: 0 !important;
-        padding: 0.5rem 0.6rem;
-        font-size: 13px;
-        line-height: 1.25;
+        /* min-height rather than taller padding: the text sets one line, and the tile still has
+           to be worth tapping. */
+        min-height: 40px;
+        padding: 0.4rem;
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    /* fc-mr-1 puts 10px after the radio on top of the label's own flex gap, and that 10px was
+       the difference: "ASAP - Within 24hrs" measures 129px against the 125px the tile had left,
+       so every option wrapped to two lines. Reclaimed, the longest label clears by 9px. */
+    #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label input[type="radio"] {
+        margin-right: 0;
     }
 }
+
+
+/* --------------------------------------------------------------------------------------------
+   Planner section tabs — shorter strip on phones, stuck and unstuck.
+   The strip is what the reader loses off the top of every screen for the length of the planner,
+   and its height was coming from padding and leading rather than from the labels: 8px above and
+   below the tab name, plus a 1.3 line on the measurement under a 2px margin.
+   The tab keeps a 44px-plus box after the trim, so it is still a comfortable target — the
+   padding comes off the strip, not off what you tap.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    /* mt-3 on the container is a Bootstrap utility, hence the !important. */
+    .fc-planner-page .js-fencing-tabs-container {
+        margin-top: 8px !important;
+    }
+
+    .fc-planner-page .fencing-tab-name {
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .fc-planner-page .sticky-roll .fencing-tab-name {
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+
+    .fc-planner-page .sticky-roll .ftm-measurement {
+        margin-top: 1px;
+        line-height: 1.15;
+    }
+}
+

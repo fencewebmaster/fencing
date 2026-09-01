@@ -1245,58 +1245,9 @@ $("#paymentFrm").validate({
  * The diagrams are drawn after load and re-drawn on edit, so the list is watched rather than
  * bound once — bind() is idempotent, and the observer is coalesced to one pass per frame.
  */
-(function initProjectPlanHScrollFade() {
-    if (!document.body.classList.contains('fc-project-plan-page')) {
-        return;
-    }
-
-    var SELECTOR = '.fc-project-plan-hscroll';
-
-    function sync(el) {
-        var max = el.scrollWidth - el.clientWidth;
-        var scrollable = max > 1;
-        el.classList.toggle('fc-hscroll-fade-start', scrollable && el.scrollLeft > 1);
-        el.classList.toggle('fc-hscroll-fade-end', scrollable && el.scrollLeft < max - 1);
-    }
-
-    function syncAll() {
-        document.querySelectorAll(SELECTOR).forEach(sync);
-    }
-
-    function bind(el) {
-        if (el.dataset.fcHscrollFade) {
-            sync(el);
-            return;
-        }
-        el.dataset.fcHscrollFade = '1';
-        el.addEventListener('scroll', function() {
-            sync(el);
-        }, { passive: true });
-        sync(el);
-    }
-
-    function bindAll() {
-        document.querySelectorAll(SELECTOR).forEach(bind);
-    }
-
-    bindAll();
-    window.addEventListener('resize', syncAll);
-
-    var list = document.getElementById('fc-fence-list');
-    if (list && typeof MutationObserver === 'function') {
-        var queued = false;
-        new MutationObserver(function() {
-            if (queued) {
-                return;
-            }
-            queued = true;
-            window.requestAnimationFrame(function() {
-                queued = false;
-                bindAll();
-            });
-        }).observe(list, { childList: true, subtree: true });
-    }
-})();
+/* The fence diagram scroll fade moved to shared/hscroll-fade.js: the planner's Step 3
+   drawing uses the same .fc-project-plan-hscroll strip, and the copy here was gated to
+   this page so Step 3 never faded. Both pages load the shared file from footer.php. */
 //----------------------------------------------------------------------------------
 
 var fcCartStickyBar = (function() {

@@ -93,6 +93,7 @@ use Fc\Admin\Services\SiteRegistryService;
 <script defer src="<?php echo asset('public/assets/js/frontend/core/main.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/vendor/jquery.inputmask.min.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/planner-modal.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/hscroll-fade.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/core/functions.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/core/events.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/slick/styles.js'); ?>"></script>
