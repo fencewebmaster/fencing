@@ -75,7 +75,7 @@ use Fc\Admin\Services\AppConfigService;
 
 <!-- Planner Step 3 — fence configuration summary -->
 <div class="modal fade" id="fc-planner-summary-modal" tabindex="-1" aria-labelledby="fcPlannerSummaryModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg fc-planner-summary-modal__dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-fullscreen-md-down fc-planner-summary-modal__dialog">
         <div class="modal-content fc-planner-summary-modal__content">
             <div class="modal-header fc-planner-summary-modal__header">
                 <div class="fc-planner-summary-modal__header-text">

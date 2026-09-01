@@ -6585,6 +6585,18 @@ thead.fc-border th:last-child {
     padding-top: 0.75rem !important;
 }
 
+/* Phones: the quote-id badge goes. It floats right of the Step 03 label, where the row is already
+   carrying the heading, the zoom stepper and the section controls, and the id is not something
+   you act on here — the planner's own share control and the project-plan page both surface it.
+   Hidden rather than dropped from the markup: the .btn-copy-link handler is delegated and fires
+   only on click, so a hidden badge simply never fires, and the id stays available to anything
+   that reads it. */
+@media (max-width: 767.98px) {
+    .fc-planner-page .js-fc-form-step[data-section="3"] .btn-copy-link {
+        display: none;
+    }
+}
+
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-panel-solution-msg:not(:empty) {
     padding-top: 0.35rem !important;
     padding-bottom: 0.35rem !important;
@@ -6969,7 +6981,7 @@ thead.fc-border th:last-child {
     gap: 0.35rem;
     padding: 0.85rem 1rem;
     border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 12px;
+    border-radius: 3px;
     background: #fff;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     min-width: 0;
@@ -7130,7 +7142,7 @@ thead.fc-border th:last-child {
     margin: 0;
     padding: 0;
     border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 12px;
+    border-radius: 3px;
     background: #fff;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     overflow: hidden;
@@ -7378,15 +7390,6 @@ thead.fc-border th:last-child {
     #fc-planner-summary-modal .fc-planner-summary-section__body-inner > .fc-planner-summary-dl {
         padding-right: 0.85rem;
     }
-
-    #fc-planner-summary-modal .fc-planner-summary-section__copy {
-        position: static;
-        display: inline-flex;
-        margin: 0.5rem 0.85rem 0 auto;
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-    }
 }
 
 @media (max-width: 992px) {
@@ -7524,14 +7527,6 @@ thead.fc-border th:last-child {
     top: -1px;
 }
 
-@media (min-width: 1024px) {
-
-    .fencing-panel-controls #btn-left_side.fc-btn-active:before,
-    .fencing-panel-controls #btn-left_side:hover:before {
-        background-image: url(../../img/webp/btn-arrow-white.webp);
-    }
-}
-
 .fencing-panel-controls #btn-right_side:after {
     display: inline-block;
     vertical-align: middle;
@@ -7544,14 +7539,6 @@ thead.fc-border th:last-child {
     transform: rotate(180deg);
     position: relative;
     top: -1px;
-}
-
-@media (min-width: 1024px) {
-
-    .fencing-panel-controls #btn-right_side.fc-btn-active:after,
-    .fencing-panel-controls #btn-right_side:hover:after {
-        background-image: url(../../img/webp/btn-arrow-white.webp);
-    }
 }
 
 .fencing-panel-controls div {
@@ -13547,8 +13534,8 @@ input[type="number"] {
 }
 
 /* Mobile: a strict two-column grid. Grid tracks keep the columns exact regardless of
-   label length or padding; long labels ellipsize inside their cell. Summary spans its
-   own full row - margin-left:auto has nothing to push against in a grid. */
+   label length or padding; long labels ellipsize inside their cell. margin-left:auto has
+   nothing to push against in a grid, so Summary's is cleared. */
 @media (max-width: 768px) {
     .fencing-panel-controls {
         display: grid;
@@ -13564,9 +13551,19 @@ input[type="number"] {
         text-overflow: ellipsis;
     }
 
+    /* Summary fills the free cell beside the last control rather than always claiming a row of
+       its own — with the usual five controls that puts it next to Edit Right Side. */
     .fencing-panel-controls .fc-planner-summary-btn {
-        grid-column: 1 / -1;
+        grid-column: auto;
         margin-left: 0 !important;
+    }
+
+    /* The control count varies by fence type, so Summary is not always even-numbered. When it
+       lands in column 1 it would otherwise sit half-width with a hole beside it; there it spans
+       the row instead. :nth-of-type counts button siblings only, so the helper <div>s hidden
+       below cannot shift the parity. */
+    .fencing-panel-controls .fc-planner-summary-btn:nth-of-type(odd) {
+        grid-column: 1 / -1;
     }
 
     /* The hidden helper <div>s the renderer inserts must not occupy grid cells. */
@@ -15286,5 +15283,167 @@ div.fc-footer-app .app-version {
 
     .fc-planner-page .fc-header-tab a.fc-tab-active {
         border-radius: 10px 10px 0 0;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Step 3 panel controls — left aligned on phones.
+   Centred, each label sat wherever its own width left it: the glyphs run from 5px (grip-lines)
+   to 15px (door-open), so the icon column moved with every button and the six labels started at
+   73 / 60 / 44 / 44 / 49px inside their boxes. Stacked two-up on a phone that reads as a jumble
+   rather than a list.
+   A fixed 16px box for the glyph is what does the aligning — the glyph centres in it, so the
+   label starts on the same line whatever the icon measures. The ID selector is repeated because
+   #btn-left_side::before sets width: auto and would otherwise outrank the class.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-planner-page .fencing-panel-controls .btn-fc {
+        text-align: left;
+    }
+
+    .fc-planner-page .fencing-panel-controls .btn-fc::before,
+    .fc-planner-page .fencing-panel-controls #btn-left_side::before {
+        width: 16px;
+        margin-right: 8px;
+        text-align: center;
+    }
+
+    /* The arrow leads here too, so this button matches the other five: glyph in the 16px column,
+       label starting on the same x. \f061 is arrow-right — the same glyph its trailing ::after
+       carries on wider screens, so the direction still reads, it just leads now. Everything else
+       (family, weight, size, colour) comes from the base .btn-fc::before rule, which applies as
+       soon as content is no longer none. */
+    .fc-planner-page .fencing-panel-controls #btn-right_side::before {
+        content: "\f061";
+    }
+
+    .fc-planner-page .fencing-panel-controls #btn-right_side::after {
+        display: none;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Fence Summary — full screen on phones.
+   Bootstrap's .modal-fullscreen-md-down does the layout: 100vw, height 100%, no margin, no
+   radius, and the body carries the scroll. The two overrides below are the project's own rules
+   that outrank it on ID specificity — the 720px dialog cap and the content's 16px radius would
+   otherwise keep it a floating card inside a full-screen dialog.
+   Centred + scrollable stay on the dialog: at this width they are inert, and they are what the
+   modal falls back to from 768px up.
+   env() lifts the header clear of a notch and keeps the body's last row off the home indicator;
+   both resolve to 0 on hardware with neither.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    #fc-planner-summary-modal .fc-planner-summary-modal__dialog {
+        max-width: none;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-modal__content {
+        border-radius: 0;
+    }
+
+    /* Tighter than the desktop 1.25rem/1.5rem: full screen means the header is the only thing
+       between the top edge and the content, so it earns less of the screen, not more. */
+    #fc-planner-summary-modal .fc-planner-summary-modal__header {
+        padding: calc(0.9rem + env(safe-area-inset-top, 0px)) 1rem 0.8rem;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-modal__title {
+        font-size: 1.125rem;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-modal__body {
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Fence Summary — compact on phones.
+   Each field was a label stacked over its value, 71px a row, so one section ran 894px and the
+   body scrolled 1484px against 734 visible. Label left, value right on one line halves that, and
+   the pair still reads as a row because the rule under it spans both cells.
+   The copy button was display: inline-flex with margin-left: auto — an auto margin does not
+   right-align an inline-level box, so it sat hard left with 293px of space beside it. Block-level
+   flex is what makes the auto margin work.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    #fc-planner-summary-modal .fc-planner-summary-dl--rows {
+        display: grid;
+        grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+        gap: 0;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-dl--rows dt {
+        padding: 0.5rem 0.5rem 0.5rem 0.85rem;
+        margin-top: 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-dl--rows dd {
+        padding: 0.5rem 0.85rem 0.5rem 0.5rem;
+        text-align: right;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    /* The last row closes the card, so its rule would double up with the card's own border. */
+    #fc-planner-summary-modal .fc-planner-summary-dl--rows dt:nth-last-child(2),
+    #fc-planner-summary-modal .fc-planner-summary-dl--rows dd:last-child {
+        border-bottom: 0;
+    }
+
+    /* Both cells of a spaced row, so the extra lead does not tilt one against the other. */
+    #fc-planner-summary-modal .fc-planner-summary-dl--rows dt.fc-planner-summary-row--spaced-top,
+    #fc-planner-summary-modal .fc-planner-summary-dl--rows dd.fc-planner-summary-row--spaced-top {
+        padding-top: 0.7rem;
+    }
+
+    /* Static and always visible across the whole phone band, not just below 576px: the panel is
+       full screen from 768px down now, and above 576px this was still the desktop treatment —
+       absolutely positioned and revealed on hover, which a touch screen never triggers. */
+    #fc-planner-summary-modal .fc-planner-summary-section__copy {
+        position: static;
+        display: flex;
+        margin: 0.4rem 0.85rem 0.1rem auto;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    /* Two short facts do not each need a full-width card. */
+    #fc-planner-summary-modal .fc-planner-summary-overview__grid {
+        flex-direction: row;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-stat {
+        padding: 0.6rem 0.75rem;
+        gap: 0.2rem;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-stat__value {
+        font-size: 1rem;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-overview {
+        margin-bottom: 0.75rem;
+    }
+
+    /* Quote ID reads as one line: the id, then the action. Stacking it (the rule this replaces
+       dropped the row to a column below 576px) made the card the tallest thing in the overview
+       for two short items. The id measures 85px against 201px of card, so the pair fits with the
+       button trimmed — 176px used, 25px spare. */
+    #fc-planner-summary-modal .fc-planner-summary-stat__quote-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-quote-copy-link {
+        gap: 0.3rem;
+        padding: 0.3rem 0.55rem;
+        font-size: 11px;
     }
 }
