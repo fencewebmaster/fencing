@@ -65,18 +65,29 @@
 						    </div>
 				
 							<div class="fc-cart-stock-area">
-							    <p>Approx Delivery Run: <span>2-3 Days</span></p>
-
-							    <p>Items in Stock: <span class="fc-stock-status fc-stock-status--inline">
-							    	<i class="fa-solid fa-circle-check text-success me-2 fs-4"></i> Yes</span>
-							    </p>
+							    <ul class="fc-stock-facts list-unstyled">
+							    	<li class="fc-stock-fact">
+							    		<span class="fc-stock-fact__icon fc-stock-fact__icon--info" aria-hidden="true"><i class="fa-solid fa-truck"></i></span>
+							    		<span class="fc-stock-fact__text">
+							    			<span class="fc-stock-fact__label">Approx Delivery Run</span>
+							    			<span class="fc-stock-fact__value">2-3 Days</span>
+							    		</span>
+							    	</li>
+							    	<li class="fc-stock-fact">
+							    		<span class="fc-stock-fact__icon fc-stock-fact__icon--good" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+							    		<span class="fc-stock-fact__text">
+							    			<span class="fc-stock-fact__label">Items in Stock</span>
+							    			<span class="fc-stock-fact__value fc-stock-fact__value--good">Yes</span>
+							    		</span>
+							    	</li>
+							    </ul>
 
 							    <div class="alert alert-danger fc-step-2-alert fc-alert-gray--low-stock">
-							        <h3 class="fc-mb-1"><i class="fa fa-exclamation-circle"></i> Low Stock Warning</h3>
-							        <p class="fc-text-red">
-							            Some items have limited stock available. <br />
-							            Your cart can only be Reserved for a Limited Time <br />
-							            Then its released for other customers.
+							        <h3 class="fc-mb-1"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Low Stock Warning</h3>
+							        <p>Some items have limited stock available.</p>
+							        <p>
+							            Your cart can only be reserved for a limited time. After that, the items will be
+							            released for other customers.
 							        </p>
 							    </div>
 							</div>

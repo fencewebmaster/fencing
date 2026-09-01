@@ -18,6 +18,7 @@ $cart_included_count = CartBuilderService::cartIncludedItemCount(
 
 // Distinct fence styles in this cart, for the filter beside the item count. Built with the
 // same helper each row labels itself with, so the options cannot drift from the rows.
+// Only worth offering from two styles up: with one, every option filters to the whole list.
 $fc_cart_fence_styles = array();
 if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
     foreach ( $cart['items'] as $fc_style_item ) {
@@ -36,7 +37,7 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
 <div class="fc-cart-list-toolbar d-flex align-items-center justify-content-between gap-2 mb-2">
     <span class="badge bg-danger text-uppercase p-2"><?php echo (int) $cart_included_count; ?> Items</span>
 
-    <?php if ( ! empty( $fc_cart_fence_styles ) ) : ?>
+    <?php if ( count( $fc_cart_fence_styles ) > 1 ) : ?>
     <select class="form-select fc-cart-style-filter js-fc-cart-style-filter" aria-label="Show items for one fence style">
         <option value="">All Fence Styles</option>
         <?php foreach ( $fc_cart_fence_styles as $fc_style_option ) : ?>

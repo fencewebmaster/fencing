@@ -9736,11 +9736,16 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     color: var(--fc-dove-gray);
 }
 
-/* Chasing highlight around the countdown border, to pull the eye to the one time-sensitive
+/* Two chasing highlights around the countdown border, to pull the eye to the one time-sensitive
    number on the page. A conic-gradient square spins behind the box; an inset ::after repaints
    the fill so only a 2px rim of the sweep is ever visible. Rotating a pseudo-element rather
    than animating an @property angle keeps this working outside Chromium.
-   Width is 140% with a square aspect so the spinner always covers the box's diagonal. */
+   Width is 140% with a square aspect so the spinner always covers the box's diagonal.
+   Both comets live in the one gradient and ride the one rotation: a second spinning element
+   would cost another paint layer to say the same thing. Each is a 90deg tail ramping to a
+   bright head that then cuts hard, and they sit 180deg apart so the pair reads as continuous
+   motion on a box that is wider than it is tall — one glint is on a long edge whenever the
+   other is rounding a corner. */
 #update_stock-delivery .fc-cart-countdown {
     position: relative;
     isolation: isolate;
@@ -9758,11 +9763,14 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     background: conic-gradient(
         from 0deg,
         transparent 0deg,
+        transparent 70deg,
+        rgba(246, 121, 37, 0.35) 120deg,
+        var(--fc-princeton-orange) 160deg,
+        transparent 160deg,
         transparent 250deg,
         rgba(246, 121, 37, 0.35) 300deg,
         var(--fc-princeton-orange) 340deg,
-        rgba(246, 121, 37, 0.35) 20deg,
-        transparent 70deg,
+        transparent 340deg,
         transparent 360deg
     );
     animation: fc-countdown-border-sweep 3.5s linear infinite;
@@ -9920,13 +9928,143 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     }
 }
 
+/* --------------------------------------------------------------------------------------------
+   Low Stock Warning — the alarm lives in the heading, the explanation reads.
+   Every word of it used to be brand red on the pink fill, which measures about 4.9:1 — it passes
+   AA, but only just, and three lines of it at 12px read as more alarm rather than as the reason
+   for the alarm. The heading keeps the red; the body drops to the page's neutral, where it is
+   legible at a glance. The pink fill is the alert's identity on its own — no accent rule.
+   The body is two paragraphs that reflow, rather than fragments hard-broken with <br>: a <br>
+   holds wherever it was authored, so in the 253px desktop column the broken lines ran past the box
+   and wrapped again mid-thought.
+   -------------------------------------------------------------------------------------------- */
 #update_stock-delivery .fc-alert-gray--low-stock {
-    padding: 12px;
+    padding: 10px 12px 11px;
     margin-bottom: 12px;
+}
+
+/* Flex so the glyph centres on the heading's box rather than sitting on its baseline. */
+#update_stock-delivery .fc-alert-gray--low-stock h3 {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    line-height: 20px;
 }
 
 #update_stock-delivery .fc-cart-countdown {
     margin-bottom: 12px !important;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Stock & Delivery — the two facts read as a spec list, not as two sentences.
+   Both lines are a label and an answer, but inline flow started each answer wherever its label
+   happened to end, so the two chips sat at different x positions and at two different sizes (the
+   delivery estimate inherited the paragraph, the stock chip was pinned at 18px, so below 768 they
+   were 13 and 18 against each other), and the answers sat at whatever x their labels ended on.
+   They are now two tiles in the panel's own language — the countdown below is a row of white
+   tiles carrying a value over a 10px tracked label, and these read the same way, so the panel is
+   one component rather than a paragraph followed by a widget.
+   Icon first because these are scanned, not read: at a glance the tick answers the question the
+   panel exists for. Label then value along one line rather than stacked — the stacked version
+   cost 112px of a panel that already carries a warning, a countdown and three buttons, and with
+   only two facts the label reads as the answer's prefix without needing its own line.
+   -------------------------------------------------------------------------------------------- */
+#update_stock-delivery .fc-stock-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 0;
+}
+
+#update_stock-delivery .fc-stock-fact {
+	display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 15px;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 3px;
+    background-color: var(--fc-white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+}
+
+/* Bare glyph, no disc behind it. The fixed width is what the disc used to do and still has to
+   be done: a truck and a circle-check are different widths, so without a set box the two labels
+   would start at different x down the pair. Centred in that box so each glyph sits on the same
+   axis whatever its own proportions.
+   16px rather than the 14px it was inside the disc — a glyph with no ground under it needs the
+   extra weight to hold the left of the tile. */
+#update_stock-delivery .fc-stock-fact__icon {
+    flex: 0 0 auto;
+    /* 20px is the truck at 16px — the wider of the two glyphs — so neither spills past its column. */
+    width: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Colour is the whole signal now that the disc is gone: brand orange for the informational fact,
+   green for the one reporting a state. */
+#update_stock-delivery .fc-stock-fact__icon--info {
+    color: var(--fc-princeton-orange);
+}
+
+#update_stock-delivery .fc-stock-fact__icon--good {
+    color: var(--fc-texas-green);
+}
+
+/* Answer pinned to the right edge, so both answers align down the column whatever their labels
+   measure — the thing this replaced could not do. */
+#update_stock-delivery .fc-stock-fact__text {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Sentence case, not the countdown's tracked uppercase. The label and the answer share 253px in
+   the desktop column, which leaves 131px for the label — and "APPROX DELIVERY RUN" set in caps
+   overflows that at 11px, before it is even legible. The same words in sentence case measure
+   123px at 12px, so dropping the caps is what buys the size. The role differs too: the countdown
+   label is a caption under a number, this one sits beside its answer and reads as a list label. */
+#update_stock-delivery .fc-stock-fact__label {
+    font-size: 12px;
+    line-height: 17px;
+    font-weight: 600;
+    color: var(--fc-dove-gray);
+}
+
+#update_stock-delivery .fc-stock-fact__value {
+    flex: 0 0 auto;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--fc-cod-gray);
+}
+
+/* Green on the answer as well as the badge: the state is what this row reports. */
+#update_stock-delivery .fc-stock-fact__value--good {
+    color: var(--fc-texas-green);
+}
+
+/* The detail behind a heading that already carries the alarm, so it steps back in size and out of
+   red. The ID is what carries this past .fencing-container p, .fc-step-2-alert p and
+   .fc-alert-gray--low-stock p, all of which are equally specific and later in the file. */
+#update_stock-delivery .fc-alert-gray--low-stock p {
+    font-size: 12px;
+    line-height: 17px;
+    color: var(--fc-cod-gray);
+}
+
+/* The generic .fc-alert-gray--low-stock p zeroes margin-bottom, which butts the two paragraphs
+   together into one block; the gap is what separates the fact from what follows from it. */
+#update_stock-delivery .fc-alert-gray--low-stock p + p {
+    margin-top: 7px;
 }
 /* Item List & Cart footers — compact, matching Steps 3 and 4.
    Two of them: the cart's View Total Cost bar and Stock & Delivery's action group.
@@ -11296,23 +11434,6 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     font-size: 14px;
 }
 
-.fc-stock-status {
-    display: inline-block;
-    vertical-align: middle;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: "Poppins", sans-serif !important;
-}
-
-.fc-stock-status--inline {
-    padding: 5px 8px;
-    background-color: var(--fc-chinese-white);
-    border-radius: 8px;
-    display: inline-flex;
-    color: var(--fc-texas-green);
-    font-size: 18px;
-}
-
 .fc-cart-items-btns {
     display: flex;
 }
@@ -11368,14 +11489,6 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     line-height: 25px;
     color: var(--fc-granite-gray);
     text-transform: initial;
-}
-
-.fc-cart-stock-area p span:not(.fc-stock-status) {
-    background-color: var(--fc-bright-gray);
-    border-radius: 8px;
-    display: inline-block;
-    padding: 4px 8px;
-    color: var(--fc-black);
 }
 
 .fc-cart-stock-area .fc-alert-gray {
