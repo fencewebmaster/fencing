@@ -33,7 +33,21 @@ $fcDownloadSteps = [
                     <?php $fcDownloadStepCurrent = 1; ?>
                     <?php include view_path('frontend.partials.modal.submit.form.stepper'); ?>
 
-                    <h2 class="fc-text-uppercase fc-font-2 fc-mb-2">Customer Details</h2>
+                    <!-- Below md the note panel opposite is hidden and its copy moves behind this
+                         button, so the heading row keeps the information without the panel's
+                         vertical cost inside an already tall dialog. -->
+                    <div class="fc-download-title-row d-flex align-items-center justify-content-between gap-2 fc-mb-2">
+                        <h2 class="fc-text-uppercase fc-font-2 mb-0">Customer Details</h2>
+
+                        <button type="button"
+                            class="btn btn-sm fc-download-help-btn d-md-none"
+                            data-bs-toggle="modal"
+                            data-bs-target="#fc-download-intro-modal"
+                            aria-label="How your plans are sent">
+                            <i class="fa-solid fa-question" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
 
                     <div class="fc-download-intro">
                         <span class="fc-download-intro__icon" aria-hidden="true">
@@ -90,7 +104,7 @@ $fcDownloadSteps = [
 
                         <button type="button" 
                             class="btn fc-btn-form-step fc-btn-next btn-orange fc-text-uppercase fc-w-b" 
-                            data-move="4"><b>Next <i class="fa-solid fa-angle-right mx-2"></i> Anything Else</b>
+                            data-move="4"><b>Next <i class="fa-solid fa-angle-right mx-2"></i> <span class="fc-btn-step-target">Anything Else</span></b>
                         </button>
                     </div>
                 </div>
@@ -104,7 +118,7 @@ $fcDownloadSteps = [
 
                         <button type="submit" 
                             class="btn fc-btn-next btn-orange fc-text-uppercase fc-w-b disabled">
-                            <b>Done <i class="fa-solid fa-angle-right mx-2"></i> View Plans &amp; Costs</b>
+                            <b>Done <i class="fa-solid fa-angle-right mx-2"></i> <span class="fc-btn-step-target">View Plans &amp; Costs</span></b>
                         </button>
                     </div>
                 </div>

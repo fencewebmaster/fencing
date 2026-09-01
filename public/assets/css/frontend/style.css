@@ -14004,7 +14004,8 @@ div.fc-footer-app .app-version {
     min-width: 0;
 }
 
-.fc-planner-page .fc-step2-important-btn {
+.fc-planner-page .fc-step2-important-btn,
+.fc-planner-page .fc-download-help-btn {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
@@ -14022,19 +14023,22 @@ div.fc-footer-app .app-version {
     transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.fc-planner-page .fc-step2-important-btn i {
+.fc-planner-page .fc-step2-important-btn i,
+.fc-planner-page .fc-download-help-btn i {
     font-size: 12px;
 }
 
 @media (hover: hover) {
-    .fc-planner-page .fc-step2-important-btn:hover:not(:active) {
+    .fc-planner-page .fc-step2-important-btn:hover:not(:active),
+    .fc-planner-page .fc-download-help-btn:hover:not(:active) {
         border-color: var(--fc-cod-gray);
         background-color: var(--fc-cod-gray);
         color: var(--fc-white);
     }
 }
 
-.fc-planner-page .fc-step2-important-btn:focus-visible {
+.fc-planner-page .fc-step2-important-btn:focus-visible,
+.fc-planner-page .fc-download-help-btn:focus-visible {
     outline: 2px solid var(--fc-cod-gray);
     outline-offset: 2px;
 }
@@ -14224,4 +14228,112 @@ div.fc-footer-app .app-version {
     .fc-planner-page .fc-sticky .fencing-tab-add {
         padding: 17px 8px;
     }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Colour Options right-edge fade (mobile).
+   The carousel shows 3 tiles and clips a 4th. The clip alone is ambiguous at a glance — it can
+   read as a layout bug rather than "there is more" — so the cut edge gets a short fade to sell it
+   as a scroll.
+   Only while another tile exists: color-options.js adds .fc-color-options-has-more on init, after
+   every page and on breakpoint change, so the fade disappears on the last page instead of
+   promising content that is not there.
+   pointer-events: none is load-bearing — the overlay sits on top of the last tile, which is
+   selectable.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-planner-page .fc-color-options-slick-area {
+        position: relative;
+    }
+
+    .fc-planner-page .fc-color-options-slick-area.fc-color-options-has-more::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        /* Stops short of the dots so it fades the tiles, not the pager. */
+        bottom: 28px;
+        width: 44px;
+        pointer-events: none;
+        z-index: 2;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.75) 55%,
+            var(--fc-white) 100%
+        );
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Modal step footer — single row on mobile.
+   .fc-form-plan-action stacks column-reverse below 767px, which put Next above Back and cost two
+   full-width rows inside a dialog that is already tall. Row instead, and DOM order does the rest:
+   Back is written first, so it lands on the left without needing an order override.
+   Scoped to the --modal-footer variant so the same class elsewhere keeps its stack.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .fc-form-plan-action.fc-form-plan-action--modal-footer {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    /* Equal basis with min-width: 0 so the long "Next > Anything Else" label shrinks its own
+       button rather than pushing the pair wider than the dialog. */
+    .fc-form-plan-action.fc-form-plan-action--modal-footer button {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        /* height: auto with a floor, not the base rule's fixed 52px: "Next > Anything Else" wraps
+           to two lines at half width, and a fixed height left it overflowing its box and sitting
+           16px above Back. Auto lets the row take the taller label and stretch both to match. */
+        height: auto;
+        min-height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        /* The column-reverse stack gave Back a 16px top margin; stretch then filled the row
+           minus that margin, so Back sat 16px lower and 16px shorter than Next. */
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    /* The verb (Next / Done) is the action; the destination behind the chevron is context, so it
+       drops a step in size and weight instead of competing with it at the same bold 13px. The
+       button's <b> wrapper is why the weight has to be restated here. */
+    .fc-form-plan-action.fc-form-plan-action--modal-footer .fc-btn-step-target {
+        /* 10px with the tracking pulled back so the longest label, "View Plans & Costs",
+           still clears the half-width button on one line. */
+        font-size: 10px;
+        font-weight: 400;
+        letter-spacing: 0.2px;
+        /* Own line, not wherever the wrap happens to fall: inline it broke as
+           "DONE > VIEW / PLANS & COSTS", splitting the destination across the verb's line. */
+        display: block;
+        line-height: 1.2;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Download wizard, Step 1 "We'll email you the plans" note — mobile.
+   The panel costs ~90px at the top of a dialog that already scrolls, so below md it gives way to
+   the question-mark chip beside the heading and its copy is read out of the hidden panel into
+   #fc-download-intro-modal. Hidden, not removed: the dialog reads it from here.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fencing-modal--download-plans .fc-download-intro {
+        display: none;
+    }
+}
+
+/* The chip must not be squeezed by the heading beside it, and the heading wraps rather than
+   pushing the chip off the row. */
+.fencing-modal--download-plans .fc-download-title-row > h2 {
+    min-width: 0;
 }

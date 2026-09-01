@@ -3104,6 +3104,29 @@ function fcStep2ImportantModalShow() {
 
 //----------------------------------------------------------------------------------
 
+/* Download wizard "We'll email you the plans" dialog (mobile). Same trick as the Step 2 notice:
+   the panel is hidden below md but still in the DOM, so the dialog reads its copy on show rather
+   than holding a second copy of the same sentence that would drift. */
+_doc.on('show.bs.modal', '#fc-download-intro-modal', fcDownloadIntroModalShow);
+
+function fcDownloadIntroModalShow() {
+    var $body = $(this).find('.js-fc-download-intro-body'),
+        $source = $('#submit-modal .fc-download-intro__text').first();
+
+    if (!$body.length) {
+        return;
+    }
+
+    if (!$source.length) {
+        $body.html('<p class="fc-modal__lead mb-0">Enter your details and we&rsquo;ll send your plans through.</p>');
+        return;
+    }
+
+    $body.html($source.clone().removeClass('fc-download-intro__text').addClass('fc-modal__lead'));
+}
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.fc-zoom-fence', fcZoomFence);
 
 function fcZoomFence(e) {

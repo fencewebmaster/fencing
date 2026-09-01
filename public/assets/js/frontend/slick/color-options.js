@@ -1,6 +1,6 @@
 /**
  * Colour options carousel (Slick) — planner Step 4 + project-plan submit modal (#submit-modal).
- * Planner: mobileFirst 2 / >767 → 4 / >990 → 6.
+ * Planner: mobileFirst 2.2 (2 + a peek) / >767 → 4 / >990 → 6.
  * Phones get a pager and no arrows, in the planner and the submit modal alike: the arrows need
  * 44px side gutters to sit in at that width, which cost more room than they earn when a
  * swipe and a pager already do the job.
@@ -50,6 +50,31 @@
                 /* Slider destroyed or mid-reinit */
             }
         });
+    }
+
+    /**
+     * Right-edge fade: shown only while there is another tile to scroll to, so it never implies
+     * content that is not there. Slick pages rather than free-scrolls, so 'more to come' is
+     * currentSlide + slidesToShow < slideCount rather than a scroll offset.
+     */
+    function syncEdgeFade($slider, $wrap) {
+        if (!$slider || !$slider.length || !$wrap || !$wrap.length) {
+            return;
+        }
+        if (!$slider.hasClass('slick-initialized')) {
+            return;
+        }
+
+        var slick = $slider.data('slick');
+        if (!slick || typeof slick.slideCount !== 'number') {
+            return;
+        }
+
+        var shown = slick.options.slidesToShow || 1;
+        var current = typeof slick.currentSlide === 'number' ? slick.currentSlide : 0;
+        var more = slick.options.infinite === true || current + shown < slick.slideCount;
+
+        $wrap.toggleClass('fc-color-options-has-more', !!more);
     }
 
     function syncDotsVisibility($slider, $wrap) {
@@ -191,9 +216,11 @@
             $wrap.find('.js-fc-modal-color-options-skeleton').attr({ 'aria-busy': 'false' });
             refreshSlickPosition($el);
             syncDotsVisibility($el, $wrap);
+            syncEdgeFade($el, $wrap);
             requestAnimationFrame(function() {
                 refreshSlickPosition($el);
                 syncDotsVisibility($el, $wrap);
+            syncEdgeFade($el, $wrap);
                 if (isModal) {
                     requestAnimationFrame(function() {
                         scheduleSubmitModalCenterSelected($el);
@@ -201,6 +228,10 @@
                 }
             });
         }
+
+        $el.on('afterChange.fcColorOptionsSlick', function() {
+            syncEdgeFade($el, $wrap);
+        });
 
         $el.on('init.fcColorOptionsSlick', function() {
             requestAnimationFrame(function() {
@@ -213,6 +244,7 @@
             requestAnimationFrame(function() {
                 refreshSlickPosition($el);
                 syncDotsVisibility($el, $wrap);
+            syncEdgeFade($el, $wrap);
                 if (isModal) {
                     requestAnimationFrame(function() {
                         scheduleSubmitModalCenterSelected($el);
@@ -228,7 +260,8 @@
                     slidesToShow: 4,
                     slidesToScroll: 4,
                     dots: true,
-                    arrows: true
+                    arrows: true,
+                    infinite: true
                 }
             },
             {
@@ -237,7 +270,8 @@
                     slidesToShow: 6,
                     slidesToScroll: 6,
                     dots: true,
-                    arrows: true
+                    arrows: true,
+                    infinite: true
                 }
             }
         ];
@@ -256,9 +290,18 @@
 
         $el.slick({
             mobileFirst: true,
-            infinite: true,
-            slidesToShow: isModal ? 2 : 1,
-            slidesToScroll: isModal ? 2 : 1,
+            // Planner phone view runs non-infinite: with a fractional slidesToShow, infinite mode
+            // offsets the track so half a tile shows at BOTH ends, which reads as a broken first
+            // item rather than a hint that the row scrolls. Non-infinite pins slide 1 to the left
+            // edge, so the only cut-off tile is the one on the right. The wider breakpoints below
+            // take whole numbers and turn it back on.
+            infinite: isModal ? true : false,
+            // Planner on a phone shows 2 tiles plus a sliver of the 3rd. The fraction is the
+            // point: a clean 2 looks like the row ends there, whereas the cut-off edge is what
+            // tells you it scrolls - the arrows are hidden at this width, so the peek is the
+            // only affordance left.
+            slidesToShow: isModal ? 2 : 2.2,
+            slidesToScroll: isModal ? 2 : 2,
             dots: true,
             arrows: false,
             appendArrows: $wrap,
@@ -288,9 +331,11 @@
                 $wrap.addClass('fc-color-options-slick-ready');
                 refreshSlickPosition($el);
                 syncDotsVisibility($el, $wrap);
+            syncEdgeFade($el, $wrap);
                 requestAnimationFrame(function() {
                     refreshSlickPosition($el);
                     syncDotsVisibility($el, $wrap);
+            syncEdgeFade($el, $wrap);
                     if (isProjectPlansSubmitModalSlider($el)) {
                         requestAnimationFrame(function() {
                             scheduleSubmitModalCenterSelected($el);
@@ -328,6 +373,7 @@
                         refreshSlickPosition($el);
                         var $w = sliderWrapFromSlider($el);
                         syncDotsVisibility($el, $w);
+                        syncEdgeFade($el, $w);
                         if (isProjectPlansSubmitModalSlider($el)) {
                             fcSubmitModalColorSlickCenterSelectedIfPaged($el);
                         }

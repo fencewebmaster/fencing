@@ -342,6 +342,32 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
+<!-- Download wizard "We'll email you the plans" note, mobile only. The panel it mirrors sits in
+     Step 1 of #submit-modal and is hidden below md; the body is filled from that panel on show so
+     the sentence has one source (see fcDownloadIntroModalShow in core/events.js). -->
+<div class="modal fade fc-modal" id="fc-download-intro-modal" tabindex="-1" aria-labelledby="fcDownloadIntroTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
+        <div class="modal-content fc-modal__content">
+            <div class="modal-header fc-modal__header">
+                <span class="fc-modal__icon fc-modal__icon--info" aria-hidden="true">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </span>
+                <div class="fc-modal__header-text">
+                    <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcDownloadIntroTitle">We&rsquo;ll email you the plans</h5>
+                    <p class="fc-modal__subtitle mb-0">Before you enter your details</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fc-modal__body js-fc-download-intro-body"></div>
+            <div class="modal-footer fc-modal__footer">
+                <button type="button" class="btn btn-orange text-uppercase px-3" data-bs-dismiss="modal" data-fc-autofocus>
+                    <strong>Got it</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Planner notice toast ("Overall Length changed", …). The rule code is only rendered in
      debug mode — see popupToast() in core/events.js. -->
 <div class="toast-container fc-toast-container position-fixed">
