@@ -48,6 +48,7 @@ $fcDownloadSteps = [
                         </button>
                     </div>
 
+                    <p class="fc-download-required-note small text-muted"><span class="fc-text-danger">*</span> All fields are required.</p>
 
                     <div class="fc-download-intro">
                         <span class="fc-download-intro__icon" aria-hidden="true">
@@ -123,7 +124,6 @@ $fcDownloadSteps = [
                     </div>
                 </div>
 
-                <p class="fencing-modal-footer-note mb-0 small text-muted">Fields marked with <span class="fc-text-danger">*</span> are required.</p>
             </footer>
         </div>
     </div>

@@ -75,10 +75,7 @@
                         <?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>
                         <div class="flex-shrink-0 d-flex order-2">
                             <button type="submit" class="btn btn-orange fc-btn-update py-3 px-3 px-sm-4 text-uppercase align-self-stretch fc-step4-btn-update" disabled>
-                                <i class="fa-regular fa-pen-to-square me-1"></i>
-                                <b>UPDATE</b>
-                                <br>
-                                <small>Go to Project Plan & Cart</small>
+                                <b>UPDATE <i class="fa-solid fa-angle-right mx-2"></i> <span class="fc-btn-step-target">Go to Project Plan &amp; Cart</span></b>
                             </button>
                         </div>
                         <?php endif; ?>
@@ -88,13 +85,7 @@
                                 class="btn <?php echo $fc_step4_plan_btn_outline ? 'btn-orange-outline' : 'btn-orange'; ?> fc-btn-create-plan fencing-btn-modal h-100 py-3 px-3 px-sm-4 text-uppercase align-self-stretch"
                                 data-target="#submit-modal"
                                 disabled>
-                                <?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>
-                                <strong>Update Details</strong><br>
-                                <?php else: ?>
-                                <strong>Create Project Plan</strong><br>
-                                <?php endif; ?>
-
-                                <small>View Costing, Plan & Materials List</small>
+                                <b><?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>Update Details<?php else: ?>Create Project Plan<?php endif; ?> <i class="fa-solid fa-angle-right mx-2"></i> <span class="fc-btn-step-target">Your Details and Timeframe</span></b>
                             </button>
                         </div>
                         <div class="flex-shrink-0 d-flex order-1">

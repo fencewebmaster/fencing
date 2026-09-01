@@ -1238,6 +1238,67 @@ $("#paymentFrm").validate({
  * initProjectPlanSectionBandStuck() below; this exposes the measurement CSS needs to reserve the
  * bar's height at the foot of the cart pane.
  */
+/**
+ * Project plan diagrams: fade the edge a plan can still be scrolled towards, so a section that
+ * runs wider than the panel says so instead of just ending at the border. The classes drive a
+ * mask in CSS; both can be on at once when the plan is scrolled to neither end.
+ * The diagrams are drawn after load and re-drawn on edit, so the list is watched rather than
+ * bound once — bind() is idempotent, and the observer is coalesced to one pass per frame.
+ */
+(function initProjectPlanHScrollFade() {
+    if (!document.body.classList.contains('fc-project-plan-page')) {
+        return;
+    }
+
+    var SELECTOR = '.fc-project-plan-hscroll';
+
+    function sync(el) {
+        var max = el.scrollWidth - el.clientWidth;
+        var scrollable = max > 1;
+        el.classList.toggle('fc-hscroll-fade-start', scrollable && el.scrollLeft > 1);
+        el.classList.toggle('fc-hscroll-fade-end', scrollable && el.scrollLeft < max - 1);
+    }
+
+    function syncAll() {
+        document.querySelectorAll(SELECTOR).forEach(sync);
+    }
+
+    function bind(el) {
+        if (el.dataset.fcHscrollFade) {
+            sync(el);
+            return;
+        }
+        el.dataset.fcHscrollFade = '1';
+        el.addEventListener('scroll', function() {
+            sync(el);
+        }, { passive: true });
+        sync(el);
+    }
+
+    function bindAll() {
+        document.querySelectorAll(SELECTOR).forEach(bind);
+    }
+
+    bindAll();
+    window.addEventListener('resize', syncAll);
+
+    var list = document.getElementById('fc-fence-list');
+    if (list && typeof MutationObserver === 'function') {
+        var queued = false;
+        new MutationObserver(function() {
+            if (queued) {
+                return;
+            }
+            queued = true;
+            window.requestAnimationFrame(function() {
+                queued = false;
+                bindAll();
+            });
+        }).observe(list, { childList: true, subtree: true });
+    }
+})();
+//----------------------------------------------------------------------------------
+
 var fcCartStickyBar = (function() {
     function measure() {
         var bar = document.querySelector('.fc-view-total-cost-bar');

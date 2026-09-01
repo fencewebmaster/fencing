@@ -52,31 +52,6 @@
         });
     }
 
-    /**
-     * Right-edge fade: shown only while there is another tile to scroll to, so it never implies
-     * content that is not there. Slick pages rather than free-scrolls, so 'more to come' is
-     * currentSlide + slidesToShow < slideCount rather than a scroll offset.
-     */
-    function syncEdgeFade($slider, $wrap) {
-        if (!$slider || !$slider.length || !$wrap || !$wrap.length) {
-            return;
-        }
-        if (!$slider.hasClass('slick-initialized')) {
-            return;
-        }
-
-        var slick = $slider.data('slick');
-        if (!slick || typeof slick.slideCount !== 'number') {
-            return;
-        }
-
-        var shown = slick.options.slidesToShow || 1;
-        var current = typeof slick.currentSlide === 'number' ? slick.currentSlide : 0;
-        var more = slick.options.infinite === true || current + shown < slick.slideCount;
-
-        $wrap.toggleClass('fc-color-options-has-more', !!more);
-    }
-
     function syncDotsVisibility($slider, $wrap) {
         if (!$slider || !$slider.length || !$wrap || !$wrap.length) {
             return;
@@ -216,11 +191,9 @@
             $wrap.find('.js-fc-modal-color-options-skeleton').attr({ 'aria-busy': 'false' });
             refreshSlickPosition($el);
             syncDotsVisibility($el, $wrap);
-            syncEdgeFade($el, $wrap);
             requestAnimationFrame(function() {
                 refreshSlickPosition($el);
                 syncDotsVisibility($el, $wrap);
-            syncEdgeFade($el, $wrap);
                 if (isModal) {
                     requestAnimationFrame(function() {
                         scheduleSubmitModalCenterSelected($el);
@@ -228,10 +201,6 @@
                 }
             });
         }
-
-        $el.on('afterChange.fcColorOptionsSlick', function() {
-            syncEdgeFade($el, $wrap);
-        });
 
         $el.on('init.fcColorOptionsSlick', function() {
             requestAnimationFrame(function() {
@@ -244,7 +213,6 @@
             requestAnimationFrame(function() {
                 refreshSlickPosition($el);
                 syncDotsVisibility($el, $wrap);
-            syncEdgeFade($el, $wrap);
                 if (isModal) {
                     requestAnimationFrame(function() {
                         scheduleSubmitModalCenterSelected($el);
@@ -290,12 +258,12 @@
 
         $el.slick({
             mobileFirst: true,
-            // Planner phone view runs non-infinite: with a fractional slidesToShow, infinite mode
-            // offsets the track so half a tile shows at BOTH ends, which reads as a broken first
-            // item rather than a hint that the row scrolls. Non-infinite pins slide 1 to the left
-            // edge, so the only cut-off tile is the one on the right. The wider breakpoints below
-            // take whole numbers and turn it back on.
-            infinite: isModal ? true : false,
+            // Infinite at every width, phones included: the row keeps going whichever way you
+            // swipe or tap rather than dead-ending on the last colour. The cost is that a
+            // fractional slidesToShow offsets the track, so a partial tile shows at both ends
+            // instead of only the right — with the row looping, that is a true statement about
+            // what sits either side of it.
+            infinite: true,
             // Planner on a phone shows 2 tiles plus a sliver of the 3rd. The fraction is the
             // point: a clean 2 looks like the row ends there, whereas the cut-off edge is what
             // tells you it scrolls - the arrows are hidden at this width, so the peek is the
@@ -331,11 +299,9 @@
                 $wrap.addClass('fc-color-options-slick-ready');
                 refreshSlickPosition($el);
                 syncDotsVisibility($el, $wrap);
-            syncEdgeFade($el, $wrap);
                 requestAnimationFrame(function() {
                     refreshSlickPosition($el);
                     syncDotsVisibility($el, $wrap);
-            syncEdgeFade($el, $wrap);
                     if (isProjectPlansSubmitModalSlider($el)) {
                         requestAnimationFrame(function() {
                             scheduleSubmitModalCenterSelected($el);
@@ -373,7 +339,6 @@
                         refreshSlickPosition($el);
                         var $w = sliderWrapFromSlider($el);
                         syncDotsVisibility($el, $w);
-                        syncEdgeFade($el, $w);
                         if (isProjectPlansSubmitModalSlider($el)) {
                             fcSubmitModalColorSlickCenterSelectedIfPaged($el);
                         }
