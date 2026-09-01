@@ -13933,20 +13933,20 @@ div.fc-footer-app .app-version {
         right: 16px;
     }
 
-    /* Delete Section and Reset join the arrows as one control cluster: same 34px square, icon
-       only, sitting immediately to their left. The wrapper goes absolute into the same band, so
-       the row it used to occupy collapses and the carousel moves up.
-       Labels are hidden via .fc-btn-label rather than font-size: 0 — "Delete" and "Reset" are
-       bare text nodes in the markup, so there was nothing for CSS to target until they were
-       wrapped. Each button carries an aria-label now that its text is gone. */
+    /* Delete Section and Reset sit with the arrows as one control cluster: same 34px square, icon
+       only, immediately to their left. The wrapper goes absolute into the same band, so the row it
+       used to occupy collapses and the carousel moves up.
+       Labels are hidden via .fc-btn-label rather than font-size: 0 — "Delete" and "Reset" are bare
+       text nodes in the markup, so there was nothing for CSS to target until they were wrapped.
+       Each button carries an aria-label now that its text is gone.
+       0/80, not the arrows' 20/96: this wrapper anchors to .fencing-section--step1, which already
+       starts inside the section's 20px padding, while the arrows anchor to the section itself.
+       Same two offsets measured from two different boxes. */
     .fc-planner-page [data-section="1"] .btn-delete-fence {
         position: absolute;
-        /* 0/80, not 20/96 like the arrows: this wrapper anchors to .fencing-section--step1, which
-           already starts inside the section's 20px padding, while the arrows anchor to the section
-           itself. Same two offsets measured from two different boxes. */
         top: 0;
         right: 80px;
-        /* left/width are explicit: the wrapper was taking the column's full 317px and hanging
+        /* left/width are explicit: the wrapper otherwise takes the column's full 317px and hangs
            off the left edge of the card rather than shrink-wrapping to its two buttons. */
         left: auto;
         width: auto;
@@ -14184,5 +14184,44 @@ div.fc-footer-app .app-version {
     .fc-chat-launcher.is-ready:hover:not(:active),
     .fc-chat-launcher.is-ready:active {
         transform: none;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Load Quote dialog — mobile.
+   modal-dialog-centered keeps it vertically centred, which is wrong for this one on a phone: it
+   is the only dialog with a text input, so the on-screen keyboard opens and shoves a centred
+   card upward, sometimes past the top of the viewport. Pinned to the top it stays put and the
+   field sits where the thumb expects it.
+   align-items rather than removing the class, so the flex layout Bootstrap relies on is intact.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    #load-quote .modal-dialog.modal-dialog-centered {
+        align-items: flex-start;
+        margin-top: 16px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Add Section: + stays full size when the tab strip sticks (mobile).
+   The sticky block compacts the whole strip - .sticky-roll .fencing-tab-add drops to 12px with
+   8px/12px padding - which is right for the labelled desktop button but leaves the phone with a
+   tiny glyph, since the "Add Section" text is already hidden there and the + is the whole control.
+   Restated at the mobile size so it reads the same stuck or not, and covers both sticky classes
+   because the strip is given .sticky-roll in one path and .fc-sticky in another.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-planner-page .sticky-roll .fencing-tab-add,
+    .fc-planner-page .fc-sticky .fencing-tab-add,
+    .fc-planner-page .sticky-roll .fencing-tab-add i,
+    .fc-planner-page .fc-sticky .fencing-tab-add i {
+        font-size: 30px;
+    }
+
+    .fc-planner-page .sticky-roll .fencing-tab-add,
+    .fc-planner-page .fc-sticky .fencing-tab-add {
+        padding: 17px 8px;
     }
 }
