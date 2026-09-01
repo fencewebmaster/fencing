@@ -15447,3 +15447,28 @@ div.fc-footer-app .app-version {
         font-size: 11px;
     }
 }
+
+
+/* --------------------------------------------------------------------------------------------
+   Edit Project Options — timeframe stays two across on phones.
+   The four options are short enough to pair, but a rule at 575.98px dropped the grid to one
+   column, so they ran 240px down a step of the dialog that holds nothing else. Two across with
+   the tile padding and label trimmed puts the whole choice on screen at once.
+   Same selector as the rule it overrides, so source order is what decides it.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.4rem;
+    }
+
+    /* The tiles carry Bootstrap's mb-1, which stacks on top of the grid gap. */
+    #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label {
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0 !important;
+        padding: 0.5rem 0.6rem;
+        font-size: 13px;
+        line-height: 1.25;
+    }
+}
