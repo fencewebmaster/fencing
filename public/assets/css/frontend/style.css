@@ -14548,34 +14548,47 @@ div.fc-footer-app .app-version {
     .fc-project-plan-page #update_stock-delivery .fencing-section__step-label {
         position: sticky;
         top: env(safe-area-inset-top, 0px);
-        /* Over the sub-headers at 10, under the sticky action bar and the modals. */
+        /* Over the sub-headers at 10 while both are in the flow; the lift above the page's
+           fixed chrome happens only once pinned — see the .is-stuck rule. */
         z-index: 12;
         background-color: var(--fc-white);
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
         /* 16/14 was fine for a band that scrolled away; pinned, those 30px are taken off every
-           screen for the length of the section, and two of them stack. 10 top and bottom keeps
-           the same 10px rhythm as the action bar and takes 11px off each band. Sides stay at 16
-           so the titles keep their line with the content below. */
-        padding-top: 10px;
-        padding-bottom: 10px;
+           screen for the length of the section, and two of them stack. Sides stay at 16 so the
+           titles keep their line with the content below. */
+        padding-top: 8px;
+        padding-bottom: 8px;
     }
 
-    /* Your Project Details band is 45 tall (24 of type, 20 of padding, 1 of border). */
+    /* Your Project Details band is 41 tall (24 of type, 16 of padding, 1 of border). */
     .fc-project-plan-page .fc-project-details .fc-card-header {
-        top: calc(45px + env(safe-area-inset-top, 0px));
+        top: calc(41px + env(safe-area-inset-top, 0px));
     }
 
-    /* Project Plans band is 59, the same as the cart and stock bands, once its quote-id card
-       sits on one row (see the block that does that further down). */
+    /* Project Plans band is 41, like the other three, now its quote-id card is down to the
+       title's height. */
     .fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head {
-        top: calc(59px + env(safe-area-inset-top, 0px));
+        top: calc(41px + env(safe-area-inset-top, 0px));
     }
 
-    /* Item List & Cart band is 59. Full selector because the rule that makes this head sticky
-       is .fc-project-plan-page #update_cart-list .table-cart thead.table-dark th — anything
-       shorter loses to it and the Description row pins underneath the band, out of sight. */
+    /* The cart's second level is the item count and the style filter, not the table's column
+       head — the filter is the control you want within reach while you scroll a long list, and
+       the one word "Description" is not worth the row it holds. Full selector on the head so it
+       outranks the rule that makes it sticky in the first place. */
     .fc-project-plan-page #update_cart-list .table-cart thead.table-dark th {
-        top: calc(59px + env(safe-area-inset-top, 0px));
+        position: static;
+    }
+
+    .fc-project-plan-page #update_cart-list .fc-cart-list-toolbar {
+        position: sticky;
+        top: calc(41px + env(safe-area-inset-top, 0px));
+        z-index: 10;
+        background-color: var(--fc-white);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+        /* 12/4 was fine for a row that scrolled away; pinned it is chrome, and the same 8 the
+           other sticky headers use. */
+        padding-top: 8px;
+        padding-bottom: 8px;
     }
 }
 
@@ -14764,44 +14777,267 @@ div.fc-footer-app .app-version {
 
 
 /* --------------------------------------------------------------------------------------------
-   The plan page's sections run the full width of the screen on mobile.
-   They sat in the container's 12px gutter with a 1px border and a 7px radius either side — the
-   card look that suits the desktop layout. On a phone that is 26px of the width spent on framing,
-   and it is what made the pinned header bands read as floating strips with the page showing past
-   them. Out to the edges, no side border, no radius: the bands are now full width because their
-   sections are, and nothing has to detect whether they are stuck.
-   Top and bottom borders stay — they are what still separates one section from the next.
+   Pinned section bands run edge to edge (mobile).
+   In the flow each band sits inside its card, so it stops at the page gutter either side. Pinned
+   at the top of the screen that reads as a floating strip with the page showing past it; full
+   width, it reads as a header. .is-stuck comes from initProjectPlanSectionBandStuck() in
+   checkout.js — CSS cannot ask whether a sticky element is currently stuck.
+   50vw - 50% is the gutter: half the viewport less half the band's containing block. It goes on
+   the margins to reach the screen edges and on the padding to put back what the margins took, so
+   the title stays on the same line it holds unpinned.
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
-    /* The tab strip is deliberately not in this list: its row is laid out to the width it is
-       given, and widening it pushed the third tab past the screen and put a horizontal scroll on
-       the document. It keeps the 12px inset. */
-    .fc-project-plan-page #project-details-section,
-    .fc-project-plan-page #project-plans-section,
+    /* Each band's id is in the selector: the rules that set these paddings are id-qualified, and
+       a class-only selector loses to them however many classes it stacks. */
+    .fc-project-plan-page #project-details-section > .fencing-section__step-label.is-stuck,
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex.is-stuck,
+    .fc-project-plan-page #update_cart-list > .row.is-stuck,
+    .fc-project-plan-page #update_stock-delivery .fencing-section__step-label.is-stuck {
+        /* Pinned, the band is page chrome and belongs in front of the other fixed chrome — the
+           Edit Details bar (1041) and the chat launcher (1040) — but still under the modals at
+           1045. Only while pinned: at rest it is part of its section, and lifting it there would
+           put an ordinary header over an action bar that is meant to float above the page. */
+        z-index: 1043;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding-left: calc(16px + (50vw - 50%));
+        padding-right: calc(16px + (50vw - 50%));
+    }
+
+    /* Stock & Delivery already breaks 16px out of its pane in the flow (the rule that connects
+       its rule to the section border), so the 16 in the formula above is paid twice and its
+       title lands 16px right of the other three. The gutter alone is the whole inset here.
+       The SECTION n toolbar is the same shape — it breaks out of its card the same way — and it
+       already has a stuck class of its own from p2.js, so it needs no sentinel. */
+    .fc-project-plan-page #update_stock-delivery .fencing-section__step-label.is-stuck,
+    .fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head.fc-project-plan-section-head--stuck {
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding-left: calc(50vw - 50%);
+        padding-right: calc(50vw - 50%);
+    }
+
+    /* The toolbar is second level like the card headers; the Stock & Delivery band shares the
+       rule above only for its padding and keeps the 1043 the other bands have. */
+    .fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head.fc-project-plan-section-head--stuck {
+        z-index: 1042;
+    }
+
+    /* The cart toolbar, pinned: same treatment as the card headers, with its own 16px left
+       gutter put back on top of the one the margins take. */
+    .fc-project-plan-page #update_cart-list .fc-cart-list-toolbar.is-stuck {
+        z-index: 1042;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding-left: calc(16px + (50vw - 50%));
+        padding-right: calc(50vw - 50%);
+    }
+
+    /* The dark card headers, one level down. 15 is their own padding; the border they carry is
+       what makes their title land on the same 29 as everything else. */
+    .fc-project-plan-page .fc-project-details .fc-card-header.is-stuck {
+        /* One under the bands they pin beneath, still clear of the action bar. */
+        z-index: 1042;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding-left: calc(15px + (50vw - 50%));
+        padding-right: calc(15px + (50vw - 50%));
+    }
+
+}
+
+/* 1px rather than 0, pulled back out of the flow: a zero-area rect is not reliably reported as
+   intersecting, and the bands whose sentinel had no height never flipped to stuck. */
+.fc-section-band-sentinel {
+    display: block;
+    height: 1px;
+    margin: 0 0 -1px;
+    padding: 0;
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Section header bands follow their section's corners (mobile).
+   Each section is a rounded panel, but the band across the top of it was square and painted white
+   over the curve — the corner read as clipped. 6 is the section's 7 less the 1px border the band
+   sits just inside of.
+   Only the band that actually sits at the top of a panel takes it: Your Project Details has
+   square top corners of its own (the tab strip joins it there). Item List & Cart is in the list
+   because it heads its own bordered panel now that the cart and stock panes are separate.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex,
+    .fc-project-plan-page #update_stock-delivery .fencing-section__step-label,
+    .fc-project-plan-page #update_cart-list > .row:first-of-type {
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+    }
+
+    /* Pinned, the band runs the full width of the screen and there is no corner left to follow. */
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex.is-stuck,
+    .fc-project-plan-page #update_stock-delivery .fencing-section__step-label.is-stuck,
+    .fc-project-plan-page #update_cart-list > .row.is-stuck {
+        border-radius: 0;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Sticky headers, tighter (mobile).
+   Two of them can be pinned at once, so their combined height is what the reader loses off the
+   top of every screen for the length of a section.
+   The 24px title carried a 38px line-height in three of the four bands and 24px in the fourth —
+   14px of leading doing nothing but making those three taller than Your Project Details. One
+   value for all four, and the second-level heads lose two of their ten pixels of padding.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #project-details-section > .fencing-section__step-label .step-label,
+    .fc-project-plan-page #project-plans-section .fc-card > .fc-row-flex .step-label,
+    .fc-project-plan-page #update_cart-list > .row:first-of-type .step-label,
+    .fc-project-plan-page #update_stock-delivery .fencing-section__step-label .step-label {
+        line-height: 24px;
+    }
+
+    .fc-project-plan-page .fc-project-details .fc-card-header {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+
+    .fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head,
+    .fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head.fc-project-plan-section-head--stuck {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   The two controls that were setting their band's height (mobile).
+   With the titles down to a 24px line, Project Plans and Item List & Cart were still the taller
+   two bands — not from the heading but from what sits opposite it: the quote-id card at 30 and
+   the copy/edit buttons at 26.8. Both come down to the title's own height, which puts all four
+   bands on 41.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #project-plans-section .quote-id-card .qic-body {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .fc-project-plan-page #project-plans-section .quote-id-card .qic-body > div {
+        line-height: 22px;
+    }
+
+    .fc-project-plan-page #project-plans-section .quote-id-card .fc-copy-quote-link {
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+
+    /* !important because the page-wide button rule sets its padding that way; without it these
+       two keep the 0.4rem that makes them 26.8 tall and the band stays 43.8. */
+    .fc-project-plan-page #update_cart-list > .row:first-of-type .btn {
+        padding-top: 3px !important;
+        padding-bottom: 3px !important;
+        /* Take the full 24 the title leaves rather than shrinking to the label's 20: the band
+           does not grow either way, and 4px of it is tap area. */
+        min-height: 24px;
+        /* And centre in it. These are display: block, so the line box sat at the top and the
+           height min-height added fell to the bottom — the icon read 4px from the top against
+           8px below it. The SECTION n buttons are centred flex boxes; this matches them. */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Stock & Delivery and Item List & Cart are separate panels on mobile.
+   They are two panes of one section, which is right side by side on a wide screen but reads as
+   one very long panel once they stack — Stock & Delivery's content running straight into the
+   cart's header with a single frame around the pair. Each takes its own border and radius, and
+   the section around them stops drawing one.
+   The grid's gutters come off with it: the row's -12px margins put the panes 11px outside the
+   section's frame, which did not show while the frame was the section's own but would put each
+   pane's new border past the edge the other sections keep to.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
     .fc-project-plan-page #update_cart-section {
-        /* -12 is .fencing-container's own padding, which is the whole gutter here and holds at
-           every mobile width. Not a vw calculation: where a scrollbar is present 100vw is wider
-           than the page, and the overshoot put a horizontal scroll on the document. */
-        margin-left: -12px;
-        margin-right: -12px;
-        border-left: 0;
-        border-right: 0;
+        border: 0;
         border-radius: 0;
     }
 
-    /* The grids inside them carry Bootstrap's -12px gutters, cancelled by +12px on the columns.
-       That balanced while the section was inset by the same 12; now that it starts at the screen
-       edge the negative half hangs 12px past the right of it and puts the document into
-       horizontal scroll. Both halves come off — the sum was zero, so nothing moves. */
-    .fc-project-plan-page #project-details-section .row,
     .fc-project-plan-page #update_cart-section > .row {
         margin-left: 0;
         margin-right: 0;
     }
 
-    .fc-project-plan-page #project-details-section .row > [class*="col"],
     .fc-project-plan-page #update_cart-section > .row > [class*="col"] {
         padding-left: 0;
         padding-right: 0;
+    }
+
+    .fc-project-plan-page #update_cart-section > .row > #update_stock-delivery,
+    .fc-project-plan-page #update_cart-section > .row > #update_cart-list {
+        border: 1px solid var(--fc-princeton-orange);
+        border-radius: 7px;
+    }
+
+    /* Same gap the sections keep between themselves. */
+    .fc-project-plan-page #update_cart-section > .row > #update_stock-delivery {
+        margin-bottom: 20px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Stock & Delivery — room at the foot of its panel (mobile).
+   Its own frame ends 1px under the last button, so the panel reads as cut off rather than
+   closed. The 16 it already keeps at the sides, kept at the bottom too.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #update_stock-delivery > [data-spy="scroll"] {
+        padding-bottom: 16px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   View Total Cost — pinned to the foot of the screen while the cart is on it (mobile).
+   The cart list is long enough that its one action scrolls out of reach almost immediately.
+   initProjectPlanCartStickyBar() in checkout.js already publishes the signal — it sets
+   .fc-cart-sticky-visible on <body> while #update_cart-section is at least ~30% of the screen —
+   but nothing was reading it; the class was toggling against no rule at all.
+   The same publisher measures the bar into --fc-view-total-bar-h, which the cart pane takes as
+   padding so the last row is not left underneath it once the bar leaves the flow.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    body.fc-cart-sticky-visible #update_cart-list > .fc-view-total-cost-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        /* Level with the Edit Details bar, above the chat launcher, under the modals. */
+        z-index: 1041;
+        /* Sized as that bar too — same 9/10 padding on the same cultured ground, so the two
+           action bars this page pins read as one component in two places. */
+        padding: 9px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+        background-color: var(--fc-cultured);
+        border-top: 1px solid var(--fc-gainsboro);
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    body.fc-cart-sticky-visible #update_cart-list {
+        padding-bottom: var(--fc-view-total-bar-h, 0px);
+    }
+
+    /* Smaller than the in-flow version, and the same size as Edit Details: 44px on a 14px label.
+       !important on the two that need it — the page-wide button rule sets padding that way, and
+       .btn-lg carries the 18px label. */
+    #update_cart-list > .fc-view-total-cost-bar .btn {
+        min-height: 44px;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        font-size: 0.875rem !important;
     }
 }

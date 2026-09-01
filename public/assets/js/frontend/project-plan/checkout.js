@@ -1232,20 +1232,15 @@ $("#paymentFrm").validate({
     ---------------------------------------------------------------- */
 
 /**
- * Project plan: pin "View Total Cost" to the viewport bottom while
- * #update_cart-section is at least ~30% visible (see CSS .fc-cart-sticky-visible).
+ * Project plan: "View Total Cost" is pinned to the foot of the screen for exactly as long as the
+ * Item List & Cart header is pinned to the top of it — the band's own stuck state drives the bar,
+ * so the action and the header it belongs to arrive and leave together. The class is set from
+ * initProjectPlanSectionBandStuck() below; this exposes the measurement CSS needs to reserve the
+ * bar's height at the foot of the cart pane.
  */
-(function initProjectPlanCartStickyBar() {
-    if (!document.body.classList.contains('fc-project-plan-page')) {
-        return;
-    }
-    var section = document.getElementById('update_cart-section');
-    var bar = document.querySelector('.fc-view-total-cost-bar');
-    if (!section || typeof IntersectionObserver === 'undefined') {
-        return;
-    }
-
-    function updateBarHeightVar() {
+var fcCartStickyBar = (function() {
+    function measure() {
+        var bar = document.querySelector('.fc-view-total-cost-bar');
         if (!document.body.classList.contains('fc-cart-sticky-visible') || !bar) {
             document.documentElement.style.removeProperty('--fc-view-total-bar-h');
             return;
@@ -1253,35 +1248,87 @@ $("#paymentFrm").validate({
         document.documentElement.style.setProperty('--fc-view-total-bar-h', bar.offsetHeight + 'px');
     }
 
-    function setSticky(on) {
-        document.body.classList.toggle('fc-cart-sticky-visible', on);
-        window.requestAnimationFrame(updateBarHeightVar);
+    window.addEventListener('resize', measure);
+
+    return {
+        set: function(on) {
+            document.body.classList.toggle('fc-cart-sticky-visible', on);
+            window.requestAnimationFrame(measure);
+        }
+    };
+})();
+//----------------------------------------------------------------------------------
+
+/**
+ * Project plan: mark each section header band .is-stuck while it is pinned, so the mobile rule
+ * can run it edge to edge. Same sentinel trick p2.js uses for the SECTION n toolbars — CSS has no
+ * way to ask whether a position: sticky element is currently stuck.
+ */
+(function initProjectPlanSectionBandStuck() {
+    if (!document.body.classList.contains('fc-project-plan-page') || typeof IntersectionObserver === 'undefined') {
+        return;
     }
 
-    var thresholds = Array.from({ length: 21 }, function(_, i) {
-        return i * 0.05;
+    var bands = [
+        '#project-details-section > .fencing-section__step-label',
+        '#project-plans-section .fc-card > .fc-row-flex',
+        '#update_cart-list > .row:first-of-type',
+        '#update_stock-delivery .fencing-section__step-label',
+        /* Second level: these pin under their section band. */
+        '.fc-project-details .fc-card-header',
+        '#update_cart-list .fc-cart-list-toolbar'
+    ];
+
+    var elements = [];
+    bands.forEach(function(selector) {
+        Array.prototype.push.apply(elements, document.querySelectorAll(selector));
     });
 
-    var io = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            var vh = window.innerHeight || document.documentElement.clientHeight;
-            var visibleH = entry.intersectionRect.height;
-            /* ≥30% of viewport shows the cart section, or ≥30% of shorter sections (ratio). */
-            var on = entry.isIntersecting && (
-                visibleH >= vh * 0.3 ||
-                entry.intersectionRatio >= 0.3
-            );
-            setSticky(on);
+    elements.forEach(function(band) {
+        if (!band || !band.parentNode) {
+            return;
+        }
+
+        /* A span, not a div: several rules address these bands as .row:first-of-type, and a div
+           inserted before one takes that position away from it — the Item List & Cart band lost
+           its gutter the moment the sentinel went in. */
+        var sentinel = document.createElement('span');
+        sentinel.className = 'fc-section-band-sentinel';
+        sentinel.setAttribute('aria-hidden', 'true');
+        band.parentNode.insertBefore(sentinel, band);
+
+        /* The sentinel sits at the band's own resting line, but the band pins at its sticky top —
+           45 under a section band, 59 under the taller ones. Pulling the root's top edge down by
+           that much makes the sentinel leave exactly when the band pins; with a plain 0 the class
+           arrived that many pixels of scroll late and the band snapped wide after it had already
+           stuck. */
+        var isCartBand = band.matches('#update_cart-list > .row:first-of-type');
+
+        var stickTop = parseFloat(window.getComputedStyle(band).top);
+        if (!isFinite(stickTop) || stickTop < 0) {
+            stickTop = 0;
+        }
+
+        var io = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                /* Above the viewport, not merely out of it: without the top test the band reads
+                   as stuck while its section is still below the fold, and you would see it full
+                   width on the way down to it. */
+                var stuck = !entry.isIntersecting && entry.boundingClientRect.top < stickTop;
+                band.classList.toggle('is-stuck', stuck);
+
+                if (isCartBand) {
+                    fcCartStickyBar.set(stuck);
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: (-stickTop) + 'px 0px 0px 0px',
+            threshold: 0
         });
-    }, {
-        root: null,
-        rootMargin: '0px',
-        threshold: thresholds
+
+        io.observe(sentinel);
     });
-
-    io.observe(section);
-
-    window.addEventListener('resize', updateBarHeightVar);
 })();
 //----------------------------------------------------------------------------------
 
