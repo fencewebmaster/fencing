@@ -328,7 +328,7 @@ use Fc\Admin\Services\AppConfigService;
                 </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcStep2ImportantTitle">Important</h5>
-                    <p class="fc-modal__subtitle mb-0">Before you enter your measurements</p>
+                    <p class="fc-modal__subtitle mb-0">Measurement Guide</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

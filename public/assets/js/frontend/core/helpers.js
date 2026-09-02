@@ -88,6 +88,106 @@ HELPER = {
     //----------------------------------------------------------------------------------
 
     /**
+     * Step 1 — bring the section's active fence style into the visible part of the picker.
+     *
+     * Slick shows 2 of 6 slides on a phone, so a section whose style sits at slide 4 came back
+     * from a tab switch with the picker parked on slides 0-1 and nothing on screen marked
+     * selected — the section header said "Slat Infill" while Step 1 read as "nothing chosen".
+     *
+     * Centres as far as the slide count allows: leftmost of the pair on a phone, mid-row on
+     * desktop. Vertical scrolling only happens when the card is actually off screen, so a tab
+     * switch made while reading Step 3 does not yank the page around.
+     *
+     * @param {number} [attempt] Internal retry counter — Slick is deferred while Step 1 is hidden.
+     */
+    scrollFenceStyleIntoCenter: function(attempt) {
+        var $item = $('.fc-planner-page .js-fencing-styles-slick .fencing-style-item.fsi-selected')
+            .not('.slick-cloned')
+            .first();
+        if (!$item.length) {
+            return;
+        }
+
+        var $slider = $item.closest('.js-fencing-styles-slick');
+        if (!$slider.length) {
+            return;
+        }
+
+        var tries = attempt || 0;
+
+        // Slick keeps its instance on the DOM element (el.slick), not in jQuery .data('slick') —
+        // ask for it and let a half-built or destroyed slider throw into the catch.
+        var slick = null;
+        if ($slider.hasClass('slick-initialized')) {
+            try {
+                slick = $slider.slick('getSlick') || null;
+            } catch (eGet) {
+                slick = null;
+            }
+        }
+
+        // Opening the planner on ?tab=2 defers Slick until Step 1 is shown, and the rAF nudge in
+        // fcBtnStep can land before the panel is measurable — the picker then stays a plain
+        // overflowing row with the style parked off-screen. Ask its own refresh hook again.
+        if (!slick) {
+            if (tries < 10) {
+                if (typeof window.fcRefreshFencingStylesSlick === 'function') {
+                    try {
+                        window.fcRefreshFencingStylesSlick();
+                    } catch (eInit) {}
+                }
+                setTimeout(function() {
+                    HELPER.scrollFenceStyleIntoCenter(tries + 1);
+                }, 120);
+            }
+            return;
+        }
+
+        var idx = parseInt($item.attr('data-slick-index'), 10);
+        if (!Number.isFinite(idx)) {
+            return;
+        }
+
+        try {
+            var show = parseInt($slider.slick('slickGetOption', 'slidesToShow'), 10) || 1;
+            var count = slick.slideCount || 0;
+
+            // Desktop shows all six at once — paging there would rotate the row into its clones
+            // for no reason. Only page when something is actually hidden.
+            if (count > show) {
+                // Go to the page holding the style, not to a centred offset: Slick snaps any
+                // index to a page boundary anyway (checkNavigable), and a centred index rounds
+                // the wrong way — asking for "one before slide 0" landed on the last page with
+                // the selected style off-screen.
+                var scroll = parseInt($slider.slick('slickGetOption', 'slidesToScroll'), 10) || 1;
+                var target = Math.floor(idx / scroll) * scroll;
+
+                if (target !== $slider.slick('slickCurrentSlide')) {
+                    $slider.slick('slickGoTo', target);
+                }
+            }
+        } catch (e) {
+            /* Slider destroyed or mid-reinit */
+        }
+
+        // After the slide settles: only pull the page when the card is not already on screen.
+        setTimeout(function() {
+            var el = $item[0];
+            if (!el) {
+                return;
+            }
+            var rect = el.getBoundingClientRect();
+            var viewH = window.innerHeight || document.documentElement.clientHeight;
+            if (rect.top >= 0 && rect.bottom <= viewH) {
+                return;
+            }
+            $item.scrollTo(300, Math.max(0, (viewH - rect.height) / 2));
+        }, 350);
+    },
+
+    //----------------------------------------------------------------------------------
+
+    /**
      * Horizontal scroll container for fence diagrams (planner Step 3 hscroll or legacy strip).
      * @param {JQuery} [$context]
      * @returns {JQuery}

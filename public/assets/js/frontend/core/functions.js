@@ -7959,6 +7959,68 @@ function initAutocompleteAddress() {
 
 //----------------------------------------------------------------------------------
 
+/**
+ * Keep the Google suggestion list pinned to the address field while the pane it sits in scrolls.
+ *
+ * Google positions .pac-container once, in document coordinates on <body>, and only re-positions
+ * it on window scroll/resize - it knows nothing about a scrolling ancestor. The Download Your
+ * Project Plans modal body is exactly that (.fencing-modal-body--scroll), so scrolling it left the
+ * suggestions parked at the field's old position: adrift below the footer, or off-screen entirely
+ * on a phone, where the keyboard shrinks the viewport enough to make the body scroll in the first
+ * place. Same pin Google itself computes - the list hangs from the field's bottom-left edge, and
+ * it stays below the field even when the field is past the fold, so there is no flip to preserve.
+ *
+ * Scroll is listened for in the capture phase because it does not bubble out of the pane, and on
+ * focus for the same reason. Out of view the list is hidden with visibility rather than display,
+ * so this never fights Google for the property it toggles as predictions come and go.
+ */
+function fcPinAddressAutocomplete() {
+    var pac = document.querySelector('.pac-container');
+
+    if (!pac) {
+        return;
+    }
+
+    // Google opens the list by clearing that inline display and closes it by setting it back, so
+    // there is nothing to place in between - but a hide from an earlier scroll has to be lifted
+    // here, or the list comes back invisible the next time Google opens it. Skipping the measuring
+    // below also keeps this off the layout path for every other scroller on the page.
+    if (pac.style.display === 'none') {
+        pac.style.visibility = '';
+        return;
+    }
+
+    var field = document.querySelector('#address');
+
+    if (!field) {
+        return;
+    }
+
+    var rect = field.getBoundingClientRect();
+
+    pac.style.top = (rect.bottom + window.pageYOffset) + 'px';
+    pac.style.left = (rect.left + window.pageXOffset) + 'px';
+
+    // Pinned to a field scrolled up behind the sticky header, the list would hang over the header
+    // itself. Nothing to hide against on the pages where the field is not inside a pane.
+    var pane = field.closest('.fencing-modal-body--scroll');
+    var paneRect = pane ? pane.getBoundingClientRect() : null;
+
+    pac.style.visibility = paneRect && (rect.bottom <= paneRect.top || rect.bottom >= paneRect.bottom)
+        ? 'hidden'
+        : '';
+}
+
+document.addEventListener('scroll', fcPinAddressAutocomplete, { capture: true, passive: true });
+
+/* Typing is what makes Google re-open the list, and focus is what makes the browser scroll the
+   field back into the pane. Both have to re-run the pin: a scroll alone can leave the list hidden
+   from the last time the field was out of view. */
+document.addEventListener('input', fcPinAddressAutocomplete);
+document.addEventListener('focus', fcPinAddressAutocomplete, true);
+
+//----------------------------------------------------------------------------------
+
 function fillInAddress() {
     // Get the place details from the autocomplete object.
     const place = autocomplete.getPlace();

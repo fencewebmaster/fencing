@@ -27,10 +27,13 @@
             if (!$node.hasClass('slick-initialized')) {
                 return;
             }
-            if (!$node.data('slick')) {
-                return;
-            }
             try {
+                // Slick keeps its instance on the DOM element (el.slick), never in jQuery's data
+                // store — the old `$node.data('slick')` guard was always false, so setPosition
+                // never ran and a breakpoint change left the track on the old slide width.
+                if (!$node.slick('getSlick')) {
+                    return;
+                }
                 $node.slick('setPosition');
             } catch (e) {
                 /* noop */

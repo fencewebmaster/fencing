@@ -131,6 +131,13 @@ let ProjectPlan = {
                 ? `<div class="fc-project-plan-section-style">${fcProjectPlanEscapeHtml(fenceStyleTitle)}</div>`
                 : '';
 
+            /* The Actions menu names its section the way the head does — title over style, on two
+               lines. Dropped entirely when the style is unknown, the same condition on which the
+               head omits its own style line. */
+            var fenceStyleMenuHtml = fenceStyleTitle
+                ? `<span class="fc-project-plan-menu-header__style">${fcProjectPlanEscapeHtml(fenceStyleTitle)}</span>`
+                : '';
+
             var section = `<div class="border p-3 mb-4 fc-project-plan-section fc-project-plan-section--pending" data-section-index="${i}" aria-busy="true">
                 <div class="fc-project-plan-section-sticky-sentinel" aria-hidden="true"></div>
                 <div class="fc-project-plan-section-head">
@@ -140,30 +147,49 @@ let ProjectPlan = {
                             ${fenceStyleHtml}
                         </div>
                         <div class="col fc-project-plan-section-head__overall text-center min-w-0" id="fc-section-overall-${i}"></div>
+                        <!-- One Actions menu, not three buttons: the head is the narrowest row on the
+                             page and the three controls had already given up their labels to fit it.
+                             The wrapper keeps .fc-project-plan-download and the toggle keeps
+                             .fc-project-plan-download-toggle — the capture busy state, the
+                             dropdown-open head class and the Bootstrap instances are all keyed on
+                             those two, and the menu they open is still the one that downloads.
+                             The toggle is no longer disabled up front: two of its four items work
+                             before the diagram has drawn. The downloads carry the disabled state
+                             instead, until the section reports ready. -->
                         <div class="col-auto text-end fc-project-plan-section-actions">
-                            <div class="d-inline-flex align-items-center gap-2 flex-nowrap">
-                                <button type="button" class="btn btn-sm text-uppercase btn-outline-dark fw-bold fc-project-plan-summary-btn" data-section="${i}" aria-label="Summary section ${i + 1}">
-                                    <i class="fa-solid fa-list-ul me-sm-1" aria-hidden="true"></i>
-                                    <span class="d-none d-sm-inline">Summary</span>
+                            <div class="dropdown fc-project-plan-download">
+                                <button type="button" class="btn btn-sm text-uppercase btn-outline-dark fw-bold dropdown-toggle fc-project-plan-download-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" data-section="${i}" aria-label="Section ${i + 1} actions">
+                                    <!-- Exactly one of these shows at any width: the glyph is the
+                                         whole control below sm, where there is no room for a label,
+                                         and the word carries it from sm up, where the caret beside
+                                         it already says it opens a menu. -->
+                                    <i class="fa-solid fa-ellipsis-vertical d-sm-none" aria-hidden="true"></i>
+                                    <span class="d-none d-sm-inline">Actions</span>
                                 </button>
-                                <div class="dropdown fc-project-plan-download">
-                                    <button type="button" class="btn btn-sm text-uppercase btn-outline-dark fw-bold dropdown-toggle fc-project-plan-download-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" data-section="${i}" aria-label="Download section" disabled>
-                                        <i class="fa-solid fa-download me-sm-1" aria-hidden="true"></i>
-                                        <span class="d-none d-sm-inline">Download</span>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                        <li>
-                                            <button type="button" class="dropdown-item fc-project-plan-download-png" data-section="${i}">Download PNG</button>
-                                        </li>
-                                        <li>
-                                            <button type="button" class="dropdown-item fc-project-plan-download-pdf" data-section="${i}">Download PDF</button>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <a href="${base_url}?section=${i+1}" class="btn btn-sm text-uppercase btn-orange fw-bold fc-project-plan-edit-section" aria-label="Edit details">
-                                    <i class="fa-regular fa-pen-to-square me-sm-1" aria-hidden="true"></i>
-                                    <span class="d-none d-sm-inline">Edit Details</span>
-                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    <!-- The menu says which section it acts on, so the items below
+                                         do not have to repeat it. Numbered in the same red the head
+                                         uses — .fc-project-plan-section-label__num is reused rather
+                                         than the hex repeated, so the two can never drift. Five of
+                                         these open on a long plan and nothing in the menu said which
+                                         one it belonged to. -->
+                                    <li>
+                                        <h6 class="dropdown-header fc-project-plan-menu-header"><span class="fc-project-plan-menu-header__title">SECTION <span class="fc-project-plan-section-label__num">${i + 1}</span></span>${fenceStyleMenuHtml}</h6>
+                                    </li>
+                                    <li>
+                                        <a href="${base_url}?section=${i+1}" class="dropdown-item fc-project-plan-edit-section">Edit this Section</a>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item fc-project-plan-summary-btn" data-section="${i}">View Summary</button>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <button type="button" class="dropdown-item fc-project-plan-download-png" data-section="${i}" disabled>Download PNG</button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item fc-project-plan-download-pdf" data-section="${i}" disabled>Download PDF</button>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -514,7 +540,9 @@ let ProjectPlan = {
         function clearPlanSectionPending() {
             if ($planSection && $planSection.length) {
                 $planSection.removeClass('fc-project-plan-section--pending').removeAttr('aria-busy');
-                $planSection.find('.fc-project-plan-download-toggle').prop('disabled', false);
+                /* The two capture items, not the menu around them: Edit Section and View Summary
+                   share that menu and neither waits on the diagram. */
+                $planSection.find('.fc-project-plan-download-png, .fc-project-plan-download-pdf').prop('disabled', false);
             }
         }
 

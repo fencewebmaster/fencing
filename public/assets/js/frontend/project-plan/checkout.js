@@ -350,7 +350,7 @@ function fcProjectPlanDownloadBusy($dropdown, isBusy, format) {
 
     $toggle.prop('disabled', false);
     var prevClass = $icon.data('fcPrevClass');
-    $icon.attr('class', prevClass || 'fa-solid fa-download me-sm-1');
+    $icon.attr('class', prevClass || 'fa-solid fa-ellipsis-vertical me-sm-1');
     fcProjectPlanDownloadToast(false);
 }
 
@@ -1231,13 +1231,10 @@ $("#paymentFrm").validate({
     [END] VALIDATE
     ---------------------------------------------------------------- */
 
-/**
- * Project plan: "View Total Cost" is pinned to the foot of the screen for exactly as long as the
- * Item List & Cart header is pinned to the top of it — the band's own stuck state drives the bar,
- * so the action and the header it belongs to arrive and leave together. The class is set from
- * initProjectPlanSectionBandStuck() below; this exposes the measurement CSS needs to reserve the
- * bar's height at the foot of the cart pane.
- */
+/* "View Total Cost" needed no signal from here in the end: the bar is position: sticky at the
+   foot of the cart pane, the same as the Edit Details bar, so CSS floats and settles it on its
+   own. The body class and the --fc-view-total-bar-h measurement that drove the fixed version
+   went with it. */
 /**
  * Project plan diagrams: fade the edge a plan can still be scrolled towards, so a section that
  * runs wider than the panel says so instead of just ending at the border. The classes drive a
@@ -1248,27 +1245,6 @@ $("#paymentFrm").validate({
 /* The fence diagram scroll fade moved to shared/hscroll-fade.js: the planner's Step 3
    drawing uses the same .fc-project-plan-hscroll strip, and the copy here was gated to
    this page so Step 3 never faded. Both pages load the shared file from footer.php. */
-//----------------------------------------------------------------------------------
-
-var fcCartStickyBar = (function() {
-    function measure() {
-        var bar = document.querySelector('.fc-view-total-cost-bar');
-        if (!document.body.classList.contains('fc-cart-sticky-visible') || !bar) {
-            document.documentElement.style.removeProperty('--fc-view-total-bar-h');
-            return;
-        }
-        document.documentElement.style.setProperty('--fc-view-total-bar-h', bar.offsetHeight + 'px');
-    }
-
-    window.addEventListener('resize', measure);
-
-    return {
-        set: function(on) {
-            document.body.classList.toggle('fc-cart-sticky-visible', on);
-            window.requestAnimationFrame(measure);
-        }
-    };
-})();
 //----------------------------------------------------------------------------------
 
 /**
@@ -1314,8 +1290,6 @@ var fcCartStickyBar = (function() {
            that much makes the sentinel leave exactly when the band pins; with a plain 0 the class
            arrived that many pixels of scroll late and the band snapped wide after it had already
            stuck. */
-        var isCartBand = band.matches('#update_cart-list > .row:first-of-type');
-
         var stickTop = parseFloat(window.getComputedStyle(band).top);
         if (!isFinite(stickTop) || stickTop < 0) {
             stickTop = 0;
@@ -1328,10 +1302,6 @@ var fcCartStickyBar = (function() {
                    width on the way down to it. */
                 var stuck = !entry.isIntersecting && entry.boundingClientRect.top < stickTop;
                 band.classList.toggle('is-stuck', stuck);
-
-                if (isCartBand) {
-                    fcCartStickyBar.set(stuck);
-                }
             });
         }, {
             root: null,

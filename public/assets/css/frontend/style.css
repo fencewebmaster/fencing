@@ -1672,6 +1672,15 @@ a div {
     padding-bottom: 30px;
 }
 
+/* Google Places suggestion list for the Download Your Project Plans address field. Google appends
+   .pac-container to <body> with its own z-index: 1000, so raising .fencing-modal from 13 to 1045
+   (for the chat launcher) buried the dropdown under the dialog it belongs to — the suggestions
+   still rendered, just behind the modal. 1046 puts it back on top of the modal while staying
+   under Bootstrap's backdrop (1050), so a confirm dialog opened from the modal still covers it. */
+.pac-container {
+    z-index: 1046;
+}
+
 /* Modal Content/Box */
 .fencing-modal-content {
     background-color: var(--fc-white-smoke);
@@ -2748,6 +2757,53 @@ a.fc-tab-active {
     font-weight: 600;
 }
 
+/* The menu's title, not one of its rows. It takes the section band's own ground and runs to the
+   menu's edges — that band is what stops it reading as a fifth item you could click, since ink
+   and weight alone put it next to items that are dark and 600 themselves.
+   Title over style on two lines, the shape the section head uses. The head's own
+   .fc-project-plan-section-style is not reused for the second line: it carries a
+   max-width: min(240px, 42vw) that belongs to a head sharing its row with the overall
+   measurement, and a menu has neither that neighbour nor that width to answer to.
+   No divider under it either — the band draws its own edge, and the rule as well would be two
+   lines saying one thing. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section-actions .dropdown-menu {
+    /* The header is the menu's top edge now; padding above it would show as a white strip. */
+    padding-top: 0;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section-actions .fc-project-plan-menu-header {
+    margin-bottom: 5px;
+    padding: 7px 16px 6px;
+    background-color: var(--fc-cultured);
+    border-bottom: 1px solid var(--fc-gainsboro);
+    /* The menu's own radius, so the band follows its corner instead of squaring it off. Taken
+       from the Bootstrap variable rather than `inherit`: the header's parent is the <li>, whose
+       radius is 0, while the custom property carries down from .dropdown-menu. */
+    border-top-left-radius: var(--bs-dropdown-border-radius);
+    border-top-right-radius: var(--bs-dropdown-border-radius);
+    color: #000;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: none;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section-actions .fc-project-plan-menu-header__title,
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section-actions .fc-project-plan-menu-header__style {
+    display: block;
+}
+
+/* Uppercase and letter-spaced like the head's style line, a size down and quieter — it is the
+   subtitle of a title that is itself only 13px. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section-actions .fc-project-plan-menu-header__style {
+    color: var(--fc-boulder);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
 .fc-project-plan-section.fc-project-plan-capturing .fc-project-plan-section-actions {
     display: none !important;
 }
@@ -2829,7 +2885,15 @@ a.fc-tab-active {
         0 6px 14px rgba(0, 0, 0, 0.07);
 }
 
-.fc-project-plan-page #fc-fence-list .fc-project-plan-section-head.fc-project-plan-section-head--dropdown-open {
+/* The open menu escapes its own section, so the head it hangs from has to outrank the next
+   section's head — the menu is a descendant of this one and cannot climb out of its stacking
+   context on its own z-index.
+   Both selectors carry the full `.border.p-3 >` path: written without it this rule was one class
+   short of the base sticky rule above and never applied at all, and the second is a class longer
+   than the stuck rule that would otherwise pull the head back down to 1042. It only started to
+   show when the menu grew from two items to four and reached past the section below. */
+.fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head.fc-project-plan-section-head--dropdown-open,
+.fc-project-plan-page #fc-fence-list .border.p-3 > .fc-project-plan-section-head.fc-project-plan-section-head--stuck.fc-project-plan-section-head--dropdown-open {
     z-index: 1065;
 }
 
@@ -6577,9 +6641,6 @@ thead.fc-border th:last-child {
     margin-bottom: 0.75rem;
 }
 
-.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-panel-controls:not(:empty) {
-    margin-bottom: 0.75rem;
-}
 
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__bottom.fc-step3-bottom {
     padding-top: 0.75rem !important;
@@ -6940,6 +7001,12 @@ thead.fc-border th:last-child {
     background: linear-gradient(180deg, #fff 0%, #fafbfc 100%);
 }
 
+/* The orange close circle takes its lift from the shared .modal .modal-header .btn-close, which
+   every other modal relies on - so the Summary cancels it here rather than at source. */
+#fc-planner-summary-modal .fc-planner-summary-modal__header .btn-close {
+    box-shadow: none;
+}
+
 #fc-planner-summary-modal .fc-planner-summary-modal__title {
     margin: 0;
     font-size: 1.25rem;
@@ -6983,7 +7050,6 @@ thead.fc-border th:last-child {
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 3px;
     background: #fff;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     min-width: 0;
 }
 
@@ -7144,20 +7210,17 @@ thead.fc-border th:last-child {
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 3px;
     background: #fff;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     overflow: hidden;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 #fc-planner-summary-modal .fc-planner-summary-section--open {
     border-color: rgba(246, 121, 37, 0.35);
-    box-shadow: 0 8px 20px rgba(246, 121, 37, 0.08);
     background: #fff4ed;
 }
 
 #fc-planner-summary-modal .fc-planner-summary-section--open.fc-planner-summary-section--incomplete {
     border-color: rgba(153, 153, 153, 0.35);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
     background: #f0f0f0;
 }
 
@@ -7298,7 +7361,6 @@ thead.fc-border th:last-child {
     font-size: 12px;
     font-weight: 600;
     line-height: 1.2;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -7900,10 +7962,15 @@ thead.fc-border th:last-child {
     max-width: 100%;
 }
 
+/* Pulled out by one slide gutter each side so the outer tiles line up with everything else in the
+   card. Each slide pads itself 8px to open the 16px between tiles, which also held the first and
+   last tile 8px inside the step title above them — 28px against the title's 20px. The width has to
+   grow with the margins: .slick-list is width: 100%, so margins alone would slide the carousel left
+   rather than widen it, and slick reads this box to size the slides. */
 .fc-planner-page .js-fencing-styles-slick .slick-list {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
+    width: calc(100% + 16px);
+    margin-left: -8px;
+    margin-right: -8px;
     padding-top: 10px;
     padding-bottom: 14px;
 }
@@ -10154,6 +10221,289 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     }
 }
 /* --------------------------------------------------------------------------------------------
+   Planner Step 1 — the same rule under the header that Steps 3 and 4 carry, so the style picker
+   reads as a body under a header rather than one undivided block.
+   The header carries a ground now, so it has to be the box itself that reaches the card rather than
+   a pseudo-element drawing a line past it. Negative margins cancel the section's padding on three
+   sides and the padding puts the text back where it was — but they also move the box the
+   Delete/Reset cluster is positioned against, so its two offsets are corrected below by the same
+   figures. The inset matches .fencing-section's padding, hence the second value at its 992px
+   breakpoint; 6px, not the card's 7px, because an inner radius is the outer one less its border.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page [data-section="1"] .fencing-section--step1 {
+    margin: -20px -20px 0;
+    padding: 20px 20px 14px;
+    background: var(--fc-cultured);
+    border-bottom: 1px solid var(--fc-gainsboro);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+@media (max-width: 992px) {
+    .fc-planner-page [data-section="1"] .fencing-section--step1 {
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+/* 14px between the title and the rule, the same gap Steps 3 and 4 open with — the padding above
+   supplies it, so the title's own mb-3 comes off. !important because bootstrap.min.css, which
+   defines mb-3, loads after this file. */
+.fc-planner-page [data-section="1"] .fencing-section--step1 .fencing-content-title {
+    margin-bottom: 0 !important;
+}
+
+/* 20px of air under the rule and 20px under the tiles, matching .fencing-section's own padding, so
+   the body sits evenly between its two boundaries. Neither number is set directly: .slick-list
+   already pads 10px above the tiles and 26px below (10 + the slide's own 12px margin + 14px), which
+   is the room the hover lift and its shadow need and cannot come off. So padding-top adds the
+   difference above, and margin-bottom below cancels the section's padding against room that is
+   already there — 26 of overhang minus 26 leaves the section's own 20 as the gap. */
+.fc-planner-page [data-section="1"] .fencing-section__cmp.fencing-styles {
+    padding-top: 10px;
+}
+
+/* Below md a Load Quote button follows the carousel and already closes the card evenly at 20px
+   either side of itself, on a list whose bottom padding is trimmed to 8px for it. */
+@media (min-width: 768px) {
+    .fc-planner-page [data-section="1"] .fencing-section__cmp.fencing-styles {
+        margin-bottom: -26px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Planner Step 2 — 40/60, sized to the form rather than to the twelve-column grid.
+   Bootstrap has no 40%: col-lg-5 is 41.67% and needed an empty col-lg beside it to keep the notes
+   column on a round fraction, so the two panes never quite answered each other. Explicit widths
+   drop that spacer, and — because the columns now meet where the grid says they do — the offsets
+   below are the plain gutter rather than a fraction of it.
+   The measurement row puts the field and Calculate side by side, and Calculate holds its own width,
+   so whatever the column gives up comes off the field. 45% carries down to 768px, where the field
+   is left 54px of usable input — enough for the five digits an overall length runs to, and the
+   narrowest this gets before the columns stop sharing a row at all. 40% did not: it left 39px
+   there, which clipped "12000".
+   -------------------------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fencing-measurement > .row > .col-lg-5 {
+        flex: 0 0 auto;
+        width: 45%;
+    }
+
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fencing-measurement > .row > .col-lg-6 {
+        flex: 0 0 auto;
+        width: 55%;
+    }
+
+    /* The column keeps its left edge on the section's padding — the row's -12px margin and this
+       column's 12px gutter cancel — but the same 12px on the right left the form nearer the seam
+       than the card. Padding it to the section's own figure squares the two. */
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fencing-measurement > .row > .col-lg-5 {
+        padding-right: 20px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 992px) {
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fencing-measurement > .row > .col-lg-5 {
+        padding-right: 16px;
+    }
+}
+
+
+/* --------------------------------------------------------------------------------------------
+   Planner Step 2 — seam between the measurement pane and the IMPORTANT notes, the same one the
+   cart's two panes carry.
+   min-width: 768px because that is where col-md-6 puts the two side by side. Below it they stack
+   and the notes panel is display: none — its copy moves behind the "?" button in the step header
+   — so there are no two columns left for a rule to sit between.
+   It is drawn off the section rather than off either column. A border on the notes column would
+   only be as tall as that column — the row is align-items: center, so the two panes are different
+   heights and neither reaches the card — and it could not be stretched to the card edges without
+   negative margins that would drag the columns with them.
+   The columns meet at 45% of the row, but this is positioned against the section's padding box P,
+   and the row is not P: the section pads it in by its own padding P0 a side and Bootstrap's gutter
+   pulls 12px back out. The boundary therefore lands at 0.45 x (P - 2 x P0 + 24) + P0 - 12 from P's
+   left edge — 45% of P, plus a tenth of that padding, less 1.2px. Hence the second value below,
+   where the padding drops to 16px.
+   top/bottom of 0 resolve against that same padding box, which is the inside of the card border —
+   hence the rule meets it top and bottom.
+   -------------------------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+    .fc-planner-page .js-fc-form-step[data-section="2"]::after {
+        content: "";
+        position: absolute;
+        left: calc(45% + 0.8px);
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid var(--fc-gainsboro);
+        /* Decorative, and it spans the whole card — it must never take a click off the panes. */
+        pointer-events: none;
+    }
+}
+
+/* .fencing-section pads 16px from here down, so the boundary sits 0.4px past 45% rather than 0.8. */
+@media (min-width: 768px) and (max-width: 992px) {
+    .fc-planner-page .js-fc-form-step[data-section="2"]::after {
+        left: calc(45% + 0.4px);
+    }
+}
+
+/* The two step headers as one band across the top of the card, split by the seam: "Step 02 / Enter
+   your measurements" on the left, "Important / Measurement Guide" on the right.
+   Each reaches its own boundaries by cancelling what holds it in — the section's padding above and
+   to the outside, the column gutter on the notes side — then re-inseting by the same figure, so the
+   text does not move when the ground appears behind it. margin-top pulls into the section's
+   padding rather than collapsing through the column: the columns are flex items, which do not
+   collapse margins, so this shifts the header alone and the band fills the strip that padding left.
+   The rule is a real border on both sides now rather than a pseudo-element on one, so the two land
+   on the same pixel without the 13px-against-14px correction the mismatch used to need. */
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-measure__header,
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header {
+    margin-top: -20px;
+    margin-bottom: 14px;
+    padding-top: 20px;
+    padding-bottom: 14px;
+    background: var(--fc-cultured);
+    border-bottom: 1px solid var(--fc-gainsboro);
+}
+
+/* 6px, not the card's 7px: this sits inside a 1px border, and an inner radius is the outer one
+   less the border it curves within. */
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-measure__header {
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-top-left-radius: 6px;
+}
+
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header {
+    border-top-right-radius: 6px;
+}
+
+/* .fencing-section's padding drops to 16px here, on both sides. */
+@media (max-width: 992px) {
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-measure__header {
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+/* Alone in the card below md — the notes column is display: none — so it closes both corners. */
+@media (max-width: 767.98px) {
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-measure__header {
+        border-top-right-radius: 6px;
+    }
+}
+
+/* The notes column's header — the same pair Step 02 carries, on this side of the seam, with the
+   grey panel below it as the body.
+   Its rule continues the one under Step 02's title: 12px to the left reaches the seam (the column
+   begins on it, being the last six of twelve), and the right runs out to the card border by the
+   section's own padding. The two rules make one line across the card, broken only where the
+   vertical seam crosses it.
+
+   Header and body take the same box and the same padding, which is what holds the copy on one
+   margin down the column. Reaching past the column's own edges is what makes that possible: the
+   gutter and the section padding are different widths (12px and 20px), so left alone they left the
+   text nearer the seam than the card border. Both blocks now cancel them and re-inset by the
+   section's padding, the same distance Step 02's own text keeps from the card on its side. */
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header,
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__body {
+    margin-left: -12px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* .fencing-section's padding is 16px here, so the inset that matches it is too. */
+@media (max-width: 992px) {
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header,
+    .fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__body {
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+/* 11px is what the other header opens between its two lines — .step-label's own 3px plus the
+   mb-2 on .fc-step2-title-row, the wrapper that exists over there to seat the mobile chip. */
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header .step-label {
+    margin-bottom: 11px;
+}
+
+/* The notes themselves. No ground of their own: the header above already separates them from the
+   step, and a grey panel under a rule read as a second card inside the first.
+   .js-fc-step2-important-body is listed alongside throughout: below md the dialog shows this very
+   copy, cloned out of the panel, and the clone brings the markup but not a scope — styling only the
+   panel would leave the phone reading a differently-typeset version of the same three sentences.
+   strong is inline by default, so the mb-1 each note carries was doing nothing and the name sat
+   against its own copy — display: block is what lets that spacing land. */
+.fc-planner-page .fc-step2-notes__body strong,
+.fc-planner-page .js-fc-step2-important-body strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Darker than the boulder the label role gives it. On the left a label sits above the control it
+   names and the control carries the weight; here what follows the name is copy, so the name has to
+   lead it rather than sit lighter than it.
+   The two selectors are long on purpose: the role rule sets colour !important and sits later in the
+   file, so matching its specificity would lose on source order. .js-fc-form-step and .fc-modal are
+   the nearest ancestors that outrank it — the dialog's copy is not inside the section, so it cannot
+   share the first selector. */
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__body strong,
+.fc-planner-page .fc-modal .js-fc-step2-important-body strong {
+    color: var(--fc-shark) !important;
+}
+
+.fc-planner-page .fc-step2-notes__body p,
+.fc-planner-page .js-fc-step2-important-body p {
+    margin-bottom: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    /* Bootstrap's .text-secondary is #6c757d, a colder grey than anything else on the card. */
+    color: var(--fc-dove-gray) !important;
+}
+
+/* One gap between notes, wherever they come from: the dynamic ones carry mb-2, the fixed one
+   nothing, and .step-2_notes itself would add a third gap on top of its last child's. */
+.fc-planner-page .fc-step2-notes__body .step-2_notes,
+.fc-planner-page .js-fc-step2-important-body .step-2_notes {
+    margin-bottom: 0;
+}
+
+.fc-planner-page .fc-step2-notes__body .step-2_notes > div,
+.fc-planner-page .js-fc-step2-important-body .step-2_notes > div {
+    margin-bottom: 14px !important;
+}
+
+.fc-planner-page .fc-step2-notes__body > div:last-child,
+.fc-planner-page .js-fc-step2-important-body > div:last-child {
+    margin-bottom: 0;
+}
+
+/* .step-label span is what carries the colour on this pair — it is the "02" over there — but
+   the alert orange, not the crimson that numeral uses. */
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header .step-label span {
+    color: var(--fc-princeton-orange);
+}
+
+/* Below 992px .fencing-section--step2 h4.fencing-content-title opens 24px under itself. On the
+   other side of the seam that gap falls below the rule, since the rule is drawn on the title;
+   here the title is inside the header block, so the same margin would push the rule 24px down
+   and break the line where the two meet. !important because that rule carries it. */
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header .fencing-content-title,
+.fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-measure__header .fencing-content-title {
+    margin-bottom: 0 !important;
+}
+
+
+/* --------------------------------------------------------------------------------------------
    Planner Step 3 — brought in line with Step 4 and the plan-page sections.
    Its two dividers were 2px --fc-bright-gray while every other section rule on the journey is
    1px --fc-gainsboro, and its action row sat on no ground at all, so the same panel read
@@ -10162,10 +10512,36 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
    20px with negative margins, which is exactly why that padding stays here rather than being
    zeroed the way Step 4's was.
    -------------------------------------------------------------------------------------------- */
+/* The rule sits on the header now rather than on the body 14px below it: the header carries a
+   ground, and a band has to end where its rule does. .fencing-section__top pads this in by 20px, so
+   the margins cancel that to reach the card and the padding puts the text back — the same move the
+   other two steps make against the section's own padding. The zoom cluster is positioned against
+   this box below md, so its offsets are corrected by the same figures further down.
+   6px, not the card's 7px, because an inner radius is the outer one less its border. */
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section--step3 {
+    margin: -20px -20px 0;
+    padding: 20px 20px 14px;
+    background: var(--fc-cultured);
+    border-bottom: 1px solid var(--fc-gainsboro);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+@media (max-width: 992px) {
+    .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section--step3 {
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+/* Keeps the 14px the rule used to open below itself; the line itself has moved up to the header.
+   border-top has to be zeroed rather than just left unset: under the 1px gainsboro this used to
+   carry is the 2px --fc-bright-gray divider it replaced, which would otherwise surface again and
+   put a second line 14px under the first. */
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__cmp.fencing-display-result {
-    border-top: 1px solid var(--fc-gainsboro);
-    /* 14px between the title and the rule, the same gap Step 4 opens with. It was 32px: 20px of
-       fc-mb-2 under the title row plus 12px of margin here. */
+    border-top: 0;
     margin-top: 14px;
 }
 
@@ -13533,37 +13909,53 @@ input[type="number"] {
     }
 }
 
-/* Mobile: a strict two-column grid. Grid tracks keep the columns exact regardless of
-   label length or padding; long labels ellipsize inside their cell. margin-left:auto has
-   nothing to push against in a grid, so Summary's is cleared. */
+/* Mobile: a strict three-column grid. Grid tracks keep the columns exact regardless of
+   label length or padding. Three across leaves a cell around 100px, which no control label
+   clears on one line, so the labels wrap rather than ellipsize and the buttons carry a
+   min-height — that is what keeps the single-line ones (Summary) the size of the rest.
+   margin-left:auto has nothing to push against in a grid, so Summary's is cleared. */
 @media (max-width: 768px) {
     .fencing-panel-controls {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 8px;
+        /* The base rule centres its flex row; inherited here that leaves a one-line control
+           (Add Gate, Summary) short of its two-line neighbours and a pixel off their baseline. */
+        align-items: stretch;
     }
 
     .fencing-panel-controls .btn-fc {
         width: 100%;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        min-height: 52px;
     }
 
-    /* Summary fills the free cell beside the last control rather than always claiming a row of
+    /* The horizontal padding has to come down for a two-word label to fit the narrower cell,
+       and .fc-planner-page .btn sets its padding !important, so this has to match it. */
+    .fc-planner-page .fencing-panel-controls .btn-fc {
+        padding: 8px !important;
+    }
+
+    /* Summary fills the free cells beside the last control rather than always claiming a row of
        its own — with the usual five controls that puts it next to Edit Right Side. */
     .fencing-panel-controls .fc-planner-summary-btn {
         grid-column: auto;
         margin-left: 0 !important;
     }
 
-    /* The control count varies by fence type, so Summary is not always even-numbered. When it
-       lands in column 1 it would otherwise sit half-width with a hole beside it; there it spans
-       the row instead. :nth-of-type counts button siblings only, so the helper <div>s hidden
-       below cannot shift the parity. */
-    .fencing-panel-controls .fc-planner-summary-btn:nth-of-type(odd) {
+    /* The control count varies by fence type, so Summary does not always land in the last
+       column. Where it would leave a hole beside it, it spans out to the end of the row
+       instead: first in its row takes all three tracks, second takes the remaining two.
+       The count has to be taken over the controls that actually occupy a cell — Glass Pool
+       renders btn-panel_options with .d-none beside its custom twin, and a plain
+       :nth-of-type would count that hidden button and place Summary a column out. Hence
+       ":nth-child(... of ...)"; a browser too old for it drops these two rules and Summary
+       simply flows into the next cell, which is the layout without the gap-filling. */
+    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 1 of .btn-fc:not(.d-none)) {
         grid-column: 1 / -1;
+    }
+
+    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 2 of .btn-fc:not(.d-none)) {
+        grid-column: span 2;
     }
 
     /* The hidden helper <div>s the renderer inserts must not occupy grid cells. */
@@ -13613,11 +14005,15 @@ input[type="number"] {
     color: var(--fc-cod-gray);
 }
 
-/* Field labels name a field, so they keep the label role's uppercase. */
+/* Field labels name a field, so they keep the label role's uppercase. The Step 2 notes are in the
+   list because each one opens by naming a field — the same field the label opposite names — so the
+   two now read as a pair across the seam instead of the note shouting it in 16px bold. */
 .fc-planner-page .fencing-section .fc-input-container > .fw-bold,
 .fc-planner-page .fencing-section .js-step-2-measurement-label,
 .fc-planner-page .js-overall-label,
-.fc-planner-page .ftm-fence-style {
+.fc-planner-page .ftm-fence-style,
+.fc-planner-page .fc-step2-notes__body strong,
+.fc-planner-page .js-fc-step2-important-body strong {
     font-size: 12px !important;
     font-weight: 600 !important;
     letter-spacing: 0.48px;
@@ -14082,8 +14478,16 @@ div.fc-footer-app .app-version {
         font-size: 14px;
     }
 
+    /* align-items overrides the grid's own centring: the 44px only grows the bordered box, so
+       the centred row left the grey +/- blocks floating with 4px of white above and below them.
+       The buttons need align-self too, being centred again by the row's own align-items-center. */
     .fc-planner-page [data-section="2"] .fencing-measurement-box .fencing-mb-input {
         min-height: 44px;
+        align-items: stretch;
+    }
+
+    .fc-planner-page [data-section="2"] .fencing-measurement-box .fencing-qty-btn {
+        align-self: stretch;
     }
 
     .fc-planner-page .btn.fencing-styles-load-quote-btn {
@@ -14181,13 +14585,14 @@ div.fc-footer-app .app-version {
        Labels are hidden via .fc-btn-label rather than font-size: 0 — "Delete" and "Reset" are bare
        text nodes in the markup, so there was nothing for CSS to target until they were wrapped.
        Each button carries an aria-label now that its text is gone.
-       0/80, not the arrows' 20/96: this wrapper anchors to .fencing-section--step1, which already
-       starts inside the section's 20px padding, while the arrows anchor to the section itself.
-       Same two offsets measured from two different boxes. */
+       20/96, the same pair the arrows use, and for the same reason now: this wrapper anchors to
+       .fencing-section--step1, which used to start inside the section's padding and since carrying
+       the header ground reaches past it, exactly as the section does. It was 0/80 while the two
+       boxes differed by that padding. */
     .fc-planner-page [data-section="1"] .btn-delete-fence {
         position: absolute;
-        top: 0;
-        right: 80px;
+        top: 20px;
+        right: 96px;
         /* left/width are explicit: the wrapper otherwise takes the column's full 317px and hangs
            off the left edge of the card rather than shrink-wrapping to its two buttons. */
         left: auto;
@@ -14286,8 +14691,11 @@ div.fc-footer-app .app-version {
 }
 
 @media (max-width: 767.98px) {
-    /* The column, not just the alert — leaving the column would keep its row gutter. */
-    .fc-planner-page [data-section="2"] .alert.alert-gray {
+    /* The column, not just the alert — leaving the column would keep its row gutter.
+       The header goes with it: it sits outside .alert-gray now, so hiding the panel alone would
+       leave IMPORTANT standing on its own under the measurement fields. */
+    .fc-planner-page [data-section="2"] .fc-step2-notes__body,
+    .fc-planner-page [data-section="2"] .fc-step2-notes__header {
         display: none;
     }
 }
@@ -14321,14 +14729,15 @@ div.fc-footer-app .app-version {
    The header row wraps below md, so the zoom stepper and Reset dropped to a third line under the
    title and pushed the fence drawing further down. They move to the top-right corner instead,
    level with "Step 03", matching the arrow cluster in Step 1.
-   Anchored to .fencing-section--step3, the nearest positioned ancestor, which starts exactly at
-   the step label — hence 0/0 rather than the section's own 20px/16px padding.
+   Anchored to .fencing-section--step3, the nearest positioned ancestor. That box used to start at
+   the step label, so these were 0/0; since it carries the header ground it reaches past
+   .fencing-section__top's padding, and the offsets are that padding.
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
     .fc-planner-page [data-section="3"] .fencing-section__controls {
         position: absolute;
-        top: 0;
-        right: 0;
+        top: 20px;
+        right: 16px;
         left: auto;
         width: auto;
         margin: 0 !important;
@@ -14587,12 +14996,13 @@ div.fc-footer-app .app-version {
 
 
 /* --------------------------------------------------------------------------------------------
-   Project plan section head — Summary / Download / Edit as one set of equal buttons on mobile.
-   Below sm all three drop their labels and become icon-only, but they did not end up the same
-   box: Summary and Edit sized to the 12px icon (30x24) while Download stayed inline-block and
-   took the 16.2px line box plus its dropdown caret (42x28), so the row read as three different
-   controls. A fixed square with the icon centred settles all three; the caret goes with the
-   label it belonged to.
+   Project plan section head — the Actions trigger is a square icon button on mobile.
+   It drops its label below sm and would otherwise sit as an inline-block sized to the 16.2px
+   line box plus its dropdown caret (42x28), which is wider than the head has to give beside the
+   section label and the overall measurement. A fixed square with the icon centred; the caret
+   goes with the label it belonged to. (Written when this was three buttons — Summary, Download
+   and Edit — that had to end up the same box; they are one menu now, but the trigger still needs
+   the square.)
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 575.98px) {
     .fc-project-plan-page .fc-project-plan-section-actions .btn {
@@ -14919,12 +15329,6 @@ div.fc-footer-app .app-version {
     padding-left: 15px;
 }
 
-/* m-3 is a Bootstrap utility, so only !important takes its 16px back to the header's 15. The
-   notes cell adds a stray 1px of its own on top of that; the wrapper is the inset here. */
-.fc-project-plan-page .fc-project-details .fc-card-body > .m-3 {
-    margin-left: 15px !important;
-}
-
 .fc-project-plan-page .fc-project-details .fc-card-body > .m-3 > table td {
     padding-left: 0;
 }
@@ -15174,32 +15578,30 @@ div.fc-footer-app .app-version {
 
 
 /* --------------------------------------------------------------------------------------------
-   View Total Cost — pinned to the foot of the screen while the cart is on it (mobile).
+   View Total Cost — floats at the foot of the screen for as long as the cart is (mobile).
    The cart list is long enough that its one action scrolls out of reach almost immediately.
-   initProjectPlanCartStickyBar() in checkout.js already publishes the signal — it sets
-   .fc-cart-sticky-visible on <body> while #update_cart-section is at least ~30% of the screen —
-   but nothing was reading it; the class was toggling against no rule at all.
-   The same publisher measures the bar into --fc-view-total-bar-h, which the cart pane takes as
-   padding so the last row is not left underneath it once the bar leaves the flow.
+   Sticky rather than fixed, exactly as the Edit Details bar above: it is the last child of the
+   cart pane, so bottom: 0 floats it at the foot of the screen for the whole of the list and then
+   settles back into the pane as you reach the end of it. Fixed did not — it stayed pinned over
+   the page below the cart, and because it left the flow the pane had to reserve its height, which
+   drew an empty box under the last row inside the pane's own frame.
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
-    body.fc-cart-sticky-visible #update_cart-list > .fc-view-total-cost-bar {
-        position: fixed;
-        left: 0;
-        right: 0;
+    #update_cart-list > .fc-view-total-cost-bar {
+        position: sticky;
         bottom: 0;
         /* Level with the Edit Details bar, above the chat launcher, under the modals. */
         z-index: 1041;
         /* Sized as that bar too — same 9/10 padding on the same cultured ground, so the two
-           action bars this page pins read as one component in two places. */
+           action bars this page floats read as one component in two places. */
         padding: 9px 10px calc(10px + env(safe-area-inset-bottom, 0px));
         background-color: var(--fc-cultured);
         border-top: 1px solid var(--fc-gainsboro);
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
-    }
-
-    body.fc-cart-sticky-visible #update_cart-list {
-        padding-bottom: var(--fc-view-total-bar-h, 0px);
+        /* Settled, the bar is the last thing inside a 7px frame, so it follows that corner
+           rather than running its own square one past it. */
+        border-bottom-left-radius: 7px;
+        border-bottom-right-radius: 7px;
     }
 
     /* Smaller than the in-flow version, and the same size as Edit Details: 44px on a 14px label.
@@ -15307,25 +15709,31 @@ div.fc-footer-app .app-version {
 
 
 /* --------------------------------------------------------------------------------------------
-   Step 3 panel controls — left aligned on phones.
-   Centred, each label sat wherever its own width left it: the glyphs run from 5px (grip-lines)
-   to 15px (door-open), so the icon column moved with every button and the six labels started at
-   73 / 60 / 44 / 44 / 49px inside their boxes. Stacked two-up on a phone that reads as a jumble
-   rather than a list.
-   A fixed 16px box for the glyph is what does the aligning — the glyph centres in it, so the
-   label starts on the same line whatever the icon measures. The ID selector is repeated because
-   #btn-left_side::before sets width: auto and would otherwise outrank the class.
+   Step 3 panel controls — icon over a centred label on phones.
+   Inline, the glyph could only ever line up the label's FIRST line: once the three-column grid
+   narrowed the cells to ~100px the labels wrap, and the wrapped lines returned to the padding
+   edge while the first sat 24px in behind the icon. Giving the glyph a line of its own settles
+   that — the label is then one block the full width of the cell, so centring it centres every
+   line of it, and the icon centres over the middle of the label rather than sitting off one
+   corner. It is sized up here because at 13px, alone on its line, it read as a stray mark.
+   The ID selector is repeated because #btn-left_side::before sets width: auto and would
+   otherwise outrank the class.
+   768px, not the usual 767.98px, so this switches on the same width as the three-column grid
+   above. Split, a 768px-wide viewport (iPad portrait) took the narrow grid without the
+   alignment that goes with it, and text-align fell back to the centre it inherits.
    -------------------------------------------------------------------------------------------- */
-@media (max-width: 767.98px) {
+@media (max-width: 768px) {
     .fc-planner-page .fencing-panel-controls .btn-fc {
-        text-align: left;
+        text-align: center;
     }
 
     .fc-planner-page .fencing-panel-controls .btn-fc::before,
     .fc-planner-page .fencing-panel-controls #btn-left_side::before {
-        width: 16px;
-        margin-right: 8px;
-        text-align: center;
+        display: block;
+        width: auto;
+        margin-right: 0;
+        margin-bottom: 4px;
+        font-size: 1.125rem;
     }
 
     /* The arrow leads here too, so this button matches the other five: glyph in the 16px column,
@@ -15510,6 +15918,10 @@ div.fc-footer-app .app-version {
    below the tab name, plus a 1.3 line on the measurement under a 2px margin.
    The tab keeps a 44px-plus box after the trim, so it is still a comfortable target — the
    padding comes off the strip, not off what you tap.
+   Sideways it was doubled up: the tab pads 10px and the name inside it pads another 10, so the
+   label began 20px in on a tab measuring about 119. Six apiece brings that to 12 and hands the
+   strip back roughly 16px a tab, which is what decides how many fit before it scrolls. The tab's
+   min-width of 6rem still floors the target, so nothing shrinks under the thumb.
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
     /* mt-3 on the container is a Bootstrap utility, hence the !important. */
@@ -15517,9 +15929,16 @@ div.fc-footer-app .app-version {
         margin-top: 8px !important;
     }
 
+    .fc-planner-page .fencing-tab {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
     .fc-planner-page .fencing-tab-name {
         padding-top: 5px;
         padding-bottom: 5px;
+        padding-left: 6px;
+        padding-right: 6px;
     }
 
     .fc-planner-page .sticky-roll .fencing-tab-name {

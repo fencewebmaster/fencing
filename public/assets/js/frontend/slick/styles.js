@@ -1,6 +1,7 @@
 /**
  * Step 1 — fence style picker carousel (Slick).
- * mobileFirst: phones 2/row; width > 767 → 4 (tablet/iPad); width > 990 → 6 (desktop).
+ * mobileFirst: phones 2/row; width > 576 → 3 (large phones/portrait tablets);
+ * width > 767 → 4 (tablet/iPad); width > 990 → 6 (desktop).
  */
 (function($) {
     'use strict';
@@ -62,8 +63,14 @@
     };
 
     /**
-     * Slick may fire `init` before `data('slick')` is set, or class slick-initialized can linger after unslick.
-     * Calling setPosition without a live instance throws (reading 'setPosition' of undefined inside slick.min.js).
+     * The class `slick-initialized` can linger after unslick, and calling setPosition without a
+     * live instance throws (reading 'setPosition' of undefined inside slick.min.js).
+     *
+     * The guard used to be `$node.data('slick')` — but Slick keeps its instance on the DOM element
+     * (el.slick), never in jQuery's data store, so that test was always false and every
+     * setPosition below was skipped. A breakpoint change then left the track measured for the old
+     * slide width (blank/misaligned picker until something else re-rendered it). Ask Slick for the
+     * instance instead, and let a half-built or destroyed slider throw into the catch.
      */
     function refreshSlickPosition($slider) {
         if (!$slider || !$slider.length || typeof $.fn.slick !== 'function') {
@@ -74,10 +81,10 @@
             if (!$node.hasClass('slick-initialized')) {
                 return;
             }
-            if (!$node.data('slick')) {
-                return;
-            }
             try {
+                if (!$node.slick('getSlick')) {
+                    return;
+                }
                 $node.slick('setPosition');
             } catch (e) {
                 /* Slider destroyed or mid-reinit */
@@ -152,7 +159,8 @@
         }
 
         $el.on('init.fencingStylesSlick', function() {
-            // Defer until Slick has attached $node.data('slick'); avoids setPosition during half-built instance.
+            // Defer a frame so Slick has finished attaching its instance; avoids setPosition
+            // against a half-built slider.
             requestAnimationFrame(function() {
                 revealAndSync();
             });
@@ -180,6 +188,16 @@
             slidesPerRow: 1,
             respondTo: 'window',
             responsive: [
+                {
+                    // mobileFirst breakpoints are min-widths and slick applies the largest one
+                    // below the current width — so this arm covers 577px up to the 767 arm.
+                    breakpoint: 576,
+                    settings: {
+                        slidesToShow: 3,
+                        slidesToScroll: 3,
+                        dots: false
+                    }
+                },
                 {
                     breakpoint: 767,
                     settings: {

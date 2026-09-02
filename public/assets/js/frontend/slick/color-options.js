@@ -41,10 +41,13 @@
             if (!$node.hasClass('slick-initialized')) {
                 return;
             }
-            if (!$node.data('slick')) {
-                return;
-            }
             try {
+                // Slick keeps its instance on the DOM element (el.slick), never in jQuery's data
+                // store — the old `$node.data('slick')` guard was always false, so setPosition
+                // never ran and a breakpoint change left the track on the old slide width.
+                if (!$node.slick('getSlick')) {
+                    return;
+                }
                 $node.slick('setPosition');
             } catch (e) {
                 /* Slider destroyed or mid-reinit */
@@ -77,7 +80,12 @@
             return;
         }
 
-        var slick = $slider.data('slick');
+        var slick = null;
+        try {
+            slick = $slider.slick('getSlick');
+        } catch (eGet) {
+            slick = null;
+        }
         if (!slick || typeof slick.slideCount !== 'number' || slick.slideCount < 1) {
             return;
         }
@@ -122,12 +130,14 @@
             return;
         }
 
-        /* Centre selected in the visible window: e.g. k=4 → offset 1 so slide sits in middle pair. */
-        var half = Math.floor((k - 1) / 2);
-        var goTo = i - half;
-        if (goTo < 0) {
-            goTo = 0;
-        }
+        /*
+         * Go to the page holding the tile rather than a centred offset. slidesToScroll equals
+         * slidesToShow in every arm here, so Slick snaps the index down to a page boundary
+         * (checkNavigable) — a centred index rounds onto the page *before* the tile, which put
+         * the selection off-screen for every tile that starts a page.
+         */
+        var scroll = slick.options.slidesToScroll || k;
+        var goTo = Math.floor(i / scroll) * scroll;
         var maxGo = Math.max(0, count - k);
         if (goTo > maxGo) {
             goTo = maxGo;

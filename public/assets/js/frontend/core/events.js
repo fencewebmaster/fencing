@@ -1292,7 +1292,11 @@ function fencingTab() {
 
     HELPER.resetSectionsBlocks();
 
-    $('.fencing-style-item[data-slug="' + custom_fence_tab[0]?.style + '"]').addClass('fsi-selected');
+    // .not('.slick-cloned'): the slug matches Slick's clones too, and the re-click below then
+    // left the class on the last clone — the real slide came back from a tab switch unmarked.
+    $('.fencing-style-item[data-slug="' + custom_fence_tab[0]?.style + '"]')
+        .not('.slick-cloned')
+        .addClass('fsi-selected');
     var tabRow0 = custom_fence_tab[0];
     var styleSlug = tabRow0?.style;
     if (styleSlug && typeof fcStripOverMaxOverallLengthFromTabStorage === 'function') {
@@ -1352,7 +1356,7 @@ function fencingTab() {
 
     FENCE.call('update_custom_fence_tab');
 
-    $('.fsi-selected').trigger('click');
+    $('.fsi-selected').not('.slick-cloned').first().trigger('click');
 
     if (typeof fcMarkStep2Committed === 'function') {
         fcMarkStep2Committed();
@@ -1381,6 +1385,8 @@ function fencingTab() {
     // Center the active section tab in the horizontal strip when tabs overflow.
     setTimeout(function() {
         HELPER.scrollFencingTabIntoCenter(_this);
+        // …and bring this section's fence style into the picker's visible window.
+        HELPER.scrollFenceStyleIntoCenter();
     }, 0);
 }
 
@@ -3082,13 +3088,13 @@ function firPlus() {
 
 /* Step 2 "Important" dialog (mobile). The notice copy is per fence style and is rewritten in
    place as the style changes, so the dialog reads it from the live panel on every show rather
-   than holding its own copy that would drift. The panel's own IMPORTANT heading is dropped -
-   the dialog header already says it. */
+   than holding its own copy that would drift. The panel is notes only - its IMPORTANT heading and
+   subtitle sit outside .alert-gray, and the dialog header carries that pair itself. */
 _doc.on('show.bs.modal', '#fc-step2-important-modal', fcStep2ImportantModalShow);
 
 function fcStep2ImportantModalShow() {
     var $body = $(this).find('.js-fc-step2-important-body'),
-        $source = $('[data-section="2"]').find('.alert-gray').first();
+        $source = $('[data-section="2"]').find('.fc-step2-notes__body').first();
 
     if (!$body.length) {
         return;
@@ -3099,11 +3105,7 @@ function fcStep2ImportantModalShow() {
         return;
     }
 
-    var $copy = $source.clone();
-
-    // The heading is the first child; the dialog header carries it instead.
-    $copy.children('.text-uppercase').first().remove();
-    $body.html($copy.html());
+    $body.html($source.html());
 }
 
 //----------------------------------------------------------------------------------
