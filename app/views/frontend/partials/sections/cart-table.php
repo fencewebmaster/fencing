@@ -48,7 +48,7 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
 </div>
 
 <div class="fc-card-body fc-border-bottom fc-p-0 fc-border-0 fc-position-relative">
-    <div class="fc-table-rounded-border mb-3">
+    <div class="fc-table-rounded-border">
         
 
         <table class="table-cart table table-hover">

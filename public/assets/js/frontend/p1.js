@@ -94,23 +94,29 @@ let Planner = {
             $('[data-tab="' + tab + '"]').show();
         }
 
+        // Synchronous, not the setTimeout this used to run in: the build loop above always
+        // leaves the *last* tab selected (each iteration re-marks whichever tab it just
+        // appended), so a delayed correction painted that wrong tab first and then jumped to the
+        // real one a beat later. Fixing it up in the same tick as the loop means the browser's
+        // first paint already shows the right tab — nothing to jump from.
+        if (section) {
+            $('.fencing-tab-selected').removeClass('fencing-tab-selected');
+            $('.fc-section-' + section).addClass('fencing-tab-selected');
+        }
+        var $selectedTab = $('.fencing-tab.fencing-tab-selected:visible');
+        if (!$selectedTab.length) {
+            $selectedTab = $('.fencing-tab.fencing-tab-selected').first();
+        }
+        if ($selectedTab.length) {
+            // Restoring a prior selection on load — apply the active look instantly,
+            // not via the (user-click-only) fade transition.
+            document.body.classList.add('fc-restoring-selection');
+            $selectedTab.trigger('click');
+            void document.body.offsetHeight; // flush styles while transitions are off
+            document.body.classList.remove('fc-restoring-selection');
+        }
+
         setTimeout(function() {
-            if (section) {
-                $('.fencing-tab-selected').removeClass('fencing-tab-selected');
-                $('.fc-section-' + section).addClass('fencing-tab-selected');
-            }
-            var $selectedTab = $('.fencing-tab.fencing-tab-selected:visible');
-            if (!$selectedTab.length) {
-                $selectedTab = $('.fencing-tab.fencing-tab-selected').first();
-            }
-            if ($selectedTab.length) {
-                // Restoring a prior selection on load — apply the active look instantly,
-                // not via the (user-click-only) fade transition.
-                document.body.classList.add('fc-restoring-selection');
-                $selectedTab.trigger('click');
-                void document.body.offsetHeight; // flush styles while transitions are off
-                document.body.classList.remove('fc-restoring-selection');
-            }
             if (typeof window.fcRefreshFencingStylesSlick === 'function') {
                 window.fcRefreshFencingStylesSlick();
             }

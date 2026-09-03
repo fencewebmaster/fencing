@@ -118,9 +118,9 @@ use Fc\Admin\Services\CartBuilderService;
 
             <footer class="fencing-modal-section fencing-modal-footer fencing-modal-footer--sticky fencing-modal-footer--project-plans">
                 <div class="d-grid gap-2 fc-project-plans-modal-footer-actions">
-                    <button type="submit" 
+                    <button type="submit"
                         class="btn btn-lg project-details--update btn-orange text-uppercase">
-                        <b>Update</b>
+                        <b>Save Changes</b>
                     </button>
                 </div>
             </footer>

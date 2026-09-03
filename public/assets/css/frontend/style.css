@@ -808,21 +808,14 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     font-weight: 600 !important;
 }
 
-/* Untracked, like Download Plans — the button in Stock & Delivery the rest are matched to. Most
-   buttons on these two pages already computed `normal`; this only moves the handful that had
-   picked up tracking of their own.
-   Deliberately no !important and no label-wrapper selectors, so a button with its own tracking
-   still wins: the two chrome buttons (Clear All 0.5px, Back to site 0.4px) are .btn plus one class
-   and sit later in this file, and their <b> inherits rather than being overridden here. The one
-   exception that does need writing out is below. */
+/* Default tracking for buttons on these pages. No !important: a button with its own tracking
+   (Clear All, Back to site, step nav below) still wins on specificity/order. */
 .fc-planner-page .btn,
 .fc-project-plan-page .btn {
     letter-spacing: normal;
 }
 
-/* The submit modal's step navigation keeps the 1px it was drawn with (Next / Back / Done). Its own
-   declaration is a plain `.fc-form-plan-action button`, one class short of the sweep above, so the
-   page class is added here purely to win. */
+/* Step nav (Next / Back / Done) keeps its 1px. */
 .fc-planner-page .fc-form-plan-action button {
     letter-spacing: 1px;
 }
@@ -2035,6 +2028,51 @@ a.fc-tab-active {
     color: var(--fc-black);
 }
 
+/* --------------------------------------------------------------------------------------------
+   Header tabs take the section tabs' folder treatment (.fencing-tab-container-area, further
+   down). They were the same idea drawn two ways: only the active tab was rounded, the inactive
+   one stayed a square block, and the strip overlapped by 10px — a whole corner of the tab behind
+   buried rather than a shared edge.
+   Now every tab is rounded at the top, the overlap is exactly the border width so the join reads
+   as one line rather than two, and the active tab is pulled forward: 4px taller than the ones
+   beside it, a shadow under it, and painting over them at the seam. Same 10px radius the mobile
+   block below already used here, and the same gainsboro the section tabs carry.
+   -------------------------------------------------------------------------------------------- */
+.fc-planner-page .fc-header-tab a {
+    border: 2px solid var(--fc-gainsboro);
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0;
+    margin-top: 4px;
+    margin-right: 0;
+    /* Zero alpha rather than none: box-shadow cannot interpolate from `none`, so without a real
+       value to ease from the active tab's shadow would snap in instead of rising with the rest. */
+    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0);
+    /* colour is in the list because this replaces the base rule's `all 0.2s` — without it the
+       hover fill would ease while the label it sits under snapped. */
+    transition:
+        margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fc-planner-page .fc-header-tab a + a {
+    margin-left: -2px;
+}
+
+.fc-planner-page .fc-header-tab a.fc-tab-active {
+    position: relative;
+    z-index: 1;
+    margin-top: 0;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* No lift on hover here, unlike the section tabs: these two are the page's own navigation and sit
+   directly under the masthead, so a tab jumping 2px on the way to the pointer read as the header
+   shifting. The orange fill is the whole of the hover. */
+
 /* Modal close — orange circle + white X (brand Princeton orange) */
 .fencing-modal-close {
     appearance: none;
@@ -2817,7 +2855,7 @@ a.fc-tab-active {
 
 .fc-project-plan-page #fc-fence-list .fc-project-plan-section-actions .dropdown-item {
     text-transform: none;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 /* The menu's title, not one of its rows. It takes the section band's own ground and runs to the
@@ -3731,12 +3769,8 @@ thead.fc-border th:last-child {
     max-width: 130px;
 }
 
-/* Edit Quantity, on a phone: the stepper is the only thing that appears under every line, and the
-   space framing it cost more height than the control did — 16px above from the markup's mt-3 and
-   15px below from the 480px .fencing-mb-input rule, around a 32px control. The stepper keeps its
-   size, being a touch target; the air around it goes, which is 25px a row over a list that is
-   already the longest thing on the page.
-   The id is in the selector to reach past that 480px rule and Bootstrap's !important mt-3. */
+/* Tighten the space around the qty stepper on mobile (was 16px above + 15px below a 32px control).
+   Id selector needed to beat the 480px .fencing-mb-input rule and Bootstrap's !important mt-3. */
 @media (max-width: 767.98px) {
     #update_cart-list .table-cart .md-qty .fencing-mb-input {
         margin-top: 6px !important;
@@ -6231,6 +6265,68 @@ thead.fc-border th:last-child {
     text-transform: uppercase;
 }
 
+/* --------------------------------------------------------------------------------------------
+   Project plan header tabs take the same folder treatment as the planner's section tabs and its
+   own header pair: every tab rounded at the top rather than just the first, a seam that overlaps
+   by exactly the border width so the join reads as one line, and the selected tab pulled forward
+   — 4px taller than the ones beside it, a shadow under it, painting over them at the seam.
+   These sit one level shallower than the planner's (no .fencing-tab-container-area here), which
+   is why they need their own block rather than sharing that selector.
+   No hover lift, matching the planner's header pair: the strip is page navigation under the
+   masthead, and a tab moving on approach reads as the header shifting.
+   -------------------------------------------------------------------------------------------- */
+.fc-project-plan-page .fencing-tab-container {
+    border: 0;
+    border-radius: 0;
+}
+
+.fc-project-plan-page .fencing-tab-container .fencing-tab {
+    border: 2px solid var(--fc-gainsboro);
+    border-radius: 10px 10px 0 0;
+    align-self: stretch;
+    height: auto;
+    margin-top: 4px;
+    /* Zero alpha rather than none: box-shadow cannot interpolate from `none`, so the selected
+       tab's shadow would snap in instead of rising with the rest of the change. */
+    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0);
+    transition:
+        margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fc-project-plan-page .fencing-tab-container .fencing-tab:not(:first-child) {
+    margin-left: -2px;
+}
+
+/* Sized to match the planner's header pair (.fc-header-tab a), so the same three names measure the
+   same on both pages. The label already shared its 20px/24px — what differed was the box:
+   height came off the strip's fixed 65px rather than the content, and the sides carried 5px against
+   that pair's 25px, which left these ~40px narrower.
+   Desktop only: below 993px the strip is 41px and the tabs split the row, and 25px sides would
+   push three of them past a phone's width. */
+@media (min-width: 993px) {
+    .fc-project-plan-page .fencing-tabs-container--project-plan {
+        /* 61, not 65: the tabs stretch into it less their 4px recess, so the inactive ones land on
+           the pair's 57 and the selected one on its 61. */
+        height: 61px;
+    }
+
+    .fc-project-plan-page .fencing-tab-container .fencing-tab {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+}
+
+.fc-project-plan-page .fencing-tab-container .fencing-tab.fencing-tab-selected {
+    position: relative;
+    z-index: 1;
+    margin-top: 0;
+    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.08);
+}
+
 .fencing-tabs-area {
     display: inline-block;
     height: inherit;
@@ -6380,6 +6476,11 @@ thead.fc-border th:last-child {
         color: var(--fc-white);
         border-color: var(--fc-princeton-orange);
     }
+
+    /* Small lift, same idea as the selected tab's forward pull. */
+    .fc-planner-page .fencing-tab-container-area .fencing-tab:not(.fencing-tab-selected):hover {
+        transform: translateY(-2px);
+    }
 }
 
 .fencing-tab-container {
@@ -6394,6 +6495,7 @@ thead.fc-border th:last-child {
     position: relative;
     top: 1px;
     padding: 8px 10px;
+    transition: color 0.25s ease;
 }
 
 @media (max-width: 992px) {
@@ -6499,6 +6601,86 @@ thead.fc-border th:last-child {
     color: var(--fc-black);
 }
 
+/* --------------------------------------------------------------------------------------------
+   Section tabs as folder tabs: each one rounded at the top and touching the next, the way browser
+   or folder tabs adjoin rather than sit in a segmented strip. Adjacent tabs overlap by exactly
+   their border width (margin-left: -2px) so the shared edge is one line, not a doubled one; the
+   rounded corners on each side of that seam curve away from it, leaving a small notch of the rail
+   showing above the join — that notch is what reads as two tabs rather than one bar.
+   The selected tab is pulled forward — a couple px taller, a shadow under it, position: relative
+   so it paints over both neighbours at the seam — the way a folder tab pulled to the front
+   overlaps the ones behind it.
+   The outer .fencing-tab-container border is dropped: each tab now draws its own. */
+.fc-planner-page .fencing-tab-container {
+    border: 0;
+    border-radius: 0;
+}
+
+/* stretch + margin-top, not height: calc(100% - 4px): that measured fine at rest, but the moment a
+   click swaps which tab is selected, two tabs are changing height at once and each one's "100%" is
+   resolved against a reference that the OTHER one's own change was also perturbing in the same
+   frame — a feedback loop between two elements each computing a percentage against a shared,
+   content-driven ancestor. It settled on the wrong heights rather than easing to the right ones.
+   Stretch fills the line without a percentage reference to fight over; margin-top gives up the
+   same 4px stretch would otherwise fill, exactly like Add Section's own fix above. */
+.fc-planner-page .fencing-tab-container-area .fencing-tab {
+    border: 2px solid var(--fc-gainsboro);
+    border-radius: 10px 10px 0 0;
+    align-self: stretch;
+    margin-top: 4px;
+    /* Same shadow the selected tab gets, at zero alpha rather than absent: box-shadow can't
+       interpolate from `none` (there is nothing to ease from), so switching tabs made the shadow
+       snap in instead of rising with the rest of the transition. This gives it a real value to
+       ease from. Timing is explicit and a touch slower than the base .fencing-tab transition
+       (0.2s) so the height/shadow/colour change reads as one deliberate motion, not the fastest
+       property finishing first. */
+    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0);
+    transition:
+        margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fc-planner-page .fencing-tab-container-area .fencing-tab:not(:first-child) {
+    margin-left: -2px;
+}
+
+.fc-planner-page .fencing-tab-container-area .fencing-tab.fencing-tab-selected {
+    position: relative;
+    z-index: 1;
+    margin-top: 0;
+    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Add Section joins the strip as one more tab rather than a control bolted on the side: same
+   border, same rounded top, same recessed height and overlapped seam as an inactive tab — it just
+   never gets the selected tab's forward pull, since it never becomes one.
+   stretch + margin-top, not height: calc(100% - 4px) like the tabs use: this button is a direct
+   child of .fencing-tabs, one flex level shallower than the tabs (nested inside
+   .fencing-tab-container-area), and at that shallower level the same percentage math resolved
+   against an indefinite ancestor and fell back to its content size — a flat 48px regardless of the
+   row's real height. Stretch doesn't need a definite reference to fill the line, so it isn't
+   exposed to that; margin-top gives up the same 4px stretch would otherwise fill. */
+.fc-planner-page .fencing-tabs-container .fencing-tab-add {
+    border: 2px solid var(--fc-gainsboro);
+    border-radius: 10px 10px 0 0;
+    background: var(--fc-bright-gray);
+    align-self: stretch;
+    height: auto;
+    min-height: 0;
+    margin-top: 4px;
+    margin-left: -2px;
+}
+
+@media (min-width: 992px) {
+    .fc-planner-page .fencing-tabs-container .fencing-tab-add:hover {
+        background: var(--fc-princeton-orange);
+        border-color: var(--fc-princeton-orange);
+        color: var(--fc-white);
+    }
+}
+
 /* White, not the #e9e9e9 this carried: the tab's ground turns Princeton orange on hover and every
    line inside it — section name, fence style, measurement, status glyph — carries a colour of its
    own, several of them !important, so the whole subtree has to be reset in one go. At #e9e9e9 they
@@ -6517,13 +6699,13 @@ thead.fc-border th:last-child {
     color: var(--fc-dark-charcoal);
     display: flex;
     align-items: center;
-    padding: 15px;
+    padding: 12px;
     text-decoration: none;
     text-transform: uppercase;
     background: var(--fc-bright-gray);
     justify-content: center;
     font-family: "Inter", sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     box-sizing: border-box;
     transition: all 0.2s ease;
@@ -8371,6 +8553,15 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     transition: none !important;
 }
 
+/* Same suppression for the section tabs' own restore (p1.js): .fencing-tab-selected is applied by
+   the same synchronous, transition:none-guarded click, but the tab and its label carry their own
+   transitions (margin-top/box-shadow/border/background, and the label's colour) that would
+   otherwise ease into place instead of appearing already active. */
+body.fc-restoring-selection .fencing-tab,
+body.fc-restoring-selection .fencing-tab-name {
+    transition: none !important;
+}
+
 /* Step 1 — modern fence style card hover */
 .fc-planner-page .fencing-style-item > div,
 .fc-planner-page .load-quote > div {
@@ -9071,10 +9262,7 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
     }
 
-    /* Download Plans' size on a phone — 44px tall with a 14px label — but only in that direction:
-       the width is still the label's own. inline-flex rather than flex because a block-level flex
-       container fills its line whatever the width says; the alignment is the footer's text-align,
-       and the centring keeps the label in the middle of a box taller than its one line of text. */
+    /* Match Download Plans' height/label size, but auto width (not full-width like it). */
     .fc-project-plan-page .js-project-details-footer > .btn.btn-sm.fc-btn-edit {
         display: inline-flex;
         align-items: center;
@@ -9103,11 +9291,8 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         order: 1;
     }
 
-    /* width, not just the dropped flex: the 480px rule further down gives this group width: 100%,
-       which the old flex-basis of 0 was quietly overriding. Without it the pair would fill the bar
-       again below 480 and, with flex-wrap: nowrap, squeeze rather than sit at their own size.
-       The base rule's justify-content: space-between and margin-left: auto still place them —
-       Cancel at the left edge, Save at the right. */
+    /* width: auto overrides a 480px rule that sets this group to 100% — without it Save/Reset
+       would fill the bar again below 480px instead of sitting at their own size. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .project-details-controls__right {
         order: 2;
         display: flex;
@@ -9121,8 +9306,7 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         display: none !important;
     }
 
-    /* Sized like the button it replaces: the same 44px and 14px, at their labels' width rather
-       than dividing the bar between them. */
+    /* Same 44px/14px as Edit Details above, sized to each label rather than splitting the bar. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .btn.btn-sm {
         display: inline-flex;
         align-items: center;
@@ -9476,9 +9660,17 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 /* No hover edge on Project Notes. The rows in the table above take one because an empty field with
    no border of its own is invisible at rest and the outline is what says the row can be edited;
    this field is a whole card body with a placeholder in it, so it never needed telling. Focus keeps
-   its ring — that is feedback, not an affordance. */
+   its ring — that is feedback, not an affordance.
+   Left edge dropped from that ring: this field sits 2px inside the section's own left border,
+   so the inset ring's left edge landed right beside it and read as one border doubled rather than
+   two things. box-shadow, not outline, so the remaining three sides can be drawn without a fourth —
+   outline has no per-side control. */
 .fc-project-details .fc-card-body .fc-form-group textarea.form-control:focus {
-    outline-offset: -2px;
+    outline: none;
+    box-shadow:
+        inset 0 2px 0 0 var(--fc-princeton-orange),
+        inset -2px 0 0 0 var(--fc-princeton-orange),
+        inset 0 -2px 0 0 var(--fc-princeton-orange) !important;
 }
 
 /* On a field this tall the icon's usual vertical centring would strand it halfway down an empty
@@ -9538,6 +9730,17 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
 .fc-project-plan-page .fc-project-details .fc-project-details-value-list li:last-child {
     margin-bottom: 0;
+}
+
+/* A one-item list is not a list. Fence Type and Other Items Needed both render a <ul> whatever the
+   count, so a single fence type sat under a bullet while When Needed beside it — plain text in the
+   same table — did not. Marker off and the indent with it, so the lone value lines up with the
+   other rows' values. The bullets come back the moment there is a second item to separate.
+   padding-left is !important only to answer the markup's own ps-3, which is a Bootstrap utility
+   and carries one; the multi-item indent is left to that class exactly as it was. */
+.fc-project-plan-page .fc-project-details .fc-project-details-value-list:has(li:only-child) {
+    list-style: none;
+    padding-left: 0 !important;
 }
 
 .fc-project-details .fc-table--colour strong {
@@ -9652,12 +9855,9 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
 #update_stock-delivery .fencing-section__step-label {
     margin-left: -20px;
-    /* -20 cancels this pane's own gutter, the extra -16 cancels #update_cart-section's
-       padding-right. Without the second part the rule under the header stopped 16px short of the
-       section border while the cart pane's header opposite ran all the way to it. The padding
-       puts back what the margin takes, so the heading text does not move. */
-    margin-right: -36px;
-    padding-right: 36px;
+    /* Cancels this pane's own 20px gutter so the header rule reaches the section border. */
+    margin-right: -20px;
+    padding-right: 20px;
 }
 
 /* The cart table runs to the border like the panels above it; only the count badge above it and
@@ -9730,8 +9930,7 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         display: none;
     }
 
-    /* The tick is the exception: it is confirmation rather than decoration, and it only exists for
-       the two seconds after a copy, so it earns the space the copy glyph does not. */
+    /* The tick is shown briefly after copying, unlike the copy icon it replaces. */
     .fc-project-plan-page .fc-cart-heading-actions .js-fc-copy-cart-items.is-copied i {
         display: inline-block;
     }
@@ -9834,6 +10033,38 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     cursor: not-allowed;
 }
 
+/* Both Step 4 footer CTAs — Create Project Plan / Update Details, and the UPDATE button that
+   joins it once the quote has been saved: same muted-grey treatment as the pair above, for the
+   same reason — Bootstrap's default disabled state is this same btn-orange at 0.65 opacity, which
+   reads as a dimmed CTA rather than one that isn't ready yet. Attribute selector, not .disabled:
+   both are disabled via the plain HTML attribute (toggled by JS once the timeframe/plan questions
+   are answered), never given the class.
+   The !importants also answer .btn-orange-outline, which Create Project Plan swaps to on a saved
+   quote and which sets background/border/colour with one of its own. */
+.fc-planner-page .fc-btn-create-plan:disabled,
+.fc-planner-page .fc-btn-update:disabled {
+    opacity: 1;
+    background-color: var(--fc-bright-gray) !important;
+    border-color: var(--fc-gainsboro) !important;
+    color: var(--fc-gray-chateau) !important;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* Submit modal's Next/Done (.fc-btn-next — Time Frame, Anything Else, and Done itself): same
+   muted-grey again, same reason. .disabled here, not :disabled — Done starts with the class
+   written straight into the markup and JS removes it once a selection is made; the button never
+   carries the disabled attribute at all. */
+.fc-planner-page .fc-btn-next.disabled {
+    opacity: 1;
+    background-color: var(--fc-bright-gray) !important;
+    border-color: var(--fc-gainsboro) !important;
+    color: var(--fc-gray-chateau) !important;
+    box-shadow: none;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 /* The last 0.6px of the match. Everything in this column is put on line-height 1.3 by
    #update_cart-list .btn:not(.js-fc-view-total-cost), where the page — and so Your Project Details
    — is on 1.35; that is the whole of the height difference. The id is in the selector because the
@@ -9842,12 +10073,8 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     line-height: 1.35;
 }
 
-/* On a phone these take Download Plans' size — 44px of height and a 14px label — so the actions at
-   the foot of the cart match the ones in the Stock & Delivery panel beside them, and clear the
-   touch-target floor while they are at it. The label stays in the middle of the taller box through
-   the flex centring in .fc-cart-edit-bar .btn above; the width stays the label's own.
-   Scoped through the id because #update_cart-list pins everything in this column to 0.75rem, and
-   no run of classes outranks an id. */
+/* Match Download Plans' size on mobile (44px/14px), width still auto. Id needed: #update_cart-list
+   pins this column to 0.75rem and no run of classes outranks an id. */
 @media (max-width: 767.98px) {
     .fc-project-plan-page #update_cart-list .fc-cart-edit-bar .btn {
         min-height: 44px;
@@ -9956,14 +10183,9 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     padding-right: 0;
 }
 
-/* One gutter for the whole section rather than per-element padding: #update_cart-section draws a
-   1px border and carried no padding, so every child — heading, filter, table, total bar and the
-   Stock & Delivery panel — sat hard against it. Setting it here keeps them all on the same edge.
-   Left stays at zero on purpose: the cart table's own rules meet the section border there, and a
-   gutter would leave its horizontal lines stopping short of it. */
-#update_cart-section {
-    padding-right: 16px;
-}
+/* No right padding here: it stacked with Stock & Delivery's own 20px, making its right side sit
+   36px from the border against 20px on the left. The pane's own padding now does the whole job.
+   Left stays 0 — the cart table's rules meet the border there, a gutter would break its lines. */
 
 /* Fence-style filter beside the item count. Compact: sized to the badge it sits next to
    rather than to a form row, and only as wide as its longest option. Scoped to the column rather
@@ -10503,10 +10725,9 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
     #update_stock-delivery .fencing-section__step-label {
         margin-left: -16px;
-        /* Same reach as the wider layout, at this block's 16px gutter: -16 cancels the pane's own
-           padding, the extra -16 cancels #update_cart-section's padding-right. */
-        margin-right: -32px;
-        padding-right: 32px;
+        /* Same idea as the wider layout, at this block's 16px gutter. */
+        margin-right: -16px;
+        padding-right: 16px;
     }
 
     #update_cart-list .fc-card.fc-table-items > .badge {
@@ -10517,12 +10738,7 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         padding: 0 16px 16px;
     }
 
-    /* .fc-cart-edit-bar tightens to 10px here, and View Total Cost has to start and end on the
-       lines the count and Edit Quantity directly above it do. This is the only width where the two
-       disagreed — both inset by 20 at full width and by the 16 above from 992 down — and the green
-       button was left standing 6px inside the bar at each end. Nested rather than written as its
-       own block further down because the rule it overrides is the one directly above: same
-       specificity, so only source order separates them. */
+    /* Match .fc-cart-edit-bar's 10px here so View Total Cost lines up with it (was 6px short). */
     @media (max-width: 767.98px) {
         #update_cart-list > .fc-view-total-cost-bar {
             padding-left: 10px;
@@ -11344,6 +11560,17 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area {
         padding-left: 40px;
         padding-right: 40px;
+    }
+
+    /* That 40px each side is arrow housing — the arrows are appended to this element and sit at
+       left/right: 2px inside it. With no arrows it is 80px of dead white space, so it comes off
+       in the two cases that produce none:
+       :has() — slick appends no arrows at all when every colour already fits one page;
+       .project-details--editable — edit mode keeps them in the DOM but display: none. */
+    .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area:not(:has(.fencing-styles-arrow)),
+    .fc-project-plan-page #project-details-section .project-details--editable .fc-project-plan-color-slick-area {
+        padding-left: 0;
+        padding-right: 0;
     }
 
     .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area .slick-prev.fencing-styles-arrow {
@@ -12832,6 +13059,20 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     border-radius: 0;
 }
 
+/* The folder shape (rounded tops, the selected tab pulled up above the row) is an unstuck-only
+   effect — pinned to the viewport top, that same -4px poke pushes the tab off-screen. Flatten and
+   drop it here the same way the container above already does. */
+/* !important: ties :first-child's folder rule on specificity (4 classes/pseudo either way), which
+   would otherwise win on source order since it's declared first. */
+.fc-planner-page .sticky-roll .fencing-tab-container-area .fencing-tab {
+    border-radius: 0 !important;
+    margin-top: 0 !important;
+}
+
+.fc-planner-page .sticky-roll .fencing-tab-container-area .fencing-tab.fencing-tab-selected {
+    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0) !important;
+}
+
 /**
  * Planner: compact section tabs while sticky
  * e.g. "S1 Barr" / "5,000 mm"
@@ -12923,6 +13164,16 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     min-width: 48px;
     padding: 8px 12px;
     font-size: 16px;
+    /* !important for the same reason the tabs need it while stuck: ties the folder rule above on
+       specificity (3 classes either way), which would otherwise win on source order.
+       height: 100% here ran into the same indefinite-ancestor fallback the base rule's comment
+       describes — stretch (already inherited, restated for clarity) with the unstuck margin
+       cancelled is what actually reaches full height reliably. Stuck tabs lose their own 4px
+       recess the same way, so this is matching, not a new exception. */
+    border-radius: 0 !important;
+    align-self: stretch !important;
+    margin-top: 0 !important;
+    min-height: 0 !important;
 }
 
 .fc-planner-page .sticky-roll .fencing-tab-add:not(:hover) {
@@ -14484,7 +14735,7 @@ input[type="number"] {
    name carries the label role's 600 instead: on a picker the name is the thing being chosen, and
    500 reads as secondary against the tile it belongs to. */
 .fc-planner-page .ftm-measurement {
-    font-size: 14px !important;
+    font-size: 12px !important;
     font-weight: 500 !important;
     color: var(--fc-cod-gray) !important;
 }
@@ -14506,7 +14757,7 @@ input[type="number"] {
    strip; the word stays neutral so only the changing part carries colour. */
 .fc-planner-page .ftm-title,
 .fc-planner-page .fencing-tab-number {
-    font-size: 20px !important;
+    font-size: 19px !important;
     font-weight: 400 !important;
 }
 
@@ -14686,16 +14937,18 @@ div.fc-footer-app .app-version {
    Two solid red buttons sat in the header of a section whose whole job is picking a style, so the
    loudest things in it were the two ways to throw work away. Same treatment as Clear All and the
    masthead link: quiet until reached for, emphatic under the pointer.
-   Scoped to .btn-delete-fence so Step 3's own Reset, which shares .fc-fence-reset-all, is left
-   alone. Selectors carry .btn-danger because bootstrap.min.css loads after this file.
+   Scoped to .btn-delete-fence so Step 3's own Reset, which shares .fc-fence-reset-all, is left for
+   the block below — its buttons sit in a row with Add Another Section and Next, not a header pair,
+   so it gets its own rule rather than being folded into this selector. Selectors carry .btn-danger
+   because bootstrap.min.css loads after this file.
    -------------------------------------------------------------------------------------------- */
 .fc-planner-page .btn-delete-fence .btn.btn-danger {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     border: 1px solid var(--fc-gainsboro);
-    background-color: transparent;
-    color: var(--fc-dove-gray);
+    background-color: var(--fc-white);
+    color: var(--fc-cod-gray);
     transition:
         color 0.15s ease,
         border-color 0.15s ease,
@@ -14725,7 +14978,6 @@ div.fc-footer-app .app-version {
     outline-offset: 2px;
 }
 
-
 /* --------------------------------------------------------------------------------------------
    Step 3 footer destructive actions (Reset / Delete Section).
    Same treatment as the Step 1 header pair. In that footer row the four buttons were Add Section,
@@ -14736,8 +14988,8 @@ div.fc-footer-app .app-version {
    -------------------------------------------------------------------------------------------- */
 .fc-planner-page .fc-step3-bottom .btn.btn-danger {
     border: 1px solid var(--fc-gainsboro);
-    background-color: transparent;
-    color: var(--fc-dove-gray);
+    background-color: var(--fc-white);
+    color: var(--fc-cod-gray);
     transition:
         color 0.15s ease,
         border-color 0.15s ease,
@@ -14787,6 +15039,12 @@ div.fc-footer-app .app-version {
         color 0.15s ease,
         border-color 0.15s ease,
         background-color 0.15s ease;
+}
+
+/* Zoom in/out specifically, darker than the shared quiet-button grey above (Reset keeps it —
+   Reset is the destructive one and dove-gray already read as muted-but-legible there). */
+.fc-planner-page .btn.fc-zoom-fence {
+    color: var(--fc-cod-gray);
 }
 
 .fc-planner-page .btn.fc-zoom-fence i,
@@ -15227,16 +15485,11 @@ div.fc-footer-app .app-version {
     transform: scale(0.85);
     position: fixed;
     right: 20px;
-    /* The lift is set by fcSyncChatLauncherOffset() on the project plan, where two bars pin
-       themselves to the foot of the viewport in the corner this button already occupies. It is the
-       pinned bar's height while one is actually stuck there and 0px the rest of the time, so the
-       button keeps its own corner on every other page and at every other scroll position. */
+    /* --fc-chat-launcher-lift is set by fcSyncChatLauncherOffset() (checkout.js) — it's the height
+       of whatever sticky bar is pinned in this corner on the project plan, else 0. */
     bottom: calc(20px + var(--fc-chat-launcher-lift, 0px));
-    /* Above the planner's own fixed chrome (sticky tabs sit at 10) and above the project plan's
-       three floating bars — Your Project Details at 1041, View Total Cost at 1041, the cart's
-       action bar at 1042 — which the launcher shares the bottom-right corner with on a phone and
-       used to disappear behind. Still below the page's modals at 1045 and Bootstrap's backdrop at
-       1050, so a dialog covers it as before. */
+    /* Above the project plan's floating bars (max 1042) so it doesn't hide behind them; below
+       modals (1045+) so a dialog still covers it. */
     z-index: 1043;
     display: inline-flex;
     align-items: center;
@@ -15256,9 +15509,7 @@ div.fc-footer-app .app-version {
         transform 0.2s ease,
         opacity 0.2s ease,
         visibility 0.2s ease,
-        /* Eased for the same reason the sticky tabs are: a bar pinning itself would otherwise
-           teleport this button 60px up the screen mid-scroll. */
-        bottom 0.2s ease,
+        bottom 0.2s ease, /* smooths the lift when a bar pins/unpins */
         background-color 0.15s ease,
         box-shadow 0.15s ease;
 }
@@ -15292,8 +15543,6 @@ div.fc-footer-app .app-version {
 @media (max-width: 767.98px) {
     .fc-chat-launcher {
         right: 16px;
-        /* Carries the lift too — this is the width where a pinned bar spans the whole screen and
-           the button has somewhere to be pushed to. */
         bottom: calc(16px + env(safe-area-inset-bottom, 0px) + var(--fc-chat-launcher-lift, 0px));
         width: 44px;
         height: 44px;
@@ -15487,29 +15736,6 @@ div.fc-footer-app .app-version {
 
     .fc-project-plan-page .fc-project-plan-section-actions .dropdown-toggle::after {
         display: none;
-    }
-}
-
-
-/* --------------------------------------------------------------------------------------------
-   Item List & Cart — both edges meet the section border on mobile.
-   Stacked, the cart pane is the full width of the section, so #update_cart-section's 16px
-   padding-right left its header rule, table lines and total bar all stopping short on the right
-   while sitting hard against the border on the left. The gutter comes off the section and goes
-   back on the children that actually need it — the same arrangement the left edge already uses
-   (header row and total bar carry their own 16px, the style filter its own margin-right; the
-   table deliberately carries none, so its horizontal rules reach the border).
-   -------------------------------------------------------------------------------------------- */
-@media (max-width: 767.98px) {
-    #update_cart-section {
-        padding-right: 0;
-    }
-
-    /* With the section gutter gone the header only has this pane's own 16px to cancel; the extra
-       -16 it carries above 767 would now push it past the border. */
-    #update_stock-delivery .fencing-section__step-label {
-        margin-right: -16px;
-        padding-right: 16px;
     }
 }
 
@@ -15992,9 +16218,7 @@ div.fc-footer-app .app-version {
         padding-right: 0;
     }
 
-    /* 2px, the weight .fencing-section--has-border draws around every other section and around
-       these two themselves once the panes sit side by side. At 1px each panel read as a lighter
-       box than the ones above it on the same screen. */
+    /* 2px to match .fencing-section--has-border elsewhere on the page (was 1px, looked lighter). */
     .fc-project-plan-page #update_cart-section > .row > #update_stock-delivery,
     .fc-project-plan-page #update_cart-section > .row > #update_cart-list {
         border: 2px solid var(--fc-princeton-orange);
@@ -16110,12 +16334,6 @@ div.fc-footer-app .app-version {
         min-width: 0;
         padding: 7px 10px 6px;
         text-align: center;
-    }
-
-    /* The -10px is the overlap that nests one tab behind the next — on the last one it
-       would just pull the strip short of the right edge. */
-    .fc-planner-page .fc-header-tab a:last-child {
-        margin-right: 0;
     }
 
     /* The label carries its own 8px/10px padding on top of the tab's — double spacing

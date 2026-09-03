@@ -13,14 +13,28 @@ function fcAfterProjectDetailsSectionReloaded() {
 }
 
 /**
- * The chat launcher and the page's two pinned bars — Your Project Details' footer and the cart's
- * action bar — both live in the bottom-right corner, and the launcher sits above them, so on a
- * phone it covered the right end of Save Changes and Edit Quantity. It steps up out of the way for
- * exactly as long as a bar is pinned there, and drops back to its own corner the moment that bar
- * settles into the flow at the end of its column.
+ * Edit mode hides the Colour Options arrows, and the CSS takes the 40px they were housed in off
+ * each side — so the row is 80px wider than the width Slick measured its slides against. Nothing
+ * else tells Slick the box changed, so the slides would keep the narrower size and leave a gap at
+ * the end of the row.
  *
- * Measured rather than assumed: the two bars are position: sticky, so whether either is at the
- * foot of the screen depends on where the column is, not on the width or the page.
+ * rAF for the normal case (the class flip has to land before Slick re-measures), plus a short
+ * timeout: rAF does not run at all while the tab is hidden, and the same 120ms is what the Step 4
+ * colour carousel already waits before its own refresh in events.js.
+ */
+function fcRefreshColourSlickAfterEditToggle() {
+    fcAfterProjectDetailsSectionReloaded();
+
+    setTimeout(function() {
+        if (typeof window.fcRefreshProjectPlanColorSlick === 'function') {
+            window.fcRefreshProjectPlanColorSlick();
+        }
+    }, 120);
+}
+
+/**
+ * Pushes the chat launcher up when a sticky bar (project details footer or cart action bar) is
+ * pinned underneath it, so it doesn't cover Save Changes / Edit Quantity on mobile.
  */
 function fcSyncChatLauncherOffset() {
     var launcher = document.querySelector('.fc-chat-launcher');
@@ -36,18 +50,14 @@ function fcSyncChatLauncherOffset() {
         if (!bar.height || !bar.width) {
             return;
         }
-        // Pinned means the bar's bottom edge is sitting on the viewport's. Once the column ends it
-        // scrolls away with the page and this stops matching.
+        // Bar is pinned when its bottom edge sits on the viewport's bottom edge.
         if (Math.abs(bar.bottom - window.innerHeight) > 1) {
             return;
         }
-        // A bar the launcher does not sit over is not in the way — which is the desktop case, where
-        // both bars end well short of this corner.
+        // Skip if it doesn't overlap the launcher horizontally (desktop case).
         if (bar.right < corner.left || bar.left > corner.right) {
             return;
         }
-        // The bar's height and nothing more: the launcher's own bottom offset — 20px, 16 on a
-        // phone — then sits between the two, which is the gap it already keeps from the edge.
         lift = Math.max(lift, bar.height);
     });
 
@@ -57,9 +67,8 @@ function fcSyncChatLauncherOffset() {
 var fcChatLauncherFrame = null;
 
 function fcQueueChatLauncherOffset() {
-    // Scroll fires far more often than the value can change; one measurement per frame is enough.
-    // Replaced rather than skipped: a frame requested while the tab is hidden never runs, and a
-    // plain "already pending" guard would then wedge every later call behind it.
+    // One measurement per animation frame. Cancel-and-replace, not skip-if-pending: a frame
+    // requested on a hidden tab never fires, which would otherwise wedge this permanently.
     if (fcChatLauncherFrame !== null) {
         cancelAnimationFrame(fcChatLauncherFrame);
     }
@@ -70,11 +79,8 @@ function fcQueueChatLauncherOffset() {
 }
 
 $(window).on('scroll resize', fcQueueChatLauncherOffset);
-// Entering or leaving edit mode changes which buttons the bar holds and so how tall it is, and a
-// cart render can change it without any scrolling at all.
+// Edit mode and cart renders can change bar height without any scroll happening.
 _doc.on('click', '.js-fc-edit-item, .fc-cancel-item, .fc-btn-edit, .fc-btn-cancel-project-details', fcQueueChatLauncherOffset);
-// Straight through, not queued: the first measurement has to land whether or not a frame is due,
-// and images settling can move a bar after ready without any scroll following.
 $(fcSyncChatLauncherOffset);
 $(window).on('load', fcSyncChatLauncherOffset);
 
@@ -147,10 +153,7 @@ function fcCopyCartItems(e) {
         return;
     }
 
-    // Both halves of the button change, because each viewport only ever shows one of them: below
-    // 576px the label is d-none and the glyph is the whole button, above it the glyph is display:
-    // none and the word is. A tick on its own would be invisible on desktop, a word on its own
-    // invisible on mobile. The .is-copied class is what lets the tick through on desktop.
+    // Swap both label and icon: only one is visible at a time depending on viewport width.
     function showCopiedFeedback() {
         var $label = $btn.find('span.d-none.d-sm-inline');
         var $icon = $btn.find('i').first();
@@ -175,8 +178,7 @@ function fcCopyCartItems(e) {
         }
         $btn.addClass('is-copied');
 
-        // Copying again inside the window restarts the two seconds; without this the first click's
-        // timer would drop the button back to Copy while the second copy still read as fresh.
+        // Restart the timer on repeat copies instead of stacking.
         clearTimeout($btn.data('fc-copy-timer'));
         $btn.data('fc-copy-timer', setTimeout(function() {
             if ($label.length) {
@@ -924,6 +926,7 @@ function fcProjectDetailsCancelEdit() {
     // Out of edit mode there is no baseline, so both actions go back to dead for the next round.
     fcProjectDetailsSnapshot = null;
     fcSyncProjectDetailsActions();
+    fcRefreshColourSlickAfterEditToggle();
 }
 
 _doc.on('click', '.fc-btn-cancel-project-details', function(e) {
@@ -949,6 +952,7 @@ function fcBtnEdit(e) {
         // What the fields held on the way in, and so nothing to save or undo yet.
         fcCaptureProjectDetailsSnapshot();
         fcSyncProjectDetailsActions();
+        fcRefreshColourSlickAfterEditToggle();
         return;
     }
 
@@ -1067,8 +1071,7 @@ function fcMountCartHeadingActions() {
     $toolbar.children('.fc-cart-style-filter').appendTo($mount);
     $toolbar.remove();
 
-    // A render can land mid-edit — the optional-item toggle rebuilds the list without leaving edit
-    // mode — and the count arrives visible, so it has to be put back into the state it belongs in.
+    // A render can land mid-edit (optional-item toggle), so re-hide the count if needed.
     $('.js-fc-cart-count').toggle(!$('.js-fc-cart-edit-bar').hasClass('is-editing'));
 }
 
@@ -1619,12 +1622,8 @@ $("#paymentFrm").validate({
 //----------------------------------------------------------------------------------
 
 /**
- * Item List & Cart — show one fence style at a time.
- *
- * Display only: rows are hidden with a class, never detached, so the per-row hidden inputs
- * (cart[qty][i], cart[original_qty][i]) still post and the cart submits whole whatever is
- * on screen. Matching is on the row's data-fc-fence-style, stamped server-side from the same
- * helper that builds the options, rather than on the label text read back out of the DOM.
+ * Item List & Cart — show one fence style at a time. Rows are hidden with a class, not detached,
+ * so their hidden qty inputs still post. Matches on data-fc-fence-style, not the label text.
  */
 function fcApplyCartStyleFilter(style) {
     $('.fc-table-items .table-cart tbody tr[data-fc-fence-style]').each(function() {
@@ -1640,9 +1639,8 @@ _doc.on('change', '.js-fc-cart-style-filter', function() {
 });
 
 /**
- * A render replaces the filter along with the rows it filters, so a choice has to be carried across
- * it by hand: adding or removing an optional item is an edit to one line, not a request to go back
- * to every fence style. Capture the value before the new HTML lands, put it back after.
+ * A cart render replaces the filter along with its options, so a chosen style has to be restored
+ * by hand afterward rather than surviving on its own.
  */
 function fcRestoreCartStyleFilter(style) {
     if (!style) {
@@ -1654,8 +1652,7 @@ function fcRestoreCartStyleFilter(style) {
         return;
     }
 
-    // The rebuilt list may no longer offer that style. Leaving the value set would show the select
-    // on one thing and the rows on another, so this falls back to the All the render arrived with.
+    // Fall back to "All" if the rebuilt list no longer offers this style.
     var stillOffered = $filter.find('option').filter(function() {
         return this.value === style;
     }).length > 0;
@@ -1669,10 +1666,8 @@ function fcRestoreCartStyleFilter(style) {
 }
 
 /**
- * Mirrors CartBuilderService::cartIncludedItemCount(): a row counts once its quantity is above
- * zero, which is what leaves out an optional item nobody has added yet. Read off the row's hidden
- * cart[qty] input rather than the displayed figure, because that is the value the count was built
- * from server-side and the only one that survives edit mode unchanged.
+ * Mirrors CartBuilderService::cartIncludedItemCount(): counts rows with qty > 0, so an unadded
+ * optional item doesn't count. Reads the hidden cart[qty] input, not the displayed value.
  */
 function fcCountedCartRows($rows) {
     return $rows.filter(function() {
@@ -1681,9 +1676,8 @@ function fcCountedCartRows($rows) {
 }
 
 /**
- * "24 Items" at rest, "6 of 24 Items" once a fence style is picked, so the number beside the filter
- * answers the question the filter just asked. Both figures are counted from the rows each time
- * rather than parsed back out of the label, which would compound its own output on the next change.
+ * "24 Items", or "6 of 24 Items" once a fence style is filtered. Recounted from the rows each
+ * time, not parsed from the previous label.
  */
 function fcSyncCartCountLabel() {
     var $count = $('.js-fc-cart-count').first();
@@ -1700,8 +1694,7 @@ function fcSyncCartCountLabel() {
         return;
     }
 
-    // Matched with a function, not an attribute selector: a style label is free text and would
-    // need escaping before it could go inside one.
+    // Filter function, not an attribute selector: style is free text and would need escaping.
     var shown = fcCountedCartRows($rows.filter(function() {
         return $(this).attr('data-fc-fence-style') === style;
     }));
