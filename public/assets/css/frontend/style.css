@@ -835,7 +835,7 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 
 .fc-project-plan-page .btn.btn-sm:not(.btn-close) {
     font-size: 0.75rem;
-    padding: 0.3rem 0.5rem !important;
+    padding: 0.3rem 0.6rem !important;
 }
 
 .fc-project-plan-page .modal .btn.btn-lg:not(.btn-close) {
@@ -9071,14 +9071,16 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
     }
 
-    /* Full width, but the button's own size: no min-height or label bump here, the same way the
-       cart's action bar carries none. Both bars used to take 44px and 0.875rem below 768, which
-       stood them 16px taller than the identical buttons on a wide screen. */
+    /* Download Plans' size on a phone — 44px tall with a 14px label — but only in that direction:
+       the width is still the label's own. inline-flex rather than flex because a block-level flex
+       container fills its line whatever the width says; the alignment is the footer's text-align,
+       and the centring keeps the label in the middle of a box taller than its one line of text. */
     .fc-project-plan-page .js-project-details-footer > .btn.btn-sm.fc-btn-edit {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 100%;
+        min-height: 38px;
+        font-size: 0.875rem;
     }
 
     /* Guarded like every other rule for these controls: the bar is hidden with the
@@ -9099,13 +9101,17 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
        that side of the screen, and the way out is never the closer target. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .fc-btn-cancel-project-details {
         order: 1;
-        flex: 1 1 0;
     }
 
+    /* width, not just the dropped flex: the 480px rule further down gives this group width: 100%,
+       which the old flex-basis of 0 was quietly overriding. Without it the pair would fill the bar
+       again below 480 and, with flex-wrap: nowrap, squeeze rather than sit at their own size.
+       The base rule's justify-content: space-between and margin-left: auto still place them —
+       Cancel at the left edge, Save at the right. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .project-details-controls__right {
         order: 2;
         display: flex;
-        flex: 1 1 0;
+        width: auto;
         gap: 8px;
     }
 
@@ -9115,13 +9121,14 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         display: none !important;
     }
 
-    /* Sized like the button above and like desktop — the pair share the row, they do not grow to
-       fill the height of a strip. */
+    /* Sized like the button it replaces: the same 44px and 14px, at their labels' width rather
+       than dividing the bar between them. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .btn.btn-sm {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        flex: 1 1 0;
+        min-height: 44px;
+        font-size: 0.875rem;
     }
 
 }
@@ -9835,11 +9842,18 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     line-height: 1.35;
 }
 
-/* No mobile floor or label bump: these buttons stay the size they are on desktop at every width.
-   They carried min-height: 44px and 0.875rem below 768 — the touch floor, and the size Your
-   Project Details' own edit bar takes there — which stood them 16px taller than the same four
-   buttons on a wide screen. The column's own 0.75rem now applies throughout, so the bar reads the
-   same everywhere. */
+/* On a phone these take Download Plans' size — 44px of height and a 14px label — so the actions at
+   the foot of the cart match the ones in the Stock & Delivery panel beside them, and clear the
+   touch-target floor while they are at it. The label stays in the middle of the taller box through
+   the flex centring in .fc-cart-edit-bar .btn above; the width stays the label's own.
+   Scoped through the id because #update_cart-list pins everything in this column to 0.75rem, and
+   no run of classes outranks an id. */
+@media (max-width: 767.98px) {
+    .fc-project-plan-page #update_cart-list .fc-cart-edit-bar .btn {
+        min-height: 44px;
+        font-size: 0.875rem;
+    }
+}
 
 @media (max-width: 992px) {
     .fc-cart-edit-bar {
