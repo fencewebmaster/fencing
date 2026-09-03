@@ -140,7 +140,7 @@ html {
 
 .fc-cart-items .fc-row-container--cart-stock>.fc-col-half,
 .fencing-section--has-border {
-    border: 1px solid var(--fc-princeton-orange);
+    border: 2px solid var(--fc-princeton-orange);
 }
 
 /* Icons */
@@ -789,6 +789,42 @@ html:has(body.fc-planner-page) {
 
 html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     display: none !important;
+}
+
+/* Every button on the two customer-facing pages sits at 600 rather than 700. The label wrappers are
+   in the selector because that is where the weight actually comes from — these buttons carry it on
+   an .fw-bold span or a <b> inside rather than on the button itself, and Bootstrap's .fw-bold is
+   !important, so the button alone would not reach it.
+   <i> is deliberately not included: Font Awesome picks its glyph face by font-weight, and setting
+   one here would swap solid icons for the regular face or drop them entirely. */
+.fc-planner-page .btn,
+.fc-planner-page .btn b,
+.fc-planner-page .btn span,
+.fc-planner-page .btn strong,
+.fc-project-plan-page .btn,
+.fc-project-plan-page .btn b,
+.fc-project-plan-page .btn span,
+.fc-project-plan-page .btn strong {
+    font-weight: 600 !important;
+}
+
+/* Untracked, like Download Plans — the button in Stock & Delivery the rest are matched to. Most
+   buttons on these two pages already computed `normal`; this only moves the handful that had
+   picked up tracking of their own.
+   Deliberately no !important and no label-wrapper selectors, so a button with its own tracking
+   still wins: the two chrome buttons (Clear All 0.5px, Back to site 0.4px) are .btn plus one class
+   and sit later in this file, and their <b> inherits rather than being overridden here. The one
+   exception that does need writing out is below. */
+.fc-planner-page .btn,
+.fc-project-plan-page .btn {
+    letter-spacing: normal;
+}
+
+/* The submit modal's step navigation keeps the 1px it was drawn with (Next / Back / Done). Its own
+   declaration is a plain `.fc-form-plan-action button`, one class short of the sweep above, so the
+   page class is added here purely to win. */
+.fc-planner-page .fc-form-plan-action button {
+    letter-spacing: 1px;
 }
 
 .fc-project-plan-page .btn:not(.btn-close) {
@@ -1615,6 +1651,30 @@ a div {
     user-select: none;          /* Likely future */   
 }
 
+/* Compact step headers. "STEP 01" at 40px was the loudest thing in a band whose job is to say which
+   step you are on, and each of the five headers spent 38px of its 95 on it.
+   31px, not the 30.4 the old 0.95 ratio gives: with the 3px this label carries below it that makes
+   the box 34px, which is what Step 02's Important chip measures. Below md the chip shares the
+   label's row, so anything shorter lets the chip set that row instead and stands one header a pixel
+   taller than the other four — the four were matched to Step 01 on purpose.
+   Scoped to the planner: 31px and the 3px are both about the subtitle underneath, which is a step
+   header's second line. */
+.fc-planner-page .step-label {
+    font-size: 32px;
+    line-height: 31px;
+}
+
+/* The plan page's section labels take the same 32px, so a header band reads the same on both. They
+   have no second line, though — Item List & Cart, Stock & Delivery, Your Project Details and
+   Project Plans are each alone in their band — so the trailing 3px is dead space and the line box
+   is just the type. That is what #project-details-section's header already set for itself; stating
+   it for all four puts every band on the same height instead of leaving that one 2px shorter. */
+.fc-project-plan-page .step-label {
+    font-size: 32px;
+    line-height: 1;
+    margin-bottom: 0;
+}
+
 @media (max-width: 992px) {
     .fc-project-plan .step-label {
         font-size: 24px;
@@ -1922,9 +1982,12 @@ h2.fc-header-title+p {
     display: flex;
 }
 
+/* 2px, the width .fencing-section--has-border carries: the active tab is the top edge of the card
+   below it and the two are the same orange, so at 1px the join read as a thinner line stepping into
+   a thicker one. */
 .fc-header-tab a {
     background: var(--fc-white);
-    border: 1px solid var(--fc-gray);
+    border: 2px solid var(--fc-gray);
     border-right: 0;
     border-bottom: 0;
     padding: 10px 0 5px 0;
@@ -1941,7 +2004,7 @@ h2.fc-header-title+p {
 }
 
 .fc-header-tab a:last-child {
-    border-right: 1px solid var(--fc-gray);
+    border-right: 2px solid var(--fc-gray);
 }
 
 @media (min-width: 768px) {
@@ -3666,6 +3729,19 @@ thead.fc-border th:last-child {
 }
 .table-cart .fencing-mb-input {
     max-width: 130px;
+}
+
+/* Edit Quantity, on a phone: the stepper is the only thing that appears under every line, and the
+   space framing it cost more height than the control did — 16px above from the markup's mt-3 and
+   15px below from the 480px .fencing-mb-input rule, around a 32px control. The stepper keeps its
+   size, being a touch target; the air around it goes, which is 25px a row over a list that is
+   already the longest thing on the page.
+   The id is in the selector to reach past that 480px rule and Bootstrap's !important mt-3. */
+@media (max-width: 767.98px) {
+    #update_cart-list .table-cart .md-qty .fencing-mb-input {
+        margin-top: 6px !important;
+        margin-bottom: 0;
+    }
 }
 
 /* Forms fields */
@@ -6219,13 +6295,22 @@ thead.fc-border th:last-child {
     min-height: 100%;
 }
 
+/* vertical-align is load-bearing, not tidying: the container is an inline-block, and once the strip
+   inside it goes position:fixed it has no in-flow line box left to take its baseline from, so the
+   baseline drops to its bottom edge and the parent's strut opens 6.5px of descender under it. That
+   is the page nudging down as the tabs stick, on top of the height events.js reserves. Aligned to
+   the top the line box measures the same either way; unstuck it costs 0.2px. */
 .fc-planner-page .fencing-tabs-container {
     height: auto;
+    vertical-align: top;
 }
 
+/* 2px throughout the tab strip, the width .fencing-section--has-border carries: a selected tab is
+   the top edge of the card below it and takes the same orange, so at 1px the join read as a thin
+   line stepping into a thick one. The dividers between tabs go with it — one weight per strip. */
 .fencing-tab-container {
     border-radius: 16px 16px 0 0;
-    border: 1px solid var(--fc-bright-gray);
+    border: 2px solid var(--fc-bright-gray);
     border-bottom: 0;
     border-left: 0;
     box-sizing: border-box;
@@ -6260,7 +6345,7 @@ thead.fc-border th:last-child {
 }
 
 .fencing-tab {
-    border: 1px solid var(--fc-white);
+    border: 2px solid var(--fc-white);
     border-bottom: 0 !important;
     padding: 0;
     cursor: pointer;
@@ -6273,7 +6358,7 @@ thead.fc-border th:last-child {
     box-sizing: border-box;
     transition: all 0.2s ease;
     border-radius: 0;
-    border-right: 1px solid var(--fc-bright-gray);
+    border-right: 2px solid var(--fc-bright-gray);
 }
 
 @media (max-width: 992px) {
@@ -6286,7 +6371,7 @@ thead.fc-border th:last-child {
 
 .fencing-tab:first-child {
     border-top-left-radius: 16px;
-    border-left: 1px solid var(--fc-bright-gray);
+    border-left: 2px solid var(--fc-bright-gray);
 }
 
 @media (min-width: 768px) {
@@ -6355,8 +6440,13 @@ thead.fc-border th:last-child {
     cursor: help;
 }
 
+/* 1rem is the 16px 0.8em always resolved to — .fencing-tab-name, the only box this icon ever sits
+   in, is 20px at every width. Absolute rather than em because that parent's font-size is eased
+   between 20px and the sticky strip's 16px: measured against it the icon dropped to 12.8px on the
+   first frame of the way back and grew to 16px over the rest of the transition, which is the icon
+   bouncing as the tabs return to the page. */
 .fc-planner-page .fc-section-tab-status__icon {
-    font-size: 0.8em;
+    font-size: 1rem;
     line-height: 1;
 }
 
@@ -6409,9 +6499,13 @@ thead.fc-border th:last-child {
     color: var(--fc-black);
 }
 
+/* White, not the #e9e9e9 this carried: the tab's ground turns Princeton orange on hover and every
+   line inside it — section name, fence style, measurement, status glyph — carries a colour of its
+   own, several of them !important, so the whole subtree has to be reset in one go. At #e9e9e9 they
+   read as grey text dimmed against the orange rather than a label on a hovered tab. */
 @media (min-width: 768px) {
     .fencing-tab:not(.fencing-tab-selected):hover * {
-        color: var(--fc-gray) !important;
+        color: var(--fc-white) !important;
     }
 }
 
@@ -6644,18 +6738,6 @@ thead.fc-border th:last-child {
 
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__bottom.fc-step3-bottom {
     padding-top: 0.75rem !important;
-}
-
-/* Phones: the quote-id badge goes. It floats right of the Step 03 label, where the row is already
-   carrying the heading, the zoom stepper and the section controls, and the id is not something
-   you act on here — the planner's own share control and the project-plan page both surface it.
-   Hidden rather than dropped from the markup: the .btn-copy-link handler is delegated and fires
-   only on click, so a hidden badge simply never fires, and the id stays available to anything
-   that reads it. */
-@media (max-width: 767.98px) {
-    .fc-planner-page .js-fc-form-step[data-section="3"] .btn-copy-link {
-        display: none;
-    }
 }
 
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-panel-solution-msg:not(:empty) {
@@ -8925,10 +9007,13 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         font-weight: 600;
     }
 
-    /* Value: the thing being read. Long emails break rather than force a scrollbar. */
+    /* Value: the thing being read. Long emails break rather than force a scrollbar.
+       0.875rem is what the .form-control in this same cell renders at, here as on the wide layout:
+       at 0.9375rem the reading state came back a size larger than the field you had been typing
+       in, which only showed on a phone. */
     .fc-project-plan-page .fc-table.fc-table-customer tbody tr td + td,
     .fc-project-plan-page .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td + td {
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
         line-height: 1.45;
         color: var(--fc-cod-gray);
         overflow-wrap: anywhere;
@@ -8986,20 +9071,14 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
     }
 
-    /* Icon off: at this size the four labels are unambiguous on their own, and dropping the glyph
-       is what lets the buttons sit in a shorter bar without crowding. Markup keeps them for the
-       wider layout. */
-    .fc-project-plan-page #project-details-section #update_details-section .js-project-details-footer .btn > i {
-        display: none;
-    }
-
+    /* Full width, but the button's own size: no min-height or label bump here, the same way the
+       cart's action bar carries none. Both bars used to take 44px and 0.875rem below 768, which
+       stood them 16px taller than the identical buttons on a wide screen. */
     .fc-project-plan-page .js-project-details-footer > .btn.btn-sm.fc-btn-edit {
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
-        min-height: 44px;
-        font-size: 0.875rem;
     }
 
     /* Guarded like every other rule for these controls: the bar is hidden with the
@@ -9036,13 +9115,13 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         display: none !important;
     }
 
+    /* Sized like the button above and like desktop — the pair share the row, they do not grow to
+       fill the height of a strip. */
     .fc-project-plan-page .project-details-controls--edit-bar:not(.fc-d-none) .btn.btn-sm {
         display: flex;
         align-items: center;
         justify-content: center;
         flex: 1 1 0;
-        min-height: 44px;
-        font-size: 0.875rem;
     }
 
 }
@@ -9267,10 +9346,28 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 }
 
 /* The flag was pinned to the top of a 32px field; it has to ride the middle of whatever height
-   the field ends up. */
+   the field ends up. On the trailing edge rather than the leading one: on the left it pushed the
+   number 45px in, so Contact started a third of an inch further along than Name and Email above it
+   and the column of values had one row out of line. */
 .fc-project-details .fc-mobile-group .au-flag-icon {
     top: 50%;
     transform: translateY(-50%);
+    left: auto;
+    right: 7px;
+}
+
+/* The padding follows the flag across, which puts this field's text on the same left edge as every
+   other value in the table. !important answers the page-wide .form-control.input-mobile rule that
+   sets the 45px inset on the left. */
+.fc-project-details .fc-mobile-group .form-control.input-mobile {
+    padding-left: 10px !important;
+    padding-right: 45px !important;
+}
+
+/* The clear button steps inside the flag rather than sitting under it. The flag is the one that is
+   always there, so it keeps the edge; this only appears while the field has focus. */
+.fc-project-details .fc-mobile-group .form-control-clear {
+    right: 44px;
 }
 
 .fc-project-details .fc-form-group textarea.form-control {
@@ -9369,11 +9466,10 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     padding: 17px !important;
 }
 
-.fc-project-details .fc-card-body .fc-form-group textarea.form-control:hover:not(:focus) {
-    outline: 1px solid var(--fc-alto);
-    outline-offset: -1px;
-}
-
+/* No hover edge on Project Notes. The rows in the table above take one because an empty field with
+   no border of its own is invisible at rest and the outline is what says the row can be edited;
+   this field is a whole card body with a placeholder in it, so it never needed telling. Focus keeps
+   its ring — that is feedback, not an affordance. */
 .fc-project-details .fc-card-body .fc-form-group textarea.form-control:focus {
     outline-offset: -2px;
 }
@@ -9509,6 +9605,36 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     box-sizing: border-box;
 }
 
+/* Desktop: the cart's header band pins while its list scrolls under it, the way the Stock &
+   Delivery pane opposite already does. The two share the rule above so that they open on the same
+   line; pinned they have to keep doing it, which is why this sits at top 0 and the spy offset that
+   held the right pane 20px lower is now 0 as well.
+   Sticky, not fixed: it belongs to #update_cart-list and should settle at the end of the column
+   rather than follow the page past the section. The row is transparent in the flow, so it needs a
+   ground of its own before rows can pass beneath it. */
+@media (min-width: 768px) {
+    #update_cart-list > .row.align-items-center {
+        position: sticky;
+        top: 0;
+        /* Over the table's own sticky column head at 7, under the action bar at 1042. */
+        z-index: 11;
+        background-color: var(--fc-white);
+    }
+
+    /* The column head pins directly under the band, with nothing of the list showing between them.
+       Written as the band's own parts, because that is where the figure comes from: 16px of padding
+       above the 32px section label and 14px below it. The band's closing rule is left out of the
+       sum on purpose, so the head pins 1.3px inside the band rather than level with it — the band
+       stands 63.34 (its rule, plus a Copy button a third of a pixel taller than the label), and
+       tucking the head behind a band with the higher z-index cannot show, where landing a fraction
+       short of it would leave the list running through the seam.
+       Full selector to match the one at the top of the file that pins this head to the safe-area
+       inset — same specificity, and this comes later. */
+    .fc-project-plan-page #update_cart-list .table-cart thead.table-dark th {
+        top: calc(16px + 32px + 14px);
+    }
+}
+
 /* The right pane is prose and buttons, so it keeps a gutter of its own. Its header is pulled
    back out to the edges so the rule under it runs the full width — the same trick the plan
    card's sticky toolbar uses against its p-3. */
@@ -9535,6 +9661,202 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 
 #update_cart-list > .fc-view-total-cost-bar {
     padding: 0 20px 20px;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Item List & Cart — the action bar.
+   Every action the cart has, at the foot of the column: Edit and Copy at rest, and Cancel on the
+   left with Reset and Save on the right once you are editing — close to the arrangement Your
+   Project Details uses for the same three. It sticks to the foot of the viewport while you are in
+   the column, then settles at the end of it: the cart is the longest table on the page and beside
+   the heading these buttons scrolled away from the rows they act on.
+   No negative margins: #update_cart-list carries no horizontal padding of its own, so the bar
+   spans the column as it stands — the way .fc-view-total-cost-bar below it does. Pulling it out by
+   20px hung it past the card on phones and pushed it into the Stock & Delivery column on desktop.
+   The inset is the bar's own padding instead.
+   Sticky and not fixed, for the reason the other two floating bars on this page give: fixed keeps
+   the strip pinned over the plan sections and cart far below, which have nothing to do with these
+   three buttons, and leaving the flow means the pane has to reserve the height. bottom: 0 floats it
+   at the foot of the screen for the whole of the list and then settles at the end of the column.
+   Ground, rule and shadow are the Edit Details / View Total Cost treatment, so the page's floating
+   action bars read as one component wherever it appears.
+   -------------------------------------------------------------------------------------------- */
+.fc-cart-edit-bar {
+    position: sticky;
+    bottom: 0;
+    /* One above View Total Cost, which floats at 1041 below 768px and would otherwise cover these:
+       while you are editing the cart, Save and Cancel are the actions and checkout is not. Both
+       stay under the modals at 1045, and above the chat launcher at 1040. */
+    z-index: 1042;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 12px;
+    padding: 12px 20px;
+    background: var(--fc-cultured);
+    border-top: 1px solid var(--fc-gainsboro);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Copy is paired with the fence-style filter beside it, so it takes that control's size rather than
+   .btn-sm's: the same 0.8125rem label and the same min-height expression, which resolves to one
+   figure for both instead of a number copied from the other.
+   Flex centring because min-height stands the button taller than its line box, and a block button
+   drops that slack underneath. The id is in the selector to outrank .btn.btn-sm's padding, which
+   carries !important. */
+.fc-project-plan-page #update_cart-list .fc-cart-heading-actions .js-fc-copy-cart-items {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(1.35em + 2px + 0.8rem);
+    padding: 2px 10px !important;
+    font-size: 0.8125rem !important;
+}
+
+/* Glyph off once the word is there. The label is d-none d-sm-inline, so 576px is where Copy starts
+   saying what it does and the icon stops adding anything — the button carries exactly one of the
+   two at any width, and below this it is still the icon that has to speak. */
+@media (min-width: 576px) {
+    .fc-project-plan-page .fc-cart-heading-actions .js-fc-copy-cart-items i {
+        display: none;
+    }
+
+    /* The tick is the exception: it is confirmation rather than decoration, and it only exists for
+       the two seconds after a copy, so it earns the space the copy glyph does not. */
+    .fc-project-plan-page .fc-cart-heading-actions .js-fc-copy-cart-items.is-copied i {
+        display: inline-block;
+    }
+}
+
+/* And the filter's border, so the pair reads as two of one control rather than a field beside a
+   button: 1px of --fc-dark-gray is what .fc-project-plan-page .form-select draws. :not(:hover) so
+   btn-outline-dark still darkens its own edge when the fill arrives under it. */
+.fc-project-plan-page #update_cart-list .fc-cart-heading-actions .js-fc-copy-cart-items:not(:hover) {
+    border-color: var(--fc-dark-gray);
+}
+
+/* The item count reads as a label in the action bar, not as an alert: it was a red badge, 28px of
+   white-on-danger against a strip of 27.8px buttons, which gave the number the loudest voice in a
+   row where the buttons are what you act on. Plain text at the buttons' own size, one weight below
+   them and in the muted grey the page uses for supporting copy. */
+.fc-cart-count {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    color: var(--fc-dove-gray);
+    white-space: nowrap;
+}
+
+.fc-cart-edit-bar__side {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Save and Reset close on the right edge; with the row wrapped they keep that edge rather than
+   stringing out under Cancel. */
+.fc-cart-edit-bar__side.js-fc-cart-edit-bar__right {
+    margin-left: auto;
+    justify-content: flex-end;
+}
+
+/* Source order is Copy, Edit, Reset, which is the resting arrangement. Editing hides Copy and wants
+   Reset before Save, so the one thing that changes between the two states is this: the button that
+   commits keeps the outside edge, the one that undoes sits inside it. */
+.fc-cart-edit-bar.is-editing .fc-reset-item {
+    order: -1;
+}
+
+/* Words, not glyphs. These buttons carry their label in a d-none d-sm-inline span, so below 576px
+   the bar was three unlabelled icons — and a floating strip has no column header beside it to say
+   what they do. The icon comes off with the swap rather than sitting beside the word: the pair
+   doubles the width of a bar that is already sharing the foot of the screen. !important because
+   the label's own .d-none is one. Scoped to the bar, so the same buttons keep their icons in the
+   header toolbar they return to. */
+.fc-cart-edit-bar .btn > i {
+    display: none;
+}
+
+.fc-cart-edit-bar .btn > span {
+    display: inline !important;
+}
+
+/* Compact on desktop: three buttons at View Total Cost's 18px/1.5rem stood 56px tall, which is the
+   right weight for the one full-width button that bar carries and too much for a strip of three.
+/* Size comes from .btn-sm in the markup, the same class Your Project Details' buttons carry, so the
+   two sections are held together by one rule (.fc-project-plan-page .btn.btn-sm) rather than by two
+   copies of its numbers. Nothing about the size is restated here.
+   Centred by flex rather than left to the line box: the 44px floor below makes the button taller
+   than its one line of text, and a block button drops that slack underneath — the label sat 8px
+   from the top and 16px from the bottom. No !important on display: jQuery's .show() clears the
+   inline value rather than writing one, so .hide() can still close these when edit mode ends. */
+.fc-cart-edit-bar .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Disabled: a light grey button with a muted label, not Bootstrap's 0.65 wash — Reset and Save
+   Changes are btn-dark and btn-orange, and a translucent version of either reads as a solid button
+   someone dimmed rather than one that is off. Stated in full so all three, and every state the
+   button classes bring, land on the same neutral.
+   pointer-events stays on so the cursor can be seen at all — both Bootstrap's .btn.disabled and
+   this file's own `.disabled *, .disabled` turn it off, and the second carries !important, which is
+   what the one here answers. Nothing gets through: jsFcEditItem and fcResetItem both preventDefault
+   before they test for .disabled, so the anchor cannot navigate either.
+   The colours are !important for their own reason — .btn-orange paints Save Changes with one, so a
+   plain declaration leaves that button orange while Reset alone goes grey. */
+.fc-cart-edit-bar .btn.disabled,
+.fc-cart-edit-bar .btn.disabled:hover,
+.fc-cart-edit-bar .btn.disabled:focus,
+.fc-cart-edit-bar .btn.disabled:active,
+.project-details-controls .btn.disabled,
+.project-details-controls .btn.disabled:hover,
+.project-details-controls .btn.disabled:focus,
+.project-details-controls .btn.disabled:active {
+    opacity: 1;
+    background-color: var(--fc-bright-gray) !important;
+    border-color: var(--fc-gainsboro) !important;
+    color: var(--fc-gray-chateau) !important;
+    box-shadow: none;
+    pointer-events: auto !important;
+    cursor: not-allowed;
+}
+
+/* The last 0.6px of the match. Everything in this column is put on line-height 1.3 by
+   #update_cart-list .btn:not(.js-fc-view-total-cost), where the page — and so Your Project Details
+   — is on 1.35; that is the whole of the height difference. The id is in the selector because the
+   rule it has to outrank carries one, which is cheaper than an !important. */
+.fc-project-plan-page #update_cart-list .fc-cart-edit-bar .btn {
+    line-height: 1.35;
+}
+
+/* No mobile floor or label bump: these buttons stay the size they are on desktop at every width.
+   They carried min-height: 44px and 0.875rem below 768 — the touch floor, and the size Your
+   Project Details' own edit bar takes there — which stood them 16px taller than the same four
+   buttons on a wide screen. The column's own 0.75rem now applies throughout, so the bar reads the
+   same everywhere. */
+
+@media (max-width: 992px) {
+    .fc-cart-edit-bar {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+/* bottom: 0 here as everywhere else. It sat one bar's height up while View Total Cost floated at
+   this width too and the two had to stack; that bar is in the flow now, so there is nothing at the
+   foot of the screen for this one to clear. */
+@media (max-width: 767.98px) {
+    .fc-cart-edit-bar {
+        padding: 9px 10px;
+        margin-bottom: 0;
+    }
+
 }
 
 @media (min-width: 576px) {
@@ -9598,14 +9920,6 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     justify-content: flex-start;
 }
 
-/* The toolbar is the first child of a padding-less .fc-card, so without this the badge and the
-   filter sit with nothing above them. Vertical only — the horizontal edges line up with the
-   table and the section heading instead. Asymmetric bottom: the markup's mb-2 already supplies
-   8px of the gap down to the table. */
-.fc-cart-list-toolbar {
-    padding: 12px 0 4px 16px;
-}
-
 /* The heading buttons and the style filter both end where the Stock & Delivery panel begins, so
    flush right leaves them touching it. Right edge only — the left edges stay on the section
    gutter with the title, table and total bar. */
@@ -9617,11 +9931,6 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
    the section border, but floating text sitting on it reads as a mistake. */
 #update_cart-list > .row.align-items-center > [class*="col"]:first-child {
     padding-left: 16px;
-}
-
-/* Margin, not padding: the select's 26px right padding is the room its caret sits in. */
-.fc-cart-list-toolbar .fc-cart-style-filter {
-    margin-right: 16px;
 }
 
 /* Item List & Cart heading row: 20px of row padding plus a 12px column gutter held the title and
@@ -9643,12 +9952,17 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 }
 
 /* Fence-style filter beside the item count. Compact: sized to the badge it sits next to
-   rather than to a form row, and only as wide as its longest option. */
-.fc-cart-list-toolbar .fc-cart-style-filter {
+   rather than to a form row, and only as wide as its longest option. Scoped to the column rather
+   than to the toolbar it used to live in — both it and the badge are moved into the heading row by
+   fcMountCartHeadingActions(). */
+#update_cart-list .fc-cart-style-filter {
     width: auto;
     min-width: 150px;
     max-width: 220px;
     height: 30px;
+    /* 3px, the radius every button on this page carries. Bootstrap's .form-select brings 6px,
+       which stood this control rounder than the Copy button it sits beside. */
+    border-radius: 3px;
     padding: 2px 26px 2px 10px;
     font-size: 12px;
     font-weight: 500;
@@ -10188,6 +10502,19 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     #update_cart-list > .fc-view-total-cost-bar {
         padding: 0 16px 16px;
     }
+
+    /* .fc-cart-edit-bar tightens to 10px here, and View Total Cost has to start and end on the
+       lines the count and Edit Quantity directly above it do. This is the only width where the two
+       disagreed — both inset by 20 at full width and by the 16 above from 992 down — and the green
+       button was left standing 6px inside the bar at each end. Nested rather than written as its
+       own block further down because the rule it overrides is the one directly above: same
+       specificity, so only source order separates them. */
+    @media (max-width: 767.98px) {
+        #update_cart-list > .fc-view-total-cost-bar {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    }
 }
 
 /* Two-pane rules only — under 768 these stack. */
@@ -10430,10 +10757,12 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     }
 }
 
-/* 11px is what the other header opens between its two lines — .step-label's own 3px plus the
-   mb-2 on .fc-step2-title-row, the wrapper that exists over there to seat the mobile chip. */
+/* .step-label's own 3px is what the other header opens between its two lines, and what Step 01
+   opens; .fc-step2-title-row, the wrapper that exists over there to seat the mobile chip, adds
+   nothing to it. Declared rather than left to the base rule so the pair stays visibly linked —
+   the two headers have to break on the same line across the seam. */
 .fc-planner-page .js-fc-form-step[data-section="2"] .fc-step2-notes__header .step-label {
-    margin-bottom: 11px;
+    margin-bottom: 3px;
 }
 
 /* The notes themselves. No ground of their own: the header above already separates them from the
@@ -10545,7 +10874,13 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     margin-top: 14px;
 }
 
-.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section--step3 > div:has(> .fencing-content-title) {
+/* The header row and the title inside it both close on nothing of their own: .fencing-section--step3
+   already pads 14px below, the gap Steps 1 and 2 keep between their title and the rule. Not `> ` on
+   the title — it sits inside .fc-step3-heading now, paired with the step label. !important on both
+   because bootstrap.min.css (fc-mb-2's neighbour, mb-0) loads after this file, and because
+   .fencing-section--step3 h4.fencing-content-title reopens 10px below 992px. */
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section--step3 > div:has(.fencing-content-title),
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section--step3 .fencing-content-title {
     margin-bottom: 0 !important;
 }
 
@@ -10569,9 +10904,21 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     padding: 0;
 }
 
+/* The header band takes the ground Steps 1-3 carry, so the run reads as one treatment rather than
+   three grey headers and a white one. Here it is two boxes and not one — the label and the title
+   are siblings, with the body following them inside the same __top — so both take the colour and
+   the 2px between them moves into the label's padding; left as a margin it drew a white line across
+   the band. Only the top-right corner is rounded: the section carries br-tl-0 for the Section
+   Details tab that sits on its top-left, and 6px is the card's 7px less its border. */
+.fc-planner-page .fc-step-4 .fencing-section__top > .step-label,
+.fc-planner-page .fc-step-4 .fencing-section__top > .fencing-content-title {
+    background: var(--fc-cultured);
+}
+
 .fc-planner-page .fc-step-4 .fencing-section__top > .step-label {
-    padding: 16px 20px 0;
-    margin-bottom: 2px;
+    padding: 16px 20px 2px;
+    margin-bottom: 0;
+    border-top-right-radius: 6px;
 }
 
 .fc-planner-page .fc-step-4 .fencing-section__top > .fencing-content-title {
@@ -11102,16 +11449,29 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
         padding-bottom: 10px;
     }
 
-    /* The value is the thing being read, so it carries the weight the label gives up. */
+    /* 400, the weight the .form-control in this same cell renders at: pressing Edit Details swaps
+       the value for an input, and at 500 the reading state came back a step heavier than the one
+       you had just been typing in. The label above still carries its own 600 to separate the two. */
     .fc-project-details .fc-table.fc-table-customer tbody tr td + td,
     .fc-project-details .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td + td {
         color: var(--fc-cod-gray);
-        font-weight: 500;
+        font-weight: 400;
         overflow-wrap: anywhere;
         line-height: 20px;
         padding-top: 10px;
         padding-bottom: 10px;
     }
+}
+
+/* Notes is its own one-row table with a single cell, so it never matched the td + td value rules
+   above and kept the page's inherited 16px — against the 14px of the textarea that replaces it in
+   edit mode, and of every other value in the section. Outside a media query because those rules
+   set the size twice, once per breakpoint, and this cell needs it at both.
+   Size and line box only: the muted colour stays, being the empty-state signal rather than type,
+   and the cell keeps its own padding, which lays out the notes block rather than a table row. */
+.fc-project-details .fc-table.fc-table-customer tbody tr td:only-child {
+    font-size: 0.875rem;
+    line-height: 20px;
 }
 
 .ally {
@@ -12374,12 +12734,76 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
 }
 
 .sticky-roll .fencing-tabs {
-    border-bottom: 1px solid var(--fc-princeton-orange);
+    border-bottom: 2px solid var(--fc-princeton-orange);
 }
 
-/* Flatten top corners when section tabs stick to the viewport */
+/* Flatten top corners when section tabs stick to the viewport, and lift the strip off the page
+   it now floats over. The unstuck shadow is the same one at zero alpha rather than `none`, which
+   is what gives the transition below two values to interpolate between. */
+.fencing-tabs-area {
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0);
+}
+
 .sticky-roll.fencing-tabs-area {
     border-radius: 0;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+}
+
+/* --------------------------------------------------------------------------------------------
+   Sticking is a transition, not a cut.
+   The strip changes form as it sticks — 20px "SECTION 1" over two further lines becomes a 16px
+   "S1 FLAT TOP" over one — and it used to do all of it in a single frame, at the same moment the
+   page below jumped by the strip's own height. events.js reserves that height now and toggles
+   .sticky-roll once per state change rather than on every scroll tick, so the only thing left to
+   move is the strip itself and every part of its form that can be interpolated is.
+   Left out on purpose: border-bottom goes 0 none -> 1px solid, and a colour that starts from the
+   computed black of a border that was never drawn animates as a flash; width is set inline by
+   events.js, and easing it would leave the strip lagging the frame during a live window resize,
+   for a value that measures the same either side of the switch; the status icon holds a fixed size
+   across both states, so it has nothing to ease and stays still while the type moves; and Add
+   Section keeps the `transition: all 0.2s ease` of its own base rule, which already covers the
+   size change here and the hover an explicit list would drop.
+   -------------------------------------------------------------------------------------------- */
+.fencing-tabs-area,
+.fencing-tabs-area .fencing-tabs,
+.fencing-tabs-area .fencing-tab-container,
+.fencing-tabs-area .fencing-tab,
+.fencing-tabs-area .fencing-tab-name,
+.fencing-tabs-area .fencing-tab-number,
+.fencing-tabs-area .ftm-measurement {
+    transition:
+        font-size 220ms ease,
+        line-height 220ms ease,
+        margin 220ms ease,
+        padding 220ms ease,
+        border-radius 220ms ease,
+        box-shadow 220ms ease,
+        opacity 220ms ease;
+}
+
+/* Position on a line is not interpolable, and three lines of the tab change place at once as it
+   compacts: "SECTION" leaves, so the number slides to the head of the row, "FLAT TOP" comes up
+   beside it off its own line, and the measurement follows them up. They are given an entrance
+   instead of being left to land in a single frame under everything else easing — the class is only
+   applied on a state change now, so each run plays once. Fade with no transform: .ftm-fence-style
+   is inline while stuck, and transforms do not apply to inline boxes. */
+@keyframes fcTabsCompactIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fc-planner-page .sticky-roll .fencing-tab-number,
+.fc-planner-page .sticky-roll .ftm-fence-style,
+.fc-planner-page .sticky-roll .ftm-measurement {
+    animation: fcTabsCompactIn 220ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fencing-tabs-area,
+    .fencing-tabs-area * {
+        transition: none !important;
+        animation: none !important;
+    }
 }
 
 .sticky-roll .fencing-tab-container {
@@ -12408,6 +12832,10 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     line-height: 1.25;
 }
 
+/* Not collapsed to font-size 0, tempting as it is for the transition below: the box would stay in
+   the line, and the whitespace either side of it in .fencing-tab-name renders as two spaces where
+   display:none leaves the two runs adjacent and they collapse into one. "SECTION" would go away
+   smoothly at the cost of 5px more air between the status tick and "S1". */
 .fc-planner-page .sticky-roll .ftm-title {
     display: none;
 }
@@ -12465,9 +12893,26 @@ body.fc-restoring-selection .fencing-style-item .fencing-style-img {
     font-size: 0.95rem;
 }
 
+/* The + takes the Overall Length stepper's +: 16px on a line-height of 1, black. They are the only
+   two pluses on the page and were reading as two sizes of one idea, this one 12px and a shade off
+   black. Set on the button rather than the glyph because the label beside it is display:none while
+   stuck, so the button's font-size drives nothing else — and the glyph inheriting one eased value
+   is what keeps it from dipping to 12px on the first frame of the way back. line-height is already
+   1 from the base rule. :not(:hover) so the white the button takes on hover above 992px still
+   wins; this selector outranks it.
+   48px because the padding alone left a 38px box around a 16px glyph, tighter than either control
+   it now reads with — it is what the stepper's + measures (47px) and what this same button already
+   takes below 768px. The tab strip beside it is flex:1 and gives up the 10px. A floor rather than
+   a width: between 768 and 992 the button is deliberately 80px, and a fixed 48 would narrow the
+   one band that was already wide enough. */
 .fc-planner-page .sticky-roll .fencing-tab-add {
+    min-width: 48px;
     padding: 8px 12px;
-    font-size: 12px;
+    font-size: 16px;
+}
+
+.fc-planner-page .sticky-roll .fencing-tab-add:not(:hover) {
+    color: var(--fc-black);
 }
 
 .fc-planner-page .sticky-roll .fencing-tab-add span {
@@ -14768,10 +15213,17 @@ div.fc-footer-app .app-version {
     transform: scale(0.85);
     position: fixed;
     right: 20px;
-    bottom: 20px;
-    /* Above the planner's own fixed chrome (sticky tabs sit at 10) but below Bootstrap's modal
-       backdrop at 1050, so a dialog still covers it. */
-    z-index: 1040;
+    /* The lift is set by fcSyncChatLauncherOffset() on the project plan, where two bars pin
+       themselves to the foot of the viewport in the corner this button already occupies. It is the
+       pinned bar's height while one is actually stuck there and 0px the rest of the time, so the
+       button keeps its own corner on every other page and at every other scroll position. */
+    bottom: calc(20px + var(--fc-chat-launcher-lift, 0px));
+    /* Above the planner's own fixed chrome (sticky tabs sit at 10) and above the project plan's
+       three floating bars — Your Project Details at 1041, View Total Cost at 1041, the cart's
+       action bar at 1042 — which the launcher shares the bottom-right corner with on a phone and
+       used to disappear behind. Still below the page's modals at 1045 and Bootstrap's backdrop at
+       1050, so a dialog covers it as before. */
+    z-index: 1043;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -14790,6 +15242,9 @@ div.fc-footer-app .app-version {
         transform 0.2s ease,
         opacity 0.2s ease,
         visibility 0.2s ease,
+        /* Eased for the same reason the sticky tabs are: a bar pinning itself would otherwise
+           teleport this button 60px up the screen mid-scroll. */
+        bottom 0.2s ease,
         background-color 0.15s ease,
         box-shadow 0.15s ease;
 }
@@ -14823,7 +15278,9 @@ div.fc-footer-app .app-version {
 @media (max-width: 767.98px) {
     .fc-chat-launcher {
         right: 16px;
-        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        /* Carries the lift too — this is the width where a pinned bar spans the whole screen and
+           the button has somewhere to be pushed to. */
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px) + var(--fc-chat-launcher-lift, 0px));
         width: 44px;
         height: 44px;
         font-size: 17px;
@@ -15152,25 +15609,14 @@ div.fc-footer-app .app-version {
         top: calc(41px + env(safe-area-inset-top, 0px));
     }
 
-    /* The cart's second level is the item count and the style filter, not the table's column
-       head — the filter is the control you want within reach while you scroll a long list, and
-       the one word "Description" is not worth the row it holds. Full selector on the head so it
-       outranks the rule that makes it sticky in the first place. */
+    /* The column head stays put: the one word "Description" is not worth the row it holds. It used
+       to give way to the item count and style filter, which were the cart's sticky second level
+       until those moved up into the section heading. Full selector so it outranks the rule that
+       makes the head sticky in the first place. */
     .fc-project-plan-page #update_cart-list .table-cart thead.table-dark th {
         position: static;
     }
 
-    .fc-project-plan-page #update_cart-list .fc-cart-list-toolbar {
-        position: sticky;
-        top: calc(41px + env(safe-area-inset-top, 0px));
-        z-index: 10;
-        background-color: var(--fc-white);
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
-        /* 12/4 was fine for a row that scrolled away; pinned it is chrome, and the same 8 the
-           other sticky headers use. */
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
 }
 
 
@@ -15398,16 +15844,6 @@ div.fc-footer-app .app-version {
         z-index: 1042;
     }
 
-    /* The cart toolbar, pinned: same treatment as the card headers, with its own 16px left
-       gutter put back on top of the one the margins take. */
-    .fc-project-plan-page #update_cart-list .fc-cart-list-toolbar.is-stuck {
-        z-index: 1042;
-        margin-left: calc(50% - 50vw);
-        margin-right: calc(50% - 50vw);
-        padding-left: calc(16px + (50vw - 50%));
-        padding-right: calc(50vw - 50%);
-    }
-
     /* The dark card headers, one level down. 15 is their own padding; the border they carry is
        what makes their title land on the same 29 as everything else. */
     .fc-project-plan-page .fc-project-details .fc-card-header.is-stuck {
@@ -15508,21 +15944,11 @@ div.fc-footer-app .app-version {
         padding-bottom: 3px;
     }
 
-    /* !important because the page-wide button rule sets its padding that way; without it these
-       two keep the 0.4rem that makes them 26.8 tall and the band stays 43.8. */
-    .fc-project-plan-page #update_cart-list > .row:first-of-type .btn {
-        padding-top: 3px !important;
-        padding-bottom: 3px !important;
-        /* Take the full 24 the title leaves rather than shrinking to the label's 20: the band
-           does not grow either way, and 4px of it is tap area. */
-        min-height: 24px;
-        /* And centre in it. These are display: block, so the line box sat at the top and the
-           height min-height added fell to the bottom — the icon read 4px from the top against
-           8px below it. The SECTION n buttons are centred flex boxes; this matches them. */
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
+    /* The 24px cap this row's buttons used to take is gone. It was sized for the Copy and Edit
+       pair the band once held, where nothing else set the height; Copy is the only button left
+       here and it sits beside the fence-style filter, which stands 32px whatever this says — so
+       the cap only made the two read as a mismatched pair. Their shared size is set once, outside
+       this query, on .fc-cart-heading-actions .js-fc-copy-cart-items. */
 }
 
 
@@ -15552,9 +15978,12 @@ div.fc-footer-app .app-version {
         padding-right: 0;
     }
 
+    /* 2px, the weight .fencing-section--has-border draws around every other section and around
+       these two themselves once the panes sit side by side. At 1px each panel read as a lighter
+       box than the ones above it on the same screen. */
     .fc-project-plan-page #update_cart-section > .row > #update_stock-delivery,
     .fc-project-plan-page #update_cart-section > .row > #update_cart-list {
-        border: 1px solid var(--fc-princeton-orange);
+        border: 2px solid var(--fc-princeton-orange);
         border-radius: 7px;
     }
 
@@ -15578,33 +16007,15 @@ div.fc-footer-app .app-version {
 
 
 /* --------------------------------------------------------------------------------------------
-   View Total Cost — floats at the foot of the screen for as long as the cart is (mobile).
-   The cart list is long enough that its one action scrolls out of reach almost immediately.
-   Sticky rather than fixed, exactly as the Edit Details bar above: it is the last child of the
-   cart pane, so bottom: 0 floats it at the foot of the screen for the whole of the list and then
-   settles back into the pane as you reach the end of it. Fixed did not — it stayed pinned over
-   the page below the cart, and because it left the flow the pane had to reserve its height, which
-   drew an empty box under the last row inside the pane's own frame.
+   View Total Cost — in the flow on mobile.
+   It used to float at the foot of the screen for the length of the cart, which is why the action
+   bar above it is offset on this width. It sits at the end of the list now like everything else,
+   so the padding falls back to the pane's own and the strip's ground, rule and shadow go with it.
+   The button keeps the smaller size below: 44px on a 14px label is a phone's touch target, not a
+   property of the bar having floated.
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
-    #update_cart-list > .fc-view-total-cost-bar {
-        position: sticky;
-        bottom: 0;
-        /* Level with the Edit Details bar, above the chat launcher, under the modals. */
-        z-index: 1041;
-        /* Sized as that bar too — same 9/10 padding on the same cultured ground, so the two
-           action bars this page floats read as one component in two places. */
-        padding: 9px 10px calc(10px + env(safe-area-inset-bottom, 0px));
-        background-color: var(--fc-cultured);
-        border-top: 1px solid var(--fc-gainsboro);
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
-        /* Settled, the bar is the last thing inside a 7px frame, so it follows that corner
-           rather than running its own square one past it. */
-        border-bottom-left-radius: 7px;
-        border-bottom-right-radius: 7px;
-    }
-
-    /* Smaller than the in-flow version, and the same size as Edit Details: 44px on a 14px label.
+    /* Smaller than the desktop version, and the same size as Edit Details: 44px on a 14px label.
        !important on the two that need it — the page-wide button rule sets padding that way, and
        .btn-lg carries the 18px label. */
     #update_cart-list > .fc-view-total-cost-bar .btn {

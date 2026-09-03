@@ -21,8 +21,10 @@ use Fc\Admin\Services\AppConfigService;
                          opposite "Step 02" rather than beside the subtitle. Below md the IMPORTANT
                          panel opposite is hidden and its content moves behind this button; the dialog
                          body is filled from that panel on show, since the copy changes with the fence
-                         style. -->
-                    <div class="fc-step2-title-row d-flex align-items-center justify-content-between gap-2 mb-2">
+                         style.
+                         No margin of its own: the gap to the title is .step-label's own 3px, the
+                         same one Step 01 opens, and an mb-2 here added 8px on top of it. -->
+                    <div class="fc-step2-title-row d-flex align-items-center justify-content-between gap-2">
                         <div class="step-label" data-action="scroll" data-target="[data-section=2]" data-offset="54">Step <span>02</span></div>
 
                         <button type="button"

@@ -63,7 +63,10 @@ use Fc\Admin\Services\PlannerSessionService;
 
                 <!-- [START] TABS -->
                 <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 mt-3" data-tab="1">
-                    <div class="fencing-tabs-area bg-white" data-spy="scroll" data-screen="0" data-target=".js-fencing-tabs-container">
+                    <!-- data-sticky-reserve: the scroll spy in events.js holds this strip's height
+                         open in the container it leaves behind, so the page below it does not jump
+                         by 73px the moment it goes fixed. -->
+                    <div class="fencing-tabs-area bg-white" data-spy="scroll" data-screen="0" data-target=".js-fencing-tabs-container" data-sticky-reserve>
                         <div class="fencing-tabs fc-row-flex">
 
                             <div class="fencing-tab-container js-fencing-tab-container fc-row-flex">

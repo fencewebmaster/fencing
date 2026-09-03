@@ -14,26 +14,18 @@
 				        		<div class="step-label">Item List & <span>Cart</span></div>
 
 				        	</div>
-					        	<div class="col min-w-0">
-					        	<div class="js-fc-cart-toolbar fc-cart-toolbar d-flex align-items-center justify-content-end gap-2 flex-wrap w-100">
-					        		<div class="js-fc-cart-toolbar-actions d-flex align-items-center gap-2 flex-wrap ms-sm-auto">
-											<a href="#" class="btn btn-outline-dark js-fc-copy-cart-items fw-bold text-uppercase" aria-label="Copy item list">
-							            		<i class="fa-regular fa-copy me-sm-1" aria-hidden="true"></i>
-							            		<span class="d-none d-sm-inline">Copy</span>
-							            	</a>
-											<a href="#" class="btn btn-orange fc-update-item text-uppercase js-fc-edit-item fw-bold" aria-label="Edit item">
-							            		<i class="fa-regular fa-pen-to-square me-sm-1" aria-hidden="true"></i>
-							            		<span class="d-none d-sm-inline">Edit</span>
-							            	</a>
-									        <a href="#" class="btn btn-secondary fc-cancel-item fw-bold text-uppercase" style="display: none;" aria-label="Cancel editing cart">
-							            		<i class="fa-solid fa-xmark me-sm-1" aria-hidden="true"></i> <span class="d-none d-sm-inline">Cancel</span>
-							            	</a>
-							            	<a href="#" class="btn btn-dark fc-reset-item fw-bold text-uppercase" style="display: none;">
-							            		<i class="fa-solid fa-rotate-left me-sm-1"></i> <span class="d-none d-sm-inline">Reset</span>
-							            	</a>
-					        		</div>
-					        	</div>
 
+				        	<!-- Copy sits with the heading; the fence-style filter is put in front of
+				        	     it by fcMountCartHeadingActions(). The filter cannot be written here:
+				        	     it is part of the cart fragment the server re-renders, and its options
+				        	     would go stale the first time the list changed.
+				        	     ms-auto, not the grid: the title column is set to shrink to its
+				        	     content at 576px up, so there is nothing to push this to the edge. -->
+				        	<div class="col-auto ms-auto js-fc-cart-heading-actions fc-cart-heading-actions d-flex align-items-center gap-2">
+				        		<a href="#" class="btn btn-sm btn-outline-dark js-fc-copy-cart-items fw-bold text-uppercase" aria-label="Copy item list">
+				        			<i class="fa-regular fa-copy me-sm-1" aria-hidden="true"></i>
+				        			<span class="d-none d-sm-inline">Copy</span>
+				        		</a>
 				        	</div>
 				        </div>
 					    <!-- [END] Label -->
@@ -41,6 +33,32 @@
 					    <div class="fc-card fc-table-items">
 					        <?php include view_path('frontend.partials.sections.cart-table'); ?>
 					    </div>
+
+						<!-- Every cart action lives here rather than beside the heading: the cart is the
+						     longest table on the page, and up there they scrolled away from the rows
+						     they act on. The bar carries both states — Edit and Copy at rest, Cancel,
+						     Reset and Save while editing — and checkout.js only ever shows and hides
+						     within it, so the one Edit/Save button keeps a single label.
+						     Reset sits last in source order and is pulled in front of Save by .is-editing,
+						     which is the only difference between the two arrangements. -->
+						<div class="js-fc-cart-edit-bar fc-cart-edit-bar">
+							<div class="js-fc-cart-edit-bar__left fc-cart-edit-bar__side">
+								<a href="#" class="btn btn-sm btn-secondary fc-cancel-item fw-bold text-uppercase" style="display: none;" aria-label="Cancel editing cart">
+									<i class="fa-solid fa-xmark me-sm-1" aria-hidden="true"></i> <span class="d-none d-sm-inline">Cancel</span>
+								</a>
+							</div>
+							<div class="js-fc-cart-edit-bar__right fc-cart-edit-bar__side">
+								<a href="#" class="btn btn-sm btn-orange fc-update-item text-uppercase js-fc-edit-item fw-bold" aria-label="Edit quantity">
+									<i class="fa-regular fa-pen-to-square me-sm-1" aria-hidden="true"></i>
+									<span class="d-none d-sm-inline">Edit Quantity</span>
+								</a>
+								<!-- Starts dead, like Save Changes: there is nothing to undo until a
+								     quantity differs from the one its row loaded with. -->
+								<a href="#" class="btn btn-sm btn-dark fc-reset-item fw-bold text-uppercase disabled" aria-disabled="true" tabindex="-1" style="display: none;">
+									<i class="fa-solid fa-rotate-left me-sm-1"></i> <span class="d-none d-sm-inline">Reset</span>
+								</a>
+							</div>
+						</div>
 
 						<div class="fc-view-total-cost-bar">
 							<div class="fc-view-total-cost-bar__inner">
@@ -59,7 +77,10 @@
 
 					<div class="col fc-position-relative order-1 mb-md-0 mb-4" id="update_stock-delivery">
 
-						<div data-spy="scroll" data-screen="768" data-offset="20" data-target="#update_stock-delivery">
+						<!-- offset 0: pinned, this pane's header has to land on the same line as the
+						     cart header opposite, which sticks at the top of its own column. At 20
+						     it floated 20px lower and the band the two share read as two. -->
+						<div data-spy="scroll" data-screen="768" data-offset="0" data-target="#update_stock-delivery">
 							<div class="fencing-section__cmp fencing-section__step-label">
 						        <div class="step-label">Stock & <span>Delivery</span></div>
 						    </div>

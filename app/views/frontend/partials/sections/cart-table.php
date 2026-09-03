@@ -35,7 +35,7 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
 ?>
 
 <div class="fc-cart-list-toolbar d-flex align-items-center justify-content-between gap-2 mb-2">
-    <span class="badge bg-danger text-uppercase p-2"><?php echo (int) $cart_included_count; ?> Items</span>
+    <span class="fc-cart-count text-uppercase js-fc-cart-count"><?php echo (int) $cart_included_count; ?> Items</span>
 
     <?php if ( count( $fc_cart_fence_styles ) > 1 ) : ?>
     <select class="form-select fc-cart-style-filter js-fc-cart-style-filter" aria-label="Show items for one fence style">

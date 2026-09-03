@@ -12,6 +12,72 @@ function fcAfterProjectDetailsSectionReloaded() {
     });
 }
 
+/**
+ * The chat launcher and the page's two pinned bars — Your Project Details' footer and the cart's
+ * action bar — both live in the bottom-right corner, and the launcher sits above them, so on a
+ * phone it covered the right end of Save Changes and Edit Quantity. It steps up out of the way for
+ * exactly as long as a bar is pinned there, and drops back to its own corner the moment that bar
+ * settles into the flow at the end of its column.
+ *
+ * Measured rather than assumed: the two bars are position: sticky, so whether either is at the
+ * foot of the screen depends on where the column is, not on the width or the page.
+ */
+function fcSyncChatLauncherOffset() {
+    var launcher = document.querySelector('.fc-chat-launcher');
+    if (!launcher) {
+        return;
+    }
+
+    var corner = launcher.getBoundingClientRect();
+    var lift = 0;
+
+    $('.js-project-details-footer, .js-fc-cart-edit-bar').each(function() {
+        var bar = this.getBoundingClientRect();
+        if (!bar.height || !bar.width) {
+            return;
+        }
+        // Pinned means the bar's bottom edge is sitting on the viewport's. Once the column ends it
+        // scrolls away with the page and this stops matching.
+        if (Math.abs(bar.bottom - window.innerHeight) > 1) {
+            return;
+        }
+        // A bar the launcher does not sit over is not in the way — which is the desktop case, where
+        // both bars end well short of this corner.
+        if (bar.right < corner.left || bar.left > corner.right) {
+            return;
+        }
+        // The bar's height and nothing more: the launcher's own bottom offset — 20px, 16 on a
+        // phone — then sits between the two, which is the gap it already keeps from the edge.
+        lift = Math.max(lift, bar.height);
+    });
+
+    launcher.style.setProperty('--fc-chat-launcher-lift', lift + 'px');
+}
+
+var fcChatLauncherFrame = null;
+
+function fcQueueChatLauncherOffset() {
+    // Scroll fires far more often than the value can change; one measurement per frame is enough.
+    // Replaced rather than skipped: a frame requested while the tab is hidden never runs, and a
+    // plain "already pending" guard would then wedge every later call behind it.
+    if (fcChatLauncherFrame !== null) {
+        cancelAnimationFrame(fcChatLauncherFrame);
+    }
+    fcChatLauncherFrame = requestAnimationFrame(function() {
+        fcChatLauncherFrame = null;
+        fcSyncChatLauncherOffset();
+    });
+}
+
+$(window).on('scroll resize', fcQueueChatLauncherOffset);
+// Entering or leaving edit mode changes which buttons the bar holds and so how tall it is, and a
+// cart render can change it without any scrolling at all.
+_doc.on('click', '.js-fc-edit-item, .fc-cancel-item, .fc-btn-edit, .fc-btn-cancel-project-details', fcQueueChatLauncherOffset);
+// Straight through, not queued: the first measurement has to land whether or not a frame is due,
+// and images settling can move a bar after ready without any scroll following.
+$(fcSyncChatLauncherOffset);
+$(window).on('load', fcSyncChatLauncherOffset);
+
 /*
     ----------------------------------------------------------------
     [START] CLICK EVENT
@@ -81,21 +147,46 @@ function fcCopyCartItems(e) {
         return;
     }
 
+    // Both halves of the button change, because each viewport only ever shows one of them: below
+    // 576px the label is d-none and the glyph is the whole button, above it the glyph is display:
+    // none and the word is. A tick on its own would be invisible on desktop, a word on its own
+    // invisible on mobile. The .is-copied class is what lets the tick through on desktop.
     function showCopiedFeedback() {
         var $label = $btn.find('span.d-none.d-sm-inline');
+        var $icon = $btn.find('i').first();
+
         var original = $btn.data('fc-copy-label');
         if (original === undefined || original === '') {
             original = $label.length ? $label.text() : 'Copy';
             $btn.data('fc-copy-label', original);
         }
+
+        var originalIcon = $btn.data('fc-copy-icon');
+        if (originalIcon === undefined && $icon.length) {
+            originalIcon = $icon.attr('class');
+            $btn.data('fc-copy-icon', originalIcon);
+        }
+
         if ($label.length) {
             $label.text('Copied!');
         }
-        setTimeout(function() {
+        if ($icon.length) {
+            $icon.attr('class', 'fa-solid fa-check me-sm-1');
+        }
+        $btn.addClass('is-copied');
+
+        // Copying again inside the window restarts the two seconds; without this the first click's
+        // timer would drop the button back to Copy while the second copy still read as fresh.
+        clearTimeout($btn.data('fc-copy-timer'));
+        $btn.data('fc-copy-timer', setTimeout(function() {
             if ($label.length) {
                 $label.text(original);
             }
-        }, 2000);
+            if ($icon.length && originalIcon) {
+                $icon.attr('class', originalIcon);
+            }
+            $btn.removeClass('is-copied');
+        }, 2000));
     }
 
     if (typeof fcCopyTextToClipboard === 'function') {
@@ -478,7 +569,7 @@ function fcPrepareProjectPlanCartScreenshotClone(cloned) {
     cloned.style.background = '#ffffff';
     cloned.style.boxSizing = 'border-box';
 
-    cloned.querySelectorAll('.fc-cart-toolbar, .js-fc-cart-toolbar, .fc-view-total-cost-bar').forEach(function(el) {
+    cloned.querySelectorAll('.fc-cart-toolbar, .js-fc-cart-toolbar, .fc-view-total-cost-bar, .fc-cart-edit-bar').forEach(function(el) {
         el.style.display = 'none';
     });
 
@@ -519,6 +610,9 @@ function fcProjectPlanCartScreenshotOptions() {
                 return false;
             }
             if (el.classList.contains('js-fc-cart-toolbar')) {
+                return false;
+            }
+            if (el.classList.contains('fc-cart-edit-bar')) {
                 return false;
             }
             if (el.classList.contains('fc-view-total-cost-bar')) {
@@ -756,6 +850,67 @@ function fcBtnDownloadFence(e) {
 // PROJECT DETAILS SECTION
 
 /**
+ * Save Changes and Reset are dead until a field differs from what it held when the editor opened.
+ *
+ * Measured against a snapshot rather than against the spans fcBtnReset restores from, which cannot
+ * be read back reliably: the notes cell nests one span inside another, so .find('span').text()
+ * returns "No notes added." twice over for a textarea that is empty, and every row would count as
+ * changed the moment you pressed Edit Details. A snapshot also says the plainer thing — changed
+ * since you started — and needs no special case for the selects.
+ */
+var fcProjectDetailsSnapshot = null;
+
+function fcProjectDetailsFields$() {
+    return $('.fc-table-customer').find('.form-control');
+}
+
+function fcProjectDetailsValues() {
+    return fcProjectDetailsFields$()
+        .map(function() {
+            return String($(this).val());
+        })
+        .get();
+}
+
+function fcCaptureProjectDetailsSnapshot() {
+    fcProjectDetailsSnapshot = fcProjectDetailsValues();
+}
+
+function fcProjectDetailsHasChanges() {
+    if (!fcProjectDetailsSnapshot) {
+        return false;
+    }
+
+    var now = fcProjectDetailsValues();
+    if (now.length !== fcProjectDetailsSnapshot.length) {
+        return true;
+    }
+
+    for (var i = 0; i < now.length; i++) {
+        if (now[i] !== fcProjectDetailsSnapshot[i]) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function fcSyncProjectDetailsActions() {
+    var editing = !$('.js-project-details-controls').hasClass('fc-d-none');
+    var enable = editing && fcProjectDetailsHasChanges();
+
+    // Only the Save half of .fc-btn-edit — Edit Details shares the class and is always available.
+    $('.fc-btn-reset, .fc-btn-edit[data-action="update"]')
+        .toggleClass('disabled', !enable)
+        .attr('aria-disabled', enable ? null : 'true')
+        .attr('tabindex', enable ? null : '-1');
+}
+
+// keyup as well as input: the field clear buttons loadClearForm() adds empty a field with .val('')
+// and announce it with a keyup, which neither of the other two events would carry.
+_doc.on('input change keyup', '.fc-table-customer .form-control', fcSyncProjectDetailsActions);
+
+/**
  * Leave project-details edit mode without saving (restore fields from displayed spans).
  */
 function fcProjectDetailsCancelEdit() {
@@ -766,6 +921,9 @@ function fcProjectDetailsCancelEdit() {
     $('.js-project-details-controls').addClass('fc-d-none');
     $(".fc-btn-edit[data-action='edit']").show();
     $('.form-control-clear').remove();
+    // Out of edit mode there is no baseline, so both actions go back to dead for the next round.
+    fcProjectDetailsSnapshot = null;
+    fcSyncProjectDetailsActions();
 }
 
 _doc.on('click', '.fc-btn-cancel-project-details', function(e) {
@@ -787,9 +945,20 @@ function fcBtnEdit(e) {
 
         _this.hide();
         loadClearForm();
-    } else {
-        $('form').submit();
+        $('.js-project-details-controls').removeClass('fc-d-none');
+        // What the fields held on the way in, and so nothing to save or undo yet.
+        fcCaptureProjectDetailsSnapshot();
+        fcSyncProjectDetailsActions();
+        return;
     }
+
+    // originalEvent tells a real click from projectDetailsUpdate()'s .trigger('click'), which
+    // arrives from the modal and has to go through whatever this button looks like.
+    if (e && e.originalEvent && _this.hasClass('disabled')) {
+        return;
+    }
+
+    $('form').submit();
     $('.js-project-details-controls').removeClass('fc-d-none');
 
 }
@@ -831,12 +1000,32 @@ _doc.on('click', '.fc-btn-reset', fcBtnReset);
 
 function fcBtnReset(e) {
     e?.preventDefault();
+
+    // As in fcBtnEdit: a real click respects the disabled state, fcProjectDetailsCancelEdit's
+    // .trigger('click') has to restore whatever the button looks like.
+    if (e && e.originalEvent && $(this).hasClass('disabled')) {
+        return;
+    }
+
     $('.fc-table-customer td').each(function() {
         var _this = $(this);
         if (_this.find('.form-control').length) {
-            var val = _this.find('span').text();
+            // Read the outermost span only, and drop the muted placeholder inside it. The cell
+            // shows either a value or a stand-in for an empty one ("No notes added.", "—"), and
+            // the empty notes cell nests one span in another — .find('span').text() across the
+            // pair returned that placeholder twice over and wrote it into the textarea.
+            var $shown = _this.find('span').first().clone();
+            $shown.find('.text-muted').remove();
+            var val = $shown.hasClass('text-muted') ? '' : $shown.text();
+
             if (_this.find('.form-control').prop('tagName').toLowerCase() == 'select') {
-                _this.find('option:contains(' + val + ')').prop('selected', true);
+                // :contains('') matches every option, and the last one would win. An empty cell
+                // belongs on the select's own empty option instead.
+                if (val === '') {
+                    _this.find('.form-control').val('');
+                } else {
+                    _this.find('option:contains(' + val + ')').prop('selected', true);
+                }
             } else {
                 _this.find('.form-control').val(val)
             }
@@ -846,14 +1035,93 @@ function fcBtnReset(e) {
     setTimeout(function() {
         $(".fc-table-customer .fc-form-control").css({ 'color': '' });
     }, 500);
+
+    // Every field is back to what its row displays, so there is nothing left to save or undo.
+    fcSyncProjectDetailsActions();
 }
 
 //----------------------------------------------------------------------------------
 
+/**
+ * The item count goes to the action bar at the foot of the list and the fence-style filter to the
+ * heading, but both are rendered as part of the cart fragment — the server rebuilds that whole
+ * block whenever the list changes, and the count has to come with it. So they are re-homed after
+ * every render rather than written into either place, and the toolbar they arrive in goes with
+ * them. Copy is static markup in the heading and stays where it is.
+ */
+function fcMountCartHeadingActions() {
+    var $mount = $('.js-fc-cart-heading-actions').first();
+    var $bar = $('.js-fc-cart-edit-bar__left').first();
+    var $toolbar = $('#update_cart-list .fc-cart-list-toolbar').first();
+
+    if (!$mount.length || !$bar.length || !$toolbar.length) {
+        return;
+    }
+
+    // Clear what the last render left in each home before the new pair arrives.
+    $('.js-fc-cart-count').not($toolbar.find('.js-fc-cart-count')).remove();
+    $mount.children('.fc-cart-style-filter').remove();
+
+    // Count ahead of Cancel on the left; filter after Copy on the right.
+    $toolbar.children('.js-fc-cart-count').prependTo($bar);
+    $toolbar.children('.fc-cart-style-filter').appendTo($mount);
+    $toolbar.remove();
+
+    // A render can land mid-edit — the optional-item toggle rebuilds the list without leaving edit
+    // mode — and the count arrives visible, so it has to be put back into the state it belongs in.
+    $('.js-fc-cart-count').toggle(!$('.js-fc-cart-edit-bar').hasClass('is-editing'));
+}
+
+$(fcMountCartHeadingActions);
+
+/**
+ * Every cart action lives in the sticky bar at the foot of the column; the two states differ only
+ * in which of them show. Copy goes with them: four buttons will not sit on one row on a phone, and
+ * copying the list mid-edit would copy half-typed values.
+ */
+/**
+ * Reset and Save Changes are dead until a quantity actually differs from the one the row loaded
+ * with — there is nothing to undo or commit before that. They are anchors, so `disabled` does not
+ * apply: the .disabled class is what Bootstrap paints and what the two click handlers check.
+ */
+function fcCartHasChanges() {
+    var changed = false;
+
+    $('.fc-table-items td').each(function() {
+        var $field = $(this).find('.fc-form-field');
+        if (!$field.length) {
+            return;
+        }
+        // Same source fcResetItem restores from, so the two always agree on what "unchanged" means.
+        if (String($field.val()) !== String($(this).closest('tr').data('original'))) {
+            changed = true;
+            return false;
+        }
+    });
+
+    return changed;
+}
+
+function fcSyncCartEditActions() {
+    var enable = $('.js-fc-cart-edit-bar').hasClass('is-editing') && fcCartHasChanges();
+
+    // tabindex with it: the button still takes pointer events so the not-allowed cursor shows, and
+    // a control nothing will act on should not be a tab stop either.
+    $('.fc-reset-item, .js-fc-edit-item')
+        .toggleClass('disabled', !enable)
+        .attr('aria-disabled', enable ? null : 'true')
+        .attr('tabindex', enable ? null : '-1');
+}
+
 function fcExitCartEditMode() {
+    $('.js-fc-cart-edit-bar').removeClass('is-editing');
     $('.fc-table-items .md-qty, .fc-reset-item').add('.fc-cancel-item').hide();
+    $('.js-fc-copy-cart-items, .js-fc-cart-count').show();
     $('.fc-item-value').removeClass('d-none');
-    $('.js-fc-edit-item span').html('Edit');
+    $('.js-fc-edit-item span').html('Edit Quantity');
+    // Edit Quantity is always available; only its Save Changes state is gated.
+    $('.js-fc-edit-item').removeClass('disabled').removeAttr('aria-disabled').removeAttr('tabindex');
+    $('.fc-reset-item').addClass('disabled').attr({ 'aria-disabled': 'true', tabindex: '-1' });
 }
 
 _doc.on('click', '.fc-cancel-item', function(e) {
@@ -876,6 +1144,9 @@ _doc.on('click', '.js-fc-optional-cart-toggle', function(e) {
 
     btn.disabled = true;
 
+    // Read before the fetch: the response replaces the select this value lives on.
+    var keepStyle = $('.js-fc-cart-style-filter').first().val() || '';
+
     var formData = new FormData();
     formData.set('action', 'toggle_optional_cart');
     formData.set('optional_key', optKey);
@@ -897,6 +1168,9 @@ _doc.on('click', '.js-fc-optional-cart-toggle', function(e) {
                 var $table = $('.fc-table-items');
                 if ($table.length) {
                     $table.html(html);
+                    // The fragment brought a fresh count back with it.
+                    fcMountCartHeadingActions();
+                    fcRestoreCartStyleFilter(keepStyle);
                 }
             }
         })
@@ -912,13 +1186,27 @@ function jsFcEditItem(e) {
     e?.preventDefault();
     var _this = $(this);
     $('[name="action"]').val('update_cart');
-    if (_this.find('span').text() === 'Edit') {
+
+    // The bar's state decides the mode, not the button's label — the label is copy and has been
+    // renamed once already; reading it back is how a rename silently turns Save into Edit.
+    if (!$('.js-fc-cart-edit-bar').hasClass('is-editing')) {
+        $('.js-fc-cart-edit-bar').addClass('is-editing');
         $('.fc-table-items .md-qty, .fc-reset-item').add('.fc-cancel-item').show();
+        // The count goes with Copy: four things will not sit on one row on a phone, and the number
+        // of lines in the list is not what you are editing.
+        $('.js-fc-copy-cart-items, .js-fc-cart-count').hide();
         $('.fc-item-value').addClass('d-none');
-        _this.find('span').html('Save');
-    } else {
-        $('form').submit();
+        _this.find('span').html('Save Changes');
+        // Nothing has been touched yet, so there is nothing to save or undo.
+        fcSyncCartEditActions();
+        return;
     }
+
+    if (_this.hasClass('disabled')) {
+        return;
+    }
+
+    $('form').submit();
 }
 
 //----------------------------------------------------------------------------------
@@ -927,6 +1215,12 @@ _doc.on('click', '.fc-reset-item', fcResetItem);
 
 function fcResetItem(e) {
     e?.preventDefault();
+
+    // Cancel calls this directly and must always restore, however the button looks.
+    if (this && $(this).hasClass('fc-reset-item') && $(this).hasClass('disabled')) {
+        return;
+    }
+
     $('.fc-table-items td').each(function() {
         var _this = $(this);
         if (_this.find('.fc-form-field').length) {
@@ -938,6 +1232,9 @@ function fcResetItem(e) {
     setTimeout(function() {
         $(".fc-table-items .fc-form-field").css({ 'color': '' });
     }, 500);
+
+    // Every row is back to what it loaded with, so there is nothing left to save or undo.
+    fcSyncCartEditActions();
 }
 
 //----------------------------------------------------------------------------------
@@ -959,7 +1256,13 @@ function inputQty(e) {
     var _this = $(this);
     var val = _this.closest('.fencing-mb-input').find('input').val();
     _this.closest('tr').find('.fc-form-field').val(val);
+    // .val() fires nothing, so the stepper has to report the change itself.
+    fcSyncCartEditActions();
 }
+
+// The typed path: the stepper's own input is covered by inputQty above, but a row whose quantity
+// is edited directly writes to .fc-form-field and would otherwise leave the two buttons dead.
+_doc.on('input change', '.fc-table-items .fc-form-field', fcSyncCartEditActions);
 
 /* ----------------------------------------------------------------
     [END] CLICK EVENT
@@ -1031,18 +1334,20 @@ $("#paymentFrm").validate({
                 success: function(response) {
                     try {
                         $('.fc-table-items').html(response);
+                        // The fragment brought a fresh count back with it.
+                        fcMountCartHeadingActions();
 
                         setTimeout(function() {
                             $(".fc-table-items .fc-form-control").css({ 'color': '' });
                             HELPER.removeSectionOverlay();
-                            $('.fc-item-value').removeClass('d-none');
-                            $('.fc-table-items .md-qty, .fc-reset-item').add('.fc-cancel-item').hide();
+                            // Saving leaves edit mode the same way Cancel does: the bar drops back
+                            // to Copy and Edit Quantity, and Reset goes dead with it. The table was
+                            // just replaced, so this has to run after that HTML is in.
+                            fcExitCartEditMode();
 
                             window.onbeforeunload = function() {}
 
                         }, 500);
-
-                        $('.js-fc-edit-item span').html('Edit');
 
                     } catch (err) {
                         console.log('err: ', response);
@@ -1263,8 +1568,7 @@ $("#paymentFrm").validate({
         '#update_cart-list > .row:first-of-type',
         '#update_stock-delivery .fencing-section__step-label',
         /* Second level: these pin under their section band. */
-        '.fc-project-details .fc-card-header',
-        '#update_cart-list .fc-cart-list-toolbar'
+        '.fc-project-details .fc-card-header'
     ];
 
     var elements = [];
@@ -1322,11 +1626,85 @@ $("#paymentFrm").validate({
  * on screen. Matching is on the row's data-fc-fence-style, stamped server-side from the same
  * helper that builds the options, rather than on the label text read back out of the DOM.
  */
-_doc.on('change', '.js-fc-cart-style-filter', function() {
-    var style = $(this).val() || '';
-
+function fcApplyCartStyleFilter(style) {
     $('.fc-table-items .table-cart tbody tr[data-fc-fence-style]').each(function() {
         var row = $(this);
         row.toggleClass('fc-cart-row--filtered', style !== '' && row.attr('data-fc-fence-style') !== style);
     });
+
+    fcSyncCartCountLabel();
+}
+
+_doc.on('change', '.js-fc-cart-style-filter', function() {
+    fcApplyCartStyleFilter($(this).val() || '');
 });
+
+/**
+ * A render replaces the filter along with the rows it filters, so a choice has to be carried across
+ * it by hand: adding or removing an optional item is an edit to one line, not a request to go back
+ * to every fence style. Capture the value before the new HTML lands, put it back after.
+ */
+function fcRestoreCartStyleFilter(style) {
+    if (!style) {
+        return;
+    }
+
+    var $filter = $('.js-fc-cart-style-filter').first();
+    if (!$filter.length) {
+        return;
+    }
+
+    // The rebuilt list may no longer offer that style. Leaving the value set would show the select
+    // on one thing and the rows on another, so this falls back to the All the render arrived with.
+    var stillOffered = $filter.find('option').filter(function() {
+        return this.value === style;
+    }).length > 0;
+
+    if (!stillOffered) {
+        return;
+    }
+
+    $filter.val(style);
+    fcApplyCartStyleFilter(style);
+}
+
+/**
+ * Mirrors CartBuilderService::cartIncludedItemCount(): a row counts once its quantity is above
+ * zero, which is what leaves out an optional item nobody has added yet. Read off the row's hidden
+ * cart[qty] input rather than the displayed figure, because that is the value the count was built
+ * from server-side and the only one that survives edit mode unchanged.
+ */
+function fcCountedCartRows($rows) {
+    return $rows.filter(function() {
+        return parseInt($(this).find('input.input-qty').first().val() || '0', 10) > 0;
+    }).length;
+}
+
+/**
+ * "24 Items" at rest, "6 of 24 Items" once a fence style is picked, so the number beside the filter
+ * answers the question the filter just asked. Both figures are counted from the rows each time
+ * rather than parsed back out of the label, which would compound its own output on the next change.
+ */
+function fcSyncCartCountLabel() {
+    var $count = $('.js-fc-cart-count').first();
+    if (!$count.length) {
+        return;
+    }
+
+    var $rows = $('.fc-table-items .table-cart tbody tr[data-fc-fence-style]');
+    var total = fcCountedCartRows($rows);
+    var style = $('.js-fc-cart-style-filter').first().val() || '';
+
+    if (style === '') {
+        $count.text(total + ' Items');
+        return;
+    }
+
+    // Matched with a function, not an attribute selector: a style label is free text and would
+    // need escaping before it could go inside one.
+    var shown = fcCountedCartRows($rows.filter(function() {
+        return $(this).attr('data-fc-fence-style') === style;
+    }));
+
+    $count.text(shown + ' of ' + total + ' Items');
+}

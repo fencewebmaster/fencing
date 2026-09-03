@@ -4564,20 +4564,58 @@ _win.on('resize', function() {
 //----------------------------------------------------------------------------------
 
 
+// Tracks whether the spy is currently stuck. .sticky-roll used to be removed and re-added on
+// every scroll tick, which restarts the CSS transitions the strip changes form with — they never
+// got past their first frame, so sticking read as a cut. The class is toggled on state change
+// only now; width and top still refresh every tick, since neither is transitioned.
+var _fcStickyRollOn = false;
+var _fcStickyReleaseTimer = null;
+
 _win.on('scroll resize', function() {
     var spy = $('[data-spy="scroll"]'),
         target = spy.attr('data-target'),
         offset = spy.attr('data-offset'),
         screen = parseInt(spy.attr('data-screen')),
-        width = $(target).width();
+        $target = $(target);
 
-    spy.removeClass('sticky-roll').css({ 'width': '' });
-
-    if (target && $('body').innerWidth() >= screen) {
-        if ($(window).scrollTop() > ($(target).offset().top)) {
-            spy.addClass('sticky-roll').css({ 'width': width, 'top': offset });
-        }
+    if (!spy.length || !target || !$target.length) {
+        return;
     }
+
+    var stick = $('body').innerWidth() >= screen && $(window).scrollTop() > $target.offset().top;
+
+    if (stick) {
+        // A release still pending means the strip is mid-transition back to its full height, so the
+        // placeholder it already holds is the measurement to keep — taking a fresh one here reads
+        // the strip part-grown and reserves a few px short, which is the jump this exists to stop.
+        var releasing = _fcStickyReleaseTimer !== null;
+
+        if (releasing) {
+            clearTimeout(_fcStickyReleaseTimer);
+            _fcStickyReleaseTimer = null;
+        }
+
+        // Measured while the strip is still in flow: position:fixed empties its container, and
+        // without a placeholder everything below jumped up by the strip's own height the moment
+        // it stuck. Only a spy that asks for it gets one — the plan page's Stock & Delivery panel
+        // is a flex column beside the cart, where reserving would stretch the column instead.
+        if (!_fcStickyRollOn && !releasing && spy.is('[data-sticky-reserve]')) {
+            $target.css('min-height', spy.outerHeight());
+        }
+        spy.addClass('sticky-roll').css({ 'width': $target.width(), 'top': offset });
+    } else if (_fcStickyRollOn) {
+        spy.removeClass('sticky-roll').css({ 'width': '', 'top': '' });
+        // The placeholder outlives the class by the length of the strip's transition. Back in flow
+        // the strip is still at its compact height and eases up to its full one, so releasing on
+        // the first frame would let the page below ride that 17px down with it — the jump the
+        // placeholder is there to prevent, just slower.
+        _fcStickyReleaseTimer = setTimeout(function() {
+            _fcStickyReleaseTimer = null;
+            $target.css('min-height', '');
+        }, 260);
+    }
+
+    _fcStickyRollOn = stick;
 
 });
 

@@ -90,7 +90,37 @@
 
 /* Step 2 — space between last field / gate-only row and Overall Length */
 [data-section="2"] .fencing-section--step2 .fc-step2-spacer-before-overall {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Step 2 — every field block in the left column closes on the same 1rem. They used to run flush
+   into one another on 0.5rem, which the g-2 gutter then ate.
+   Do NOT also zero the -0.5rem margin-top these rows carry: the gutter is net zero, the row pulling
+   up by half a gutter and each of its columns pushing down by the same, so the gap you see between
+   two blocks is the margin below the upper one and nothing else. Cancelling only the row's half
+   leaves the columns' half standing and opens 1.5rem here and 1rem there — which is the Slat Size
+   row sitting differently from the Fence Height row.
+   Direct children of the column only — .fc-step2-gate-only also appears nested inside the height
+   row, where it is one column of a two-up and is deliberately closed at 0 below.
+   !important because bootstrap.min.css loads after this file and the height row carries mb-2.
+   :has(*) because .step-2_field is left in the markup and emptied by the fence module; a margin on
+   the empty one opens a gap under a block that is not there. */
+[data-section="2"] .fencing-section--step2 .col-lg-5 > .step-2_field:has(*),
+[data-section="2"] .fencing-section--step2 .col-lg-5 > .fc-step2-slat-height-row:not(.d-none),
+[data-section="2"] .fencing-section--step2 .col-lg-5 > .fc-step2-gate-only:not(.d-none) {
+    margin-bottom: 1rem !important;
+}
+
+/* A validation message is positioned, so nothing in flow knows it is there: it hangs 25px below the
+   field it belongs to — its own bottom: -30px less the 5px margin that shifts it back up — and used
+   to land across the block underneath. "Please enter fence height" sat over the Overall Length
+   label, and Overall Length's own message ran past the bottom of the card.
+   The block that owns the message opens far enough to hold it: the 25px of overhang plus the 1rem
+   this stack keeps between blocks. Only while the message shows, so nothing is reserved in the
+   ordinary case, and the message stays out of flow so the two controls in a row still line up
+   rather than one dropping to follow it. */
+[data-section="2"] .fencing-section--step2 .col-lg-5 > *:has(.fc-input-msg.fcim-show) {
+    margin-bottom: calc(1rem + 25px) !important;
 }
 
 [data-section="2"] .fc-step2-slat-height-row.fc-step2-row--single:not(.d-none) {

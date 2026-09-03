@@ -11,17 +11,16 @@
             </div>
 
             <div class="fencing-section__cmp fencing-section--step3">
-                
-                <?php if( @$_SESSION['planner_id'] ): ?>
-                <div class="btn-copy-link badge border text-muted float-end" data-id="quote-id-1">
-                    <span id="quote-id-1"><?php echo e((string) @$_SESSION['planner_id']); ?></span>
-                </div>
-                <?php endif; ?>
 
-                <div class="step-label" data-action="scroll" data-target="[data-section=3]" data-offset="54">Step <span>03</span></div>
-
+                <!-- Step number and title are one block, with the zoom cluster beside the pair
+                     rather than beside the title alone — the way Step 01 seats its Delete/Reset.
+                     Sharing a row with the controls centred the 19px title inside their 37px box,
+                     which pushed it 9px off "Step 03" and 9px off the rule below. -->
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 fc-mb-2">
-                    <h4 class="fencing-content-title mb-0">Configure this fence section</h4>
+                    <div class="fc-step3-heading">
+                        <div class="step-label" data-action="scroll" data-target="[data-section=3]" data-offset="54">Step <span>03</span></div>
+                        <h4 class="fencing-content-title mb-0">Configure this fence section</h4>
+                    </div>
 
                     <div class="fencing-section__controls d-flex align-items-center flex-wrap ms-auto gap-1">
 

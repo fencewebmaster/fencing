@@ -284,23 +284,25 @@ use Fc\Admin\Services\FenceCatalogService;
 
 			<div class="text-end js-project-details-footer">
 				<button type="button" data-action="edit" class="btn btn-sm fc-btn-edit btn-orange text-uppercase" aria-label="Edit details">
-					<i class="fa-regular fa-pen-to-square me-1" aria-hidden="true"></i>
 					<b class="">Edit Details</b>
 				</button>
 
-				<div class="js-project-details-controls project-details-controls project-details-controls--edit-bar fc-d-none mt-2">
+				<!-- No mt-2: the footer already pads 14px, and the extra 8 stood the buttons 23px
+				     below the card above them against 14 beneath — where Edit Details, which this
+				     replaces, sits evenly on both. It also grew the footer by 8px on entering edit. -->
+				<div class="js-project-details-controls project-details-controls project-details-controls--edit-bar fc-d-none">
 					<button type="button" class="btn btn-sm btn-secondary text-uppercase fc-btn-cancel-project-details">
-						<i class="fa-solid fa-xmark me-1" aria-hidden="true"></i>
-						Cancel
+						<b>Cancel</b>
 					</button>
 					<div class="project-details-controls__right">
-						<button type="button" data-action="update" class="btn btn-sm fc-btn-edit btn-orange text-uppercase btn-orange fc-w-700">
-							<i class="fa-regular fa-pen-to-square me-1"></i>
-							<b>Save</b>
+						<!-- Both start dead: there is nothing to save or undo until a field differs
+						     from the value its row still displays. -->
+						<button type="button" data-action="update" class="btn btn-sm fc-btn-edit btn-orange text-uppercase btn-orange fc-w-700 disabled" aria-disabled="true" tabindex="-1">
+							<b>Save Changes</b>
 						</button>
 
-						<button type="button" class="btn btn-sm fc-btn-reset btn-dark text-uppercase" style="display:none;">
-							<i class="fa-solid fa-rotate-left me-1"></i> <b>Reset</b>
+						<button type="button" class="btn btn-sm fc-btn-reset btn-dark text-uppercase disabled" aria-disabled="true" tabindex="-1" style="display:none;">
+							<b>Reset</b>
 						</button>
 					</div>
 				</div>
