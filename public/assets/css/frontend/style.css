@@ -111,6 +111,7 @@
     --fc-a-orange-25: rgba(246, 121, 37, 0.25);
     --fc-a-orange-35: rgba(246, 121, 37, 0.35);
     --fc-a-orange-38: rgba(246, 121, 37, 0.38);
+    --fc-a-danger-35: rgba(220, 53, 69, 0.35);
     --fc-a-linen-65: rgba(238, 226, 216, 0.65);
     --fc-a-linen-75: rgba(238, 226, 216, 0.75);
     --fc-overlay-dark: #000000e0;
@@ -3769,12 +3770,346 @@ thead.fc-border th:last-child {
     max-width: 130px;
 }
 
+/* Item List & Cart — the table takes the same corner as every other header on the page.
+   .fc-bg-dark and .fc-border-top round their headers 10px, and the cart's dark thead was the one
+   header still square, inside a wrapper that draws a border but no radius.
+
+   The obvious fix — overflow: hidden on the wrapper so the thead clips to the corner — is not
+   available: .fc-project-plan-page #update_cart-list .fc-table-rounded-border sets overflow to
+   visible on purpose, because the header is position: sticky and any clipping ancestor kills
+   that. So the cells carry their own corners instead and nothing is clipped.
+
+   Which cell holds which corner moves with the breakpoint: QTY and Stock are d-none below 768,
+   leaving the middle cell as the only one drawn, so it takes both. Rounding a display: none cell
+   would paint nothing and leave its visible neighbour square.
+
+   Scoped to the cart — .fc-table-rounded-border is used across project details too, where it is
+   deliberately squared off. */
+#update_cart-list .fc-table-rounded-border {
+    border-radius: 10px;
+}
+
+/* border-collapse: collapse ignores a cell's border-radius outright — the corners below compute
+   but never paint. Separate is what lets them render, and it is safe here specifically: these
+   cells draw a bottom border only (no left, right or top), so there is nothing for the collapse
+   to have been merging. border-spacing: 0 keeps the grid tight, and each row still shows exactly
+   one 1px line between it and the next. */
+#update_cart-list .table-cart {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+@media (min-width: 768px) {
+    #update_cart-list .table-cart thead th:first-child {
+        border-top-left-radius: 10px;
+    }
+
+    #update_cart-list .table-cart thead th:last-child {
+        border-top-right-radius: 10px;
+    }
+
+    #update_cart-list .table-cart tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 10px;
+    }
+
+    #update_cart-list .table-cart tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 10px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    #update_cart-list .table-cart thead th[colspan] {
+        border-radius: 10px 10px 0 0;
+    }
+
+    #update_cart-list .table-cart tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 10px;
+    }
+
+    #update_cart-list .table-cart tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 10px;
+    }
+}
+
 /* Tighten the space around the qty stepper on mobile (was 16px above + 15px below a 32px control).
    Id selector needed to beat the 480px .fencing-mb-input rule and Bootstrap's !important mt-3. */
 @media (max-width: 767.98px) {
     #update_cart-list .table-cart .md-qty .fencing-mb-input {
         margin-top: 6px !important;
         margin-bottom: 0;
+    }
+}
+
+/* The Optional pill, now above the thumbnail in the image column rather than trailing the
+   product name. Block so the image drops below it, and small enough that it does not widen the
+   image column and take the space back off the title it was moved out of. */
+#update_cart-list .table-cart .fc-cart-optional-badge {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 4px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.2em 0.6em;
+}
+
+/* Width gauge for the cart qty stepper — a real .btn.btn-sm carrying the longer of the two cart
+   labels, so the cascade sizes it and the Add/Remove button identically and nothing here has to
+   restate their padding or type. That matters more than it looks: the font-size on these buttons
+   comes from an id rule (#update_cart-list .btn:not(...)) that outranks the component rule, and a
+   hand-copied box was 7px out.
+
+   Flattened to nothing and hidden at every width, not just the one that uses it. Only the mobile
+   block below reads its width, but the element is in the markup on every row and every screen —
+   left to render it would be a button-shaped "Remove from cart" sitting in the desktop cell.
+   height + overflow rather than display:none, which would measure nothing at all.
+   .btn.btn-sm in the selector is load-bearing: the mobile rule that trims these buttons also
+   matches the gauge, and at one class more than this carried it put the vertical padding back
+   and gave the gauge 8px of height — which pushed the quantity field down the column and took
+   the stock label out of line with it. */
+#update_cart-list .table-cart .btn.btn-sm.fc-cart-qty-gauge {
+    display: block;
+    height: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin: 0;
+    border-top: 0;
+    border-bottom: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------------------------
+   Mobile, edit mode: the qty stepper sits above Add/Remove from cart and the two share a width.
+
+   The width is not a number anywhere. .fc-cart-qty-actions shrinks to its widest child, and the
+   only child with an intrinsic width is the button — the stepper is set to fill instead of
+   measuring itself — so whatever the button comes out at, in whatever font has loaded, the
+   stepper matches. That keeps it correct against the ::before further down that reserves the
+   button's width for the longer of the two labels.
+
+   Order comes from the markup rather than flex order: the stepper is written first now, which is
+   also the reading order for a screen reader.
+   -------------------------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    #update_cart-list .table-cart .fc-cart-qty-actions {
+        width: max-content;
+        max-width: 100%;
+    }
+
+    /* Both children fill the reserved width, so neither has to be measured against the other. */
+    #update_cart-list .table-cart .fc-cart-optional-actions .btn {
+        width: 100%;
+    }
+
+    /* d-none is added to the value by fcApplyCartRowsEditMode when edit mode opens, but this one
+       carries d-block from the markup as well, and the two are the same weight. Rather than rely
+       on which of Bootstrap's utilities happens to be written last, the id selector settles it. */
+    #update_cart-list .table-cart .fc-item-value.d-none {
+        display: none !important;
+    }
+
+    /* The thumbnail hands width back to the column that needs it. At 100px it was taking a
+       third of a 320px screen for a picture that is recognised at half that, and every pixel it
+       gives up goes to the description cell where the title, the stepper and stock all live. */
+    #update_cart-list .table-cart .fc-cart-product-thumb {
+        width: var(--fc-cart-thumb-w);
+        height: auto;
+    }
+
+    /* The column is told its width rather than left to the table to work out. Auto layout was
+       giving it 110.7px to hold a 72px picture — 38.7px of nothing, most of it sitting between
+       the thumbnail and the text, and the amount moved as the window resized because it was
+       whatever the algorithm had left over. Stated as the picture plus its own padding, the gap
+       is the padding and nothing else, and it holds still at every width.
+       Both halves come off one variable so the cell cannot drift out of step with the picture
+       inside it. */
+    #update_cart-list .table-cart .fc-cart-product-image-cell {
+        width: calc(var(--fc-cart-thumb-w) + 20px);
+        min-width: calc(var(--fc-cart-thumb-w) + 20px);
+    }
+
+    /* Everything on the quantity line comes down a size on a phone.
+
+       The measured problem: the quantity column is sized by the gauge, which is the Remove from
+       cart label at button size — 142.8px. With the stock label at 83.1px and the gap between
+       them, the line wanted 235.5px inside a description cell offering 239.7px. Four pixels of
+       slack, which is none: a 360px phone, a longer label, or one more pixel of padding anywhere
+       and the stock label goes off the edge of the card. This trims it to about 197px, which
+       still fits with room to spare at 320px.
+
+       Type carries the reduction rather than padding, so the controls keep their hit area. The
+       id in the selector is deliberate — #update_cart-list .btn:not(...) sets the font-size these
+       buttons actually use, and a rule written in classes alone loses to it however many it has.
+       Padding needs !important as well because the compact rule further up carries one. */
+    #update_cart-list .table-cart .fc-cart-qty-actions .btn {
+        font-size: 0.625rem;
+        padding: 0.25rem 0.4rem !important;
+        letter-spacing: 0.01em;
+    }
+
+    /* Follows the same reduction so the read-only state and the stepper stay the same size as
+       each other and as the button above them. */
+    /* The read-only value and the stepper take the same height as each other. It gives stock one
+       number to centre against, and it stops the row changing height as edit mode opens and
+       closes — the field swaps, the layout holds still. */
+    #update_cart-list .table-cart .fc-cart-qty-actions .fc-item-value {
+        font-size: 0.8125rem;
+        padding: 0.25rem 0.4rem !important;
+        height: var(--fc-cart-qty-control-h);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Matches the stepper it swaps with. !important because the corner comes from Bootstrap's
+           .rounded on the element, which carries one. */
+        border-radius: 3px !important;
+    }
+
+    #update_cart-list .table-cart .md-qty .fencing-mb-input {
+        height: var(--fc-cart-qty-control-h);
+    }
+
+    #update_cart-list .table-cart .md-qty .fencing-mb-input input {
+        font-size: 0.8125rem;
+    }
+
+    #update_cart-list .table-cart .fencing-qty-btn {
+        height: 28px;
+        min-height: 0;
+        padding: 0.25rem 0.45rem;
+    }
+
+    #update_cart-list .table-cart .fc-cart-stock-mobile {
+        font-size: 0.6875rem;
+    }
+
+    #update_cart-list .table-cart .fc-cart-stock-mobile i {
+        font-size: 0.75rem !important;
+        margin-right: 0.25rem !important;
+    }
+
+    /* Quantity and stock on one line. The left column is whichever quantity state is showing —
+       the read-only value at rest, the stepper in edit mode — and stock sits to its right.
+       flex-start, not centre: the quantity column also carries the Add/Remove button underneath
+       on optional rows, and centring would drift stock down against the middle of the pair
+       instead of holding it level with the field it belongs to.
+       The quantity column keeps its own width (the gauge sets it), so stock takes what is left. */
+    #update_cart-list .table-cart {
+        /* One source for the thumbnail and for the column built around it. */
+        --fc-cart-thumb-w: 72px;
+    }
+
+    #update_cart-list .table-cart .fc-cart-qty-row {
+        /* The stepper sets it: 28px of button between the 1px borders of the box around them. */
+        --fc-cart-qty-control-h: 30px;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.4rem;
+        /* The one guarantee. The quantity column is a fixed width and the stock label will not
+           break, so on a narrow enough phone the pair cannot both fit and the label was running
+           off the side of the card — at 320px it was over by 9px even after the trim above.
+           Wrapping puts stock on its own line instead of off the edge. It only happens where the
+           line genuinely does not fit: at 375px there is 32px to spare and the two stay level. */
+        flex-wrap: wrap;
+    }
+
+    #update_cart-list .table-cart .fc-cart-qty-row .fc-cart-stock-mobile {
+        flex: 0 1 auto;
+        /* "Low-Stock" broke across two lines at the hyphen once it had only the leftover width;
+           it is two words on one line or it is not worth reading at a glance. */
+        white-space: nowrap;
+        /* Centred on the quantity control, not on the column. align-items: center on the row
+           would measure against the whole left-hand side, and on an optional line that also
+           carries the Add/Remove button underneath — stock would sit halfway down the pair
+           instead of level with the field it describes. Matching the control's own height and
+           centring inside that keeps it on the field in both states and whether or not a button
+           follows. The nudge this replaces was a guess that only looked right in one of them. */
+        align-self: flex-start;
+    }
+
+    /* The height and the centring go on the inner row, not the wrapper: the wrapper carries
+       Bootstrap's d-block, which is display:block !important and won this outright — the box was
+       the right 30px but the text sat at the top of it, seven pixels above the middle of the
+       field. The inner element is already d-flex align-items-center, so it only needs the height
+       to centre against. */
+    #update_cart-list .table-cart .fc-cart-stock-mobile > .d-flex {
+        min-height: var(--fc-cart-qty-control-h);
+    }
+
+    /* The value shares the stepper's slot, so it takes the same width. The 128px cap it used to
+       carry inline is gone from the markup — an inline style would have needed !important here,
+       and the wrapper is what sets this width now. */
+    #update_cart-list .table-cart .fc-cart-qty-actions .fc-item-value {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    /* In-Stock / Low-Stock line. It was setting at body size with a 16px icon beside it, which on
+       a phone read as loudly as the product name above it for something that is only ever a
+       reassurance. Both come down; the icon keeps the colour that carries the meaning.
+       !important on the icon because fs-6 and me-2 on it are Bootstrap utilities, which carry it. */
+    #update_cart-list .table-cart .fc-cart-stock-mobile {
+        font-size: 0.75rem;
+        line-height: 1.35;
+    }
+
+    #update_cart-list .table-cart .fc-cart-stock-mobile i {
+        font-size: 0.8125rem !important;
+        margin-right: 0.3rem !important;
+    }
+
+    /* Width only on .md-qty itself — no display. It carries an inline display:none and is shown
+       by fcApplyCartRowsEditMode when edit mode opens, and an !important here beat that inline
+       rule and left the stepper on screen the whole time, edit mode or not.
+       The inner wrapper is a different matter: d-table-cell made its width behave like a table
+       column, and block is what lets the 100% resolve against .fc-cart-qty-actions. Forcing it is
+       safe because it only ever shows when .md-qty above it does. */
+    #update_cart-list .table-cart .md-qty {
+        width: 100%;
+    }
+
+    #update_cart-list .table-cart .md-qty .d-table-cell {
+        display: block !important;
+        width: 100%;
+    }
+
+    /* max-width:none is the one that matters — .table-cart .fencing-mb-input caps the stepper at
+       130px, which is narrower than the button and would hold it there however wide the wrapper
+       got. The 15px right margin would take its own bite out of the shared width on top of that.
+       Corner comes down with the +/- below it: at 8px the container showed a rounder corner than
+       the button sitting inside it. */
+    #update_cart-list .table-cart .md-qty .fencing-mb-input {
+        width: 100%;
+        max-width: none;
+        margin-right: 0;
+        border-radius: 3px;
+        /* The 6px this had from the spacing rule above put the stepper 6px lower than the value
+           it replaces, so stock was level with one state and not the other. The row's own gap
+           handles the spacing now. */
+        margin-top: 0 !important;
+    }
+
+    /* The number field is what has to stop measuring itself. A text input reports an intrinsic
+       width from its size attribute — about 170px — and the wrapper above shrinks to the widest
+       child, so the stepper was setting the width and coming out broader than the button rather
+       than matching it. Zero basis and min-width:0 drop that contribution to nothing, which
+       leaves the button as the only child with a width to give, and the field then fills whatever
+       the button turned out to be. */
+    #update_cart-list .table-cart .md-qty .fencing-mb-input input {
+        flex: 1 1 0;
+        width: 0;
+        min-width: 0;
+    }
+
+    /* Square the stepper's ends off to 3px. The 9px pill corners were shaped for the planner's
+       larger measurement input; at this size they read as rounder than the button beside them. */
+    #update_cart-list .table-cart .fencing-qty-minus {
+        border-radius: 3px 0 0 3px;
+    }
+
+    #update_cart-list .table-cart .fencing-qty-plus {
+        border-radius: 0 3px 3px 0;
     }
 }
 
@@ -4616,22 +4951,38 @@ thead.fc-border th:last-child {
     color: var(--fc-gainsboro);
 }
 
-.fc-zoom-reset:disabled,
-.fc-zoom-reset.disabled {
-    background-color: var(--fc-silver-chalice) !important;
-    border-color: var(--fc-silver-chalice) !important;
-    color: var(--fc-cultured) !important;
+/* Zoom toolbar's Reset and zoom-out: the same muted grey every other disabled control on the
+   planner uses, rather than the mid-grey-on-near-white they carried before, which read as a solid
+   button in its own colour rather than one that is off.
+   The .fc-planner-page prefix is what makes opacity land: head.php loads bootstrap.min.css after
+   this file, so its `.btn:disabled { opacity: .65 }` beat the bare `.fc-zoom-*:disabled` here on
+   source order and washed the whole button out. The extra class outranks it — the same reason the
+   Create Project Plan and Next/Done rules further down carry one. */
+.fc-planner-page .btn.fc-zoom-reset:disabled,
+.fc-planner-page .btn.fc-zoom-reset.disabled,
+.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"]:disabled,
+.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"].disabled {
+    background-color: var(--fc-bright-gray) !important;
+    border-color: var(--fc-gainsboro) !important;
+    color: var(--fc-gray-chateau) !important;
     opacity: 1;
-}
-
-.fc-zoom-fence[data-zoom="out"]:disabled,
-.fc-zoom-fence[data-zoom="out"].disabled {
-    background-color: var(--fc-silver-chalice) !important;
-    border-color: var(--fc-silver-chalice) !important;
-    color: var(--fc-cultured) !important;
-    opacity: 1;
+    box-shadow: none;
     cursor: not-allowed;
     pointer-events: none;
+}
+
+/* The label is an <i> plus a <span>, not a text node, so the colour above never reaches it —
+   `.disabled *` (further up this file) paints every child --fc-gainsboro, which is the button's
+   own border colour and all but vanishes on the grey. These two carry the enabled state's own
+   colours too, so the override has to be !important the same way. */
+.fc-planner-page .btn.fc-zoom-reset:disabled i,
+.fc-planner-page .btn.fc-zoom-reset:disabled span,
+.fc-planner-page .btn.fc-zoom-reset.disabled i,
+.fc-planner-page .btn.fc-zoom-reset.disabled span,
+.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"]:disabled i,
+.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"].disabled i {
+    color: var(--fc-gray-chateau) !important;
+    opacity: 1;
 }
 
 .fc-form-plan .fc-col-half {
@@ -8578,6 +8929,78 @@ body.fc-restoring-selection .fencing-tab-name {
     transform: none;
 }
 
+/* --------------------------------------------------------------------------------------------
+   The remove control on the selected style tile.
+
+   What it actually does is reset the section — style, measurements, gates, colours and panel
+   options, per #fc-reset-section-confirm — and the confirm only appears once the section has been
+   calculated. Below that point one click clears the tile silently, which is why this is treated
+   as a destructive control and not made any easier to hit by accident: 24px square, which is the
+   smallest WCAG 2.2 AA allows for a target (2.5.8), with no invisible expanded hit area to widen
+   it past what is drawn. Anything below this stops being a compliant target.
+
+   Three defects fixed here:
+
+   1. It had no accessible name. A <button> whose only child is an <i> announces as "button" and
+      nothing else. The label and tooltip are on the markup in step-1.php, which is also where
+      the icon picked up aria-hidden.
+   2. `outline: none` on the base rule with no replacement anywhere — a keyboard user tabbing
+      onto it saw no focus at all (WCAG 2.4.7). The ring below follows .fencing-modal-close: white
+      outline, coloured halo, offset clear of the button.
+   3. The glyph sat 1.5px high. `border-bottom: 3px` took its space out of the fixed 27px box
+      while line-height went on centring in what was left. Dropping that border and centring with
+      grid removes the arithmetic instead of correcting it.
+
+   The border it replaces was a raised-edge look that no other control on the page still uses. A
+   white ring does the job that edge was actually doing — separating the button from the photo
+   behind it — and the circle keeps it reading as a dismiss affordance at this size.
+   -------------------------------------------------------------------------------------------- */
+.fencing-style-item .fencing-style-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-bottom: 0 !important;
+    border-radius: 50%;
+    font-size: 11px;
+    line-height: 1;
+    /* White ring only. It is what separates the button from the photo behind it; the drop shadow
+       that used to sit outside it is gone. */
+    box-shadow: 0 0 0 2px var(--fc-white);
+}
+
+/* display is forced to block !important by the show/hide pair above, so the centring override
+   has to carry one too — matched on .fsi-selected only, or it would defeat the hide. */
+.fencing-style-item.fsi-selected .fencing-style-btn.fc-fence-reset-all {
+    display: grid !important;
+    place-items: center;
+}
+
+@media (hover: hover) {
+    /* Ties the `transform: none` rule directly above on specificity and wins on order. The lift
+       is the button's own, not the tile's — that is what the rule above was there to stop. */
+    .fc-planner-page .fencing-style-item .fencing-style-btn:hover {
+        transform: translateY(-1px);
+    }
+}
+
+.fencing-style-item .fencing-style-btn:active {
+    transform: translateY(0);
+}
+
+.fencing-style-item .fencing-style-btn:focus-visible {
+    outline: 2px solid var(--fc-white);
+    outline-offset: 2px;
+    box-shadow:
+        0 0 0 2px var(--fc-white),
+        0 0 0 6px var(--fc-a-danger-35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-planner-page .fencing-style-item .fencing-style-btn:hover {
+        transform: none;
+    }
+}
+
 .fc-planner-page .fencing-style-item:not(.fsi-selected):hover > div {
     transform: translateY(-6px);
     box-shadow: 0 14px 32px var(--fc-a-orange-22), 0 6px 16px rgba(0, 0, 0, 0.08);
@@ -10065,6 +10488,55 @@ body.fc-restoring-selection .fencing-tab-name {
     cursor: not-allowed;
 }
 
+/* Its wording is inside a <b> as well, and because this one is disabled by class rather than
+   attribute, `.disabled *` reaches that <b> and paints it --fc-gainsboro — the same near-white as
+   the button's border, which left the label all but unreadable on the grey while the button around
+   it was already correct. */
+.fc-planner-page .fc-btn-next.disabled b,
+.fc-planner-page .fc-btn-next.disabled i,
+.fc-planner-page .fc-btn-next.disabled span {
+    color: var(--fc-gray-chateau) !important;
+}
+
+/* Step 3's NEXT > PLAN OPTIONS (.fc-btn-next-step): the last of the set, and the one that had no
+   disabled rule at all — it is btn-orange, so it fell through to Bootstrap's 0.65 wash and sat
+   there as a dimmed orange CTA while the section was still incomplete, which is the exact reading
+   the rules above exist to avoid. Attribute selector: events.js disables it with
+   attr('disabled','disabled'), never the class. !important for the colours because .btn-orange
+   sets all three of its own. */
+/* Step 2's Calculate: btn-light plus btn-dark's colours, so Bootstrap left it near-black at 0.65
+   with white lettering — the heaviest thing on the step while being the one control that is not
+   ready. Same neutral as the rest. Its label is a bare text node, so no child rule is needed. */
+.fc-planner-page .btn.btn-fc-calculate:disabled,
+.fc-planner-page .btn.btn-fc-calculate.disabled {
+    opacity: 1;
+    background-color: var(--fc-bright-gray) !important;
+    border-color: var(--fc-gainsboro) !important;
+    color: var(--fc-gray-chateau) !important;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.fc-planner-page .btn.fc-btn-next-step:disabled,
+.fc-planner-page .btn.fc-btn-next-step.disabled {
+    opacity: 1;
+    background-color: var(--fc-bright-gray) !important;
+    border-color: var(--fc-gainsboro) !important;
+    color: var(--fc-gray-chateau) !important;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* The wording lives in two <b>s (one per breakpoint), so it takes the colour itself rather than
+   inheriting — .btn-orange's `color: var(--fc-white) !important` reaches them and would leave
+   white text on the grey. */
+.fc-planner-page .btn.fc-btn-next-step:disabled b,
+.fc-planner-page .btn.fc-btn-next-step:disabled i,
+.fc-planner-page .btn.fc-btn-next-step.disabled b,
+.fc-planner-page .btn.fc-btn-next-step.disabled i {
+    color: var(--fc-gray-chateau) !important;
+}
+
 /* The last 0.6px of the match. Everything in this column is put on line-height 1.3 by
    #update_cart-list .btn:not(.js-fc-view-total-cost), where the page — and so Your Project Details
    — is on 1.35; that is the whole of the height difference. The id is in the selector because the
@@ -10305,6 +10777,10 @@ body.fc-restoring-selection .fencing-tab-name {
     display: flex;
     align-items: stretch;
     gap: 8px;
+    /* Air under ORDER WITHIN:. The <br> after the label only gives what the 25px line-height
+       leaves, which sat the tiles almost against it. On the timer rather than the label so the
+       empty-state skeleton gets the same gap and the panel does not shift on the first tick. */
+    margin-top: 6px;
 }
 
 .fc-countdown-unit {
@@ -10315,7 +10791,7 @@ body.fc-restoring-selection .fencing-tab-name {
     justify-content: center;
     gap: 1px;
     padding: 5px 4px 6px;
-    border-radius: 6px;
+    border-radius: 3px;
     background-color: var(--fc-white);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
 }
@@ -10338,6 +10814,54 @@ body.fc-restoring-selection .fencing-tab-name {
     letter-spacing: 0.9px;
     text-transform: uppercase;
     color: var(--fc-dove-gray);
+}
+
+/* --------------------------------------------------------------------------------------------
+   The three digit tiles read as a clock face rather than three white cards.
+
+   White on the panel's pale pink was the weakest part of the block: two near-white surfaces
+   separated only by a 7% shadow, so the tiles barely existed and the orange digits were carrying
+   the whole thing on their own. Dark tiles give the numbers something to sit on, and the panel
+   ends up with a proper hierarchy — orange rim, pink ground, dark faces, white figures.
+
+   The digits go white rather than staying orange. Orange on near-black passes, but the accent is
+   already doing three jobs here (the rim, the ORDER WITHIN label, the panel's whole reason for
+   being); spending it on the figures too flattens all of them. White on #1e1e1e is 17:1, which is
+   the right amount of contrast for the one number on the page that is counting down.
+   -------------------------------------------------------------------------------------------- */
+.fc-countdown-unit {
+    /* flex: 1 1 0 above only equalises the three while there is room to spare. A flex item's
+       min-width is auto, so once the column tightens each tile stops at its own content and MINS
+       comes out wider than HRS and SECS — 42.8 / 40.7 / 38.8 in a 300px column, which is exactly
+       what the equal basis was chosen to avoid. min-width: 0 lets the basis do its job. */
+    min-width: 0;
+    /* The accent let down onto the panel behind it: 85% orange over the pink reads as
+       rgb(247, 138, 64), a lighter tile that still belongs to the same family as the rim.
+       rgba first as the fallback, then color-mix off --fc-princeton-orange itself for browsers
+       that have it — same pairing as the green alert further up. The literal is the same colour
+       written out, so the two agree, but only the second follows if the token is ever retuned. */
+    background-color: rgba(246, 121, 37, 0.85);
+    background-color: color-mix(in srgb, var(--fc-princeton-orange) 85%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.45),
+        0 2px 6px rgba(198, 88, 20, 0.28);
+}
+
+/* White on the orange. Worth recording that this is 2.73:1 against #f67925 and so sits under
+   WCAG AA, which asks 3:1 even for large text — a deliberate call, not an oversight. The shadow
+   below is what makes it hold up in practice: a soft dark edge under the figures separates them
+   from the fill without touching the colour. */
+.fc-countdown-unit__value {
+    color: var(--fc-white);
+    /* Carries a little more weight than it did on the solid tile — the lighter fill takes the
+       white from 2.73:1 down to 2.42:1, so the shadow is doing more of the separating. */
+    text-shadow: 0 1px 2px rgba(120, 52, 8, 0.55);
+}
+
+.fc-countdown-unit__label {
+    color: var(--fc-white);
+    text-shadow: 0 1px 1px rgba(120, 52, 8, 0.5);
 }
 
 /* Two chasing highlights around the countdown border, to pull the eye to the one time-sensitive
@@ -10380,13 +10904,13 @@ body.fc-restoring-selection .fencing-tab-name {
     animation: fc-countdown-border-sweep 3.5s linear infinite;
 }
 
-/* Repaints the fill inside the rim. Radius is 2px under the box's 8px so the corners stay true. */
+/* Repaints the fill inside the rim. Radius is 2px under the box's 3px so the corners stay true. */
 #update_stock-delivery .fc-cart-countdown::after {
     content: "";
     position: absolute;
     inset: 2px;
     z-index: -1;
-    border-radius: 6px;
+    border-radius: 1px;
     background-color: var(--fc-fair-pink);
 }
 
@@ -10532,6 +11056,7 @@ body.fc-restoring-selection .fencing-tab-name {
     }
 }
 
+
 /* --------------------------------------------------------------------------------------------
    Low Stock Warning — the alarm lives in the heading, the explanation reads.
    Every word of it used to be brand red on the pink fill, which measures about 4.9:1 — it passes
@@ -10545,6 +11070,9 @@ body.fc-restoring-selection .fencing-tab-name {
 #update_stock-delivery .fc-alert-gray--low-stock {
     padding: 10px 12px 11px;
     margin-bottom: 12px;
+    /* Matches the countdown below it — the two panels sit one above the other and were rounded
+       differently. Overrides Bootstrap's .alert, which sets its own corner. */
+    border-radius: 3px;
 }
 
 /* Flex so the glyph centres on the heading's box rather than sitting on its baseline. */
@@ -12470,7 +12998,11 @@ body.fc-restoring-selection .fencing-tab-name {
        as the tiles being inset from the box rather than filling it. */
     padding: 10px;
     background-color: var(--fc-fair-pink);
-    border-radius: 8px;
+    border-radius: 3px;
+    /* The accent at a third strength, so the panel has a defined edge without competing with the
+       tiles inside it or with the sweep that runs around the rim on the project-plan page.
+       --fc-a-orange-35 is that exact value and already in the palette. */
+    border: 1px solid var(--fc-a-orange-35);
 }
 
 .fc-cart-countdown p {
@@ -12770,7 +13302,7 @@ body.fc-restoring-selection .fencing-tab-name {
 
 .quote-id-card {
     border: 2px solid var(--fc-black);
-    border-radius: 7px;
+    border-radius: 3px;
     text-align: center;
     width: 160px;
     max-width: 100%;
@@ -13267,9 +13799,44 @@ img.fc-cart-product-thumb,
     color: var(--fc-dark-medium-gray, #a9a9a9);
 }
 
-.fc-cart-optional-actions .btn {
-    font-size: 0.75rem;
-    padding: 0.35rem 0.65rem;
+/* Add to cart / Remove from cart on an optional line.
+
+   One width for both states. The labels are 11 and 16 characters, which came to 107px and 148px —
+   so the button jumped 41px wider the moment it was pressed, and the row reflowed under the
+   pointer. min-width holds the wider of the two, and nowrap keeps the longer label on one line
+   inside it.
+
+   !important and this much selector because the rule it replaces never took effect:
+   `.fc-cart-optional-actions .btn` at two classes lost to
+   `.fc-project-plan-page .btn.btn-sm:not(.btn-close)`, which sets padding at four classes and
+   !important. This carries five so it wins on weight rather than on being further down. */
+.fc-project-plan-page .fc-cart-optional-actions .btn.btn-sm.js-fc-optional-cart-toggle,
+.fc-project-plan-page .fc-cart-qty-actions .btn.btn-sm.fc-cart-qty-gauge {
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.7rem;
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+/* The width itself is reserved by the longer of the two labels rather than by a pixel figure.
+   Only one of the two is ever in the DOM — the server renders Add or Remove, never both — so
+   there is nothing for the shorter state to line up against, and a min-width in px only holds
+   while the font that was measured is the font that renders. It was not: this page loads Poppins
+   from fonts.css, and the figure had been taken without it.
+
+   So the longer label is carried on ::before at zero height and clipped. It never paints, but its
+   width counts toward the button's shrink-to-fit, which puts both states on the same box in
+   whatever face actually loads — Poppins, the fallback mid-load, or the fallback for good. It
+   also means a reworded label resizes the button on its own.
+
+   ::before because ::after on this page belongs to the button shine. */
+.fc-project-plan-page .fc-cart-optional-actions .btn.btn-sm.js-fc-optional-cart-toggle::before {
+    content: "Remove from cart";
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 body.fc-cart-image-modal-open {
@@ -14241,6 +14808,134 @@ input[type="number"] {
     outline: 2px solid var(--fc-princeton-orange);
     outline-offset: 2px;
 }
+
+/* --------------------------------------------------------------------------------------------
+   Cart image gallery — square plate, and the close button the rest of the app uses.
+   -------------------------------------------------------------------------------------------- */
+
+/* One square plate, whatever shape the photo is, and as large as the screen will give.
+
+   Sized off both axes and capped, so it is the same square on a phone held either way and never
+   taller than the viewport. The plate used to take its size from the image, which meant it
+   changed shape between items and the dialog jumped as you paged through with the arrows.
+
+   scale-down, not contain: the picture is drawn at its own size and only shrinks if it is bigger
+   than the plate. contain would blow a small cutout up to fill the square and show every soft
+   edge in it. Centred on both axes, which is object-fit's default position.
+
+   max-width/height are cleared because the base rule caps them at viewport fractions that would
+   otherwise win over the square. */
+#fc-cart-image-modal .fc-cart-image-modal__img {
+    width: min(88vw, 76vh, 860px);
+    height: min(88vw, 76vh, 860px);
+    max-width: none;
+    max-height: none;
+    object-fit: scale-down;
+    object-position: center center;
+}
+
+/* The close button matches .fencing-modal-close — orange circle, and the X spins a full turn on
+   hover. It was a translucent grey circle with a static glyph, the one control on the page that
+   did not behave like the others. Drawn as two bars for the same reason the original is: a glyph
+   cannot rotate its halves in opposite directions. The <i> stays in the markup and is hidden, so
+   nothing depends on the icon font being loaded. */
+#fc-cart-image-modal .fc-cart-image-modal__close {
+    border: 2px solid var(--fc-princeton-orange);
+    background: var(--fc-princeton-orange);
+    box-shadow: 0 2px 8px var(--fc-a-orange-22);
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.15s ease;
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close i {
+    display: none;
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close::before,
+#fc-cart-image-modal .fc-cart-image-modal__close::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 2.5px;
+    margin-top: -1.25px;
+    margin-left: -8px;
+    border-radius: 1px;
+    background-color: var(--fc-white);
+    transition: transform 0.45s ease;
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close::before {
+    transform: rotate(45deg);
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close::after {
+    transform: rotate(-45deg);
+}
+
+/* 45 -> 405 and -45 -> 315: a full turn each, landing back on the same X. */
+#fc-cart-image-modal .fc-cart-image-modal__close:hover {
+    background: var(--fc-pumpkin);
+    border-color: var(--fc-pumpkin);
+    box-shadow: 0 4px 14px var(--fc-a-orange-38);
+    transform: scale(1.05);
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close:hover::before {
+    transform: rotate(405deg);
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close:hover::after {
+    transform: rotate(315deg);
+}
+
+#fc-cart-image-modal .fc-cart-image-modal__close:focus-visible {
+    outline: 2px solid var(--fc-white);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px var(--fc-a-orange-25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #fc-cart-image-modal .fc-cart-image-modal__close::before,
+    #fc-cart-image-modal .fc-cart-image-modal__close::after {
+        transition: none;
+    }
+}
+
+/* Phones: the arrows go beside the picture, not on top of it.
+   They are positioned against the dialog on small screens, and the dialog had been narrowed to
+   width: auto so it wrapped the plate — which put both arrows on the white, half swallowed by it
+   and translucent white on white where they showed. Letting the dialog span the screen again puts
+   them back in the margin the square leaves either side: at 375px the plate is 292px, so there is
+   41px each side and the arrow is 34px. The plate stays centred and untouched. */
+@media (max-width: 576px) {
+    #fc-cart-image-modal .fc-cart-image-modal__dialog {
+        width: 100%;
+    }
+
+    /* Held back from the 88vw above so the arrows have somewhere to go. At 375px this is 262px,
+       which leaves 40px each side of the plate for a 34px arrow — beside the picture rather than
+       on it. The plate is still the largest square that leaves the controls their room. */
+    #fc-cart-image-modal .fc-cart-image-modal__img {
+        width: min(70vw, 54vh, 420px);
+        height: min(70vw, 54vh, 420px);
+    }
+
+    /* Dark rather than 22% white: over the plate's edge on the narrowest screens a white circle
+       has nothing to read against. */
+    #fc-cart-image-modal .fc-cart-image-modal__nav {
+        z-index: 3;
+        background: var(--fc-a-black-55);
+    }
+
+    #fc-cart-image-modal .fc-cart-image-modal__nav:hover {
+        background: var(--fc-a-black-75);
+    }
+}
 /* ---------------------------------------------------------------------------
    Download progress toast (project-plan/modals.php)
 
@@ -14587,6 +15282,71 @@ input[type="number"] {
     .fencing-panel-controls .btn-fc:hover::before,
     .fencing-panel-controls #btn-right_side:hover::after {
         color: var(--fc-white);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------
+   Step 3 control panel: the same glint the .btn sweep gives Next > Plan Options, built the same
+   way — an absolutely positioned bar inside the button, skewed and translated across on hover,
+   with overflow: hidden parking it out of sight at rest. Same gradient stops, same 100deg, same
+   -180% -> 320% travel, same 0.5s linear, so the two read as one effect.
+
+   Which pseudo-element it uses has to vary, because each of these buttons has already spent one
+   on its icon and the pair splits cleanly: every control takes ::before for its glyph except
+   #btn-right_side, whose arrow sits after the label and whose ::before is explicitly `content:
+   none` above. So the glint takes ::after everywhere and ::before on that one button — one free
+   slot each, nothing overwritten.
+
+   This block sits after the icon rules rather than up with the .btn sweep because the
+   #btn-right_side::before arm has to outrank that `content: none`, and both come to (1,1,0):
+   equal weight, so order decides it.
+   -------------------------------------------------------------------------------------------- */
+.fencing-panel-controls .btn-fc {
+    position: relative;
+    overflow: hidden;
+}
+
+.fencing-panel-controls .btn-fc:not(#btn-right_side):not(:disabled):not(.disabled)::after,
+.fencing-panel-controls #btn-right_side:not(:disabled):not(.disabled)::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    bottom: -50%;
+    left: 0;
+    width: 60%;
+    /* The icon rules give ::before an inline box with a glyph, a font and a right margin. None of
+       it belongs on the bar, and margin would shift it off its own left: 0, so they are cleared
+       here rather than left to cascade in. */
+    display: block;
+    margin: 0;
+    font-size: 0;
+    pointer-events: none;
+    will-change: transform;
+    background: linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.08) 28%,
+        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0.08) 72%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-180%) skewX(-18deg);
+    transition: transform 0.5s linear;
+}
+
+@media (hover: hover) {
+    .fencing-panel-controls .btn-fc:not(#btn-right_side):not(:disabled):not(.disabled):hover::after,
+    .fencing-panel-controls .btn-fc:not(#btn-right_side):not(:disabled):not(.disabled):focus-visible::after,
+    .fencing-panel-controls #btn-right_side:not(:disabled):not(.disabled):hover::before,
+    .fencing-panel-controls #btn-right_side:not(:disabled):not(.disabled):focus-visible::before {
+        transform: translateX(320%) skewX(-18deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fencing-panel-controls .btn-fc:not(#btn-right_side):not(:disabled):not(.disabled)::after,
+    .fencing-panel-controls #btn-right_side:not(:disabled):not(.disabled)::before {
+        transition: none;
     }
 }
 
@@ -15504,6 +16264,12 @@ div.fc-footer-app .app-version {
     font-size: 22px;
     line-height: 1;
     cursor: pointer;
+    /* Clips the .fc-btn-shine band to the circle. The utility sets this too, but stating it here
+       means the launcher does not depend on that rule to keep its own contents in bounds — and
+       note the other half of .fc-btn-shine, position: relative, is deliberately overridden by the
+       position: fixed above. Same weight, and this rule is further down the file, which is what
+       keeps the button in its corner. */
+    overflow: hidden;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.24);
     transition:
         transform 0.2s ease,
@@ -15614,8 +16380,6 @@ div.fc-footer-app .app-version {
         padding: 7px;
     }
 }
-
-
 
 /* --------------------------------------------------------------------------------------------
    Modal step footer — single row on mobile.
@@ -16520,34 +17284,48 @@ div.fc-footer-app .app-version {
 
 
 /* --------------------------------------------------------------------------------------------
-   Edit Project Options — timeframe stays two across on phones.
-   The four options are short enough to pair, but a rule at 575.98px dropped the grid to one
-   column, so they ran 240px down a step of the dialog that holds nothing else. Two across with
-   the tile padding and label trimmed puts the whole choice on screen at once.
-   Same selector as the rule it overrides, so source order is what decides it.
+   Edit Project Options — timeframe runs one per row on phones.
+   This block used to force the four options two across, on the reasoning that they are short
+   enough to pair and that one column ran 240px down a step of the dialog that holds nothing
+   else. Full width is the call now: at 375px the pair leaves each tile about 168px, which puts
+   "ASAP - Within 24hrs" and "LATER - This Month" a few characters from wrapping, and a column of
+   four full-width rows is the easier thing to read and tap. The dialog scrolls, and this step is
+   short either way.
+
+   Set here rather than left to the 575.98px rule below it so the single column covers the whole
+   phone range up to 768px, not just the narrowest part of it. Same selector as the base
+   two-column rule, so source order is what decides it.
    -------------------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
     #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         gap: 0.4rem;
     }
 
     /* The tiles carry Bootstrap's mb-1, which stacks on top of the grid gap. */
+    /* Every number here was set to squeeze two tiles into a row — 11px type, 0.4rem of padding,
+       a 0.3rem gap and a 40px box. The row is full width now, so the squeeze has nothing left to
+       buy and the type goes back up to 16px, the usual floor for body copy on a phone and the
+       point below which iOS zooms a form control on focus. The tile has room for it: 343px wide
+       less 32px of padding and 29px of radio and gap leaves 282px, and the longest label,
+       "ASAP - Within 24hrs", sets at about 150px.
+
+       min-height goes to 44px with it — the recommended target, and no longer in tension with
+       fitting two across. Padding and gap come back in line with the desktop rule above so the
+       tiles read the same at both sizes, only wider. */
     #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label {
         align-items: center;
-        gap: 0.3rem;
+        gap: 0.7rem;
         margin-bottom: 0 !important;
-        /* min-height rather than taller padding: the text sets one line, and the tile still has
-           to be worth tapping. */
-        min-height: 40px;
-        padding: 0.4rem;
-        font-size: 11px;
+        min-height: 44px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
         line-height: 1.3;
     }
 
-    /* fc-mr-1 puts 10px after the radio on top of the label's own flex gap, and that 10px was
-       the difference: "ASAP - Within 24hrs" measures 129px against the 125px the tile had left,
-       so every option wrapped to two lines. Reclaimed, the longest label clears by 9px. */
+    /* fc-mr-1 adds 10px after the radio on top of the label's own flex gap. Zeroed so the gap is
+       the only thing setting that spacing — it was reclaimed space when the tiles were paired,
+       and now it is just the one source of truth. */
     #submit-modal .fc-form-plan[data-formtab="2"] .fc-form-check label input[type="radio"] {
         margin-right: 0;
     }

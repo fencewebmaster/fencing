@@ -156,7 +156,7 @@ window.addEventListener('load', function() {
 // after window load in both loaders.
 if ($fcChatraId !== '' || $fcChatraInCustomCode) :
 ?>
-<button type="button" id="fc-chat-launcher" class="fc-chat-launcher" aria-label="Open live chat">
+<button type="button" id="fc-chat-launcher" class="fc-chat-launcher fc-btn-shine" aria-label="Open live chat">
     <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
 </button>
 <script>

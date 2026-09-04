@@ -15,7 +15,7 @@ use Fc\Admin\Services\FenceCatalogService;
 				<div class="fc-card-header fc-bg-dark fc-border-top">
 					Customer Details
 				</div>
-				<div class="fc-table-rounded-border fc-mb-2 fc-position-relative">
+				<div class="fc-table-rounded-border fc-position-relative">
 				
 					<table class="fc-table fc-table-customer">
 						<tbody>
@@ -87,7 +87,7 @@ use Fc\Admin\Services\FenceCatalogService;
 				</div>
 				</div>
 
-				<div class="fc-card fc-mb-2">
+				<div class="fc-card">
 				
 					<div class="fc-card-header fc-bg-dark fc-border-top">
 						Project Notes & Additional Details
@@ -118,7 +118,7 @@ use Fc\Admin\Services\FenceCatalogService;
 			</div>
 
 			<div class="col-md">
-				<div class="fc-card fc-mb-2">
+				<div class="fc-card">
 
 					<div class="fc-card-header fc-bg-dark fc-border-top">
 						Color Options
@@ -126,7 +126,7 @@ use Fc\Admin\Services\FenceCatalogService;
 
 					<div class="fc-edit-zone">
 
-					<div class="fc-table-rounded-border fc-rounded-top-none fc-mb-2">
+					<div class="fc-table-rounded-border fc-rounded-top-none">
 					
 						<table class="fc-table fc-table--colour project-details--edit">
 							<tbody>
@@ -223,7 +223,7 @@ use Fc\Admin\Services\FenceCatalogService;
 						Fence Details
 					</div>
 
-				<div class="fc-table-rounded-border fc-mb-2 project-details--edit"> 
+				<div class="fc-table-rounded-border project-details--edit"> 
 
 					<p class="fc-project-details-edit-hint small fc-d-none" role="status">Click items below to edit</p>
 

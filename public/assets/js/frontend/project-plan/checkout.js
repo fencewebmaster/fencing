@@ -1116,6 +1116,35 @@ function fcSyncCartEditActions() {
         .attr('tabindex', enable ? null : '-1');
 }
 
+/**
+ * Save Changes on, whatever fcSyncCartEditActions just decided.
+ *
+ * That function gates Save and Reset together on "does any quantity differ from the one its row
+ * loaded with", which is the right question for Reset and the wrong one for Save once an action
+ * has already been taken: a reset is itself something the user may want to commit, and a cart
+ * toggle changes the cart without touching a single quantity field. Reset is left alone — after
+ * either of those there is genuinely nothing left to undo.
+ */
+function fcEnableCartSaveButton() {
+    if (!$('.js-fc-cart-edit-bar').hasClass('is-editing')) {
+        return;
+    }
+    $('.js-fc-edit-item').removeClass('disabled').removeAttr('aria-disabled').removeAttr('tabindex');
+}
+
+/**
+ * Put freshly rendered rows into edit dress.
+ *
+ * The cart fragment always comes back in its rest state — steppers hidden, values shown — because
+ * the server has no idea the bar is mid-edit. The bar itself sits outside .fc-table-items and so
+ * survives the swap, which is what left the two disagreeing: Cancel and Save on screen above rows
+ * that had gone back to plain values.
+ */
+function fcApplyCartRowsEditMode() {
+    $('.fc-table-items .md-qty').show();
+    $('.fc-table-items .fc-item-value').addClass('d-none');
+}
+
 function fcExitCartEditMode() {
     $('.js-fc-cart-edit-bar').removeClass('is-editing');
     $('.fc-table-items .md-qty, .fc-reset-item').add('.fc-cancel-item').hide();
@@ -1174,6 +1203,14 @@ _doc.on('click', '.js-fc-optional-cart-toggle', function(e) {
                     // The fragment brought a fresh count back with it.
                     fcMountCartHeadingActions();
                     fcRestoreCartStyleFilter(keepStyle);
+                    // Adding or removing a line is an edit like any other, so the mode holds. The
+                    // new rows carry the quantities the toggle just wrote, so the actions are
+                    // re-read against those before Save is put back on.
+                    if ($('.js-fc-cart-edit-bar').hasClass('is-editing')) {
+                        fcApplyCartRowsEditMode();
+                        fcSyncCartEditActions();
+                        fcEnableCartSaveButton();
+                    }
                 }
             }
         })
@@ -1194,11 +1231,11 @@ function jsFcEditItem(e) {
     // renamed once already; reading it back is how a rename silently turns Save into Edit.
     if (!$('.js-fc-cart-edit-bar').hasClass('is-editing')) {
         $('.js-fc-cart-edit-bar').addClass('is-editing');
-        $('.fc-table-items .md-qty, .fc-reset-item').add('.fc-cancel-item').show();
+        $('.fc-reset-item').add('.fc-cancel-item').show();
+        fcApplyCartRowsEditMode();
         // The count goes with Copy: four things will not sit on one row on a phone, and the number
         // of lines in the list is not what you are editing.
         $('.js-fc-copy-cart-items, .js-fc-cart-count').hide();
-        $('.fc-item-value').addClass('d-none');
         _this.find('span').html('Save Changes');
         // Nothing has been touched yet, so there is nothing to save or undo.
         fcSyncCartEditActions();
@@ -1236,8 +1273,10 @@ function fcResetItem(e) {
         $(".fc-table-items .fc-form-field").css({ 'color': '' });
     }, 500);
 
-    // Every row is back to what it loaded with, so there is nothing left to save or undo.
+    // Every row is back to what it loaded with, so there is nothing left to undo — but the reset
+    // is still something to commit, so Save stays live where fcSyncCartEditActions would drop it.
     fcSyncCartEditActions();
+    fcEnableCartSaveButton();
 }
 
 //----------------------------------------------------------------------------------

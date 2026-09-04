@@ -164,6 +164,8 @@ final class CheckoutCartModel
     public static function updateQuantities(array $postedCart): void
     {
         $cart_items_data = [];
+        // optional_key => saved qty, for the custom_fence_products sync after the loop.
+        $optional_qty_by_key = [];
 
         foreach ($_SESSION['fc_cart']['items'] as $cart_item_k => $cart_item) {
             $posted = $postedCart['qty'][$cart_item_k] ?? null;
@@ -177,10 +179,56 @@ final class CheckoutCartModel
             $cart_items_data[$cart_item_k] = $cart_item;
 
             $cart_items_data[$cart_item_k]['qty'] = $quantity;
+
+            // On an optional line the quantity is what decides whether it is in the cart, so a
+            // save re-derives that rather than leaving it to the Add/Remove button. Editing a
+            // pending line up from 0 includes it; taking an included line back to 0 drops it to
+            // pending. Either way the row stays in the list — nothing here removes it — so a line
+            // taken to 0 keeps its place and offers Add to cart again. The button itself is
+            // rendered from optional_included, and the save response re-renders the table, so it
+            // swaps without any client-side help.
+            if (!empty($cart_item['optional'])) {
+                $was_included = !empty($cart_item['optional_included']);
+                $included     = $quantity > 0;
+                $cart_items_data[$cart_item_k]['optional_included'] = $included;
+
+                // Adding re-baselines original_qty, the same way the Add to cart button does:
+                // the line was not in the cart, so the quantity it arrives with is its starting
+                // point, not an edit of one. Without this the row would come back carrying the
+                // edited pencil and a Reset that empties it again.
+                // Only on the way in. Taking a line to 0 leaves original_qty where it was, so
+                // Reset still restores the quantity it had before it was removed.
+                if ($included && !$was_included) {
+                    $cart_items_data[$cart_item_k]['original_qty'] = $quantity;
+                }
+
+                $optional_key = !empty($cart_item['optional_key'])
+                    ? (string) $cart_item['optional_key']
+                    : CartBuilderService::optionalCartItemKey($cart_item);
+                if ($optional_key !== '') {
+                    $optional_qty_by_key[$optional_key] = $quantity;
+                }
+            }
         }
 
         $_SESSION['fc_cart'] = [
             'items' => $cart_items_data,
         ];
+
+        // The same line exists a second time in custom_fence_products, which is what gets posted
+        // to the store. toggleOptional keeps the two in step; a quantity save has to as well, or
+        // an item added this way would show in the cart and be missing from the order.
+        if ($optional_qty_by_key !== [] && !empty($_SESSION['custom_fence_products'])
+            && is_array($_SESSION['custom_fence_products'])) {
+            foreach ($_SESSION['custom_fence_products'] as $pk => $prod) {
+                if (!is_array($prod) || empty($prod['optional'])) {
+                    continue;
+                }
+                $prod_key = CartBuilderService::optionalCartItemKey($prod);
+                if (array_key_exists($prod_key, $optional_qty_by_key)) {
+                    $_SESSION['custom_fence_products'][$pk]['qty'] = $optional_qty_by_key[$prod_key];
+                }
+            }
+        }
     }
 }

@@ -103,6 +103,12 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                     }
                     ?>
                     <td<?php echo $product_image_attrs; ?>>
+                        <?php if ( ! empty( $cart_item['optional'] ) ) : ?>
+                        <!-- Above the thumbnail rather than trailing the product name: in the name
+                             it took a bite out of the title's line and pushed longer names onto an
+                             extra row. The image column is the narrow one and has the headroom. -->
+                        <span class="badge rounded-pill bg-secondary fc-cart-optional-badge">Optional</span>
+                        <?php endif; ?>
                         <?php if ( $full_cart_image !== '' ) : ?>
                         <img src="<?php echo e($full_cart_image); ?>"
                              alt=""
@@ -116,9 +122,6 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                     <td class="align-top" style="width: max-content;">
                         <div class="fw-bold text-dark fc-cart-item-title">
                             <?php echo @$cart_item['name']; ?>
-                            <?php if ( ! empty( $cart_item['optional'] ) ) : ?>
-                            <span class="badge rounded-pill bg-secondary ms-1 align-middle">Optional</span>
-                            <?php endif; ?>
                         </div>
 
                         <div class="text-muted mb-1"><?php echo @$cart_item['sku']; ?></div>
@@ -134,39 +137,30 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                         <div class="small text-muted fc-cart-fence-style"><?php echo e($fence_style_label); ?></div>
                         <?php endif; ?>
 
-                        <div class="d-block d-md-none">
-                            <div class="fw-bold d-flex align-items-center">
-                            <?php if(@$cart_item['stock'] == 'yes'): ?>
-                                 <i class="fa-solid fa-circle-check text-success me-2 fs-6"></i> In-Stock
-                            <?php else: ?>
-                            <i class="fa-solid fa-circle-exclamation text-orange fs-6 me-2"></i> Low-Stock
-                            <?php endif; ?>
-                            </div>
-                        </div>                            
+                        <!-- Quantity and stock read as one line on a phone: whichever of the two
+                             quantity states is showing sits on the left, stock to its right.
+                             Flexed in CSS at mobile only; on desktop stock has its own column and
+                             both children here are d-md-none, so this stays an inert wrapper. -->
+                        <div class="fc-cart-qty-row">
 
-                        <div class="fc-item-value d-md-none d-block fw-bold border rounded bg-light text-center p-1<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' text-muted' : ''; ?>" style="max-width: 128px;">
+                        <!-- Wrapper so the stepper and the Add/Remove button come out the same
+                             width on mobile without either being given a pixel figure: it shrinks
+                             to its widest child, which is the button, and the stepper fills it.
+                             Stepper first — on a phone the quantity is what is being edited, and
+                             the button acts on the result of it. -->
+                        <div class="fc-cart-qty-actions">
+
+                            <!-- Width gauge. Carries the button's own classes so it is sized by
+                                 exactly the rules that size the button — no copy of its padding,
+                                 font or border to keep in step, and rows with no button (most of
+                                 them) still get the same width. Zero height and clipped in CSS,
+                                 so it is only ever a measurement. -->
+                            <span class="fc-cart-qty-gauge btn btn-sm text-uppercase fw-bold" aria-hidden="true">Remove from cart</span>
+
+                        <div class="fc-item-value d-md-none d-block fw-bold border rounded bg-light text-center p-1<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' text-muted' : ''; ?>">
                             <?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? '—' : @$cart_item['qty']; ?>
                         </div>
 
-                        <?php if ( ! empty( $cart_item['optional'] ) ) : ?>
-                        <div class="fc-cart-optional-actions mt-2">
-                            <?php if ( empty( $cart_item['optional_included'] ) ) : ?>
-                            <button type="button"
-                                class="btn btn-sm btn-orange text-uppercase fw-bold js-fc-optional-cart-toggle"
-                                data-optional-key="<?php echo e((string) ( $cart_item['optional_key'] ?? '' )); ?>"
-                                data-include="1">
-                                Add to cart
-                            </button>
-                            <?php else : ?>
-                            <button type="button"
-                                class="btn btn-sm btn-danger text-uppercase fw-bold js-fc-optional-cart-toggle"
-                                data-optional-key="<?php echo e((string) ( $cart_item['optional_key'] ?? '' )); ?>"
-                                data-include="0">
-                                Remove from cart
-                            </button>
-                            <?php endif; ?>
-                        </div>
-                        <?php endif; ?>
 
                         <div class="md-qty" style="display: none;">
                             <div class="d-md-none d-table-cell">
@@ -183,6 +177,40 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                                 </div>                    
                             </div>
                         </div>
+
+                        <?php if ( ! empty( $cart_item['optional'] ) ) : ?>
+                        <div class="fc-cart-optional-actions mt-2">
+                            <?php if ( empty( $cart_item['optional_included'] ) ) : ?>
+                            <button type="button"
+                                class="btn btn-sm btn-green text-uppercase fw-bold js-fc-optional-cart-toggle"
+                                data-optional-key="<?php echo e((string) ( $cart_item['optional_key'] ?? '' )); ?>"
+                                data-include="1">
+                                Add to cart
+                            </button>
+                            <?php else : ?>
+                            <button type="button"
+                                class="btn btn-sm btn-danger text-uppercase fw-bold js-fc-optional-cart-toggle"
+                                data-optional-key="<?php echo e((string) ( $cart_item['optional_key'] ?? '' )); ?>"
+                                data-include="0">
+                                Remove from cart
+                            </button>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
+
+                        </div><!-- /.fc-cart-qty-actions -->
+
+                        <div class="d-block d-md-none fc-cart-stock-mobile">
+                            <div class="fw-bold d-flex align-items-center">
+                            <?php if(@$cart_item['stock'] == 'yes'): ?>
+                                 <i class="fa-solid fa-circle-check text-success me-2 fs-6"></i> In-Stock
+                            <?php else: ?>
+                            <i class="fa-solid fa-circle-exclamation text-orange fs-6 me-2"></i> Low-Stock
+                            <?php endif; ?>
+                            </div>
+                        </div>
+
+                        </div><!-- /.fc-cart-qty-row -->
 
                         <?php if( @$cart_item['qty'] != @$cart_item['original_qty'] ): ?>
                         <div class="qty-edited" data-toggle="toggle" title="Edited">

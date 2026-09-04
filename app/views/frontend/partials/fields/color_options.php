@@ -1,4 +1,4 @@
-<div class="fc-card fc-mb-2" data-fc-planner-fence-title="{{title}}">
+<div class="fc-card" data-fc-planner-fence-title="{{title}}">
     
     <div class="fc-card-header fc-bg-dark fc-border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="fc-color-options-planner-heading d-flex align-items-start align-items-sm-center gap-2 min-w-0 flex-grow-1">

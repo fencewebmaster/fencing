@@ -96,7 +96,13 @@
                         <?php echo $fence['title']; ?>
                     </div>
 
-                    <button type="button" class="fencing-style-btn js-fencing-style-btn fc-fence-reset-all"<?php echo $fence_is_live ? '' : ' tabindex="-1" aria-hidden="true" hidden'; ?>><i class="fa fa-times"></i></button>
+                    <?php
+                    // Names the consequence, not the glyph: this resets the whole section, and
+                    // below a calculated section it does so without a confirm. strip_tags because
+                    // the title is markup where it is printed above, but this is an attribute.
+                    $fence_reset_label = 'Remove ' . strip_tags($fence['title']) . ' and reset this section';
+                    ?>
+                    <button type="button" class="fencing-style-btn js-fencing-style-btn fc-fence-reset-all" aria-label="<?php echo e($fence_reset_label); ?>" title="<?php echo e($fence_reset_label); ?>"<?php echo $fence_is_live ? '' : ' tabindex="-1" aria-hidden="true" hidden'; ?>><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
                 </div>
             </div>
