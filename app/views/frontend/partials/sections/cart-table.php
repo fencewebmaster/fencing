@@ -155,7 +155,7 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                                  font or border to keep in step, and rows with no button (most of
                                  them) still get the same width. Zero height and clipped in CSS,
                                  so it is only ever a measurement. -->
-                            <span class="fc-cart-qty-gauge btn btn-sm text-uppercase fw-bold" aria-hidden="true">Remove from cart</span>
+                            <span class="fc-cart-qty-gauge btn btn-sm text-uppercase" aria-hidden="true">Remove from cart</span>
 
                         <div class="fc-item-value d-md-none d-block fw-bold border rounded bg-light text-center p-1<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' text-muted' : ''; ?>">
                             <?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? '—' : @$cart_item['qty']; ?>
@@ -182,14 +182,14 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                         <div class="fc-cart-optional-actions mt-2">
                             <?php if ( empty( $cart_item['optional_included'] ) ) : ?>
                             <button type="button"
-                                class="btn btn-sm btn-green text-uppercase fw-bold js-fc-optional-cart-toggle"
+                                class="btn btn-sm btn-green text-uppercase js-fc-optional-cart-toggle"
                                 data-optional-key="<?php echo e((string) ( $cart_item['optional_key'] ?? '' )); ?>"
                                 data-include="1">
                                 Add to cart
                             </button>
                             <?php else : ?>
                             <button type="button"
-                                class="btn btn-sm btn-danger text-uppercase fw-bold js-fc-optional-cart-toggle"
+                                class="btn btn-sm btn-danger text-uppercase js-fc-optional-cart-toggle"
                                 data-optional-key="<?php echo e((string) ( $cart_item['optional_key'] ?? '' )); ?>"
                                 data-include="0">
                                 Remove from cart

@@ -284,7 +284,7 @@ use Fc\Admin\Services\FenceCatalogService;
 
 			<div class="text-end js-project-details-footer">
 				<button type="button" data-action="edit" class="btn btn-sm fc-btn-edit btn-orange text-uppercase" aria-label="Edit details">
-					<b class="">Edit Details</b>
+					Edit Details
 				</button>
 
 				<!-- No mt-2: the footer already pads 14px, and the extra 8 stood the buttons 23px
@@ -292,17 +292,17 @@ use Fc\Admin\Services\FenceCatalogService;
 				     replaces, sits evenly on both. It also grew the footer by 8px on entering edit. -->
 				<div class="js-project-details-controls project-details-controls project-details-controls--edit-bar fc-d-none">
 					<button type="button" class="btn btn-sm btn-secondary text-uppercase fc-btn-cancel-project-details">
-						<b>Cancel</b>
+						Cancel
 					</button>
 					<div class="project-details-controls__right">
 						<!-- Both start dead: there is nothing to save or undo until a field differs
 						     from the value its row still displays. -->
 						<button type="button" data-action="update" class="btn btn-sm fc-btn-edit btn-orange text-uppercase btn-orange fc-w-700 disabled" aria-disabled="true" tabindex="-1">
-							<b>Save Changes</b>
+							Save Changes
 						</button>
 
 						<button type="button" class="btn btn-sm fc-btn-reset btn-dark text-uppercase disabled" aria-disabled="true" tabindex="-1" style="display:none;">
-							<b>Reset</b>
+							Reset
 						</button>
 					</div>
 				</div>

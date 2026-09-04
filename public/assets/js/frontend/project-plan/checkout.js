@@ -34,7 +34,7 @@ function fcRefreshColourSlickAfterEditToggle() {
 
 /**
  * Pushes the chat launcher up when a sticky bar (project details footer or cart action bar) is
- * pinned underneath it, so it doesn't cover Save Changes / Edit Quantity on mobile.
+ * pinned underneath it, so it doesn't cover Save Changes / Change QTY on mobile.
  */
 function fcSyncChatLauncherOffset() {
     var launcher = document.querySelector('.fc-chat-launcher');
@@ -1150,8 +1150,8 @@ function fcExitCartEditMode() {
     $('.fc-table-items .md-qty, .fc-reset-item').add('.fc-cancel-item').hide();
     $('.js-fc-copy-cart-items, .js-fc-cart-count').show();
     $('.fc-item-value').removeClass('d-none');
-    $('.js-fc-edit-item span').html('Edit Quantity');
-    // Edit Quantity is always available; only its Save Changes state is gated.
+    $('.js-fc-edit-item span').html('Change QTY');
+    // Change QTY is always available; only its Save Changes state is gated.
     $('.js-fc-edit-item').removeClass('disabled').removeAttr('aria-disabled').removeAttr('tabindex');
     $('.fc-reset-item').addClass('disabled').attr({ 'aria-disabled': 'true', tabindex: '-1' });
 }
@@ -1383,7 +1383,7 @@ $("#paymentFrm").validate({
                             $(".fc-table-items .fc-form-control").css({ 'color': '' });
                             HELPER.removeSectionOverlay();
                             // Saving leaves edit mode the same way Cancel does: the bar drops back
-                            // to Copy and Edit Quantity, and Reset goes dead with it. The table was
+                            // to Copy and Change QTY, and Reset goes dead with it. The table was
                             // just replaced, so this has to run after that HTML is in.
                             fcExitCartEditMode();
 

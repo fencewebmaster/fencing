@@ -20,7 +20,7 @@ use Fc\Admin\Services\SiteRegistryService;
             </div>
         </div>
         <div class="col-auto">
-            <button type="button" data-bs-toggle="modal" data-bs-target="#clear-all-data" class="btn btn-sm fw-bold text-uppercase fc-clear-all-btn" aria-label="Clear all sections and start a new quote">
+            <button type="button" data-bs-toggle="modal" data-bs-target="#clear-all-data" class="btn btn-sm text-uppercase fc-clear-all-btn" aria-label="Clear all sections and start a new quote">
                 <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
                 <span>Clear All</span>
             </button>

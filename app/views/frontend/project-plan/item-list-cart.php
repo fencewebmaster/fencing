@@ -22,7 +22,7 @@
 				        	     ms-auto, not the grid: the title column is set to shrink to its
 				        	     content at 576px up, so there is nothing to push this to the edge. -->
 				        	<div class="col-auto ms-auto js-fc-cart-heading-actions fc-cart-heading-actions d-flex align-items-center gap-2">
-				        		<a href="#" class="btn btn-sm btn-outline-dark js-fc-copy-cart-items fw-bold text-uppercase" aria-label="Copy item list">
+				        		<a href="#" class="btn btn-sm btn-outline-dark js-fc-copy-cart-items text-uppercase" aria-label="Copy item list">
 				        			<i class="fa-regular fa-copy me-sm-1" aria-hidden="true"></i>
 				        			<span class="d-none d-sm-inline">Copy</span>
 				        		</a>
@@ -43,18 +43,18 @@
 						     which is the only difference between the two arrangements. -->
 						<div class="js-fc-cart-edit-bar fc-cart-edit-bar">
 							<div class="js-fc-cart-edit-bar__left fc-cart-edit-bar__side">
-								<a href="#" class="btn btn-sm btn-secondary fc-cancel-item fw-bold text-uppercase" style="display: none;" aria-label="Cancel editing cart">
+								<a href="#" class="btn btn-sm btn-secondary fc-cancel-item text-uppercase" style="display: none;" aria-label="Cancel editing cart">
 									<i class="fa-solid fa-xmark me-sm-1" aria-hidden="true"></i> <span class="d-none d-sm-inline">Cancel</span>
 								</a>
 							</div>
 							<div class="js-fc-cart-edit-bar__right fc-cart-edit-bar__side">
-								<a href="#" class="btn btn-sm btn-orange fc-update-item text-uppercase js-fc-edit-item fw-bold" aria-label="Edit quantity">
+								<a href="#" class="btn btn-sm btn-orange fc-update-item text-uppercase js-fc-edit-item" aria-label="Change quantity">
 									<i class="fa-regular fa-pen-to-square me-sm-1" aria-hidden="true"></i>
-									<span class="d-none d-sm-inline">Edit Quantity</span>
+									<span class="d-none d-sm-inline">Change QTY</span>
 								</a>
 								<!-- Starts dead, like Save Changes: there is nothing to undo until a
 								     quantity differs from the one its row loaded with. -->
-								<a href="#" class="btn btn-sm btn-dark fc-reset-item fw-bold text-uppercase disabled" aria-disabled="true" tabindex="-1" style="display: none;">
+								<a href="#" class="btn btn-sm btn-dark fc-reset-item text-uppercase disabled" aria-disabled="true" tabindex="-1" style="display: none;">
 									<i class="fa-solid fa-rotate-left me-sm-1"></i> <span class="d-none d-sm-inline">Reset</span>
 								</a>
 							</div>
@@ -64,7 +64,7 @@
 							<div class="fc-view-total-cost-bar__inner">
 								<div class="d-grid gap-2">
 									<div class="animate__animated" animation-type="animate__bounce">
-										<button type="submit" class="btn btn-lg btn-submit btn-green js-fc-view-total-cost text-uppercase w-100 text fw-bold fc-btn-shine">
+										<button type="submit" class="btn btn-lg btn-submit btn-green js-fc-view-total-cost text-uppercase w-100 text fc-btn-shine">
 											<i class="fa-solid fa-cart-shopping me-1"></i>
 											View Total Cost!
 										</button>
@@ -123,21 +123,21 @@
 							</div>
 							
 							<div class="fc-stock-delivery-actions d-grid gap-2">
-								<button type="button" class="btn btn-lg fc-btn-download-fence btn-outline-dark text-uppercase w-100 fs-6 text fw-bold" aria-label="Download project plans as PDF">
+								<button type="button" class="btn btn-lg fc-btn-download-fence btn-outline-dark text-uppercase w-100 fs-6 text" aria-label="Download project plans as PDF">
 									<i class="fa-solid fa-download me-2" aria-hidden="true"></i>
 									<span>Download Plans</span>
 								</button>
 
 								<div class="row g-2">
 									<div class="col-lg col-md-12 col-sm">
-								        <button type="submit" class="btn btn-submit btn-lg btn-dark text-uppercase w-100 fs-6 text fw-bold fc-btn-shine">
+								        <button type="submit" class="btn btn-submit btn-lg btn-dark text-uppercase w-100 fs-6 text fc-btn-shine">
 								            <i class="fa-solid fa-cart-shopping me-2"></i>
 								            Order Items Now!
 								        </button>
 									</div>
 									<div class="col-lg col-md-12 col-sm">
 								        <a href="tel:0480016687" class="btn btn-lg btn-dark text-uppercase w-100 fs-6 text">
-								           	<b><i class="fa-solid fa-phone me-2"></i> Call 04800 166 87</b>
+								           	<i class="fa-solid fa-phone me-2"></i> Call 04800 166 87
 								        </a>
 							       </div>
 								</div>

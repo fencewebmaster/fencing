@@ -80,7 +80,7 @@ use Fc\Admin\Services\AppConfigService;
 
                         </div>
 
-                        <button type="button" class="btn btn-dark text-uppercase btn-fc-calculate px-3 fw-bold">
+                        <button type="button" class="btn btn-dark text-uppercase btn-fc-calculate px-3">
                             Calculate
                         </button>
 

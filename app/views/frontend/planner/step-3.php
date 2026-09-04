@@ -104,8 +104,8 @@
                         <button type="button" 
                             aria-label="Add section"
                             class="btn btn-dark fc-tab-add fencing-tab-add fc-step3-icon-btn p-3 w-100 w-xl-auto">
-                            <b class="d-md-none"><i class="fa-solid fa-plus" aria-hidden="true"></i></b>
-                            <b class="d-none d-md-inline"><i class="fa-solid fa-plus me-1"></i> Add Another Section</b>
+                            <span class="d-md-none"><i class="fa-solid fa-plus" aria-hidden="true"></i></span>
+                            <span class="d-none d-md-inline"><i class="fa-solid fa-plus me-1"></i> Add Another Section</span>
                         </button>
                     </div>
 
@@ -113,10 +113,8 @@
                         <button type="button" 
                             aria-label="Reset section"
                             class="btn btn-danger fc-fence-reset-all fc-fence-reset fc-step3-icon-btn text-uppercase p-3 w-100 w-xl-auto">
-                            <b>
-                                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
-                                <span class="d-none d-md-inline ms-1">Reset</span>
-                            </b>
+                            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                            <span class="d-none d-md-inline ms-1">Reset</span>
                         </button>
                     </div>
 
@@ -128,15 +126,15 @@
                             data-section="4"
                             data-offset="0"
                             disabled>
-                            <b class="d-xl-none">NEXT <i class="fa-solid fa-angle-right mx-1" aria-hidden="true"></i> PLAN OPTIONS</b>
-                            <b class="d-none d-xl-inline">NEXT <i class="fa-solid fa-angle-right mx-2"></i> Select PLAN OPTIONS</b>
+                            <span class="d-xl-none"><b>NEXT</b> <i class="fa-solid fa-angle-right mx-1" aria-hidden="true"></i> PLAN OPTIONS</span>
+                            <span class="d-none d-xl-inline"><b>NEXT</b> <i class="fa-solid fa-angle-right mx-2"></i> Select PLAN OPTIONS</span>
                         </button>
                     </div>
 
                     <div class="d-none d-md-block col-auto col-md-12 col-lg-12 col-xl-auto order-md-4 order-xl-3">
                         <button type="button" 
                             aria-label="Delete section"
-                            class="btn btn-danger btn-fc-sm btn-delete-fence js-btn-delete-fence fc-step3-icon-btn fw-bold text-uppercase p-3 w-100 w-xl-auto" 
+                            class="btn btn-danger btn-fc-sm btn-delete-fence js-btn-delete-fence fc-step3-icon-btn text-uppercase p-3 w-100 w-xl-auto" 
                             >
                             <span><i class="fa fa-trash-can" aria-hidden="true"></i><span class="d-none d-md-inline ms-1">Delete <span>Section</span></span></span>
                         </button>
@@ -157,7 +155,7 @@
                         <button type="button" 
                             class="btn btn-step btn-outline-secondary text-uppercase fc-px-3 order-1 order-sm-2 w-100 w-sm-auto" 
                             data-tab="2" 
-                            data-move="1"><b><i class="fa-solid fa-angle-left me-2"></i> Back</b>
+                            data-move="1"><i class="fa-solid fa-angle-left me-2"></i> Back
                         </button>
                     </div>
                 </div>

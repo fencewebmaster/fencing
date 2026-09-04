@@ -12,14 +12,14 @@
                 <div class="btn-delete-fence text-end mb-2">
 
                     <button type="button" 
-                        class="btn btn-danger btn-sm js-btn-delete-fence px-2 fw-bold text-uppercase" 
+                        class="btn btn-danger btn-sm js-btn-delete-fence px-2 text-uppercase" 
                         aria-label="Delete section"
                         style="display:none;">
                         <i class="fa fa-trash-can" aria-hidden="true"></i><span class="fc-btn-label"> Delete <span>Section</span></span>
                     </button>
 
                     <button type="button" 
-                        class="btn btn-danger btn-sm fc-fence-reset-all px-2 fw-bold text-uppercase" 
+                        class="btn btn-danger btn-sm fc-fence-reset-all px-2 text-uppercase" 
                         aria-label="Reset section"
                         style="display:none;">
                         <i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span class="fc-btn-label"> Reset</span>
@@ -102,7 +102,7 @@
                     // the title is markup where it is printed above, but this is an attribute.
                     $fence_reset_label = 'Remove ' . strip_tags($fence['title']) . ' and reset this section';
                     ?>
-                    <button type="button" class="fencing-style-btn js-fencing-style-btn fc-fence-reset-all" aria-label="<?php echo e($fence_reset_label); ?>" title="<?php echo e($fence_reset_label); ?>"<?php echo $fence_is_live ? '' : ' tabindex="-1" aria-hidden="true" hidden'; ?>><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                    <button type="button" class="fencing-style-btn js-fencing-style-btn fc-fence-reset-all fc-btn-shine" aria-label="<?php echo e($fence_reset_label); ?>" title="<?php echo e($fence_reset_label); ?>"<?php echo $fence_is_live ? '' : ' tabindex="-1" aria-hidden="true" hidden'; ?>><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
                 </div>
             </div>
@@ -116,9 +116,13 @@
                         <img src="<?php echo url(); ?>public/assets/img/webp/plain-white.webp">  
                         <div class="lq-mid-desc">
                             <div class="lq-icon">
-                                <i class="fa-solid fa-file-circle-plus"></i>                                         
+                                <i class="fa-solid fa-folder-open"></i>                                         
                             </div>
-                            Click Here to<br> Load Quote                                                             
+                            <!-- Two sentences, two elements: as one run of text it wrapped mid-phrase
+                                 ("Already saved a / quote? Enter your / ID to continue"), so neither
+                                 idea read as a unit. Separate blocks break between them instead. -->
+                            <span class="lq-lead">Already saved a quote?</span>
+                            <span class="lq-hint">Enter your ID to continue</span>
                         </div>
                     </div>
 
@@ -133,10 +137,10 @@
 
             <div class="fencing-styles-load-quote-mobile fc-load-quote-mobile-only text-center">
                 <button type="button"
-                    class="btn btn-dark text-uppercase fw-bold px-4 py-2 fencing-styles-load-quote-btn"
+                    class="btn btn-dark text-uppercase px-4 py-2 fencing-styles-load-quote-btn"
                     data-bs-toggle="modal"
                     data-bs-target="#load-quote">
-                    <i class="fa-solid fa-file-circle-plus me-2"></i>Load Quote
+                    <i class="fa-solid fa-folder-open me-2"></i>Load Quote
                 </button>
             </div>
 
