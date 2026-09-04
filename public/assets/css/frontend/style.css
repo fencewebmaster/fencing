@@ -1824,8 +1824,33 @@ label.error {
 }
 
 .fc-form-check label.error {
-    top: -30px;
+    top: -13px;
     position: absolute;
+}
+
+/* The wizard draws each radio option as a bordered flex row, and the error label is a label too -
+   so it has to opt out of that treatment and go back to the pill the text fields get, straddling
+   the top-right corner of the group. -13px clears the step hint above by a pixel. */
+#submit-modal .fc-form-plan .fc-form-group.fc-form-check label.error {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    gap: 0;
+    margin: 0;
+    padding: 3px 5px;
+    border: 0;
+    border-radius: 5px;
+    background: var(--fc-alizarin);
+    color: var(--fc-white);
+    font-family: "Poppins", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    /* The phone rule gives each option tile a 44px floor and this label matches that selector too. */
+    min-height: 0;
+    white-space: nowrap;
+    top: -13px;
+    right: 5px;
 }
 
 /* Step 2 uses .fc-input-msg — hide jQuery Validate duplicate labels */

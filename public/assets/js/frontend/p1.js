@@ -346,17 +346,6 @@ let Planner = {
             v.form[0].style = v.form[0].style;
             v.form[0].tab = v.form[0].tab - 1;
 
-            if (!qidFromUrl && typeof fcMergePlannerTabFormPreferLocalStep2 === 'function') {
-                try {
-                    var tabIdxMerge = v.form[0].tab;
-                    var localTabRaw = localStorage.getItem('custom_fence-' + tabIdxMerge);
-                    if (localTabRaw) {
-                        var localTabForm = JSON.parse(localTabRaw);
-                        v.form = fcMergePlannerTabFormPreferLocalStep2(localTabForm, v.form);
-                    }
-                } catch (eMerge) {}
-            }
-
             localStorage.setItem('custom_fence-' + v.form[0].tab, JSON.stringify(v.form));
 
             if (v.settings) {

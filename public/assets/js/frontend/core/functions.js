@@ -8054,6 +8054,34 @@ function fillInAddress() {
     }
     document.querySelector("#address").value = address1.join(', ');
 
+    /* Google writes these three straight to .value, which fires nothing - so the modal's own change
+       listener never runs and a picked address is gone on the next reload, while every typed field
+       around it survives. Announcing the write puts them back on the same path as a typed edit:
+       saveFormData persists them, and a field still showing an error pill from an earlier Enter is
+       re-checked so the pill clears. Only fields already flagged are re-checked, so this never raises
+       a new error on a field the customer has not reached yet. */
+    var addressValidator = null;
+    try {
+        addressValidator = $('#address').closest('form').data('validator');
+    } catch (eVd) {}
+
+    ['address', 'postcode', 'state'].forEach(function(fieldId) {
+        var el = document.getElementById(fieldId);
+        if (!el) {
+            return;
+        }
+        // change only, never input: input is what Google Places listens to for predictions, so
+        // announcing the fill that way made it re-query and reopen the list it had just closed.
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        if (addressValidator && $(el).hasClass('error')) {
+            addressValidator.element(el);
+        }
+    });
+
+    if (typeof saveFormData === 'function') {
+        saveFormData();
+    }
+
     if (typeof fcSyncDownloadPlansFloatingLabels === 'function') {
         fcSyncDownloadPlansFloatingLabels();
     }

@@ -118,7 +118,7 @@ $fcDownloadSteps = [
                         </button>
 
                         <button type="submit" 
-                            class="btn fc-btn-next btn-orange fc-text-uppercase fc-w-b disabled">
+                            class="btn fc-btn-next btn-orange fc-text-uppercase fc-w-b">
                             <b>Done <i class="fa-solid fa-angle-right mx-2"></i> <span class="fc-btn-step-target">View Plans &amp; Costs</span></b>
                         </button>
                     </div>

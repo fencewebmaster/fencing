@@ -1319,17 +1319,6 @@ function fencingTab() {
             }
         }
     }
-    if (
-        measurement === FENCES.defaultValues.measurement &&
-        tabRow0?.calculateValue !== undefined &&
-        tabRow0?.calculateValue !== null &&
-        tabRow0?.calculateValue !== '' &&
-        styleSlug &&
-        typeof fcStyleStep2WasCalculated === 'function' &&
-        fcStyleStep2WasCalculated(tabRow0, styleSlug)
-    ) {
-        measurement = tabRow0.calculateValue;
-    }
     if (typeof fcSanitizeOverallLengthRestoreVal === 'function') {
         measurement = fcSanitizeOverallLengthRestoreVal(measurement);
     }
@@ -3456,15 +3445,9 @@ function fcBtnFormStep() {
         history.pushState({}, '', `?tab=${tab}&form=${move}`);
     }
 
-    _this.closest('form').find('[type="submit"]')
-        .addClass('disabled')
-        .attr('disabled', 'disabled');
-
-    if ($('.fc-form-check-img input:checked').length) {
-        _this.closest('form').find('[type="submit"]')
-            .removeClass('disabled')
-            .removeAttr('disabled');
-    }
+    /* Done is left enabled: it is gated by validation now, which names what is missing, where
+       disabling it only stopped the click and explained nothing. The selector reached every
+       [type=submit] in the form - the planner's own UPDATE among them - so this stops that too. */
 }
 
 //----------------------------------------------------------------------------------
@@ -3588,18 +3571,16 @@ function fcFormCheck_input() {
         _this.closest('.fc-form-check-img').addClass('fc-selected');
     }
 
-    var $form = _this.closest('form');
-    if ($form.length) {
-        $form.find('[type="submit"]')
-            .addClass('disabled')
-            .attr('disabled', 'disabled');
-
-        if ($otherProducts.find('input:checked').length) {
-            $form.find('[type="submit"]')
-                .removeClass('disabled')
-                .removeAttr('disabled');
+    /* The rule for this group hangs off NIL, so ticking a tile never re-checks it and the pill would
+       sit there on a question that is now answered. Only once a message exists - so a first tick
+       never raises one on a customer who has not asked to move on yet. */
+    try {
+        var groupValidator = _this.closest('form').data('validator');
+        var nilEl = $otherProducts.find('input[name="nothing_extra"]')[0];
+        if (groupValidator && nilEl && $otherProducts.find('label.error').length) {
+            groupValidator.element(nilEl);
         }
-    }
+    } catch (eGv) {}
 
     if (typeof fcPersistOtherProductsToProjectPlans === 'function') {
         fcPersistOtherProductsToProjectPlans();
@@ -4019,6 +4000,114 @@ function fcSelectOption_v2() {
     ---------------------------------------------------------------- */
 
 _doc.on('keydown', '[data-section="2"] input, [data-section="2"] select', step2EnterNavigate);
+
+/* Enter walks the Download Your Project Plans wizard the way Step 2's own Enter already does: a
+   field that passes hands focus on, one that fails states why and keeps it. The check is the form's
+   own jQuery Validate instance, so Enter reports exactly what Next would - same rules, same wording,
+   same label in the same place - rather than a second opinion written here. preventDefault runs
+   either way: the wizard sits inside #fc-planning-form, whose Done button would otherwise take an
+   Enter from any field as an implicit submit and post the plan half-filled. */
+function fcDownloadPlansEnterNavigate(e) {
+    var code = e.keyCode || e.which;
+    if (code !== 13) {
+        return;
+    }
+
+    var el = e.target;
+    if (!el || el.tagName === 'TEXTAREA' || el.disabled || el.readOnly) {
+        return;
+    }
+
+    // Text-like fields and the State select only; the radio panes keep Enter as their own submit.
+    var type = (el.type || 'text').toLowerCase();
+    var isTextLike =
+        el.tagName === 'INPUT' &&
+        (type === 'text' || type === 'tel' || type === 'email' || type === 'number' || type === 'search' || type === '');
+    if (!isTextLike && el.tagName !== 'SELECT') {
+        return;
+    }
+
+    var pane = el.closest('.fc-form-plan');
+    if (!pane || !$(pane).is(':visible')) {
+        return;
+    }
+
+    // Google's address suggestions own the Enter key while their list is up.
+    if ($('.pac-container:visible').length) {
+        return;
+    }
+
+    e.preventDefault();
+
+    var validator = null;
+    try {
+        validator = $(el).closest('form').data('validator');
+    } catch (errVd) {}
+
+    if (validator) {
+        // element() renders the message itself, so a failure only has to stop here.
+        if (validator.element(el) === false) {
+            return;
+        }
+    } else if (!String(el.value != null ? el.value : '').trim()) {
+        return;
+    }
+
+    var $fields = $(pane).find('input, select').filter(function() {
+        var t = (this.type || 'text').toLowerCase();
+        if (t === 'hidden' || t === 'button' || t === 'submit' || t === 'reset') {
+            return false;
+        }
+        return !this.disabled && !this.readOnly && $(this).is(':visible');
+    });
+
+    var next = $fields.get($fields.index(el) + 1);
+    if (!next) {
+        return;
+    }
+
+    next.focus();
+    if (typeof next.select === 'function' && (next.type || '').toLowerCase() !== 'number') {
+        try {
+            next.select();
+        } catch (errSel) {}
+    }
+}
+
+_doc.on('keydown', '#submit-modal input, #submit-modal select', fcDownloadPlansEnterNavigate);
+
+/* Enter anywhere in the wizard that is not a field presses the step's own button, so a step whose
+   answer is a radio still reports what is missing instead of the key doing nothing. Fields are
+   handled above; a focused radio keeps the browser's own implicit submit, which runs the same
+   validation. A button already marked disabled is left alone. */
+function fcDownloadPlansEnterStep(e) {
+    var code = e.keyCode || e.which;
+    if (code !== 13) {
+        return;
+    }
+
+    var $modal = $('#submit-modal:visible');
+    if (!$modal.length) {
+        return;
+    }
+
+    if (!e.target || $(e.target).is('input, select, textarea, button, a, [contenteditable]')) {
+        return;
+    }
+
+    var $btn = $modal.find('.fc-download-footer-actions:visible .fc-btn-next').first();
+    if (!$btn.length) {
+        $btn = $modal.find('.fc-form-plan:visible .fc-btn-next').first();
+    }
+    if (!$btn.length || $btn.hasClass('disabled') || $btn.is('[disabled]')) {
+        return;
+    }
+
+    e.preventDefault();
+    $btn.trigger('click');
+}
+
+_doc.on('keydown', fcDownloadPlansEnterStep);
 
 _doc.on('keydown', function(e) {
     var code = e.keyCode || e.which;
@@ -4751,10 +4840,40 @@ $("#fc-planning-form").validate({
             required: true,
             email: true
         },
+        /* Anything Else is one question answered by either a tile or NIL, so the rule hangs off NIL
+           and asks whether anything at all is chosen. */
+        nothing_extra: {
+            required: function() {
+                return $('#submit-modal .fc-other-products input[name="extra[]"]:checked').length === 0;
+            }
+        },
     },
     messages: {
         timeframe: "Please select an option.",
-       
+        nothing_extra: "Please choose at least one option.",
+    },
+    /* A radio group has no single field to hang a message off, and jQuery Validate's default drops
+       the label inside the first option - where the row's own flex rules stretch it into a red slab
+       across the hint above. On the group box instead, where it straddles the top-right corner the
+       way it does on a text field. Everything else keeps the default placement. */
+    errorPlacement: function(error, element) {
+        var $extras = element.closest('.fc-other-products');
+        if ($extras.length) {
+            error.appendTo($extras);
+            return;
+        }
+
+        var type = (element.attr('type') || '').toLowerCase();
+        if (type === 'radio' || type === 'checkbox') {
+            // div only: pane 4 wraps each checkbox in a <label class="fc-form-check">, which is an
+            // item and not a group, and appending there would bury the message inside one option.
+            var $group = element.closest('div.fc-form-check');
+            if ($group.length) {
+                error.appendTo($group);
+                return;
+            }
+        }
+        error.insertAfter(element);
     },
     submitHandler: function(form) {
         var tab = $('#submit-modal .fc-form-plan:visible').attr('data-formtab'),
