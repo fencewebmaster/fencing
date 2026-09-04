@@ -3755,11 +3755,12 @@ thead.fc-border th:last-child {
     max-width: 130px;
 }
 
-/* Cart table takes the house 10px corner. overflow:hidden is unavailable - the wrapper is
-   deliberately visible so the sticky thead is not clipped - so the cells carry their own corners.
-   Which cell owns which moves with the breakpoint: QTY and Stock are d-none below 768. */
+/* Cart table keeps the house 10px corner along its foot only - the header runs square. The top
+   corners come off the wrapper as well: overflow:hidden is unavailable here (the wrapper is
+   deliberately visible so the sticky thead is not clipped), so a rounded wrapper would just let
+   the dark header square itself off outside the curve. */
 #update_cart-list .fc-table-rounded-border {
-    border-radius: 10px;
+    border-radius: 0 0 10px 10px;
 }
 
 /* border-collapse:collapse ignores cell border-radius outright. Separate is what renders it, and
@@ -3769,36 +3770,14 @@ thead.fc-border th:last-child {
     border-spacing: 0;
 }
 
-@media (min-width: 768px) {
-    #update_cart-list .table-cart thead th:first-child {
-        border-top-left-radius: 10px;
-    }
-
-    #update_cart-list .table-cart thead th:last-child {
-        border-top-right-radius: 10px;
-    }
-
-    #update_cart-list .table-cart tbody tr:last-child td:first-child {
-        border-bottom-left-radius: 10px;
-    }
-
-    #update_cart-list .table-cart tbody tr:last-child td:last-child {
-        border-bottom-right-radius: 10px;
-    }
+/* No breakpoint split any more: that only ever existed for the header, whose cells change with
+   QTY and Stock going d-none below 768. The last row is the same two cells at every width. */
+#update_cart-list .table-cart tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
 }
 
-@media (max-width: 767.98px) {
-    #update_cart-list .table-cart thead th[colspan] {
-        border-radius: 10px 10px 0 0;
-    }
-
-    #update_cart-list .table-cart tbody tr:last-child td:first-child {
-        border-bottom-left-radius: 10px;
-    }
-
-    #update_cart-list .table-cart tbody tr:last-child td:last-child {
-        border-bottom-right-radius: 10px;
-    }
+#update_cart-list .table-cart tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
 }
 
 /* Tighten the space around the qty stepper on mobile (was 16px above + 15px below a 32px control).
@@ -10180,6 +10159,7 @@ body.fc-restoring-selection .fencing-tab-name {
         /* Over the table's own sticky column head at 7, under the action bar at 1042. */
         z-index: 11;
         background-color: var(--fc-white);
+        border-radius: 4px;
     }
 
     /* The column head pins directly under the band, with nothing of the list showing between them.
@@ -10270,7 +10250,6 @@ body.fc-restoring-selection .fencing-tab-name {
     justify-content: center;
     min-height: calc(1.35em + 2px + 0.8rem);
     padding: 2px 10px !important;
-    font-size: 0.8125rem !important;
 }
 
 /* Glyph off once the word is there. The label is d-none d-sm-inline, so 576px is where Copy starts
