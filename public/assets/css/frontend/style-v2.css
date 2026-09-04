@@ -1,7 +1,4 @@
-/* Step 2 — consistent corner radius on fields, selects, and buttons.
-   3px matches the site-wide button radius, so the measurement field, its qty controls and
-   Calculate all close on the same corner instead of the field being rounder than the button
-   attached to it. */
+/* Step 2: 3px on fields, selects and buttons, so the measurement field and the Calculate attached to it close on one corner. */
 [data-section="2"] {
     --fc-step2-radius: 3px;
 }
@@ -93,32 +90,14 @@
     margin-bottom: 1rem;
 }
 
-/* Step 2 — every field block in the left column closes on the same 1rem. They used to run flush
-   into one another on 0.5rem, which the g-2 gutter then ate.
-   Do NOT also zero the -0.5rem margin-top these rows carry: the gutter is net zero, the row pulling
-   up by half a gutter and each of its columns pushing down by the same, so the gap you see between
-   two blocks is the margin below the upper one and nothing else. Cancelling only the row's half
-   leaves the columns' half standing and opens 1.5rem here and 1rem there — which is the Slat Size
-   row sitting differently from the Fence Height row.
-   Direct children of the column only — .fc-step2-gate-only also appears nested inside the height
-   row, where it is one column of a two-up and is deliberately closed at 0 below.
-   !important because bootstrap.min.css loads after this file and the height row carries mb-2.
-   :has(*) because .step-2_field is left in the markup and emptied by the fence module; a margin on
-   the empty one opens a gap under a block that is not there. */
+/* Step 2 blocks close on 1rem; do not also zero the row's -0.5rem, the gutter is net zero. :has(*) skips the emptied block. */
 [data-section="2"] .fencing-section--step2 .col-lg-5 > .step-2_field:has(*),
 [data-section="2"] .fencing-section--step2 .col-lg-5 > .fc-step2-slat-height-row:not(.d-none),
 [data-section="2"] .fencing-section--step2 .col-lg-5 > .fc-step2-gate-only:not(.d-none) {
     margin-bottom: 1rem !important;
 }
 
-/* A validation message is positioned, so nothing in flow knows it is there: it hangs 25px below the
-   field it belongs to — its own bottom: -30px less the 5px margin that shifts it back up — and used
-   to land across the block underneath. "Please enter fence height" sat over the Overall Length
-   label, and Overall Length's own message ran past the bottom of the card.
-   The block that owns the message opens far enough to hold it: the 25px of overhang plus the 1rem
-   this stack keeps between blocks. Only while the message shows, so nothing is reserved in the
-   ordinary case, and the message stays out of flow so the two controls in a row still line up
-   rather than one dropping to follow it. */
+/* The block opens far enough to hold its positioned validation message (25px of overhang plus 1rem), and only while it shows. */
 [data-section="2"] .fencing-section--step2 .col-lg-5 > *:has(.fc-input-msg.fcim-show) {
     margin-bottom: calc(1rem + 25px) !important;
 }

@@ -512,11 +512,15 @@ HELPER = {
 
     //----------------------------------------------------------------------------------
 
-    /**
-     * Set defaul value for measurement box
-     */
+    /* Default the Overall Length box on load - but not one the planner restore already filled: p1.js restores synchronously while parsing, FENCES.init runs on DOM-ready after it, and every restore path stamps data-last. */
     setMeasurementDefaultValue: function() {
-        $(FENCES.el.measurementBoxNumber).val(FENCES.defaultValues.measurement);
+        $(FENCES.el.measurementBoxNumber).each(function() {
+            var $box = $(this);
+            if ($box.attr('data-last')) {
+                return;
+            }
+            $box.val(FENCES.defaultValues.measurement);
+        });
     },
 
     //----------------------------------------------------------------------------------

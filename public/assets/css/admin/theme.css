@@ -1,6 +1,4 @@
-/**
- * FC Admin — light / dark appearance (toggle via html[data-fc-admin-theme]).
- */
+/* FC Admin — light / dark appearance (toggle via html[data-fc-admin-theme]). */
 html[data-fc-admin-theme='light'],
 html:not([data-fc-admin-theme]) {
     color-scheme: light;
@@ -172,11 +170,7 @@ html[data-fc-admin-theme='dark'] .fc-admin-theme-switcher__btn--active {
     z-index: 1;
 }
 
-/*
- * Cache purge in topbar — must beat .fc-entries-date-dropdown
- * (min-width: 10rem) from entries.css which loads after this file.
- * Final overrides also live at the end of entries.css.
- */
+/* Cache purge in topbar: must beat .fc-entries-date-dropdown from entries.css, which loads after this file. */
 .fc-entries-date-dropdown.fc-admin-cache-dropdown {
     position: relative;
     flex: 0 0 auto !important;

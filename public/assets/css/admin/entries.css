@@ -1,6 +1,4 @@
-/**
- * FC Admin — Planner entries (wp_planners)
- */
+/* FC Admin — Planner entries (wp_planners). */
 
 .fc-entries-page {
     display: flex;
@@ -1330,12 +1328,7 @@ html[data-fc-admin-theme='dark'] .fc-system-products-tab.is-active .fc-system-pr
     white-space: nowrap;
 }
 
-/*
- * "SKU" switch — same track/thumb toggle look as Settings → Integration
- * (grey off, orange on). Carries .fc-entries-page__filter for the shared
- * field look; min-height matches .fc-entries-fence-dropdown__toggle so it
- * lines up with the other toolbar controls.
- */
+/* "SKU" switch: the Settings toggle look, with the shared filter field; min-height matches the fence dropdown beside it. */
 .fc-sp-incomplete-toggle {
     display: inline-flex;
     align-items: center;
@@ -4255,11 +4248,7 @@ html[data-fc-admin-theme='dark'] .fc-entries-cart-table__thumb-placeholder {
     color: #fff;
     font-size: .8125rem;
 }
-/* Pages like planner-entries render <main> with zero padding (p-0), so the banner already
-   sits flush against the top/left/right edges there. Everywhere else <main> keeps Tailwind's
-   p-4/sm:p-6 padding on every side — this cancels exactly that (top included, so there's no
-   gap above the banner either) so it reaches the same edges on every page. Bottom margin
-   stays 0 either way, so spacing below the banner is unaffected. */
+/* Cancels <main>'s Tailwind p-4/sm:p-6 on every side, so the banner reaches the edges as it already does on p-0 pages. */
 .fc-auth-switch-banner--full-bleed {
     margin: -1rem -1rem 0;
 }

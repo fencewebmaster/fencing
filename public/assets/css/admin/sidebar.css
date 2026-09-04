@@ -1,6 +1,4 @@
-/**
- * FC Admin — modern sidebar navigation
- */
+/* FC Admin — modern sidebar navigation. */
 
 html[data-fc-admin-theme='light'],
 html:not([data-fc-admin-theme]) {

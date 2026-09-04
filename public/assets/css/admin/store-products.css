@@ -1,8 +1,4 @@
-/**
- * Store products / system products admin — list tables, edit modal, drag-reorder,
- * SKU/color cells. Shared with the Gallery attach-photo modal (#fc-sp-edit-modal
- * compound selectors).
- */
+/* Store products admin — list tables, edit modal, drag-reorder, SKU/color cells; shared with the Gallery attach-photo modal. */
 
 .fc-store-products-row--drag-over {
     outline: 2px dashed #6366f1;

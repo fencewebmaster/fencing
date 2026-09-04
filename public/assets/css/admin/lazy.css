@@ -1,10 +1,4 @@
-/**
- * FC Admin — Lazy image loader (shared)
- *
- * Markup: <img class="fc-lazy" data-fc-lazy data-fc-lazy-src="…" alt="">
- * The loader auto-adds `.fc-lazy-frame.is-loading` to each image's parent
- * to show a skeleton placeholder until the image finishes loading.
- */
+/* FC Admin — lazy image loader: adds .fc-lazy-frame.is-loading to each image's parent for a skeleton placeholder. */
 
 .fc-lazy {
     opacity: 0;

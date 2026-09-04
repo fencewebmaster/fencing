@@ -1,6 +1,4 @@
-/**
- * FC Admin — planner-matching button styles (scoped to .fc-admin-page).
- */
+/* FC Admin — planner-matching button styles (scoped to .fc-admin-page). */
 .fc-admin-page .btn:not(.btn-close):not(.fencing-modal-close) {
     display: inline-flex;
     align-items: center;
