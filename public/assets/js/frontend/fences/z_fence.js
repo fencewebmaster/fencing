@@ -965,21 +965,39 @@ FENCE = {
         }
         var stdGateMm = parseInt(String($stdGateSelect.val() || '').replace(/,/g, ''), 10);
 
-        var sizeRaw = $('[name="width"]').val(),
+        // The custom width input is the customer's answer only while the gate modal is open. Closed,
+        // it holds whatever the last render or a Custom re-click left there - empty, or the STD
+        // default - and several writers run then: closing the modal, a tab move, the Step 4 move.
+        var $widthInput = $('.custom-gate [name="width"]');
+        var widthInputLive = $widthInput.length > 0 && $widthInput.is(':visible');
+        var sizeRaw = $widthInput.val(),
             default_width = fd?.data?.settings?.gate?.size?.width;
 
         var sizeParsed = parseInt(String(sizeRaw || '').replace(/,/g, ''), 10);
         var defaultParsed = parseInt(String(default_width || '').replace(/,/g, ''), 10);
         var prevStoredSize = parseInt(String(gateRowPrev?.settings?.size ?? '').replace(/,/g, ''), 10);
+        var prevWidthField = fieldsPrev.find(function(obj) {
+            return obj && obj.key === 'width';
+        });
+        var prevWidthParsed = parseInt(String(prevWidthField?.val ?? '').replace(/,/g, ''), 10);
 
         var size;
         if (isCustomGate) {
-            size =
-                Number.isFinite(sizeParsed) && sizeParsed > 0
-                    ? sizeParsed
-                    : Number.isFinite(defaultParsed) && defaultParsed > 0
-                      ? defaultParsed
-                      : sizeRaw || default_width;
+            /* Stored width before the STD default: with the diagram gate present this rewrite used to
+               take an empty or default-filled input as the answer and store 970 over a custom 500 -
+               while the width field still said 500 - so the plan page showed a gate the customer
+               never chose. */
+            if (widthInputLive && Number.isFinite(sizeParsed) && sizeParsed > 0) {
+                size = sizeParsed;
+            } else if (Number.isFinite(prevStoredSize) && prevStoredSize > 0) {
+                size = prevStoredSize;
+            } else if (Number.isFinite(prevWidthParsed) && prevWidthParsed > 0) {
+                size = prevWidthParsed;
+            } else if (Number.isFinite(defaultParsed) && defaultParsed > 0) {
+                size = defaultParsed;
+            } else {
+                size = sizeRaw || default_width;
+            }
         } else {
             if (Number.isFinite(stdGateMm) && stdGateMm > 0) {
                 size = stdGateMm;
@@ -1143,7 +1161,7 @@ FENCE = {
                 data.panel_group === 'a' &&
                 typeof fcGlassPoolEnsureDefaultGateFields === 'function'
             ) {
-                settings.fields = fcGlassPoolEnsureDefaultGateFields(data, settings.fields);
+                settings.fields = fcGlassPoolEnsureDefaultGateFields(data, settings.fields, settings);
             }
         }
 
@@ -1154,6 +1172,25 @@ FENCE = {
             var gwMm = parseInt(String(gwRow?.val || '').replace(/,/g, ''), 10);
             if (Number.isFinite(gwMm) && gwMm > 0) {
                 settings.size = gwMm;
+            }
+        }
+
+        // A custom gate's width field must agree with its size: an empty modal input at write time
+        // would otherwise store '' beside a size that was just recovered from storage.
+        if (isCustomGate && Array.isArray(settings.fields)) {
+            var widthRowOut = settings.fields.find(function(f) {
+                return f && f.key === 'width';
+            });
+            var sizeOut = parseInt(String(size ?? '').replace(/,/g, ''), 10);
+            if (Number.isFinite(sizeOut) && sizeOut > 0) {
+                if (widthRowOut) {
+                    var wv = parseInt(String(widthRowOut.val ?? '').replace(/,/g, ''), 10);
+                    if (!Number.isFinite(wv) || wv <= 0) {
+                        widthRowOut.val = String(sizeOut);
+                    }
+                } else {
+                    settings.fields.push({ key: 'width', val: String(sizeOut), tag: 'input', type: 'number' });
+                }
             }
         }
 

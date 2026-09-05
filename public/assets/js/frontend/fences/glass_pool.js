@@ -46,6 +46,24 @@ GlassPool = {
                 return item.control_key == 'gate';
             });
 
+            /* Read the gate through the same defaults the planner applies on render. The plan page and
+               a quote reload build this cart straight from stored rows that a Step 2 Gate ONLY leaves
+               without hinge type or width, and the slugs below concatenated those blanks into
+               gate+undefined+undefined - a line no product matches, so the glass leaf itself was dropped. */
+            if (gate_data[0] && typeof fcGlassPoolEnsureDefaultGateFields === 'function') {
+                var glassInfo = typeof fc_data !== 'undefined' && fc_data ? fc_data[fence] : null;
+                if (glassInfo) {
+                    var resolvedGate = JSON.parse(JSON.stringify(gate_data[0]));
+                    resolvedGate.settings = resolvedGate.settings || {};
+                    resolvedGate.settings.fields = fcGlassPoolEnsureDefaultGateFields(
+                        glassInfo,
+                        resolvedGate.settings.fields,
+                        resolvedGate.settings
+                    );
+                    gate_data = [resolvedGate];
+                }
+            }
+
             var gate_hinge_panel = gate_data[0]?.settings?.fields?.find(function(item) {
                 return item.key == 'gate_hinge_panel_width';
             });
@@ -84,8 +102,12 @@ GlassPool = {
                     return item.key == 'gate_width';
                 });
 
+                /* The planner names this node `gate`; the project plan appends the fence height, and
+                   glass has no height form so it lands as `gate+1`. Matching only the bare slug left
+                   the plan cart holding a line no product matches, and the leaf vanished there even
+                   though the planner cart was right. */
                 array.forEach(function(item) {
-                    if (item.slug == 'gate') {
+                    if (item.slug == 'gate' || /^gate\+\d+$/.test(item.slug)) {
                         item.slug = 'gate+' + gate_hinge_type?.val + '+' + gate_panel?.val;
                     }
                 });

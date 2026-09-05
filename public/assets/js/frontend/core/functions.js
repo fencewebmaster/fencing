@@ -2311,13 +2311,76 @@ function fcGlassPoolDefaultOptionSlug(fieldDef) {
  * Ensure persisted glass-pool gate fields exist before the modal opens (Add Gate flow).
  * Without defaults, hinge gaps are undefined and the glass solver fails on long runs.
  */
-function fcGlassPoolEnsureDefaultGateFields(info, fields) {
-    fields = Array.isArray(fields) ? fields.slice() : [];
+function fcGlassPoolEnsureDefaultGateFields(info, fields, settings) {
+    /* Copy each field object, not just the array. The persist caller compares this result against the
+       row it handed in to decide whether to write, so a shallow slice shared the objects: filling an
+       empty value in place read as "no change" and the row was never saved. */
+    fields = Array.isArray(fields)
+        ? fields.map(function(f) {
+              return f && typeof f === 'object' ? Object.assign({}, f) : f;
+          })
+        : [];
     if (!info || info.panel_group !== 'a') {
         return fields;
     }
 
     var gateFields = info.settings?.gate?.fields || [];
+
+    /* A Gate ONLY section written from Step 2 carries the chosen leaf width as settings.size and no
+       gate_width field at all. Defaulting the width blindly picked 750 for a customer who chose 890,
+       and the size was then overwritten to match. A stock width in size is the answer: it also
+       settles the hinge type when that is missing, since each range stocks its own widths. */
+    var sizeMm = parseInt(String(settings?.size ?? '').replace(/,/g, ''), 10);
+    var hingeDef = gateFields.find(function(f) {
+        return f && f.slug === 'gate_hinge_type';
+    });
+    var hingeOptions = Array.isArray(hingeDef?.options) ? hingeDef.options : [];
+    function stocksWidth(opt, w) {
+        return !!(opt && Array.isArray(opt.gate_width) && opt.gate_width.some(function(x) {
+            return parseInt(String(x).replace(/,/g, ''), 10) === w;
+        }));
+    }
+    function allowedWidthsFor(slug) {
+        var opt = hingeOptions.find(function(o) {
+            return o && String(o.slug) === String(slug);
+        });
+        return Array.isArray(opt?.gate_width)
+            ? opt.gate_width
+                  .map(function(w) {
+                      return parseInt(String(w).replace(/,/g, ''), 10);
+                  })
+                  .filter(function(w) {
+                      return Number.isFinite(w) && w > 0;
+                  })
+            : [];
+    }
+    var hingeField = fields.find(function(f) {
+        return f && f.key === 'gate_hinge_type';
+    });
+    var hingeSlug = hingeField && String(hingeField.val || '').trim() !== '' ? String(hingeField.val) : '';
+    var widthField = fields.find(function(f) {
+        return f && f.key === 'gate_width';
+    });
+    var widthMissing = !widthField || widthField.val === undefined || String(widthField.val).trim() === '';
+    if (widthMissing && Number.isFinite(sizeMm) && sizeMm > 0) {
+        var range = hingeOptions.find(function(o) {
+            return o && (!hingeSlug || String(o.slug) === hingeSlug) && stocksWidth(o, sizeMm);
+        });
+        if (range) {
+            if (!hingeSlug) {
+                if (hingeField) {
+                    hingeField.val = String(range.slug);
+                } else {
+                    fields.push({ key: 'gate_hinge_type', val: String(range.slug), tag: 'input', type: 'hidden' });
+                }
+            }
+            if (widthField) {
+                widthField.val = String(sizeMm);
+            } else {
+                fields.push({ key: 'gate_width', val: String(sizeMm), tag: 'input', type: 'hidden' });
+            }
+        }
+    }
     var required = [
         { slug: 'gate_hinge_type', key: 'gate_hinge_type' },
         { slug: 'gate_hinge_panel_width', key: 'gate_hinge_panel_width' },
@@ -2345,6 +2408,26 @@ function fcGlassPoolEnsureDefaultGateFields(info, fields) {
             fields.push({ key: req.key, val: val, tag: 'input', type: 'hidden' });
         }
     });
+
+    /* The width has to be one the chosen hinge range actually stocks. The field-level default is 750,
+       which Soft-Close does not carry, and a stored pair can disagree after a hinge change. Either way
+       the cart slug matches no product and the gate silently vanishes, so pull the width onto the
+       range the same way the modal dropdown does. */
+    var finalHinge = fields.find(function(f) {
+        return f && f.key === 'gate_hinge_type';
+    });
+    var finalWidth = fields.find(function(f) {
+        return f && f.key === 'gate_width';
+    });
+    if (finalHinge && finalWidth) {
+        var allowedFinal = allowedWidthsFor(finalHinge.val);
+        if (allowedFinal.length) {
+            var curWidth = parseInt(String(finalWidth.val ?? '').replace(/,/g, ''), 10);
+            if (!allowedFinal.includes(curWidth)) {
+                finalWidth.val = String(allowedFinal.includes(sizeMm) ? sizeMm : allowedFinal[0]);
+            }
+        }
+    }
 
     return fields;
 }
@@ -2384,7 +2467,9 @@ function fcGlassPoolPersistGateFieldsIfNeeded(tab, slug, info) {
         return;
     }
     var prevFields = cf[gi].settings?.fields || [];
-    var fields = fcGlassPoolEnsureDefaultGateFields(info, prevFields);
+    // Pass the row's settings: its size is the leaf width chosen in Step 2, and defaulting the width
+    // without it picked 750 for an 890 gate - which update_hinge_panel then copied back over the size.
+    var fields = fcGlassPoolEnsureDefaultGateFields(info, prevFields, cf[gi].settings);
     if (JSON.stringify(fields) === JSON.stringify(prevFields)) {
         return;
     }
@@ -2483,6 +2568,10 @@ function fcGlassPoolSyncGateWidthDropdown(fd, hingeTypeSlug) {
     var nextVal = allowed.includes(prevVal) ? prevVal : allowed[0];
     if (Number.isFinite(nextVal)) {
         $select.val(String(nextVal));
+        /* The capture that runs after a hinge change reads this wrapper's value attribute, not the
+           select. Leaving it stale stored the previous range's width against the new hinge, a pair no
+           product matches. Keep it in step with what the customer now sees. */
+        $select.closest('[name="gate_width"]').attr('value', String(nextVal));
     }
     return Number.isFinite(nextVal) ? nextVal : null;
 }

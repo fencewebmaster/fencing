@@ -3642,24 +3642,10 @@ thead.fc-border th:last-child {
     max-width: 130px;
 }
 
-/* Cart table rounds its foot only; the wrapper's top goes too, since overflow:hidden is unavailable. */
-#update_cart-list .fc-table-rounded-border {
-    border-radius: 0 0 10px 10px;
-}
-
-/* border-collapse:collapse ignores cell radius; separate renders it, and merges nothing here. */
+/* Kept for flush cells: the border:0 rules above are tuned for separate, not collapse. */
 #update_cart-list .table-cart {
     border-collapse: separate;
     border-spacing: 0;
-}
-
-/* No breakpoint split: that was only ever the header. The last row is the same two cells at every width. */
-#update_cart-list .table-cart tbody tr:last-child td:first-child {
-    border-bottom-left-radius: 10px;
-}
-
-#update_cart-list .table-cart tbody tr:last-child td:last-child {
-    border-bottom-right-radius: 10px;
 }
 
 /* Tighten the space around the mobile qty stepper; the id beats the 480px rule and Bootstrap's mt-3. */
@@ -10462,6 +10448,23 @@ body.fc-restoring-selection .fencing-tab-name {
 #update_cart-list > .fc-view-total-cost-bar .btn {
     padding-top: 11px;
     padding-bottom: 11px;
+}
+
+/* Stock & Delivery footer: mirror the cart bar's own bottom pad, so Call keeps the same floor as
+   View Total Cost. Whichever column runs longer sets the card's bottom edge, and without this the
+   button sat flush against it every time this one won. Not margin-top:auto - see the sticky-roll
+   rule below for why the actions are not pushed to the foot. */
+@media (min-width: 768px) {
+    #update_cart-section .fc-stock-delivery-actions {
+        padding-bottom: 12px;
+    }
+}
+
+/* 16px here, matching .fc-view-total-cost-bar's own step up at this width. */
+@media (min-width: 768px) and (max-width: 992px) {
+    #update_cart-section .fc-stock-delivery-actions {
+        padding-bottom: 16px;
+    }
 }
 
 /* Touch targets stay whole below xl, the same floor Steps 3 and 4 use. */

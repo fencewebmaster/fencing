@@ -439,7 +439,43 @@ function fcGateOnlyStep2Enable() {
 
     FENCE.call('update_gate', 'add');
     FENCE.call('update_custom_fence_gate');
-
+    /* Slat: Gate ONLY derives Overall Length itself (leaf + posts + gaps), so an empty box is not a
+       missing answer. The validator already accepts that - but only once a gate row exists, and on a
+       fresh section that row is written by the Calculate this validation was blocking. Fill the box
+       first, from the stored custom leaf where there is one, else the STD leaf, so Gate ONLY can be
+       turned on before any length is typed and no message lands on the length field. */
+    if (slatStdGo && (!$box.val() || SlatFence.isGateOnlyPlaceholderMm($box.val()))) {
+        var fdFill = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : fd;
+        var fillMm = null;
+        try {
+            if (typeof SlatFence.isSlatCustomGateFd === 'function' && SlatFence.isSlatCustomGateFd(fdFill)) {
+                var leafFill = SlatFence.resolveCustomGateLeafWidthMm(fdFill, {});
+                if (leafFill) {
+                    fillMm = SlatFence.computeDisplayOverallFromGateLeafMm(fdFill, leafFill, {
+                        isDouble: SlatFence.resolveGateTypeIsDouble(fdFill)
+                    });
+                }
+            }
+            if (fillMm == null || !Number.isFinite(fillMm) || fillMm <= 0) {
+                var infoFill = (fdFill && fdFill.info) || [];
+                var hasGateRowFill = infoFill.some(function(item) {
+                    return item && item.control_key === 'gate';
+                });
+                var fdStd = hasGateRowFill
+                    ? fdFill
+                    : $.extend({}, fdFill, {
+                          info: infoFill.concat([{ control_key: 'gate', settings: {} }])
+                      });
+                fillMm = FENCE.getStdGateMinOverallPhysicalMm(fdStd);
+            }
+        } catch (eFill) {
+            fillMm = null;
+        }
+        if (Number.isFinite(fillMm) && fillMm > 0) {
+            $box.val(fillMm).attr('data-last', String(fillMm));
+            $box.closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
+        }
+    }
     if (!validateStep2BeforeCalculate(false)) {
         updateGateOnly(false);
         $box.val(prev);
@@ -449,6 +485,11 @@ function fcGateOnlyStep2Enable() {
             $box.removeAttr('data-last');
         }
         $box.removeAttr('data-prev-gate-only-mbn');
+        // Whatever else failed, the length field carries no message on a Gate ONLY click: the
+        // length is Gate ONLY's own answer, not the customer's.
+        if (slatStdGo) {
+            $box.closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
+        }
         $row.removeClass('fc-selected');
         $row.find('[name="gate_only_step2"]').prop('checked', false);
         if (typeof checkGateOnly === 'function') {
@@ -614,6 +655,11 @@ function fcGateOnlyStep2Disable() {
             fcPersistStep2Immediate({ force: true });
         }
     } catch (ePs) {}
+    // measurementBoxNumber() and the tab reload above re-validate the box we just emptied. Empty here
+    // means "not answered yet", not a wrong entry: the customer clicked a checkbox, not the length field.
+    if (!$box.val()) {
+        $box.closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
+    }
 }
 
 _doc.on('click', '.select-gate_only_step2', function(e) {

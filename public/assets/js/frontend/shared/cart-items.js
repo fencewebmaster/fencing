@@ -63,6 +63,43 @@ FENCES.cartItems = {
         return s === 'barr';
     },
 
+    isFlatTopFence: function(context) {
+        if (!context) {
+            return false;
+        }
+        var raw = context.fenceSlug || '';
+        if (!raw && context.tabInfo && context.tabInfo[0]) {
+            raw = context.tabInfo[0].fence || context.tabInfo[0].style || '';
+        }
+        var s = typeof normalizeFenceStyleSlug === 'function' ? normalizeFenceStyleSlug(raw) : String(raw || '');
+        return s === 'flat_top';
+    },
+
+    /**
+     * Flat Top: a custom gate is a panel cut to width on the Gate Converter (the only stocked gate is
+     * the 970 STD), so it needs a donor panel; the STD gate is a manufactured item and does not.
+     * Read off the converter line the gate-kit rules have already produced, or the gate settings.
+     */
+    flatTopGateNeedsDonorPanel: function(context, array) {
+        if (!FENCES.cartItems.isFlatTopFence(context)) {
+            return false;
+        }
+        if ((array || []).some(function(item) {
+            return /^gate\+converter(?:\+\d+)*$/.test(String(item?.slug || ''));
+        })) {
+            return true;
+        }
+        var gate_data = (context?.fenceInfo || []).filter(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        if (!gate_data.length) {
+            return false;
+        }
+        return typeof FENCE !== 'undefined' && typeof FENCE.isStdGate === 'function'
+            ? !FENCE.isStdGate(gate_data)
+            : false;
+    },
+
     /** Barr gate on diagram or in fence settings (gate opening consumes one panel SKU). */
     hasBarrGate: function(context, root) {
         if (!FENCES.cartItems.isBarrFence(context)) {
@@ -106,6 +143,29 @@ FENCES.cartItems = {
             }
         }
         return 0;
+    },
+
+    /**
+     * The panel a custom gate is cut from, in the style's own catalogue form. Barr panels key on
+     * fence height (panel_options+even+1200); Flat Top panels key on panel width, and the selected
+     * option already carries it (even+2400, full+3000). Empty when the form cannot be completed, so
+     * no half-formed slug is sold.
+     */
+    gateDonorPanelSlug: function(context) {
+        if (FENCES.cartItems.isFlatTopFence(context)) {
+            var opt = String(context?.calc?.selected_values?.panel_option || '');
+            return /^(?:even|full)\+\d+$/.test(opt) ? 'panel_options+' + opt : '';
+        }
+        if (!FENCES.cartItems.isBarrFence(context)) {
+            return '';
+        }
+        var height = FENCES.cartItems.getBarrFenceHeightMm(context);
+        if (!height) {
+            return '';
+        }
+        var option = String(context?.calc?.selected_values?.panel_option || 'even');
+        option = option.indexOf('full') !== -1 ? 'full' : 'even';
+        return 'panel_options+' + option + '+' + height;
     },
 
     /**
@@ -200,16 +260,24 @@ FENCES.cartItems = {
     },
 
     /**
-     * Barr: increment panel_options+even/full+{height} qty by 1 when gate needs an extra panel SKU.
+     * Barr and Flat Top: a gate built on the converter is cut from a panel, so add one to the panel
+     * line - or add that line when the section rendered no panels at all (Gate ONLY, or a run the
+     * gate consumes). STD gates are stocked items and add nothing.
      */
     apply_barr_gate_panel_extra: function(array, context) {
-        if (!FENCES.cartItems.isBarrFence(context)) {
+        var isBarr = FENCES.cartItems.isBarrFence(context);
+        var isFlatTop = FENCES.cartItems.isFlatTopFence(context);
+        if (!isBarr && !isFlatTop) {
             return array;
         }
-        if (!FENCES.cartItems.shouldBarrGateAddExtraPanel(context, array)) {
+        var needsPanel = isBarr
+            ? FENCES.cartItems.shouldBarrGateAddExtraPanel(context, array)
+            : FENCES.cartItems.flatTopGateNeedsDonorPanel(context, array);
+        if (!needsPanel) {
             return array;
         }
         if (
+            isBarr &&
             !FENCES.cartItems.hasBarrGate(context) &&
             !(array || []).some(function(item) {
                 return FENCES.cartItems.isBarrGatePanelSlug(item && item.slug);
@@ -218,12 +286,24 @@ FENCES.cartItems = {
             return array;
         }
 
+        var bumped = false;
         array.forEach(function(item, k) {
             var slug = item && item.slug ? String(item.slug) : '';
             if (/^panel_options\+(?:even|full)\+\d+$/.test(slug)) {
                 array[k].qty = (parseInt(item.qty, 10) || 0) + 1;
+                bumped = true;
             }
         });
+
+        /* Nothing to bump: Gate ONLY, or a run the gate consumes, renders no panels, so the converter
+           went into the cart with nothing to convert. A custom Barr gate is a fence panel cut to width
+           on the converter uprights - the donor panel has to be sold with it. */
+        if (!bumped) {
+            var donor = FENCES.cartItems.gateDonorPanelSlug(context);
+            if (donor) {
+                array.push({ slug: donor, qty: 1 });
+            }
+        }
         return array;
     },
 
@@ -331,8 +411,13 @@ FENCES.cartItems = {
         }
 
         var opt = '';
-        if (typeof SlatFence !== 'undefined' && typeof SlatFence.getContextFieldValue === 'function') {
-            opt = String(SlatFence.getContextFieldValue(context, 'post_options', 'post_option', '') || '');
+        /* getFenceSettingValue, not getContextFieldValue: the post option is a fence setting (fenceInfo,
+           control_key post_options), not a Step 2 field. The field reader takes (context, name, default),
+           so handed these four arguments it looked for a field named post_options, found none, and
+           returned its "default" - the literal post_option - which then became the slug and, being
+           truthy, kept every fallback below from running. */
+        if (typeof SlatFence !== 'undefined' && typeof SlatFence.getFenceSettingValue === 'function') {
+            opt = String(SlatFence.getFenceSettingValue(context, 'post_options', 'post_option', '') || '');
         }
         if (!opt && Array.isArray(context?.fenceInfo)) {
             var po = context.fenceInfo.find(function(item) {
