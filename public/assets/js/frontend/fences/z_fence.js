@@ -12,12 +12,17 @@ FENCE = {
             min_gate_raked: "Minimum <b>Overall Length</b> for a <b>GATE & {{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_raked: "Minimum <b>Overall Length</b> for <b>{{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_gate_hinge: "Minimum <b>Overall Length</b> for a <b>GATE & HINGE PANEL</b> is <b>{{overall}}</b>mm",
+            gate_width_capped: "Your <b>CUSTOM GATE</b> was reduced from <b>{{from}}</b>mm to <b class='text-underline'>{{to}}</b>mm — the widest leaf that can be cut from the panel option you just selected.",
         },
         item: {
             raked: 50 + 1200 + 50,
             raked_post: 1200 + 50,
             center_point: 25,
             base_margin: 0.1,
+            // Narrowest panel worth cutting and hanging. Matches the per-style minPanelWidthOnGate
+            // the gate logic already uses; kept here because it is a property of the panel, not of
+            // being next to a gate (see FenceCalculator._repairFullPanelPlan).
+            min_panel_width: 86,
         },
         flat_top: {
             gate: 970 + 50 + 20 + 20,       
@@ -190,6 +195,11 @@ FENCE = {
             .html('')
             .attr('data-type', info?.slug)
             .attr('data-group', info?.panel_group)
+            // Which section this diagram is showing. The planner renders one section at a time and
+            // (on .fc-planner-page) does it behind a double requestAnimationFrame, so anything that
+            // switches tabs and then counts the diagram needs a way to know the switch has landed —
+            // see fcWhenPlannerSectionRendered(), which the cart rebuild waits on.
+            .attr('data-fc-section', tab)
             .removeClass('custom-height');
 
         var fence_height_filtered_data = info?.form?.filter(function(item) {
@@ -833,6 +843,22 @@ FENCE = {
                     }
                 }
             } catch (errSlat) {}
+        }
+
+        // Panel Options picks the donor panel a custom gate leaf is cut from, so a gate entered
+        // under a wider option is left over-width by the switch. Re-cap it against the new option
+        // and say so, rather than quoting a leaf that cannot come out of the panel it bills for.
+        if (modal_key === 'panel_options') {
+            var gateCapped = FENCE.reconcileCustomGateWidth();
+            if (gateCapped && typeof popupToast === 'function') {
+                popupToast(
+                    'Important',
+                    FENCE.settings.message.gate_width_capped
+                        .replace('{{from}}', gateCapped.from)
+                        .replace('{{to}}', gateCapped.to),
+                    'CG-CAP'
+                );
+            }
         }
 
         if (keysPreservingGateOnly[resolvedModalKey] && typeof checkGateOnly === 'function') {
@@ -2141,6 +2167,13 @@ FENCE = {
                         .replace(/{{center_point}}/gi, center_point)
                         .replace(/{{panel_size}}/gi, panel_h)
                         .replace(/{{panel_unit}}/gi, panel_w)
+                        // The step-up templates carry a centres annotation too, and these two were
+                        // never substituted here — raw `{{panel_size_center}}` (left) and
+                        // `{{center_post}}` (right) sat in the DOM, hidden only because
+                        // #fc-planning-form .fc-center-point is display:none. Same expressions the
+                        // project plan uses, which does render them (p2.re_update_raked_panels).
+                        .replace(/{{panel_size_center}}/gi, panel_w + center_point + 'W')
+                        .replace(/{{center_post}}/gi, FENCE.settings.item.center_point)
                         .replace(/{{panel_height}}/gi, panel_height)
                         .replace(/{{panel_number}}/gi, side_part+'-raked')
                         .replace(/{{post}}/gi, has_post);
@@ -2844,6 +2877,113 @@ FENCE = {
                 fcSyncGateMoveControlsState();
             }
         }, 350);
+    },
+
+    //----------------------------------------------------------------------------------
+
+    /**
+     * Custom gate width cap for the selected fence. A custom gate leaf is a fence panel cut to
+     * width on the converter, so the cap is the donor panel's width less one post — which means it
+     * moves with Panel Options (Flat Top: 2400 / 2400 / 3000). Shared by the gate modal, which
+     * stamps it on the width field as data-max, and by reconcileCustomGateWidth() below, so the
+     * cap the modal enforces and the cap applied afterwards cannot drift apart.
+     */
+    customGateLimits: function(fd) {
+        fd = fd || getSelectedFenceData();
+
+        var slug = fd?.slug,
+            info = fd?.info,
+            data = fd?.data;
+
+        var panel_field_options = data?.settings?.panel_options?.fields?.[0]?.options || [];
+        var default_panel = panel_field_options.filter(function(item) {
+            return item.default;
+        });
+        var selected_panel = get_field_options(info, data, 'panel_options');
+        var active_panel = selected_panel[0]?.slug ? selected_panel[0].slug : default_panel[0]?.slug;
+        var panel_options_data = get_field_by_slug(panel_field_options, active_panel);
+
+        var gateMaxH =
+            typeof SlatFence !== 'undefined' && SlatFence.getGateMaxFenceHeightEl
+                ? SlatFence.getGateMaxFenceHeightEl()
+                : null;
+        var step2MaxH = document.querySelector('[data-section="2"] [name="max_fence_height"]');
+
+        return SlatFence.getCustomGateLimits({
+            slug: slug,
+            panelOptionsData: panel_options_data,
+            fenceHeight: $('[name="fence_height"]').val(),
+            maxFenceHeight:
+                gateMaxH && gateMaxH.value
+                    ? gateMaxH.value
+                    : step2MaxH && step2MaxH.value
+                      ? step2MaxH.value
+                      : $('[name="max_fence_height"]').val(),
+            tabInfo: fd?.tabInfo,
+            fenceInfo: info,
+            postWidth: FENCE.get(slug, 'post')
+        });
+    },
+
+    //----------------------------------------------------------------------------------
+
+    /**
+     * Re-cap a stored custom gate after Panel Options changes.
+     *
+     * The gate modal enforces the donor-panel cap only while it is open, so picking Full 3000W with
+     * a 3000 gate and then switching to Even 2400W left a 3000 leaf to be cut from a 2400 donor:
+     * the cart still billed exactly one donor panel, and the negative gate off-cut that would have
+     * shown it ((C5 - post) - C8 + gaps) was clamped to 0 by HELPER.isNaNtoZero. Clamps down to the
+     * new cap and returns {from, to} when it changed, so the caller can tell the user.
+     *
+     * STD gates are stocked items, not cut from a panel, so they are left alone.
+     */
+    reconcileCustomGateWidth: function(fd) {
+        fd = fd || getSelectedFenceData();
+
+        if (!fd?.data?.settings?.gate?.custom) {
+            return null;
+        }
+
+        var gate_data = (fd.info || []).filter(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        if (!gate_data.length || FENCE.isStdGate(gate_data)) {
+            return null;
+        }
+
+        var current = parseInt(gate_data[0]?.settings?.size, 10);
+        if (!Number.isFinite(current) || current <= 0) {
+            return null;
+        }
+
+        var maxWidth = parseInt(FENCE.customGateLimits(fd)?.maxWidth, 10);
+        // A cap below the field's own minimum is not a usable width to clamp to — leave the gate
+        // as entered rather than writing a value the modal would reject.
+        var minWidth = parseInt($('.custom-gate [name="width"]').attr('data-min'), 10);
+        if (!Number.isFinite(minWidth) || minWidth <= 0) {
+            minWidth = 300;
+        }
+        if (!Number.isFinite(maxWidth) || maxWidth < minWidth || current <= maxWidth) {
+            return null;
+        }
+
+        gate_data[0].settings.size = maxWidth;
+        var widthField = (gate_data[0].settings.fields || []).find(function(item) {
+            return item && item.key === 'width';
+        });
+        if (widthField) {
+            widthField.val = String(maxWidth);
+        }
+
+        localStorage.setItem('custom_fence-' + fd.tab + '-' + fd.slug, JSON.stringify(fd.info));
+
+        var widthEl = document.querySelector('.custom-gate [name="width"]');
+        if (widthEl) {
+            widthEl.value = String(maxWidth);
+        }
+
+        return { from: current, to: maxWidth };
     },
 
     //----------------------------------------------------------------------------------

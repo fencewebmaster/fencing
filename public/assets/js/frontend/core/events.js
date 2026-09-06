@@ -1173,6 +1173,13 @@ function fcSelectPostItem() {
         slug = _this.attr('data-slug'),
         getFormField = _this.closest('.fc-form-field');
 
+    // A colour swatch is both .fc-select-item and .fc-select-color, so it reaches this handler as
+    // well as fcSelectColor; the guard has to be on both or the greyed-out swatch still takes the
+    // selection here (see fcApplyPanelOptionColorRestrictions).
+    if (_this.hasClass('fc-select-color--unavailable')) {
+        return;
+    }
+
     _this.closest('.fencing-form-group').find('.fc-select').removeClass('fc-selected');
     _this.addClass('fc-selected');
 
@@ -2162,35 +2169,9 @@ function fencingBtnModal(event) {
         // Custom gate
         if (data?.settings[key]?.custom) {
 
-            default_panel = data.settings.panel_options.fields[0].options.filter(function(item) {
-                return item.default;
-            });
-
-            selected_panel = get_field_options(info, data, 'panel_options');
-
-            active_panel = selected_panel[0]?.slug ? selected_panel[0].slug : default_panel[0].slug;
-
-            panel_options_data = get_field_by_slug(data.settings.panel_options.fields[0].options, active_panel);
-
-            var gateMaxH =
-                typeof SlatFence !== 'undefined' && SlatFence.getGateMaxFenceHeightEl
-                    ? SlatFence.getGateMaxFenceHeightEl()
-                    : null;
-            var step2MaxH = document.querySelector('[data-section="2"] [name="max_fence_height"]');
-            var gateLimits = SlatFence.getCustomGateLimits({
-                slug: i,
-                panelOptionsData: panel_options_data,
-                fenceHeight: $('[name="fence_height"]').val(),
-                maxFenceHeight:
-                    gateMaxH && gateMaxH.value
-                        ? gateMaxH.value
-                        : step2MaxH && step2MaxH.value
-                          ? step2MaxH.value
-                          : $('[name="max_fence_height"]').val(),
-                tabInfo: getSelectedFenceData(i)?.tabInfo,
-                fenceInfo: info,
-                postWidth: FENCE.get(i, 'post')
-            });
+            // The cap moves with Panel Options, so it lives on FENCE where the post-change
+            // reconciler can read the same number (see FENCE.reconcileCustomGateWidth).
+            var gateLimits = FENCE.customGateLimits(fd);
 
             var maxWidth = gateLimits.maxWidth;
             var maxLength = gateLimits.maxLength;
@@ -3406,6 +3387,11 @@ function fcSelectPanelRange() {
 _doc.on('click', '.fc-select-color', fcSelectColor);
 
 function fcSelectColor() {
+    // Greyed out because the selected panel option is not made in it — the swatch stays visible so
+    // the reason is legible, but it must not become the selection. Also guarded in fcSelectPostItem.
+    if ($(this).hasClass('fc-select-color--unavailable')) {
+        return;
+    }
     update_color_options();
     try {
         if (typeof fcApplyPlannerUpdateDisabledFromColors === 'function') {

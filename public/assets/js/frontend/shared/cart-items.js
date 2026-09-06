@@ -732,6 +732,19 @@ FENCES.cartItems = {
         return null;
     },
 
+    /**
+     * The DOM `process()` was scoped to, for the condition passes that count nodes.
+     *
+     * They used to query `document` while process() counted inside `opts.scopeRoot`, which is
+     * invisible on the planner (one section rendered at a time) and wrong on the project plan,
+     * where every `#pp-{n}` is in the DOM at once — each section's bracket line came out as the
+     * panel count of *all* sections. Falls back to document so an unscoped call behaves as before.
+     */
+    scopeRootFrom: function(processOpts) {
+        var root = processOpts && processOpts.scopeRoot;
+        return root && root.querySelectorAll ? root : document;
+    },
+
     init: function(i, opts) {
         opts = opts || {};
         var tabIndex = i;
@@ -924,11 +937,8 @@ FENCES.cartItems = {
         processOpts = processOpts || {};
         newCartItems = FENCES.cartItems.apply_barr_corner_post_rules(newCartItems, context);
 
-        //Apply condition for panel_options+even
-        newCartItems = FENCES.cartItems.apply_panel_options_even(newCartItems, context);
-
-        //Apply condition for panel_options+full
-        newCartItems = FENCES.cartItems.apply_panel_options_full(newCartItems, context);
+        //Brackets: one per panel on the diagram, step-up panels included
+        newCartItems = FENCES.cartItems.apply_panel_options_bracket_qty(newCartItems, context, processOpts);
 
         //Apply condition for post_options+opt-1 
         newCartItems = FENCES.cartItems.apply_post_options_opt1(newCartItems, context);
@@ -1023,40 +1033,22 @@ FENCES.cartItems = {
 
     //----------------------------------------------------------------------------------
 
-    apply_panel_options_even: function(array, context) {
-        //Get offcut size
-        let getOffCutValue = document.querySelector('.fencing-offcut')?.getAttribute('data-cart-value');
-        let getPanelItems = FENCES.cartItems.countNodesWithCartQty(document.querySelectorAll('.panel-item:not(.fencing-raked-panel)'));
-        if (context && FENCES.cartItems.isBarrFence(context)) {
-            getPanelItems = FENCES.cartItems.countBarrPanelItemsForBracket(document, context, array);
-        }
-        //Find the existing object
-        const foundObject = array.find(obj => obj['slug'] === "panel_options+even");
-        let qty = getPanelItems;
-        if (qty) {
-            FENCES.cartItems.apply_panel_options_bracket(array, qty);
-        }
-        return array;
-    },
-
-    //----------------------------------------------------------------------------------
-
-    /**  1 + 3
-     * IF panel options = "Full Panels - 3000W" = (Number of full length Panels) + (Number of short length panels)
-     * @param {*} array 
-     * @returns 
+    /**
+     * Brackets: one per panel on the diagram, step-up panels included.
+     *
+     * This was two passes — an "even" one counting panels only and a "full" one counting panels
+     * plus step-ups — both run unconditionally, so the second always overwrote the first and the
+     * even branch never reached the cart. Panels plus step-ups is the right count for either
+     * panel option, so that is the only rule left and the panel option no longer changes it.
      */
-    apply_panel_options_full: function(array, context) {
-        //Get all short panel item
-        let noOfShortPanel = document.querySelectorAll('.short-panel-item').length;
-        let getPanelItems = FENCES.cartItems.countNodesWithCartQty(document.querySelectorAll('.panel-item:not(.fencing-raked-panel)'));
-        let getRakedPanelItems = document.querySelectorAll('.panel-item.fencing-raked-panel').length;
+    apply_panel_options_bracket_qty: function(array, context, processOpts) {
+        let root = FENCES.cartItems.scopeRootFrom(processOpts);
+        let panels = FENCES.cartItems.countNodesWithCartQty(root.querySelectorAll('.panel-item:not(.fencing-raked-panel)'));
         if (context && FENCES.cartItems.isBarrFence(context)) {
-            getPanelItems = FENCES.cartItems.countBarrPanelItemsForBracket(document, context, array);
+            panels = FENCES.cartItems.countBarrPanelItemsForBracket(root, context, array);
         }
-        //Find the existing object
-        const foundObject = array.find(obj => obj['slug'] === "panel_options+full");
-        var qty = getPanelItems + getRakedPanelItems;
+        const rakedPanels = root.querySelectorAll('.panel-item.fencing-raked-panel').length;
+        const qty = panels + rakedPanels;
         if (qty) {
             FENCES.cartItems.apply_panel_options_bracket(array, qty);
         }
@@ -1066,10 +1058,10 @@ FENCES.cartItems = {
     //----------------------------------------------------------------------------------
 
     /**
-     * Get qty of either slug selected for panel_options{even/full}
-     * @param {*} array 
-     * @param {*} total 
-     * @returns 
+     * Write the bracket line, replacing any quantity already there.
+     * @param {*} array
+     * @param {*} total
+     * @returns
      */
     apply_panel_options_bracket: function(array, total) {
 
@@ -1093,59 +1085,14 @@ FENCES.cartItems = {
 
     //----------------------------------------------------------------------------------
 
-    /**
-     * Apply Condition for Base Plated Posts | Row 16
-     * Condition: Object with slug `panel_post+opt-1` AND `raked_post+opt-1` must be in array
-     * 
-     * @param {*} array 
-     * @returns 
+    /*
+     * apply_raked_panel_post_opt1 / _opt2 lived here: two rules that would have folded raked
+     * posts into a `raked_panel_post+opt-1` line and bumped the cemented raked post by one.
+     * Neither was ever called from anywhere, and apply_post_options_opt1 below already counts
+     * raked posts into the base-plate totals, so the cart was correct and the pair only
+     * advertised a rule that was not running. Removed rather than wired up — git history has
+     * them if the costing sheet ever wants that behaviour for real.
      */
-    apply_raked_panel_post_opt1: function(array) {
-        //Find the two objects with slug `panel_post+opt-1` and `raked_post+opt-1` in the array
-        //If it exists means user selected it
-        const foundPanelPostOpt1 = array.find(obj => obj['slug'] === "panel_post+opt-1");
-        const foundRakedPostOpt1 = array.find(obj => obj['slug'] === "raked_post+opt-1");
-        //If any of the slug returns undefined, do nothing
-        if (typeof foundPanelPostOpt1 === "undefined" || typeof foundRakedPostOpt1 === "undefined") {
-            return array;
-        }
-        //Remove `post_options+opt-2` from array
-        array = FENCES.cartItems.remove_post_options_opt2(array);
-        let total = foundPanelPostOpt1.qty + foundRakedPostOpt1.qty;
-        array.push({
-            "slug": "raked_panel_post+opt-1",
-            "qty": total,
-        });
-        return array;
-    },
-
-    //----------------------------------------------------------------------------------
-
-    /**
-     * Apply Condition for Cemented Post | Row 20
-     * Condition: Object with slug `panel_post+opt-2` AND `raked_post+opt-2` must be in array
-     * 
-     * @param {*} array 
-     * @returns 
-     */
-    apply_raked_panel_post_opt2: function(array) {
-        const foundRakedPostOpt2 = array.find(obj => obj['slug'] === "raked_post+opt-2");
-        //If any of the slug returns undefined, do nothing
-        if (typeof foundRakedPostOpt2 === "undefined") {
-            return array;
-        }
-        //Find the two objects with slug `panel_post+opt-2` and `raked_post+opt-2` in the array
-        //If it exists means user selected it
-        for (var i = 0; i < array.length; i++) {
-            if (array[i].slug == 'raked_post+opt-2') {
-                array[i].qty = array[i].qty + 1;
-                break;
-            }
-        }
-        return array;
-    },
-
-    //----------------------------------------------------------------------------------
 
     /**
      * Apply Condition for Cemented Post

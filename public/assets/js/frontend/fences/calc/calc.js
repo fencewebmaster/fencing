@@ -101,17 +101,20 @@ class FenceCalculator {
         // --- Inputs (C3-C10) ---
         /*
             C3  = 11000;  // overall width
-            C4  = -50;    // edit left side
             C5  = 2450;   // panel options
             C6  = 0;      // post options
-            C7  = 0;      // edit right side
             C8  = 1060;   // add gate
             C9  = 1250;   // add raked panel left
-            C10 = 1250;   // add raked panel right 
+            C10 = 1250;   // add raked panel right
+
+            C4 (edit left side) and C7 (edit right side) are gone: both were declared 0 and never
+            assigned, so the five values derived from them (C15, D24, E22, E23, E24) were each
+            written once and never read. End-side adjustments come from FENCE.minus_posts() and
+            HELPER.sideOptionValue() instead.
         */
 
         // --- Variable declarations for calculation ---
-        let C3 = 0, C4 = 0, C5 = 0, C6 = 0, C7 = 0, C8 = 0, C9 = 0, C10 = 0;
+        let C3 = 0, C5 = 0, C6 = 0, C8 = 0, C9 = 0, C10 = 0;
         let left_raked_panel_height = 0;
         let left_raked_panel_width = 0;
         let right_raked_panel_height = 0;
@@ -166,6 +169,7 @@ class FenceCalculator {
         let gate_length = 0;
         let gate_width = 0;
         let extra_panel_count = 0;
+        let leftover_span = 0;
 
 
         // --- Raked panels: left/right are symmetric, resolved per side ---
@@ -224,7 +228,8 @@ class FenceCalculator {
             gate_hinge_panel_width,
             _short_panel_length,
             _offcut_panel_length,
-            extra_panel_count
+            extra_panel_count,
+            leftover_span
             } = this._calculatePanelLayout({
                 i,
             info,
@@ -238,9 +243,7 @@ class FenceCalculator {
             gate_post_gaps,
             post_panel,
             C3,
-            C4,
             C5,
-            C7,
             C8,
             C9,
             C10,
@@ -273,17 +276,31 @@ class FenceCalculator {
         // --------------------------------------------------
 
         // Post removal (Barr-style; Slat main uses fixed post layout from overall width).
+        const removed_posts_mm = FENCE.minus_posts(custom_fence);
         ({
             full_panel_length, even_panel_length, long_panel_length,
             short_panel_length, offcut_panel_length, short_panel_count
         } = this._applyPostRemovalAdjustment({
-            removedPostsMm: FENCE.minus_posts(custom_fence),
+            removedPostsMm: removed_posts_mm,
             skip: style.isMainSlat,
             default_panel_width,
             long_panel_count, short_panel_count,
             full_panel_length, even_panel_length, long_panel_length,
             short_panel_length, offcut_panel_length,
             _short_panel_length, _offcut_panel_length
+        }));
+
+        // Full-panel plans whose remainder cannot be built, re-laid as equal panels.
+        ({
+            long_panel_count, long_panel_length,
+            short_panel_count, short_panel_length,
+            offcut_panel_count, offcut_panel_length
+        } = this._repairFullPanelPlan({
+            style, panel_options_data, post_panel, default_panel_width,
+            leftover_span, removed_posts_mm, _short_panel_length,
+            long_panel_count, long_panel_length,
+            short_panel_count, short_panel_length,
+            offcut_panel_count, offcut_panel_length
         }));
 
 
@@ -363,6 +380,10 @@ class FenceCalculator {
         // --- Gate only logic ---
         if( gateOnly ) {
             short_panel_count = long_panel_count = even_panel_count = 0;
+            // The off-cut tile is per panel cut down, and a gate-only section cuts none. Zeroed with
+            // the counts so a stale "PANEL OFF-CUT 6x135W" cannot outlive the panels it came from.
+            offcut_panel_count = 0;
+            offcut_panel_length = 0;
         }
         if( style.isGlass ) {
              offcut_panel_count = 0;
@@ -379,11 +400,11 @@ class FenceCalculator {
             },
             'full_panel': {
                 'count': HELPER.isNaNtoZero(full_panel_count),
-                'length': full_panel_length
+                'length': HELPER.isNaNtoZero(full_panel_length)
             },
             'even_panel': {
                 'count': HELPER.isNaNtoZero(even_panel_count),
-                'length': even_panel_length
+                'length': HELPER.isNaNtoZero(even_panel_length)
             },
             'long_panel': {
                 'count': HELPER.isNaNtoZero(long_panel_count),
@@ -391,11 +412,11 @@ class FenceCalculator {
             },
             'short_panel': {
                 'count': HELPER.isNaNtoZero(short_panel_count),
-                'length': short_panel_length
+                'length': HELPER.isNaNtoZero(short_panel_length)
             },
             'offcut_panel': {
                 'count': HELPER.isNaNtoZero(offcut_panel_count),
-                'length': offcut_panel_length
+                'length': HELPER.isNaNtoZero(offcut_panel_length)
             },
             'offcut_gate_panel': {
                 'count': HELPER.isNaNtoZero(offcut_gate_panel_count),
@@ -696,6 +717,10 @@ class FenceCalculator {
             _short_panel_length, _offcut_panel_length
         } = input;
         const _post = removedPostsMm;
+        // Width the stock-width cap below could not keep. The freed end-post width is shared over
+        // the panels, and capping a panel back to stock silently drops its share — the run then
+        // measures short of the entered length. _repairFullPanelPlan puts it back by re-laying the
+        // bays; reported rather than fixed here so this stays the verbatim redistribution it was.
         if( _post && !skip ) {
             const divided_post = _post/(long_panel_count + short_panel_count);
             full_panel_length = HELPER.isNaNtoZero(Math.round(full_panel_length + divided_post));
@@ -726,6 +751,136 @@ class FenceCalculator {
         };
     }
 
+    /**
+     * Re-lay a "Full Size Panels" run whose remainder panel cannot actually be built.
+     *
+     * The option is k stock panels plus one cut-down remainder, and three bands in every panel
+     * pitch have no valid remainder:
+     *
+     *   - the leftover lands on or under one post width, so there is no room for another bay and
+     *     E19 falls to zero: the remainder was dropped and the run came out up to 50mm short of
+     *     the entered length, with no off-cut tile and no message;
+     *   - it lands just above, and a 10mm sliver was quoted and billed as a whole stock panel;
+     *   - both end posts were removed and _applyPostRemovalAdjustment pushed the remainder past
+     *     the stock width, so the panel drawn could not be cut from the panel on the invoice, or
+     *     capped it back to stock and dropped the freed width that no longer fitted.
+     *
+     * They are the same defect and repair the same way: hold the block width — the panels plus the
+     * posts between them, plus whatever the old plan lost — and spread it over the fewest bays that
+     * can hold it without exceeding stock. Panel count and total are exact by construction, so the
+     * run still measures what the customer entered.
+     *
+     * Only ever narrows panels. Where the result would itself be unbuildable (below the minimum,
+     * or still over stock) the plan is left exactly as it was rather than swapped for something no
+     * better, and the even-panel option, which has none of these bands, remains available.
+     */
+    _repairFullPanelPlan(input) {
+        let {
+            style, panel_options_data, post_panel, default_panel_width,
+            leftover_span, removed_posts_mm, _short_panel_length,
+            long_panel_count, long_panel_length,
+            short_panel_count, short_panel_length,
+            offcut_panel_count, offcut_panel_length
+        } = input;
+
+        const unchanged = {
+            long_panel_count, long_panel_length,
+            short_panel_count, short_panel_length,
+            offcut_panel_count, offcut_panel_length
+        };
+
+        const slug = panel_options_data?.slug;
+        const isFullOption = typeof slug === 'string' && slug.includes('full');
+        if (!isFullOption || !style.isPanelGroupB || style.isMainSlat || style.isGlass) {
+            return unchanged;
+        }
+
+        const stock = Math.round(default_panel_width);
+        const post = Math.round(post_panel);
+        const minPanel = parseInt(FENCE.get('item', 'min_panel_width'), 10) || 86;
+        if (!(stock > 0) || !(post > 0)) {
+            return unchanged;
+        }
+
+        const widths = [];
+        for (let n = 0; n < long_panel_count; n++) widths.push(Math.round(long_panel_length));
+        for (let n = 0; n < short_panel_count; n++) widths.push(Math.round(short_panel_length));
+        if (!widths.length || widths.some(w => !Number.isFinite(w) || w <= 0)) {
+            return unchanged;
+        }
+
+        // Only the leftover small enough to have been dropped: anything larger became its own bay.
+        // Rounded before the comparison, not after — D19 is a ratio scaled back up, so a leftover of
+        // exactly one post width arrives as 50.00000000000005 and an untouched `<= post` misses it.
+        const leftover = Number.isFinite(leftover_span) ? Math.round(leftover_span) : 0;
+        const dropped = leftover > 0 && leftover <= post ? leftover : 0;
+        const removed = Number.isFinite(removed_posts_mm) && removed_posts_mm > 0
+            ? Math.round(removed_posts_mm)
+            : 0;
+
+        // What the run of panels and the posts between them has to span, taken from the layout
+        // before the post-removal redistribution touched it: stock panels, the remainder as first
+        // computed, the posts between them, the leftover that was dropped, and the width freed by
+        // each removed end post. This is the number the run must measure.
+        const blockWidth =
+            long_panel_count * stock +
+            short_panel_count * Math.round(_short_panel_length || 0) +
+            post * (widths.length - 1) +
+            dropped +
+            removed;
+
+        // The plan as it stands. A mismatch means the redistribution capped a panel back to stock
+        // and dropped the difference, which is the same shortfall by another route.
+        const planWidth = widths.reduce((a, b) => a + b, 0) + post * (widths.length - 1);
+
+        const tooNarrow = widths.some(w => w < minPanel);
+        const overStock = widths.some(w => w > stock);
+        if (blockWidth === planWidth && !tooNarrow && !overStock) {
+            return unchanged;
+        }
+
+        // Fewest bays that can hold it without any panel exceeding stock — never fewer than the
+        // plan already had, so a sliver is re-spread across the bays it is already using.
+        const minBays = Math.ceil((blockWidth + post) / (stock + post));
+        const count = Math.max(widths.length, minBays);
+        const panelTotal = blockWidth - post * (count - 1);
+        if (!(panelTotal > 0) || !(count >= 1) || !Number.isFinite(count)) {
+            return unchanged;
+        }
+
+        const base = Math.floor(panelTotal / count);
+        const extra = panelTotal - base * count; // 0..count-1 spare mm, all onto one panel
+        if (base < minPanel || base > stock || base + extra > stock) {
+            return unchanged;
+        }
+
+        if (extra > 0) {
+            long_panel_count = count - 1;
+            long_panel_length = base;
+            short_panel_count = 1;
+            short_panel_length = base + extra;
+        } else {
+            long_panel_count = count;
+            long_panel_length = base;
+            short_panel_count = 0;
+            short_panel_length = 0;
+        }
+
+        // Every panel is now cut down, so each one leaves an off-cut, as the even option reports.
+        offcut_panel_count = count;
+        offcut_panel_length = stock - base;
+        if (offcut_panel_length <= 0) {
+            offcut_panel_count = 0;
+            offcut_panel_length = 0;
+        }
+
+        return {
+            long_panel_count, long_panel_length,
+            short_panel_count, short_panel_length,
+            offcut_panel_count, offcut_panel_length
+        };
+    }
+
     // --- Panel layout (even/full panel family) ---
 
     /**
@@ -753,9 +908,7 @@ class FenceCalculator {
             gate_post_gaps,
             post_panel,
             C3,
-            C4,
             C5,
-            C7,
             C8,
             C9,
             C10,
@@ -783,7 +936,6 @@ class FenceCalculator {
 
             const spanOverall = C3 - C8 - C9 - C10;
             let C14 = spanOverall - post_panel;
-            let C15 = C3 + C7 + C4;
             let C16 = Math.ceil(C14 / C5);
             let C17 = C16;
             let C18 = Math.floor(C14 / C5);
@@ -847,14 +999,10 @@ class FenceCalculator {
             let D21 = C8;
             let D22 = C9 > 0 ? 1 : 0;
             let D23 = C10 > 0 ? 1 : 0;
-            let D24 = D22 < 1 ? (C4 < 0 ? -1 : 0) : 0;
             let E17 = D17 - post_panel;
             let E18 = D18 - post_panel;
             let E19 = D19 < post_panel ? 0 : D19 - post_panel; // E19
             let E21 = D21 - post_panel;
-            let E22 = C9 > 0 ? (C4 < 0 ? 1 : 0) : 0;
-            let E23 = C10 > 0 ? (C7 < 0 ? 1 : 0) : 0;
-            let E24 = D23 < 1 ? (C7 < 0 ? -1 : 0) : 0;
             let C19 = E19 < 1 ? 0 : 1;
 
             // C20 = C19;
@@ -992,7 +1140,11 @@ class FenceCalculator {
             gate_hinge_panel_width,
             _short_panel_length,
             _offcut_panel_length,
-            extra_panel_count
+            extra_panel_count,
+            // D19 is the span left over after the last full panel. Once it drops to a post width
+            // or less there is no room for another bay, E19 goes to zero and the remainder is
+            // dropped — _repairFullPanelPlan needs it to put those millimetres back.
+            leftover_span: isNaN(D19) ? 0 : D19
         };
     }
 }

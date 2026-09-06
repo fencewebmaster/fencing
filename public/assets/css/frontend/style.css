@@ -447,6 +447,24 @@ html:has(body.fc-planner-page) {
     border-color: var(--fc-princeton-orange);
 }
 
+/* Colour ruled out by the selected panel option (Full Size Panels 3000W is black only). Shown
+   rather than removed so the reason is legible; the click handler and cursor both refuse it, and
+   the press/active treatments above are cancelled so it never reads as selectable. */
+.fc-select-color.fc-select-color--unavailable {
+    cursor: not-allowed;
+    opacity: 0.34;
+    filter: grayscale(1);
+}
+
+.fc-select-color.fc-select-color--unavailable:active,
+.fc-select-color.fc-select-color--unavailable.is-pressed,
+.fc-select-color.fc-select-color--unavailable:hover {
+    transform: none;
+    box-shadow: none;
+    filter: grayscale(1);
+    border-color: inherit;
+}
+
 /* Project plan modal — Color Options cards */
 #submit-modal.fencing-modal--project-plans .fc-select-color {
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease, border-color 0.2s ease;
@@ -8310,6 +8328,10 @@ thead.fc-border th:last-child {
     transform: translate(-50%, -50%);
     text-align: center;
     width: 100%;
+    /* Absolutely positioned, so width: 100% is the image box's padding box: the text ran under the
+       card's own 10px inset and touched the border on a phone. Padding puts it back inside. */
+    padding-left: 10px;
+    padding-right: 10px;
     font-size: 13px;
     line-height: 1.35;
     font-weight: 500;

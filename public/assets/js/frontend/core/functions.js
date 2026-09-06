@@ -5561,6 +5561,74 @@ function fcRebuildAllPlannerCarts(sectionCount) {
     }
 }
 
+/**
+ * Call `done` once the planner's fence diagram is actually showing section `tabIdx`.
+ *
+ * Switching tabs re-renders through fcRunWithPlannerStep3Skeleton, which defers the render behind
+ * two animation frames, so a caller that clicks a tab and reads the diagram in the same task counts
+ * whichever section is still on screen. `data-fc-section` is stamped by the renderer (see
+ * FENCE.load_fencing_items), and the cart-node count has to hold still for one frame after that
+ * before the diagram is read.
+ *
+ * Polls on requestAnimationFrame deliberately — that is the same clock the render is waiting on, so
+ * this cannot outrun it — with a wall-clock backstop for the backgrounded tab, where no frame ever
+ * arrives and the rebuild has to finish anyway rather than wait for the user to come back.
+ */
+function fcWhenPlannerSectionRendered(tabIdx, done) {
+    if (typeof done !== 'function') {
+        return;
+    }
+    if (typeof requestAnimationFrame !== 'function') {
+        done();
+        return;
+    }
+
+    // Head-room, not an expected wait: the render itself is two frames.
+    var framesLeft = 90;
+    var lastCount = -1;
+    var finished = false;
+
+    function finish() {
+        if (finished) {
+            return;
+        }
+        finished = true;
+        done();
+    }
+
+    // Frames stop arriving entirely in a backgrounded tab, and so does the render — but the rebuild
+    // must still finish rather than hang until the user comes back, so fall through on the clock.
+    setTimeout(finish, 2000);
+
+    function poll() {
+        if (finished) {
+            return;
+        }
+
+        var container =
+            document.querySelector('.fc-planner-page .fencing-panel-container') ||
+            document.querySelector('.fencing-panel-container');
+
+        if (!container) {
+            finish();
+            return;
+        }
+
+        var stamped = parseInt(container.getAttribute('data-fc-section'), 10);
+        var count = container.querySelectorAll('[data-cart-key]').length;
+        var settled = stamped === tabIdx && count === lastCount;
+        lastCount = count;
+
+        if (settled || --framesLeft <= 0) {
+            finish();
+            return;
+        }
+        requestAnimationFrame(poll);
+    }
+
+    requestAnimationFrame(poll);
+}
+
 function fcRebuildPlannerCartSequential(sectionCount, onDone) {
     removeItemStorageWith('cart_items-');
     if (!sectionCount || sectionCount < 1) {
@@ -5570,7 +5638,24 @@ function fcRebuildPlannerCartSequential(sectionCount, onDone) {
         return;
     }
     var idx = 0;
-    var stepDelayMs = 120;
+
+    function finishStep() {
+        try {
+            FENCES.cartItems.init(idx, {
+                skipTabClick: true,
+                scopeRoot: FENCES.cartItems.getProcessScopeRoot(idx)
+            });
+        } catch (e) {}
+        idx++;
+        setTimeout(step, 0);
+    }
+
+    // Which page we are on, NOT whether `#pp-{idx}` exists: the planner's single live diagram is
+    // itself `<div id="pp-0">` (planner/step-3.php), so probing for `#pp-0` matched on the planner
+    // too and section 0 was rebuilt without ever switching to it — it was billed with whatever
+    // section happened to be on screen. Only the project plan renders every `#pp-{n}` at once.
+    var onPlanner = !!document.querySelector('.fc-planner-page');
+
     function step() {
         if (idx >= sectionCount) {
             if (typeof onDone === 'function') {
@@ -5578,16 +5663,29 @@ function fcRebuildPlannerCartSequential(sectionCount, onDone) {
             }
             return;
         }
+
+        if (!onPlanner) {
+            // Project plan: every section is already in the DOM, so there is nothing to wait for.
+            try {
+                FENCES.cartItems.init(idx, {
+                    skipTabClick: true,
+                    scopeRoot: document.querySelector('#pp-' + idx)
+                });
+            } catch (e) {}
+            idx++;
+            setTimeout(step, 0);
+            return;
+        }
+
+        // Planner: one section on screen at a time. Click the tab, then wait for that section's
+        // diagram to render before counting it — reading straight after the click billed the
+        // section with whatever was still displayed.
         try {
-            var planRoot = document.querySelector('#pp-' + idx);
-            FENCES.cartItems.init(idx, {
-                skipTabClick: !!planRoot,
-                scopeRoot: planRoot || FENCES.cartItems.getProcessScopeRoot(idx)
-            });
+            $('.fc-section-' + (idx + 1)).click();
         } catch (e) {}
-        idx++;
-        setTimeout(step, stepDelayMs);
+        fcWhenPlannerSectionRendered(idx, finishStep);
     }
+
     step();
 }
 
@@ -6000,6 +6098,105 @@ function transitionPlannerColorOptionsReveal($host, $mount) {
     });
 }
 
+/**
+ * Colours the currently selected panel options leave available for a fence style, or null when
+ * nothing restricts them.
+ *
+ * A panel option may only be manufactured in some colours — Flat Top's "Full Size Panels 3000W"
+ * carries `desc: 'ONLY Available In BLACK'` — and that used to be advisory text only: every colour
+ * stayed selectable, and a SKU with `off` in that colour column is silently dropped from the
+ * materials list further down (CartBuilderService::getProductSkus), so the customer got posts and
+ * brackets with no panels. The option's `colors` array in writable/fences/*.php is the rule; this
+ * intersects it across every section using the style, since one colour is chosen per style.
+ */
+function fcAllowedColorsForFenceStyle(styleSlug) {
+    var info = typeof fc_data !== 'undefined' ? fc_data[styleSlug] : null;
+    var options = info?.settings?.panel_options?.fields?.[0]?.options;
+    if (!Array.isArray(options) || !options.length) {
+        return null;
+    }
+
+    var sections = parseInt(localStorage.getItem('custom_fence-section'), 10);
+    if (!Number.isFinite(sections) || sections < 1) {
+        sections = 1;
+    }
+
+    var allowed = null;
+    var restricted = false;
+
+    for (var tab = 0; tab < sections; tab++) {
+        var tabRaw = localStorage.getItem('custom_fence-' + tab);
+        var tabInfo = tabRaw ? JSON.parse(tabRaw) : [];
+        var raw = tabInfo?.[0]?.fence || tabInfo?.[0]?.style || '';
+        if (!raw || normalizeFenceStyleSlug(raw) !== styleSlug) {
+            continue;
+        }
+
+        var segment = readCustomFenceSegment(tab, raw);
+        var selected = get_field_options(segment, info, 'panel_options', 'panel_option');
+        var option = Array.isArray(selected) ? selected[0] : selected;
+        var colors = option?.colors;
+        if (!Array.isArray(colors) || !colors.length) {
+            continue; // this section's option allows anything the style allows
+        }
+
+        restricted = true;
+        allowed = allowed === null
+            ? colors.slice()
+            : allowed.filter(function(c) {
+                  return colors.indexOf(c) !== -1;
+              });
+    }
+
+    return restricted ? (allowed || []) : null;
+}
+
+/**
+ * Step 4: grey out colours the selected panel option cannot be made in, and drop a selection that
+ * has just become invalid so the plan cannot be submitted against it.
+ */
+function fcApplyPanelOptionColorRestrictions($scope) {
+    $scope = $scope && $scope.length ? $scope : $('[data-load="color-options"]');
+    if (!$scope.length) {
+        return;
+    }
+
+    $scope.find('.fc-color-options').each(function() {
+        var $group = $(this);
+        var styleSlug = String($group.attr('data-slug') || '');
+        if (!styleSlug) {
+            return;
+        }
+
+        var allowed = fcAllowedColorsForFenceStyle(styleSlug);
+        var $items = $group.find('.fc-select-color');
+
+        if (allowed === null) {
+            $items.removeClass('fc-select-color--unavailable')
+                .removeAttr('aria-disabled')
+                .removeAttr('title');
+            return;
+        }
+
+        $items.each(function() {
+            var $item = $(this);
+            var ok = allowed.indexOf(String($item.attr('data-slug') || '')) !== -1;
+            $item.toggleClass('fc-select-color--unavailable', !ok)
+                .attr('aria-disabled', ok ? null : 'true')
+                .attr('title', ok ? null : 'Not available with the panel option selected for this fence');
+            if (!ok) {
+                $item.removeClass('fc-selected');
+            }
+        });
+    });
+
+    if (typeof update_color_options === 'function') {
+        try {
+            update_color_options();
+        } catch (e) {}
+    }
+}
+
 function loadColorOptions() {
     var $host = $('.js-fc-color-options-skeleton-host');
     var $mount = $('.js-fc-color-options-mount');
@@ -6078,6 +6275,10 @@ function loadColorOptions() {
             }
 
         }
+
+        // Panel options can rule colours out (e.g. Full Size Panels 3000W is black only), so this
+        // runs after the style's own colour list is built and before the reveal.
+        fcApplyPanelOptionColorRestrictions(colorOption);
 
         if (typeof fcApplyPlannerUpdateDisabledFromColors === 'function') {
             fcApplyPlannerUpdateDisabledFromColors();
