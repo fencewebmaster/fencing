@@ -187,11 +187,11 @@ class FenceCalculator {
 
 
         // --- Raked panels: left/right are symmetric, resolved per side ---
-        const leftRaked = this._resolveRakedSide(custom_fence, info, 'left_side', 'left_raked');
+        const leftRaked = this._resolveRakedSide(custom_fence, info, 'left_side', 'left_raked', post_panel);
         C9 = leftRaked.width;
         left_raked_panel_height = leftRaked.height;
         left_raked_panel_width = leftRaked.panel_width;
-        const rightRaked = this._resolveRakedSide(custom_fence, info, 'right_side', 'right_raked');
+        const rightRaked = this._resolveRakedSide(custom_fence, info, 'right_side', 'right_raked', post_panel);
         C10 = rightRaked.width;
         right_raked_panel_height = rightRaked.height;
         right_raked_panel_width = rightRaked.panel_width;
@@ -694,11 +694,20 @@ class FenceCalculator {
 
     /**
      * One raked-side lookup (left_side/left_raked or right_side/right_raked): the selected raked
-     * option's width and height, and the panel width net of the 50mm post. The left and right
-     * blocks in calculate_fences() were a copy-pasted pair; this is that block with only the side
-     * literals parameterized. Width stays 0 when no raked option is selected.
+     * option's width and height, and the panel width net of one post. The left and right blocks in
+     * calculate_fences() were a copy-pasted pair; this is that block with only the side literals
+     * parameterized. Width stays 0 when no raked option is selected.
+     *
+     * `postPanelMm` is the style's own post width (FENCE.get(slug, 'post')), not a literal 50 - the
+     * raw catalog width (e.g. 1250 for "1300H - 300 Step-Up") is the step-up's full footprint
+     * including one post, and only Flat Top and Slat happen to have a 50mm post. Barr's is 25mm;
+     * subtracting 50 there quietly dropped 25mm from the diagram and the overall-length total
+     * (BR-02). The raw `width` above (assigned to C9/C10) is unaffected - that arithmetic already
+     * used the true footprint, so the diagram was 25mm short of what the length math accounted for.
+     * Not user-reachable today: Barr's step-up field is hidden (class: 'd-none' in 2-BARR.php), so
+     * no live order was affected - fixed to stop it waiting for the day that field is turned on.
      */
-    _resolveRakedSide(custom_fence, info, sideKey, rakedSlug) {
+    _resolveRakedSide(custom_fence, info, sideKey, rakedSlug, postPanelMm) {
         let width = 0;
         let step_up_panels = get_field_multi_options(custom_fence, info, sideKey);
         step_up_panels = get_field_by_slug(step_up_panels, rakedSlug);
@@ -708,7 +717,8 @@ class FenceCalculator {
             width = step_up_panels?.size?.width;
         }
         const height = step_up_panels?.size?.height;
-        const panel_width = isNaN(width - 50) ? 0 : width - 50;
+        const post = Number.isFinite(postPanelMm) ? postPanelMm : 50;
+        const panel_width = isNaN(width - post) ? 0 : width - post;
         return { width, height, panel_width };
     }
 
