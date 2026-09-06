@@ -146,6 +146,20 @@ class FenceCalculator {
         ({ C5, panel_options_data, max_panel_spacing, default_panel_width } =
             this._resolvePanelWidth({ i, info, style, custom_fence, C3, fence_height, panel_width_height_key }));
 
+        // The real ceiling on a panel's physical length for the option AND height selected, used
+        // wherever a panel width is capped or re-laid. `default_panel_width` (catalog `size.default`)
+        // is not it for Barr: Barr's panel options carry `width_based_height`, so the true per-panel
+        // span (C5 - post) moves with fence height while `default` sits fixed at the 1200H value.
+        // Off that height, capping against `default_panel_width` let a redistributed or repaired
+        // panel come out wider than the height can physically build (an 1800H "2053W" panel whose
+        // real maximum is 1969mm). C5 - post_panel is exactly `default_panel_width` for Flat Top
+        // (the two are defined to coincide there), so this changes nothing for the styles where the
+        // catalog value was already correct.
+        const max_panel_width_mm =
+            Number.isFinite(C5) && Number.isFinite(post_panel) && C5 - post_panel > 0
+                ? Math.round(C5 - post_panel)
+                : default_panel_width;
+
         C6 = 0; // post options
 
         // --- Gate inputs: span (C8), offcut gate panel, hinge/swing/placement meta ---
@@ -283,7 +297,7 @@ class FenceCalculator {
         } = this._applyPostRemovalAdjustment({
             removedPostsMm: removed_posts_mm,
             skip: style.isMainSlat,
-            default_panel_width,
+            default_panel_width: max_panel_width_mm,
             long_panel_count, short_panel_count,
             full_panel_length, even_panel_length, long_panel_length,
             short_panel_length, offcut_panel_length,
@@ -296,7 +310,7 @@ class FenceCalculator {
             short_panel_count, short_panel_length,
             offcut_panel_count, offcut_panel_length
         } = this._repairFullPanelPlan({
-            style, panel_options_data, post_panel, default_panel_width,
+            style, panel_options_data, post_panel, default_panel_width: max_panel_width_mm,
             leftover_span, removed_posts_mm, _short_panel_length,
             long_panel_count, long_panel_length,
             short_panel_count, short_panel_length,
