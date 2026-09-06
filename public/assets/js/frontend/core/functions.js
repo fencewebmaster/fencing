@@ -3294,6 +3294,48 @@ function fcShowPlannerStep4ColorValidation($scope) {
     return $first;
 }
 
+/* Step 3's NEXT > Select PLAN OPTIONS used to sit disabled until the section had been calculated,
+   which told the customer nothing about why. It stays live now and answers on click, the same way
+   Step 4's buttons do - see fcValidatePlannerStep4Colors(). */
+var FC_STEP3_NOT_CALCULATED_MESSAGE = 'Please run Calculate first.';
+
+function fcClearPlannerStep3Validation() {
+    $('.fc-planner-page').find('label.error.fc-step3-error').remove();
+}
+
+/**
+ * Gate for NEXT > Select PLAN OPTIONS: the section has to have been calculated, or there are no
+ * real measurements behind the plan options being chosen.
+ *
+ * Not a panel count - the fence draws itself the moment a style is picked, so panels exist well
+ * before Calculate has run. calculateValue is the signal, the same one the reset dialog reads to
+ * decide whether a section has anything worth warning about.
+ */
+function fcValidatePlannerStep3Ready() {
+    fcClearPlannerStep3Validation();
+
+    var calculated =
+        typeof fcSectionIsCalculated === 'function'
+            ? fcSectionIsCalculated()
+            : $('.fencing-panel-item:visible').length > 0;
+
+    if (calculated) {
+        return true;
+    }
+
+    var $host = $('.fc-btn-next-step:visible').first().closest('div');
+    if (!$host.length) {
+        return false; // nowhere to put the message - still block, the section is not ready
+    }
+
+    $host.append(
+        $('<label>', { class: 'error fc-step3-error' }).text(FC_STEP3_NOT_CALCULATED_MESSAGE)
+    );
+    $host.scrollTo(300, 110);
+
+    return false;
+}
+
 /**
  * Step 4 (tab=2) gate for UPDATE / Create Project Plan. Paints the pills and walks the page to the
  * first offender when something is missing; clears them and returns true when the step is answered.

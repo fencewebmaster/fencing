@@ -124,8 +124,7 @@
                             data-tab="1" 
                             data-move="2"
                             data-section="4"
-                            data-offset="0"
-                            disabled>
+                            data-offset="0">
                             <span class="d-xl-none"><b>NEXT</b> <i class="fa-solid fa-angle-right mx-1" aria-hidden="true"></i> PLAN OPTIONS</span>
                             <span class="d-none d-xl-inline"><b>NEXT</b> <i class="fa-solid fa-angle-right mx-2"></i> Select PLAN OPTIONS</span>
                         </button>

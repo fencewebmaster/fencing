@@ -772,6 +772,20 @@ html:has(body.fc-planner-page) {
     white-space: nowrap;
 }
 
+/* Step 3's NEXT > Select PLAN OPTIONS answers on click now rather than sitting disabled, and says
+   so with the same pill Step 4 and the Download wizard use. It hangs off the button's own column so
+   it lands where the click did; the column is a Bootstrap grid cell with no position of its own. */
+.fc-planner-page .fc-tab-control .col:has(> .fc-btn-next-step),
+.fc-planner-page .col:has(> .fc-btn-next-step) {
+    position: relative;
+}
+
+.fc-planner-page label.error.fc-step3-error {
+    top: -11px;
+    right: 5px;
+    white-space: nowrap;
+}
+
 /* An empty planner has no row to hang a pill off, so it goes on the wrap - a zero-height grid cell,
    which is why this one flows instead of taking a corner. */
 .fc-planner-page .fc-step-4 label.error.fc-step4-error--empty {

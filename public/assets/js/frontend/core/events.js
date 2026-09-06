@@ -542,7 +542,11 @@ function fcHidePlannerStep3Results() {
     try {
         $('.err-message').html('');
     } catch (e3) {}
-    $('.fc-btn-next-step').attr('disabled', 'disabled');
+    // NEXT > Select PLAN OPTIONS is no longer held disabled; fcValidatePlannerStep3Ready() answers
+    // on click instead. Its message goes with the results it was about.
+    if (typeof fcClearPlannerStep3Validation === 'function') {
+        fcClearPlannerStep3Validation();
+    }
 }
 
 /**
@@ -832,10 +836,6 @@ function fencingStyleItem(e) {
     });
 
     setTimeout(function() {
-        $('.fc-btn-next-step').attr('disabled', 'disabled');
-        if ($('.fencing-panel-item:visible').length > 0) {
-            $('.fc-btn-next-step').removeAttr('disabled');
-        }
         checkGateOnly();
         if (typeof fcSyncStep2GateOnlyVisibility === 'function') {
             fcSyncStep2GateOnlyVisibility();
@@ -3152,8 +3152,11 @@ function btnCalculate() {
 
     setTimeout(function() {
 
-        $('.fc-btn-next-step').attr('disabled', 'disabled');
-        $('.fc-btn-next-step').removeAttr('disabled');
+        // A fence is drawn now, so the "run Calculate first" pill has been answered — retire it
+        // rather than leaving it up until the customer clicks NEXT again.
+        if (typeof fcClearPlannerStep3Validation === 'function' && fcSectionIsCalculated()) {
+            fcClearPlannerStep3Validation();
+        }
 
         if (typeof fcSyncGateMoveControlsState === 'function') {
             fcSyncGateMoveControlsState();
@@ -3619,6 +3622,17 @@ function fcBtnStep(e) {
         section = _this.attr('data-section'),
         offset = _this.attr('data-offset'),
         move = _this.attr('data-move');
+
+    /* Going forward to Plan Options needs a drawn fence - there is nothing to configure without
+       one. Checked here rather than by disabling the button, so the customer is told why. */
+    if (
+        (move === '2' || move === 2) &&
+        $('.fc-planner-page').length &&
+        typeof fcValidatePlannerStep3Ready === 'function' &&
+        !fcValidatePlannerStep3Ready()
+    ) {
+        return;
+    }
 
     function applyPlannerTabMove() {
         if (
