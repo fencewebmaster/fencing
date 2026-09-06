@@ -39,6 +39,31 @@
                 var item = self.findItemByKey(key);
                 input.value = item && field ? item[field] || '' : '';
             });
+            this.paintStock();
+        }
+
+        /** Stock & Delivery block: two toggles plus the TinyMCE-backed description. */
+        paintStock() {
+            var stock = this.state.projectPlanStock || {};
+            document.querySelectorAll('[data-fc-project-plan-stock-field]').forEach(function (el) {
+                var field = el.getAttribute('data-fc-project-plan-stock-field');
+                if (!field) {
+                    return;
+                }
+                if (el.type === 'checkbox') {
+                    el.checked = !!stock[field];
+                    return;
+                }
+                el.value = stock[field] == null ? '' : String(stock[field]);
+                // The editor owns the visible copy once it is mounted; the textarea underneath is
+                // only what gets posted, so it has to be pushed across explicitly.
+                if (global.tinymce && el.id) {
+                    var editor = global.tinymce.get(el.id);
+                    if (editor) {
+                        editor.setContent(el.value);
+                    }
+                }
+            });
         }
 
         setDirty(isDirty) {
@@ -311,6 +336,78 @@
             });
         }
 
+        /**
+         * Toggles write straight through; the description is a TinyMCE field, so its textarea only
+         * carries the current HTML after the editor saves into it - hence the change/input listener
+         * on the textarea itself rather than on the iframe.
+         */
+        bindStock() {
+            var self = this;
+            var state = this.state;
+            state.projectPlanStock = state.projectPlanStock || {};
+
+            document.querySelectorAll('[data-fc-project-plan-stock-field]').forEach(function (el) {
+                var field = el.getAttribute('data-fc-project-plan-stock-field');
+                if (!field) {
+                    return;
+                }
+                function sync() {
+                    state.projectPlanStock[field] = el.type === 'checkbox' ? !!el.checked : el.value;
+                    self.setDirty(true);
+                }
+                el.addEventListener('change', sync);
+                if (el.type !== 'checkbox') {
+                    el.addEventListener('input', sync);
+                }
+            });
+
+            self.mountEditor();
+        }
+
+        /**
+         * TinyMCE measures its container on init, so mounting it inside a panel that is still
+         * `hidden` gives a collapsed editor. Settings only shows one tab at a time — so the mount
+         * waits until this panel is on screen, and settings.js calls it again on tab switch.
+         * initInRoot() skips already-bound textareas, which makes repeat calls free.
+         */
+        mountEditor() {
+            var self = this;
+            var state = this.state;
+            var panel = document.getElementById('fc-settings-panel-project-plan');
+            if (!panel || panel.classList.contains('hidden') || !global.FcFenceStyleWysiwyg) {
+                return;
+            }
+
+            state.projectPlanStock = state.projectPlanStock || {};
+            global.FcFenceStyleWysiwyg.initInRoot(panel, function (textarea, content) {
+                var field = textarea.getAttribute('data-fc-project-plan-stock-field');
+                if (!field) {
+                    return;
+                }
+                state.projectPlanStock[field] = content;
+                self.setDirty(true);
+            });
+        }
+
+        /** Pull the editor's live content into its textarea before reading the payload. */
+        syncStockFromDom() {
+            if (global.FcFenceStyleWysiwyg) {
+                global.FcFenceStyleWysiwyg.syncAll(
+                    document.getElementById('fc-settings-panel-project-plan') || document
+                );
+            }
+            var state = this.state;
+            state.projectPlanStock = state.projectPlanStock || {};
+            document.querySelectorAll('[data-fc-project-plan-stock-field]').forEach(function (el) {
+                var field = el.getAttribute('data-fc-project-plan-stock-field');
+                if (!field) {
+                    return;
+                }
+                state.projectPlanStock[field] = el.type === 'checkbox' ? !!el.checked : el.value;
+            });
+            return state.projectPlanStock;
+        }
+
         bind() {
             var self = this;
             var state = this.state;
@@ -351,6 +448,8 @@
                 });
             }
 
+            self.bindStock();
+
             var saveBtn = document.getElementById('fc-project-plan-save');
             if (saveBtn) {
                 saveBtn.addEventListener('click', function () {
@@ -385,6 +484,8 @@
                             ? '<img src="' + escapeHtml(url) + '" alt="" loading="lazy" decoding="async" />'
                             : global.FC.Settings.buildImagePlaceholderHtml();
                     });
+                    state.projectPlanStock = Object.assign({}, state.projectPlanStockDefaults || {});
+                    self.paintStock();
                     self.setDirty(true);
                 });
             }
@@ -401,7 +502,11 @@
                     Accept: 'application/json'
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({ items: state.projectPlanItems, csrf: state.csrf })
+                body: JSON.stringify({
+                    items: state.projectPlanItems,
+                    stock: self.syncStockFromDom(),
+                    csrf: state.csrf
+                })
             })
                 .then(function (res) {
                     return res.json().then(function (body) {
@@ -413,6 +518,9 @@
                 })
                 .then(function (body) {
                     state.projectPlanItems = self.clone(body.extraItems || state.projectPlanItems);
+                    if (body.stock) {
+                        state.projectPlanStock = Object.assign({}, body.stock);
+                    }
                     self.paint();
                     self.setDirty(false);
                     self.flash.set(body.message || 'Project Plan settings saved.', 'success');

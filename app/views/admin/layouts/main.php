@@ -1440,6 +1440,10 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/gallery.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/media-picker.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/components/image-lightbox.js'); ?>"></script>
+    <?php /* Settings -> Project Plan -> Stock & Delivery edits the Low Stock copy in the same
+             TinyMCE field the fence-style editor uses. Loaded before settings.js: the tab
+             controller reaches for FcFenceStyleWysiwyg as soon as the panel is shown. */ ?>
+    <script src="<?php echo asset('assets/js/admin/fence-styles/wysiwyg.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/settings.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/settings-tab-controller.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/theme-tab.js'); ?>"></script>

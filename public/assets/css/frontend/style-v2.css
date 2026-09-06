@@ -200,16 +200,27 @@
     position: relative;
 }
 
+/* Basis 0, not auto. On auto the field's basis is its own width:100%, so the row is
+   over-subscribed and both items go through the shrink pass every time it re-runs - and the
+   Calculate button carries overflow:hidden, which switches off its automatic minimum size, so it
+   was the one squeezed (label clipped, 80px used against 88px of content). Entering a width flips
+   the button from btn-light/disabled to btn-dark, the pass ran again, and the field, the mm suffix
+   and the plus button all slid ~10px sideways mid-typing. */
 .fencing-modal-area--gate .custom-gate .fc-gate-modal-calculate-row .fencing-mb-input {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-width: 0;
 }
 
+/* The button takes a fixed share and never shrinks, so the field is what gives way and nothing
+   moves as the value is typed. Wider than the ~90px its label asks for - it reads as the action of
+   the row rather than a chip beside the field. */
 .fencing-modal-area--gate .custom-gate .fc-gate-modal-calculate-row .btn {
     border-radius: var(--fc-gate-field-radius) !important;
     margin-top: 0;
     align-self: stretch;
     white-space: nowrap;
+    flex: 0 0 auto;
+    min-width: 150px;
 }
 
 .fencing-modal-area--gate .custom-gate .alert.alert-gray {

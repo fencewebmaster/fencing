@@ -146,8 +146,7 @@
                     <div class="fc-step3-options-actions d-flex flex-column flex-sm-row flex-wrap align-items-stretch gap-2">
                         <button type="button" 
                             class="btn btn-orange fc-btn-create-plan fencing-btn-modal order-2 order-sm-1 w-100 w-sm-auto" 
-                            data-target="#submit-modal" 
-                            disabled>
+                            data-target="#submit-modal">
                             <strong>Create Project Plan</strong><br>
                             <small>View Costing, Plan & Materials List</small>
                         </button>

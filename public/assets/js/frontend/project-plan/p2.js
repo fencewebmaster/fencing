@@ -1534,8 +1534,16 @@ let ProjectPlan = {
     countDownTimer: function() {
         var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-        // 10800000 ms = 3 hours
-        setcountDownDate = new Date(Date.now() + 10800000).toLocaleString('en-US', {
+        // Settings -> Project Plan -> Stock & Delivery. Stamped on the timer element by
+        // item-list-cart.php; 3 hours is what this was hard-coded to before it became a setting,
+        // and is still the fallback when the element carries no value.
+        var timerEl = document.getElementById('fc-countdown-timer');
+        var countdownHours = parseInt(timerEl ? timerEl.getAttribute('data-fc-countdown-hours') : '', 10);
+        if (!Number.isFinite(countdownHours) || countdownHours < 1) {
+            countdownHours = 3;
+        }
+
+        setcountDownDate = new Date(Date.now() + countdownHours * 3600000).toLocaleString('en-US', {
             timeZone: timezone,
             year: 'numeric',
             month: 'short',
@@ -1547,14 +1555,25 @@ let ProjectPlan = {
 
         var getcountDownDate = localStorage.getItem('countdown-date');
 
+        /* A deadline already issued is left alone: the customer was shown a reservation window and
+           cutting it short (or extending it) under them is worse than being a countdown behind.
+           A change to Countdown length is picked up on the next issue instead - when this one runs
+           out and the expiry branch below re-enters, or after Clear All drops the key. */
         if (!getcountDownDate) {
             // Set the date we're counting down to
             localStorage.setItem('countdown-date', setcountDownDate);
-            var getcountDownDate = localStorage.getItem('countdown-date');
+            getcountDownDate = localStorage.getItem('countdown-date');
         }
 
         var countDownDateFormat = new Date(getcountDownDate).getTime(),
             cont = 'fc-countdown-timer';
+
+        // The ORDER WITHIN block is optional now (Settings -> Project Plan -> Stock & Delivery).
+        // With it switched off the target element is absent, and the interval below wrote to it
+        // unguarded - one TypeError per second for the life of the page.
+        if (!timerEl) {
+            return;
+        }
 
         // Update the count down every 1 second
         var x = setInterval(function() {
@@ -1584,13 +1603,18 @@ let ProjectPlan = {
                     '</span>';
             }
 
-            document.getElementById(cont).innerHTML = markup;
+            var el = document.getElementById(cont);
+            if (!el) {
+                clearInterval(x); // re-rendered away mid-run
+                return;
+            }
+            el.innerHTML = markup;
 
             // If the count down is finished, write some text
             if (distance <= 1) {
                 clearInterval(x);
                 localStorage.removeItem('countdown-date');
-                document.getElementById(cont).innerHTML = '<div class="fc-loader-gif"></div>';
+                el.innerHTML = '<div class="fc-loader-gif"></div>';
                 ProjectPlan.countDownTimer();
             }
 

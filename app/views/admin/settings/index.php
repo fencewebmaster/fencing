@@ -816,6 +816,90 @@ $tab = $fcSettingsPage;
                             <button type="button" id="fc-project-plan-add" class="btn btn-sm btn-dark fw-semibold">
                                 <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Add item
                             </button>
+
+                            <?php $ppStock = is_array($tab['project_plan_stock'] ?? null) ? $tab['project_plan_stock'] : []; ?>
+                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                                <div class="mb-4">
+                                    <h3 class="text-sm font-semibold text-slate-800">Stock &amp; Delivery</h3>
+                                    <p class="mt-1 text-xs text-slate-500">The panel beside the item list on the project plan. Turn either block off for sites that don&rsquo;t run a stock warning or a countdown.</p>
+                                </div>
+
+                                <div class="flex flex-col gap-2.5">
+                                    <label class="flex items-center justify-between gap-3" for="fc-project-plan-stock-lowStockEnabled">
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Show Low Stock Warning</span>
+                                            <span class="block text-xs text-slate-500">The red panel under the delivery facts.</span>
+                                        </span>
+                                        <span class="relative inline-flex shrink-0 cursor-pointer items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="fc-project-plan-stock-lowStockEnabled"
+                                                data-fc-project-plan-stock-field="lowStockEnabled"
+                                                class="peer sr-only"
+                                                <?php echo !empty($ppStock['lowStockEnabled']) ? 'checked' : ''; ?>
+                                            >
+                                            <span class="h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200 peer-checked:bg-[var(--fc-princeton-orange)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-[var(--fc-princeton-orange)]"></span>
+                                            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
+
+                                    <label class="flex items-center justify-between gap-3 border-t border-slate-200 pt-2.5" for="fc-project-plan-stock-orderWithinEnabled">
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Show Order Within countdown</span>
+                                            <span class="block text-xs text-slate-500">The ORDER WITHIN timer below the stock panel.</span>
+                                        </span>
+                                        <span class="relative inline-flex shrink-0 cursor-pointer items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="fc-project-plan-stock-orderWithinEnabled"
+                                                data-fc-project-plan-stock-field="orderWithinEnabled"
+                                                class="peer sr-only"
+                                                <?php echo !empty($ppStock['orderWithinEnabled']) ? 'checked' : ''; ?>
+                                            >
+                                            <span class="h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200 peer-checked:bg-[var(--fc-princeton-orange)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-[var(--fc-princeton-orange)]"></span>
+                                            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
+
+                                    <label class="flex items-center justify-between gap-3 border-t border-slate-200 pt-2.5" for="fc-project-plan-stock-orderWithinHours">
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Countdown length</span>
+                                            <span class="block text-xs text-slate-500">Hours the cart is held for. A countdown already running keeps its deadline &mdash; the new length applies when it next resets.</span>
+                                        </span>
+                                        <span class="flex shrink-0 items-center gap-2">
+                                            <input
+                                                type="number"
+                                                id="fc-project-plan-stock-orderWithinHours"
+                                                data-fc-project-plan-stock-field="orderWithinHours"
+                                                class="fc-settings-field w-24 text-right"
+                                                min="<?php echo e((string) ($tab['project_plan_stock_hours_min'] ?? 1)); ?>"
+                                                max="<?php echo e((string) ($tab['project_plan_stock_hours_max'] ?? 168)); ?>"
+                                                step="1"
+                                                inputmode="numeric"
+                                                value="<?php echo e((string) ($ppStock['orderWithinHours'] ?? 3)); ?>"
+                                            >
+                                            <span class="text-xs text-slate-500">hours</span>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <?php /* Same field shape the fence-style editor uses for its HTML fields
+                                         (fence-styles/gui.js, type 'html'): a div rather than a label,
+                                         because a <label> wrapper hands every click in the editor back to
+                                         the hidden textarea. .fc-fs-* styling lives in layouts/main.php. */ ?>
+                                <div class="mt-4 border-t border-slate-200 pt-4">
+                                    <div class="fc-fs-gui-field fc-fs-gui-field--wysiwyg">
+                                        <span class="fc-fs-gui-field__label">Low Stock Warning description</span>
+                                        <textarea
+                                            id="fc-project-plan-stock-lowStockHtml"
+                                            data-fc-project-plan-stock-field="lowStockHtml"
+                                            data-fc-wysiwyg="1"
+                                            rows="6"
+                                            class="fc-fs-input fc-fs-wysiwyg"
+                                        ><?php echo e((string) ($ppStock['lowStockHtml'] ?? '')); ?></textarea>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
 
                         <div id="fc-settings-panel-console" class="<?php echo e((string) $tab['panel_class']['console']); ?>space-y-5">

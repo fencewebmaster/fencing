@@ -23,7 +23,12 @@ function formControlClear() {
 _doc.on('click', '.fc-btn-update', fcBtnUpdate);
 
 function fcBtnUpdate(e) {
+    // type="submit", so the default has to go before the gate: an unanswered colour row must not
+    // fall through to #fc-planning-form's own submitHandler.
     e.preventDefault();
+    if (typeof fcValidatePlannerStep4Colors === 'function' && !fcValidatePlannerStep4Colors()) {
+        return;
+    }
     Planner.planCart();
 }
 
@@ -678,10 +683,28 @@ _doc.on('click', '.select-gate_only_step2', function(e) {
 
 //----------------------------------------------------------------------------------
 
+/**
+ * The style card carries this section's own Reset (X) and Delete controls, so a click on one of
+ * them bubbles here as if it were a style pick. fcFenceResetAll defers its work in a setTimeout,
+ * which meant the style handlers ran afterwards and wrote custom_fence-{tab} straight back — the
+ * section came back labelled with its old style, empty, and Step 4 still counted it as a fence.
+ */
+function fcClickIsSectionControl(e) {
+    var t = e && (e.target || (e.originalEvent && e.originalEvent.target));
+    if (!t || typeof t.closest !== 'function') {
+        return false;
+    }
+    return !!t.closest('.fc-fence-reset-all, .fc-fence-reset, .js-btn-delete-fence');
+}
+
 _doc.on('click', '.fencing-style-item', fencingStyleItem);
 
 function fencingStyleItem(e) {
     var _this = $(this);
+
+    if (fcClickIsSectionControl(e)) {
+        return;
+    }
 
     if (_this.hasClass('fencing-style-item--unavailable') || _this.attr('data-live') === '0') {
         return;
@@ -837,8 +860,11 @@ function fencingStyleItem(e) {
 
 _doc.on('click', '.fencing-style-item', fencingStyleItem_2);
 
-function fencingStyleItem_2() {
+function fencingStyleItem_2(e) {
     var _this = $(this);
+    if (fcClickIsSectionControl(e)) {
+        return;
+    }
     if (_this.hasClass('fencing-style-item--unavailable') || _this.attr('data-live') === '0') {
         return;
     }
@@ -1740,21 +1766,96 @@ function fcConfirmRefire(el) {
 
 _doc.on('click', '.fc-fence-reset-all', fcFenceResetAll);
 
+/**
+ * Every scrap of per-style state this section has worn, not just the style on screen.
+ *
+ * Two prefixes, and both had to go:
+ *  - `custom_fence-{tab}-{slug}` — panel/gate settings. Reset only ever removed the *selected*
+ *    style's key, so a style used earlier got its settings back when it was picked again.
+ *  - `fc-step2-go-snap-{tab}-{slug}` — the Step 2 snapshot fcCaptureStep2GateOnlySnapshot() takes
+ *    when you switch away from a style with Gate ONLY on. fencingStyleItem() replays it the moment
+ *    you return to that style, so after a reset the whole of Step 2 — slat size, gap, height,
+ *    overall length — came straight back on the next click of that fence.
+ */
+function fcRemoveTabStyleState(tab) {
+    var prefixes = ['custom_fence-' + tab + '-', 'fc-step2-go-snap-' + tab + '-'];
+    for (var k = localStorage.length - 1; k >= 0; k--) {
+        var key = localStorage.key(k);
+        if (!key) {
+            continue;
+        }
+        for (var p = 0; p < prefixes.length; p++) {
+            if (key.indexOf(prefixes[p]) === 0) {
+                localStorage.removeItem(key);
+                break;
+            }
+        }
+    }
+}
+
+/**
+ * Reset cleared the length box's value and nothing else, so the style's own fields (slat size/gap,
+ * max_fence_height) stayed filled behind the faded step, and data-last / data-prev-gate-only-mbn
+ * survived to be written into whichever style was picked next — a brand new style's
+ * measurementByStyle came back carrying the reset section's dataLast. Gate ONLY also left the
+ * length field readonly, which nothing downstream undoes.
+ */
+function fcClearStep2ForReset() {
+    var $section = $('[data-section="2"]');
+    var $box = $(FENCES.el.measurementBoxNumber);
+
+    $box.val('').removeAttr('data-last').removeAttr('data-prev-gate-only-mbn');
+
+    $section
+        .find('.step-2_field, .fc-step2-height-slot, .fc-step2-pair-slot, .fc-step2-slat-select-row')
+        .find('input, select')
+        .each(function() {
+            if (this.type === 'checkbox' || this.type === 'radio') {
+                this.checked = false;
+            } else {
+                $(this).val('');
+            }
+        });
+
+    $('.select-gate_only_step2')
+        .removeClass('fc-selected')
+        .find('[name="gate_only_step2"]')
+        .prop('checked', false);
+
+    $section.find('.fc-input-msg').removeClass('fcim-show').html('');
+
+    if (typeof fcUnlockStep2OverallLengthField === 'function') {
+        fcUnlockStep2OverallLengthField();
+    }
+    try {
+        if (typeof updateGateOnly === 'function') {
+            updateGateOnly(false);
+        }
+        if (typeof checkGateOnly === 'function') {
+            checkGateOnly();
+        }
+    } catch (eGo) {}
+}
+
 function fcFenceResetAll(e) {
     e?.preventDefault();
 
-    var i = $('.fencing-style-item.fsi-selected').attr('data-slug'),
-        tab = $('.fencing-tab.fencing-tab-selected').index();
+    var tab = $('.fencing-tab.fencing-tab-selected').index();
 
     setTimeout(function() {
         $('.fsi-selected').removeClass('fsi-selected');
         $('.fencing-tab-selected').find('.ftm-measurement').html('');
         $('.fencing-tab-selected').find('.ftm-fence-style').empty().prop('hidden', true).hide();
         $('.fc-tab-title, .fc-tab-subtitle').html('');
-        $('.measurement-box-number').val('');
+        fcClearStep2ForReset();
 
         localStorage.removeItem('custom_fence-' + tab);
-        localStorage.removeItem('custom_fence-' + tab + '-' + i);
+        fcRemoveTabStyleState(tab);
+        // Clearing storage is not enough on a saved quote: the page rehydrates from the session /
+        // wp_planners row on every load, so without this the fence is back after a refresh.
+        if (typeof fcPlannerMarkSectionCleared === 'function') {
+            fcPlannerMarkSectionCleared(tab);
+        }
 
         $('.js-fc-form-step').fadeOut('fast');
         $('.fc-fence-reset-all').hide();
@@ -1889,6 +1990,21 @@ function fencingBtnModal(event) {
         _this.hasClass('fc-panel-control--gate-only-disabled')
     ) {
         event?.preventDefault?.();
+        return false;
+    }
+
+    /* Create Project Plan is no longer held disabled, so its colour rules are answered here - the
+       bail above is where they used to be answered, and this is still ahead of both FCModal.open
+       and getSelectedFenceData(), which has no fence to return on an empty planner.
+       stopImmediatePropagation because fcBtnCreatePlan is bound to the same click further down this
+       file and would otherwise go on to set up the wizard's first pane behind a closed modal. */
+    if (
+        _this.hasClass('fc-btn-create-plan') &&
+        typeof fcValidatePlannerStep4Colors === 'function' &&
+        !fcValidatePlannerStep4Colors()
+    ) {
+        event?.preventDefault?.();
+        event?.stopImmediatePropagation?.();
         return false;
     }
 
@@ -3394,8 +3510,8 @@ function fcSelectColor() {
     }
     update_color_options();
     try {
-        if (typeof fcApplyPlannerUpdateDisabledFromColors === 'function') {
-            fcApplyPlannerUpdateDisabledFromColors();
+        if (typeof fcRefreshPlannerStep4ColorValidation === 'function') {
+            fcRefreshPlannerStep4ColorValidation();
         }
     } catch (err) {}
 }
@@ -3534,8 +3650,8 @@ function fcBtnStep(e) {
                     window.fcRefreshColorOptionsSlick();
                 }
                 try {
-                    if (typeof fcApplyPlannerUpdateDisabledFromColors === 'function') {
-                        fcApplyPlannerUpdateDisabledFromColors();
+                    if (typeof fcRefreshPlannerStep4ColorValidation === 'function') {
+                        fcRefreshPlannerStep4ColorValidation();
                     }
                 } catch (err) {}
             }, 120);
@@ -3624,13 +3740,9 @@ function fcFormCheck_input() {
 _doc.on('click', '[name="color_options"]', color_options);
 
 function color_options() {
-    var $scope = $('#fc-planning-form .fc-step-4');
-    var $groups = $scope.find('.fc-color-options');
-    var complete = $groups.length > 0 && fcPlannerColorOptionGroupsComplete($scope);
-    $('.fc-btn-create-plan').prop('disabled', !complete);
     try {
-        if (typeof fcApplyPlannerUpdateDisabledFromColors === 'function') {
-            fcApplyPlannerUpdateDisabledFromColors();
+        if (typeof fcRefreshPlannerStep4ColorValidation === 'function') {
+            fcRefreshPlannerStep4ColorValidation();
         }
     } catch (err) {}
 }
@@ -3640,6 +3752,8 @@ function color_options() {
 _doc.on('click', '.fc-btn-create-plan', fcBtnCreatePlan);
 
 function fcBtnCreatePlan() {
+    // Colours are gated in fencingBtnModal, which runs first on this same click and stops the rest.
+
     // Push param in URL tab={tab}
     history.pushState({}, '', `?tab=2&form=1`);
 

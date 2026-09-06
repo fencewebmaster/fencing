@@ -61,6 +61,12 @@ final class SettingsPresenter
         }
         unset($ppItem);
         $projectPlanDefaults = is_array($projectPlanPayload['defaults'] ?? null) ? $projectPlanPayload['defaults'] : [];
+        $projectPlanStock = is_array($projectPlanPayload['stock'] ?? null)
+            ? $projectPlanPayload['stock']
+            : PlannerOptionSettings::stockDefaults();
+        $projectPlanStockDefaults = is_array($projectPlanPayload['stockDefaults'] ?? null)
+            ? $projectPlanPayload['stockDefaults']
+            : PlannerOptionSettings::stockDefaults();
         $consolePayload = ConsoleSettings::apiPayload();
         $console = is_array($consolePayload['console'] ?? null)
             ? $consolePayload['console']
@@ -110,6 +116,8 @@ final class SettingsPresenter
                 : [],
             'projectPlanItems' => $projectPlanItems,
             'projectPlanDefaults' => $projectPlanDefaults,
+            'projectPlanStock' => $projectPlanStock,
+            'projectPlanStockDefaults' => $projectPlanStockDefaults,
             'console' => $console,
             'consoleDefaults' => $consolePayload['defaults'] ?? ConsoleSettings::defaults(),
             'csrf' => AuthService::csrfToken(),
@@ -256,6 +264,9 @@ final class SettingsPresenter
                 ? $integrationsPayload['superAdmin']
                 : [],
             'project_plan_items' => $projectPlanItems,
+            'project_plan_stock' => $projectPlanStock,
+            'project_plan_stock_hours_min' => PlannerOptionSettings::ORDER_WITHIN_HOURS_MIN,
+            'project_plan_stock_hours_max' => PlannerOptionSettings::ORDER_WITHIN_HOURS_MAX,
             'console' => $console,
             'panel_class' => [
                 'theme' => $initialTab === 'theme' ? '' : 'hidden ',

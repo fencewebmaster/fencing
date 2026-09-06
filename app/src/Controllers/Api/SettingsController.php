@@ -255,6 +255,18 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
+            // Stock & Delivery rides along with the item list: one tab, one Save button. Optional
+            // so an older client (or the import path) posting only `items` keeps working.
+            if (isset($payload['stock']) && is_array($payload['stock'])) {
+                $stockResult = PlannerOptionSettings::saveStock($payload['stock']);
+                if (empty($stockResult['ok'])) {
+                    http_response_code(400);
+                    echo json_encode($stockResult, JSON_UNESCAPED_UNICODE);
+                    return;
+                }
+                $result['stock'] = $stockResult['stock'];
+            }
+
             $result['message'] = 'Project Plan settings saved.';
             echo json_encode($result, JSON_UNESCAPED_UNICODE);
             return;
@@ -498,6 +510,7 @@ final class SettingsController extends BaseApiController
             'system'       => SystemSettings::get(),
             'integrations' => IntegrationsSettings::get(),
             'projectPlan'  => PlannerOptionSettings::extraItems(),
+            'projectPlanStock' => PlannerOptionSettings::stock(),
             'console'      => ConsoleSettings::get(),
         ];
 

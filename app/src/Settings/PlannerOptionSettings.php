@@ -248,8 +248,138 @@ final class PlannerOptionSettings
         return ['ok' => true, 'extraItems' => self::extraItems()];
     }
 
+    /** Widest countdown the admin can set, in hours — a week. */
+    public const ORDER_WITHIN_HOURS_MIN = 1;
+    public const ORDER_WITHIN_HOURS_MAX = 168;
+
     /**
-     * @return array{ok:bool,extraItems:list<array{slug:string,label:string,image:string,imageDefault:string}>,defaults:list<array{slug:string,label:string,image:string}>,updatedAt?:string|null}
+     * Stock & Delivery panel on the project plan (frontend/project-plan/item-list-cart.php):
+     * whether the Low Stock Warning and the ORDER WITHIN countdown are shown, the warning's own
+     * copy, and how long the countdown runs. All of it used to be hard-coded markup (and a
+     * hard-coded 3 hours in p2.js), so a site that does not run low on stock — or wants a
+     * different reservation window — had no way to change it.
+     *
+     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int}
+     */
+    public static function stockDefaults(): array
+    {
+        return [
+            'lowStockEnabled' => true,
+            'lowStockHtml' => '<p>Some items have limited stock available.</p>'
+                . '<p>Your cart can only be reserved for a limited time. After that, the items will be'
+                . ' released for other customers.</p>',
+            'orderWithinEnabled' => true,
+            'orderWithinHours' => 3,
+        ];
+    }
+
+    /**
+     * Saved Stock & Delivery settings, defaults filled in for anything never written.
+     *
+     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int}
+     */
+    public static function stock(): array
+    {
+        return self::normalizeStock(ThemeSettings::section('projectPlanStock'));
+    }
+
+    /**
+     * The whitelist, not stockDefaults() — a key missing from the literal returned here is
+     * dropped on every read and write (see the settings notes in CLAUDE.md).
+     *
+     * @param array<string, mixed> $input
+     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int}
+     */
+    public static function normalizeStock(array $input): array
+    {
+        $defaults = self::stockDefaults();
+
+        $html = array_key_exists('lowStockHtml', $input)
+            ? self::sanitizeRichHtml((string) $input['lowStockHtml'])
+            : $defaults['lowStockHtml'];
+
+        // A blank or non-numeric box means "leave it alone" rather than a zero-length countdown,
+        // which would expire the moment the page painted.
+        $hours = $defaults['orderWithinHours'];
+        if (array_key_exists('orderWithinHours', $input) && is_numeric($input['orderWithinHours'])) {
+            $hours = max(
+                self::ORDER_WITHIN_HOURS_MIN,
+                min(self::ORDER_WITHIN_HOURS_MAX, (int) $input['orderWithinHours'])
+            );
+        }
+
+        return [
+            'lowStockEnabled' => array_key_exists('lowStockEnabled', $input)
+                ? self::toBool($input['lowStockEnabled'])
+                : $defaults['lowStockEnabled'],
+            'lowStockHtml' => $html,
+            'orderWithinEnabled' => array_key_exists('orderWithinEnabled', $input)
+                ? self::toBool($input['orderWithinEnabled'])
+                : $defaults['orderWithinEnabled'],
+            'orderWithinHours' => $hours,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $input
+     * @return array{ok:bool,stock?:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int},error?:string}
+     */
+    public static function saveStock(array $input): array
+    {
+        $normalized = self::normalizeStock($input);
+
+        $result = ThemeSettings::writeSection('projectPlanStock', $normalized);
+        if (!$result['ok']) {
+            return $result;
+        }
+
+        return ['ok' => true, 'stock' => $normalized];
+    }
+
+    /**
+     * Checkbox values arrive as JSON true/false from the admin, but an imported settings file
+     * can carry "1"/"0"/"true" — take all of them rather than silently reading a string as true.
+     */
+    private static function toBool(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            return !in_array(strtolower(trim($value)), ['', '0', 'false', 'off', 'no'], true);
+        }
+
+        return (bool) $value;
+    }
+
+    /**
+     * The Low Stock copy comes from a TinyMCE field, so it is HTML by design and cannot be
+     * escaped on output. Strip what an editor never needs to emit: script/style/iframe bodies,
+     * every on* handler, and javascript: URLs. Admin-authored either way, but the field is
+     * reachable by any role with settings access, and the output lands on a customer page.
+     */
+    private static function sanitizeRichHtml(string $html): string
+    {
+        $html = trim($html);
+        if ($html === '') {
+            return '';
+        }
+        if (mb_strlen($html) > 20000) {
+            $html = mb_substr($html, 0, 20000);
+        }
+
+        // Tag plus contents: leaving the body behind would dump raw JS/CSS text onto the page.
+        $html = preg_replace('#<(script|style|iframe|object|embed)\b[^>]*>.*?</\1\s*>#is', '', $html) ?? '';
+        // ...and an unclosed one, which the regex above cannot see.
+        $html = preg_replace('#<(script|style|iframe|object|embed)\b[^>]*>#i', '', $html) ?? '';
+        $html = preg_replace('#\son[a-z-]+\s*=\s*("[^"]*"|\x27[^\x27]*\x27|[^\s>]+)#i', '', $html) ?? '';
+        $html = preg_replace('#(href|src)\s*=\s*("|\x27)\s*javascript:[^"\x27]*("|\x27)#i', '$1="#"', $html) ?? '';
+
+        return trim($html);
+    }
+
+    /**
+     * @return array{ok:bool,extraItems:list<array{slug:string,label:string,image:string,imageDefault:string}>,defaults:list<array{slug:string,label:string,image:string}>,stock:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int},stockDefaults:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int},updatedAt?:string|null}
      */
     public static function apiPayload(): array
     {
@@ -257,6 +387,8 @@ final class PlannerOptionSettings
             'ok' => true,
             'extraItems' => self::extraItems(),
             'defaults' => self::defaultExtraItems(),
+            'stock' => self::stock(),
+            'stockDefaults' => self::stockDefaults(),
             'updatedAt' => ThemeSettings::updatedAt(),
         ];
     }

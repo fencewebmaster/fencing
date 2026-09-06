@@ -631,6 +631,10 @@
         if (tabId === 'system') {
             global.FC.Settings.tabs.system.paint();
         }
+        if (tabId === 'project-plan') {
+            // The Low Stock editor could not size itself while this panel was hidden.
+            global.FC.Settings.tabs.projectPlan.mountEditor();
+        }
     }
 
     function bindSettingsShell() {
@@ -695,6 +699,8 @@
 
         state.projectPlanItems = global.FC.Settings.tabs.projectPlan.clone(data.projectPlanItems || []);
         state.projectPlanItemsDefaults = global.FC.Settings.tabs.projectPlan.clone(data.projectPlanDefaults || []);
+        state.projectPlanStock = Object.assign({}, data.projectPlanStock || {});
+        state.projectPlanStockDefaults = Object.assign({}, data.projectPlanStockDefaults || {});
 
         state.console = Object.assign(
             { debugMode: false },

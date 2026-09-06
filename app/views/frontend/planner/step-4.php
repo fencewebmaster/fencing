@@ -74,7 +74,7 @@
                     <div class="d-flex flex-wrap align-items-stretch gap-2 fc-step4-bottom-btns">
                         <?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>
                         <div class="flex-shrink-0 d-flex order-2">
-                            <button type="submit" class="btn btn-orange fc-btn-update py-3 px-3 px-sm-4 text-uppercase align-self-stretch fc-step4-btn-update" disabled>
+                            <button type="submit" class="btn btn-orange fc-btn-update py-3 px-3 px-sm-4 text-uppercase align-self-stretch fc-step4-btn-update">
                                 <b>UPDATE <i class="fa-solid fa-angle-right mx-2"></i> <span class="fc-btn-step-target">Go to Project Plan &amp; Cart</span></b>
                             </button>
                         </div>
@@ -83,8 +83,7 @@
                             <?php $fc_step4_plan_btn_outline = @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name']; ?>
                             <button type="button"
                                 class="btn <?php echo $fc_step4_plan_btn_outline ? 'btn-orange-outline' : 'btn-orange'; ?> fc-btn-create-plan fencing-btn-modal h-100 py-3 px-3 px-sm-4 text-uppercase align-self-stretch"
-                                data-target="#submit-modal"
-                                disabled>
+                                data-target="#submit-modal">
                                 <b><?php if( @$_SESSION['planner_id'] && @$_SESSION['fc_data']['name'] ): ?>Update Details<?php else: ?>Create Project Plan<?php endif; ?> <i class="fa-solid fa-angle-right mx-2"></i> <span class="fc-btn-step-target">Your Details and Timeframe</span></b>
                             </button>
                         </div>

@@ -341,10 +341,24 @@ let Planner = {
             fullLocalSnap = fcCapturePlannerFenceCartStorageSnapshot();
         }
 
+        /**
+         * Sections the user reset. Unlike a delete these leave the section count alone, so
+         * structureDrift never fires for them and the server row below would put the fence straight
+         * back on the next load.
+         */
+        var clearedSections =
+            !qidFromUrl && typeof fcPlannerPruneClearedSections === 'function'
+                ? fcPlannerPruneClearedSections()
+                : [];
+
         $(custom_fence_items).each(function(k, v) {
 
             v.form[0].style = v.form[0].style;
             v.form[0].tab = v.form[0].tab - 1;
+
+            if (clearedSections.indexOf(v.form[0].tab) !== -1) {
+                return;
+            }
 
             localStorage.setItem('custom_fence-' + v.form[0].tab, JSON.stringify(v.form));
 

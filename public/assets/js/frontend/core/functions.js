@@ -999,6 +999,31 @@ function fcReindexPlannerStorageAfterSectionDelete(deletedTabIndex0) {
 
     fcRenameCartFlatKeysAfterSectionDelete(d);
     fcRenameCartSlugBucketsAfterSectionDelete(d);
+    fcPlannerReindexClearedSectionsAfterDelete(d);
+}
+
+/**
+ * The reset markers are section indices, so a delete has to shift them with everything else —
+ * otherwise the marker points at whichever section moved down into that slot and suppresses the
+ * server row for a section the user never reset.
+ */
+function fcPlannerReindexClearedSectionsAfterDelete(deletedTabIndex0) {
+    var d = parseInt(deletedTabIndex0, 10);
+    if (!Number.isFinite(d) || d < 0) {
+        return;
+    }
+    var list = fcPlannerClearedSections();
+    if (!list.length) {
+        return;
+    }
+    var shifted = [];
+    list.forEach(function(tab) {
+        if (tab === d) {
+            return;
+        }
+        shifted.push(tab > d ? tab - 1 : tab);
+    });
+    fcPlannerWriteClearedSections(shifted);
 }
 
 //----------------------------------------------------------------------------------
@@ -1472,21 +1497,21 @@ function fcStaggerGlassPoolAdjacentGapLabels($fc) {
 }
 
 /**
- * Glass pool: the solver's gap is rarely a whole number - 37.2857mm, 23.25mm - but every gap label
- * is drawn as an integer. Printing the same rounded figure on all of them throws away up to half a
- * millimetre per gap, so a long run visibly fails to add up to the length that was ordered. Spread
- * the difference instead: most gaps keep the floor value and a few carry one extra millimetre,
- * placed evenly along the run rather than bunched at one end.
+ * Glass pool: the solver's gap is rarely a whole number - 37.5mm, 23.25mm - but every gap label is
+ * drawn as an integer. This used to spread the remainder along the run (37,38,37,38 over a 150mm
+ * span) so the labels summed to the ordered length exactly.
  *
- * This lands exactly, never approximately. Panels, gate, hinge panel and clamps are all whole
- * millimetres, and the solver reconciles the run to a whole-millimetre overall length, so whatever
- * the gaps have to account for is itself a whole number of millimetres - which is precisely what
- * gets handed out below.
+ * The uniform figure is what the owner asked for instead: a run is set out on site to one spacing,
+ * so reading two different numbers off the same drawing is what people query. The trade-off is
+ * deliberate and known - four gaps labelled 38 describe 152mm where the run really has 150mm, so on
+ * a long run the labels no longer add up to the overall length. The drawn widths are unchanged; it
+ * is only the printed figure that is now uniform.
  *
- * Gate hinge/latch gaps and fixed end clamps are left alone: those are fixed hardware dimensions,
- * not the solver's to redistribute.
+ * Fixed hardware gaps (clamps, the gate's own hinge/latch spacings) are excluded - they are not the
+ * solver's to size. So are the two run ends, which a later '(nn)' side-spacing write in z_fence/p2
+ * owns; they already print the same rounded figure.
  */
-function fcDistributeGlassPoolGapRounding($fc, exactSpacingMm) {
+function fcApplyGlassPoolUniformGapLabels($fc, exactSpacingMm) {
     if (!$fc || !$fc.length) {
         return;
     }
@@ -1496,35 +1521,19 @@ function fcDistributeGlassPoolGapRounding($fc, exactSpacingMm) {
         return;
     }
 
-    // Every gap the solver sized: fixed clamps and the gate's own hinge/latch gaps are excluded,
-    // being hardware dimensions rather than anything the solver gets to choose.
     var $solverGaps = $fc.find('.fencing-panel-spacing-number').not('.PTP90, .PTPA, .PTW, .near-gate');
-    var solverCount = $solverGaps.length;
-    if (!solverCount) {
+    if (!$solverGaps.length) {
         return;
     }
 
-    // A run that ends in an open gap has that end re-labelled with the rounded figure further down
-    // the render (see the '(nn)' side-spacing write in z_fence/p2). Those two are not ours to set,
-    // so leave them be and let the interior gaps carry their rounding error as well as their own.
-    var $endGaps = $solverGaps.filter('.left-panel-post, .right-panel-post');
-    var $innerGaps = $solverGaps.not($endGaps);
-    var innerCount = $innerGaps.length;
-    if (!innerCount) {
-        return; // nothing left to absorb the difference - better to leave the labels alone
+    var $innerGaps = $solverGaps.not('.left-panel-post, .right-panel-post');
+    if (!$innerGaps.length) {
+        return;
     }
 
-    // What every solver-sized gap must add up to, less what the end labels already commit to.
-    var totalMm = Math.round(solverCount * gap) - $endGaps.length * Math.round(gap);
-    var base = Math.floor(totalMm / innerCount);
-    var extra = totalMm - base * innerCount; // whole millimetres left to place
-    if (base <= 0 || extra < 0 || extra >= innerCount) {
-        return; // not a shape this was written for - leave the labels as the renderer set them
-    }
-
-    $innerGaps.each(function(i) {
-        var bump = Math.floor(((i + 1) * extra) / innerCount) - Math.floor((i * extra) / innerCount);
-        $(this).find('span:not(.fs-clamp)').html(String(base + bump));
+    var label = String(Math.round(gap));
+    $innerGaps.each(function() {
+        $(this).find('span:not(.fs-clamp)').html(label);
     });
 }
 
@@ -1541,8 +1550,8 @@ function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab, exactSpacingMm) {
     fcEnsureGlassPoolHingeGateGapLabel($fc, tab);
     fcApplyGlassPoolPanelSpacingWidths(tab, spacingMm, $fc);
     fcNormalizeGlassPoolGateAdjacentPosts($fc);
-    // After the gate/hinge labels are settled, so their fixed gaps are excluded from the spread.
-    fcDistributeGlassPoolGapRounding($fc, exactSpacingMm != null ? exactSpacingMm : spacingMm);
+    // After the gate/hinge labels are settled, so their fixed gaps keep their own figures.
+    fcApplyGlassPoolUniformGapLabels($fc, exactSpacingMm != null ? exactSpacingMm : spacingMm);
     fcStaggerGlassPoolAdjacentGapLabels($fc);
 }
 
@@ -3076,7 +3085,8 @@ function fcCapturePlannerUpdateFenceBaseline() {
 }
 
 /**
- * Keep UPDATE column visible; enable/disable is driven only by colour completeness (see fcApplyPlannerUpdateDisabledFromColors).
+ * Keep UPDATE column visible; the colour rules are enforced on click now
+ * (see fcRefreshPlannerStep4ColorValidation), not by holding the button disabled.
  * Previously hid the column when fence snapshot diverged from baseline, which blocked colour-based enable on tab=2.
  */
 function fcSyncPlannerUpdateButtonVisibility() {
@@ -3085,7 +3095,7 @@ function fcSyncPlannerUpdateButtonVisibility() {
         return;
     }
     $btn.closest('.col-lg-auto').removeClass('fc-d-none');
-    fcApplyPlannerUpdateDisabledFromColors();
+    fcRefreshPlannerStep4ColorValidation();
 }
 
 /**
@@ -3213,25 +3223,117 @@ function fcSyncPlannerStep4ColorRowMarkers($scope) {
     });
 }
 
+/* A disabled UPDATE / Create Project Plan named nothing that was missing - the only clue was the
+   small orange chip on a card that may be scrolled off. Both buttons stay live now and answer on
+   click, the way Download Your Project Plans does: jQuery Validate's own `label.error` pill is
+   raised on the group that is unanswered. */
+var FC_STEP4_COLOR_ERROR_MESSAGE = 'Please select a colour.';
+var FC_STEP4_NO_SECTIONS_ERROR_MESSAGE = 'Please add a fence section first.';
+
+/** Scope to .fc-step-4 only: #submit-modal lives inside #fc-planning-form and duplicates .fc-color-options. */
+function fcPlannerStep4Scope() {
+    return $('#fc-planning-form .fc-step-4');
+}
+
+function fcClearPlannerStep4ColorValidation($scope) {
+    if (!$scope || !$scope.length) {
+        return;
+    }
+    $scope.find('label.error.fc-step4-error').remove();
+    $scope.find('.fc-planner-color-options-row--invalid').removeClass('fc-planner-color-options-row--invalid');
+}
+
 /**
- * Step 4 (tab=2): disable UPDATE until every planner colour row has a selection (same rule as Create / Update Project Plan).
- * Scope to .fc-step-4 only: #submit-modal also lives inside #fc-planning-form and duplicates .fc-color-options,
- * which inflated `total` and kept UPDATE disabled when only Step 4 rows were complete.
+ * Raise the pill on every colour row still unanswered - and on the empty step, which has no row to
+ * hang one off. Returns the element to scroll to, or null when there is nowhere to put a message.
  */
-function fcApplyPlannerUpdateDisabledFromColors() {
-    var $scope = $('#fc-planning-form .fc-step-4');
+function fcShowPlannerStep4ColorValidation($scope) {
+    fcClearPlannerStep4ColorValidation($scope);
+
+    var $groups = $scope.find('.fc-color-options');
+    if (!$groups.length) {
+        var $wrap = $scope.find('.fc-planner-color-options-wrap').first();
+        if (!$wrap.length) {
+            return null;
+        }
+        $wrap.append(
+            $('<label>', { class: 'error fc-step4-error fc-step4-error--empty' })
+                .text(FC_STEP4_NO_SECTIONS_ERROR_MESSAGE)
+        );
+        return $wrap;
+    }
+
+    var $first = null;
+    $groups.each(function() {
+        var $g = $(this);
+        // Slick `infinite` clones copy .fc-selected, so an unanswered row still counts > 0 unless
+        // the clones are dropped first - the filter fcPlannerColorOptionGroupsComplete uses.
+        var n = $g
+            .find('.fc-select-item.fc-selected')
+            .filter(function() {
+                return $(this).closest('.slick-cloned').length === 0;
+            }).length;
+        if (n >= 1) {
+            return;
+        }
+        var $card = $g.closest('.fc-card');
+        // On the card body, not the card: the dark header already carries the status chip and the
+        // section count, and a pill straddling that corner would land on top of them.
+        var $host = $card.length ? $card.find('.fc-card-body').first() : $g;
+        if (!$host.length) {
+            $host = $g;
+        }
+        $card.addClass('fc-planner-color-options-row--invalid');
+        $host.append(
+            $('<label>', { class: 'error fc-step4-error' }).text(FC_STEP4_COLOR_ERROR_MESSAGE)
+        );
+        if (!$first) {
+            $first = $card.length ? $card : $g;
+        }
+    });
+    return $first;
+}
+
+/**
+ * Step 4 (tab=2) gate for UPDATE / Create Project Plan. Paints the pills and walks the page to the
+ * first offender when something is missing; clears them and returns true when the step is answered.
+ */
+function fcValidatePlannerStep4Colors() {
+    var $scope = fcPlannerStep4Scope();
+    if (!$scope.length) {
+        return true;
+    }
     fcSyncPlannerStep4ColorRowMarkers($scope);
 
-    var $btn = $('#fc-planning-form .fc-btn-update');
-    if (!$btn.length) {
+    if ($scope.find('.fc-color-options').length && fcPlannerColorOptionGroupsComplete($scope)) {
+        fcClearPlannerStep4ColorValidation($scope);
+        return true;
+    }
+
+    var $target = fcShowPlannerStep4ColorValidation($scope);
+    if ($target && $target.length) {
+        $target.scrollTo(300, 110);
+    }
+    return false;
+}
+
+/**
+ * Keep the Step 4 markers in step with the colour rows, and retire a pill the moment its row is
+ * answered. Only once a message exists - so a first tick never raises one on a customer who has not
+ * asked to move on yet, the rule the Anything Else group already follows.
+ */
+function fcRefreshPlannerStep4ColorValidation() {
+    var $scope = fcPlannerStep4Scope();
+    fcSyncPlannerStep4ColorRowMarkers($scope);
+
+    if (!$scope.length || !$scope.find('label.error.fc-step4-error').length) {
         return;
     }
-    var $groups = $scope.find('.fc-color-options');
-    if ($groups.length === 0) {
-        $btn.prop('disabled', true);
+    if ($scope.find('.fc-color-options').length && fcPlannerColorOptionGroupsComplete($scope)) {
+        fcClearPlannerStep4ColorValidation($scope);
         return;
     }
-    $btn.prop('disabled', !fcPlannerColorOptionGroupsComplete($scope));
+    fcShowPlannerStep4ColorValidation($scope);
 }
 
 /** `custom_fence-{tab}-{style}` payload; tries canonical key then legacy `slat_fence`. */
@@ -4320,6 +4422,83 @@ function readPlannerSectionSettingsBlob(tabIdx0, styleSlug) {
  * Used by planner `reloadFencingData` to snapshot segment JSON before PHP session merge overwrites it
  * (post options, sides, gate, etc. all live in these blobs — not only in `custom_fence-{tab}`).
  */
+/**
+ * Sections emptied by Reset. Deleting a section changes the section count, which reloadFencingData()
+ * reads as structure drift and lets local storage win — a reset leaves the count alone, so the
+ * session/quote rows for that tab merged straight back in and the fence returned on reload. This is
+ * the marker that tells the merge the emptiness was deliberate.
+ *
+ * Top-level key on purpose: `custom_fence-{n}-…` is the per-style segment namespace, which
+ * fcRemoveTabStyleSegments() purges and fcPlannerListCustomFenceSegmentBlobKeys() enumerates.
+ */
+var FC_PLANNER_CLEARED_SECTIONS_KEY = 'custom_fence-cleared';
+
+function fcPlannerClearedSections() {
+    try {
+        var raw = localStorage.getItem(FC_PLANNER_CLEARED_SECTIONS_KEY);
+        var list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list.filter(function(n) { return Number.isFinite(n); }) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function fcPlannerWriteClearedSections(list) {
+    try {
+        if (!list || !list.length) {
+            localStorage.removeItem(FC_PLANNER_CLEARED_SECTIONS_KEY);
+            return;
+        }
+        localStorage.setItem(FC_PLANNER_CLEARED_SECTIONS_KEY, JSON.stringify(list));
+    } catch (e) {}
+}
+
+function fcPlannerMarkSectionCleared(tab) {
+    tab = parseInt(tab, 10);
+    if (!Number.isFinite(tab) || tab < 0) {
+        return;
+    }
+    var list = fcPlannerClearedSections();
+    if (list.indexOf(tab) === -1) {
+        list.push(tab);
+        fcPlannerWriteClearedSections(list);
+    }
+}
+
+/**
+ * Drop the marker once the tab carries real Step 2 data again — a style pick on its own is not
+ * enough, or the very next merge would overwrite the half-built section with the old server row.
+ */
+function fcPlannerPruneClearedSections() {
+    var list = fcPlannerClearedSections();
+    if (!list.length) {
+        return list;
+    }
+    var kept = list.filter(function(tab) {
+        try {
+            var raw = localStorage.getItem('custom_fence-' + tab);
+            if (!raw) {
+                return true;
+            }
+            var row = JSON.parse(raw);
+            var r0 = row && row[0];
+            if (!r0) {
+                return true;
+            }
+            var rebuilt =
+                (r0.calculateValue != null && r0.calculateValue !== '') ||
+                (typeof fcHasMeaningfulStep2TabRow === 'function' && fcHasMeaningfulStep2TabRow(r0));
+            return !rebuilt;
+        } catch (e) {
+            return true;
+        }
+    });
+    if (kept.length !== list.length) {
+        fcPlannerWriteClearedSections(kept);
+    }
+    return kept;
+}
+
 function fcPlannerListCustomFenceSegmentBlobKeys() {
     var keys = [];
     try {
@@ -6289,11 +6468,6 @@ function loadColorOptions() {
 
         colorOption.html('');
 
-        $('.fc-btn-create-plan').prop('disabled', true);
-        if (typeof fcApplyPlannerUpdateDisabledFromColors === 'function') {
-            fcApplyPlannerUpdateDisabledFromColors();
-        }
-
         $.each(items, function(k, v) {
             if (v) {
                 var slug = fc_data[v].slug,
@@ -6341,20 +6515,14 @@ function loadColorOptions() {
                 }
                 $('#fc-planning-form .fc-color-options[data-slug="' + v.fence + '"] .fc-select-item[data-slug="' + v.color + '"]').addClass('fc-selected');
             });
-
-            var $plannerStep4 = $('#fc-planning-form .fc-step-4');
-            if ($plannerStep4.find('.fc-color-options').length && fcPlannerColorOptionGroupsComplete($plannerStep4)) {
-                $('.fc-btn-create-plan').prop('disabled', false);
-            }
-
         }
 
         // Panel options can rule colours out (e.g. Full Size Panels 3000W is black only), so this
         // runs after the style's own colour list is built and before the reveal.
         fcApplyPanelOptionColorRestrictions(colorOption);
 
-        if (typeof fcApplyPlannerUpdateDisabledFromColors === 'function') {
-            fcApplyPlannerUpdateDisabledFromColors();
+        if (typeof fcRefreshPlannerStep4ColorValidation === 'function') {
+            fcRefreshPlannerStep4ColorValidation();
         }
 
         if (hasSkeleton) {

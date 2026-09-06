@@ -755,6 +755,33 @@ html:has(body.fc-planner-page) {
     color: rgba(255, 255, 255, 0.6);
 }
 
+/* Step 4 answers its colour rules on click now rather than by holding UPDATE / Create Project Plan
+   disabled, so a failed row gets what a failed field gets in Download Your Project Plans: the red
+   edge, and label.error's own pill straddling the group's top corner. The group is the card body,
+   which the pill hangs off (style-v2.css already positions it) - so it straddles the seam under the
+   dark header rather than the header itself, where the status chip and section count already sit.
+   .fc-step-4 .fencing-section is overflow:visible, so nothing clips it. */
+.fc-planner-page .fc-step-4 .fc-planner-color-options-row--invalid .fc-card-header,
+.fc-planner-page .fc-step-4 .fc-planner-color-options-row--invalid .fc-card-body {
+    border-color: var(--fc-alizarin);
+}
+
+.fc-planner-page .fc-step-4 label.error.fc-step4-error {
+    top: -11px;
+    right: 10px;
+    white-space: nowrap;
+}
+
+/* An empty planner has no row to hang a pill off, so it goes on the wrap - a zero-height grid cell,
+   which is why this one flows instead of taking a corner. */
+.fc-planner-page .fc-step-4 label.error.fc-step4-error--empty {
+    position: static;
+    display: inline-block;
+    /* Grid stretches an item to its column, which turned the pill into a full-width slab. */
+    justify-self: start;
+    margin-top: 4px;
+}
+
 /* Section count keeps its pill but takes the step subtitle's type; stays white for the dark header. */
 .fc-planner-page [data-load="color-options"] .fc-color-options-section-count {
     margin-left: auto;

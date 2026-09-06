@@ -1,4 +1,15 @@
 													
+<?php
+/**
+ * Project plan — item list + cart, and the Stock & Delivery panel beside it.
+ *
+ * @var array $fc_pp_stock Stock & Delivery settings (Settings -> Project Plan).
+ */
+
+use Fc\Admin\Settings\PlannerOptionSettings;
+
+$fc_pp_stock = PlannerOptionSettings::stock();
+?>
 <!-- [START] PRODUCT LIST -->
 <div class="fc-cart-items">
 	<div class="fc-card">
@@ -103,24 +114,26 @@
 							    	</li>
 							    </ul>
 
+							    <?php if ( ! empty($fc_pp_stock['lowStockEnabled']) && trim((string) $fc_pp_stock['lowStockHtml']) !== '' ) : ?>
 							    <div class="alert alert-danger fc-step-2-alert fc-alert-gray--low-stock">
 							        <h3 class="fc-mb-1"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Low Stock Warning</h3>
-							        <p>Some items have limited stock available.</p>
-							        <p>
-							            Your cart can only be reserved for a limited time. After that, the items will be
-							            released for other customers.
-							        </p>
+							        <?php /* Authored in the settings WYSIWYG and sanitized on save by
+							                 PlannerOptionSettings::normalizeStock() - echoed as HTML by design. */ ?>
+							        <?php echo $fc_pp_stock['lowStockHtml']; ?>
 							    </div>
+							    <?php endif; ?>
 							</div>
 
 							<div style="clear: both;"></div>
 							
+							<?php if ( ! empty($fc_pp_stock['orderWithinEnabled']) ) : ?>
 							<div class="fc-cart-countdown mb-3">
 							    <p>
 							        <strong>ORDER WITHIN:</strong><br />
-							        <span id="fc-countdown-timer"></span>
+							        <span id="fc-countdown-timer" data-fc-countdown-hours="<?php echo e((string) ($fc_pp_stock['orderWithinHours'] ?? 3)); ?>"></span>
 							    </p>
 							</div>
+							<?php endif; ?>
 							
 							<div class="fc-stock-delivery-actions d-grid gap-2">
 								<button type="button" class="btn btn-lg fc-btn-download-fence btn-outline-dark text-uppercase w-100 fs-6 text" aria-label="Download project plans as PDF">
