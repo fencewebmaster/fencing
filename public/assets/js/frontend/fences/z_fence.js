@@ -290,6 +290,11 @@ FENCE = {
                     .replace(/{{panel_value}}/gi, panel_option_value)
                     .replace(/{{panel_unit}}/gi, 'HINGE<br>PANEL')
                     .replace(/{{panel_size_center}}/gi, panelSizeCenterW(panel_size))
+                    // The hinge panel template carries {{center_post}} twice, like panel_item and
+                    // short_panel_item below - it was the only one of the three not substituting it,
+                    // so the raw token sat in the markup until fcSyncPlannerStep3PanelEnds happened
+                    // to overwrite those spans on a later tick.
+                    .replace(/{{center_post}}/gi, tplCenterPoint)
                     .replace(/{{panel_number}}/gi, gate_hinge_panel_number);
 
                 $(FENCES.el.fencingPanelContainer).append(tpl);
@@ -310,6 +315,33 @@ FENCE = {
         const renderLongPanels = infillRenderPlan.renderLongPanels;
         const hiddenLongPanels = infillRenderPlan.hiddenLongPanels;
 
+        // Even panels: the run divides into a width that is rarely a whole millimetre, so printing
+        // one rounded width on every panel walks the fence past the length that was ordered - 7
+        // panels at 2086 make 15,002mm of a 15,000mm run. Spread the difference instead: most
+        // panels keep the whole-millimetre floor and a few carry one more, so the widths differ by
+        // at most a millimetre and the run lands exactly. Only the cut-down instruction on the
+        // diagram changes - the cart orders full stock panels either way, so nothing about the
+        // order or the price moves.
+        const longPanelExactW = Number(calc.long_panel.length_exact);
+        const spreadLongPanelW =
+            renderLongPanels > 0 &&
+            renderLongPanels === totalLongPanels &&
+            isFinite(longPanelExactW) &&
+            longPanelExactW > 0 &&
+            Math.abs(longPanelExactW - calc.long_panel.length) < 1;
+        const longPanelTotalW = spreadLongPanelW ? Math.round(renderLongPanels * longPanelExactW) : 0;
+        const longPanelBaseW = spreadLongPanelW ? Math.floor(longPanelTotalW / renderLongPanels) : 0;
+        const longPanelExtraW = spreadLongPanelW ? longPanelTotalW - longPanelBaseW * renderLongPanels : 0;
+        const longPanelWidthAt = function(idx) {
+            if (!spreadLongPanelW || longPanelBaseW <= 0) {
+                return calc.long_panel.length;
+            }
+            return longPanelBaseW + (
+                Math.floor(((idx + 1) * longPanelExtraW) / renderLongPanels) -
+                Math.floor((idx * longPanelExtraW) / renderLongPanels)
+            );
+        };
+
         for (let i = 0; i < renderLongPanels; i++) {
 
             mesurement = $(FENCES.el.measurementBoxNumber).val();
@@ -319,7 +351,7 @@ FENCE = {
                 var panel_number = i + gate_hinge_panel_number + 1;
             }
 
-                panel_size = calc.long_panel.length,
+                panel_size = longPanelWidthAt(i),
                 panel_unit = FENCES.defaultValues.unit,
                 data_key = "post_options";
 
@@ -1731,7 +1763,7 @@ FENCE = {
                         : $(FENCES.el.fencingPanelContainer).first();
 
                 if (typeof fcFinalizeGlassPoolPanelLayout === 'function') {
-                    fcFinalizeGlassPoolPanelLayout($glassFc, gaps, null);
+                    fcFinalizeGlassPoolPanelLayout($glassFc, gaps, null, calc.selected_values.spacing_exact);
                 } else {
                     if (typeof fcEnsureGlassPoolHingeAdjacentToGate === 'function') {
                         fcEnsureGlassPoolHingeAdjacentToGate($glassFc);
@@ -2240,7 +2272,7 @@ FENCE = {
             if (!$glassFcPlanner.length) {
                 $glassFcPlanner = $(FENCES.el.fencingPanelContainer).first();
             }
-            fcFinalizeGlassPoolPanelLayout($glassFcPlanner, calc.selected_values.spacing, tab);
+            fcFinalizeGlassPoolPanelLayout($glassFcPlanner, calc.selected_values.spacing, tab, calc.selected_values.spacing_exact);
         }
 
         if (typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(i)) {

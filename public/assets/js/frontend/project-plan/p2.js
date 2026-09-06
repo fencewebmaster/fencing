@@ -1338,7 +1338,7 @@ let ProjectPlan = {
                 }
 
                 if (typeof fcFinalizeGlassPoolPanelLayout === 'function') {
-                    fcFinalizeGlassPoolPanelLayout($ppFc, gaps, tab);
+                    fcFinalizeGlassPoolPanelLayout($ppFc, gaps, tab, calc.selected_values.spacing_exact);
                 } else {
                     if (typeof fcApplyGlassPoolPanelSpacingWidths === 'function') {
                         fcApplyGlassPoolPanelSpacingWidths(tab, gaps, $ppFc);
@@ -1491,7 +1491,7 @@ let ProjectPlan = {
         FENCE.call('load_post_options_first_last_values', custom_fence, info, tab, calc);
 
         if (info.slug === 'glass_pool' && typeof fcFinalizeGlassPoolPanelLayout === 'function') {
-            fcFinalizeGlassPoolPanelLayout($ppFc, calc.selected_values.spacing, tab);
+            fcFinalizeGlassPoolPanelLayout($ppFc, calc.selected_values.spacing, tab, calc.selected_values.spacing_exact);
         }
 
         if (typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(getSelectedFenceData()?.slug)) {

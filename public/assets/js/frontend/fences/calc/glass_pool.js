@@ -566,9 +566,15 @@ function _calculateGlassFencingInternal(config, leftEndGap, rightEndGap, leftDyn
         }
         const totalElements = numRegularPanels + numFixedElements + hingePanelAsPanel;
         let totalGapsCount = totalElements - 1;
-        // Add end gaps if left or right end attachments are present (size > 0 or dynamic)
-        if (leftDynamic || leftEndGap > 0) totalGapsCount++;
-        if (rightDynamic || rightEndGap > 0) totalGapsCount++;
+        // Only a DYNAMIC end takes a share of the leftover below. Its width is the solver's to
+        // choose, so it divides the remainder alongside the internal gaps. A fixed end (90deg,
+        // angled or wall clamp) is a known width: it has already been taken out of
+        // totalLengthForGaps and is drawn at its own size, so counting it here as well would hand
+        // it a second share and starve every real gap - the run then lands short of the ordered
+        // length by roughly one gap per fixed end. This matches findAllPossiblePanelLayouts'
+        // filter above, which has always counted dynamic ends only.
+        if (leftDynamic) totalGapsCount++;
+        if (rightDynamic) totalGapsCount++;
         // If gate and hinge are active, reduce 2 gaps (gate has its own left/right gaps)
         if (gate?.active && gate.hingePanelActive) totalGapsCount -= 2;
         else if (gate?.active) totalGapsCount -= 2;

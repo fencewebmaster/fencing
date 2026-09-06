@@ -173,6 +173,8 @@ class FenceCalculator {
         let full_panel_length = 0;
         let even_panel_count = 0;
         let even_panel_length = 0;
+        // Even panels before the width is rounded to a whole millimetre - see 'length_exact' below.
+        let long_panel_length_exact = 0;
         let long_panel_count = 0;
         let long_panel_length = 0;
         let offcut_panel_count = 0;
@@ -229,6 +231,7 @@ class FenceCalculator {
             even_panel_length,
             long_panel_count,
             long_panel_length,
+            long_panel_length_exact,
             short_panel_count,
             short_panel_length,
             offcut_panel_count,
@@ -386,6 +389,11 @@ class FenceCalculator {
                 defaultPanelSizeMm: C5,
                 panelGapMm: max_panel_spacing
             }));
+
+            // The glass solver sets its own panel widths on a 50mm increment; the even-panel
+            // figure computed further up does not describe them, so drop it rather than leave a
+            // stale fraction on the result for someone to trust later.
+            long_panel_length_exact = 0;
         }
 
         // --------------------------------------------------
@@ -422,7 +430,16 @@ class FenceCalculator {
             },
             'long_panel': {
                 'count': HELPER.isNaNtoZero(long_panel_count),
-                'length': HELPER.isNaNtoZero(long_panel_length)
+                'length': HELPER.isNaNtoZero(long_panel_length),
+                // Even panels divide the run into equal widths, but the width is a whole
+                // millimetre and the division rarely is. Printing the same rounded width on every
+                // panel pushes the run past the ordered length by up to half a millimetre a panel,
+                // so the diagram spreads the difference instead. Zero when there is nothing to
+                // spread (full-size panels, infill, slat) - deliberately not isNaNtoZero(), which
+                // would round away the very fraction this carries.
+                'length_exact': Number.isFinite(long_panel_length_exact) && long_panel_length_exact > 0
+                    ? long_panel_length_exact
+                    : 0
             },
             'short_panel': {
                 'count': HELPER.isNaNtoZero(short_panel_count),
@@ -456,6 +473,12 @@ class FenceCalculator {
             'selected_values': {
                 'panel_option': panel_options_data?.slug,
                 'spacing': HELPER.isNaNtoZero(Math.round(spacing_width)), // .toFixed(2).replace(".00", "")
+                // The glass solver's gap is rarely whole (37.2857mm and the like). Keep the exact
+                // figure too so the diagram can spread the rounding across its gap labels instead
+                // of losing up to half a millimetre on every one of them. Deliberately not
+                // isNaNtoZero() - that helper rounds, which is the very thing this value exists to
+                // avoid - so guard against NaN/Infinity without touching the fraction.
+                'spacing_exact': Number.isFinite(spacing_width) && spacing_width > 0 ? spacing_width : 0,
                 'message' : msg,
                 'closest_lengths' : closest_lengths || null,
                 ...(style.isSlatLike ? { fence_height_key: fence_height } : {}),
@@ -1024,6 +1047,8 @@ class FenceCalculator {
             let D22 = C9 > 0 ? 1 : 0;
             let D23 = C10 > 0 ? 1 : 0;
             let E17 = D17 - post_panel;
+            // D17 rounds the pitch; keep the unrounded width too so the renderer can reconcile.
+            let E17_exact = C17 ? (C14 / C17) - post_panel : 0;
             let E18 = D18 - post_panel;
             let E19 = D19 < post_panel ? 0 : D19 - post_panel; // E19
             let E21 = D21 - post_panel;
@@ -1107,9 +1132,18 @@ class FenceCalculator {
                 }
             }
 
+            // Stays 0 for full-size panels, so the diagram's spread is a no-op on that path.
+            let long_panel_length_exact = 0;
+
             if (panel_options_data?.slug?.includes('even') || panel_options_data?.slug === undefined) {
                 long_panel_count = even_panel_count + extra_panel_count;
                 long_panel_length = Math.round(even_panel_length);
+                // Only when the plain even width came through untouched. The slat override and the
+                // hinge-panel adjustment above both rewrite even_panel_length on their own terms,
+                // and an extra panel changes the count the width was derived from - in any of those
+                // cases hand back the rounded width so the spread below is a no-op.
+                long_panel_length_exact =
+                    even_panel_length === E17 && extra_panel_count === 0 ? E17_exact : long_panel_length;
             } else {
                 long_panel_count = full_panel_count + extra_panel_count;
                 long_panel_length = Math.round(full_panel_length);
@@ -1151,6 +1185,7 @@ class FenceCalculator {
             even_panel_length,
             long_panel_count,
             long_panel_length,
+            long_panel_length_exact,
             short_panel_count,
             short_panel_length,
             offcut_panel_count,

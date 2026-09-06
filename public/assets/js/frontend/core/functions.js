@@ -1472,9 +1472,66 @@ function fcStaggerGlassPoolAdjacentGapLabels($fc) {
 }
 
 /**
+ * Glass pool: the solver's gap is rarely a whole number - 37.2857mm, 23.25mm - but every gap label
+ * is drawn as an integer. Printing the same rounded figure on all of them throws away up to half a
+ * millimetre per gap, so a long run visibly fails to add up to the length that was ordered. Spread
+ * the difference instead: most gaps keep the floor value and a few carry one extra millimetre,
+ * placed evenly along the run rather than bunched at one end.
+ *
+ * This lands exactly, never approximately. Panels, gate, hinge panel and clamps are all whole
+ * millimetres, and the solver reconciles the run to a whole-millimetre overall length, so whatever
+ * the gaps have to account for is itself a whole number of millimetres - which is precisely what
+ * gets handed out below.
+ *
+ * Gate hinge/latch gaps and fixed end clamps are left alone: those are fixed hardware dimensions,
+ * not the solver's to redistribute.
+ */
+function fcDistributeGlassPoolGapRounding($fc, exactSpacingMm) {
+    if (!$fc || !$fc.length) {
+        return;
+    }
+
+    var gap = Number(exactSpacingMm);
+    if (!isFinite(gap) || gap <= 0) {
+        return;
+    }
+
+    // Every gap the solver sized: fixed clamps and the gate's own hinge/latch gaps are excluded,
+    // being hardware dimensions rather than anything the solver gets to choose.
+    var $solverGaps = $fc.find('.fencing-panel-spacing-number').not('.PTP90, .PTPA, .PTW, .near-gate');
+    var solverCount = $solverGaps.length;
+    if (!solverCount) {
+        return;
+    }
+
+    // A run that ends in an open gap has that end re-labelled with the rounded figure further down
+    // the render (see the '(nn)' side-spacing write in z_fence/p2). Those two are not ours to set,
+    // so leave them be and let the interior gaps carry their rounding error as well as their own.
+    var $endGaps = $solverGaps.filter('.left-panel-post, .right-panel-post');
+    var $innerGaps = $solverGaps.not($endGaps);
+    var innerCount = $innerGaps.length;
+    if (!innerCount) {
+        return; // nothing left to absorb the difference - better to leave the labels alone
+    }
+
+    // What every solver-sized gap must add up to, less what the end labels already commit to.
+    var totalMm = Math.round(solverCount * gap) - $endGaps.length * Math.round(gap);
+    var base = Math.floor(totalMm / innerCount);
+    var extra = totalMm - base * innerCount; // whole millimetres left to place
+    if (base <= 0 || extra < 0 || extra >= innerCount) {
+        return; // not a shape this was written for - leave the labels as the renderer set them
+    }
+
+    $innerGaps.each(function(i) {
+        var bump = Math.floor(((i + 1) * extra) / innerCount) - Math.floor((i * extra) / innerCount);
+        $(this).find('span:not(.fs-clamp)').html(String(base + bump));
+    });
+}
+
+/**
  * Glass pool: run hinge adjacency, uniform gap widths, and gate post cleanup after render.
  */
-function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab) {
+function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab, exactSpacingMm) {
     $fc = fcResolveGlassPoolPanelContainer($fc, tab);
     if (!$fc.length || String($fc.attr('data-type') || '') !== 'glass_pool') {
         return;
@@ -1484,6 +1541,8 @@ function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab) {
     fcEnsureGlassPoolHingeGateGapLabel($fc, tab);
     fcApplyGlassPoolPanelSpacingWidths(tab, spacingMm, $fc);
     fcNormalizeGlassPoolGateAdjacentPosts($fc);
+    // After the gate/hinge labels are settled, so their fixed gaps are excluded from the spread.
+    fcDistributeGlassPoolGapRounding($fc, exactSpacingMm != null ? exactSpacingMm : spacingMm);
     fcStaggerGlassPoolAdjacentGapLabels($fc);
 }
 
@@ -6138,6 +6197,20 @@ function fcAllowedColorsForFenceStyle(styleSlug) {
         var colors = option?.colors;
         if (!Array.isArray(colors) || !colors.length) {
             continue; // this section's option allows anything the style allows
+        }
+
+        // Keep only colours this style is actually made in. A restriction naming none of them
+        // is a config error, not a constraint: honouring it would grey out every swatch and
+        // leave the customer with no way to finish the quote. Dropping it fails open, which is
+        // recoverable; a picker with nothing selectable is not. A restriction that survives
+        // this filter is real, so genuinely conflicting sections still grey out as they should.
+        if (Array.isArray(info?.color)) {
+            colors = colors.filter(function(c) {
+                return info.color.indexOf(c) !== -1;
+            });
+            if (!colors.length) {
+                continue;
+            }
         }
 
         restricted = true;
