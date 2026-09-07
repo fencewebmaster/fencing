@@ -4,11 +4,13 @@
  * Project plan — item list + cart, and the Stock & Delivery panel beside it.
  *
  * @var array $fc_pp_stock Stock & Delivery settings (Settings -> Project Plan).
+ * @var string $fc_pp_phone Call button number as typed in settings; '' hides the button.
  */
 
 use Fc\Admin\Settings\PlannerOptionSettings;
 
 $fc_pp_stock = PlannerOptionSettings::stock();
+$fc_pp_phone = trim((string) ($fc_pp_stock['phone'] ?? ''));
 ?>
 <!-- [START] PRODUCT LIST -->
 <div class="fc-cart-items">
@@ -74,7 +76,11 @@ $fc_pp_stock = PlannerOptionSettings::stock();
 						<div class="fc-view-total-cost-bar">
 							<div class="fc-view-total-cost-bar__inner">
 								<div class="d-grid gap-2">
-									<div class="animate__animated" animation-type="animate__bounce">
+									<?php /* No bounce: setAnimation() (core/events.js) re-adds the class on
+									         every scroll once the button is in view, and each cart
+									         re-render - now one per optional Add to cart / Remove -
+									         hands it a fresh element to animate all over again. */ ?>
+									<div>
 										<button type="submit" class="btn btn-lg btn-submit btn-green js-fc-view-total-cost text-uppercase w-100 text fc-btn-shine">
 											<i class="fa-solid fa-cart-shopping me-1"></i>
 											View Total Cost!
@@ -148,11 +154,13 @@ $fc_pp_stock = PlannerOptionSettings::stock();
 								            Order Items Now!
 								        </button>
 									</div>
+									<?php if ($fc_pp_phone !== '') : ?>
 									<div class="col-lg col-md-12 col-sm">
-								        <a href="tel:0480016687" class="btn btn-lg btn-dark text-uppercase w-100 fs-6 text">
-								           	<i class="fa-solid fa-phone me-2"></i> Call 04800 166 87
+								        <a href="tel:<?php echo e(PlannerOptionSettings::stockPhoneHref($fc_pp_phone)); ?>" class="btn btn-lg btn-dark text-uppercase w-100 fs-6 text">
+								           	<i class="fa-solid fa-phone me-2"></i> Call <?php echo e($fc_pp_phone); ?>
 								        </a>
 							       </div>
+									<?php endif; ?>
 								</div>
 							</div>
 

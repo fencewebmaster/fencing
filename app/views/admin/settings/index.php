@@ -861,6 +861,25 @@ $tab = $fcSettingsPage;
                                         </span>
                                     </label>
 
+                                    <label class="flex items-center justify-between gap-3 border-t border-slate-200 pt-2.5" for="fc-project-plan-stock-phone">
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Call button phone number</span>
+                                            <span class="block text-xs text-slate-500">Printed on the Call button exactly as typed. Leave blank to hide the button.</span>
+                                        </span>
+                                        <span class="flex shrink-0 items-center gap-2">
+                                            <input
+                                                type="tel"
+                                                id="fc-project-plan-stock-phone"
+                                                data-fc-project-plan-stock-field="phone"
+                                                class="fc-settings-field w-48 text-right"
+                                                autocomplete="off"
+                                                spellcheck="false"
+                                                placeholder="<?php echo e((string) ($tab['project_plan_stock_defaults']['phone'] ?? '')); ?>"
+                                                value="<?php echo e((string) ($ppStock['phone'] ?? '')); ?>"
+                                            >
+                                        </span>
+                                    </label>
+
                                     <label class="flex items-center justify-between gap-3 border-t border-slate-200 pt-2.5" for="fc-project-plan-stock-orderWithinHours">
                                         <span class="min-w-0">
                                             <span class="block text-sm font-medium text-slate-700">Countdown length</span>

@@ -265,6 +265,7 @@ final class SettingsPresenter
                 : [],
             'project_plan_items' => $projectPlanItems,
             'project_plan_stock' => $projectPlanStock,
+            'project_plan_stock_defaults' => $projectPlanStockDefaults,
             'project_plan_stock_hours_min' => PlannerOptionSettings::ORDER_WITHIN_HOURS_MIN,
             'project_plan_stock_hours_max' => PlannerOptionSettings::ORDER_WITHIN_HOURS_MAX,
             'console' => $console,

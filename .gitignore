@@ -14,7 +14,8 @@ writable/products*
 writable/groups-permissions/*.json
 writable/theme.json
 writable/fences/*.php
-tests
+tests/*
+!tests/glass-pool-clamps/
 
 # Generated storage (keep directory placeholders)
 writable/storage/cache/**/*.json

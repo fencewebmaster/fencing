@@ -259,7 +259,7 @@ final class PlannerOptionSettings
      * hard-coded 3 hours in p2.js), so a site that does not run low on stock — or wants a
      * different reservation window — had no way to change it.
      *
-     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int}
+     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int,phone:string}
      */
     public static function stockDefaults(): array
     {
@@ -270,13 +270,14 @@ final class PlannerOptionSettings
                 . ' released for other customers.</p>',
             'orderWithinEnabled' => true,
             'orderWithinHours' => 3,
+            'phone' => '0480 016 687',
         ];
     }
 
     /**
      * Saved Stock & Delivery settings, defaults filled in for anything never written.
      *
-     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int}
+     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int,phone:string}
      */
     public static function stock(): array
     {
@@ -288,7 +289,7 @@ final class PlannerOptionSettings
      * dropped on every read and write (see the settings notes in CLAUDE.md).
      *
      * @param array<string, mixed> $input
-     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int}
+     * @return array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int,phone:string}
      */
     public static function normalizeStock(array $input): array
     {
@@ -317,12 +318,15 @@ final class PlannerOptionSettings
                 ? self::toBool($input['orderWithinEnabled'])
                 : $defaults['orderWithinEnabled'],
             'orderWithinHours' => $hours,
+            'phone' => array_key_exists('phone', $input)
+                ? self::normalizePhone((string) $input['phone'])
+                : $defaults['phone'],
         ];
     }
 
     /**
      * @param array<string, mixed> $input
-     * @return array{ok:bool,stock?:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int},error?:string}
+     * @return array{ok:bool,stock?:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int,phone:string},error?:string}
      */
     public static function saveStock(array $input): array
     {
@@ -334,6 +338,29 @@ final class PlannerOptionSettings
         }
 
         return ['ok' => true, 'stock' => $normalized];
+    }
+
+    /**
+     * The Call button's number, as the admin typed it — it is printed on the button, so the
+     * spacing is theirs to choose. Everything a phone number can't contain is dropped so the
+     * field can't smuggle markup onto the plan page; blank means "no Call button at all".
+     */
+    private static function normalizePhone(string $phone): string
+    {
+        $phone = trim(preg_replace('/[^0-9+()\-.\s]/', '', $phone) ?? '');
+
+        return mb_substr($phone, 0, 40);
+    }
+
+    /**
+     * `tel:` target for a display number — the href can't carry the spaces and brackets the
+     * button shows, and a leading + has to survive.
+     */
+    public static function stockPhoneHref(string $phone): string
+    {
+        $href = preg_replace('/(?!^\+)[^0-9]/', '', trim($phone)) ?? '';
+
+        return $href;
     }
 
     /**
@@ -379,7 +406,7 @@ final class PlannerOptionSettings
     }
 
     /**
-     * @return array{ok:bool,extraItems:list<array{slug:string,label:string,image:string,imageDefault:string}>,defaults:list<array{slug:string,label:string,image:string}>,stock:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int},stockDefaults:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int},updatedAt?:string|null}
+     * @return array{ok:bool,extraItems:list<array{slug:string,label:string,image:string,imageDefault:string}>,defaults:list<array{slug:string,label:string,image:string}>,stock:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int,phone:string},stockDefaults:array{lowStockEnabled:bool,lowStockHtml:string,orderWithinEnabled:bool,orderWithinHours:int,phone:string},updatedAt?:string|null}
      */
     public static function apiPayload(): array
     {

@@ -1132,14 +1132,21 @@ FENCES.cartItems = {
                     glue += 1;
                 }
 
+                // Consumables, not fence: an installer usually owns a cartridge gun already and
+                // may have glue on the van. Listed with a suggested qty and an "Add to cart"
+                // button (Barr's base_plate+dynabolts pattern) rather than billed by default.
                 array.push({
                     "slug": "chem_achor+glue",
-                    "qty": glue,
+                    "qty": 0,
+                    "optional": true,
+                    "suggested_qty": glue,
                 });
-                
+
                 array.push({
                     "slug": "chem_achor+glue_gun",
-                    "qty": 1,
+                    "qty": 0,
+                    "optional": true,
+                    "suggested_qty": 1,
                 });
             }
 
@@ -1206,9 +1213,13 @@ FENCES.cartItems = {
         if (total) {
 
             if ($.inArray(tabInfo[0]?.fence, ['glass_pool']) !== -1) {
+                // Optional like the chem anchor consumables above - suggested, not billed until
+                // the customer adds it.
                 array.push({
                     "slug": "grout",
-                    "qty": Math.round($('.fencing-panel-spigot').length / 8),
+                    "qty": 0,
+                    "optional": true,
+                    "suggested_qty": Math.round($('.fencing-panel-spigot').length / 8),
                 });
             }
 

@@ -10,6 +10,42 @@ var fcSuppressControlModalCloseOnFcSelectChange = false;
     ----------------------------------------------------------------
 */
 
+/* Glass pool clamp gap prompt: armed by a genuine user gesture only. The renders a gesture
+   triggers (Calculate, a Step 2 edit, an option modal change) may raise the dialog; the same
+   renders reached by script - the style-tile restore on page load, tab switches, a quote
+   reload, the pre-submit cart rebuild - never do. isTrusted tells the two apart: every scripted
+   .click()/.trigger() arrives untrusted.
+
+   Native CAPTURE on document, not a jQuery delegated bind. Delegation dispatches from the
+   target upward, so a handler matched on an inner element (the tile, the range input) runs
+   BEFORE one matched on an ancestor - the render had already happened and consumed nothing,
+   then the ancestor armed for whatever rendered next. Capture also survives the bubble-phase
+   `.fc-modal-content` stopPropagation (events.js, control modal), which otherwise hid every
+   click inside the modal from an ancestor-bound handler. */
+document.addEventListener('click', fcArmClampPromptOnGesture, true);
+document.addEventListener('change', fcArmClampPromptOnGesture, true);
+document.addEventListener('keydown', fcArmClampPromptOnGesture, true);
+
+function fcArmClampPromptOnGesture(e) {
+    if (!e || !e.isTrusted || !e.target || typeof e.target.closest !== 'function') {
+        return;
+    }
+    // Enter in Step 2 runs Calculate through step2EnterNavigate — the primary glass flow, and
+    // neither a click nor a change.
+    if (e.type === 'keydown' && e.key !== 'Enter') {
+        return;
+    }
+    var inScope = e.target.closest(
+        '.btn-fc-calculate, #fc-control-modal, .js-fc-form-step[data-section="2"]'
+    );
+    if (!inScope) {
+        return;
+    }
+    if (typeof GlassPool !== 'undefined' && typeof GlassPool.armClampPrompt === 'function') {
+        GlassPool.armClampPrompt();
+    }
+}
+
 _doc.on('click', '.form-control-clear', formControlClear);
 
 function formControlClear() {
@@ -1762,6 +1798,35 @@ function fcConfirmRefire(el) {
     el.click();
 }
 
+// Glass pool panel-to-panel clamps: the gap prompt's Adjust Gap button, and the "Adjust gap"
+// link in the Step 3 status line that re-offers a declined prompt. Both live on the GlassPool
+// hook bag (fences/glass_pool.js), which loads after this file, hence the typeof guards.
+_doc.on('click', '.js-fc-clamp-gap-adjust', fcClampGapAdjust);
+_doc.on('click', '.js-fc-clamp-gap-manual', fcClampGapManual);
+_doc.on('click', '.js-fc-clamp-gap-prompt', fcClampGapPrompt);
+
+function fcClampGapAdjust() {
+    if (typeof GlassPool !== 'undefined' && typeof GlassPool.applyClampGapAdjust === 'function') {
+        GlassPool.applyClampGapAdjust();
+    }
+}
+
+function fcClampGapManual() {
+    if (typeof GlassPool !== 'undefined' && typeof GlassPool.openMaxPanelSpacing === 'function') {
+        GlassPool.openMaxPanelSpacing();
+    }
+}
+
+function fcClampGapPrompt(e) {
+    e.preventDefault();
+    if (typeof GlassPool === 'undefined' || typeof GlassPool.maybePromptClampGap !== 'function') {
+        return;
+    }
+    GlassPool.clampPromptState.key = '';
+    GlassPool.armClampPrompt();
+    GlassPool.maybePromptClampGap(calculate_fences(), getSelectedFenceData());
+}
+
 //----------------------------------------------------------------------------------
 
 _doc.on('click', '.fc-fence-reset-all', fcFenceResetAll);
@@ -3438,6 +3503,16 @@ function fcSelectPost() {
         return;
     }
 
+    // Panel Clamps tile: reset the gap prompt and drop a standing adjustment BEFORE the row is
+    // persisted, so the render update_custom_fence itself triggers already sees the final state.
+    // The prompt is raised by the post-persist render site (z_fence.js), not here.
+    if (modal_key === 'panel_options_custom' && String(fc_form_field.attr('name') || '') === 'post_option') {
+        var fdClamp = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+        if (fdClamp && fdClamp.data && fdClamp.data.panel_group === 'a' && typeof GlassPool !== 'undefined' && typeof GlassPool.onPanelClampOptionChanging === 'function') {
+            try { GlassPool.onPanelClampOptionChanging(String(_this.attr('data-slug') || ''), fdClamp); } catch (eClamp) {}
+        }
+    }
+
     FENCE.call('update_custom_fence', modal_key);
     FENCE.call('updateOverallPosts');
 
@@ -4755,8 +4830,16 @@ function fencingInputRange_input() {
     _this.closest('.fencing-input-range').find('.fir-info span').text( val );
 
     if( modal_key == 'edit_spacing' ) {
-        var width = val/10;
-        $('.fencing-panel-spacing-number').css({'width': width});
+        // Glass pool: this slider is Max Panel Spacing, a CAP - the gap the fence is actually
+        // built to comes out of the solver and is usually smaller (2000mm at 50 builds 33.3mm).
+        // Previewing the raw slider value slid every strip on a drag that changed nothing in the
+        // result. The strips are set from the solved gap by fcApplyGlassPoolPanelSpacingWidths
+        // on the render that follows, so for glass they only move when the answer moves. Tubular
+        // styles space their posts at exactly this value, so their preview is accurate - keep it.
+        if (!fd || !fd.data || fd.data.panel_group !== 'a') {
+            var width = val/10;
+            $('.fencing-panel-spacing-number').css({'width': width});
+        }
     }
 
     if( modal_key == 'panel_options_custom' ) {

@@ -22,6 +22,16 @@
         'number-field': true
     };
 
+    // Mirrors GlassPoolCalc.clampDefaults() in frontend fences/calc/glass_pool.js — the planner
+    // falls back to these when a config has no panel_clamps, so the editor seeds the same rows.
+    // A fresh object per call: the seeded object is edited in place through setByPath.
+    function panelClampDefaults() {
+        return {
+            small: { title: 'Small', min_gap_mm: 20, max_gap_mm: 50, slug: 'panel_to_panel_clamp+sm' },
+            large: { title: 'Large', min_gap_mm: 50, max_gap_mm: 95, slug: 'panel_to_panel_clamp+lg' }
+        };
+    }
+
     function confirmDelete(title, message) {
         var Modal = global.FcAdminModal;
         if (Modal && typeof Modal.confirm === 'function') {
@@ -1532,6 +1542,35 @@
                 'Panel limits',
                 '<div class="fc-fs-field-row fc-fs-field-row--2 fc-fs-gui-field--span">' + limitsHtml + '</div>'
             );
+        }
+
+        if (config.panel_group === 'a') {
+            if (!isPlainObject(config.panel_clamps) || !Object.keys(config.panel_clamps).length) {
+                // Seed onto the caller's own object: the first render's config is deep-cloned into
+                // state.config straight after, and re-renders pass state.config itself, so Save
+                // writes the rows into a file that never had them. Without this the planner ran on
+                // its JS defaults with nothing in the editor to change, and the hydration pass
+                // (getByPath → undefined) blanked every input in the group.
+                config.panel_clamps = panelClampDefaults();
+            }
+            var clampRowsHtml = '';
+            Object.keys(config.panel_clamps).forEach(function (key) {
+                var clamp = isPlainObject(config.panel_clamps[key]) ? config.panel_clamps[key] : {};
+                var clampBase = 'panel_clamps.' + key;
+                clampRowsHtml +=
+                    '<div class="fc-fs-field-row fc-fs-field-row--4 fc-fs-gui-field--span">' +
+                    renderGuiField('Title', clampBase + '.title', clamp.title || '', {}) +
+                    renderGuiField('Min gap (mm)', clampBase + '.min_gap_mm', clamp.min_gap_mm, { type: 'number' }) +
+                    renderGuiField('Max gap (mm)', clampBase + '.max_gap_mm', clamp.max_gap_mm, { type: 'number' }) +
+                    renderGuiField('Product slug', clampBase + '.slug', clamp.slug || '', {
+                        mono: true,
+                        hint: 'Must match a System Products row'
+                    }) +
+                    '</div>';
+            });
+            html += renderFieldGroup('Panel-to-panel clamps', clampRowsHtml, {
+                hint: 'Matched to the calculated panel gap: from a size\'s minimum up to (not including) its maximum uses that size; the largest size includes its maximum. Gaps below the smallest minimum ask the customer to adjust; gaps above the largest maximum add no clamp. Leave no field blank.'
+            });
         }
 
         if (config.pack_qty && isPlainObject(config.pack_qty)) {

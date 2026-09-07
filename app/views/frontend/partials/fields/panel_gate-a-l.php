@@ -24,7 +24,7 @@
 
 	</div>
 
-	<div class="fc-center-point fc-last-c-p" style="display: none;">
+	<div class="fc-center-point fc-last-c-p">
 	    <span class="fc-div-c-p"></span>
 	    <span class="fc-div-c-p"></span>
 	    <span class="fc-end-c-p">{{center_post}}</span>

@@ -267,6 +267,10 @@ function fcWhenPlannerQuoteReady(callback, options) {
 }
 
 function fcRunQuoteReloadSubmit() {
+    // A reloaded quote re-renders every section from storage; that is not a user gesture.
+    if (typeof GlassPool !== 'undefined' && GlassPool.clampPromptState) {
+        GlassPool.clampPromptState.armed = false;
+    }
     fcWhenPlannerQuoteReady(function() {
         if (
             typeof fcHydratePlannerCartItemsLocalStorage === 'function' &&
@@ -1372,11 +1376,34 @@ function fcEnsureGlassPoolHingeAdjacentToGate($fc) {
         return $from.nextUntil($to).filter('.fencing-panel-item:not(.extra-panel-item)').length > 0;
     }
 
+    // An end-of-run marker belongs to that END of the fence, not to the hinge panel next to it.
+    // When the hinge starts the run, $hinge.prev() IS the left end marker - the selector cannot
+    // tell it from the hinge's own gap - so the bundle carried the PTP90/PTPA/PTW corner into the
+    // middle of the run and left the head as a plain gap. Swap the two strips before the move, so
+    // the end strip keeps the head with its own label, width and classes intact and a plain gap is
+    // what travels. Moving the classes alone is not enough: the end label ('(0) PTP90') and the
+    // 10px corner width live in the strip itself. A side-gap end hid the same bug - it draws nothing.
+    function keepEndStripAtHead() {
+        var $lead = $hinge.prev('.fencing-panel-spacing-number');
+        if (!$lead.length || !$lead.is('.left-panel-post, .right-panel-post')) {
+            return;
+        }
+        var $successor = $hinge.next('.panel-post').next('.fencing-panel-spacing-number');
+        if (!$successor.length || $successor.is('.left-panel-post, .right-panel-post')) {
+            return;
+        }
+        var $slot = $('<span></span>');
+        $lead.replaceWith($slot);
+        $successor.replaceWith($lead);
+        $slot.replaceWith($successor);
+    }
+
     if ($gate.hasClass('panel-gate-left') && ($hinge.index() > $gate.index() || hasForeignPanelBetween($hinge, $gate))) {
         var $insertBefore = $gate.prevAll('.fencing-panel-spacing-number').first();
         if (!$insertBefore.length) {
             $insertBefore = $gate;
         }
+        keepEndStripAtHead();
         hingeBundleNodes().insertBefore($insertBefore);
     } else if ($gate.hasClass('panel-gate-right') && ($hinge.index() < $gate.index() || hasForeignPanelBetween($gate, $hinge))) {
         var $insertAfter = $gate.nextAll('.panel-post').first();
@@ -1553,6 +1580,11 @@ function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab, exactSpacingMm) {
     // After the gate/hinge labels are settled, so their fixed gaps keep their own figures.
     fcApplyGlassPoolUniformGapLabels($fc, exactSpacingMm != null ? exactSpacingMm : spacingMm);
     fcStaggerGlassPoolAdjacentGapLabels($fc);
+    // The hinge move above carries the hinge panel's strip with it, so the clamp bars placed
+    // (and end-stripped) earlier no longer sit on the junctions the cart bills.
+    if (typeof GlassPool !== 'undefined' && typeof GlassPool.syncClampBars === 'function') {
+        GlassPool.syncClampBars($fc);
+    }
 }
 
 /**
@@ -5053,18 +5085,27 @@ function fcSyncPlannerStep3PanelEnds(slug) {
         return;
     }
 
-    var $items = $fc.find('.fencing-panel-item:not(.fencing-raked-panel)');
+    // Raked items count as items here: excluding them put .last-item (and the surviving
+    // .fc-last-c-p, since the removal below is driven off this same set) on the last STRAIGHT panel
+    // of a right-raked run, so the end post value rendered one panel short of the end.
+    var $items = $fc.find('.fencing-panel-item');
     $items.removeClass('first-item last-item');
     if ($items.length) {
         $items.first().addClass('first-item');
         $items.last().addClass('last-item');
     }
 
-    if ($fc.find('.raked-panel .raked-panel-container').length === 1) {
-        $fc.find('.raked-panel').addClass('first-item last-item');
+    // A raked wrapper is "both ends" only when it is the run's whole content. The old count
+    // spanned both wrappers, so a single right-side rake matched it and marked BOTH wrappers
+    // first+last - surfacing the right rake's start value mid-run. Mirrors project-plan's
+    // load_center_point().
+    var $rakedWraps = $fc.find('.raked-panel').has('.raked-panel-container');
+
+    if ($rakedWraps.length === 1 && !$items.not('.fencing-raked-panel').length) {
+        $rakedWraps.addClass('first-item last-item');
     } else {
-        $fc.find('.left_raked-panel').first().addClass('first-item');
-        $fc.find('.right_raked-panel').first().addClass('last-item');
+        $rakedWraps.filter('.left_raked-panel').first().addClass('first-item');
+        $rakedWraps.filter('.right_raked-panel').first().addClass('last-item');
     }
 
     $fc.find('.cp_no-post--left').removeClass('cp_no-post--left');
@@ -5075,6 +5116,27 @@ function fcSyncPlannerStep3PanelEnds(slug) {
     }
     if ($fc.find('.right-panel-post.no-post').length) {
         $fc.find('.fc-center-point').last().addClass('cp_no-post--right');
+    }
+
+    // A run of one item (Gate ONLY, a lone panel) carries both Centers lines on that same
+    // element, so .fc-last-c-p's opening tick lands exactly on .fc-first-c-p's - and painted
+    // its default black over the red no-post tick underneath. Colour it from the end it is
+    // actually sitting on. Multi-item runs leave it black: there it marks a real posted junction.
+    $fc.find('.cp_no-post--left-dup').removeClass('cp_no-post--left-dup');
+    if ($fc.find('.left-panel-post.no-post').length) {
+        var $cpAll = $fc.find('.fc-center-point');
+        var $cpFirstItem = $cpAll.first().closest('.fencing-panel-item');
+        var $cpLast = $cpAll.last();
+        if ($cpFirstItem.length && $cpLast.closest('.fencing-panel-item').is($cpFirstItem)) {
+            $cpLast.addClass('cp_no-post--left-dup');
+        }
+    }
+
+    // Gate ONLY is a run with no posts anywhere, so the whole Centers annotation reads as a
+    // no-post dimension - the label text included, not just the end ticks and their values.
+    $fc.removeClass('fc-centers-all-no-post');
+    if ($items.length === 1 && $items.hasClass('fencing-panel-gate')) {
+        $fc.addClass('fc-centers-all-no-post');
     }
 
     $items.not(':last').find('.fc-last-c-p').remove();
@@ -5910,6 +5972,12 @@ function fcWhenPlannerSectionRendered(tabIdx, done) {
 }
 
 function fcRebuildPlannerCartSequential(sectionCount, onDone) {
+    // Clicks through every section tab and renders each one. None of those renders is a user
+    // gesture, so no clamp gap dialog may come out of them — least of all over the submit
+    // loader, for a section that is not on screen.
+    if (typeof GlassPool !== 'undefined' && GlassPool.clampPromptState) {
+        GlassPool.clampPromptState.armed = false;
+    }
     removeItemStorageWith('cart_items-');
     if (!sectionCount || sectionCount < 1) {
         if (typeof onDone === 'function') {
@@ -7159,7 +7227,25 @@ function addNotesOrInfo(el, v) {
                     </label>`;                
             }
 
-             notes_html += `<div class="fc-text-gray fc-modal-note-body">${notes.description}</div>
+            // The Panel Clamps note carries a {{panel_clamp_ranges}} token rather than literal
+            // sizes, so the copy cannot go stale against the panel_clamps ranges it describes.
+            var notesDescription = notes.description;
+            if (
+                typeof notesDescription === 'string' &&
+                notesDescription.indexOf('{{panel_clamp_ranges}}') !== -1 &&
+                typeof GlassPool !== 'undefined' &&
+                typeof GlassPool.clampSizesFromInfo === 'function'
+            ) {
+                var fdNote = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+                if (fdNote && fdNote.data && fdNote.data.panel_group === 'a') {
+                    var clampRanges = GlassPool.clampSizesFromInfo(fdNote.data).map(function(size) {
+                        return size.title + ' (' + size.minGapMm + 'mm - ' + size.maxGapMm + 'mm Gap)';
+                    }).join('<br>');
+                    notesDescription = notesDescription.replace(/{{panel_clamp_ranges}}/gi, clampRanges);
+                }
+            }
+
+             notes_html += `<div class="fc-text-gray fc-modal-note-body">${notesDescription}</div>
                 </div>
             </div>`;
 
@@ -7252,12 +7338,39 @@ function fcApplyCalcSolutionMessage(calc) {
             );
         }
 
+        // The gesture that reached here is still the customer's: the failing pass cleared the
+        // clamp arm, so re-arm before the corrected solve or the length they just accepted
+        // would never offer its gap adjustment.
+        if (typeof GlassPool !== 'undefined' && typeof GlassPool.armClampPrompt === 'function') {
+            GlassPool.armClampPrompt();
+        }
+
         if (typeof btnCalculate === 'function') {
             btnCalculate();
         } else {
             $('.btn-fc-calculate').first().trigger('click');
         }
     }, 0);
+}
+
+/**
+ * Glass pool: the panel-to-panel clamp status line under the diagram, the dimmed-bars diagram
+ * state and (planner) the gap-adjustment prompt - GlassPool.applyClampMessage does the work.
+ *
+ * Only the post-persist render site in z_fence.js passes a calc. updateOverAllLength() reports
+ * the same solve, but from inputs btnCalculate() has not stored yet, and a prompt built on
+ * those offered an adjustment for a layout the customer was never shown. `calc === null` (and
+ * any non-glass fence) clears the line, so a gate-only section or a style switch does not keep
+ * the last glass message.
+ */
+function fcApplyGlassClampMessage(calc, fd) {
+    if (typeof GlassPool === 'undefined' || typeof GlassPool.applyClampMessage !== 'function') {
+        return;
+    }
+    if (!fd || !fd.data) {
+        return;
+    }
+    GlassPool.applyClampMessage(fd.data.panel_group === 'a' ? calc : null, fd);
 }
 
 /**
@@ -7693,6 +7806,11 @@ function updateOverAllLength(data) {
 		fcApplyCalcSolutionMessage(calc);
 	} else {
 		$('.err-message').html('');
+		// Clear only: this runs before btnCalculate persists Step 2, so the clamp line and
+		// prompt are left to the post-persist render site (z_fence.js).
+		if (typeof fcApplyGlassClampMessage === 'function') {
+			fcApplyGlassClampMessage(null, fd);
+		}
 	}
 
     var slatGoCustomSkipOalRewrite =

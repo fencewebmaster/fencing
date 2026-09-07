@@ -279,9 +279,16 @@
 .cp_no-post--left .fc-start-c-p,
 .cp_no-post--right:after,
 .cp_no-post--right .fc-div-c-p:nth-child(2),
+.cp_no-post--left-dup .fc-div-c-p:nth-child(1),
 .cp_no-post--right .fc-end-c-p {
     color: var(--fc-red);
     z-index: 1;
+}
+
+/* Gate ONLY: no posts anywhere in the run, so the whole Centers annotation is flagged - the
+   label text too, not only the end ticks and values the no-post rules above pick out. */
+.fc-centers-all-no-post .fc-center-point {
+    color: var(--fc-red);
 }
 
 

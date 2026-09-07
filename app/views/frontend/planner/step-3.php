@@ -86,6 +86,9 @@
 
             </div>
             <div class="err-message fencing-panel-solution-msg text-center text-danger px-2 py-2" role="alert"></div>
+            <!-- Glass pool panel-to-panel clamp status (size × qty, or why none are added); written by
+                 GlassPool.applyClampMessage, hidden while empty. -->
+            <div class="fc-clamp-message fencing-panel-clamp-msg text-center px-2 py-1" role="status" aria-live="polite"></div>
             <div class="fc-overall pt-1 pb-2"><span class="d-oaw"></span> <span class="js-overall-label">Overall</span></div>
 
             <!-- [START] PANEL CONTROLS -->   

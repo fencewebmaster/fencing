@@ -354,6 +354,9 @@ class FenceCalculator {
         // Verified alternative overall lengths from the glass solver on failure - carried on
         // selected_values so the UI can auto-adjust instead of showing the raw error.
         let closest_lengths = null;
+        // Panel-to-panel clamp outcome from the glass solver (GlassPoolCalc.clampResult);
+        // stays null for every other style and for gate-only glass.
+        let clamp = null;
 
         // --------------------------------------------------
         // 6. Style-specific panel layout - second dispatch point (glass solver)
@@ -367,8 +370,13 @@ class FenceCalculator {
             // calculateGlassFencing(). Gate-only stays excluded here: the solver would subtract
             // the gate and hunt for regular panels that don't exist, surfacing a bogus
             // "no solutions" error. The keys match these locals by name.
+            // data.clampEnforce is the planner's dry run ("what gap would the clamp minimum
+            // give?") - it enforces without the customer's stored acceptance and never renders.
+            const clampRequest = (typeof GlassPool.clampRequest === 'function')
+                ? GlassPool.clampRequest(custom_fence, info, { forceEnforce: data?.clampEnforce === true })
+                : null;
             ({
-                spacing_width, msg, closest_lengths,
+                spacing_width, msg, closest_lengths, clamp,
                 long_panel_count, long_panel_length,
                 short_panel_count, short_panel_length,
                 gate_hinge_panel_count, gate_hinge_panel_width
@@ -387,7 +395,8 @@ class FenceCalculator {
                 leftSideWidthD: left_side_width_d,
                 rightSideWidthD: right_side_width_d,
                 defaultPanelSizeMm: C5,
-                panelGapMm: max_panel_spacing
+                panelGapMm: max_panel_spacing,
+                clamp: clampRequest
             }));
 
             // The glass solver sets its own panel widths on a 50mm increment; the even-panel
@@ -481,6 +490,9 @@ class FenceCalculator {
                 'spacing_exact': Number.isFinite(spacing_width) && spacing_width > 0 ? spacing_width : 0,
                 'message' : msg,
                 'closest_lengths' : closest_lengths || null,
+                // Same inert object for every non-glass style and for gate-only glass, so
+                // consumers never have to null-check the key.
+                'clamp': clamp || { selected: false, enforce: false, status: 'none', size: null, slug: '', gapMm: 0 },
                 ...(style.isSlatLike ? { fence_height_key: fence_height } : {}),
             }
         };

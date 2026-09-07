@@ -564,8 +564,17 @@ FENCE = {
             } else {
                 $('.err-message').html((calc.selected_values && calc.selected_values.message) || '');
             }
+            // Glass panel-to-panel clamp status + gap prompt. This is the post-persist render
+            // (update_custom_fence and btnCalculate both land here), the only place the stored
+            // Step 2 and modal state are final; updateOverAllLength's site reads stale inputs.
+            if (typeof fcApplyGlassClampMessage === 'function') {
+                fcApplyGlassClampMessage(calc, fd);
+            }
         } else {
             $('.err-message').html('');
+            if (typeof fcApplyGlassClampMessage === 'function') {
+                fcApplyGlassClampMessage(null, fd);
+            }
         }
 
         $('.ftm-measurement:not(:empty)').closest(FENCES.el.fencingTab).removeClass('incomplete-section');

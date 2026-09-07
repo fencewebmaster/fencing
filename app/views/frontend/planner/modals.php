@@ -316,6 +316,53 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
+<!-- Glass pool Panel Clamps — the solved panel gap is under the minimum a panel-to-panel clamp
+     fits. Filled and shown by GlassPool.maybePromptClampGap (fences/glass_pool.js) only after an
+     enforced dry-run proves a layout exists at this Overall Length; Adjust Gap is wired in
+     core/events.js. Cancel leaves Yes Clamps selected with nothing billed. -->
+<div class="modal fade fc-modal" id="fc-clamp-gap-confirm" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcClampGapTitle" aria-describedby="fcClampGapDesc" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--wide">
+        <div class="modal-content fc-modal__content">
+            <div class="modal-header fc-modal__header">
+                <div class="fc-modal__header-text">
+                    <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcClampGapTitle">Panel Gap Adjustment Required</h5>
+                    <p class="fc-modal__subtitle mb-0">Panel-to-panel clamps need a minimum gap</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fc-modal__body">
+                <p class="fc-modal__lead" id="fcClampGapDesc">The current panel gap is <b><span class="js-fc-clamp-gap-current"></span> mm</b>, but the minimum gap required for a panel-to-panel clamp is <b><span class="js-fc-clamp-gap-min"></span> mm</b>.</p>
+                <p class="fc-modal__lead">Would you like to adjust the panel width to allow the required <span class="js-fc-clamp-gap-min"></span> mm gap?</p>
+                <div class="fc-modal__stats">
+                    <div class="fc-modal__stat">
+                        <span class="fc-modal__stat-label">After adjusting</span>
+                        <span class="fc-modal__stat-value"><span class="js-fc-clamp-gap-after"></span> mm gap</span>
+                    </div>
+                    <div class="fc-modal__stat">
+                        <span class="fc-modal__stat-label">Panels</span>
+                        <span class="fc-modal__stat-value"><span class="js-fc-clamp-panels-after"></span></span>
+                    </div>
+                    <div class="fc-modal__stat fc-modal__stat--full">
+                        <span class="fc-modal__stat-label">Clamp</span>
+                        <span class="fc-modal__stat-value"><span class="js-fc-clamp-size-after"></span></span>
+                    </div>
+                </div>
+                <p class="fc-modal__note">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <span>Auto Adjustment recalculates the panel widths and keeps the Overall Length. Manual Adjustment opens Max Panel Spacing so you can set the gap yourself. Cancel keeps the current layout — clamps are not added until the gap is within range.</span>
+                </p>
+            </div>
+            <div class="modal-footer fc-modal__footer">
+                <button type="button" class="btn btn-outline-secondary text-uppercase px-3" data-bs-dismiss="modal" data-fc-autofocus>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-outline-dark text-uppercase px-3 js-fc-clamp-gap-manual" data-bs-dismiss="modal"><i class="fa-solid fa-sliders me-2" aria-hidden="true"></i>Manual Adjustment</button>
+                <button type="button" class="btn btn-orange text-uppercase px-3 js-fc-clamp-gap-adjust" data-bs-dismiss="modal"><i class="fa-solid fa-wand-magic-sparkles me-2" aria-hidden="true"></i>Auto Adjustment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Step 2 "Important" notice, mobile only. The body is empty in the markup on purpose: the
      notice copy changes with the fence style, so it is copied from the live panel in Step 2 each
      time the dialog opens (see fcStep2ImportantModalShow in core/events.js). -->

@@ -6821,6 +6821,15 @@ thead.fc-border th:last-child {
     display: none;
 }
 
+/* Glass panel-to-panel clamp status, under the solver error. Empty = nothing to report. */
+.fencing-panel-clamp-msg:empty {
+    display: none;
+}
+
+.fencing-panel-clamp-msg--warn {
+    color: var(--fc-bootstrap-danger);
+}
+
 .fencing-display-result {
     display: flex; 
     align-items: center;
@@ -11123,6 +11132,18 @@ body.fc-restoring-selection .fencing-tab-name {
     padding-bottom: 0;
 }
 
+/* Copy Link sits on the same line as each plan card's Actions menu. The cards below are .p-3
+   with their border removed (above), so their content edge is 16px in from the section; this
+   head row carried 20px of its own plus the 10px every [class*="fc-col-"] gets, which left the
+   button 14px short of every Actions button under it. */
+.fc-project-plan-page #project-plans-section > .fc-card > .fc-row-flex {
+    padding-right: 16px;
+}
+
+.fc-project-plan-page #project-plans-section > .fc-card > .fc-row-flex > .fc-col-6:last-child {
+    padding-right: 0;
+}
+
 .fc-project-plan-page #project-plans-section .fencing-section__step-label {
     margin-bottom: 0;
 }
@@ -11719,6 +11740,13 @@ body.fc-restoring-selection .fencing-tab-name {
     z-index: 1;
     margin-left: -9px;
     margin-right: -9px;
+}
+
+/* Yes Clamps stays selected after Cancel on the gap prompt, so the bars keep drawing while
+   nothing is billed: dimmed to say the gap is outside every clamp's range. */
+.fencing-panel-container.fc-clamps-unsupported .fencing-panel-spacing-number.panel-opt-2 .fs-clamp {
+    opacity: .35;
+    border-style: dashed;
 }
 
 .fencing-panel-container {
@@ -12767,7 +12795,7 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 .cg-top { 
-    top: -25px;
+    top: -20px;
     background: var(--fc-white);
     position: relative !important;
     border: 1px solid var(--fc-alto-2) !important;
@@ -13115,6 +13143,12 @@ input[type="number"] {
     max-width: 420px;
 }
 
+/* Wider shell for dialogs whose stat pair carries a full clamp name — "Small (20mm - 50mm Gap)"
+   wrapped onto a second line inside the 480px default. */
+.fc-modal .fc-modal__dialog--wide {
+    max-width: 640px;
+}
+
 .fc-modal .fc-modal__content {
     border: 0;
     border-radius: 16px;
@@ -13253,6 +13287,11 @@ input[type="number"] {
     flex-direction: column;
     gap: 0.35rem;
     padding: 0.85rem 1rem;
+}
+
+/* Own row: a full clamp name ("Small (20mm - 50mm Gap)") does not fit a third of the shell. */
+.fc-modal .fc-modal__stat--full {
+    flex: 1 1 100%;
 }
 
 .fc-modal .fc-modal__stat-label {

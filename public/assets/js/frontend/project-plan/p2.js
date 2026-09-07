@@ -402,6 +402,18 @@ let ProjectPlan = {
             return;
         }
 
+        // Measure from the untransformed positions, and from the stylesheet's own bottom reserve.
+        // This runs more than once per render, and a y that already carries the previous pass's
+        // translate makes every delta 0 - the second pass would then clear every transform and
+        // undo the alignment it just made.
+        var $result = $fc.closest('.fc-result');
+        $centerPoints.each(function() {
+            this.style.transform = '';
+        });
+        if ($result.length) {
+            $result[0].style.paddingBottom = '';
+        }
+
         var entries = [];
         $centerPoints.each(function() {
             var rect = this.getBoundingClientRect();
@@ -423,6 +435,25 @@ let ProjectPlan = {
             var delta = maxY - entry.y;
             entry.el.style.transform = delta > 0.5 ? 'translateY(' + Math.round(delta) + 'px)' : '';
         });
+
+        // .fc-result reserves a fixed clamp(72px, 8vw, 96px) below the diagram and the scroller
+        // around it clips vertically, so once the line is pushed down to clear a gate its text
+        // ran past the reserve and was cut off. Grow the reserve to whatever the line needs.
+        if (!$result.length) {
+            return;
+        }
+        var resultEl = $result[0];
+        var overshoot = 0;
+        $centerPoints.each(function() {
+            var past = (this.getBoundingClientRect().top + this.scrollHeight) - resultEl.getBoundingClientRect().bottom;
+            if (past > overshoot) {
+                overshoot = past;
+            }
+        });
+        if (overshoot > 0) {
+            var reserved = parseFloat(window.getComputedStyle(resultEl).paddingBottom) || 0;
+            resultEl.style.paddingBottom = Math.ceil(reserved + overshoot + 2) + 'px';
+        }
     },
 
     //----------------------------------------------------------------------------------
@@ -454,15 +485,29 @@ let ProjectPlan = {
         $('#fc-section-overall-' + tab).html(overallHtml);
 
         var $fencingItems = $fc.find('.fencing-panel-item');
+        // Clear before re-marking. The gate branch of reload_load_fencing_items relocates the glass
+        // pool hinge panel next to the gate a task after this first ran, and .first-item travels with
+        // the element - stranding the bracketed end post value mid-run instead of at the two ends.
+        $fc.find('.first-item').removeClass('first-item');
+        $fc.find('.last-item').removeClass('last-item');
         $fencingItems.first().addClass('first-item');
         $fencingItems.last().addClass('last-item');
 
-        if ($fc.find('.raked-panel .raked-panel-container').length == 1) {
-            $fc.find('.raked-panel').addClass('first-item last-item');
+        // A raked wrapper is "both ends" only when it is the section's whole run. The old count
+        // spanned both wrappers, so a single right-side rake matched it and marked BOTH wrappers
+        // first+last - surfacing the right rake's start value mid-run. Mark by side instead, and
+        // skip the empty opposite wrapper: the markup always ships both.
+        var $rakedWraps = $fc.find('.raked-panel').has('.raked-panel-container');
+
+        if ($rakedWraps.length === 1 && !$fencingItems.not('.fencing-raked-panel').length) {
+            $rakedWraps.addClass('first-item last-item');
         } else {
-            $fc.find('.left_raked-panel').first().addClass('first-item');
-            $fc.find('.right_raked-panel').first().addClass('last-item');
+            $rakedWraps.filter('.left_raked-panel').first().addClass('first-item');
+            $rakedWraps.filter('.right_raked-panel').first().addClass('last-item');
         }
+
+        $fc.find('.cp_no-post--left').removeClass('cp_no-post--left');
+        $fc.find('.cp_no-post--right').removeClass('cp_no-post--right');
 
         if ($fc.find('.left-panel-post.no-post').length) {
             $fc.find('.fc-center-point').first().addClass('cp_no-post--left');
@@ -470,6 +515,27 @@ let ProjectPlan = {
 
         if ($fc.find('.right-panel-post.no-post').length) {
             $fc.find('.fc-center-point').last().addClass('cp_no-post--right');
+        }
+
+        // A run of one item (Gate ONLY, a lone panel) carries both Centers lines on that same
+        // element, so .fc-last-c-p's opening tick lands exactly on .fc-first-c-p's - and painted
+        // its default black over the red no-post tick underneath. Colour it from the end it is
+        // actually sitting on. Multi-item runs leave it black: there it marks a real posted junction.
+        $fc.find('.cp_no-post--left-dup').removeClass('cp_no-post--left-dup');
+        if ($fc.find('.left-panel-post.no-post').length) {
+            var $cpAll = $fc.find('.fc-center-point');
+            var $cpFirstItem = $cpAll.first().closest('.fencing-panel-item');
+            var $cpLast = $cpAll.last();
+            if ($cpFirstItem.length && $cpLast.closest('.fencing-panel-item').is($cpFirstItem)) {
+                $cpLast.addClass('cp_no-post--left-dup');
+            }
+        }
+
+        // Gate ONLY is a run with no posts anywhere, so the whole Centers annotation reads as a
+        // no-post dimension - the label text included, not just the end ticks and their values.
+        $fc.removeClass('fc-centers-all-no-post');
+        if ($fencingItems.length === 1 && $fencingItems.hasClass('fencing-panel-gate')) {
+            $fc.addClass('fc-centers-all-no-post');
         }
 
         $fencingItems.not(':last').find('.fc-last-c-p').remove();
@@ -523,7 +589,15 @@ let ProjectPlan = {
             }
         }
 
+        // Each Centers line is absolutely positioned against its own panel at bottom: -82px, so
+        // a taller element (a gate) drops its line below the panels' and the dimension line
+        // reads as two. Align from the geometry we have NOW, then again next frame in case a
+        // late height moved a baseline (gate scaling, slat inline heights, a web font landing).
+        // The rAF pass alone was not enough: it does not fire while the tab is in the
+        // background, so a plan opened in a new tab kept its Centers lines at per-panel heights
+        // until something else forced a resync.
         var syncTab = tab;
+        ProjectPlan.syncProjectPlanCenterPointBaseline(syncTab);
         requestAnimationFrame(function() {
             ProjectPlan.syncProjectPlanCenterPointBaseline(syncTab);
         });
@@ -847,6 +921,21 @@ let ProjectPlan = {
         $spacings.last().find('.fs-clamp').remove();
 
         FENCE.call('near_gate_spacing');
+
+        /* Pair of z_fence.js renderLoad: dims the clamp bars while the gap is outside every
+           clamp's range. Placed after near_gate_spacing so the junction count skips the gate
+           strips; the bars themselves are synced by fcFinalizeGlassPoolPanelLayout further
+           down, once load_post_options_all has drawn them. No status line or prompt here. */
+        if (
+            info?.panel_group === 'a' &&
+            typeof GlassPool !== 'undefined' &&
+            typeof GlassPool.applyClampDiagramState === 'function' &&
+            typeof GlassPool.clampStatus === 'function'
+        ) {
+            try {
+                GlassPool.applyClampDiagramState($ppFc, GlassPool.clampStatus(calc, { tabIndex: tab }).status);
+            } catch (eClamp) {}
+        }
 
         var slatCtx = { fenceInfo: custom_fence, tabInfo: custom_fence_tab };
         if (SlatFence.isSlatLike(info?.slug)) {
@@ -1260,7 +1349,11 @@ let ProjectPlan = {
                     </div>      
                 </div>`;
 
-                $('.hinge-panel').append(hinges_panel);
+                // Every section's .fencing-panel-container lives in the DOM at once here (unlike
+                // the planner, which shows one section at a time) - an unscoped selector matches
+                // every gate section already rendered, not just this tab's, so each subsequent
+                // section's load appended one more hinge-icon set onto every earlier one.
+                $('#pp-' + tab + ' .hinge-panel').append(hinges_panel);
 
                 var hinges_gate = `<div class="fc-hinges-set">
                     <div class="fc-hinges fc-hinges-top">
@@ -1349,6 +1442,15 @@ let ProjectPlan = {
                 }
 
             }
+
+            // Everything in this timeout runs a task after the caller's synchronous
+            // load_center_point(), so that pass marked .first-item/.last-item before switchPanel()
+            // and fcEnsureGlassPoolHingeAdjacentToGate() moved the hinge panel. Re-mark from the
+            // order we actually ended up with - mirrors the planner's deferred
+            // fcSyncPlannerStep3PanelEnds().
+            try {
+                ProjectPlan.load_center_point(tab);
+            } catch (eEnds) {}
         });    
 
     },
