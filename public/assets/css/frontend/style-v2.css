@@ -74,6 +74,23 @@
     max-height: 16rem !important;
 }
 
+/* Dropdown options carry the brand colour instead of the theme's bootstrap blue and gray. The
+   selected option keeps the solid fill and wins over the hover wash, so the current choice stays
+   readable while the cursor runs over it. !important throughout: the bootstrap-5 select2 theme is
+   deferred in head.php, so it lands after this file and would otherwise take the cascade on order. */
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option--selected,
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option[aria-selected="true"] {
+    background-color: var(--fc-princeton-orange) !important;
+    color: var(--fc-white) !important;
+}
+
+/* Hover and keyboard highlight: label and a wash of the background both in the brand orange, the
+   wash transparent so the dropdown's own background still reads through it. */
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option--highlighted:not(.select2-results__option--selected):not([aria-selected="true"]) {
+    background-color: color-mix(in srgb, var(--fc-princeton-orange) 15%, transparent) !important;
+    color: var(--fc-princeton-orange) !important;
+}
+
 
 [data-section="2"] .fc-step2-field--disabled .select2-container {
     pointer-events: none;
@@ -285,10 +302,26 @@
     z-index: 1;
 }
 
-/* Gate ONLY: no posts anywhere in the run, so the whole Centers annotation is flagged - the
-   label text too, not only the end ticks and values the no-post rules above pick out. */
-.fc-centers-all-no-post .fc-center-point {
+/* Glass Pool Gate ONLY: the run has no posts, but its two end gaps are the gate's real
+   hinge and latch dimensions, so only the label carries the flag. The ticks and their values are
+   put back to black and left to the per-end gap rule above, whose :not()s keep a genuine 0mm end
+   red. Set explicitly because both tick shapes are drawn in currentColor. */
+.fc-centers-label-no-post .fc-center-point {
     color: var(--fc-red);
+}
+
+.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--left) .fc-start-c-p,
+.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--right) .fc-end-c-p {
+    color: var(--fc-black);
+}
+
+.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--left):not(.cp_no-post--right):not(.cp_no-post--left-dup) .fc-div-c-p {
+    border-left-color: var(--fc-black);
+}
+
+.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--left):before,
+.fc-centers-label-no-post .fc-center-point.fc-last-c-p:not(.cp_no-post--right):after {
+    border-top-color: var(--fc-black);
 }
 
 
@@ -298,6 +331,34 @@
 
 [data-group="b"] .panel-post:not(.panel-no-post).opt-2 {
     margin-bottom: 25px;
+}
+
+/* Slat: Cement In (opt-2) and Core Drilled (opt-4) draw the post sitting on the surface, the same
+   way Base Plated (opt-1) does - the surface line sits at the foot of the post and the spacing
+   number goes back to opt-1's position. Only the line's colour still tells them apart: it keeps the
+   light gray it already had, where opt-1's runs in currentColor. Post height is not set here - for
+   Slat that comes from --fc-slat-post-height-px (an !important rule in style.css), so the matching
+   trim is applied beside it in slat_fence.js. Slat only, so the other tubular styles keep the
+   buried post the rules in style.css draw for them. */
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2,
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2-1,
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4,
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4-1 {
+    margin-bottom: 30px;
+}
+
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2:after,
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2-1:after,
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4:after,
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4-1:after {
+    bottom: -2px;
+}
+
+.fencing-panel-container[data-type="slat"] .fencing-panel-spacing-number.opt-2 span,
+.fencing-panel-container[data-type="slat"] .fencing-panel-spacing-number.opt-2-1 span,
+.fencing-panel-container[data-type="slat"] .fencing-panel-spacing-number.opt-4 span,
+.fencing-panel-container[data-type="slat"] .fencing-panel-spacing-number.opt-4-1 span {
+    bottom: 0;
 }
 
 .qty-edited {

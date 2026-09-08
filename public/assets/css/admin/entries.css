@@ -1081,7 +1081,8 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
 }
 
 .fc-entries-fence-dropdown__option:hover {
-    background: #f0f0f1;
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 15%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
 .fc-entries-fence-dropdown__option input {
@@ -1488,7 +1489,8 @@ html[data-fc-admin-theme='dark'] .fc-sp-incomplete-toggle.is-active {
 }
 
 .fc-products-download-dropdown__option:hover:not(:disabled):not(.is-disabled) {
-    background: #f6f7f7;
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 15%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
 .fc-products-download-dropdown__option:disabled,
@@ -1512,7 +1514,8 @@ html[data-fc-admin-theme='dark'] .fc-products-download-dropdown__option i {
 }
 
 html[data-fc-admin-theme='dark'] .fc-products-download-dropdown__option:hover:not(:disabled):not(.is-disabled) {
-    background: #2c3338;
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 25%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
 .fc-products-download-modal {
@@ -1863,25 +1866,31 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
     transition: background 0.12s ease, color 0.12s ease;
 }
 
+/* Hover is a wash of the brand orange; the selected option takes it solid, so the current choice
+   still reads as chosen while the cursor runs down the list. Matches the planner's dropdowns. */
 .fc-entries-date-dropdown__option:hover {
-    background: #f6f7f7;
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 15%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
-.fc-entries-date-dropdown__option.is-selected {
-    background: rgba(246, 121, 37, 0.1);
-    color: #c2410c;
+.fc-entries-date-dropdown__option.is-selected,
+.fc-entries-date-dropdown__option.is-selected:hover {
+    background: var(--fc-princeton-orange, #f67925);
+    color: #fff;
 }
 
 .fc-entries-date-dropdown__check {
     flex-shrink: 0;
     font-size: 0.75rem;
-    color: #f67925;
+    color: var(--fc-princeton-orange, #f67925);
     opacity: 0;
     transform: scale(0.85);
     transition: opacity 0.12s ease, transform 0.12s ease;
 }
 
+/* The tick sits on the solid orange fill once selected, so it goes white with the label. */
 .fc-entries-date-dropdown__option.is-selected .fc-entries-date-dropdown__check {
+    color: #fff;
     opacity: 1;
     transform: scale(1);
 }
@@ -3009,7 +3018,8 @@ html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__panel {
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__option:hover {
-    background: var(--fc-admin-surface-muted);
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 25%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__footer {
@@ -3052,13 +3062,17 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__option {
     color: var(--fc-admin-text-heading);
 }
 
+/* Dark theme takes a heavier wash - 15% of the orange over a dark surface is nearly invisible. The
+   selected fill is the same solid orange as the light theme, so both read identically once chosen. */
 html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__option:hover {
-    background: var(--fc-admin-surface-muted);
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 25%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
-html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__option.is-selected {
-    background: rgba(246, 121, 37, 0.16);
-    color: #fdba74;
+html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__option.is-selected,
+html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__option.is-selected:hover {
+    background: var(--fc-princeton-orange, #f67925);
+    color: #fff;
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__custom-wrap,

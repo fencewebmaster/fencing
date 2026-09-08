@@ -2578,6 +2578,64 @@ function fcGlassPoolPersistGateFieldsIfNeeded(tab, slug, info) {
     localStorage.setItem('custom_fence-' + tab + '-' + slug, JSON.stringify(cf));
 }
 
+/**
+ * Glass Pool Gate ONLY: put both ends back on "Gap".
+ *
+ * A gate-only run has no glass either side of the gate, so an end still set to a clamp from
+ * before the switch (PTP90 / PTPA / PTW) bills a panel-to-panel or wall clamp for a junction that
+ * is not there, and sets the end out at the clamp's fixed 0 or 25mm instead of the gate's own
+ * hinge and latch gap. Runs at render as well as on the toggle, so a section saved with a clamp
+ * end before Gate ONLY was turned on is corrected when it is next drawn.
+ *
+ * Only rewrites an end that is already stored: an end never opened has no row, and the config's
+ * own default for it is "Gap" already.
+ */
+function fcGlassPoolForceGateOnlySideGap(tab, slug, info) {
+    if (!info || info.panel_group !== 'a' || typeof readCustomFenceSegment !== 'function') {
+        return;
+    }
+
+    var cf = readCustomFenceSegment(tab, slug);
+    if (!Array.isArray(cf)) {
+        return;
+    }
+
+    var row = function(control_key) {
+        return cf.find(function(item) {
+            return item && item.control_key === control_key;
+        });
+    };
+
+    // Either flag alone means Gate ONLY - the segment's own and the tab row's are kept in step by
+    // updateGateOnly()/checkGateOnly(), and update_custom_fence() reads both the same way.
+    var gateOnly = !!row('gate')?.settings?.gateOnly;
+    if (!gateOnly) {
+        try {
+            var tabRow = JSON.parse(localStorage.getItem('custom_fence-' + tab) || 'null');
+            gateOnly = !!(Array.isArray(tabRow) && tabRow[0] && tabRow[0].gateOnly);
+        } catch (eTabRow) {}
+    }
+    if (!gateOnly) {
+        return;
+    }
+
+    var changed = false;
+
+    ['left', 'right'].forEach(function(side) {
+        var setting = row(side + '_side')?.settings?.find(function(item) {
+            return item && item.key === side + '_option';
+        });
+        if (setting && setting.val !== 'side-gap') {
+            setting.val = 'side-gap';
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        localStorage.setItem('custom_fence-' + tab + '-' + slug, JSON.stringify(cf));
+    }
+}
+
 /** Gate hinge type option from glass-pool fence config. */
 function fcGlassPoolGetGateHingeTypeOption(info, hingeTypeSlug) {
     var fieldDef = (info?.settings?.gate?.fields || []).find(function(f) {
@@ -5069,6 +5127,49 @@ function fcScrollPlannerStep3ToLeftPost(slug) {
 }
 
 /**
+ * Should this end's Centers tick and value be flagged red (`cp_no-post--*`)?
+ *
+ * Glass Pool has no end posts at all - every left/right option is a clamp or a gap - so both ends
+ * always carry `.no-post`, and the end value came out red even where the side gap was a real
+ * dimension to set out to (42mm off a wall, 25mm on an angled clamp). Red reads as "nothing to
+ * measure to", so on panel group 'a' keep it for a 0mm side only: the panel-to-panel clamp, where
+ * the glass meets with no gap between. Every other group is unchanged - there `.no-post` really is
+ * a post the customer removed. Shared with project-plan's `load_center_point()`.
+ */
+function fcShouldFlagNoPostEnd($fc, side) {
+    var $end = $fc.find('.' + side + '-panel-post.no-post');
+
+    if (!$end.length) {
+        return false;
+    }
+
+    if ($fc.attr('data-group') !== 'a') {
+        return true;
+    }
+
+    // The side gap the end already carries. Read the strip's FIRST span, not its text: the value
+    // sits there alone ("(25)"), while the option slug beside it is its own .sw.cg-top span and
+    // carries digits of its own - PTP90 would otherwise read as a 90mm gap. Brackets are optional
+    // because the gate pass can leave the label bare. Both the spacing number and the bare
+    // .panel-post can wear the side class while only one holds a value, so take the first that
+    // does; nothing readable at all leaves the flag on rather than dropping it on an unfamiliar
+    // shape.
+    var gap = '';
+
+    $end.each(function() {
+        if (gap !== '') {
+            return;
+        }
+        var found = /-?\d+/.exec($(this).find('span').first().text());
+        if (found) {
+            gap = found[0];
+        }
+    });
+
+    return gap === '' || parseInt(gap, 10) === 0;
+}
+
+/**
  * Planner Step 3: first/last panel markers + end post labels (mirrors project-plan `load_center_point`).
  * Not used for Slat Infill.
  */
@@ -5111,10 +5212,12 @@ function fcSyncPlannerStep3PanelEnds(slug) {
     $fc.find('.cp_no-post--left').removeClass('cp_no-post--left');
     $fc.find('.cp_no-post--right').removeClass('cp_no-post--right');
 
-    if ($fc.find('.left-panel-post.no-post').length) {
+    var flagLeftEnd = fcShouldFlagNoPostEnd($fc, 'left');
+
+    if (flagLeftEnd) {
         $fc.find('.fc-center-point').first().addClass('cp_no-post--left');
     }
-    if ($fc.find('.right-panel-post.no-post').length) {
+    if (fcShouldFlagNoPostEnd($fc, 'right')) {
         $fc.find('.fc-center-point').last().addClass('cp_no-post--right');
     }
 
@@ -5123,7 +5226,7 @@ function fcSyncPlannerStep3PanelEnds(slug) {
     // its default black over the red no-post tick underneath. Colour it from the end it is
     // actually sitting on. Multi-item runs leave it black: there it marks a real posted junction.
     $fc.find('.cp_no-post--left-dup').removeClass('cp_no-post--left-dup');
-    if ($fc.find('.left-panel-post.no-post').length) {
+    if (flagLeftEnd) {
         var $cpAll = $fc.find('.fc-center-point');
         var $cpFirstItem = $cpAll.first().closest('.fencing-panel-item');
         var $cpLast = $cpAll.last();
@@ -5132,11 +5235,20 @@ function fcSyncPlannerStep3PanelEnds(slug) {
         }
     }
 
-    // Gate ONLY is a run with no posts anywhere, so the whole Centers annotation reads as a
-    // no-post dimension - the label text included, not just the end ticks and their values.
-    $fc.removeClass('fc-centers-all-no-post');
-    if ($items.length === 1 && $items.hasClass('fencing-panel-gate')) {
-        $fc.addClass('fc-centers-all-no-post');
+    // Gate ONLY on Glass Pool flags its label: those ends are clamps or a gap by definition,
+    // never posts, so the annotation is not a measurement between posts - but the two end gaps
+    // are real hinge-and-latch dimensions, so the ticks and values stay black under the per-end
+    // rule. Every other style is left to that per-end rule alone: a gate-only run's ends are the
+    // gate's own hinge and latch gaps too, and flagging the whole annotation reddened them no
+    // matter how wide they were. A group 'b' no-post end is written as (0) by z_fence.js, so
+    // fcShouldFlagNoPostEnd() still catches the genuine 0mm end on its own.
+    $fc.removeClass('fc-centers-label-no-post');
+    if (
+        $items.length === 1 &&
+        $items.hasClass('fencing-panel-gate') &&
+        $fc.attr('data-group') === 'a'
+    ) {
+        $fc.addClass('fc-centers-label-no-post');
     }
 
     $items.not(':last').find('.fc-last-c-p').remove();
@@ -7911,6 +8023,12 @@ function checkGateOnly() {
 
     var value = !!(segGo || tabGo);
 
+    // Before the UI is synced: a gate-only glass run has no glass to clamp to, so the ends go
+    // back to "Gap" whichever path set the flag.
+    if (value && typeof fcGlassPoolForceGateOnlySideGap === 'function') {
+        fcGlassPoolForceGateOnlySideGap(tab, slug, fd.data);
+    }
+
     $('[name="gate_only"]').prop('checked', value);
 
     $('[name="gate_only"]').each(function() {
@@ -7954,16 +8072,11 @@ function checkGateOnly() {
 }
 
 /**
- * Gate ONLY: gate + left/right side modals stay enabled; other Step 3 panel controls stay disabled.
+ * Gate ONLY: the gate modal stays enabled; left/right side and post/spigot options modals stay
+ * enabled only for tubular styles (Glass Pool has no real ends or posts left to configure).
  * @param {boolean} [forcedGateOnly] If set, use this instead of reading segment/tab (avoids stale fd right after storage write).
  */
 function fcSyncPanelControlsGateOnlyDisabled(forcedGateOnly) {
-    var gateOnlyAllowedKeys = {
-        gate: true,
-        post_options: true,
-        left_side: true,
-        right_side: true
-    };
     var $controls = $(typeof FENCES !== 'undefined' && FENCES.el && FENCES.el.fencingPanelControls
         ? FENCES.el.fencingPanelControls
         : '.fencing-panel-controls');
@@ -7971,16 +8084,37 @@ function fcSyncPanelControlsGateOnlyDisabled(forcedGateOnly) {
         return;
     }
 
+    // Read up front: the style decides which keys stay live, so it is needed even when the caller
+    // already knows the flag. getSelectedFenceData() has no fence to return on an empty planner.
+    var fd = null;
+    try {
+        fd = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+    } catch (eFd) {}
+
     var gateOnly;
     if (typeof forcedGateOnly === 'boolean') {
         gateOnly = forcedGateOnly;
     } else {
-        var fd = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
         if (!fd || !fd.info) {
             return;
         }
         gateOnly = fcIsPlannerGateOnlyActive(fd);
     }
+
+    // Glass Pool gives up its two end controls as well: a gate-only run has no glass either side
+    // of the gate, so there is no end to set out - both are the gate's own hinge and latch gap,
+    // and the sides are held on "Gap" regardless (fcGlassPoolForceGateOnlySideGap). The tubular
+    // styles keep theirs: a no-post end is still a real choice on a gate-only run there. Spigots
+    // (post_options) follows the same split: Glass Pool has no posts to spigot on a gate-only run,
+    // but a tubular style's real posts still need their post/spigot option set.
+    var endsEditable = !(fd && fd.data && fd.data.panel_group === 'a');
+
+    var gateOnlyAllowedKeys = {
+        gate: true,
+        post_options: endsEditable,
+        left_side: endsEditable,
+        right_side: endsEditable
+    };
 
     $controls.find('.fencing-btn-modal').each(function() {
         var $btn = $(this);

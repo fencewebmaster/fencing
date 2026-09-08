@@ -7758,7 +7758,8 @@ thead.fc-border th:last-child {
     color: var(--fc-white);
 }
 
-/* Step 3: Gate ONLY — panel/post controls disabled; gate + left/right side stay clickable */
+/* Step 3: Gate ONLY — panel/post controls disabled; gate + post options stay clickable, and
+   so do left/right side on every style but Glass Pool, whose ends are the gate's own gaps. */
 .fencing-panel-controls .fencing-btn-modal:disabled,
 .fencing-panel-controls .fencing-btn-modal.fc-panel-control--gate-only-disabled {
     opacity: 0.5;

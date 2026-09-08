@@ -216,6 +216,7 @@ FENCE = {
             typeof fcGlassPoolPersistGateFieldsIfNeeded === 'function'
         ) {
             fcGlassPoolPersistGateFieldsIfNeeded(tab, slug, info);
+            fcGlassPoolForceGateOnlySideGap(tab, slug, info);
             custom_fence = fd.info;
             try {
                 fd = getSelectedFenceData();
@@ -1754,7 +1755,10 @@ FENCE = {
                 var calc = calculate_fences();
                 gaps = calc.selected_values.spacing;   
 
-                $('.fencing-panel-spacing-number:not(.PTP90, .PTPA, .PTW)').find('span:not(.fs-clamp)').html(gaps);
+                // Not the two end strips: their bracketed side-gap value is written by the
+                // build and is not the panel-to-panel gap this line is spreading. Same
+                // exclusion fcApplyGlassPoolUniformGapLabels() already makes.
+                $('.fencing-panel-spacing-number:not(.PTP90, .PTPA, .PTW):not(.left-panel-post):not(.right-panel-post)').find('span:not(.fs-clamp)').html(gaps);
 
                 // Set gate spacing
                 if( $('.fencing-panel-gate').hasClass('panel-gate-left') ) {

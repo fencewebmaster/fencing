@@ -3754,7 +3754,18 @@ SlatFence = {
         }
 
         var slatNoBuryPost = (postOpt === 'opt-3' || postOpt === 'opt-5');
-        var slatReducePostHeightPx = (postOpt === 'opt-1') ? 20 : ((postOpt === 'opt-2' || postOpt === 'opt-4') ? 10 : 0);
+        // Slat draws Cement In (opt-2) and Core Drilled (opt-4) sitting on the surface, the same way
+        // Base Plated (opt-1) is - style-v2.css puts their surface line at the foot of the post too.
+        // So they take opt-1's trim as well: on the old 10px they stood 10px taller than opt-1 once
+        // that line moved down, which read as a different post rather than a different footing. Kept
+        // to the main slat slug, because the style-v2.css rules that move the line are Slat-only -
+        // Slat Infill still buries these two and keeps the 10px.
+        var slatSurfaceFootedPost =
+            this.isMainSlatSlug(info?.slug) && (postOpt === 'opt-2' || postOpt === 'opt-4');
+        var slatReducePostHeightPx =
+            (postOpt === 'opt-1' || slatSurfaceFootedPost)
+                ? 20
+                : ((postOpt === 'opt-2' || postOpt === 'opt-4') ? 10 : 0);
         var ctx = { fenceInfo: custom_fence };
         if (extraCtx.tabInfo) {
             ctx.tabInfo = extraCtx.tabInfo;

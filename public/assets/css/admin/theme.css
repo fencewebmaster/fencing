@@ -293,14 +293,17 @@ html[data-fc-admin-theme='dark'] .fc-admin-theme-switcher__btn--active {
 
 .fc-admin-cache-dropdown__option:hover:not(:disabled),
 .fc-admin-cache-dropdown__option.is-active:not(:disabled) {
-    background: #f6f7f7 !important;
-    border-color: #dcdcde;
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 15%, transparent) !important;
+    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 35%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
+/* The icon tile sits on the hover wash, so it takes a stronger mix of the same orange to stay
+   distinct from the row behind it. */
 .fc-admin-cache-dropdown__option:hover:not(:disabled) .fc-admin-cache-dropdown__option-icon,
 .fc-admin-cache-dropdown__option.is-active:not(:disabled) .fc-admin-cache-dropdown__option-icon {
-    background: #e8e8e9;
-    color: #1d2327;
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 22%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
 .fc-admin-cache-dropdown__option--all {
@@ -374,8 +377,9 @@ html[data-fc-admin-theme='dark'] .fc-admin-cache-dropdown__option-icon {
 
 html[data-fc-admin-theme='dark'] .fc-admin-cache-dropdown__option:hover:not(:disabled),
 html[data-fc-admin-theme='dark'] .fc-admin-cache-dropdown__option.is-active:not(:disabled) {
-    background: var(--fc-admin-surface-subtle, #1e293b) !important;
-    border-color: var(--fc-admin-border, #334155);
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 25%, transparent) !important;
+    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 45%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
 }
 
 html[data-fc-admin-theme='dark'] .fc-admin-cache-dropdown__option--all {
@@ -797,5 +801,14 @@ input[name="fc-integration-webhookMode"][value="test"]:checked + .fc-mode-pill {
 
 [data-fc-debug-mode="1"].fc-debug-toggle--active {
     background: var(--fc-green, #04a725);
+    color: #fff;
+}
+
+/* Native selects: the option list is drawn by the browser, so the checked row is the only part that
+   takes a colour, and only where the engine honours it (Chrome and Firefox on Windows/Linux; Safari
+   paints the OS popup and ignores it). Progressive - the control reads fine without it. Keeps the
+   admin's custom dropdowns and its plain selects on the same brand orange. */
+select option:checked {
+    background: var(--fc-princeton-orange, #f67925);
     color: #fff;
 }

@@ -509,11 +509,15 @@ let ProjectPlan = {
         $fc.find('.cp_no-post--left').removeClass('cp_no-post--left');
         $fc.find('.cp_no-post--right').removeClass('cp_no-post--right');
 
-        if ($fc.find('.left-panel-post.no-post').length) {
+        // Glass Pool ends are never posts, so a real side gap used to read red like a missing
+        // one - fcShouldFlagNoPostEnd() keeps the flag for a 0mm side only. See functions.js.
+        var flagLeftEnd = fcShouldFlagNoPostEnd($fc, 'left');
+
+        if (flagLeftEnd) {
             $fc.find('.fc-center-point').first().addClass('cp_no-post--left');
         }
 
-        if ($fc.find('.right-panel-post.no-post').length) {
+        if (fcShouldFlagNoPostEnd($fc, 'right')) {
             $fc.find('.fc-center-point').last().addClass('cp_no-post--right');
         }
 
@@ -522,7 +526,7 @@ let ProjectPlan = {
         // its default black over the red no-post tick underneath. Colour it from the end it is
         // actually sitting on. Multi-item runs leave it black: there it marks a real posted junction.
         $fc.find('.cp_no-post--left-dup').removeClass('cp_no-post--left-dup');
-        if ($fc.find('.left-panel-post.no-post').length) {
+        if (flagLeftEnd) {
             var $cpAll = $fc.find('.fc-center-point');
             var $cpFirstItem = $cpAll.first().closest('.fencing-panel-item');
             var $cpLast = $cpAll.last();
@@ -531,11 +535,20 @@ let ProjectPlan = {
             }
         }
 
-        // Gate ONLY is a run with no posts anywhere, so the whole Centers annotation reads as a
-        // no-post dimension - the label text included, not just the end ticks and their values.
-        $fc.removeClass('fc-centers-all-no-post');
-        if ($fencingItems.length === 1 && $fencingItems.hasClass('fencing-panel-gate')) {
-            $fc.addClass('fc-centers-all-no-post');
+        // Gate ONLY on Glass Pool flags its label: those ends are clamps or a gap by definition,
+        // never posts, so the annotation is not a measurement between posts - but the two end gaps
+        // are real hinge-and-latch dimensions, so the ticks and values stay black under the per-end
+        // rule. Every other style is left to that per-end rule alone: a gate-only run's ends are the
+        // gate's own hinge and latch gaps too, and flagging the whole annotation reddened them no
+        // matter how wide they were. A group 'b' no-post end is written as (0) by z_fence.js, so
+        // fcShouldFlagNoPostEnd() still catches the genuine 0mm end on its own.
+        $fc.removeClass('fc-centers-label-no-post');
+        if (
+            $fencingItems.length === 1 &&
+            $fencingItems.hasClass('fencing-panel-gate') &&
+            $fc.attr('data-group') === 'a'
+        ) {
+            $fc.addClass('fc-centers-label-no-post');
         }
 
         $fencingItems.not(':last').find('.fc-last-c-p').remove();
@@ -658,6 +671,7 @@ let ProjectPlan = {
             typeof fcGlassPoolPersistGateFieldsIfNeeded === 'function'
         ) {
             fcGlassPoolPersistGateFieldsIfNeeded(tab, i, info);
+            fcGlassPoolForceGateOnlySideGap(tab, i, info);
             custom_fence = readCustomFenceSegment(tab, rawStyle);
         }
 
@@ -1418,7 +1432,10 @@ let ProjectPlan = {
 
                 gaps = calc.selected_values.spacing;   
 
-                $('#pp-'+tab+' .fencing-panel-spacing-number:not(.PTP90, .PTPA, .PTW)').find('span:not(.fs-clamp)').html(gaps);
+                // Not the two end strips: their bracketed side-gap value is written by the
+                // build and is not the panel-to-panel gap this line is spreading. Same
+                // exclusion fcApplyGlassPoolUniformGapLabels() already makes.
+                $('#pp-'+tab+' .fencing-panel-spacing-number:not(.PTP90, .PTPA, .PTW):not(.left-panel-post):not(.right-panel-post)').find('span:not(.fs-clamp)').html(gaps);
 
                 // Set gate spacing
                 if( $('#pp-'+tab+' .fencing-panel-gate').hasClass('panel-gate-left') ) {
