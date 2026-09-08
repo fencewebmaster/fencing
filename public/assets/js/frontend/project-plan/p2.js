@@ -535,22 +535,11 @@ let ProjectPlan = {
             }
         }
 
-        // Gate ONLY on Glass Pool flags its label: those ends are clamps or a gap by definition,
-        // never posts, so the annotation is not a measurement between posts - but the two end gaps
-        // are real hinge-and-latch dimensions, so the ticks and values stay black under the per-end
-        // rule. Every other style is left to that per-end rule alone: a gate-only run's ends are the
-        // gate's own hinge and latch gaps too, and flagging the whole annotation reddened them no
-        // matter how wide they were. A group 'b' no-post end is written as (0) by z_fence.js, so
-        // fcShouldFlagNoPostEnd() still catches the genuine 0mm end on its own.
-        $fc.removeClass('fc-centers-label-no-post');
-        if (
-            $fencingItems.length === 1 &&
-            $fencingItems.hasClass('fencing-panel-gate') &&
-            $fc.attr('data-group') === 'a'
-        ) {
-            $fc.addClass('fc-centers-label-no-post');
-        }
-
+        // No blanket flag on a gate-only run any more, Glass Pool included. The Centers width and
+        // the "Centers" label are bare text nodes sharing .fc-center-point, so colouring that
+        // element to mark the label reddened the width with it - and the width is a real dimension
+        // to build to. Every style is left to the per-end rule instead, which still reddens a
+        // genuine 0mm end through fcShouldFlagNoPostEnd().
         $fencingItems.not(':last').find('.fc-last-c-p').remove();
 
         if (left_raked_count && panel_count > 1) {

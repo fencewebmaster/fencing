@@ -119,8 +119,76 @@ final class CheckoutCartModel
 
     /**
      * Include/exclude an optional cart line (and its custom-fence product twin).
+     *
+     * Adding the chemical-anchor gun also adds its glue: a cartridge gun on its own installs
+     * nothing, and the two are listed as separate opt-ins, so a customer could take the gun and
+     * leave without the consumable it fires. Only that direction is paired — glue without a gun is
+     * a normal order, since the installer usually owns one already (the reason both are optional in
+     * the first place, see apply_post_options_opt1 in cart-items.js).
      */
     public static function toggleOptional(string $optionalKey, bool $include): void
+    {
+        self::applyOptionalInclude($optionalKey, $include);
+
+        if (!$include) {
+            return;
+        }
+
+        $partnerKey = self::partneredOptionalKey($optionalKey);
+
+        // Left alone when it is already in: re-applying would reset a quantity the customer edited.
+        if ($partnerKey !== null && !self::optionalIsIncluded($partnerKey)) {
+            self::applyOptionalInclude($partnerKey, true);
+        }
+    }
+
+    /**
+     * The optional line that has to come along with `$optionalKey`, or null when it travels alone.
+     *
+     * Keys are `fence|color|slug` (CartBuilderService::optionalCartItemKey), so swapping just the
+     * slug keeps the partner inside the same fence and colour group — a second glass section, or
+     * the same fence in another colour, carries its own pair and is not touched by this one.
+     */
+    private static function partneredOptionalKey(string $optionalKey): ?string
+    {
+        $gun  = '|chem_achor+glue_gun';
+        $glue = '|chem_achor+glue';
+
+        if (!str_ends_with($optionalKey, $gun)) {
+            return null;
+        }
+
+        return substr($optionalKey, 0, -strlen($gun)) . $glue;
+    }
+
+    /**
+     * Is this optional line already opted in?
+     */
+    private static function optionalIsIncluded(string $optionalKey): bool
+    {
+        if ($optionalKey === '' || empty($_SESSION['fc_cart']['items']) || !is_array($_SESSION['fc_cart']['items'])) {
+            return false;
+        }
+
+        foreach ($_SESSION['fc_cart']['items'] as $row) {
+            if (!is_array($row) || empty($row['optional'])) {
+                continue;
+            }
+            $row_key = !empty($row['optional_key'])
+                ? (string) $row['optional_key']
+                : CartBuilderService::optionalCartItemKey($row);
+            if ($row_key === $optionalKey) {
+                return !empty($row['optional_included']);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Set one optional line's opt-in state on both the cart row and its product twin.
+     */
+    private static function applyOptionalInclude(string $optionalKey, bool $include): void
     {
         if ($optionalKey !== '' && !empty($_SESSION['fc_cart']['items']) && is_array($_SESSION['fc_cart']['items'])) {
             foreach ($_SESSION['fc_cart']['items'] as $idx => $row) {

@@ -5235,22 +5235,11 @@ function fcSyncPlannerStep3PanelEnds(slug) {
         }
     }
 
-    // Gate ONLY on Glass Pool flags its label: those ends are clamps or a gap by definition,
-    // never posts, so the annotation is not a measurement between posts - but the two end gaps
-    // are real hinge-and-latch dimensions, so the ticks and values stay black under the per-end
-    // rule. Every other style is left to that per-end rule alone: a gate-only run's ends are the
-    // gate's own hinge and latch gaps too, and flagging the whole annotation reddened them no
-    // matter how wide they were. A group 'b' no-post end is written as (0) by z_fence.js, so
-    // fcShouldFlagNoPostEnd() still catches the genuine 0mm end on its own.
-    $fc.removeClass('fc-centers-label-no-post');
-    if (
-        $items.length === 1 &&
-        $items.hasClass('fencing-panel-gate') &&
-        $fc.attr('data-group') === 'a'
-    ) {
-        $fc.addClass('fc-centers-label-no-post');
-    }
-
+    // No blanket flag on a gate-only run any more, Glass Pool included. The Centers width and the
+    // "Centers" label are bare text nodes sharing .fc-center-point, so colouring that element to
+    // mark the label reddened the width with it - and the width is a real dimension to build to.
+    // Every style is left to the per-end rule instead, which still reddens a genuine 0mm end
+    // through fcShouldFlagNoPostEnd().
     $items.not(':last').find('.fc-last-c-p').remove();
 
     var $spacingNums = $fc.find('.fencing-panel-spacing-number');
@@ -6923,7 +6912,11 @@ function fcInitStep2Select2($targets) {
             width: '100%',
             minimumResultsForSearch: 0,
             placeholder: $s.find('option[value=""]').first().text() || 'Select',
-            allowClear: $s.find('option[value=""]').length > 0,
+            /* No clear cross on these. Every Step 2 dropdown is a measurement the section cannot be
+               calculated without, so emptying one back to the placeholder is never a state the
+               customer wants to land in - the way out of a wrong value is picking another one. The
+               placeholder stays, it just no longer brings allowClear's × with it. */
+            allowClear: false,
             dropdownParent: $parent.length ? $parent : $(document.body)
         });
         if ($s.prop('disabled')) {
@@ -7369,13 +7362,51 @@ function addNotesOrInfo(el, v) {
 
 //----------------------------------------------------------------------------------
 
+/**
+ * The in-field clear control. One place: it is injected on load from here and again from the keyup
+ * handler in events.js, and the two copies used to drift.
+ *
+ * A <button>, not the <i> it used to be - as an icon it could not be tabbed to, could not be fired
+ * from the keyboard, and screen readers never announced it at all. type="button" is load-bearing:
+ * these fields sit inside #fc-planning-form, where a bare button submits the step. The name carries
+ * the field's own label, so a reader moving button to button hears "Clear Mobile" rather than six
+ * buttons all called "Clear".
+ */
+function fcClearButton($input) {
+    var label = '';
+
+    try {
+        label = $input
+            .closest('.fc-label-group, .fc-form-group, .form-group')
+            .find('label')
+            .not('.error')
+            .first()
+            .text();
+    } catch (e) {}
+
+    label = $.trim(String(label || '').replace(/\*/g, ''));
+
+    var name = label ? 'Clear ' + label : 'Clear this field';
+
+    /* Built through jQuery rather than concatenated, so the label lands in the attribute escaped. */
+    return $('<button/>', {
+        type: 'button',
+        /* Out of the tab order: Tab through the form should walk the fields, not stop on a clear
+           button between every one of them. Still focusable programmatically, still clickable, and
+           still announced in a screen reader's element list - and Escape in the field clears it
+           without a pointer (fcHasClearEscape in events.js). */
+        tabindex: -1,
+        'class': 'fa-solid fa-circle-xmark form-control-clear',
+        'aria-label': name
+    });
+}
+
 function loadClearForm() {
     $('.has-clear .form-control').each(function() {
         var _this = $(this);
         if (_this.val()) {
-            var clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`;
             _this.siblings('.form-control-clear').remove();
-            if (_this.val()) _this.after(clear);
+            _this.after(fcClearButton(_this));
         }
     });
 }

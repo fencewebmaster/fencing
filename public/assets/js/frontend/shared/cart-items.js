@@ -958,7 +958,62 @@ FENCES.cartItems = {
 
         newCartItems = FENCES.cartItems.apply_barr_bracket_rules(newCartItems, context, processOpts);
 
+        // Last, so it sees the finished list: the style hooks above can add or filter lines.
+        newCartItems = FENCES.cartItems.pair_chem_anchor_glue(newCartItems);
+
         return newCartItems;
+    },
+
+    //----------------------------------------------------------------------------------
+
+    /**
+     * A chemical-anchor gun never travels alone — it fires nothing without a cartridge.
+     *
+     * apply_post_options_opt1 pushes the pair together, so this is a backstop rather than the
+     * primary route: it covers any later path that emits the gun on its own, and any hook that
+     * filters the glue back out. Added optional (`qty: 0` + suggested), the same way both lines are
+     * listed in the first place - an installer often has glue on the van, so this puts the line in
+     * front of them to add rather than billing it. The reverse is deliberately not paired: glue
+     * without a gun is a normal order.
+     */
+    pair_chem_anchor_glue: function(array) {
+        if (!Array.isArray(array)) {
+            return array;
+        }
+
+        var GUN = 'chem_achor+glue_gun';
+        var GLUE = 'chem_achor+glue';
+
+        var hasGun = array.some(function(item) {
+            return item && item.slug === GUN;
+        });
+
+        if (!hasGun) {
+            return array;
+        }
+
+        var hasGlue = array.some(function(item) {
+            return item && item.slug === GLUE;
+        });
+
+        if (hasGlue) {
+            return array;
+        }
+
+        /* Mirrors the rule in apply_post_options_opt1 - one cartridge per seven anchors. Falls back
+           to a single cartridge where there are no spigots to count, so the line is never offered
+           at zero. */
+        var gluePerBolts = 7;
+        var spigots = $('.fencing-panel-spigot').length;
+
+        array.push({
+            slug: GLUE,
+            qty: 0,
+            optional: true,
+            suggested_qty: spigots > 0 ? Math.ceil(spigots / gluePerBolts) : 1
+        });
+
+        return array;
     },
 
     //----------------------------------------------------------------------------------
@@ -1130,6 +1185,15 @@ FENCES.cartItems = {
                 let glue = Math.floor(spigots / gluePerBolts);
                 if (spigots % gluePerBolts > 0) {
                     glue += 1;
+                }
+
+                /* Gate ONLY draws no panels, so there are no spigots to divide and this came out 0 -
+                   yet the gun below is suggested at 1 either way, and the gate's own hinge and latch
+                   fixings still get chemically anchored. At 0 the pairing in
+                   CheckoutCartModel::toggleOptional would include the glue at zero quantity, so
+                   taking the gun ordered no cartridge. One is the floor whenever the pair is listed. */
+                if (glue < 1) {
+                    glue = 1;
                 }
 
                 // Consumables, not fence: an installer usually owns a cartridge gun already and

@@ -79,7 +79,14 @@ GlassPool = {
                     }
                 });
 
-                if (calc?.gate_hinge_panel?.count) {
+                /* Gate ONLY counts as well, though it has no hinge panel to hang off: the gate still
+                   swings on the same hinges, so the hardware is still on the job. The slug is built
+                   from the hinge type alone - the panel width only feeds the gate_hinge_panel line
+                   below - and the gate row is read through fcGlassPoolEnsureDefaultGateFields above,
+                   so a Step 2 Gate ONLY that never set a type still resolves to the default rather
+                   than to gate_hinge+undefined. Read off the stored row, not the live planner, so a
+                   quote reload and the project plan bill it the same way. */
+                if (calc?.gate_hinge_panel?.count || gate_data[0]?.settings?.gateOnly === true) {
                     array.push({
                         slug: 'gate_hinge+' + gate_hinge_type?.val,
                         qty: 1

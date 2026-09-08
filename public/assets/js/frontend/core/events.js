@@ -3629,6 +3629,34 @@ function fcSubmitModalKeydown(e) {
 //----------------------------------------------------------------------------------
 
 /**
+ * Escape clears the field the caret is in. The clear button is out of the tab order (see
+ * fcClearButton), so this is the keyboard's way to it.
+ *
+ * Layered over fcSubmitModalKeydown above: it only swallows the key when there is something to
+ * clear, so Escape on an already-empty field still closes the wizard. jQuery runs delegated
+ * handlers before the selector-less ones bound to the same document, so this sees the key first
+ * whatever order the two are registered in - stopImmediatePropagation is what holds the modal
+ * back, since both sit on document and stopPropagation alone would not.
+ */
+_doc.on('keydown', '.has-clear .form-control', fcHasClearEscape);
+
+function fcHasClearEscape(e) {
+    if (e.key !== 'Escape' && e.key !== 'Esc') {
+        return;
+    }
+
+    var _this = $(this);
+    if (!_this.val()) {
+        return;
+    }
+
+    e.stopImmediatePropagation();
+    _this.val('').trigger('keyup');
+}
+
+//----------------------------------------------------------------------------------
+
+/**
  * Download-plans wizard floating labels: `.is-filled` on the field group keeps the label
  * floated for fields that hold a value. Runs on load, on modal open, and after programmatic
  * fills (restoreFormData, Google address autocomplete) - none of which fire input events.
@@ -4365,7 +4393,10 @@ _doc.on('keyup input change', '.has-clear .form-control', hasClear_formControl);
 
 function hasClear_formControl() {
     var _this = $(this),
-        clear = `<i class="fa-solid fa-circle-xmark form-control-clear"></i>`,
+        /* A button, not the <i> this used to be: as an icon it could not be tabbed to or fired from
+           the keyboard and screen readers never announced it. type="button" is load-bearing - these
+           fields sit inside #fc-planning-form and a bare button would submit the step. */
+        clear = fcClearButton(_this),
         shown = _this.siblings('.form-control-clear').length > 0,
         wanted = !!_this.val();
 

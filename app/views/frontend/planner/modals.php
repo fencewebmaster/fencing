@@ -150,13 +150,11 @@ use Fc\Admin\Services\AppConfigService;
                         <span>Letters and numbers only. You will find it on the Fence Summary of the plan you saved.</span>
                     </p>
                 </div>
+                <!-- No Cancel: the header's X already backs out of a dialog that asks for one
+                     value, and it left the only action competing with a button that undoes it. -->
                 <div class="modal-footer fc-modal__footer">
-                    <button type="button" class="btn btn-outline-secondary text-uppercase px-3" data-bs-dismiss="modal">
-                        <strong>Cancel</strong>
-                    </button>
                     <button type="submit" class="btn btn-orange text-uppercase px-3">
-                        <i class="fa fa-check me-2" aria-hidden="true"></i>
-                        <strong>Load quote</strong>
+                        Load Now
                     </button>
                 </div>
             </div>

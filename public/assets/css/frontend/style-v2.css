@@ -302,28 +302,6 @@
     z-index: 1;
 }
 
-/* Glass Pool Gate ONLY: the run has no posts, but its two end gaps are the gate's real
-   hinge and latch dimensions, so only the label carries the flag. The ticks and their values are
-   put back to black and left to the per-end gap rule above, whose :not()s keep a genuine 0mm end
-   red. Set explicitly because both tick shapes are drawn in currentColor. */
-.fc-centers-label-no-post .fc-center-point {
-    color: var(--fc-red);
-}
-
-.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--left) .fc-start-c-p,
-.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--right) .fc-end-c-p {
-    color: var(--fc-black);
-}
-
-.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--left):not(.cp_no-post--right):not(.cp_no-post--left-dup) .fc-div-c-p {
-    border-left-color: var(--fc-black);
-}
-
-.fc-centers-label-no-post .fc-center-point:not(.cp_no-post--left):before,
-.fc-centers-label-no-post .fc-center-point.fc-last-c-p:not(.cp_no-post--right):after {
-    border-top-color: var(--fc-black);
-}
-
 
 .fencing-panel-spacing-number.opt-2 span {
     bottom: -5px;

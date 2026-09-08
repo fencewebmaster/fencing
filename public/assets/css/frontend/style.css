@@ -1875,10 +1875,10 @@ label.error {
     z-index: 999;
     color: var(--fc-white);
     padding: 3px 5px;
-    border-radius: 5px;
+    border-radius: 3px;
     font-size: 12px;
     position: absolute;
-    right: 5px;
+    right: 0;
     top: -13px;
 }
 
@@ -10994,8 +10994,8 @@ body.fc-restoring-selection .fencing-tab-name {
 
 /* Its header is the first thing inside a rounded border here, so square top corners sat outside it. */
 .fc-planner-page .fc-step-4 .fc-step4-notes .fc-card-header {
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 /* Buttons across the journey are flat: hover lifts 1px off a shared shadow token, and :not(:active) leaves the press alone. */
@@ -13036,13 +13036,73 @@ body.fc-modal-open {
     display: none;
 }
 
+/* In-field clear button. Kept to a 16px box so the per-context offsets below still centre it, with
+   the hit target and every interaction state drawn outside that box - an ::after overlay for touch,
+   a spread box-shadow for the hover halo - so none of it can shift the field's layout. Muted at
+   rest: in brand red it read as an error marker sitting inside a perfectly valid field, and said the
+   same thing as the validation colour. The red comes back on hover, where the destructive hint
+   belongs. */
 .form-control-clear {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    /* Both, on purpose: the class also carries Font Awesome's .fa-solid, whose own
+       `display: var(--fa-display, inline-block)` loads after this file and wins on source order at
+       equal specificity. Feeding FA its variable makes either declaration land on inline-flex, so the
+       glyph is centred by flex rather than by inline layout. */
+    --fa-display: inline-flex;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 15px;
+    line-height: 1;
     pointer-events: auto;
     cursor: pointer;
     position: absolute;
     background: var(--fc-white);
-    color: var(--fc-brand-primary);
+    color: var(--fc-silver-chalice);
+    /* No transition or :active of its own - now that it is a real <button> the shared planner button
+       rule above already gives it the app's transition and its scale(0.96) press. */
 }
+
+/* Out to a 28px target without moving the icon: the glyph stays where every offset rule expects it. */
+.form-control-clear:after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+}
+
+/* The glyph spins on hover the way .fencing-modal-close's X does, and on that button's timing - it
+   rotates the mark rather than the control, so the halo and the focus ring stay put. Set on the
+   pseudo-element because the shared button transition above applies to the element only, and a
+   pseudo-element inherits none of it. `display` is not decoration here: transform is ignored on an
+   inline box, and this glyph is one until it is blockified. */
+.form-control-clear:before {
+    display: block;
+    transition: transform 0.45s ease;
+}
+
+.form-control-clear:hover {
+    color: var(--fc-brand-primary);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--fc-brand-primary) 10%, transparent);
+}
+
+.form-control-clear:hover:before {
+    transform: rotate(360deg);
+}
+
+.form-control-clear:focus-visible {
+    color: var(--fc-brand-primary);
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 3px;
+}
+
 
 .fc-label-group .form-control-clear,
 .form-group .form-control-clear {
@@ -13142,6 +13202,26 @@ input[type="number"] {
 
 .fc-modal .fc-modal__dialog--sm {
     max-width: 420px;
+}
+
+/* Load Quote asks for one short ID, so it takes less width than the other two --sm dialogs, which
+   share that modifier and keep theirs. Narrowed here rather than on --sm for that reason. */
+.fc-modal#load-quote .fc-modal__dialog--sm {
+    max-width: 360px;
+}
+
+/* Its footer holds a single action now that Cancel is gone, so it spans the row instead of sitting
+   right-aligned against empty space. A flex child of .modal-footer, hence the basis rather than a
+   plain width. The label lifts off the shared 13px too - at full width and on its own, it reads as
+   the dialog's one action rather than a button squeezed into a toolbar. Set on the button so the
+   check icon and the <strong> both inherit it. */
+.fc-modal#load-quote .fc-modal__footer .btn {
+    flex: 1 1 100%;
+    font-size: 1rem;
+    /* Opens up to match the larger label - the shared planner rule pins every button to
+       0.4rem 0.7rem with !important, so this needs the flag to land, and the id here already
+       outranks it. */
+    padding: 0.65rem 1rem !important;
 }
 
 /* Wider shell for dialogs whose stat pair carries a full clamp name — "Small (20mm - 50mm Gap)"
@@ -13401,11 +13481,12 @@ input[type="number"] {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-/* box-shadow is unset !important app-wide on :focus, so the focus ring has to be an outline. */
+/* No ring on this one: the field is autofocused when the dialog opens, so an outline fired on every
+   open rather than marking a place the customer had navigated to. The border still turns brand
+   orange, which keeps focus visible - box-shadow is unset !important app-wide on :focus, so the
+   border is what is left to carry it. */
 #load-quote [name="qid"]:focus-visible {
     border-color: var(--fc-princeton-orange) !important;
-    outline: 2px solid var(--fc-princeton-orange);
-    outline-offset: 2px;
 }
 
 /* Bootstrap's is-invalid glyph lands at 3em here and reads as a character in the ID. */
