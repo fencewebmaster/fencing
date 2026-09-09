@@ -1,6 +1,7 @@
 /**
  * Project plan (/project-plan) — Color Options carousel (Slick).
- * mobileFirst: 1 full-width slide, dots only; width > 767 → 4 slides with arrows.
+ * mobileFirst: 2 slides (1 when the quote has a single colour), dots only; width > 767 → 4
+ * slides with arrows.
  * Phones get no arrows: they sit outside the track (left/right: -30px) so they overhang a
  * narrow viewport, and a swipe plus dots is the expected affordance on touch. Dropping them
  * also frees the 96px the dot row reserved for them.
@@ -78,6 +79,10 @@
             '<i class="fa-solid fa-chevron-right fencing-styles-arrow__icon" aria-hidden="true"></i>' +
             '</span></button>';
 
+        // A lone colour card still has to fill the row: slidesToShow 2 would size it to half the
+        // track and leave the other half blank, which is the common single-fence quote.
+        var phoneSlides = Math.min(2, $el.children().length);
+
         $wrap.addClass('fc-project-plan-color-slick-pending');
 
         var revealFallback = setTimeout(function() {
@@ -112,8 +117,8 @@
         $el.slick({
             mobileFirst: true,
             infinite: true,
-            slidesToShow: 1,
-            slidesToScroll: 1,
+            slidesToShow: phoneSlides,
+            slidesToScroll: phoneSlides,
             dots: true,
             arrows: false,
             appendArrows: $wrap,

@@ -5792,7 +5792,7 @@ thead.fc-border th:last-child {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-self: stretch;
     width: 100%;
     min-height: 100%;
@@ -5804,7 +5804,7 @@ thead.fc-border th:last-child {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     margin-bottom: 0;
 }
 
@@ -8993,10 +8993,35 @@ body.fc-restoring-selection .fencing-tab-name {
     text-align: left;
 }
 
+/* Every tile takes the height of the tallest in its row. A name that wraps to two lines -
+   "Woodland Grey" does at this width where "Black" does not - made its own tile 13px taller than
+   its neighbours, so the row stepped up and down as you swiped along it. Slick floats the slides
+   and a float sizes to its own content, so the track has to be the flex container for them to
+   equalise at all; the tile then fills the slide it sits in. This is the planner half of what the
+   project-plan modal already does for its own row further down ("cards stretch to row max"). */
+.fc-planner-page .js-fc-color-options-slick .slick-track {
+    display: flex;
+    align-items: stretch;
+}
+
 .fc-planner-page .js-fc-color-options-slick .fc-color-options__slide {
+    display: flex;
+    /* Slick writes each slide's width inline; as a flex item it must not be squeezed off it. */
+    flex-shrink: 0;
+    /* Load-bearing: slick.css sets .slick-slide { height: 100% }, and a specified cross size opts
+       the slide out of the track's align-items: stretch, which is the whole mechanism above. */
+    height: auto;
     padding-left: 6px;
     padding-right: 6px;
     box-sizing: border-box;
+}
+
+.fc-planner-page .js-fc-color-options-slick .fc-color-options__slide .fc-select.fc-select-color {
+    width: 100%;
+    /* .fc-step-4 .fc-select pins its content to the bottom for the fixed-height selects; once the
+       colour tiles equalise to the row max that stranded a one-line name at the foot of a tile
+       sized by a two-line neighbour. Names read as a column, so they start at the top. */
+    justify-content: flex-start;
 }
 
 .fc-planner-page .fc-step-4 .fc-card:has(.fc-color-options-slick-area),
