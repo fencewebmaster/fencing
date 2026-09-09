@@ -3189,6 +3189,74 @@ function fcSyncPlannerUpdateButtonVisibility() {
 }
 
 /**
+ * The real slide behind a Slick clone, for an option tile that was clicked.
+ *
+ * `infinite` duplicates every slide, and a tap lands on whichever copy is on screen. On a phone the
+ * colour row shows 2.2 of its tiles, so with three colours six of the nine tappable swatches are
+ * clones. Every reader of a selection counts originals only - the two below, and
+ * fcCollectPlannerColorRowsFromDom() which is what actually stores the colour - so a selection left
+ * on a clone read as no selection at all: the swatch looked chosen, nothing was saved, and Step 4
+ * answered "Please select a colour". Returns the tile untouched when it is not a clone, or when
+ * there is no slider or no slug to match it back by.
+ */
+function fcResolveSlickOptionOriginal($el) {
+    if (!$el || !$el.length || !$el.closest('.slick-cloned').length) {
+        return $el;
+    }
+
+    var $slider = $el.closest('.slick-slider');
+    var slug = $el.attr('data-slug');
+
+    if (!$slider.length || slug === undefined || slug === null || slug === '') {
+        return $el;
+    }
+
+    var $original = $slider
+        .find('.fc-select-post, .fc-select-item')
+        .filter(function() {
+            return (
+                $(this).attr('data-slug') === slug &&
+                $(this).closest('.slick-cloned').length === 0
+            );
+        })
+        .first();
+
+    return $original.length ? $original : $el;
+}
+
+/**
+ * Carry an option tile's selected state onto the clones Slick made of it.
+ *
+ * The copies are static - Slick never re-syncs them - so selecting the real slide on its own would
+ * leave the tile the customer actually tapped looking unselected, with the highlight sitting on a
+ * slide that may be scrolled off screen.
+ */
+function fcSyncSlickOptionCopies($el) {
+    if (!$el || !$el.length) {
+        return;
+    }
+
+    var $slider = $el.closest('.slick-slider');
+    var slug = $el.attr('data-slug');
+
+    if (!$slider.length || slug === undefined || slug === null || slug === '') {
+        return;
+    }
+
+    var selected = $el.hasClass('fc-selected');
+
+    $slider
+        .find('.fc-select-post, .fc-select-item')
+        .filter(function() {
+            return (
+                $(this).attr('data-slug') === slug &&
+                $(this).closest('.slick-cloned').length > 0
+            );
+        })
+        .toggleClass('fc-selected', selected);
+}
+
+/**
  * Each `.fc-color-options` row has a selection in real DOM only (not Slick `infinite` clones).
  * Cloned slides copy `.fc-selected`, so a naive count of `.fc-selected` stays > row count and keeps buttons disabled.
  */

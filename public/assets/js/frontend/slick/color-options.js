@@ -268,12 +268,15 @@
 
         $el.slick({
             mobileFirst: true,
-            // Infinite at every width, phones included: the row keeps going whichever way you
-            // swipe or tap rather than dead-ending on the last colour. The cost is that a
-            // fractional slidesToShow offsets the track, so a partial tile shows at both ends
-            // instead of only the right — with the row looping, that is a true statement about
-            // what sits either side of it.
-            infinite: true,
+            // Looping everywhere except the planner on a phone. There slidesToShow is fractional,
+            // and Slick offsets an infinite track by slidesToShow * slideWidth - 2.2 widths - while
+            // the leading clone block it has to clear is a whole ceil(2.2) = 3 slides. The 0.8 it
+            // never clears sat at the left edge as a permanently half-cut tile. Dropping infinite
+            // zeroes that offset so the row starts flush; the peek below is untouched, so the
+            // affordance survives. The modal keeps looping: its slidesToShow is a whole 2, so its
+            // clone block and its offset already match and it starts flush as it is. Both blocks in
+            // `responsive` re-assert infinite, so only phone widths change here.
+            infinite: isModal ? true : false,
             // Planner on a phone shows 2 tiles plus a sliver of the 3rd. The fraction is the
             // point: a clean 2 looks like the row ends there, whereas the cut-off edge is what
             // tells you it scrolls - the arrows are hidden at this width, so the peek is the

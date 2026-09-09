@@ -1231,7 +1231,13 @@ function fcCopyQuoteLink(e) {
 _doc.on('click', '.fc-select-post, .fc-select-item', fcSelectPostItem);
 
 function fcSelectPostItem() {
-    var _this = $(this),
+    // A tap inside a Slick carousel lands on whichever copy of the tile is on screen, and that is
+    // usually a clone - see fcResolveSlickOptionOriginal(). Everything below reads off the real
+    // slide instead, which is the only one the readers of a selection count.
+    var _this =
+            typeof fcResolveSlickOptionOriginal === 'function'
+                ? fcResolveSlickOptionOriginal($(this))
+                : $(this),
         slug = _this.attr('data-slug'),
         getFormField = _this.closest('.fc-form-field');
 
@@ -1244,6 +1250,11 @@ function fcSelectPostItem() {
 
     _this.closest('.fencing-form-group').find('.fc-select').removeClass('fc-selected');
     _this.addClass('fc-selected');
+
+    // The clones are static copies, so the tile that was actually tapped needs painting too.
+    if (typeof fcSyncSlickOptionCopies === 'function') {
+        fcSyncSlickOptionCopies(_this);
+    }
 
     getFormField.attr('value', slug);
 
