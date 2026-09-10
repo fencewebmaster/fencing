@@ -1876,7 +1876,7 @@ label.error {
     color: var(--fc-white);
     padding: 3px 5px;
     border-radius: 3px;
-    font-size: 12px;
+    font-size: 11px;
     position: absolute;
     right: 0;
     top: -13px;
@@ -4620,7 +4620,7 @@ thead.fc-border th:last-child {
     color: var(--fc-white);
     padding: 2px 5px;
     border-radius: 5px;
-    font-size: 12px;
+    font-size: 11px;
     position: absolute;
     bottom: -30px;
     display: none;
@@ -15452,10 +15452,6 @@ div.fc-footer-app .app-version {
 
 /* Your Project Details: one left edge, the header's 15px, because that is the line the section titles already sit on. */
 .fc-project-plan-page .fc-project-details .fc-table-rounded-border > table > tbody > tr > td:first-child {
-    padding-left: 15px;
-}
-
-.fc-project-plan-page .fc-project-details .fc-project-details-edit-hint {
     padding-left: 15px;
 }
 

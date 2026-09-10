@@ -21,9 +21,7 @@ $version = $page['version'];
 <!DOCTYPE html>
 <html lang="en" class="h-full" data-fc-admin-theme="light">
 <head>
-    <script>
-    (function(){try{var t=localStorage.getItem('fc-admin-appearance');document.documentElement.setAttribute('data-fc-admin-theme',t==='dark'?'dark':'light');}catch(e){}})();
-    </script>
+    <?php view('admin.layouts.partials.storage-boot'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="<?php echo e(rtrim((string) $page['admin_base'], '/') . '/'); ?>">
@@ -159,6 +157,7 @@ $version = $page['version'];
         };
     </script>
     <script src="<?php echo asset('assets/js/admin/core/namespace.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/core/store.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/admin-appearance.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/login.js'); ?>"></script>
 </body>

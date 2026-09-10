@@ -16,6 +16,7 @@ writable/theme.json
 writable/fences/*.php
 tests/*
 !tests/glass-pool-clamps/
+!tests/debugbar/
 
 # Generated storage (keep directory placeholders)
 writable/storage/cache/**/*.json

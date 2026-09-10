@@ -69,6 +69,23 @@ function clearFencingData() {
     removeItemStorageWith("cart_items");
     removeItemStorageWith("project-plans");
     removeItemStorageWith("countdown-date");
+    // Step 2 Gate ONLY snapshots are section state too — keyed by the same (tab, style) pair as
+    // custom_fence-{tab}-{slug}, which fcRemoveTabStyleState() already clears as a pair on a
+    // per-section reset. They were missing here, and this function is what p1.js runs before
+    // hydrating a saved quote (`?qid=`), so the PREVIOUS quote's snapshots survived the load:
+    // picking that fence style in the loaded quote re-applied Step 2 — slat size, gap, height,
+    // overall length — from a different customer's quote, silently overwriting the loaded values.
+    removeItemStorageWith("fc-step2-go-snap-");
+    // Last-clicked field slug, which z_fence.js reads back as the gate swing direction. Clearing
+    // it here (it used to go only on the post-checkout wipe) is what "Clear All" and a `?qid=`
+    // load need: z_fence's `last_clicked?.value?.includes('right') ? true : <DOM check>` takes the
+    // stored value in preference to the rebuilt DOM, so a stale 'right' from the previous quote
+    // pinned the new one's gate to the wrong side. Both read sites are null-safe — JSON.parse(null)
+    // is null, and they fall through to the panel's own class — so removing it just restores the
+    // DOM as the source of truth.
+    try {
+        localStorage.removeItem("last-clicked-value");
+    } catch (e) {}
 }
 
 //----------------------------------------------------------------------------------
@@ -77,11 +94,13 @@ function clearFencingData() {
  * Full browser wipe for fencing calculator keys (used after successful project-plan checkout push).
  */
 function clearPlannerLocalStorage() {
+    // Both extras this used to carry — the fc-step2-go-snap-* sweep and the last-clicked-value
+    // removal — now live in clearFencingData(), because every planner-reset path (Clear All,
+    // `?qid=` load, `?fence=` deep link) needs them, not just the post-checkout wipe. Repeating
+    // them here would be a second place to keep in step with no behaviour of its own, so this is
+    // deliberately a pure delegation; it stays as a distinct name because the call site reads as
+    // "wipe the planner after a successful store push", not "reset fencing data".
     clearFencingData();
-    try {
-        localStorage.removeItem("last-clicked-value");
-    } catch (e) {}
-    removeItemStorageWith("fc-step2-go-snap-");
 }
 
 //----------------------------------------------------------------------------------
@@ -721,8 +740,11 @@ function restoreFormData() {
             } else if (input.type === "select-one") {
                 input.value = formData[key];
             } else {
+                // Storage is bare digits; the field always shows them spaced, through the same
+                // mask typing goes through - a short legacy number groups the way typing those
+                // same digits would, rather than sitting there unformatted.
                 input.value = key === 'mobile'
-                    ? fcNormalizeMobileForStorage(formData[key])
+                    ? HELPER.formatAustralianMobileInput(formData[key])
                     : formData[key];
             }
         }
@@ -5390,10 +5412,6 @@ function fcApplyOverallLengthValidationUi(opts) {
     var $msg = $(box).closest('.fc-input-container').find('.fc-input-msg').first();
     if (!result.valid) {
         $msg.addClass('fcim-show').html(result.message || 'Invalid value');
-        $('.btn-fc-calculate')
-            .attr('disabled', 'disabled')
-            .removeClass('btn-dark')
-            .addClass('btn-light disabled');
         if (opts.hideStep3 !== false && typeof fcHidePlannerStep3Results === 'function') {
             fcHidePlannerStep3Results();
         }

@@ -413,6 +413,26 @@ let Planner = {
         }
 
         if (!didFullLocalRestore) {
+            /**
+             * max() is for the session-merge path only, where sections added locally but not yet
+             * submitted must outlive a stale server row. On `?qid=` it must never actually merge,
+             * or the previous quote's larger section count survives and phantom tabs render over
+             * the rows this hydration just wrote — one customer's sections inside another's quote.
+             *
+             * TWO separate guards keep it inert there, and both have to hold:
+             *  - quote loaded OK  → reload_fence_items() ran clearFencingData() (its `qid &&
+             *    !qidLoadFailed` arm), so custom_fence-section is gone and this reads back as 1.
+             *  - quote load FAILED → that clear is skipped, so localSectionCountBefore is still the
+             *    previous quote's count. What protects this line instead is the early return at the
+             *    top of this function, which holds because PlannerPageModel::loadQuote() returns
+             *    `'res' => (object) []` for a missing/trashed quote and PlannerController gates the
+             *    `$_SESSION['fc_data']['fences']` fallback on `!$quote['failed']` — so fc_fence_info
+             *    can never carry fence_data when the load failed.
+             *
+             * Removing either guard — including "tidying away" that early return as redundant, or
+             * dropping the `!$quote['failed']` condition so a bad Quote ID keeps session work —
+             * turns this line into live cross-quote data corruption.
+             */
             var mergedSectionCount = Math.max(serverSectionCount, localSectionCountBefore);
             localStorage.setItem('custom_fence-section', String(mergedSectionCount));
         }

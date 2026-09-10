@@ -303,8 +303,16 @@ final class CartBuilderService
             return json_encode($val);
         }
 
+        // Everything below needs a string: json_decode() and preg_match() both reject anything else
+        // under strict_types, and callers legitimately hand over a record field or a POST key that
+        // was never set (CheckoutCartModel::applyProjectDetails passes null when a quote carries no
+        // colour rows). Nothing else can be decoded, so it comes back untouched.
+        if (!is_string($val)) {
+            return $val;
+        }
+
         // Digit strings with a leading zero must stay strings (json_decode would drop the zero).
-        if (is_string($val) && preg_match('/^0\d+$/', trim($val))) {
+        if (preg_match('/^0\d+$/', trim($val))) {
             return trim($val);
         }
 
@@ -328,7 +336,50 @@ final class CartBuilderService
             return '';
         }
 
-        return trim((string) $mobile);
+        $raw = trim((string) $mobile);
+        if ($raw === '') {
+            return '';
+        }
+
+        // The planner displays the number spaced (0412 345 678) since the validation rework, and a
+        // direct POST can still arrive as +61 4.. - both land here as the bare digits every row
+        // written before that already holds.
+        $digits = (string) preg_replace('/[^0-9]/', '', $raw);
+        if ($digits === '') {
+            return $raw;
+        }
+
+        if (strlen($digits) === 11 && str_starts_with($digits, '61')) {
+            $digits = '0' . substr($digits, 2);
+        }
+
+        return $digits;
+    }
+
+    /**
+     * Group a stored mobile the way the planner field shows it: 0412 345 678. The column holds bare
+     * digits, so a read-only view of the number would otherwise read differently from the input the
+     * customer edits it in. Short or non-numeric values group as far as they go, matching the mask.
+     */
+    public static function formatMobileForDisplay(mixed $mobile): string
+    {
+        $digits = self::normalizeMobileForStorage($mobile);
+        if ($digits === '' || !ctype_digit($digits)) {
+            return $digits;
+        }
+
+        $digits = substr($digits, 0, 10);
+        $length = strlen($digits);
+
+        if ($length <= 4) {
+            return $digits;
+        }
+
+        if ($length <= 7) {
+            return substr($digits, 0, 4) . ' ' . substr($digits, 4);
+        }
+
+        return substr($digits, 0, 4) . ' ' . substr($digits, 4, 3) . ' ' . substr($digits, 7);
     }
 
     /**

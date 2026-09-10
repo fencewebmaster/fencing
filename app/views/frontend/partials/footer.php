@@ -1,4 +1,5 @@
 <?php
+use Fc\Admin\Debug\DebugbarServer;
 use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Services\AppConfigService;
 use Fc\Admin\Settings\BrandingSettings;
@@ -103,6 +104,19 @@ use Fc\Admin\Services\SiteRegistryService;
 <script defer src="<?php echo asset('public/assets/js/frontend/fences/calc/calc.js'); ?>"></script>
 
 <?php include view_path('frontend.partials.fence-scripts'); ?>
+
+<?php if (!empty($fcDebugbarOn)) : ?>
+<?php
+// Debugbar: flag comes from head.php's shared-scope $fcDebugbarOn (Settings -> Console).
+// The island carries the server capture (timing/queries/errors); the two scripts execute
+// after the whole deferred chain above and wrap globals from OUTSIDE at DOMContentLoaded,
+// so calculator files stay untouched. Kept ahead of the custom-footer block so that block
+// stays the last thing on the page.
+echo DebugbarServer::inlineJsonIsland();
+?>
+<script defer src="<?php echo asset('public/assets/js/frontend/debug/debugbar-core.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/debug/debugbar-ui.js'); ?>"></script>
+<?php endif; ?>
 
 <?php
 // Custom footer code from Settings -> Integration. Raw and unescaped, same rationale as

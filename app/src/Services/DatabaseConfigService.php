@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
+use Fc\Admin\Debug\DebugbarServer;
+use Fc\Admin\Debug\TimedMysqli;
+use Fc\Admin\Debug\TimedPdoStatement;
+
 /**
  * Shared database configuration from fc/config.php (PDO / mysqli).
  * Does not load WordPress or read wp-config.php.
@@ -176,9 +180,15 @@ final class DatabaseConfigService
         $hosts = array_values(array_unique($hosts));
         $lastError = '';
 
+        // The Debugbar's query log rides a timing subclass, chosen here because this is the
+        // only `new \mysqli` in the tree - every raw ->query()/->prepare() caller gets timed
+        // without being touched. Callers only ever check `instanceof \mysqli`, which the
+        // subclass satisfies; when Debug Mode is off the plain driver is used, unchanged.
+        $mysqliClass = DebugbarServer::collectQueries() ? TimedMysqli::class : \mysqli::class;
+
         foreach ($hosts as $host) {
             try {
-                $conn = @new \mysqli(
+                $conn = @new $mysqliClass(
                     $host,
                     (string) $cfg['username'],
                     (string) $cfg['password'],
@@ -265,12 +275,18 @@ final class DatabaseConfigService
                 $host,
                 (string) $cfg['database']
             );
+            $pdoOptions = [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                \PDO::ATTR_EMULATE_PREPARES => false,
+            ];
+            // Same deal as the mysqli subclass above: the only `new \PDO` in the tree, so a
+            // statement class here times every prepare/execute when the Debugbar is armed.
+            if (DebugbarServer::collectQueries()) {
+                $pdoOptions[\PDO::ATTR_STATEMENT_CLASS] = [TimedPdoStatement::class];
+            }
             try {
-                $pdo = new \PDO($dsn, (string) $cfg['username'], (string) $cfg['password'], [
-                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-                    \PDO::ATTR_EMULATE_PREPARES => false,
-                ]);
+                $pdo = new \PDO($dsn, (string) $cfg['username'], (string) $cfg['password'], $pdoOptions);
                 $result = [
                     'pdo' => $pdo,
                     'error' => '',

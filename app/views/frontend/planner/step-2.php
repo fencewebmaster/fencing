@@ -78,6 +78,10 @@ use Fc\Admin\Services\AppConfigService;
 
                             </div>
 
+                            <!-- Inside the input frame, not the container: the container also holds
+                                 Calculate, so a container-anchored message sat over the button. -->
+                            <div class="fc-input-msg error-msg"></div>
+
                         </div>
 
                         <button type="button" class="btn btn-dark text-uppercase btn-fc-calculate px-3">
@@ -85,8 +89,6 @@ use Fc\Admin\Services\AppConfigService;
                         </button>
 
                     </div>
-
-                    <div class="fc-input-msg error-msg"></div>
                 </div>
             </div>
             <div class="col-lg-6 col-md-6">

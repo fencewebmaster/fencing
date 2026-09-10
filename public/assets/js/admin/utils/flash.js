@@ -16,8 +16,11 @@
     class FlashMessage {
         /**
          * @param {Object} options
-         * @param {string} options.storageKey sessionStorage key (kept per-caller
-         *   so an in-flight flash set before a deploy still gets consumed after it)
+         * @param {string} options.storageKey flash scope inside the shared
+         *   'fc-admin-session' envelope. Kept as each caller's pre-consolidation
+         *   sessionStorage key name: FC.store.session uses the same string as
+         *   its legacy fallback, so an in-flight flash set before a deploy
+         *   still gets consumed after it.
          * @param {string} [options.noticeSelector] selector for the notice mount,
          *   relative to the root passed to renderInto — omit if this instance is
          *   only used for set()/consume(), not renderInto()
@@ -32,35 +35,27 @@
         }
 
         set(message, type) {
-            try {
-                sessionStorage.setItem(
-                    this.storageKey,
-                    JSON.stringify({
-                        message: String(message || ''),
-                        type: type === 'error' ? 'error' : 'success'
-                    })
-                );
-            } catch (e) {
-                /* ignore */
+            var store = global.FC && global.FC.store;
+            if (!store) {
+                return;
             }
+            store.session.set(this.storageKey, {
+                message: String(message || ''),
+                type: type === 'error' ? 'error' : 'success'
+            });
         }
 
         /** @returns {{message:string,type:string}|null} */
         consume() {
-            try {
-                var raw = sessionStorage.getItem(this.storageKey);
-                if (!raw) {
-                    return null;
-                }
-                sessionStorage.removeItem(this.storageKey);
-                var data = JSON.parse(raw);
-                if (!data || !data.message) {
-                    return null;
-                }
-                return data;
-            } catch (e) {
+            var store = global.FC && global.FC.store;
+            if (!store) {
                 return null;
             }
+            var data = store.session.consume(this.storageKey);
+            if (!data || !data.message) {
+                return null;
+            }
+            return data;
         }
 
         /**

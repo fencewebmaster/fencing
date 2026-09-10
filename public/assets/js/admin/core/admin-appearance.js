@@ -4,20 +4,21 @@
 (function (global) {
     'use strict';
 
-    var STORAGE_KEY = 'fc-admin-appearance';
     var html = document.documentElement;
+
+    // core/store.js loads right before this file on both admin pages; the guard
+    // only matters if that script failed to load, where defaults beat a throw.
+    function store() {
+        return (global.FC && global.FC.store) || null;
+    }
 
     function normalizeTheme(value) {
         return value === 'dark' ? 'dark' : 'light';
     }
 
     function readStoredTheme() {
-        try {
-            var stored = localStorage.getItem(STORAGE_KEY);
-            return normalizeTheme(stored);
-        } catch (e) {
-            return 'light';
-        }
+        var s = store();
+        return s ? s.get('ui.appearance') : 'light';
     }
 
     function updateSwitcher(theme) {
@@ -35,10 +36,9 @@
         html.setAttribute('data-fc-admin-theme', theme);
 
         if (!options.skipStore) {
-            try {
-                localStorage.setItem(STORAGE_KEY, theme);
-            } catch (e) {
-                /* ignore quota / private mode */
+            var s = store();
+            if (s) {
+                s.set('ui.appearance', theme);
             }
         }
 

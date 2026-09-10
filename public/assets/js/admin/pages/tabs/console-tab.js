@@ -14,6 +14,7 @@
     class ConsoleTabController extends global.FC.Settings.TabController {
         bind() {
             this.bindDebugModeToggle();
+            this.bindDebugbarFields();
             this.bindDevConsole();
         }
 
@@ -46,6 +47,144 @@
             this.applyDebugModeFlag(enabled);
         }
 
+        /**
+         * @param {boolean} force repaint even a focused field. Used on the save response,
+         *   whose values come back from disk: normalize() clamps out-of-range input (10 ->
+         *   50 for max entries), and without this the field kept displaying the rejected
+         *   value, with no further `change` to correct it.
+         */
+        paintDebugbarFields(force) {
+            var consoleState = this.state.console || {};
+            document.querySelectorAll('[data-fc-console-field]').forEach(function (input) {
+                var key = input.getAttribute('data-fc-console-field');
+                var value = consoleState[key] === undefined || consoleState[key] === null ? '' : consoleState[key];
+                if (input.type === 'checkbox') {
+                    input.checked = !!consoleState[key];
+                    return;
+                }
+                // Skip a field the user is mid-edit in, unless the server just corrected it.
+                if (document.activeElement === input && !(force && String(input.value) !== String(value))) {
+                    return;
+                }
+                input.value = value;
+            });
+        }
+
+        /**
+         * Debugbar sub-settings save through the same action=console POST as the Debug Mode
+         * toggle, but without the toggle's full page reload - nothing on the ADMIN page
+         * depends on these keys.
+         *
+         * Posts ONLY the changed key. The page's console snapshot is read once from the
+         * bootstrap island and never refreshed, so sending the whole object let a stale tab
+         * write back a debugMode another admin had since changed - re-arming (or clearing)
+         * Debug Mode site-wide from an unrelated checkbox. The server merges the delta onto
+         * what is on disk.
+         *
+         * Saves are queued per key rather than dropped: the old shared consoleSaving guard
+         * discarded a second spinner click silently, leaving the field showing a value that
+         * was never saved, and it also made the Debug Mode toggle a no-op mid-save.
+         */
+        saveDebugbarField(key, value) {
+            var self = this;
+            var state = this.state;
+
+            state.consoleFieldInFlight = state.consoleFieldInFlight || {};
+            state.consoleFieldPending = state.consoleFieldPending || {};
+
+            state.console = Object.assign({}, state.console || {}, (function () {
+                var partial = {};
+                partial[key] = value;
+                return partial;
+            })());
+            this.paintDebugbarFields();
+
+            if (state.consoleFieldInFlight[key]) {
+                // Coalesce: the in-flight response fires the newest value for this key.
+                state.consoleFieldPending[key] = value;
+                return;
+            }
+
+            var previous = Object.assign({}, state.console);
+            state.consoleFieldInFlight[key] = true;
+            global.FC.util.toast('saving', 'Saving Debugbar settings…', TOAST_CONSOLE);
+
+            var payload = {};
+            payload[key] = value;
+
+            fetch(API_CONSOLE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    console: payload,
+                    csrf: state.csrf
+                })
+            })
+                .then(function (res) {
+                    return res.json().then(function (body) {
+                        if (!res.ok || !body.ok) {
+                            throw new Error((body && body.error) || 'Save failed');
+                        }
+                        return body;
+                    });
+                })
+                .then(function (body) {
+                    state.console = Object.assign({}, state.console, body.console || {});
+                    // force: the server value is authoritative and may be a clamp of what
+                    // was typed, so it must land even in a field that still has focus.
+                    self.paintDebugbarFields(true);
+                    global.FC.util.toast('success', body.message || 'Console settings saved.', TOAST_CONSOLE);
+                })
+                .catch(function (err) {
+                    state.console = previous;
+                    self.paintDebugbarFields(true);
+                    global.FC.util.toast('error', err.message || 'Could not save Debugbar settings.', TOAST_CONSOLE);
+                })
+                .then(function () {
+                    state.consoleFieldInFlight[key] = false;
+                    if (Object.prototype.hasOwnProperty.call(state.consoleFieldPending, key)) {
+                        var queued = state.consoleFieldPending[key];
+                        delete state.consoleFieldPending[key];
+                        self.saveDebugbarField(key, queued);
+                    }
+                });
+        }
+
+        bindDebugbarFields() {
+            var self = this;
+            var state = this.state;
+            if (state.consoleDebugbarBound) {
+                this.paintDebugbarFields();
+                return;
+            }
+            state.consoleDebugbarBound = true;
+
+            document.querySelectorAll('[data-fc-console-field]').forEach(function (input) {
+                var key = input.getAttribute('data-fc-console-field');
+                input.addEventListener('change', function () {
+                    var value;
+                    if (input.type === 'checkbox') {
+                        value = input.checked;
+                    } else if (input.type === 'number') {
+                        value = parseInt(input.value, 10);
+                        if (isNaN(value)) {
+                            self.paintDebugbarFields();
+                            return;
+                        }
+                    } else {
+                        value = input.value;
+                    }
+                    self.saveDebugbarField(key, value);
+                });
+            });
+
+            this.paintDebugbarFields();
+        }
+
         saveDebugMode(enabled) {
             var self = this;
             var state = this.state;
@@ -70,8 +209,11 @@
                     Accept: 'application/json'
                 },
                 credentials: 'same-origin',
+                // Only the key this control owns: the page's console snapshot is taken once at
+                // load, so posting the whole object let a stale tab overwrite Debugbar settings
+                // another admin had changed since. The server merges onto what is on disk.
                 body: JSON.stringify({
-                    console: state.console,
+                    console: { debugMode: next },
                     csrf: state.csrf
                 })
             })
@@ -86,7 +228,7 @@
                 .then(function (body) {
                     state.console = Object.assign(
                         {},
-                        state.consoleDefaults || { debugMode: false },
+                        state.consoleDefaults || { debugMode: false, showDebugbar: true, debugVerbose: false, debugMaxEntries: 200, debugRedactKeys: '' },
                         body.console || state.console
                     );
                     self.paintDebugModeToggle();

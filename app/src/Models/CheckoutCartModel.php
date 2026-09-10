@@ -40,7 +40,12 @@ final class CheckoutCartModel
             }
         }
 
-        $post['color'] = CartBuilderService::convertInputs($post['color'] ?? null);
+        // A quote with no colour rows renders no colour inputs, so the key can be missing entirely.
+        // Only convert what was actually posted: writing it back as null would blank the stored
+        // colours in the array_merge below, and $posted_colors already handles the absence.
+        if (isset($post['color'])) {
+            $post['color'] = CartBuilderService::convertInputs($post['color']);
+        }
 
         if (isset($post['project_plans']) && (string) $post['project_plans'] !== '') {
             $_SESSION['fc_data']['project_plans'] = (string) $post['project_plans'];

@@ -10,12 +10,19 @@ namespace Fc\Admin\Settings;
 final class ConsoleSettings
 {
     /**
-     * @return array{debugMode:bool}
+     * @return array{debugMode:bool,showDebugbar:bool,debugVerbose:bool,debugMaxEntries:int,debugRedactKeys:string}
      */
     public static function defaults(): array
     {
         return [
             'debugMode' => false,
+            // Debugbar sub-settings. All of them are inert unless debugMode is on - debugMode
+            // stays the single master switch; showDebugbar only lets a developer keep server
+            // debug behaviour (error display, slug rows) without the toolbar overlay.
+            'showDebugbar' => true,
+            'debugVerbose' => false,
+            'debugMaxEntries' => 200,
+            'debugRedactKeys' => 'password,secret,token,nonce,key,auth,cookie,credential,db_password,database_password',
         ];
     }
 
@@ -44,24 +51,49 @@ final class ConsoleSettings
         return is_array($loaded) ? $loaded : [];
     }
 
+    private static function normalizeBool(mixed $value, bool $default): bool
+    {
+        $value = $value ?? $default;
+        if (is_string($value)) {
+            return in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], true);
+        }
+
+        return (bool) $value;
+    }
+
     /**
-     * @return array{debugMode:bool}
+     * @return array{debugMode:bool,showDebugbar:bool,debugVerbose:bool,debugMaxEntries:int,debugRedactKeys:string}
      */
     public static function normalize(array $input): array
     {
         $defaults = self::defaults();
-        $debug = $input['debugMode'] ?? $defaults['debugMode'];
-        if (is_string($debug)) {
-            $debug = in_array(strtolower(trim($debug)), ['1', 'true', 'yes', 'on'], true);
+
+        $maxEntries = $input['debugMaxEntries'] ?? $defaults['debugMaxEntries'];
+        $maxEntries = is_numeric($maxEntries) ? (int) $maxEntries : $defaults['debugMaxEntries'];
+        $maxEntries = max(50, min(2000, $maxEntries));
+
+        // Kept as a CSV string (what the admin field holds); consumers split via debugRedactKeys().
+        // An emptied field falls back to the defaults rather than turning redaction off silently.
+        $redact = trim((string) ($input['debugRedactKeys'] ?? $defaults['debugRedactKeys']));
+        $redact = implode(',', array_values(array_filter(array_map(
+            static fn (string $k): string => strtolower(trim($k)),
+            explode(',', $redact)
+        ), static fn (string $k): bool => $k !== '')));
+        if ($redact === '') {
+            $redact = $defaults['debugRedactKeys'];
         }
 
         return [
-            'debugMode' => (bool) $debug,
+            'debugMode' => self::normalizeBool($input['debugMode'] ?? null, $defaults['debugMode']),
+            'showDebugbar' => self::normalizeBool($input['showDebugbar'] ?? null, $defaults['showDebugbar']),
+            'debugVerbose' => self::normalizeBool($input['debugVerbose'] ?? null, $defaults['debugVerbose']),
+            'debugMaxEntries' => $maxEntries,
+            'debugRedactKeys' => $redact,
         ];
     }
 
     /**
-     * @return array{debugMode:bool}
+     * @return array{debugMode:bool,showDebugbar:bool,debugVerbose:bool,debugMaxEntries:int,debugRedactKeys:string}
      */
     public static function get(): array
     {
@@ -76,9 +108,32 @@ final class ConsoleSettings
         return !empty(self::get()['debugMode']);
     }
 
+    public static function showDebugbar(): bool
+    {
+        return !empty(self::get()['showDebugbar']);
+    }
+
+    public static function debugVerbose(): bool
+    {
+        return !empty(self::get()['debugVerbose']);
+    }
+
+    public static function debugMaxEntries(): int
+    {
+        return (int) self::get()['debugMaxEntries'];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function debugRedactKeys(): array
+    {
+        return array_values(array_filter(explode(',', (string) self::get()['debugRedactKeys'])));
+    }
+
     /**
      * @param array<string, mixed> $console
-     * @return array{ok:bool,console?:array{debugMode:bool},error?:string}
+     * @return array{ok:bool,console?:array{debugMode:bool,showDebugbar:bool,debugVerbose:bool,debugMaxEntries:int,debugRedactKeys:string},error?:string}
      */
     public static function save(array $console): array
     {
@@ -154,7 +209,7 @@ final class ConsoleSettings
     }
 
     /**
-     * @return array{ok:bool,console:array{debugMode:bool},defaults:array{debugMode:bool}}
+     * @return array{ok:bool,console:array{debugMode:bool,showDebugbar:bool,debugVerbose:bool,debugMaxEntries:int,debugRedactKeys:string},defaults:array{debugMode:bool,showDebugbar:bool,debugVerbose:bool,debugMaxEntries:int,debugRedactKeys:string}}
      */
     public static function apiPayload(): array
     {

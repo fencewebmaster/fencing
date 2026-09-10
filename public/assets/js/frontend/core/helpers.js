@@ -956,27 +956,75 @@ HELPER = {
 
     //----------------------------------------------------------------------------------
     
+    /**
+     * Australian mobile check that reports *why* it failed. The boolean this replaces could only
+     * ever back one message, so four digits, a landline and 0400 000 000 all told the customer the
+     * same unhelpful thing - and jQuery Validate's minlength beat it to the field anyway.
+     * Returns { valid, digits, message } with `digits` normalised to the 0-prefixed form.
+     */
+    validateAustralianMobile: function(phoneNumber) {
+        var raw = phoneNumber === undefined || phoneNumber === null ? '' : String(phoneNumber).trim();
+        var digits = HELPER.normalizeAustralianMobileDigits(raw);
+
+        if (!digits) {
+            return { valid: false, digits: '', message: 'Please enter your mobile number.' };
+        }
+        if (digits.length !== 10) {
+            return {
+                valid: false,
+                digits: digits,
+                message: 'Enter a valid 10-digit Australian mobile number'
+            };
+        }
+        if (!/^04/.test(digits)) {
+            return {
+                valid: false,
+                digits: digits,
+                message: 'Australian mobile numbers start with 04.'
+            };
+        }
+        // 0400 000 000 / 0411 111 111 are placeholders nobody can be called back on. The old
+        // sequential-digit guard is gone with them: it rejected 0412 345 678, a real number.
+        if (/^04(\d)\1{7}$/.test(digits)) {
+            return { valid: false, digits: digits, message: 'Please enter a real mobile number.' };
+        }
+
+        return { valid: true, digits: digits, message: '' };
+    },
+
+    /** Digits of an AU mobile, with a pasted +61 / 61 country code folded back to a leading 0. */
+    normalizeAustralianMobileDigits: function(value) {
+        var raw = value === undefined || value === null ? '' : String(value).trim();
+        var digits = raw.replace(/\D/g, '');
+
+        // Only an unambiguous country code converts: a written +61, or the full 11-digit 61…
+        // form. A 10-digit number that merely happens to open 61 is left alone.
+        if (/^\+\s*61/.test(raw) || (digits.length === 11 && digits.indexOf('61') === 0)) {
+            digits = '0' + digits.slice(2);
+        }
+
+        // Not truncated to 10 here: the validator has to be able to see an over-long entry and
+        // say so. Capping belongs to the formatter, which is what limits what can be typed.
+        return digits;
+    },
+
+    /** Space a mobile as it is typed - 0412 345 678 - spacing partial input as far as it goes. */
+    formatAustralianMobileInput: function(value) {
+        var digits = HELPER.normalizeAustralianMobileDigits(value).slice(0, 10);
+
+        if (digits.length <= 4) {
+            return digits;
+        }
+        if (digits.length <= 7) {
+            return digits.slice(0, 4) + ' ' + digits.slice(4);
+        }
+
+        return digits.slice(0, 4) + ' ' + digits.slice(4, 7) + ' ' + digits.slice(7);
+    },
+
     // Function to validate Australian phone numbers
     isValidAustralianNumber: function(phoneNumber) {
-        // Remove non-numeric characters
-        let cleaned = phoneNumber.replace(/\D/g, '');
-
-        // Ensure the number starts with 0 or +61 (Australia)
-        if (!/^(\+61|0)/.test(phoneNumber)) return false;
-
-        // Convert +61 to 0 (standardize)
-        if (cleaned.startsWith('61')) cleaned = '0' + cleaned.slice(2);
-
-        // Check length (Mobile: 10 digits, Landline: 8–10 digits)
-        if (cleaned.length < 8 || cleaned.length > 10) return false;
-
-        // Block repetitive numbers (1111111111, 0000000000)
-        if (/^(.)\1+$/.test(cleaned)) return false;
-
-        // Block sequential numbers (1234567890, 9876543210)
-        if (/123456789|987654321/.test(cleaned)) return false;
-
-        return true; // Valid number
+        return HELPER.validateAustralianMobile(phoneNumber).valid;
     },
 
     // Function to format Australian numbers correctly
@@ -1022,11 +1070,17 @@ HELPER = {
 }
 
 /**
- * Keep mobile as a string so JSON/localStorage never drops a leading 0.
+ * Keep mobile as a string so JSON/localStorage never drops a leading 0, and store it as bare digits.
+ * The field displays it spaced (0412 345 678) since the validation rework; every row written before
+ * that is unspaced, so the spacing is stripped here rather than leaving the column in two formats.
  */
 function fcNormalizeMobileForStorage(value) {
     if (value == null || value === '') {
         return '';
     }
-    return String(value).trim();
+
+    var raw = String(value).trim();
+    var digits = HELPER.normalizeAustralianMobileDigits(raw);
+
+    return digits || raw;
 }

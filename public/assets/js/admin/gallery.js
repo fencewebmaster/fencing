@@ -9,7 +9,6 @@
     var API_DELETE = fcApiUrl('gallery', 'action=delete');
     var TOAST_GALLERY = 'fc-admin-gallery';
     var MODAL_ID = 'fc-gallery-attach-modal';
-    var VIEW_MODE_KEY = 'fc-gallery-view-mode';
     var ACCEPT_TYPES = 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml';
     var GALLERY_DEFAULT_TAB = 'library';
     var GALLERY_URL_TAB_KEY = 'tab';
@@ -151,19 +150,13 @@
     }
 
     function getViewMode() {
-        try {
-            return localStorage.getItem(VIEW_MODE_KEY) === 'list' ? 'list' : 'grid';
-        } catch (e) {
-            return 'grid';
-        }
+        return global.FC && global.FC.store ? global.FC.store.get('ui.galleryViewMode') : 'grid';
     }
 
     function setViewMode(mode) {
         state.viewMode = mode === 'list' ? 'list' : 'grid';
-        try {
-            localStorage.setItem(VIEW_MODE_KEY, state.viewMode);
-        } catch (e) {
-            /* ignore */
+        if (global.FC && global.FC.store) {
+            global.FC.store.set('ui.galleryViewMode', state.viewMode);
         }
     }
 

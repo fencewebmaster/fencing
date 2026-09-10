@@ -814,6 +814,7 @@ function fencingStyleItem(e) {
     }
 
     extra_fields();
+    fcDisarmStep2Errors();
 
     if (plannerPage) {
         try {
@@ -1353,6 +1354,8 @@ _doc.on('click', '.fc-modal-content', function(e) {
 _doc.on('click', '.fencing-tab', fencingTab);
 
 function fencingTab() {
+
+    fcDisarmStep2Errors();
 
     var _this = $(this);
     var $plannerStrip =
@@ -2475,6 +2478,33 @@ function fencingBtnModal(event) {
 
 _doc.on('click', '.btn-fc-calculate', btnCalculate);
 
+/**
+ * Step 2 keeps its validation messages hidden until Calculate is pressed. The render path validates
+ * on its own - load_fencing_items() calls fcApplyOverallLengthValidationUi(), the slat height sync
+ * calls maxFenceHeightValidation(), and the auto-calculate probe runs the whole of
+ * validateStep2BeforeCalculate() - so a section nobody had touched came up red. Gating the display
+ * in CSS covers every one of those call sites without unpicking them.
+ */
+function fcArmStep2Errors() {
+    $('.js-fc-form-step[data-section="2"]').addClass('fc-step2-show-errors');
+}
+
+function fcDisarmStep2Errors() {
+    $('.js-fc-form-step[data-section="2"]').removeClass('fc-step2-show-errors');
+}
+
+/**
+ * Step 2's Calculate stays clickable even when the step is incomplete. btnCalculate() opens with
+ * validateStep2BeforeCalculate(), so a premature click flags every offending field; a greyed-out
+ * button left the customer with no way to find out what was still missing.
+ */
+function fcEnableStep2CalculateButton() {
+    $('.btn-fc-calculate')
+        .removeAttr('disabled')
+        .removeClass('btn-light disabled')
+        .addClass('btn-dark');
+}
+
 function updateCalculateButtonByStep2Completeness() {
     var ok = true;
 
@@ -2539,17 +2569,7 @@ function updateCalculateButtonByStep2Completeness() {
         }
     });
 
-    if (ok) {
-        $('.btn-fc-calculate')
-            .removeAttr('disabled')
-            .removeClass('btn-light disabled')
-            .addClass('btn-dark');
-    } else {
-        $('.btn-fc-calculate')
-            .attr('disabled', 'disabled')
-            .removeClass('btn-dark')
-            .addClass('btn-light disabled');
-    }
+    fcEnableStep2CalculateButton();
 
     return ok;
 }
@@ -2819,8 +2839,17 @@ function validateStep2BeforeCalculate(showNativeTooltip = false) {
         }
     }
 
-    // Validate each visible Step 2 form-control.
-    $('[data-section="2"] [data-action="change"] .form-control:visible').each(function() {
+    // Validate each visible Step 2 form-control. Fence Height is moved into `.fc-step2-height-slot`
+    // and Number of Panels renders in a plain `.step-2_field` row, both outside the
+    // [data-action="change"] block - so without naming them here the arms for them below never ran
+    // and a blank Number of Panels reached Calculate unflagged.
+    $(
+        '[data-section="2"] [data-action="change"] .form-control:visible, ' +
+            '[data-section="2"] .fc-step2-height-slot .form-control:visible, ' +
+            '[data-section="2"] .fc-step2-height-slot .fc-max-fence-height-input:visible, ' +
+            '[data-section="2"] .fc-step2-pair-slot .form-control:visible, ' +
+            '[data-section="2"] [name="panel_count"]:visible'
+    ).each(function() {
         var el = this;
         var name = el.name || '';
         var raw = (el.value || '').toString().trim();
@@ -2862,11 +2891,6 @@ function validateStep2BeforeCalculate(showNativeTooltip = false) {
             return;
         }
 
-        if (!raw) {
-            markInvalid(el, 'Please enter the amount');
-            return;
-        }
-
         if (name === 'panel_count') {
             if (!panelCountValidation({ target: el })) {
                 hasError = true;
@@ -2893,16 +2917,15 @@ function validateStep2BeforeCalculate(showNativeTooltip = false) {
             fcClearStep2NativeValidity(el);
             return;
         }
+
+        // Everything else: the field-specific arms above run first so they keep their own wording.
+        if (!raw) {
+            markInvalid(el, 'Please enter the amount');
+        }
     });
 
-    if (hasError) {
-        $('.btn-fc-calculate')
-            .attr('disabled', 'disabled')
-            .removeClass('btn-dark')
-            .addClass('btn-light disabled');
-        if (typeof fcHidePlannerStep3Results === 'function') {
-            fcHidePlannerStep3Results();
-        }
+    if (hasError && typeof fcHidePlannerStep3Results === 'function') {
+        fcHidePlannerStep3Results();
     }
 
     return !hasError;
@@ -2998,6 +3021,8 @@ function step2TrySubmitCalculateFromEnter() {
 }
 
 function btnCalculate() {
+    fcArmStep2Errors();
+
     if (!validateStep2BeforeCalculate(false)) {
         return;
     }
@@ -4586,6 +4611,136 @@ function slatSizeStep2_change() {
 
 //----------------------------------------------------------------------------------
 
+var FC_STEP2_SLAT_SELECTS =
+    '[data-section="2"] [name="slat_gap"], [data-section="2"] [name="slat_size"]';
+
+/** Show or clear one slat select's Step 2 message from its own validator. */
+function fcSyncStep2SlatSelectError(el) {
+    if (!el) {
+        return;
+    }
+    var fd = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+    if (!fd || typeof SlatFence === 'undefined' || !SlatFence.isSlatLike(fd.slug)) {
+        return;
+    }
+
+    var $msg = $(el).closest('.fc-input-container').find('.fc-input-msg').first();
+    if (!$msg.length) {
+        return;
+    }
+
+    var validator = el.name === 'slat_size' ? 'validateSlatSizeField' : 'validateSlatGapField';
+    var result;
+    try {
+        result = SlatFence[validator](el);
+    } catch (err) {
+        result = { valid: !!($(el).val() || '').toString().trim() };
+    }
+
+    $msg.removeClass('fcim-show').html('');
+    if (!result || !result.valid) {
+        $msg.addClass('fcim-show').html(
+            (result && result.message) ||
+                (el.name === 'slat_size' ? 'Please select a slat size' : 'Please select a slat gap')
+        );
+    }
+}
+
+// Once Calculate has flagged these, the message sits over the control the user reached for. Clear
+// it while they choose and put it back on close, which is also when a dropdown dismissed without a
+// pick is still unanswered.
+_doc.on('select2:opening focus', FC_STEP2_SLAT_SELECTS, fcStep2SlatSelectOpening);
+
+function fcStep2SlatSelectOpening() {
+    $(this).closest('.fc-input-container').find('.fc-input-msg').first().removeClass('fcim-show').html('');
+}
+
+_doc.on('select2:close blur', FC_STEP2_SLAT_SELECTS, fcStep2SlatSelectClosing);
+
+function fcStep2SlatSelectClosing() {
+    // select2:close lands before the change handler on a pick, so defer and let a real choice win.
+    var el = this;
+    setTimeout(function() {
+        fcSyncStep2SlatSelectError(el);
+    }, 0);
+}
+
+//----------------------------------------------------------------------------------
+
+/**
+ * Step 2 measurements that carry their own inline message: Fence Height (Slat / Slat Infill
+ * `max_fence_height`, Barr's `fence_height`) and Overall Length, which Slat Infill labels
+ * "Opening Width".
+ */
+var FC_STEP2_MEASURE_FIELDS =
+    '[data-section="2"] [name="max_fence_height"], ' +
+    '[data-section="2"] [name="fence_height"], ' +
+    '.measurement-box-number';
+
+/** Show or clear one measurement's Step 2 message from whichever rule owns that field. */
+function fcSyncStep2MeasureFieldError(el) {
+    if (!el || el.disabled) {
+        return;
+    }
+
+    if ($(el).hasClass('measurement-box-number')) {
+        // Overall Length also drives the Calculate button, so go through its own UI applier rather
+        // than painting the message here and leaving the button out of step.
+        if (typeof fcApplyOverallLengthValidationUi === 'function') {
+            fcApplyOverallLengthValidationUi({ el: el, hideStep3: false });
+        }
+        return;
+    }
+
+    var $msg = $(el).closest('.fc-input-container').find('.fc-input-msg').first();
+    if (!$msg.length) {
+        return;
+    }
+
+    var result = { valid: true, message: '' };
+    if (el.name === 'max_fence_height' && typeof SlatFence !== 'undefined') {
+        try {
+            result = SlatFence.validateMaxFenceHeightField(el);
+        } catch (err) {
+            result = { valid: !!String(el.value || '').trim(), message: 'Please enter the amount' };
+        }
+    } else {
+        var raw = String(el.value || '').replace(/,/g, '').trim();
+        var min = parseInt(el.getAttribute('data-min') || el.getAttribute('min') || '', 10);
+        var max = parseInt(el.getAttribute('data-max') || el.getAttribute('max') || '', 10);
+        var val = parseInt(raw, 10);
+        if (!raw) {
+            result = { valid: false, message: 'Please enter the amount' };
+        } else if (Number.isFinite(min) && val < min) {
+            result = { valid: false, message: ' Invalid ' + HELPER.number_format(min) + 'mm min' };
+        } else if (Number.isFinite(max) && val > max) {
+            result = { valid: false, message: ' Invalid ' + HELPER.number_format(max) + 'mm max' };
+        }
+    }
+
+    $msg.removeClass('fcim-show').html('');
+    if (!result || !result.valid) {
+        $msg.addClass('fcim-show').html((result && result.message) || 'Invalid value');
+    }
+}
+
+// Step 2 does not flag anything until Calculate is pressed, but once a message is up it sits over
+// the field the user reached for, so clear it on focus and re-check on the way out.
+_doc.on('focus', FC_STEP2_MEASURE_FIELDS, function() {
+    $(this)
+        .closest('.fc-input-container')
+        .find('.fc-input-msg')
+        .first()
+        .removeClass('fcim-show')
+        .html('');
+});
+
+_doc.on('blur', FC_STEP2_MEASURE_FIELDS, function() {
+    fcSyncStep2MeasureFieldError(this);
+});
+
+//----------------------------------------------------------------------------------
+
 // Slat Fence: Max Fence Height — validate on input/blur; auto-calc on change/blur except Gate ONLY Step 2 height.
 _doc.on('input blur change', '[name="max_fence_height"]', maxFenceHeightValidation);
 _doc.on('input blur', '[name="gate_max_fence_height"]', gateMaxFenceHeightValidation);
@@ -5185,9 +5340,60 @@ $("#fc-planning-form").validate({
     }
 });
 
-$.validator.addMethod("phone-format", function(value, element, params) {
-    return HELPER.isValidAustralianNumber(value);
-}, 'Please enter a valid mobile number.');
+/* One message per failure mode: the static string could not tell the customer whether they had
+   typed four digits, a landline or 0400 000 000. jQuery Validate calls the message argument with
+   (param, element) when it is a function, so it re-reads the field and reports the actual reason. */
+$.validator.addMethod(
+    'phone-format',
+    function(value, element) {
+        return this.optional(element) || HELPER.validateAustralianMobile(value).valid;
+    },
+    function(params, element) {
+        return HELPER.validateAustralianMobile($(element).val()).message;
+    }
+);
+
+/* The field is digits-only on keypress, so the 0412 345 678 spacing has to be put in for the
+   customer. The caret is restored by digit offset, not string offset - by character it slips a
+   place every time an edit crosses one of the inserted spaces. */
+_doc.on('input', '.input-mobile', fcFormatMobileInput);
+
+// The project-plan form renders its value straight from the row, which is stored unspaced.
+$(function() {
+    $('.input-mobile').each(function() {
+        if (this.value) {
+            this.value = HELPER.formatAustralianMobileInput(this.value);
+        }
+    });
+});
+
+function fcFormatMobileInput() {
+    var el = this,
+        before = el.value,
+        formatted = HELPER.formatAustralianMobileInput(before);
+
+    if (formatted === before) {
+        return;
+    }
+
+    var caret = el.selectionStart === null ? before.length : el.selectionStart,
+        digitsBefore = before.slice(0, caret).replace(/[^0-9]/g, '').length,
+        pos = 0,
+        seen = 0;
+
+    el.value = formatted;
+
+    while (pos < formatted.length && seen < digitsBefore) {
+        if (formatted.charAt(pos) >= '0' && formatted.charAt(pos) <= '9') {
+            seen++;
+        }
+        pos++;
+    }
+
+    try {
+        el.setSelectionRange(pos, pos);
+    } catch (err) {}
+}
 
 
 // $('.input-mobile').inputmask('9999 999 999');

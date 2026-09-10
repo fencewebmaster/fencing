@@ -1764,11 +1764,11 @@ SlatFence = {
             $field.prepend($row);
         }
         if ($size.length) {
-            $size.removeClass('mb-2').addClass('col-md-6 col-12');
+            $size.removeClass('mb-2').addClass('col-md-6 col-6');
             $row.append($size);
         }
         if ($gap.length) {
-            $gap.removeClass('mb-2').addClass('col-md-6 col-12');
+            $gap.removeClass('mb-2').addClass('col-md-6 col-6');
             $row.append($gap);
         }
     },
@@ -3452,16 +3452,9 @@ SlatFence = {
 
     syncCalculateButtonState: function(args = {}) {
         var canCalculate = !!args.canCalculate;
-        if (canCalculate) {
-            $('.btn-fc-calculate')
-                .removeAttr('disabled')
-                .removeClass('btn-light disabled')
-                .addClass('btn-dark');
-        } else {
-            $('.btn-fc-calculate')
-                .attr('disabled', 'disabled')
-                .removeClass('btn-dark')
-                .addClass('btn-light disabled');
+        // Step 2 never greys Calculate out now; callers still read the flag for their own gating.
+        if (typeof fcEnableStep2CalculateButton === 'function') {
+            fcEnableStep2CalculateButton();
         }
 
         return canCalculate;

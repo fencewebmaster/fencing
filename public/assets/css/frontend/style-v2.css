@@ -114,9 +114,48 @@
     margin-bottom: 1rem !important;
 }
 
-/* The block opens far enough to hold its positioned validation message (25px of overhang plus 1rem), and only while it shows. */
-[data-section="2"] .fencing-section--step2 .col-lg-5 > *:has(.fc-input-msg.fcim-show) {
-    margin-bottom: calc(1rem + 25px) !important;
+/* The validation message floats clear of the flow instead of opening the block by its 25px of
+   overhang. Step 2 now flags empty fields the moment a style is picked and clears them on
+   focus, so reserving the space only while a message showed made the whole step jump 25px per
+   field as the customer worked down it. */
+
+/* Floating it left the pill hanging over the next block's label, so it moves onto its own
+   field's label line at the top right and points down at the input it belongs to. */
+[data-section="2"] .fc-input-msg {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    margin: 0;
+}
+
+[data-section="2"] .fc-input-msg:after {
+    top: auto;
+    bottom: -7px;
+    /* 7px is half the 14px triangle, so the point lands on the pill's centre. */
+    left: 50%;
+    right: auto;
+    margin-left: -7px;
+    border-width: 7px 7px 0;
+}
+
+/* Overall Length's message lives inside the input frame (see planner/step-2.php), so it anchors
+   to the frame's top edge rather than the container's - the container's right edge is Calculate. */
+[data-section="2"] .fencing-mb-input > .fc-input-msg {
+    top: auto;
+    bottom: calc(100% + 1px);
+}
+
+/* That overflow: hidden above rounds the frame's corners, and it was clipping the message away
+   to just the tip of its arrow. The qty buttons carry their own matching radii, so the corners
+   survive without it - and only the frame holding a message opts out. */
+[data-section="2"] .fencing-mb-input:has(> .fc-input-msg) {
+    overflow: visible;
+}
+
+/* Step 2 shows nothing until Calculate arms it (fcArmStep2Errors) - see the note there for the
+   render-time validators this covers. */
+.js-fc-form-step[data-section="2"]:not(.fc-step2-show-errors) .fc-input-msg.fcim-show {
+    display: none;
 }
 
 [data-section="2"] .fc-step2-slat-height-row.fc-step2-row--single:not(.d-none) {

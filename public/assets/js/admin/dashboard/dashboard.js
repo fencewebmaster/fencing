@@ -1617,12 +1617,6 @@
         ensureDateDropdown(root);
         restoreDateFilter(root);
 
-        try {
-            localStorage.removeItem('fc-dashboard-date-filter');
-        } catch (err) {
-            /* ignore */
-        }
-
         bindThemeRefresh();
         bindSliderResize();
         bindEntryLinks(root);

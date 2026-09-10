@@ -1,5 +1,6 @@
 <?php
 use Fc\Admin\Core\FrontendApplication;
+use Fc\Admin\Debug\DebugbarServer;
 use Fc\Admin\Helpers\AssetHelper;
 use Fc\Admin\Services\AppConfigService;
 use Fc\Admin\Settings\BrandingSettings;
@@ -65,6 +66,16 @@ echo ThemeSettings::cssBlock();
 <link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/fonts/fa/css/all.min.css'); ?>">
 
 <link href="<?php echo asset('public/assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
+
+<?php
+// Debugbar (Settings -> Console -> Debug Mode). One request-cached flag decides CSS here
+// and the JS + JSON island in footer.php - shared scope, same as $info above. Nothing is
+// emitted when off, so the disabled page is byte-identical to today.
+$fcDebugbarOn = DebugbarServer::showDebugbar();
+if ($fcDebugbarOn) :
+?>
+<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/frontend/debugbar.css'); ?>">
+<?php endif; ?>
 
 <?php if ($fc_route === 'project-plan') : ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>

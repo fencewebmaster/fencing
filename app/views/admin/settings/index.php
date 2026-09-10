@@ -957,6 +957,80 @@ $tab = $fcSettingsPage;
 
                             <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
                                 <div>
+                                    <h3 class="text-sm font-semibold text-slate-800">Debugbar</h3>
+                                    <p class="mt-1 text-xs text-slate-500">Developer toolbar on the planner and project plan pages while Debug Mode is on. Changes save immediately and apply on the next page load.</p>
+                                </div>
+
+                                <div class="flex flex-col gap-2.5">
+                                    <label class="flex items-center justify-between gap-3" for="fc-console-showDebugbar">
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Show Debugbar</span>
+                                            <span class="block text-xs text-slate-500">The docked panel itself. Turn off to keep Debug Mode&rsquo;s server behaviour without the overlay.</span>
+                                        </span>
+                                        <span class="relative inline-flex shrink-0 cursor-pointer items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="fc-console-showDebugbar"
+                                                data-fc-console-field="showDebugbar"
+                                                class="peer sr-only"
+                                                <?php echo !empty($consoleSettings['showDebugbar']) ? 'checked' : ''; ?>
+                                            >
+                                            <span class="h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200 peer-checked:bg-[var(--fc-princeton-orange)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-[var(--fc-princeton-orange)]"></span>
+                                            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
+
+                                    <label class="flex items-center justify-between gap-3 border-t border-slate-200 pt-2.5" for="fc-console-debugVerbose">
+                                        <span class="min-w-0">
+                                            <span class="block text-sm font-medium text-slate-700">Verbose Trace</span>
+                                            <span class="block text-xs text-slate-500">Per-stage calculation and per-rule cart entries; the query log also shows SQL literals in full.</span>
+                                        </span>
+                                        <span class="relative inline-flex shrink-0 cursor-pointer items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="fc-console-debugVerbose"
+                                                data-fc-console-field="debugVerbose"
+                                                class="peer sr-only"
+                                                <?php echo !empty($consoleSettings['debugVerbose']) ? 'checked' : ''; ?>
+                                            >
+                                            <span class="h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200 peer-checked:bg-[var(--fc-princeton-orange)] peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-[var(--fc-princeton-orange)]"></span>
+                                            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-4">
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-console-debugMaxEntries">
+                                        <span class="text-sm font-medium text-slate-700">Max captured entries</span>
+                                        <input
+                                            type="number"
+                                            id="fc-console-debugMaxEntries"
+                                            data-fc-console-field="debugMaxEntries"
+                                            class="fc-settings-field"
+                                            min="50"
+                                            max="2000"
+                                            step="50"
+                                            value="<?php echo e((string) ($consoleSettings['debugMaxEntries'] ?? 200)); ?>"
+                                        >
+                                        <span class="text-xs text-slate-500">Ring-buffer size for trace, log, request and query captures. Default: 200.</span>
+                                    </label>
+                                    <label class="flex min-w-0 flex-col gap-1" for="fc-console-debugRedactKeys">
+                                        <span class="text-sm font-medium text-slate-700">Redaction keys</span>
+                                        <input
+                                            type="text"
+                                            id="fc-console-debugRedactKeys"
+                                            data-fc-console-field="debugRedactKeys"
+                                            class="fc-settings-field"
+                                            spellcheck="false"
+                                            value="<?php echo e((string) ($consoleSettings['debugRedactKeys'] ?? '')); ?>"
+                                        >
+                                        <span class="text-xs text-slate-500">Comma-separated key names whose captured values display as [redacted]. An empty field restores the defaults.</span>
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="border border-slate-200 bg-slate-50/60 p-4 sm:p-5 space-y-4">
+                                <div>
                                     <h3 class="text-sm font-semibold text-slate-800">Console</h3>
                                     <p class="mt-1 text-xs text-slate-500">Type <code>git …</code> commands in the project root, or <code>help</code> / <code>clear</code> / <code>pwd</code>. Mutating git commands require confirmation.</p>
                                 </div>

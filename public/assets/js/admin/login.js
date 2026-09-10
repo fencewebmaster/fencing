@@ -32,6 +32,49 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Wipe admin client storage. This page only renders while nobody is
+        // signed in (LoginPageController redirects a logged-in visitor to the
+        // dashboard), so rendering it at all is enough to clear session-shaped
+        // state — that also covers a session which merely expired on a shared
+        // machine, which a hook on the logout click would miss.
+        //
+        // LogoutController adds ?logged_out=1 on a deliberate sign-out, and
+        // only that case takes the theme too: this handler runs on EVERY render
+        // of this page, so wiping ui.appearance unconditionally would discard
+        // whatever the theme toggle below just wrote on the visitor's next
+        // reload. The flag is stripped from the URL afterwards so a refresh (or
+        // a bookmarked copy of the URL) is an ordinary login-page visit.
+        if (window.FC && window.FC.store) {
+            var loggedOut = /[?&]logged_out=1(&|$)/.test(window.location.search);
+            window.FC.store.clearAll(loggedOut ? { everything: true } : undefined);
+
+            if (loggedOut) {
+                // storage-boot.php painted this render from the pre-wipe
+                // envelope and admin-appearance.js already applied the same
+                // value (its DOMContentLoaded handler is registered first), so
+                // without this the page keeps showing the signed-out user's
+                // theme while the store has reset to the default — and the
+                // toggle below, which reads the attribute, would compute its
+                // next value from the stale one. get() returns a schema
+                // enum, never a raw stored string.
+                document.documentElement.setAttribute(
+                    'data-fc-admin-theme',
+                    window.FC.store.get('ui.appearance')
+                );
+            }
+
+            if (loggedOut && window.history && window.history.replaceState) {
+                var qs = window.location.search
+                    .replace(/([?&])logged_out=1(&|$)/, '$1')
+                    .replace(/[?&]$/, '');
+                window.history.replaceState(
+                    null,
+                    '',
+                    window.location.pathname + qs + window.location.hash
+                );
+            }
+        }
+
         var form = document.getElementById('login-form');
         var toggleBtn = document.getElementById('toggle-password');
         var passwordInput = document.getElementById('password');
@@ -80,10 +123,8 @@
                 var html = document.documentElement;
                 var next = html.getAttribute('data-fc-admin-theme') === 'dark' ? 'light' : 'dark';
                 html.setAttribute('data-fc-admin-theme', next);
-                try {
-                    localStorage.setItem('fc-admin-appearance', next);
-                } catch (e) {
-                    /* ignore */
+                if (window.FC && window.FC.store) {
+                    window.FC.store.set('ui.appearance', next);
                 }
             });
         }

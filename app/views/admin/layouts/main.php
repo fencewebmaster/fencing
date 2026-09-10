@@ -24,8 +24,8 @@ use Fc\Admin\Settings\ThemeSettings;
     echo ConsoleSettings::debugMode() ? '1' : '0';
 ?>">
 <head>
+    <?php view('admin.layouts.partials.storage-boot'); ?>
     <script>
-    (function(){try{var t=localStorage.getItem('fc-admin-appearance');document.documentElement.setAttribute('data-fc-admin-theme',t==='dark'?'dark':'light');if(localStorage.getItem('fc-admin-sidebar-collapsed')==='1'){document.documentElement.classList.add('fc-admin-sidebar-collapsed');}}catch(e){}})();
     window.FC_DEBUG = document.documentElement.getAttribute('data-fc-debug') === '1';
     </script>
     <meta charset="UTF-8">
@@ -1396,6 +1396,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <div id="fc-admin-modal-root" class="pointer-events-none fixed inset-0 z-[9999]" aria-hidden="true"></div>
 
     <script src="<?php echo asset('assets/js/admin/core/namespace.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/core/store.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/utils/dom.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/utils/clipboard.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/utils/toast-bridge.js'); ?>"></script>

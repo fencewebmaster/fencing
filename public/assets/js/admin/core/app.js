@@ -163,12 +163,8 @@
 
         syncCollapsedTitles(collapsed);
 
-        if (persist !== false) {
-            try {
-                global.localStorage.setItem('fc-admin-sidebar-collapsed', collapsed ? '1' : '0');
-            } catch (e) {
-                /* storage may be unavailable */
-            }
+        if (persist !== false && global.FC && global.FC.store) {
+            global.FC.store.set('ui.sidebarCollapsed', !!collapsed);
         }
     }
 
@@ -224,12 +220,9 @@
                 menuToggleEl.setAttribute('aria-expanded', 'false');
             }
             document.body.classList.remove('fc-admin-sidebar-open');
-            var collapsed = false;
-            try {
-                collapsed = global.localStorage.getItem('fc-admin-sidebar-collapsed') === '1';
-            } catch (e) {
-                collapsed = isSidebarCollapsed();
-            }
+            var collapsed = global.FC && global.FC.store
+                ? global.FC.store.get('ui.sidebarCollapsed')
+                : isSidebarCollapsed();
             setSidebarCollapsed(collapsed, false);
         } else {
             setSidebarCollapsed(false, false);

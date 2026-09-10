@@ -97,7 +97,11 @@ final class AuthController extends BaseApiController
         JsonResponse::send([
             'ok'       => true,
             'message'  => 'Signed out.',
-            'redirect' => 'login',
+            // Same ?logged_out=1 contract as the web /logout route — admin/login.js
+            // reads it to clear the whole fc-admin envelope rather than only the
+            // session-shaped keys. Kept in step even though no admin JS calls this
+            // endpoint today, so the two sign-out paths cannot diverge later.
+            'redirect' => 'login?logged_out=1',
         ]);
     }
 

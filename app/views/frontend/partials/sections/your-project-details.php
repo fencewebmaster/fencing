@@ -31,9 +31,9 @@ use Fc\Admin\Services\FenceCatalogService;
 							<tr>
 								<td width="100">Contact</td>
 								<td>
-									<span><?php echo e((string) @$info['mobile']); ?></span>
+									<span><?php echo e(CartBuilderService::formatMobileForDisplay(@$info['mobile'])); ?></span>
 									<div class="fc-form-group has-clear fc-mobile-group position-relative">
-										<input type="tel" name="mobile" value="<?php echo e((string) @$info['mobile']); ?>" class="form-control no-space numeric-only input-mobile" phone-format="9999 999 999" autocomplete="off" minlength="7" required>   
+										<input type="tel" name="mobile" value="<?php echo e(CartBuilderService::formatMobileForDisplay(@$info['mobile'])); ?>" class="form-control no-space numeric-only input-mobile" phone-format="9999 999 999" placeholder="0412 345 678" inputmode="numeric" autocomplete="tel-national" data-msg-required="Please enter your mobile number." required>   
 						                <i class="au-flag-icon"></i>
 									</div>
 								</td>

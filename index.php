@@ -10,4 +10,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/app/bootstrap.php';
 
+// Debugbar collectors (Settings -> Console -> Debug Mode) arm before dispatch so request
+// timing, DB queries and PHP errors are visible from the first byte. Hard no-op when off,
+// and it never writes into responses - footer.php decides whether anything is emitted.
+\Fc\Admin\Debug\DebugbarServer::bootIfEnabled();
+
 \Fc\Admin\Core\FrontendApplication::handleWebRequest();

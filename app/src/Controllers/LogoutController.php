@@ -13,10 +13,18 @@ final class LogoutController extends BaseController
     public function index(AdminContext $context): void
     {
         $token = (string) $this->request->query('_token', '');
-        if (AuthService::consumeOneTimeToken('logout', $token)) {
+        $loggedOut = AuthService::consumeOneTimeToken('logout', $token);
+        if ($loggedOut) {
             AuthService::logout();
         }
 
-        Response::redirect(rtrim($context->adminBase, '/') . '/login');
+        // ?logged_out=1 tells admin/login.js this was a deliberate sign-out
+        // rather than any other route onto the login page, so it clears the
+        // whole fc-admin envelope (theme included) instead of only the
+        // session-shaped keys. Omitted when the CSRF token failed and no logout
+        // actually happened. login.js strips the flag from the URL once read.
+        Response::redirect(
+            rtrim($context->adminBase, '/') . '/login' . ($loggedOut ? '?logged_out=1' : '')
+        );
     }
 }

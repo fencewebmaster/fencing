@@ -475,7 +475,16 @@ final class SettingsController extends BaseApiController
                 return;
             }
 
-            $result = ConsoleSettings::save($payload['console']);
+            // The action saves the whole console section (Debug Mode + Debugbar fields);
+            // only a debugMode flip keeps the toggle's dedicated wording.
+            $current = ConsoleSettings::get();
+            $debugModeBefore = !empty($current['debugMode']);
+
+            // Merge onto what is on disk so a client may post ONLY the keys it changed.
+            // The page's console snapshot is taken once at load and never refreshed, so a
+            // whole-object save let a stale tab re-arm (or clear) Debug Mode site-wide for
+            // everyone else just by ticking an unrelated Debugbar checkbox.
+            $result = ConsoleSettings::save(array_merge($current, $payload['console']));
             if (!$result['ok']) {
                 http_response_code(400);
                 echo json_encode($result, JSON_UNESCAPED_UNICODE);
@@ -483,9 +492,9 @@ final class SettingsController extends BaseApiController
             }
 
             $response = ConsoleSettings::apiPayload();
-            $response['message'] = !empty($response['console']['debugMode'])
-                ? 'Debug Mode turned on.'
-                : 'Debug Mode turned off.';
+            $response['message'] = $debugModeBefore !== !empty($response['console']['debugMode'])
+                ? (!empty($response['console']['debugMode']) ? 'Debug Mode turned on.' : 'Debug Mode turned off.')
+                : 'Console settings saved.';
             echo json_encode($response, JSON_UNESCAPED_UNICODE);
             return;
         }
