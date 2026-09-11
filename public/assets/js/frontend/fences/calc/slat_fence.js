@@ -291,6 +291,30 @@ SlatFenceCalc = {
         return this.allocatePooledPacks(weights, total)[pos];
     },
 
+    /**
+     * Slat tek screws (slat_gate+screws_flat, bag of 100) are ONE bag per job: the old eForm adds a
+     * single bag to every order, whereas one bag per section ordered 3 bags for a 3-section job. The
+     * bag goes on the first Slat / Slat Infill section with slats, so the per-section lines still
+     * add up to 1.
+     *
+     * Returns this section's bags (1 or 0), or null when no section resolves from storage (storage
+     * not written yet) so the caller can fall back to one bag on this section.
+     */
+    pooledSlatScrewBagsForSection: function(sectionIndex) {
+        if (!Number.isFinite(sectionIndex) || typeof fcGetPersistedFenceSectionCount !== 'function') {
+            return null;
+        }
+        var count = fcGetPersistedFenceSectionCount();
+        if (!Number.isFinite(count) || count < 1) return null;
+
+        for (var i = 0; i < count; i++) {
+            var s = this.slatSectionSlatCountFromStorage(i);
+            if (!this.isSlatLike(s.style) || s.slats <= 0) continue;
+            return i === sectionIndex ? 1 : 0;
+        }
+        return null;
+    },
+
     /** Panel / bottom-gap math (Slat Planner V6): 3 mm top + 3 mm bottom in panel height. */
     getSlatPanelEndAllowanceMm: function(fenceSlug) {
         return this.getSlatConfigNumber(fenceSlug, 'panel_end_allowance_mm', 6);

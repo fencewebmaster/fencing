@@ -4857,9 +4857,17 @@ SlatFence = {
             threadRodPosts > 0 ||
             cementPosts > 0 ||
             (calc?.gate?.count > 0);
-        // Slat Infill has no gate/post hardware, so the flat-head screw pack is not supplied.
-        if (hasFenceBody && !isSlatInfill) {
-            addOrInc('slat_gate+screws_flat', 1);
+        // Slat tek screws: one bag per JOB, Slat Infill included. Infill used to be skipped here as
+        // "gate/post hardware", but the product is slat self-drilling tek screws and the old eForm
+        // adds one bag to every order whatever the style. pooledSlatScrewBagsForSection() puts the
+        // bag on a single section; null means storage could not resolve the job yet, so this
+        // section carries it.
+        if (hasFenceBody) {
+            var screwBags = this.pooledSlatScrewBagsForSection(context?.tabIndex);
+            if (screwBags === null) screwBags = 1;
+            if (screwBags > 0) {
+                addOrInc('slat_gate+screws_flat', screwBags);
+            }
         }
 
         return array;
