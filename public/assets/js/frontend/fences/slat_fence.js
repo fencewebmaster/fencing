@@ -4311,7 +4311,7 @@ SlatFence = {
 
         $(FENCES.el.fencingPanelGate)
             .find('.fencing-panel-item-size')
-            .html(gateTypeLabel + '<br>' + gateHeightLine + displayGateWidthMm + panel_unit + '<br> ' + panel_name);
+            .html(gateTypeLabel + '<br>' + gateHeightLine + '<span class="fc-gate-width">' + displayGateWidthMm + panel_unit + '<br></span> ' + panel_name);
 
         $(FENCES.el.fencingPanelGate).find('.double-gate').remove();
         if (gateTypeSlug === 'double') {

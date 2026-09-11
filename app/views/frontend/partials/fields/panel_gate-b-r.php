@@ -3,7 +3,7 @@
 	data-key="gate" 
 	data-target="#fc-control-modal">
 
-	<div class="fencing-panel-item-size">{{panel_size}}{{panel_unit}}<br> {{panel_name}}</div>
+	<div class="fencing-panel-item-size"><span class="fc-gate-width">{{panel_size}}{{panel_unit}}<br></span> {{panel_name}}</div>
 
 	<div class="fc-center-point fc-first-c-p">
 		<span class="fc-div-c-p"></span>

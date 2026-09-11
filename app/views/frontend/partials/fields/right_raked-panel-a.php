@@ -11,7 +11,7 @@
 		data-key="right_side" 
 		data-target="#fc-control-modal">
 
-			<div class="fencing-panel-item-size">{{panel_size}}H <br> {{panel_unit}}W</div>
+			<div class="fencing-panel-item-size">{{panel_size}}H <span class="fc-raked-width"><br> {{panel_unit}}W</span></div>
 
 		</div>
 		

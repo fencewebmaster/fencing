@@ -94,6 +94,7 @@ use Fc\Admin\Services\SiteRegistryService;
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/hscroll-fade.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/hscroll-proxy.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/overall-dimension.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/panel-dimensions.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/drawing-keys.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/planner-shortcuts.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/core/functions.js'); ?>"></script>

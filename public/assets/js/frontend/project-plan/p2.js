@@ -198,6 +198,12 @@ let ProjectPlan = {
                     <div class="fc-project-plan-hscroll">
                         <div id="pp-${i}" class="dl-row">
                             <div class="fc-result">
+                                <!-- Width over each panel and gate, and the Overall line under the run,
+                                     as planner Step 3 draws them: shared/panel-dimensions.js and
+                                     shared/overall-dimension.js place both from the drawn parts. Both
+                                     ship hidden until the section has drawn; aria-hidden, as the parts'
+                                     labels and the head's Overall already carry the figures. -->
+                                <div class="fc-pdim js-fc-pdim fc-pdim--off" aria-hidden="true"></div>
                                 <div class="fencing-panel-container">
                                     <div class="fc-project-plan-skeleton" aria-hidden="true">
                                         <div class="fc-project-plan-skeleton__run">
@@ -213,6 +219,7 @@ let ProjectPlan = {
                                         </div>
                                     </div>
                                 </div>
+                                <div class="fc-dim js-fc-dim fc-dim--off" aria-hidden="true"><span class="fc-dim__arm fc-dim__arm--start"></span><span class="fc-dim__anchor"><span class="fc-dim__label"><span class="fc-dim__num"></span> <span class="fc-dim__word"></span></span></span><span class="fc-dim__arm fc-dim__arm--end"></span></div>
                             </div>
                         </div>
                     </div>

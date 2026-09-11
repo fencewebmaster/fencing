@@ -64,6 +64,13 @@
 
                 <div class="fc-project-plan-hscroll">
                     <div class="fc-result">
+                        <!-- Width dimension over each panel and gate — |—— 1,934W ——| — as the design-1
+                             mockup draws it, above the run the way the Overall line sits under it.
+                             shared/panel-dimensions.js places one segment per drawn part from its
+                             rendered box and reads the figure from the part's own label. Ships hidden
+                             until a part is drawn; aria-hidden — the parts' labels already carry it. -->
+                        <div class="fc-pdim js-fc-pdim fc-pdim--off" aria-hidden="true"></div>
+
                         <div class="fencing-panel-items">
                             <div class="fencing-panel-rail fencing-btn-modal" 
                                 data-key="rail_options" 

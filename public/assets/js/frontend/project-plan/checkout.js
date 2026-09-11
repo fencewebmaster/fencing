@@ -211,21 +211,27 @@ function fcGetProjectPlanSectionEl(sectionIndex) {
     return pp ? pp.closest('.fc-project-plan-section') : null;
 }
 
-function fcMeasureProjectPlanSectionContentWidth(sectionEl) {
-    var container = sectionEl.querySelector('.fencing-panel-container');
-    if (container) {
-        return Math.ceil(Math.max(container.scrollWidth, container.getBoundingClientRect().width));
-    }
+/**
+ * What a section's capture needs, measured on the live section. The copy onCloneNode is handed is
+ * not in the page, so everything measured on it reads 0: the width taken from it came out 0px, was
+ * written onto the copy's strip, .dl-row and .fc-result, and left the drawing out of every PNG, PDF
+ * and Download Plans page. The capture lays the strip out at full width, so the section grows by
+ * what the strip has scrolled out of view and loses the strip's scrollbar; without that size passed
+ * to modern-screenshot, the image was also cut off at the on-screen section's width.
+ */
+function fcMeasureProjectPlanSectionCapture(sectionEl) {
+    var strip = sectionEl.querySelector('.fc-project-plan-hscroll');
+    var hidden = strip ? Math.max(0, strip.scrollWidth - strip.clientWidth) : 0;
+    var scrollbar = strip ? Math.max(0, strip.offsetHeight - strip.clientHeight) : 0;
 
-    var result = sectionEl.querySelector('.fc-result');
-    if (result) {
-        return Math.ceil(Math.max(result.scrollWidth, result.getBoundingClientRect().width));
-    }
-
-    return Math.ceil(sectionEl.scrollWidth);
+    return {
+        width: Math.ceil(sectionEl.offsetWidth + hidden),
+        height: Math.ceil(sectionEl.offsetHeight - scrollbar),
+        stripWidth: strip ? Math.ceil(strip.scrollWidth) : 0
+    };
 }
 
-function fcPrepareProjectPlanSectionScreenshotClone(cloned) {
+function fcPrepareProjectPlanSectionScreenshotClone(cloned, size) {
     if (!cloned || cloned.nodeType !== 1 || !cloned.classList) {
         return;
     }
@@ -241,32 +247,31 @@ function fcPrepareProjectPlanSectionScreenshotClone(cloned) {
         head.style.top = 'auto';
         head.style.zIndex = 'auto';
         head.style.boxShadow = 'none';
+        /* Copied at the on-screen section's width; its band has to span the whole run. */
+        head.style.width = 'auto';
         head.classList.remove('fc-project-plan-section-head--stuck', 'fc-project-plan-section-head--dropdown-open');
     }
 
-    var contentWidth = fcMeasureProjectPlanSectionContentWidth(cloned);
     var hscroll = cloned.querySelector('.fc-project-plan-hscroll');
     var planItem = cloned.querySelector('.plan-item');
-    var dlRow = cloned.querySelector('.dl-row');
-    var fcResult = cloned.querySelector('.fc-result');
 
     cloned.style.overflow = 'visible';
     cloned.style.maxWidth = 'none';
 
     if (hscroll) {
+        /* The whole run rather than the stretch the strip shows, and without the edge fades that say
+           there is more to scroll: on the full-width copy they would fade out the run's own ends. */
         hscroll.style.overflow = 'visible';
-        hscroll.style.width = contentWidth + 'px';
-        hscroll.scrollLeft = 0;
+        hscroll.style.maxWidth = 'none';
+        hscroll.style.setProperty('-webkit-mask-image', 'none');
+        hscroll.style.setProperty('mask-image', 'none');
+        if (size && size.stripWidth) {
+            hscroll.style.width = size.stripWidth + 'px';
+        }
     }
     if (planItem) {
         planItem.style.overflow = 'visible';
-    }
-    if (dlRow) {
-        dlRow.style.width = contentWidth + 'px';
-    }
-    if (fcResult) {
-        fcResult.style.width = contentWidth + 'px';
-        fcResult.style.maxWidth = 'none';
+        planItem.style.width = 'auto';
     }
 
     var skeleton = cloned.querySelector('.fc-project-plan-skeleton');
@@ -275,13 +280,18 @@ function fcPrepareProjectPlanSectionScreenshotClone(cloned) {
     }
 }
 
-function fcProjectPlanSectionScreenshotOptions() {
+function fcProjectPlanSectionScreenshotOptions(sectionEl) {
+    var size = fcMeasureProjectPlanSectionCapture(sectionEl);
+
     return {
         scale: Math.min(window.devicePixelRatio || 1, 2),
         backgroundColor: '#ffffff',
+        width: size.width,
+        height: size.height,
         timeout: 60000,
         features: {
-            restoreScrollPosition: true,
+            /* The strip is captured from its start at full width, wherever it is scrolled to on screen. */
+            restoreScrollPosition: false,
             copyScrollbar: false
         },
         filter: function(node) {
@@ -298,7 +308,7 @@ function fcProjectPlanSectionScreenshotOptions() {
             return true;
         },
         onCloneNode: function(cloned) {
-            fcPrepareProjectPlanSectionScreenshotClone(cloned);
+            fcPrepareProjectPlanSectionScreenshotClone(cloned, size);
         }
     };
 }
@@ -343,7 +353,7 @@ function fcCaptureProjectPlanSection(sectionIndex) {
                     fcCloseProjectPlanSectionDropdown(sectionEl);
 
                     window.modernScreenshot
-                        .domToPng(sectionEl, fcProjectPlanSectionScreenshotOptions())
+                        .domToPng(sectionEl, fcProjectPlanSectionScreenshotOptions(sectionEl))
                         .then(resolve)
                         .catch(reject);
                 });
@@ -358,15 +368,46 @@ function fcCaptureProjectPlanSection(sectionIndex) {
     });
 }
 
+function fcDataUrlToBlob(dataUrl) {
+    var comma = dataUrl.indexOf(',');
+    var type = dataUrl.slice(5, comma).split(';')[0] || 'image/png';
+    var binary = atob(dataUrl.slice(comma + 1));
+    var bytes = new Uint8Array(binary.length);
+
+    for (var i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: type });
+}
+
 function fcDownloadDataUrlPng(dataUrl, filename) {
     if (!dataUrl) {
         return;
     }
 
+    /* An object URL on a link that is in the page: Firefox ignores a click on a download link that
+       is not in the document, and Chrome fails a data: URL download past about 2MB, which a long
+       section captured at 2x passes. */
+    var url = dataUrl;
+    try {
+        url = URL.createObjectURL(fcDataUrlToBlob(dataUrl));
+    } catch (err) {
+        url = dataUrl;
+    }
+
     var link = document.createElement('a');
     link.download = filename;
-    link.href = dataUrl;
+    link.href = url;
+    link.style.display = 'none';
+    document.body.appendChild(link);
     link.click();
+
+    setTimeout(function() {
+        link.remove();
+        if (url !== dataUrl) {
+            URL.revokeObjectURL(url);
+        }
+    }, 1000);
 }
 
 /**
@@ -539,7 +580,8 @@ function fcLoadProjectPlanCaptureDimensions(dataUrl) {
             resolve({
                 dataUrl: dataUrl,
                 width: probe.width,
-                height: probe.height
+                height: probe.height,
+                image: probe
             });
         };
         probe.onerror = function() {
@@ -669,6 +711,105 @@ function fcCaptureProjectPlanCartList() {
     });
 }
 
+/**
+ * Where the item list's A4 pages end, in rows of the captured image. At a fixed height a page cut
+ * through whatever row of the table landed there. Each page now ends just under the rule beneath a
+ * row of the table, the nearest one found walking up through the page's last quarter, so the row
+ * keeps its own bottom border and the next page opens on a whole row. Failing a rule it ends on an
+ * empty line of pixels, and failing that at full height. An empty line alone was not enough: the
+ * gap between a wrapped description's lines is one too, and a row broke across two pages there.
+ * The blank run at the foot of the capture is left off too: the list is captured at the height it
+ * has in its narrower column on screen, and that run was printing as an empty last page.
+ */
+function fcFindCartListPageBreaks(image, pageHeight) {
+    /* Squeezed across but not down, so a 1px rule is still a whole line of its own colour. */
+    var width = Math.min(image.width, 400);
+    var height = image.height;
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+
+    canvas.width = width;
+    canvas.height = height;
+    context.drawImage(image, 0, 0, width, height);
+
+    var pixels = context.getImageData(0, 0, width, height).data;
+    /* Inside the card's own left and right borders. */
+    var from = Math.floor(width * 0.06);
+    var to = Math.ceil(width * 0.94);
+
+    /* Per line of pixels: how many are not near-white, how many of those are dark enough to be
+       text, and how many are the light grey of a table rule. */
+    function tally(row) {
+        var counts = { marked: 0, dark: 0, grey: 0 };
+
+        for (var x = from; x < to; x++) {
+            var i = (row * width + x) * 4;
+            var low = Math.min(pixels[i], pixels[i + 1], pixels[i + 2]);
+
+            if (low < 235) {
+                counts.marked++;
+                if (low < 150) {
+                    counts.dark++;
+                } else if (low > 200) {
+                    counts.grey++;
+                }
+            }
+        }
+        return counts;
+    }
+
+    /* A few marked pixels are allowed on an empty line: the table's own side borders cross every
+       line, text or not. */
+    function plain(row) {
+        return tally(row).marked <= 3;
+    }
+
+    function rule(row) {
+        var counts = tally(row);
+        return counts.dark <= 3 && counts.grey >= (to - from) * 0.3;
+    }
+
+    var last = height - 1;
+    while (last > 0 && plain(last)) {
+        last--;
+    }
+
+    var end = Math.min(height, last + 2);
+    var breaks = [0];
+    var top = 0;
+
+    while (end - top > pageHeight) {
+        var full = Math.floor(top + pageHeight);
+        var floor = Math.ceil(top + pageHeight * 0.75);
+        var cut = 0;
+        var row;
+
+        for (row = full - 1; row >= floor && !cut; row--) {
+            if (rule(row)) {
+                cut = row + 1;
+            }
+        }
+        /* A rule two lines thick (a 1px border captured at 2x) stays whole on the page it ends. */
+        while (cut && cut < full && rule(cut)) {
+            cut++;
+        }
+        for (row = full; row >= floor && !cut; row--) {
+            if (plain(row)) {
+                cut = row;
+            }
+        }
+        if (cut <= top) {
+            cut = full;
+        }
+
+        breaks.push(cut);
+        top = cut;
+    }
+
+    breaks.push(end);
+    return breaks;
+}
+
 function fcAppendCartListA4Pages(doc, cartDataUrl) {
     return fcLoadProjectPlanCaptureDimensions(cartDataUrl).then(function(dim) {
         var a4 = fcProjectPlanA4PageSizePx();
@@ -677,19 +818,21 @@ function fcAppendCartListA4Pages(doc, cartDataUrl) {
         var pageH = a4.height;
         var contentW = pageW - margin * 2;
         var contentH = pageH - margin * 2;
-        var imgW = contentW;
-        var imgH = (dim.height * imgW) / dim.width;
-        var y = margin;
+        var ratio = contentW / dim.width;
+        var breaks = fcFindCartListPageBreaks(dim.image, contentH / ratio);
 
-        doc.addPage([pageW, pageH], 'portrait');
-        doc.addImage(dim.dataUrl, 'PNG', margin, y, imgW, imgH, undefined, 'FAST');
+        for (var i = 1; i < breaks.length; i++) {
+            var top = breaks[i - 1];
 
-        var heightLeft = imgH - contentH;
-        while (heightLeft > 0) {
-            y = margin - (imgH - heightLeft);
             doc.addPage([pageW, pageH], 'portrait');
-            doc.addImage(dim.dataUrl, 'PNG', margin, y, imgW, imgH, undefined, 'FAST');
-            heightLeft -= contentH;
+            /* Each page prints its own slice only: unclipped, the image ran on into the bottom
+               margin, and the next page's top margin printed the same strip again. */
+            doc.saveGraphicsState();
+            doc.rect(margin, margin, contentW, (breaks[i] - top) * ratio, null);
+            doc.clip();
+            doc.discardPath();
+            doc.addImage(dim.dataUrl, 'PNG', margin, margin - top * ratio, contentW, dim.height * ratio, 'fc-project-plan-cart', 'FAST');
+            doc.restoreGraphicsState();
         }
     });
 }
@@ -803,14 +946,21 @@ function fcProjectPlanDownloadToast(show, message) {
 }
 
 function fcBtnDownloadFenceBusy($button, isBusy) {
+    var $icon = $button.find('i').first();
+
     if (isBusy) {
-        $button.find('i').removeAttr('class').addClass('fas fa-spinner fa-spin');
+        /* The icon's own classes are kept and put back, me-2 with them: rebuilding them from the
+           icon name alone dropped the gap before "Download Plans" after the first download. */
+        if (!$icon.data('fcPrevClass')) {
+            $icon.data('fcPrevClass', $icon.attr('class'));
+        }
+        $icon.attr('class', 'fas fa-spinner fa-spin me-2');
         $button.attr('disabled', true).find('span').html('Preparing Plans...');
         fcProjectPlanDownloadToast(true);
         return;
     }
 
-    $button.find('i').removeAttr('class').addClass('fa-solid fa-download');
+    $icon.attr('class', $icon.data('fcPrevClass') || 'fa-solid fa-download me-2');
     $button.removeAttr('disabled').find('span').html('Download Plans');
     fcProjectPlanDownloadToast(false);
 }
@@ -828,7 +978,11 @@ function fcBtnDownloadFence(e) {
     fcWaitForProjectPlanSectionsReady()
         .then(function(indices) {
             return fcCaptureAllProjectPlanSections(indices).then(function(sectionCaptures) {
-                return fcCaptureProjectPlanCartList().then(function(cartCapture) {
+                /* An item list that will not capture costs the plan its item list pages, not the
+                   whole download. */
+                return fcCaptureProjectPlanCartList().catch(function() {
+                    return null;
+                }).then(function(cartCapture) {
                     return {
                         sectionCaptures: sectionCaptures,
                         cartCapture: cartCapture

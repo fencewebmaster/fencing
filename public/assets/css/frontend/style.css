@@ -6983,13 +6983,13 @@ thead.fc-border th:last-child {
     margin-bottom: 0.75rem;
 }
 
-/* Planner Step 3: dimension line under the drawing, drawn like an architectural dimension: a
-   short tick (extension line) at each end of the drawn run, arrowheads meeting the ticks, a 1px
+/* Planner Step 3 and the project plan: dimension line under the drawing, drawn like an
+   architectural dimension: a short tick (extension line) at each end of the drawn run, arrowheads meeting the ticks, a 1px
    shaft and the Overall figure on a tag in the middle. Geometry comes from
    shared/overall-dimension.js; this is only the look. Everything is painted in currentColor —
    the #404040 of the fence bars, but a step lighter than the 2px rails so it reads as a note,
    not a fence member. */
-.fc-planner-page .fc-dim {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim {
     display: flex;
     align-items: center;
     /* No gap: the arms meet under the figure, so the line stays unbroken when the script
@@ -7005,7 +7005,7 @@ thead.fc-border th:last-child {
     white-space: nowrap;
 }
 
-.fc-planner-page .fc-dim.fc-dim--off {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim.fc-dim--off {
     display: none;
 }
 
@@ -7017,7 +7017,7 @@ thead.fc-border th:last-child {
    the strip (an off-cut box beside the run is enough). z-index 1 keeps it over the arms (they
    are positioned spans too); the label centres on it via flex, overflowing both sides
    equally. */
-.fc-planner-page .fc-dim__anchor {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__anchor {
     position: relative;
     z-index: 1;
     display: flex;
@@ -7031,7 +7031,7 @@ thead.fc-border th:last-child {
    grew the line box a pixel, and the row must stay an odd height so the 1px shaft centres on a
    whole pixel instead of smearing across two. Flex drops the space between the two spans, so
    the gap stands in for it. */
-.fc-planner-page .fc-dim__label {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__label {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -7044,19 +7044,19 @@ thead.fc-border th:last-child {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.fc-planner-page .fc-dim__num {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__num {
     font-weight: 700;
 }
 
-.fc-planner-page .fc-dim__word {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__word {
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.08em;
 }
 
 /* Extension ticks at the run's exact ends — the row's first and last flex items. */
-.fc-planner-page .fc-dim::before,
-.fc-planner-page .fc-dim::after {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim::after {
     content: "";
     flex: none;
     width: 1px;
@@ -7067,7 +7067,7 @@ thead.fc-border th:last-child {
 /* The arms: 1px shafts from each tick to the figure, equal flex so they meet at the line's
    centre. Real spans rather than pseudo-elements, because each needs a pseudo of its own for
    its arrowhead. */
-.fc-planner-page .fc-dim__arm {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm {
     position: relative;
     flex: 1 1 0;
     min-width: 12px;
@@ -7079,8 +7079,8 @@ thead.fc-border th:last-child {
    any zoom, no image, no gradient smear (the half-triangle gradients they replace blurred the
    tip). The 8px head centres on the 1px shaft at -3.5px: that half pixel only moves the tip,
    and a triangle has no horizontal edge to soften. */
-.fc-planner-page .fc-dim__arm--start::before,
-.fc-planner-page .fc-dim__arm--end::after {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--start::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--end::after {
     content: "";
     position: absolute;
     top: -3.5px;
@@ -7088,16 +7088,131 @@ thead.fc-border th:last-child {
     border-color: transparent;
 }
 
-.fc-planner-page .fc-dim__arm--start::before {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--start::before {
     left: 0;
     border-width: 4px 9px 4px 0;
     border-right-color: currentColor;
 }
 
-.fc-planner-page .fc-dim__arm--end::after {
+:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--end::after {
     right: 0;
     border-width: 4px 0 4px 9px;
     border-left-color: currentColor;
+}
+
+/* Planner Step 3 and the project plan: a width dimension over each panel and gate — |—— 1,934W ——|
+   — as design-1 draws it: a tick at each edge of the part, a 1px line between them and the figure sitting on it.
+   Geometry comes from shared/panel-dimensions.js; this is only the look, in the same
+   currentColor and type as the Overall line under the run. */
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim {
+    position: relative;
+    height: 24px;
+    /* --fc-pdim-lift and --fc-pdim-rise come from panel-dimensions.js, clearing a raked panel's
+       high end and its post; both are unset, so 0 0 6px, on a run without one. */
+    margin: calc(-1 * var(--fc-pdim-lift, 0px)) 0 calc(6px + var(--fc-pdim-rise, 0px));
+    color: var(--fc-tundora);
+    font-size: 12px;
+    line-height: 15px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim.fc-pdim--off {
+    display: none;
+}
+
+/* The line sits 4px off the row's foot, spanning the part exactly; the ticks centre on it. */
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim__seg {
+    position: absolute;
+    bottom: 4px;
+    height: 1px;
+    background: currentColor;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim__seg::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim__seg::after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    width: 1px;
+    height: 9px;
+    background: currentColor;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim__seg::before {
+    left: 0;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim__seg::after {
+    right: 0;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim__label {
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* A part narrower than its figure (zoomed right out, a short panel): a smaller figure rather than
+   one that runs into its neighbour's. */
+:is(.fc-planner-page, .fc-project-plan-page) .fc-pdim__seg--tight .fc-pdim__label {
+    font-size: 10px;
+}
+
+/* While the line carries each part's width, the part stops repeating it inside: a panel's "1934W"
+   (with the break after it, or "PANEL" would sit under an empty line), a raked panel's W line, and
+   a gate's "970mm", so a gate reads "GATE". Only visually hidden, because panel-dimensions.js and
+   ProjectPlan.fixCentersWidthWithoutEndPost still read the figure from textContent. Keyed to the
+   line actually showing, so the figure comes back if the line ever fails to draw. */
+:is(.fc-planner-page, .fc-project-plan-page) .fc-result:has(> .fc-pdim:not(.fc-pdim--off)) .fencing-panel-item-size .fc-panel-size,
+:is(.fc-planner-page, .fc-project-plan-page) .fc-result:has(> .fc-pdim:not(.fc-pdim--off)) .fencing-panel-item-size .fc-panel-size + br,
+:is(.fc-planner-page, .fc-project-plan-page) .fc-result:has(> .fc-pdim:not(.fc-pdim--off)) .fencing-panel-item-size .fc-raked-width,
+:is(.fc-planner-page, .fc-project-plan-page) .fc-result:has(> .fc-pdim:not(.fc-pdim--off)) .fencing-panel-item-size .fc-gate-width {
+    display: none;
+}
+
+/* Project plan: the Overall line hangs from .fc-result's foot rather than sitting in its content
+   box. Its padding-bottom is the room for the spacing and Centers labels under the run, which
+   p2.js grows until they fit, so a line inside would cross them and one hung from the foot always
+   clears them. Placed against .fc-result, not .dl-row: the PNG/PDF capture resizes .dl-row to the
+   run, which would shift a line measured from it. .dl-row keeps the line's room, as the strip
+   clips vertically. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll .fc-result:has(> .fc-dim) {
+    position: relative;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-dim {
+    position: absolute;
+    top: 100%;
+    left: 0;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll .dl-row:has(> .fc-result > .fc-dim:not(.fc-dim--off)) {
+    padding-bottom: 36px;
+}
+
+/* A slat section's .fc-result is itself the flex box that stands the run on its foot, so the width
+   row takes a line of its own above the run instead of a place beside it. */
+.fc-project-plan-page .fc-result.fc-slat-scale:has(> .fc-pdim) {
+    flex-wrap: wrap;
+    align-content: flex-end;
+}
+
+.fc-project-plan-page .fc-result.fc-slat-scale.fc-slat-align-top:has(> .fc-pdim) {
+    align-content: flex-start;
+}
+
+.fc-project-plan-page .fc-result.fc-slat-scale > .fc-pdim {
+    flex: 0 0 100%;
+}
+
+/* Project plan: once the width line is on, the run takes planner Step 3's 18px of head-room above
+   its parts (the padding-top the planner's .fencing-panel-container has). The gap figures over
+   the posts ("20" either side of a gate) stand in that room on the planner, clear of the line's
+   ticks; without it they rose into them. It also brings a raked post's rise down to the planner's. */
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container {
+    padding-top: 18px;
 }
 
 /* While the line carries the figure, the old centred Overall text is only visually hidden: it
@@ -12215,11 +12330,11 @@ body.fc-restoring-selection .fencing-tab-name {
     margin: 15px 5px;
     height: fit-content;
     background: var(--fc-white);
-    padding: 5px 4px;
+    padding: 2px 4px;
     color: var(--fc-black);
     text-align: -webkit-center;
     border: 1px solid var(--fc-spanish-gray);
-    border-radius: 5px;
+    border-radius: 3px;
     line-height: 14px;
     z-index: 2;
 }
