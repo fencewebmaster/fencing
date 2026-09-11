@@ -37,9 +37,6 @@ use Fc\Admin\Services\AppConfigService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon fc-modal__icon--warning" aria-hidden="true">
-                    <i class="fa-solid fa-ruler-horizontal"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcOverallLengthMaxModalLabel">Overall Length too large</h5>
                     <p class="fc-modal__subtitle mb-0">Over the limit for <span class="js-fc-overall-max-style">this fence style</span></p>
@@ -89,6 +86,123 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
+<!-- Planner keyboard shortcuts, behind the keyboard button beside Summary (fc-planner-summary.js
+     adds it). Step 2's keys are events.js's own (step2EnterNavigate; Tab is the browser's), the
+     editor keys are shared/drawing-keys.js and the Ctrl combos shared/planner-shortcuts.js. Esc is
+     each dialog's own: Bootstrap closes these, and events.js closes the planner's option window
+     and the download wizard. Keep the list in step with all of them. -->
+<div class="modal fade fc-modal" id="fc-shortcuts-modal" tabindex="-1" aria-labelledby="fcShortcutsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable fc-modal__dialog fc-modal__dialog--shortcuts">
+        <div class="modal-content fc-modal__content">
+            <div class="modal-header fc-modal__header">
+                <div class="fc-modal__header-text">
+                    <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcShortcutsModalLabel">Keyboard shortcuts</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fc-modal__body">
+                <div class="fc-shortcuts-grid">
+                    <div class="fc-shortcuts-col">
+                        <h6 class="fc-modal__field-label" id="fcShortcutsSections">Sections</h6>
+                        <ul class="fc-modal__list fc-shortcuts" aria-labelledby="fcShortcutsSections">
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>A</kbd></span>
+                                <span><b>A</b>dd a section</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>D</kbd></span>
+                                <span><b>D</b>elete this section (asks first)</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>R</kbd></span>
+                                <span><b>R</b>eset this section (asks first)</span>
+                            </li>
+                        </ul>
+
+                        <h6 class="fc-modal__field-label" id="fcShortcutsStep2">For your measurements in Step 2</h6>
+                        <ul class="fc-modal__list fc-shortcuts" aria-labelledby="fcShortcutsStep2">
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Tab</kbd></span>
+                                <span>Next field, Shift + Tab goes back</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Enter</kbd></span>
+                                <span>Next empty field, then Calculate</span>
+                            </li>
+                        </ul>
+
+                        <h6 class="fc-modal__field-label" id="fcShortcutsStep3">For the fence editor in Step 3</h6>
+                        <ul class="fc-modal__list fc-shortcuts" aria-labelledby="fcShortcutsStep3">
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd></span>
+                                <span>Scroll the editor, hold to glide</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>+</kbd><kbd>&minus;</kbd></span>
+                                <span>Zoom in or out (10% steps)</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>0</kbd></span>
+                                <span>Reset the zoom to 100%</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="fc-shortcuts-col">
+                        <h6 class="fc-modal__field-label" id="fcShortcutsOptions">Fence options in Step 3</h6>
+                        <ul class="fc-modal__list fc-shortcuts" aria-labelledby="fcShortcutsOptions">
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>L</kbd></span>
+                                <span>Edit <b>L</b>eft Side</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>G</kbd></span>
+                                <span>Add <b>G</b>ate / Gate Options</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>S</kbd></span>
+                                <span>Edit <b>S</b>pacing</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>S</kbd></span>
+                                <span><b>S</b>pigot Options</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>P</kbd></span>
+                                <span><b>P</b>anel Options</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>P</kbd></span>
+                                <span><b>P</b>ost Options</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>R</kbd></span>
+                                <span>Edit <b>R</b>ight Side</span>
+                            </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>M</kbd></span>
+                                <span>Su<b>m</b>mary</span>
+                            </li>
+                        </ul>
+
+                        <h6 class="fc-modal__field-label" id="fcShortcutsDialogs">Dialogs</h6>
+                        <ul class="fc-modal__list fc-shortcuts" aria-labelledby="fcShortcutsDialogs">
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>Esc</kbd></span>
+                                <span>Close the open dialog</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="fc-modal__note">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <span><strong>Key not working?</strong> Click outside the field you&rsquo;re typing in, or close the open dialog. On a Mac, use Control, not &#8984;.</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Incomplete fence sections — choose to fix or continue to project plan. The section
      list is filled on show (events.js); the fallback copy stays visible when the two
      completeness checks disagree and it comes back empty. -->
@@ -96,9 +210,6 @@ use Fc\Admin\Services\AppConfigService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon fc-modal__icon--warning" aria-hidden="true">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcIncompleteSectionsModalLabel">Sections need attention</h5>
                     <p class="fc-modal__subtitle mb-0">Some measurements are still missing</p>
@@ -170,9 +281,6 @@ use Fc\Admin\Services\AppConfigService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon" aria-hidden="true">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcPopupAlertModalLabel"></h5>
                 </div>
@@ -242,9 +350,6 @@ use Fc\Admin\Services\AppConfigService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon" aria-hidden="true">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcResetSectionTitle">Reset section</h5>
                     <p class="fc-modal__subtitle mb-0">Start this section again from the fencing style</p>
@@ -280,9 +385,6 @@ use Fc\Admin\Services\AppConfigService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon" aria-hidden="true">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcDeleteSectionTitle">Delete section</h5>
                     <p class="fc-modal__subtitle mb-0">Remove this section from your quote</p>
@@ -368,9 +470,6 @@ use Fc\Admin\Services\AppConfigService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon fc-modal__icon--info" aria-hidden="true">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcStep2ImportantTitle">Important</h5>
                     <p class="fc-modal__subtitle mb-0">Measurement Guide</p>
@@ -394,9 +493,6 @@ use Fc\Admin\Services\AppConfigService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon fc-modal__icon--info" aria-hidden="true">
-                    <i class="fa-solid fa-envelope-open-text"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcDownloadIntroTitle">We&rsquo;ll email you the plans</h5>
                     <p class="fc-modal__subtitle mb-0">Before you enter your details</p>

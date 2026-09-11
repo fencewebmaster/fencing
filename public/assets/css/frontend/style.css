@@ -43,6 +43,7 @@
     --fc-shark: #292929;
     --fc-dark-charcoal: #333;
     --fc-charcoal-37: rgb(37, 37, 37);
+    --fc-tundora: #404040;
     --fc-boulder-78: rgb(78, 78, 78);
     --fc-emperor: #525252;
     --fc-emperor-555: #555;
@@ -1619,7 +1620,7 @@ a div {
 
 @media (max-width: 992px) {
     .fencing-content-title {
-        font-size: 14px;
+        font-size: 12px;
     }
 }
 
@@ -1640,7 +1641,6 @@ a div {
 /* Compact step headers: 31px, which with its 3px below matches Step 02's Important chip. Planner only. */
 .fc-planner-page .step-label {
     font-size: 32px;
-    line-height: 31px;
 }
 
 /* Plan page section labels take the same 32px but have no second line, so no trailing 3px. */
@@ -4733,31 +4733,6 @@ thead.fc-border th:last-child {
     color: var(--fc-gainsboro);
 }
 
-/* Disabled zoom controls take the shared muted grey; .fc-planner-page is what beats Bootstrap's later .btn:disabled. */
-.fc-planner-page .btn.fc-zoom-reset:disabled,
-.fc-planner-page .btn.fc-zoom-reset.disabled,
-.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"]:disabled,
-.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"].disabled {
-    background-color: var(--fc-bright-gray) !important;
-    border-color: var(--fc-gainsboro) !important;
-    color: var(--fc-gray-chateau) !important;
-    opacity: 1;
-    box-shadow: none;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* The label is an <i> plus a <span>, so .disabled * paints it gainsboro; !important for the same reason. */
-.fc-planner-page .btn.fc-zoom-reset:disabled i,
-.fc-planner-page .btn.fc-zoom-reset:disabled span,
-.fc-planner-page .btn.fc-zoom-reset.disabled i,
-.fc-planner-page .btn.fc-zoom-reset.disabled span,
-.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"]:disabled i,
-.fc-planner-page .btn.fc-zoom-fence[data-zoom="out"].disabled i {
-    color: var(--fc-gray-chateau) !important;
-    opacity: 1;
-}
-
 .fc-form-plan .fc-col-half {
     width: calc(50% - 0px);
 }
@@ -6860,6 +6835,79 @@ thead.fc-border th:last-child {
     box-sizing: border-box;
 }
 
+/* Planner Step 3 canvas: the 24px drafting-grid tile from the design-2 mockup
+   (tests/mockup/design-2.html .viewport) across everything between the header band and the
+   action row — drawing, solution/clamp messages, Overall line and the option chips. One tile
+   origin on __top, not per child, or the 24px grid restarts and mis-aligns at every seam. The
+   header band (.fencing-section--step3) and the .fc-step3-bottom action row bleed to the card
+   edges on their own opaque grounds, so they mask their areas themselves. The top radius
+   matches the header band's, or the square corners of the grid peek out behind its 6px arcs.
+   Literal colours on purpose: a neutral drafting tone, not brand — theme changes must not
+   recolour the grid. */
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__top {
+    background-color: #f6f7f9;
+    background-image: linear-gradient(#e9ebef 1px, transparent 1px),
+        linear-gradient(90deg, #e9ebef 1px, transparent 1px);
+    background-size: 22px 22px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* The base .fencing-display-result rule paints the strip white, which would float a white slab
+   in the middle of the grid. */
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__cmp.fencing-display-result {
+    background: transparent;
+}
+
+/* Planner Step 3: the drawing strip's scrollbar moves under the control buttons. The strip's own
+   bar is hidden here and .fc-hscroll-proxy (kept in sync by shared/hscroll-proxy.js) renders it
+   at the bottom of the section instead of between the drawing and the Overall line. */
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result .fc-project-plan-hscroll {
+    scrollbar-width: none;
+}
+
+.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result .fc-project-plan-hscroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* Same 5px bar the other custom scroll strips draw (see .fencing-tab-container::-webkit-scrollbar);
+   scrollbar-width/-color is the Firefox half of the same look. */
+.fc-hscroll-proxy {
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--fc-dark-charcoal) var(--fc-concrete);
+}
+
+.fc-hscroll-proxy__inner {
+    height: 1px;
+}
+
+.fc-hscroll-proxy::-webkit-scrollbar {
+    height: 5px;
+}
+
+.fc-hscroll-proxy::-webkit-scrollbar-track {
+    background: var(--fc-concrete);
+}
+
+.fc-hscroll-proxy::-webkit-scrollbar-thumb {
+    background: var(--fc-dark-charcoal);
+}
+
+@media (min-width: 1024px) {
+    .fc-hscroll-proxy::-webkit-scrollbar-thumb:hover {
+        background: var(--fc-emperor-555);
+    }
+}
+
+/* Own off-state class, not the .fc-d-none utility: that utility sits early in this sheet, and a
+   same-specificity display rule below it would win (the .fencing-tabs-container trap). */
+.fc-hscroll-proxy--off {
+    display: none;
+}
+
 @media (max-width: 992px) {
     .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-section__cmp.fencing-display-result {
         margin-left: -16px;
@@ -6933,6 +6981,138 @@ thead.fc-border th:last-child {
     padding-top: 0.5rem !important;
     padding-bottom: 1rem !important;
     margin-bottom: 0.75rem;
+}
+
+/* Planner Step 3: dimension line under the drawing, drawn like an architectural dimension: a
+   short tick (extension line) at each end of the drawn run, arrowheads meeting the ticks, a 1px
+   shaft and the Overall figure on a tag in the middle. Geometry comes from
+   shared/overall-dimension.js; this is only the look. Everything is painted in currentColor —
+   the #404040 of the fence bars, but a step lighter than the 2px rails so it reads as a note,
+   not a fence member. */
+.fc-planner-page .fc-dim {
+    display: flex;
+    align-items: center;
+    /* No gap: the arms meet under the figure, so the line stays unbroken when the script
+       slides the figure's anchor away from the middle. */
+    gap: 0;
+    margin: 6px 0 8px;
+    color: var(--fc-tundora);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 15px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.fc-planner-page .fc-dim.fc-dim--off {
+    display: none;
+}
+
+/* The figure's anchor: a zero-width box at the arms' meeting point — the line's own centre,
+   which is where the figure sits whenever the whole line is on screen. On a run wider than the
+   screen shared/overall-dimension.js slides it (relative `left`) to the middle of the VISIBLE
+   stretch of the line, so the figure never scrolls away. Not sticky left/right: 50%: that pins
+   to the strip's centre, which leaves the line's centre whenever the drawing is not centred in
+   the strip (an off-cut box beside the run is enough). z-index 1 keeps it over the arms (they
+   are positioned spans too); the label centres on it via flex, overflowing both sides
+   equally. */
+.fc-planner-page .fc-dim__anchor {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    width: 0;
+}
+
+/* The figure's tag cuts the line, as the white label box does in the mockup; a hairline border
+   and a soft shadow lift it off the drafting grid. The number carries the weight, the word
+   steps back. A FIXED 21px pill rather than padding around the text: the mixed 12px/11px type
+   grew the line box a pixel, and the row must stay an odd height so the 1px shaft centres on a
+   whole pixel instead of smearing across two. Flex drops the space between the two spans, so
+   the gap stands in for it. */
+.fc-planner-page .fc-dim__label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-sizing: border-box;
+    height: 21px;
+    padding: 0 10px;
+    border: 1px solid var(--fc-alto);
+    border-radius: 999px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.fc-planner-page .fc-dim__num {
+    font-weight: 700;
+}
+
+.fc-planner-page .fc-dim__word {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+}
+
+/* Extension ticks at the run's exact ends — the row's first and last flex items. */
+.fc-planner-page .fc-dim::before,
+.fc-planner-page .fc-dim::after {
+    content: "";
+    flex: none;
+    width: 1px;
+    height: 11px;
+    background: currentColor;
+}
+
+/* The arms: 1px shafts from each tick to the figure, equal flex so they meet at the line's
+   centre. Real spans rather than pseudo-elements, because each needs a pseudo of its own for
+   its arrowhead. */
+.fc-planner-page .fc-dim__arm {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 12px;
+    height: 1px;
+    background: currentColor;
+}
+
+/* Arrowheads: CSS border triangles (9 x 8px) with their tips on the ticks — crisp diagonals at
+   any zoom, no image, no gradient smear (the half-triangle gradients they replace blurred the
+   tip). The 8px head centres on the 1px shaft at -3.5px: that half pixel only moves the tip,
+   and a triangle has no horizontal edge to soften. */
+.fc-planner-page .fc-dim__arm--start::before,
+.fc-planner-page .fc-dim__arm--end::after {
+    content: "";
+    position: absolute;
+    top: -3.5px;
+    border-style: solid;
+    border-color: transparent;
+}
+
+.fc-planner-page .fc-dim__arm--start::before {
+    left: 0;
+    border-width: 4px 9px 4px 0;
+    border-right-color: currentColor;
+}
+
+.fc-planner-page .fc-dim__arm--end::after {
+    right: 0;
+    border-width: 4px 0 4px 9px;
+    border-left-color: currentColor;
+}
+
+/* While the line carries the figure, the old centred Overall text is only visually hidden: it
+   stays the text source and what screen readers read (the line is aria-hidden). Out-ranks the
+   step's own !important paddings above, and Bootstrap's pt-1/pb-2 utilities. */
+.fc-planner-page .js-fc-form-step[data-section="3"] .fc-overall.fc-overall--in-dim {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 
 
@@ -7999,16 +8179,6 @@ thead.fc-border th:last-child {
     font-size: 12px;
 }
 
-.fc-zoom-progress {
-    background-color: var(--fc-bright-gray);
-    width: 74px;
-    height: 35px;
-    border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .fencing-styles {
     display: block;
     padding-bottom: 20px;
@@ -8603,10 +8773,6 @@ body.fc-restoring-selection .fencing-tab-name {
     transition: background-color 0.2s ease;
 }
 
-.fc-planner-page .fencing-style-item:hover .fencing-style-btn {
-    transform: none;
-}
-
 /* Remove control on the selected tile: 24px (the WCAG 2.5.8 floor), no expanded hit area, ring for 2.4.7. */
 .fencing-style-item .fencing-style-btn {
     width: 24px;
@@ -8628,17 +8794,6 @@ body.fc-restoring-selection .fencing-tab-name {
     place-items: center;
 }
 
-@media (hover: hover) {
-    /* Ties the `transform: none` rule above and wins on order: the lift is the button's own, not the tile's. */
-    .fc-planner-page .fencing-style-item .fencing-style-btn:hover {
-        transform: translateY(-1px);
-    }
-}
-
-.fencing-style-item .fencing-style-btn:active {
-    transform: translateY(0);
-}
-
 .fencing-style-item .fencing-style-btn:focus-visible {
     outline: 2px solid var(--fc-white);
     outline-offset: 2px;
@@ -8647,24 +8802,12 @@ body.fc-restoring-selection .fencing-tab-name {
         0 0 0 6px var(--fc-a-orange-35);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .fc-planner-page .fencing-style-item .fencing-style-btn:hover {
-        transform: none;
-    }
-}
-
-.fc-planner-page .fencing-style-item:not(.fsi-selected):hover > div {
-    transform: translateY(-6px);
-    box-shadow: 0 14px 32px var(--fc-a-orange-22), 0 6px 16px rgba(0, 0, 0, 0.08);
-}
-
+/* Hovering a style card moves nothing — no lift, no image zoom, no pop shadow, and none of the
+   old button micro-lift — by request: the card keeps its resting position and only the colours
+   answer the pointer (image to full opacity, orange border, recoloured title). */
 .fc-planner-page .fencing-style-item:not(.fsi-selected):hover .fencing-style-img {
     opacity: 1;
     border-color: var(--fc-princeton-orange);
-}
-
-.fc-planner-page .fencing-style-item:not(.fsi-selected):hover .fencing-style-img img {
-    transform: scale(1.06);
 }
 
 .fc-planner-page .fencing-style-item:not(.fsi-selected):hover .fencing-style-title {
@@ -8673,22 +8816,7 @@ body.fc-restoring-selection .fencing-tab-name {
     color: var(--fc-princeton-orange);
 }
 
-.fc-planner-page .fencing-style-item.fsi-selected:hover > div {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px var(--fc-a-orange-35), 0 4px 14px rgba(0, 0, 0, 0.1);
-}
-
-.fc-planner-page .fencing-style-item.fsi-selected:hover .fencing-style-img img {
-    transform: scale(1.03);
-}
-
-.fc-planner-page .load-quote:hover > div {
-    transform: translateY(-6px);
-    box-shadow: 0 14px 32px var(--fc-a-orange-22), 0 6px 16px rgba(0, 0, 0, 0.08);
-}
-
 .fc-planner-page .load-quote:hover .lq-icon {
-    transform: scale(1.08);
     color: var(--fc-princeton-orange);
 }
 
@@ -8702,11 +8830,6 @@ body.fc-restoring-selection .fencing-tab-name {
         transition: none !important;
     }
 
-    .fc-planner-page .fencing-style-item:hover > div,
-    .fc-planner-page .load-quote:hover > div,
-    .fc-planner-page .fencing-style-item:hover .fencing-style-img img {
-        transform: none !important;
-    }
 }
 
 /* Step 1 — Slick carousel (2 / 4 / 6 per viewport; see slick/styles.js) */
@@ -11380,9 +11503,243 @@ body.fc-restoring-selection .fencing-tab-name {
 .ally {
     background-image: url(../../img/webp/ally-thin.webp?v=1);
     background-repeat: repeat;
-    border-color: var(--fc-black);
+    border-color: var(--fc-tundora);
     background-size: 9px;
     background-color: var(--fc-white);
+}
+
+/* Fence drawings — the planner's Step 3 and every project-plan section alike, via
+   :is(.fc-planner-page, .fc-project-plan-page), which keeps the single-class specificity these
+   rules were written against. Both pages build the same template markup with data-type on
+   .fencing-panel-container (project-plan/p2.js sets it the way z_fence.js does).
+
+   Flat Top only: draw the panel the way the design-2 mockup does — flat top
+   rail, bottom rail and bold pickets, all one solid #404040 — instead of the faint ally-thin tile above, which
+   reads as an empty box from a normal viewing distance. Pure background layers on the elements
+   the engine already renders: no new DOM, so the data-cart-* scrape and every click target stay
+   exactly as they were. Raked panels keep the tile — their slanted boxes would shear these
+   axis-aligned rails. Layers: identical 2px rails flush with the top and bottom edges — a shade
+   under the true 38 mm ≈ 3px, by request; 7px read as post-thick, and a lifted bottom rail read
+   as a stray extra bar above the border — then pickets (~10px pitch ≈ the real 112 mm centres
+   at panel scale). */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:not(.fencing-raked-panel) {
+    /* Transparent ground, no sky layer: the Step 3 drafting grid reads through between the
+       pickets, the way the mockup's SVG fence sits straight on its canvas. Pickets are 2.5px
+       on the 10px pitch — 3.5px read too heavy beside the posts. */
+    background-color: transparent;
+    background-image:
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        repeating-linear-gradient(90deg,
+            var(--fc-tundora) 0 2.5px,
+            transparent 2.5px 10px);
+    background-size: 100% 2px, 100% 2px, auto;
+    background-position: 0 0, 0 100%, 0 0;
+    background-repeat: no-repeat, no-repeat, repeat;
+}
+
+/* Barr: same drawing, one difference — both rails sit 7px in from the edges and the pickets run
+   edge to edge, standing proud of BOTH rails, which is the style's signature (see barr.webp on
+   the Step 1 card). A flush Flat-Top-style bottom rail hid the lower overhang and read wrong.
+   No top/bottom box border either: past free-standing tips it read as a second pair of rails.
+   The sides keep theirs (tucked against the posts), and the gate's blue stiles are an inset
+   shadow, so they survive. Hover keeps the blush wash; the orange border cue is sides-only here.
+   Pickets 2.5px on the 10px pitch, matching Flat Top. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel) {
+    border-top: 0;
+    border-bottom: 0;
+    background-color: transparent;
+    background-image:
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        repeating-linear-gradient(90deg,
+            var(--fc-tundora) 0 2.5px,
+            transparent 2.5px 10px);
+    background-size: 100% 4px, 100% 4px, auto;
+    background-position: 0 7px, 0 calc(100% - 7px), 0 0;
+    background-repeat: no-repeat, no-repeat, repeat;
+}
+
+/* Slat + Slat Infill: the gaps between slats go transparent so the ground reads through them —
+   the planner's drafting grid, the project plan's section background (solid white gaps made the
+   panel read as one filled box on the grid). Slats stay the flat
+   nickel of the base rule — no gradient shading, by request. The stops reuse the SAME
+   --fc-slat-gap-px / --fc-slat-size-px vars as the base rule further down, so whatever pitch
+   the section's gap and slat-size selection computed is untouched; only the gap paint changes.
+   !important to meet the base rule's own. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .ally,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .offcut-body,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .offcut-body {
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent var(--fc-slat-gap-px, 1px),
+        var(--fc-nickel) var(--fc-slat-gap-px, 1px),
+        var(--fc-nickel) calc(var(--fc-slat-gap-px, 1px) + var(--fc-slat-size-px, 7px))
+    ) !important;
+}
+
+/* The transparent ground above out-ranks the base blush hover, so it is re-stated (same fix as
+   Flat Top and Barr); it shows through the slat gaps. */
+@media (min-width: 1024px) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .ally:hover,
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally:hover {
+        background-color: var(--fc-lavender-blush);
+    }
+}
+
+/* Slat post outline softened to the #333333 brand charcoal — the bare `border: 1px solid` on
+   the group-b base rule fell back to currentColor, i.e. pure black, which sat too hard against
+   the flat nickel post. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="panel_post"],
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="raked_post"] {
+    border-color: var(--fc-dark-charcoal);
+}
+
+/* Same post cap as Flat Top and Barr, but in the #333333 charcoal to match the softened post
+   outline above; the post itself keeps the base rule's flat nickel — no gradient, by request.
+   :before is free on slat posts (the core-drilled markers use :after; the Infill brick texture
+   is scoped to its own type). */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="panel_post"]:not(.panel-no-post)::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="raked_post"]:not(.panel-no-post)::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -3px;
+    right: -3px;
+    height: 4px;
+    border-radius: 1px;
+    background: #777777;
+}
+
+
+/* Custom-height panels get 4px ally-thick strips OUTSIDE the box (.custom-height .ally:before/
+   :after further down) — cut-edge markers in the old webp language. Barr's default height already
+   lands in .custom-height, so without this they float as white slivers over the new drawing.
+   Same wholesale suppression the slat styles use; the offcut keeps its pseudos (old look). */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:after,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:after {
+    content: none !important;
+}
+
+/* Raked panels: the same pickets as the straight panels (they kept the old thin webp tile, so
+   their bars looked skinnier and denser). Safe because the rake is a clip-path on a rectangle,
+   not a skew — vertical bars stay vertical and the slope just clips them. Ground stays WHITE,
+   not transparent: the .fencing-*-panel-o-b wrapper behind the clip is the black outline/hover
+   layer, and transparent gaps would show it, not the grid. TWO top-rail runs, both the regular
+   panel's 2px bar: one at y=0 (the clip crops it to the tall side's flat top) and one on the
+   25% line anchored right, covering the lower flat run PAST the slope — without it that edge
+   showed the bare outline beside a neighbour showing outline + rail, so the bar sizes did not
+   match. The slope between them keeps the wrapper's outline (a horizontal bar cannot follow
+   it). The clip polygons run 37%..70% / 36.5%..69%, so the 30%-wide run stays clear of the
+   slope on both shapes; the right panel's wrapper is scaleX-flipped, which mirrors this layer
+   to the correct side on its own. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally.fencing-raked-panel {
+    background-color: var(--fc-white);
+    background-image:
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        repeating-linear-gradient(90deg,
+            var(--fc-tundora) 0 2.5px,
+            transparent 2.5px 10px);
+    background-size: 100% 2px, 30% 2px, 100% 2px, auto;
+    background-position: 0 0, 100% 25%, 0 100%, 0 0;
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+}
+
+/* The raked outline (the black band along the slope and steps) is the wrapper showing between
+   TWO different clip polygons — the inner panel's slope sat ~1% of the panel width off the
+   wrapper's, so the band grew with panel width and read far bolder than the 2px rails (the
+   left panel's -webkit- and standard values didn't even agree). The inner clip now copies the
+   wrapper's polygon, EXCEPT the slope run, whose two vertices sit a fixed 4px lower: with the
+   wrapper's 2px padding that makes a ~6px vertical band along the slope — reading as the same
+   weight as the flat runs' outline+rail stack — and, being a px offset, it stays constant at
+   every panel width. The extra 37%/70% vertices drop into and climb out of the slope band so
+   the flat runs on either side keep their exact geometry. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-b {
+    -webkit-clip-path: polygon(37% 0, 37% 2px, 70% calc(25% + 4px), 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    clip-path: polygon(37% 0, 37% 2px, 70% calc(25% + 4px), 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-b {
+    -webkit-clip-path: polygon(36.5% 0, 36.5% 2px, 70% calc(25% + 4px), 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    clip-path: polygon(36.5% 0, 36.5% 2px, 70% calc(25% + 4px), 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+}
+
+/* The raked outline band (slope, steps and the 2px lip along the flat tops) is the wrapper's own
+   fill showing around the inner clip. It was black; it takes the bars' #404040 so the raked
+   panel's bars match the rails, pickets and posts. The orange hover survives: the base
+   #fc-planning-form ...-o-b:hover rule carries an id and out-ranks this one. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-left-panel-o-b,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-right-panel-o-b {
+    background: var(--fc-tundora);
+}
+
+/* Barr raked: same pickets, and the bottom rail keeps Barr's 7px inset with the tips running
+   past it, like the straight panels. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally.fencing-raked-panel {
+    background-color: var(--fc-white);
+    background-image:
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        repeating-linear-gradient(90deg,
+            var(--fc-tundora) 0 2.5px,
+            transparent 2.5px 10px);
+    background-size: 100% 3px, auto;
+    background-position: 0 calc(100% - 7px), 0 0;
+    background-repeat: no-repeat, repeat;
+}
+
+/* The base :hover blush wash loses to the transparent background-color above on specificity,
+   so it is re-stated at this scope; it paints through the picket gaps, and the orange hover
+   border still comes from the base .fencing-panel-item:hover rule. */
+@media (min-width: 1024px) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:not(.fencing-raked-panel):hover,
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel):hover {
+        background-color: var(--fc-lavender-blush);
+    }
+}
+
+/* Gate leaf reads as a gate, not another panel: an inner frame like the mockup's, drawn in the
+   bars' #404040 (it was deep blue) so every bar in the drawing is one colour — the orange
+   label is what marks the gate now. Inset shadow, not border — the ally border is the shared
+   panel edge and stays. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-panel-gate {
+    box-shadow: inset 0 0 0 2px var(--fc-tundora);
+}
+
+/* Barr gate: frame the stiles only. With tips standing free past both rails, the full frame's
+   horizontal edges read as yet another pair of bars — the same complaint the panel border drew. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-panel-gate {
+    box-shadow: inset 2px 0 0 0 var(--fc-tundora), inset -2px 0 0 0 var(--fc-tundora);
+}
+
+/* Post cap, as on every mockup post: a stub wider than the 8px post at its exposed top.
+   .panel-post is already position:relative with visible overflow for this type. */
+/* Flat Top and Barr posts: one solid #404040 instead of the group-b base's three-stop shading
+   (charcoal -> boulder -> black), matching the solid rails and pickets. The cap and the 1px
+   outline stay black. Covers the raked posts too, which carry .panel-post. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post {
+    background: var(--fc-tundora);
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -3px;
+    right: -3px;
+    height: 4px;
+    border-radius: 1px;
+    background: var(--fc-black);
 }
 
 /* Slat Fence: Ally border color */
@@ -11461,7 +11818,7 @@ body.fc-restoring-selection .fencing-tab-name {
     position: absolute;
     left: 0;
     top: 0;
-    width: 5px;
+    width: 4px;
     height: 100%;
     background: #b6b6b6;
     border: 1px solid #555555;
@@ -11477,7 +11834,7 @@ body.fc-restoring-selection .fencing-tab-name {
     position: absolute;
     right: 0;
     top: 0;
-    width: 5px;
+    width: 4px;
     height: 100%;
     background: #b6b6b6;
     border: 1px solid #555555;
@@ -11541,7 +11898,6 @@ body.fc-restoring-selection .fencing-tab-name {
     min-width: 8px;
     margin-top: -7px;
     margin-bottom: 30px;
-    border-radius: 2px;
     border: 1px solid;
     position: relative;
     z-index: 1;
@@ -13270,30 +13626,6 @@ input[type="number"] {
     background: linear-gradient(180deg, var(--fc-white) 0%, var(--fc-alabaster) 100%);
 }
 
-/* Severity badge: red for destructive/failed, orange for "fix this", blue for a task. */
-.fc-modal .fc-modal__icon {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    font-size: 1.0625rem;
-    background: var(--fc-lavender-blush);
-    color: var(--fc-brand-primary);
-}
-
-.fc-modal .fc-modal__icon--warning {
-    background: var(--fc-fair-pink);
-    color: var(--fc-fiery-orange);
-}
-
-.fc-modal .fc-modal__icon--info {
-    background: var(--fc-pattens-blue);
-    color: var(--fc-allports);
-}
-
 .fc-modal .fc-modal__header-text {
     flex: 1 1 auto;
     min-width: 0;
@@ -13466,6 +13798,165 @@ input[type="number"] {
 .fc-modal .fc-modal__busy-btn.is-busy {
     pointer-events: none;
     opacity: 0.75;
+}
+
+/* Keyboard shortcuts dialog: a compact cheat sheet — two columns from md up, tighter rows and
+   header than the shared shell, and no footer (the header's × and Esc close it) — so the whole
+   sheet fits a laptop screen without a scrollbar. */
+.fc-modal .fc-modal__dialog--shortcuts {
+    max-width: 760px;
+}
+
+.fc-modal#fc-shortcuts-modal .fc-modal__header {
+    padding: 0.875rem 1.25rem 0.75rem;
+}
+
+.fc-modal#fc-shortcuts-modal .fc-modal__body {
+    padding: 0.875rem 1.25rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .fc-modal .fc-shortcuts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 1rem;
+        align-items: start;
+    }
+}
+
+/* Rows tighter than the shared list's; a fixed keys column lines the descriptions up. */
+.fc-modal .fc-shortcuts li {
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+
+/* Wide enough for Ctrl + Shift + D, the longest combo, with room to spare: a flex item never
+   shrinks below its content, so a combo wider than the column would push its row's description
+   out of line with the rest. */
+.fc-modal .fc-shortcuts__keys {
+    display: inline-flex;
+    flex: 0 0 7rem;
+    align-items: center;
+    gap: 2px;
+}
+
+/* The + between a combo's keys, quieter than the keycaps it joins. */
+.fc-modal .fc-shortcuts__plus {
+    color: var(--fc-gray-chateau);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* One labelled list per group; a label that follows a list opens a gap from it. */
+.fc-modal .fc-shortcuts + .fc-modal__field-label {
+    margin-top: 0.75rem;
+}
+
+.fc-modal#fc-shortcuts-modal .fc-modal__field-label {
+    margin-bottom: 0.3rem;
+}
+
+/* Bootstrap draws <kbd> as white-on-black monospace; these are the design-1 mockup's keycaps. The
+   lip under each cap is a shadow rather than a thicker bottom border, with the 1px margin keeping
+   its room, so a hovered row can sink its caps into the lip without the row changing height. */
+.fc-modal .fc-shortcuts kbd {
+    display: inline-block;
+    min-width: 20px;
+    margin-bottom: 1px;
+    padding: 1px 4px;
+    border: 1px solid var(--fc-silver-chalice);
+    border-radius: 5px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 0 var(--fc-silver-chalice);
+    color: var(--fc-cod-gray);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 14px;
+    text-align: center;
+    transition-property: transform, box-shadow, background-color, border-color, color;
+    transition-duration: 0.12s;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* A hovered row plays its combo: the keys go down one at a time, in the order they are pressed,
+   and stay down until the pointer leaves, when they all come up together. The letter the combo is
+   named for is underlined as the last key, the one it names, goes down. Pointer devices only: on a
+   touch screen a tap would leave its row stuck down. */
+@media (hover: hover) {
+    /* Clips the first and last rows' tint to the card's rounded corners. */
+    .fc-modal .fc-shortcuts {
+        overflow: hidden;
+    }
+
+    .fc-modal .fc-shortcuts li {
+        transition: background-color 0.18s ease;
+    }
+
+    .fc-modal .fc-shortcuts li:hover {
+        background-color: color-mix(in srgb, var(--fc-princeton-orange) 8%, var(--fc-white));
+    }
+
+    .fc-modal .fc-shortcuts li:hover kbd {
+        border-color: var(--fc-princeton-orange);
+        background-color: var(--fc-princeton-orange);
+        box-shadow: 0 0 0 var(--fc-princeton-orange);
+        color: var(--fc-white);
+        transform: translateY(1px);
+    }
+
+    /* The first key waits 40ms, so a pointer sweeping across the list does not flash every row
+       it crosses. */
+    .fc-modal .fc-shortcuts li:hover kbd:nth-of-type(1) {
+        transition-delay: 0.04s;
+    }
+
+    .fc-modal .fc-shortcuts li:hover kbd:nth-of-type(2) {
+        transition-delay: 0.15s;
+    }
+
+    .fc-modal .fc-shortcuts li:hover kbd:nth-of-type(3) {
+        transition-delay: 0.26s;
+    }
+
+    .fc-modal .fc-shortcuts b {
+        text-decoration-line: underline;
+        text-decoration-color: transparent;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+        transition: color 0.12s ease, text-decoration-color 0.12s ease;
+    }
+
+    .fc-modal .fc-shortcuts li:hover b {
+        color: var(--fc-princeton-orange);
+        text-decoration-color: var(--fc-princeton-orange);
+        transition-delay: 0.15s;
+    }
+
+    .fc-modal .fc-shortcuts li:hover:has(kbd:nth-of-type(3)) b {
+        transition-delay: 0.26s;
+    }
+}
+
+/* Reduced motion: the keys and the letter change colour at once, and nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+    .fc-modal .fc-shortcuts li,
+    .fc-modal .fc-shortcuts kbd,
+    .fc-modal .fc-shortcuts b {
+        transition: none;
+    }
+
+    .fc-modal .fc-shortcuts li:hover kbd {
+        transform: none;
+    }
+}
+
+.fc-modal#fc-shortcuts-modal .fc-modal__note {
+    margin-top: 0.75rem;
+    font-size: 0.6875rem;
 }
 
 @media (max-width: 575.98px) {
@@ -14278,6 +14769,31 @@ input[type="number"] {
 .fencing-panel-controls #btn-rail_options::before { content: "\f7a4"; }      /* grip-lines */
 .fencing-panel-controls #btn-spigot_options::before { content: "\f0ad"; }    /* wrench */
 .fencing-panel-controls #btn-planner-summary::before { content: "\f46d"; }   /* clipboard-list */
+.fencing-panel-controls #btn-planner-shortcuts::before { content: "\f11c"; margin-right: 0; } /* keyboard, icon only */
+
+/* The keyboard-shortcuts control sits just before Summary (fc-planner-summary.js inserts it) and
+   takes over Summary's auto margin: with one on each, the free space would split and part the pair. */
+.fencing-panel-controls .fc-planner-shortcuts-btn {
+    margin-left: auto !important;
+}
+
+.fencing-panel-controls .fc-planner-shortcuts-btn + .fc-planner-summary-btn {
+    margin-left: 0 !important;
+}
+
+/* Touch-first screens — phones, tablets, an iPad without a trackpad — have no keyboard to take the
+   shortcuts, so their button goes, and Summary takes its auto margin back from it. */
+@media (hover: none) and (pointer: coarse) {
+    .fencing-panel-controls .fc-planner-shortcuts-btn {
+        display: none;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) and (min-width: 769px) {
+    .fencing-panel-controls .fc-planner-shortcuts-btn + .fc-planner-summary-btn {
+        margin-left: auto !important;
+    }
+}
 
 /* Side controls keep their directional arrows, now as glyphs rather than the webp images. */
 .fencing-panel-controls #btn-left_side::before {
@@ -14425,13 +14941,19 @@ input[type="number"] {
         margin-left: 0 !important;
     }
 
-    /* The control count varies, so Summary spans to the end of its row; :nth-child(of) skips Glass Pool's hidden twin. */
-    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 1 of .btn-fc:not(.d-none)) {
+    /* The control count varies, so Summary spans to the end of its row; :nth-child(of) skips Glass
+       Pool's hidden twin, and the keyboard-shortcuts control, which phones do not show. */
+    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 1 of .btn-fc:not(.d-none):not(.fc-planner-shortcuts-btn)) {
         grid-column: 1 / -1;
     }
 
-    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 2 of .btn-fc:not(.d-none)) {
+    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 2 of .btn-fc:not(.d-none):not(.fc-planner-shortcuts-btn)) {
         grid-column: span 2;
+    }
+
+    /* No keyboard on a phone to take the shortcuts. */
+    .fencing-panel-controls .fc-planner-shortcuts-btn {
+        display: none;
     }
 
     /* The hidden helper <div>s the renderer inserts must not occupy grid cells. */
@@ -14718,107 +15240,151 @@ div.fc-footer-app .app-version {
 }
 
 
-/* Zoom controls: the same quiet treatment as the other chrome, so they stop outweighing the diagram they operate on. */
-.fc-planner-page .btn.fc-zoom-fence,
-.fc-planner-page .btn.fc-zoom-reset {
-    /* stretch, not a fixed height, so the buttons stay level with the readout; justify-content stops the label top-aligning. */
-    align-self: stretch;
-    justify-content: center;
+/* Step 3 zoom bar, the design-1 mockup's canvas bar (tests/mockup/design-1.html .toolbar), in the
+   title row's right corner. The mockup's neutrals and accent map onto the nearest --fc- tokens. */
+.fc-planner-page .fc-zoom-bar {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    padding: 3px;
     border: 1px solid var(--fc-gainsboro);
-    background-color: transparent;
-    color: var(--fc-dove-gray);
-    transition:
-        color 0.15s ease,
-        border-color 0.15s ease,
-        background-color 0.15s ease;
+    border-radius: 3px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 2px var(--fc-a-black-6);
 }
 
-/* Zoom in/out darker than the shared quiet grey; Reset keeps it, being the destructive one of the three. */
-.fc-planner-page .btn.fc-zoom-fence {
+.fc-planner-page .fc-zoom-bar__btn,
+.fc-planner-page .fc-zoom-bar__value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    min-width: 28px;
+    margin: 0;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
     color: var(--fc-cod-gray);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
 }
 
-.fc-planner-page .btn.fc-zoom-fence i,
-.fc-planner-page .btn.fc-zoom-reset i {
-    opacity: 0.85;
+.fc-planner-page .fc-zoom-bar__btn.fc-zoom-fence {
+    width: 28px;
+    padding: 0;
+}
+
+.fc-planner-page .fc-zoom-bar__icon {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+/* Tabular figures stop the bar resizing as the readout steps 90 -> 100 -> 110. */
+.fc-planner-page .fc-zoom-bar__value {
+    min-width: 48px;
+    padding: 0 4px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 @media (hover: hover) {
-    .fc-planner-page .btn.fc-zoom-fence:hover:not(:active) {
-        border-color: var(--fc-cod-gray);
-        background-color: var(--fc-cod-gray);
-        color: var(--fc-white);
-    }
-
-    .fc-planner-page .btn.fc-zoom-reset:hover:not(:active) {
-        border-color: var(--fc-bootstrap-danger);
-        background-color: var(--fc-bootstrap-danger);
-        color: var(--fc-white);
-    }
-
-    .fc-planner-page .btn.fc-zoom-fence:hover:not(:active) i,
-    .fc-planner-page .btn.fc-zoom-reset:hover:not(:active) i {
-        opacity: 1;
+    .fc-planner-page .fc-zoom-bar__btn:hover:not(:disabled) {
+        background: var(--fc-cultured);
     }
 }
 
-/* box-shadow is unset !important app-wide, so the focus ring has to be an outline. */
-.fc-planner-page .btn.fc-zoom-fence:focus-visible {
-    outline: 2px solid var(--fc-cod-gray);
-    outline-offset: 2px;
+/* Zoom-out at its 10% floor, Reset at 100%. */
+.fc-planner-page .fc-zoom-bar__btn:disabled,
+.fc-planner-page .fc-zoom-bar__btn.disabled,
+.fc-planner-page .fc-zoom-bar__btn.disabled * {
+    color: var(--fc-gray-chateau);
+    cursor: not-allowed;
 }
 
-.fc-planner-page .btn.fc-zoom-reset:focus-visible {
-    outline: 2px solid var(--fc-bootstrap-danger);
-    outline-offset: 2px;
+/* An outline, so the press effect's inset shadow cannot swallow the ring. */
+.fc-planner-page .fc-zoom-bar__btn:focus-visible {
+    outline: 2px solid var(--fc-deep-blue);
+    outline-offset: 1px;
 }
 
+/* Touch: the mockup's 36px phone targets. */
+@media (pointer: coarse) {
+    .fc-planner-page .fc-zoom-bar__btn,
+    .fc-planner-page .fc-zoom-bar__value {
+        height: 36px;
+    }
 
-/* Zoom stepper as one segmented control: the readout belongs between the two buttons that change it. */
-.fc-planner-page .fc-zoom-stepper {
-    display: inline-flex;
-    align-self: stretch;
-    align-items: stretch;
-    border: 1px solid var(--fc-gainsboro);
-    border-radius: 3px;
-    overflow: hidden;
-    background-color: var(--fc-white);
+    .fc-planner-page .fc-zoom-bar__btn {
+        min-width: 40px;
+    }
+
+    .fc-planner-page .fc-zoom-bar__btn.fc-zoom-fence {
+        width: 40px;
+    }
 }
 
-/* The group draws the outline now, so the buttons drop their own; colour and hover still come from the shared rule. */
-.fc-planner-page .fc-zoom-stepper .btn.fc-zoom-fence {
-    width: 34px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    border-radius: 0;
-    font-size: 12px;
-}
+/* Phones: beside the Step 03 pair the bar has no room (a 375px phone's header row is 315px and the
+   one-line title alone takes 196px), so it wrapped onto a line of its own under the title. It moves
+   up opposite "Step 03" instead, the way Step 02's ? button sits opposite its label, with the title
+   full width beneath, and shrinks to the desktop's 28px controls to fit beside the label down to a
+   320px screen. display: contents lets the heading's two lines join the row, and order puts the
+   title on the line after the bar. gap-2 is !important, and a row gap there would open the label's
+   3px to 11px. */
+@media (max-width: 575.98px) {
+    .fc-planner-page .fc-step3-head {
+        row-gap: 0 !important;
+    }
 
-.fc-planner-page .fc-zoom-stepper .fc-zoom-progress {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 54px;
-    margin: 0;
-    padding: 0 6px;
-    /* The base rule's 4px radius and grey fill were for when it stood alone; inside the group both made it read as a third button. */
-    border-radius: 0;
-    background-color: transparent;
-    border-left: 1px solid var(--fc-gainsboro);
-    border-right: 1px solid var(--fc-gainsboro);
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1;
-    color: var(--fc-cod-gray);
-    /* tabular figures stop the group resizing as the value steps 100 -> 110 -> 90 */
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-    user-select: none;
-}
+    .fc-planner-page .fc-step3-heading {
+        display: contents;
+    }
 
+    .fc-planner-page .fc-step3-heading .fencing-content-title {
+        flex: 0 0 100%;
+        order: 1;
+    }
+
+    .fc-planner-page .fc-zoom-bar {
+        gap: 0px;
+        padding: 2px;
+        border-radius: 3px;
+    }
+
+    .fc-planner-page .fc-zoom-bar__btn,
+    .fc-planner-page .fc-zoom-bar__value {
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .fc-planner-page .fc-zoom-bar__btn {
+        min-width: 0;
+        padding: 0 6px;
+    }
+
+    .fc-planner-page .fc-zoom-bar__btn.fc-zoom-fence {
+        width: 28px;
+        padding: 0;
+    }
+
+    .fc-planner-page .fc-zoom-bar__value {
+        min-width: 34px;
+        padding: 0 2px;
+    }
+
+    .fc-planner-page .fc-zoom-bar__icon {
+        width: 14px;
+        height: 14px;
+    }
+}
 
 /* Section context bar stays one line on mobile: nowrap, with overflow-x so a long fence name scrolls rather than wrapping. */
 @media (max-width: 992px) {
@@ -14933,7 +15499,7 @@ div.fc-footer-app .app-version {
 
     .fc-planner-page [data-section="1"] .fencing-styles-arrow.slick-prev {
         left: auto;
-        right: 56px;
+        right: 52px;
     }
 
     .fc-planner-page [data-section="1"] .fencing-styles-arrow.slick-next {
@@ -14945,13 +15511,13 @@ div.fc-footer-app .app-version {
     .fc-planner-page [data-section="1"] .btn-delete-fence {
         position: absolute;
         top: 20px;
-        right: 96px;
+        right: 90px;
         /* left/width are explicit, or the wrapper takes the column's full width instead of shrink-wrapping to its two buttons. */
         left: auto;
         width: auto;
         display: flex;
         justify-content: flex-end;
-        gap: 6px;
+        gap: 2px;
         margin-bottom: 0 !important;
         z-index: 1;
     }
@@ -15053,26 +15619,6 @@ div.fc-footer-app .app-version {
     .fc-planner-page [data-section="2"] .fc-step2-gate-only .fc-select-2::after {
         top: 50%;
         transform: translateY(-50%);
-    }
-}
-
-
-/* Step 3 zoom controls move to the top-right corner on mobile, level with "Step 03", anchored to the section. */
-@media (max-width: 767.98px) {
-    .fc-planner-page [data-section="3"] .fencing-section__controls {
-        position: absolute;
-        top: 20px;
-        right: 16px;
-        left: auto;
-        width: auto;
-        margin: 0 !important;
-        flex-wrap: nowrap;
-        z-index: 1;
-    }
-
-    /* The title keeps the row to itself now, so it no longer needs to share the width. */
-    .fc-planner-page [data-section="3"] .fencing-section--step3 > .d-flex:has(> .fencing-section__controls) {
-        padding-right: 0;
     }
 }
 

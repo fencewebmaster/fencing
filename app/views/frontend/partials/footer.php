@@ -41,9 +41,6 @@ use Fc\Admin\Services\SiteRegistryService;
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
             <div class="modal-header fc-modal__header">
-                <span class="fc-modal__icon" aria-hidden="true">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </span>
                 <div class="fc-modal__header-text">
                     <h5 class="modal-title fc-modal__title text-uppercase fw-bold" id="fcClearAllTitle">Clear all</h5>
                     <p class="fc-modal__subtitle mb-0">Reset the planner and start a new quote</p>
@@ -95,6 +92,10 @@ use Fc\Admin\Services\SiteRegistryService;
 <script defer src="<?php echo asset('public/assets/js/vendor/jquery.inputmask.min.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/planner-modal.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/hscroll-fade.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/hscroll-proxy.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/overall-dimension.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/drawing-keys.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/planner-shortcuts.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/core/functions.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/core/events.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/slick/styles.js'); ?>"></script>

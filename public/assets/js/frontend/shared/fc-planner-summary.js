@@ -1234,6 +1234,19 @@
                 text: 'Summary'
             }).appendTo($controls);
         }
+        /* Keyboard shortcuts, just before Summary: Bootstrap's data API opens #fc-shortcuts-modal
+           (planner/modals.php). Added here because the renderer empties this row on every pass. */
+        if (!$controls.find('#btn-planner-shortcuts').length) {
+            $('<button>', {
+                type: 'button',
+                id: 'btn-planner-shortcuts',
+                class: 'btn-fc btn-fc-outline-default fc-planner-shortcuts-btn fc-mb-1',
+                title: 'Keyboard shortcuts',
+                'aria-label': 'Keyboard shortcuts',
+                'data-bs-toggle': 'modal',
+                'data-bs-target': '#fc-shortcuts-modal'
+            }).insertBefore($controls.find('#btn-planner-summary'));
+        }
     }
 
     function openModal(activeSectionOverride) {

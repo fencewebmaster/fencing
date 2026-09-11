@@ -15,38 +15,28 @@
                 <!-- Step number and title are one block, with the zoom cluster beside the pair
                      rather than beside the title alone — the way Step 01 seats its Delete/Reset.
                      Sharing a row with the controls centred the 19px title inside their 37px box,
-                     which pushed it 9px off "Step 03" and 9px off the rule below. -->
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 fc-mb-2">
+                     which pushed it 9px off "Step 03" and 9px off the rule below. On phones the
+                     pair leaves no room beside it, so .fc-step3-head seats a smaller bar opposite
+                     "Step 03" instead, the way Step 02 seats its ? button (see style.css). -->
+                <div class="fc-step3-head d-flex justify-content-between align-items-center flex-wrap gap-2 fc-mb-2">
                     <div class="fc-step3-heading">
                         <div class="step-label" data-action="scroll" data-target="[data-section=3]" data-offset="54">Step <span>03</span></div>
                         <h4 class="fencing-content-title mb-0">Configure this fence section</h4>
                     </div>
 
-                    <div class="fencing-section__controls d-flex align-items-center flex-wrap ms-auto gap-1">
-
-                        <button type="button" style="display: none;">
-                            <i class="fc-icon fc-rectangle"></i>
+                    <!-- The design-1 mockup's zoom bar (tests/mockup/design-1.html .toolbar): minus,
+                         readout, plus, Reset. The controls keep the hooks events.js and HELPER.zooming
+                         drive — .fc-zoom-fence[data-zoom], the one .js-fc-zoom-progress readout, and
+                         .js-fc-zoom-reset, which HELPER keeps disabled at 100%. -->
+                    <div class="fc-zoom-bar" role="group" aria-label="Zoom the fence editor">
+                        <button type="button" class="fc-zoom-bar__btn fc-zoom-fence" data-zoom="out" aria-label="Zoom out" title="Zoom out (&minus;)">
+                            <svg class="fc-zoom-bar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14"/></svg>
                         </button>
-
-                        <!-- Stepper: minus / value / plus reads small-to-large. The buttons lost
-                             their labels, so each carries an aria-label instead. -->
-                        <div class="fc-zoom-stepper" role="group" aria-label="Zoom the fence drawing">
-                            <button type="button" class="fc-zoom-fence btn btn-sm btn-dark" data-zoom="out" aria-label="Zoom out">
-                                <i class="fa fa-magnifying-glass-minus" aria-hidden="true"></i>
-                            </button>
-
-                            <div class="fc-zoom-progress js-fc-zoom-progress" aria-live="polite">100%</div>
-
-                            <button type="button" class="fc-zoom-fence btn btn-sm btn-dark" data-zoom="in" aria-label="Zoom in">
-                                <i class="fa fa-magnifying-glass-plus" aria-hidden="true"></i>
-                            </button>
-                        </div>
-
-                        <button type="button" href="#" class="fc-zoom-reset js-fc-zoom-reset btn btn-sm btn-danger align-items-center text-uppercase px-2" data-zoom="reset">
-                            <i class="fa-solid fa-rotate-left"></i>
-                            <span class="d-none d-sm-inline-block ms-2">Reset</span>
+                        <span class="fc-zoom-bar__value js-fc-zoom-progress" aria-live="polite">100%</span>
+                        <button type="button" class="fc-zoom-bar__btn fc-zoom-fence" data-zoom="in" aria-label="Zoom in" title="Zoom in (+)">
+                            <svg class="fc-zoom-bar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
                         </button>
-
+                        <button type="button" class="fc-zoom-bar__btn js-fc-zoom-reset" title="Back to 100% (0)" disabled>Reset</button>
                     </div>
                 </div>
 
@@ -81,6 +71,14 @@
 
                             <div id="pp-0" class="fencing-panel-container"></div>
                         </div>
+
+                        <!-- Dimension line under the drawing — <—— 6,000 OVERALL ——> — as the design-1
+                             mockup draws it. Inside the scroll strip so it scrolls and zooms with the
+                             run; shared/overall-dimension.js sizes it to the drawn parts and mirrors the
+                             .fc-overall text into it. Ships hidden until there is a figure to show. The
+                             figure sits on a zero-width anchor at the line's centre; on a run wider than
+                             the screen the script slides it to the middle of the visible stretch. -->
+                        <div class="fc-dim js-fc-dim fc-dim--off" aria-hidden="true"><span class="fc-dim__arm fc-dim__arm--start"></span><span class="fc-dim__anchor"><span class="fc-dim__label"><span class="fc-dim__num"></span> <span class="fc-dim__word"></span></span></span><span class="fc-dim__arm fc-dim__arm--end"></span></div>
                     </div>
                 </div>
 
@@ -93,6 +91,16 @@
 
             <!-- [START] PANEL CONTROLS -->   
             <span class="fencing-section__cmp fencing-panel-controls"></span>
+
+            <!-- Detached scrollbar for the drawing strip above. The strip's own bar is hidden
+                 (planner Step 3 only) and shared/hscroll-proxy.js mirrors it here, so the
+                 scrollbar sits under the control buttons instead of splitting the drawing from
+                 the Overall line. Ships hidden: the module un-hides it only while the drawing
+                 actually overflows. aria-hidden — it duplicates scrolling the strip itself
+                 still offers by drag and keyboard. -->
+            <div class="fc-hscroll-proxy js-fc-hscroll-proxy fc-hscroll-proxy--off" aria-hidden="true">
+                <div class="fc-hscroll-proxy__inner"></div>
+            </div>
 
 
             <!-- [END] PANEL CONTROLS -->
