@@ -6983,13 +6983,13 @@ thead.fc-border th:last-child {
     margin-bottom: 0.75rem;
 }
 
-/* Planner Step 3 and the project plan: dimension line under the drawing, drawn like an
-   architectural dimension: a short tick (extension line) at each end of the drawn run, arrowheads meeting the ticks, a 1px
+/* Planner Step 3: dimension line under the drawing, drawn like an architectural dimension: a
+   short tick (extension line) at each end of the drawn run, arrowheads meeting the ticks, a 1px
    shaft and the Overall figure on a tag in the middle. Geometry comes from
    shared/overall-dimension.js; this is only the look. Everything is painted in currentColor —
    the #404040 of the fence bars, but a step lighter than the 2px rails so it reads as a note,
    not a fence member. */
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim {
+.fc-planner-page .fc-dim {
     display: flex;
     align-items: center;
     /* No gap: the arms meet under the figure, so the line stays unbroken when the script
@@ -7005,7 +7005,7 @@ thead.fc-border th:last-child {
     white-space: nowrap;
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim.fc-dim--off {
+.fc-planner-page .fc-dim.fc-dim--off {
     display: none;
 }
 
@@ -7017,7 +7017,7 @@ thead.fc-border th:last-child {
    the strip (an off-cut box beside the run is enough). z-index 1 keeps it over the arms (they
    are positioned spans too); the label centres on it via flex, overflowing both sides
    equally. */
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__anchor {
+.fc-planner-page .fc-dim__anchor {
     position: relative;
     z-index: 1;
     display: flex;
@@ -7031,7 +7031,7 @@ thead.fc-border th:last-child {
    grew the line box a pixel, and the row must stay an odd height so the 1px shaft centres on a
    whole pixel instead of smearing across two. Flex drops the space between the two spans, so
    the gap stands in for it. */
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__label {
+.fc-planner-page .fc-dim__label {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -7044,19 +7044,19 @@ thead.fc-border th:last-child {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__num {
+.fc-planner-page .fc-dim__num {
     font-weight: 700;
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__word {
+.fc-planner-page .fc-dim__word {
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.08em;
 }
 
 /* Extension ticks at the run's exact ends — the row's first and last flex items. */
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim::before,
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim::after {
+.fc-planner-page .fc-dim::before,
+.fc-planner-page .fc-dim::after {
     content: "";
     flex: none;
     width: 1px;
@@ -7067,7 +7067,7 @@ thead.fc-border th:last-child {
 /* The arms: 1px shafts from each tick to the figure, equal flex so they meet at the line's
    centre. Real spans rather than pseudo-elements, because each needs a pseudo of its own for
    its arrowhead. */
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm {
+.fc-planner-page .fc-dim__arm {
     position: relative;
     flex: 1 1 0;
     min-width: 12px;
@@ -7079,8 +7079,8 @@ thead.fc-border th:last-child {
    any zoom, no image, no gradient smear (the half-triangle gradients they replace blurred the
    tip). The 8px head centres on the 1px shaft at -3.5px: that half pixel only moves the tip,
    and a triangle has no horizontal edge to soften. */
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--start::before,
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--end::after {
+.fc-planner-page .fc-dim__arm--start::before,
+.fc-planner-page .fc-dim__arm--end::after {
     content: "";
     position: absolute;
     top: -3.5px;
@@ -7088,13 +7088,13 @@ thead.fc-border th:last-child {
     border-color: transparent;
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--start::before {
+.fc-planner-page .fc-dim__arm--start::before {
     left: 0;
     border-width: 4px 9px 4px 0;
     border-right-color: currentColor;
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fc-dim__arm--end::after {
+.fc-planner-page .fc-dim__arm--end::after {
     right: 0;
     border-width: 4px 0 4px 9px;
     border-left-color: currentColor;
@@ -7170,26 +7170,6 @@ thead.fc-border th:last-child {
 :is(.fc-planner-page, .fc-project-plan-page) .fc-result:has(> .fc-pdim:not(.fc-pdim--off)) .fencing-panel-item-size .fc-raked-width,
 :is(.fc-planner-page, .fc-project-plan-page) .fc-result:has(> .fc-pdim:not(.fc-pdim--off)) .fencing-panel-item-size .fc-gate-width {
     display: none;
-}
-
-/* Project plan: the Overall line hangs from .fc-result's foot rather than sitting in its content
-   box. Its padding-bottom is the room for the spacing and Centers labels under the run, which
-   p2.js grows until they fit, so a line inside would cross them and one hung from the foot always
-   clears them. Placed against .fc-result, not .dl-row: the PNG/PDF capture resizes .dl-row to the
-   run, which would shift a line measured from it. .dl-row keeps the line's room, as the strip
-   clips vertically. */
-.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll .fc-result:has(> .fc-dim) {
-    position: relative;
-}
-
-.fc-project-plan-page #fc-fence-list .fc-result > .fc-dim {
-    position: absolute;
-    top: 100%;
-    left: 0;
-}
-
-.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll .dl-row:has(> .fc-result > .fc-dim:not(.fc-dim--off)) {
-    padding-bottom: 36px;
 }
 
 /* A slat section's .fc-result is itself the flex box that stands the run on its foot, so the width
