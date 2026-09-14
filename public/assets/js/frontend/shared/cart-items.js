@@ -1000,17 +1000,12 @@ FENCES.cartItems = {
             return array;
         }
 
-        /* Mirrors the rule in apply_post_options_opt1 - one cartridge per seven anchors. Falls back
-           to a single cartridge where there are no spigots to count, so the line is never offered
-           at zero. */
-        var gluePerBolts = 7;
-        var spigots = $('.fencing-panel-spigot').length;
-
+        /* Flat 1, not one per seven anchors - owner's call. Mirrors apply_post_options_opt1. */
         array.push({
             slug: GLUE,
             qty: 0,
             optional: true,
-            suggested_qty: spigots > 0 ? Math.ceil(spigots / gluePerBolts) : 1
+            suggested_qty: 1
         });
 
         return array;
@@ -1174,36 +1169,22 @@ FENCES.cartItems = {
 
             // If the spigot is base plated
             if ($.inArray(tabInfo[0]?.fence, ['glass_pool']) !== -1) {
-                var spigots = $('.fencing-panel-spigot').length,
-                    gluePerBolts = 7; 
+                var spigots = $('.fencing-panel-spigot').length;
 
                 array.push({
                     "slug": "fixings_stone",
                     "qty": spigots,
                 });
 
-                let glue = Math.floor(spigots / gluePerBolts);
-                if (spigots % gluePerBolts > 0) {
-                    glue += 1;
-                }
-
-                /* Gate ONLY draws no panels, so there are no spigots to divide and this came out 0 -
-                   yet the gun below is suggested at 1 either way, and the gate's own hinge and latch
-                   fixings still get chemically anchored. At 0 the pairing in
-                   CheckoutCartModel::toggleOptional would include the glue at zero quantity, so
-                   taking the gun ordered no cartridge. One is the floor whenever the pair is listed. */
-                if (glue < 1) {
-                    glue = 1;
-                }
-
                 // Consumables, not fence: an installer usually owns a cartridge gun already and
                 // may have glue on the van. Listed with a suggested qty and an "Add to cart"
                 // button (Barr's base_plate+dynabolts pattern) rather than billed by default.
+                // Suggested at 1, not ceil(spigots/7) - owner's call; the installer adjusts a long run.
                 array.push({
                     "slug": "chem_achor+glue",
                     "qty": 0,
                     "optional": true,
-                    "suggested_qty": glue,
+                    "suggested_qty": 1,
                 });
 
                 array.push({

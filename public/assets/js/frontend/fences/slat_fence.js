@@ -141,6 +141,11 @@ SlatFence = {
                 ProjectPlan.fixCentersWidthWithoutEndPost($lastPanel);
             }
         }
+
+        // Most callers reach this without fcSyncPlannerStep3PanelEnds, so parens land here too.
+        if (typeof fcApplyEndLabelParens === 'function') {
+            fcApplyEndLabelParens($root);
+        }
     },
 
     /** Centers label: `panelW` or `panelW + postW` depending on config. */
@@ -4764,9 +4769,10 @@ SlatFence = {
             var f241 = f240 === 0 ? 0 : Math.ceil(f240 / 4);
             var f420 = gateBasePosts;
             var f421 = f420 === 0 ? 0 : f420 / 4;
+            // Flat 1 suggested, not the computed tube count (owner's call); glueTubes still gates the pair.
             var glueTubes = Math.round(f421 + f241);
             if (glueTubes > 0) {
-                addOptional('slat_fixings+glue_tube', glueTubes);
+                addOptional('slat_fixings+glue_tube', 1);
                 addOptional('slat_fixings+glue_gun', 1);
             }
 

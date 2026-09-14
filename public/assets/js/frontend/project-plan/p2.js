@@ -604,6 +604,18 @@ let ProjectPlan = {
         // The rAF pass alone was not enough: it does not fire while the tab is in the
         // background, so a plan opened in a new tab kept its Centers lines at per-panel heights
         // until something else forced a resync.
+        // Before the baseline align, so markers are their final width when heights are measured.
+        if (typeof fcApplyEndLabelParens === 'function') {
+            fcApplyEndLabelParens($pp);
+        }
+
+        // Group b gate hardware. Group a builds its own .fc-hinges-set higher up in this file, the
+        // same split z_fence.js has; without this the plan drew slat/flat-top/barr gates bare while
+        // the planner showed hinges and latch.
+        if (typeof fcRenderGateHardware === 'function') {
+            fcRenderGateHardware($pp);
+        }
+
         var syncTab = tab;
         ProjectPlan.syncProjectPlanCenterPointBaseline(syncTab);
         requestAnimationFrame(function() {
@@ -1310,6 +1322,12 @@ let ProjectPlan = {
                     }
 
                 }
+            }
+
+            // Mirrors z_fence.js: under the placement drive the hand never reached default_swing,
+            // so a stored right-hand gate re-rendered left on the project plan too.
+            if (useGlassPoolPlacementDrivePp) {
+                default_swing = !swing_slug.includes('right');
             }
 
             if( group == 'a' && $('#pp-'+tab+' .fencing-panel-gate').length ) {

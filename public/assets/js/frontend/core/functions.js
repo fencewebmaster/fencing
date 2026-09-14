@@ -1587,6 +1587,27 @@ function fcApplyGlassPoolUniformGapLabels($fc, exactSpacingMm) {
 }
 
 /**
+ * Near-gate classes are applied during the render, BEFORE this finalize moves the hinge bundle -
+ * on a right-hand gate they stayed on the pre-move neighbours, so the hinge-gap strip kept a
+ * panel-gap width and label while the real one sat orphaned past the hinge panel. Re-class against
+ * the settled DOM, scoped to this container (the project plan holds one per section). Unlike the
+ * render-time near_gate_spacing pair, this includes prev().prev() for panel-gate-right too.
+ */
+function fcReapplyGlassPoolNearGateClasses($fc) {
+    $fc.find('.near-gate').removeClass('near-gate');
+    var $gl = $fc.find('.panel-gate-left');
+    var $gr = $fc.find('.panel-gate-right');
+    $gl.next().addClass('near-gate');
+    $gl.next().next().addClass('near-gate');
+    $gl.prev().addClass('near-gate');
+    $gl.prev().prev().addClass('near-gate');
+    $gr.next().addClass('near-gate');
+    $gr.next().next().addClass('near-gate');
+    $gr.prev().addClass('near-gate');
+    $gr.prev().prev().addClass('near-gate');
+}
+
+/**
  * Glass pool: run hinge adjacency, uniform gap widths, and gate post cleanup after render.
  */
 function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab, exactSpacingMm) {
@@ -1596,17 +1617,44 @@ function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab, exactSpacingMm) {
     }
 
     fcEnsureGlassPoolHingeAdjacentToGate($fc);
+    fcReapplyGlassPoolNearGateClasses($fc);
     fcEnsureGlassPoolHingeGateGapLabel($fc, tab);
     fcApplyGlassPoolPanelSpacingWidths(tab, spacingMm, $fc);
     fcNormalizeGlassPoolGateAdjacentPosts($fc);
     // After the gate/hinge labels are settled, so their fixed gaps keep their own figures.
     fcApplyGlassPoolUniformGapLabels($fc, exactSpacingMm != null ? exactSpacingMm : spacingMm);
+    fcApplyGlassPoolGateGapWidths($fc);
     fcStaggerGlassPoolAdjacentGapLabels($fc);
     // The hinge move above carries the hinge panel's strip with it, so the clamp bars placed
     // (and end-stripped) earlier no longer sit on the junctions the cart bills.
     if (typeof GlassPool !== 'undefined' && typeof GlassPool.syncClampBars === 'function') {
         GlassPool.syncClampBars($fc);
     }
+}
+
+/**
+ * The two strips either side of the gate carry their own gaps - hinge ~10mm, latch ~9mm - but
+ * fcApplyGlassPoolPanelSpacingWidths sizes every strip from the panel figure, so a 10mm gap drew
+ * as wide as a 47mm one and the leaf stood clear of its neighbours. Size them from the figure they
+ * print, on the same mm/10 scale. Runs after the labelers, the only point those figures are final.
+ */
+function fcApplyGlassPoolGateGapWidths($fc) {
+    if (!$fc || !$fc.length || String($fc.attr('data-type') || '') !== 'glass_pool') {
+        return;
+    }
+
+    $fc.find('.fencing-panel-spacing-number.near-gate').each(function() {
+        var $strip = $(this);
+        var printed = $strip.find('span').not('.fs-clamp').first().text();
+        var mm = parseInt(String(printed).replace(/[^0-9]/g, ''), 10);
+        if (!Number.isFinite(mm) || mm <= 0) {
+            return;
+        }
+        // Floor of 2px, not the raw mm/10: the gate's own gaps are ~9-10mm against 33mm+ panel
+        // joints, so honest scale drew them at 1px and the leaf read as flush against its
+        // neighbours. Two keeps the gap legible while staying visibly tighter than a panel joint.
+        $strip.css('width', Math.max(mm / 10, 2));
+    });
 }
 
 /**
@@ -5260,6 +5308,128 @@ function fcShouldFlagNoPostEnd($fc, side) {
 }
 
 /**
+ * Wraps an end label as `(50)`. Strips existing parens first so repeated sync passes cannot nest
+ * them; a blank value stays '' for the hide-post-value `:empty` rule.
+ */
+function fcFormatCenterPointLabel(value) {
+    var text = String(value == null ? '' : value).trim();
+    while (text.length > 1 && text.charAt(0) === '(' && text.charAt(text.length - 1) === ')') {
+        text = text.slice(1, -1).trim();
+    }
+    return text === '' ? '' : '(' + text + ')';
+}
+
+/**
+ * Re-wrap every Centers end marker in a scope. Runs at the tail of each sync pass, not at the
+ * write sites - four different sources fill these.
+ */
+function fcApplyCenterPointParens(scope) {
+    var $scope = scope ? $(scope) : $(document);
+    if (!$scope.length) {
+        return;
+    }
+    $scope.find('.fc-start-c-p, .fc-end-c-p').each(function() {
+        var label = fcFormatCenterPointLabel($(this).text());
+        if (label === '') {
+            $(this).empty();
+            return;
+        }
+        $(this).text(label);
+    });
+}
+
+/**
+ * Same for the run's two end gaps. Only the strip's own value span is touched - `.cg-top` carries
+ * data-cart-value for the BOM.
+ */
+function fcApplyEndGapParens(scope) {
+    var $scope = scope ? $(scope) : $(document);
+    if (!$scope.length) {
+        return;
+    }
+    var $containers = $scope.find('.fencing-panel-container').add($scope.filter('.fencing-panel-container'));
+    $containers.each(function() {
+        // Per container, not per scope: a project plan holds one of these per section.
+        var $strips = $(this).find('.fencing-panel-spacing-number');
+        if (!$strips.length) {
+            return;
+        }
+        $strips.first().add($strips.last()).each(function() {
+            var $value = $(this).children('span').not('.cg-top, .sw, .fs-clamp').first();
+            if (!$value.length) {
+                return;
+            }
+            var label = fcFormatCenterPointLabel($value.text());
+            if (label === '') {
+                $value.empty();
+                $(this).removeClass('fc-end-gap-paren');
+                return;
+            }
+            $value.text(label);
+            // Marks the strip for the CSS offset that recentres the wider label.
+            $(this).addClass('fc-end-gap-paren');
+        });
+    });
+}
+
+/** Both end-label passes, run together at the tail of every sync. */
+function fcApplyEndLabelParens(scope) {
+    fcApplyCenterPointParens(scope);
+    fcApplyEndGapParens(scope);
+}
+
+/**
+ * Gate hinges and latch for panel-group b (Flat Top, Barr, Slat). Group a builds its own set in
+ * z_fence.js, which is why that block is gated on `group == 'a'` - group b drew no hardware at all.
+ * Decorative only: no cart keys, no measurement, and pointer-events off so the leaf's own modal
+ * click still lands. Hinge side comes from panel-gate-left/right, the same pairing z_fence makes
+ * when it sets fc-hinges-left alongside panel-gate-left - hinges screw into the post, so the
+ * post side is the hinge side. A double gate hangs off both posts and meets in the middle.
+ */
+function fcRenderGateHardware(scope) {
+    var $scope = scope ? $(scope) : $(document);
+    if (!$scope.length) {
+        return;
+    }
+    var $containers = $scope.find('.fencing-panel-container').add($scope.filter('.fencing-panel-container'));
+    $containers.each(function() {
+        var $container = $(this);
+        if (String($container.attr('data-group') || '') !== 'b') {
+            return;
+        }
+        $container.find('.fc-gate-hw').remove();
+        $container.find('.fencing-panel-gate').each(function() {
+            var $gate = $(this);
+            var isDouble = $gate.find('.double-gate').length > 0;
+            var side = $gate.hasClass('panel-gate-left') ? 'left' : 'right';
+            var parts = isDouble
+                ? fcGateHardwareHtml('left') + fcGateHardwareHtml('right')
+                : fcGateHardwareHtml(side);
+            $gate.append('<span class="fc-gate-hw" aria-hidden="true">' + parts + '</span>');
+        });
+    });
+}
+
+/**
+ * One leaf's hardware: two hinge knuckles on `side`, latch on the closing edge opposite it.
+ * The catalogue is D&D/SafeTech for every group-b style - HIN-HD-ASC (TruClose heavy duty
+ * adjustable self-closing) and LAT-MTP (MagnaLatch magnetic top pull), so the latch carries a
+ * keeper on the post and sits at the head of the gate rather than mid-height.
+ */
+function fcGateHardwareHtml(side) {
+    var leaf = 'fc-gate-hw__leaf fc-gate-hw__leaf--' + side;
+    return (
+        '<span class="' + leaf + '">' +
+            '<span class="fc-gate-hw__hinge fc-gate-hw__hinge--top"></span>' +
+            '<span class="fc-gate-hw__hinge fc-gate-hw__hinge--bot"></span>' +
+            '<span class="fc-gate-hw__latch">' +
+                '<span class="fc-gate-hw__keeper"></span>' +
+            '</span>' +
+        '</span>'
+    );
+}
+
+/**
  * Planner Step 3: first/last panel markers + end post labels (mirrors project-plan `load_center_point`).
  * Not used for Slat Infill.
  */
@@ -5391,6 +5561,11 @@ function fcSyncPlannerStep3PanelEnds(slug) {
             SlatFence.syncSlatNoPostEndCenterMarkers($fc[0]);
         } catch (eSlat) {}
     }
+
+    // Last, so it catches whichever of the four fills above actually ran.
+    fcApplyEndLabelParens($fc);
+
+    fcRenderGateHardware($fc);
 
     fcScrollPlannerStep3ToLeftPost(slug);
 }

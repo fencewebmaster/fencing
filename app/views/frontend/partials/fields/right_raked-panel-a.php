@@ -19,7 +19,7 @@
 
 	<div class="fc-center-point fc-first-c-p">
 		<span class="fc-div-c-p"></span>
-	    <span class="fc-start-c-p">{{center_post}}</span>
+	    <span class="fc-start-c-p">({{center_post}})</span>
 	    {{panel_size_center}}<br>
 	    Centers
 	</div>
@@ -27,7 +27,7 @@
 	<div class="fc-center-point fc-last-c-p">
 	    <span class="fc-div-c-p"></span>
 	    <span class="fc-div-c-p"></span>
-	    <span class="fc-end-c-p">{{center_post}}</span>
+	    <span class="fc-end-c-p">({{center_post}})</span>
 	</div>
 
     <div class="fencing-panel-spigots panel-post">

@@ -1650,6 +1650,16 @@ FENCE = {
                 }
             }
 
+            // Placement drive: the branches above are skipped, so the hand never reached
+            // default_swing and every placement >= 0 rendered left-hand (right-hand support was
+            // left unfinished - fcGlassPoolIsRightHandSwingFromGateData had no caller). The side
+            // classes are all the drive needs: fcEnsureGlassPoolHingeAdjacentToGate and the gap
+            // rebuild already move the hinge bundle to whichever side panel-gate-left/right names.
+            // placement is deliberately untouched - the BOM must not shift.
+            if (useGlassPoolPlacementDrive) {
+                default_swing = !swing_slug.includes('right');
+            }
+
             if( group == 'a' && $('.fencing-panel-gate').length ) {
 
                 var gate_hinge_type = gate_data[0]?.settings?.fields?.find(function(item) {

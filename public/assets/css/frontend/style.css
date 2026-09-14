@@ -2528,25 +2528,123 @@ a.fc-tab-active {
     display: flex;
     flex-direction: column;
 }
-.fc-hinges .fa-hinge-type {
-    font-size: 7px;
-    margin: 1px;
-    background: var(--fc-alto);
-    border: 1px solid var(--fc-cod-gray);
-    border-radius: 2px;
-    width: 5px;
-    height: 5px;
-}
-.hinge-type-opt-1 .fc-hinges .fa-hinge-type {
-    background: var(--fc-white);
+/* Glass pool hardware is stainless, not the polymer the group-b styles use: gate_hinge+opt-1 is
+   MR-GGH (Standard Range glass-to-glass hinge), opt-2 is PSC-125GG (Soft-Close), and both are
+   stocked polished / satin / matt black. Chrome reads as a bright vertical gradient with a hard
+   dark edge, which is what separates it from the glass behind it. */
+.fc-hinges-set {
+    --gh-lit: var(--fc-white);
+    --gh-face: var(--fc-alto);
+    --gh-mid: var(--fc-silver-chalice);
+    --gh-shade: var(--fc-gray-chateau);
+    --gh-edge: var(--fc-cod-gray);
 }
 
-.hinge-type-opt-1 .fa-hinge-type {
-    border-radius: 100%;
+.fc-hinges .fa-hinge-type {
+    margin: 0;
+    width: 6px;
+    height: 7px;
+    border-radius: 1px;
+    background: linear-gradient(
+        to right,
+        var(--gh-shade) 0 1px,
+        var(--gh-lit) 1px 2px,
+        var(--gh-face) 2px 4px,
+        var(--gh-mid) 4px 5px,
+        var(--gh-shade) 5px 100%
+    );
+    box-shadow: 0 0 0 1px var(--gh-edge);
 }
-.hinge-type-opt-2 .fa-hinge-type {
-    height: 10px;
+
+/* Standard Range (MR-GGH) is two parts side by side, not stacked: a tall pivot barrel with a
+   conical cap, and a flat bolted clamp plate on the glass. The barrel takes the gap side, so the
+   two panels' halves meet across it. */
+.hinge-type-opt-1 .fc-hinges-top,
+.hinge-type-opt-1 .fc-hinges-bot {
+    flex-direction: row;
+    align-items: center;
+    /* Height of the barrel, not of the contents: the hinge-panel half has no barrel, so without
+       it that row measured 11px and centred its plate 1px off the gate's. */
+    height: 13px;
+}
+
+.hinge-type-opt-1 .fc-hinges-right .fc-hinges-top,
+.hinge-type-opt-1 .fc-hinges-right .fc-hinges-bot {
+    flex-direction: row-reverse;
+}
+
+/* Pivot barrel. One per hinge, carried on the gate leaf - the hinge-panel half below hides its
+   copy, or the two would meet at the seam and read as two hinges. */
+.hinge-type-opt-1 .fc-hinges-top .fa-hinge-type:first-child,
+.hinge-type-opt-1 .fc-hinges-bot .fa-hinge-type:first-child {
+    position: relative;
+    width: 4px;
+    height: 13px;
+    border-radius: 2px;
+    background:
+        linear-gradient(
+            to bottom,
+            transparent 0 22%,
+            var(--gh-edge) 22% 27%,
+            transparent 27% 73%,
+            var(--gh-edge) 73% 78%,
+            transparent 78%
+        ),
+        linear-gradient(
+            to right,
+            var(--gh-shade) 0 1px,
+            var(--gh-lit) 1px 2px,
+            var(--gh-face) 2px 3px,
+            var(--gh-mid) 3px 4px,
+            var(--gh-shade) 4px 100%
+        );
+}
+
+/* Conical cap on the barrel head. */
+.hinge-type-opt-1 .fc-hinges-top .fa-hinge-type:first-child::before,
+.hinge-type-opt-1 .fc-hinges-bot .fa-hinge-type:first-child::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 4px;
+    height: 3px;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    background: linear-gradient(to right, var(--gh-mid), var(--gh-lit) 45%, var(--gh-shade));
+}
+
+/* Bolted clamp plate on the glass. */
+.hinge-type-opt-1 .fc-hinges-top .fa-hinge-type:last-child,
+.hinge-type-opt-1 .fc-hinges-bot .fa-hinge-type:last-child {
     width: 7px;
+    height: 11px;
+    border-radius: 1px;
+    background:
+        radial-gradient(circle at 50% 3px, var(--gh-shade) 0 1.2px, transparent 1.4px),
+        radial-gradient(circle at 50% 8px, var(--gh-shade) 0 1.2px, transparent 1.4px),
+        linear-gradient(
+            to right,
+            var(--gh-mid) 0 1px,
+            var(--gh-lit) 1px 2px,
+            var(--gh-face) 2px 5px,
+            var(--gh-shade) 5px 100%
+        );
+}
+
+/* The hinge panel shows only its clamp plate; the pivot lives on the gate leaf. Keyed off
+   .hinge-panel, not the side classes, because those swap with the hinge position. */
+.hinge-type-opt-1 .hinge-panel .fc-hinges-top .fa-hinge-type:first-child,
+.hinge-type-opt-1 .hinge-panel .fc-hinges-bot .fa-hinge-type:first-child {
+    display: none;
+}
+
+/* Soft-Close Range: one chunkier body, and the second element is hidden. */
+/* Soft-Close Range (PSC-125GG): one compact bevelled block, no exposed barrel. The chrome stops
+   are px, so they rescale with the width. */
+.hinge-type-opt-2 .fa-hinge-type {
+    width: 8px;
+    height: 11px;
+    border-radius: 2px;
 }
 .hinge-type-opt-2 .fa-hinge-type:last-child {
     display: none;
@@ -2557,11 +2655,44 @@ a.fc-tab-active {
 .hinge-type-opt-1 .fc-hinges-right .fc-hinges {
     right: 2px;       
 }
+
+/* Hinge rows only, off .fc-hinges-center which stretches the latch with its own left/right pair.
+   -2px puts the clamp plate on its panel's edge - correct for the hinge-panel half, which is a
+   plate alone. */
+.hinge-type-opt-1 .fc-hinges-left .fc-hinges-top,
+.hinge-type-opt-1 .fc-hinges-left .fc-hinges-bot {
+    left: -2px;
+}
+.hinge-type-opt-1 .fc-hinges-right .fc-hinges-top,
+.hinge-type-opt-1 .fc-hinges-right .fc-hinges-bot {
+    right: -2px;
+}
+
+/* The gate half carries the barrel, and the pivot belongs IN the joint, not against the gate's
+   edge: a further 2.5px out (half the 1px visible gap + half the 4px barrel) centres it on the
+   seam and carries its plate with it. Keyed off .fencing-panel-gate - the fc-hinges-left/right
+   side classes swap between the two panels with the hinge position and cannot tell them apart. */
+.hinge-type-opt-1 .fencing-panel-gate .fc-hinges-left .fc-hinges-top,
+.hinge-type-opt-1 .fencing-panel-gate .fc-hinges-left .fc-hinges-bot {
+    left: -4.5px;
+}
+.hinge-type-opt-1 .fencing-panel-gate .fc-hinges-right .fc-hinges-top,
+.hinge-type-opt-1 .fencing-panel-gate .fc-hinges-right .fc-hinges-bot {
+    right: -4.5px;
+}
+
+/* Above the hinge-panel plate it now laps, whichever of the two paints last. */
+.hinge-type-opt-1 .fc-hinges-top .fa-hinge-type:first-child,
+.hinge-type-opt-1 .fc-hinges-bot .fa-hinge-type:first-child {
+    z-index: 2;
+}
+/* -2px, not -4px: the block is 11px wide now and the gate sits hard against its neighbour, so the
+   old overhang lapped the two halves over each other instead of meeting them at the seam. */
 .hinge-type-opt-2 .fc-hinges-left .fc-hinges {
-    left: -4px;       
+    left: -2px;       
 }
 .hinge-type-opt-2 .fc-hinges-right .fc-hinges {
-    right: -4px;       
+    right: -2px;       
 }
 
 .fc-hinges-top {
@@ -2576,14 +2707,103 @@ a.fc-tab-active {
     left: -5px;
     top: 45%;
 }
+/* latch_glass_to_glass (MR-FLGG) is a two-part fitting like the hinges: a body clamped on the gate
+   glass and its keeper on the next panel, meeting on the seam. Anchored to the gate's closing edge
+   rather than the stretched group, which only ever placed the one block. */
+.hinge-type-opt-1 .fc-hinges-left .fc-hinges-center,
+.hinge-type-opt-2 .fc-hinges-left .fc-hinges-center {
+    left: auto;
+    right: -2px;
+    width: 7px;
+    align-items: stretch;
+}
+
+.hinge-type-opt-1 .fc-hinges-right .fc-hinges-center,
+.hinge-type-opt-2 .fc-hinges-right .fc-hinges-center {
+    right: auto;
+    left: -2px;
+    width: 7px;
+    align-items: stretch;
+}
+
+/* Each half is a clamp plate carrying a raised mechanism block, and the gate half stands a pull
+   knob off its outer edge - the black parts of the fitting, rendered in satin against the polished
+   plate so the whole latch stays stainless. */
 .fc-hinges-center i {
-    font-size: 10px;
+    position: relative;
     z-index: 1;
-    width: 10px;
-    height: 10px;
+    width: 7px;
+    height: 11px;
     border-radius: 2px;
-    background: var(--fc-boulder);
-    border: 1px solid var(--fc-cod-gray);
+    background:
+        linear-gradient(to bottom, var(--gh-mid), var(--gh-shade)) no-repeat 50% 50% / 4px 7px,
+        linear-gradient(
+            to right,
+            var(--gh-shade) 0 1px,
+            var(--gh-lit) 1px 2px,
+            var(--gh-face) 2px 5px,
+            var(--gh-mid) 5px 7px,
+            var(--gh-shade) 7px 100%
+        );
+    box-shadow: 0 0 0 1px var(--gh-edge);
+}
+
+/* The keeper half, on the neighbouring panel across the seam. */
+.fc-hinges-center i::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 7px;
+    border-radius: 2px;
+    background:
+        linear-gradient(to bottom, var(--gh-mid), var(--gh-shade)) no-repeat 50% 50% / 4px 7px,
+        linear-gradient(
+            to right,
+            var(--gh-shade) 0 1px,
+            var(--gh-lit) 1px 2px,
+            var(--gh-face) 2px 5px,
+            var(--gh-mid) 5px 7px,
+            var(--gh-shade) 7px 100%
+        );
+    box-shadow: 0 0 0 1px var(--gh-edge);
+}
+
+/* Pull knob: a short barrel off the gate half, flaring at the free end. */
+.fc-hinges-center i::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    margin-top: -2px;
+    width: 4px;
+    height: 4px;
+    border-radius: 1px 2px 2px 1px;
+    background: linear-gradient(to bottom, var(--gh-lit), var(--gh-face) 45%, var(--gh-shade));
+    box-shadow: 0 0 0 1px var(--gh-edge);
+}
+
+.fc-hinges-left .fc-hinges-center i::before {
+    left: 100%;
+}
+
+.fc-hinges-right .fc-hinges-center i::before {
+    right: 100%;
+}
+
+.fc-hinges-left .fc-hinges-center i::after {
+    right: 100%;
+}
+
+.fc-hinges-right .fc-hinges-center i::after {
+    left: 100%;
+    border-radius: 2px 1px 1px 2px;
+}
+
+/* No keeper where the gate closes onto a wall or post rather than another panel - there is no
+   neighbouring glass to carry it, and the cart swaps to latch_glass_to_wall_post to match. */
+.fencing-panel-gate.first-item .fc-hinges-right .fc-hinges-center i::before,
+.fencing-panel-gate.last-item .fc-hinges-left .fc-hinges-center i::before {
+    display: none;
 }
 
 .fc-hinges-bot {
@@ -2985,14 +3205,15 @@ a.fc-tab-active {
     right: -7px;
 }
 
+/* -18px, not -13px: the parens widened the marker the old offset was tuned for. */
 .fc-start-c-p {
-    left: -13px;
+    left: -18px;
     position: absolute;
     top: 10px;
 }
 
 .fc-end-c-p {
-    right: -13px;
+    right: -18px;
     position: absolute;
     top: 10px;
 }
@@ -3071,7 +3292,7 @@ a.fc-tab-active {
 
 .fc-gate-spacing {
     position: absolute;
-    top: -22px;
+    top: -30px;
     font-size: 12px;
     color: var(--fc-black);
 }
@@ -12305,6 +12526,12 @@ body.fc-restoring-selection .fencing-tab-name {
     left: -12px;
 }
 
+/* Recentres the parenthesised end gaps. Shifted, not repositioned: group a, group b and raked
+   panels each tune their own `left`, so one absolute value cannot serve all three. */
+.fencing-panel-spacing-number.fc-end-gap-paren:not(.no-post) > span:not(.cg-top):not(.sw):not(.fs-clamp) {
+    transform: translateX(-5.45px);
+}
+
 .fencing-panel-item-size {
     font-size: 11px;
     margin: 15px 5px;
@@ -16527,4 +16754,254 @@ div.fc-footer-app .app-version {
 /* One weight for button labels: 600. :not(:has(b)) spares labels whose own <b> does the emphasis; fw-bold still wins outright. */
 .btn:not(:has(b)) {
     font-weight: 600;
+}
+
+/* ===== Gate hardware (panel group b) ===== */
+
+/* Modelled on what the catalogue actually ships for these styles: HIN-HD-ASC (TruClose heavy duty
+   adjustable self-closing hinge) and LAT-MTP (MagnaLatch magnetic top pull latch). Both are black
+   UV-stabilised polymer with stainless pins, and the hinges carry trim covers so no fastener shows.
+   Overlay on the gate leaf, which is already position:relative. Group a keeps its own
+   .fc-hinges-set markup from z_fence.js and is untouched here. */
+.fc-gate-hw {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none; /* the leaf itself opens the gate modal */
+    --hw-body: var(--fc-cod-gray);
+    --hw-lit: var(--fc-boulder);
+    --hw-shade: var(--fc-mine-shaft);
+    --hw-pin: var(--fc-alto);
+    --hw-alert: var(--fc-red);
+    --hw-edge: var(--fc-black);
+}
+
+.fc-gate-hw__leaf {
+    position: absolute;
+    inset: 0;
+}
+
+/* A double gate's right leaf occupies the half past the centre split. */
+.fc-gate-hw__leaf--left + .fc-gate-hw__leaf--right {
+    left: 50%;
+}
+.fc-gate-hw__leaf--left:has(+ .fc-gate-hw__leaf--right) {
+    right: 50%;
+}
+
+/* ----- Hinges ----- */
+
+/* Knuckle only. Straight-on, the covered leaves sit against the faces of the post and stile, so
+   the barrel in the gap is all that reads at this size. Stainless pin ends top and bottom. */
+.fc-gate-hw__hinge {
+    position: absolute;
+    width: 5px;
+    height: 16px;
+    border-radius: 2px;
+    background:
+        linear-gradient(
+            to bottom,
+            var(--hw-pin) 0 1.5px,
+            transparent 1.5px calc(100% - 1.5px),
+            var(--hw-pin) calc(100% - 1.5px) 100%
+        ),
+        linear-gradient(
+            to bottom,
+            transparent 0 32%,
+            var(--hw-edge) 32% 38%,
+            transparent 38% 62%,
+            var(--hw-edge) 62% 68%,
+            transparent 68%
+        ),
+        linear-gradient(to right, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%);
+    box-shadow: 0 0 0 1px var(--hw-edge);
+}
+
+/* Fixed inset from the rails rather than a percentage, so a shorter gate keeps its hinges
+   tight under the top rail and above the bottom one. */
+.fc-gate-hw__hinge--top {
+    top: 14px;
+}
+
+.fc-gate-hw__hinge--bot {
+    bottom: 12px;
+}
+
+/* Soft-close range: a squatter, squarer body than the standard knuckle. */
+.hinge-type-opt-2 .fc-gate-hw__hinge {
+    width: 6px;
+    height: 13px;
+    border-radius: 1px;
+    background:
+        linear-gradient(
+            to bottom,
+            var(--hw-pin) 0 1.5px,
+            transparent 1.5px calc(100% - 1.5px),
+            var(--hw-pin) calc(100% - 1.5px) 100%
+        ),
+        linear-gradient(to bottom, transparent 0 46%, var(--hw-edge) 46% 54%, transparent 54%),
+        linear-gradient(to right, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%);
+}
+
+/* ----- Latch ----- */
+
+/* SafeTech/MagnaLatch magnetic top pull (LAT-MTP), drawn as the whole assembly: knob, then the
+   chunky head that carries the red status eye and the key barrel, then the slim rod down to the
+   magnetic catch at the foot. The rod stands proud of the top rail because the release has to
+   clear a child's reach - gate and container are both overflow:visible and the overlay's z-index
+   keeps it over the post cap. The element is the assembly's bounding box; the rod and the post
+   bracket are background layers inside it. */
+.fc-gate-hw__latch {
+    position: absolute;
+    top: -14px;
+    width: 9px;
+    height: 44px;
+    background:
+        /* post bracket */
+        linear-gradient(to bottom, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%)
+            no-repeat 50% 22px / 9px 4px,
+        /* rod */
+        linear-gradient(
+                to right,
+                var(--hw-shade) 0 1px,
+                var(--hw-lit) 1px 2px,
+                var(--hw-body) 2px 100%
+            )
+            no-repeat 50% 16px / 4px 24px;
+}
+
+/* Head housing: the mechanism body, wider than the rod, with the status eye and key barrel. */
+.fc-gate-hw__latch::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 1px;
+    width: 7px;
+    height: 11px;
+    border-radius: 1px;
+    background:
+        /* key barrel */
+        radial-gradient(circle at 50% 50%, var(--hw-pin) 0 1.1px, transparent 1.3px)
+            no-repeat 5px 7px / 3px 3px,
+        /* status eye */
+        radial-gradient(circle at 50% 50%, var(--hw-alert) 0 1.1px, transparent 1.3px)
+            no-repeat 2px 3px / 3px 3px,
+        linear-gradient(to right, var(--hw-shade) 0 1px, var(--hw-lit) 1px 2px, var(--hw-body) 2px 100%);
+    box-shadow: 0 0 0 1px var(--hw-edge), 1px 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+/* Release knob, standing on the head. */
+.fc-gate-hw__latch::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 2px;
+    width: 5px;
+    height: 6px;
+    border-radius: 2px 2px 1px 1px;
+    background: linear-gradient(to right, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%);
+    box-shadow: 0 0 0 1px var(--hw-edge);
+}
+
+/* Magnetic catch at the foot, reaching across to its striker on the post. */
+.fc-gate-hw__keeper {
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+    width: 11px;
+    height: 9px;
+    border-radius: 1px 3px 3px 1px;
+    background: linear-gradient(to bottom, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%);
+    box-shadow: 0 0 0 1px var(--hw-edge), 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+/* ----- Sides ----- */
+
+/* The knuckle centres on the gate-to-post gap: -6px is the 2px gate border plus half the 3px
+   margin, then half the barrel back. Both are fixed, so this holds at every gate size. The latch
+   stays inboard on the stile with only its keeper crossing to the post. */
+
+.fc-gate-hw__leaf--left .fc-gate-hw__hinge {
+    left: -6px;
+}
+
+.fc-gate-hw__leaf--left .fc-gate-hw__latch {
+    right: 1px;
+}
+
+.fc-gate-hw__leaf--right .fc-gate-hw__hinge {
+    right: -6px;
+}
+
+/* Mirrored so the keeper still reaches its own post. */
+.fc-gate-hw__leaf--right .fc-gate-hw__latch {
+    left: 1px;
+    transform: scaleX(-1);
+}
+
+/* ===== Slat gate latch and handle ===== */
+
+/* Slat is not a pool gate, and its catalogue says so: slat_gate+latch_deluxe is a D&D LokkLatch
+   Deluxe - a hand-height two-part lockable latch, body on the stile and striker through the post -
+   with slat_gate+handle as a separate pull. The MagnaLatch rod the other group-b styles carry does
+   not apply here, so the shared parts are re-cut rather than reused. */
+.fencing-panel-container[data-type="slat"] .fc-gate-hw__latch,
+.fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__latch {
+    top: calc(46% - 8px);
+    width: 7px;
+    height: 16px;
+    border-radius: 1px;
+    background: linear-gradient(
+        to right,
+        var(--hw-shade) 0 1px,
+        var(--hw-lit) 1px 2px,
+        var(--hw-body) 2px 100%
+    );
+    box-shadow: 0 0 0 1px var(--hw-edge), 1px 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+/* Key cylinder over the thumb lever - it locks from both faces. */
+.fencing-panel-container[data-type="slat"] .fc-gate-hw__latch::before,
+.fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__latch::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 2px;
+    right: 1px;
+    height: 10px;
+    border-radius: 0;
+    box-shadow: none;
+    background:
+        radial-gradient(circle at 50% 50%, var(--hw-pin) 0 1.1px, transparent 1.3px)
+            no-repeat 50% 2px / 3px 3px,
+        linear-gradient(to bottom, transparent 0 6px, var(--hw-lit) 6px 9px, transparent 9px);
+}
+
+/* slat_gate+handle: the pull, standing off the leaf inboard of the latch. */
+.fencing-panel-container[data-type="slat"] .fc-gate-hw__latch::after,
+.fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__latch::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 9px;
+    width: 4px;
+    height: 14px;
+    border-radius: 1px 2px 2px 1px;
+    background:
+        linear-gradient(to right, transparent 0 1px, var(--hw-body) 1px 100%) no-repeat 0 3px / 100% 8px,
+        linear-gradient(to right, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%);
+    box-shadow: 0 0 0 1px var(--hw-edge);
+}
+
+/* Striker body, bolted through the post opposite the latch. */
+.fencing-panel-container[data-type="slat"] .fc-gate-hw__keeper,
+.fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__keeper {
+    top: 2px;
+    bottom: auto;
+    left: 13px;
+    width: 7px;
+    height: 12px;
+    border-radius: 1px;
+    background: linear-gradient(to right, var(--hw-shade) 0 1px, var(--hw-lit) 1px 2px, var(--hw-body) 2px 100%);
+    box-shadow: 0 0 0 1px var(--hw-edge);
 }
