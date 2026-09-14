@@ -1,4 +1,4 @@
-.cursor
+.claude
 CLAUDE.md
 
 config.php
@@ -15,8 +15,6 @@ writable/groups-permissions/*.json
 writable/theme.json
 writable/fences/*.php
 tests/*
-!tests/glass-pool-clamps/
-!tests/debugbar/
 
 # Generated storage (keep directory placeholders)
 writable/storage/cache/**/*.json
@@ -29,5 +27,7 @@ public/assets/uploads/**
 !public/assets/uploads/.htaccess
 !public/assets/uploads/.gitkeep
 
-# Tailwind standalone CLI binary (~40MB, platform-specific — download via build/tailwind/README.md)
-build/tailwind/tailwindcss.exe
+# Build tooling — incl. the Tailwind standalone CLI binary (~40MB, platform-specific;
+# download via build/tailwind/README.md). The three sources in build/tailwind/ predate
+# this rule and stay tracked, so the documented rebuild command still works on a clean clone.
+build/
