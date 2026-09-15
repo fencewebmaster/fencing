@@ -60,8 +60,8 @@
         integrationsRevision: '',
         integrationDirty: false,
         integrationFormBound: false,
-        console: { debugMode: false, showDebugbar: true, debugVerbose: false, debugMaxEntries: 200, debugRedactKeys: '' },
-        consoleDefaults: { debugMode: false, showDebugbar: true, debugVerbose: false, debugMaxEntries: 200, debugRedactKeys: '' },
+        console: { debugMode: false },
+        consoleDefaults: { debugMode: false },
         consoleFormBound: false,
         consoleSaving: false,
         csrf: ''
@@ -703,11 +703,11 @@
         state.projectPlanStockDefaults = Object.assign({}, data.projectPlanStockDefaults || {});
 
         state.console = Object.assign(
-            { debugMode: false, showDebugbar: true, debugVerbose: false, debugMaxEntries: 200, debugRedactKeys: '' },
+            { debugMode: false },
             data.console || {}
         );
         state.consoleDefaults = Object.assign(
-            { debugMode: false, showDebugbar: true, debugVerbose: false, debugMaxEntries: 200, debugRedactKeys: '' },
+            { debugMode: false },
             data.consoleDefaults || {}
         );
 

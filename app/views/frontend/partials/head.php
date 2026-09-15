@@ -21,17 +21,17 @@ endif;
 <?php $info = $_SESSION; ?>
 <?php $fc_route = FrontendApplication::currentRoute(); ?>
 
-<!-- jQuery loads here, not deferred, so it's ready before GTM tags run -->
+<?php /* jQuery loads here, not deferred, so it's ready before GTM tags run */ ?>
 <script src="<?php echo asset('public/assets/js/vendor/jquery-3.3.1.min.js'); ?>"></script>
 
 <?php if( $gtmID = @$site_info['gtmID'] ): ?>
-<!-- Google Tag Manager -->
+<?php /* Google Tag Manager */ ?>
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','<?php echo @$gtmID; ?>');</script>
-<!-- End Google Tag Manager -->
+<?php /* End Google Tag Manager */ ?>
 <?php endif; ?>
 
 <?php
@@ -87,7 +87,7 @@ if ($fcDebugbarOn) :
 <?php AssetHelper::deferStylesheet(asset('public/assets/css/vendor/select2/select2-bootstrap-5-theme.min.css')); ?>
 
 <?php if( $gtagID = @$site_info['gtagID'] ): ?>
-<!-- Google tag (gtag.js) -->
+<?php /* Google tag (gtag.js) */ ?>
 <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo @$gtagID; ?>"></script>
 <script>
 	window.dataLayer = window.dataLayer || [];
@@ -105,6 +105,6 @@ if ($fcDebugbarOn) :
 $fcHeaderCode = trim((string) (AppConfigService::all()->custom_code->header ?? ''));
 if ($fcHeaderCode !== '') :
 ?>
-<!-- Custom header code -->
+<?php /* Custom header code */ ?>
 <?php echo $fcHeaderCode; ?>
 <?php endif; ?>

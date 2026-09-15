@@ -34,9 +34,9 @@ use Fc\Admin\Services\SiteRegistryService;
 <span class="badge bg-danger text-white text-uppercase p-1 is-demo">Test<br> Version</span>
 <?php endif; ?>
 
-<!-- Clear All — destructive confirm. It spells out what disappears because the old copy,
+<?php /* Clear All — destructive confirm. It spells out what disappears because the old copy,
      "clear all data and reset the form", never told anyone which of their sections they lose.
-     data-fc-role survives Bootstrap stamping role="dialog" over the markup on every show. -->
+     data-fc-role survives Bootstrap stamping role="dialog" over the markup on every show. */ ?>
 <div class="modal fade fc-modal" id="clear-all-data" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcClearAllTitle" aria-describedby="fcClearAllDesc" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
@@ -72,13 +72,13 @@ use Fc\Admin\Services\SiteRegistryService;
     </div>
 </div>
 
-<!-- Libraries -->
+<?php /* Libraries */ ?>
 <script defer src="<?php echo asset('public/assets/js/vendor/select2.min.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/vendor/slick.min.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/vendor/jquery.validate.min.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/vendor/jquery-scrollspy.min.js'); ?>"></script>
 
-<!-- Plugins -->
+<?php /* Plugins */ ?>
 <script src="https://maps.googleapis.com/maps/api/js?key=<?php echo e((string) AppConfigService::all()->apikey->google_map); ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
     async defer></script>
 
@@ -86,7 +86,7 @@ use Fc\Admin\Services\SiteRegistryService;
 
 
 
-<!-- Scripts -->
+<?php /* Scripts */ ?>
 <script defer src="<?php echo asset('public/assets/js/frontend/core/helpers.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/core/main.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/vendor/jquery.inputmask.min.js'); ?>"></script>
@@ -126,7 +126,7 @@ echo DebugbarServer::inlineJsonIsland();
 $fcFooterCode = trim((string) (AppConfigService::all()->custom_code->footer ?? ''));
 if ($fcFooterCode !== '') :
 ?>
-<!-- Custom footer code -->
+<?php /* Custom footer code */ ?>
 <?php echo $fcFooterCode; ?>
 <?php endif; ?>
 
@@ -142,7 +142,7 @@ $fcChatraInCustomCode = stripos($fcFooterCode, 'chatra') !== false
 
 if ($fcChatraId !== '' && !$fcChatraInCustomCode) :
 ?>
-<!-- Chatra -->
+<?php /* Chatra */ ?>
 <script>
 window.addEventListener('load', function() {
     window.setTimeout(function() {
@@ -159,7 +159,7 @@ window.addEventListener('load', function() {
     }, 2500);
 });
 </script>
-<!-- /Chatra -->
+<?php /* /Chatra */ ?>
 <?php endif; ?>
 
 <?php
@@ -179,12 +179,8 @@ if ($fcChatraId !== '' || $fcChatraInCustomCode) :
     window.ChatraSetup = window.ChatraSetup || {};
     window.ChatraSetup.customWidgetButton = '#fc-chat-launcher';
 
-    // The loader waits 2.5s after window load before it even requests chatra.js, so the button
-    // would sit there un-bound and do nothing if it were shown straight away. It stays hidden
-    // until Chatra has actually initialised, which is signalled by its iframe appearing.
-    //
-    // Deliberately no timeout fallback: if Chatra never loads - blocked, offline, bad ID - the
-    // button should stay hidden rather than appear and swallow clicks.
+    <?php /* Hidden until Chatra's iframe appears: its loader waits 2.5s after window load, so a
+             button shown early would be un-bound. No timeout fallback, on purpose. */ ?>
     (function () {
         var btn = document.getElementById('fc-chat-launcher');
 
@@ -202,7 +198,7 @@ if ($fcChatraId !== '' || $fcChatraInCustomCode) :
         }
 
         if (typeof MutationObserver !== 'function') {
-            // No observer to lean on; fall back to the loader's own delay plus a margin.
+            <?php /* No observer to lean on; fall back to the loader's own delay plus a margin. */ ?>
             window.setTimeout(reveal, 4000);
             return;
         }

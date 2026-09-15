@@ -33,9 +33,9 @@ $fcDownloadSteps = [
                     <?php $fcDownloadStepCurrent = 1; ?>
                     <?php include view_path('frontend.partials.modal.submit.form.stepper'); ?>
 
-                    <!-- Below md the note panel opposite is hidden and its copy moves behind this
+                    <?php /* Below md the note panel opposite is hidden and its copy moves behind this
                          button, so the heading row keeps the information without the panel's
-                         vertical cost inside an already tall dialog. -->
+                         vertical cost inside an already tall dialog. */ ?>
                     <div class="fc-download-title-row d-flex align-items-center justify-content-between gap-2 fc-mb-2">
                         <h2 class="fc-text-uppercase fc-font-2 mb-0">Customer Details</h2>
 

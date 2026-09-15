@@ -228,7 +228,7 @@
                 .then(function (body) {
                     state.console = Object.assign(
                         {},
-                        state.consoleDefaults || { debugMode: false, showDebugbar: true, debugVerbose: false, debugMaxEntries: 200, debugRedactKeys: '' },
+                        state.consoleDefaults || { debugMode: false },
                         body.console || state.console
                     );
                     self.paintDebugModeToggle();

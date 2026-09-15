@@ -1,4 +1,4 @@
-<!-- [START] FORM SUBMISSION LOADER -->
+<?php /* [START] FORM SUBMISSION LOADER */ ?>
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
         <div class="fc-loader">
@@ -15,10 +15,10 @@
         </div>
     </div>
 </div>
-<!-- [END] FORM SUBMISSION LOADER -->
+<?php /* [END] FORM SUBMISSION LOADER */ ?>
 
-<!-- Download progress toast. Downloads used to raise the full-screen submission loader, which
-     blacked out the page for something the user can happily keep scrolling past. -->
+<?php /* Download progress toast. Downloads used to raise the full-screen submission loader, which
+     blacked out the page for something the user can happily keep scrolling past. */ ?>
 <div class="fc-download-toast" role="status" aria-live="polite">
     <span class="fc-loader-gif fc-download-toast__spinner" aria-hidden="true"></span>
     <div class="fc-download-toast__text">
@@ -27,7 +27,7 @@
     </div>
 </div>
 
-<!-- [START] Cart item image gallery (project plan) -->
+<?php /* [START] Cart item image gallery (project plan) */ ?>
 <div id="fc-cart-image-modal" class="fc-cart-image-modal" aria-hidden="true">
 	<div class="fc-cart-image-modal__backdrop" data-fc-cart-gallery-close></div>
 	<div class="fc-cart-image-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="fc-cart-image-modal-title">
@@ -47,9 +47,9 @@
 		<div class="fc-cart-image-modal__counter" aria-live="polite"></div>
 	</div>
 </div>
-<!-- [END] Cart item image gallery -->
+<?php /* [END] Cart item image gallery */ ?>
 
-<!-- Project plan — fence configuration summary -->
+<?php /* Project plan — fence configuration summary */ ?>
 <div class="modal fade" id="fc-planner-summary-modal" tabindex="-1" aria-labelledby="fcPlannerSummaryModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-fullscreen-md-down fc-planner-summary-modal__dialog">
         <div class="modal-content fc-planner-summary-modal__content">

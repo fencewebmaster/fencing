@@ -1,7 +1,7 @@
 <?php
 use Fc\Admin\Services\AppConfigService;
 ?>
-<!-- [START] FORM SUBMISSION LOADER -->
+<?php /* [START] FORM SUBMISSION LOADER */ ?>
 <div class="fc-loader-overlay" style="display: none;">
     <div class="fc-loader-container">
         <div class="fc-loader">
@@ -25,14 +25,14 @@ use Fc\Admin\Services\AppConfigService;
         </div>
     </div>
 </div>
-<!-- [END] FORM SUBMISSION LOADER -->
+<?php /* [END] FORM SUBMISSION LOADER */ ?>
 
 
-<!-- Overall Length exceeds planner / fence style maximum.
+<?php /* Overall Length exceeds planner / fence style maximum.
      NOTE: nothing shows or fills this modal today — no JS references
      #fc-overall-length-max-modal, the js-fc-overall-max-* spans or
      data-action="reset-overall-length". Restyled with the rest of the family so it is
-     right the day it gets wired up. -->
+     right the day it gets wired up. */ ?>
 <div class="modal fade fc-modal" id="fc-overall-length-max-modal" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcOverallLengthMaxModalLabel" aria-describedby="fcOverallLengthMaxModalDesc" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
@@ -70,7 +70,7 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Planner Step 3 — fence configuration summary -->
+<?php /* Planner Step 3 — fence configuration summary */ ?>
 <div class="modal fade" id="fc-planner-summary-modal" tabindex="-1" aria-labelledby="fcPlannerSummaryModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-fullscreen-md-down fc-planner-summary-modal__dialog">
         <div class="modal-content fc-planner-summary-modal__content">
@@ -86,11 +86,11 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Planner keyboard shortcuts, behind the keyboard button beside Summary (fc-planner-summary.js
+<?php /* Planner keyboard shortcuts, behind the keyboard button beside Summary (fc-planner-summary.js
      adds it). Step 2's keys are events.js's own (step2EnterNavigate; Tab is the browser's), the
      editor keys are shared/drawing-keys.js and the Ctrl combos shared/planner-shortcuts.js. Esc is
      each dialog's own: Bootstrap closes these, and events.js closes the planner's option window
-     and the download wizard. Keep the list in step with all of them. -->
+     and the download wizard. Keep the list in step with all of them. */ ?>
 <div class="modal fade fc-modal" id="fc-shortcuts-modal" tabindex="-1" aria-labelledby="fcShortcutsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable fc-modal__dialog fc-modal__dialog--shortcuts">
         <div class="modal-content fc-modal__content">
@@ -110,11 +110,11 @@ use Fc\Admin\Services\AppConfigService;
                                 <span><b>A</b>dd a section</span>
                             </li>
                             <li>
-                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>D</kbd></span>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Alt</kbd><span class="fc-shortcuts__plus">+</span><kbd>D</kbd></span>
                                 <span><b>D</b>elete this section (asks first)</span>
                             </li>
                             <li>
-                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>R</kbd></span>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Alt</kbd><span class="fc-shortcuts__plus">+</span><kbd>R</kbd></span>
                                 <span><b>R</b>eset this section (asks first)</span>
                             </li>
                         </ul>
@@ -164,7 +164,7 @@ use Fc\Admin\Services\AppConfigService;
                                 <span>Edit <b>S</b>pacing</span>
                             </li>
                             <li>
-                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>S</kbd></span>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Alt</kbd><span class="fc-shortcuts__plus">+</span><kbd>S</kbd></span>
                                 <span><b>S</b>pigot Options</span>
                             </li>
                             <li>
@@ -172,7 +172,7 @@ use Fc\Admin\Services\AppConfigService;
                                 <span><b>P</b>anel Options</span>
                             </li>
                             <li>
-                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Shift</kbd><span class="fc-shortcuts__plus">+</span><kbd>P</kbd></span>
+                                <span class="fc-shortcuts__keys"><kbd>Ctrl</kbd><span class="fc-shortcuts__plus">+</span><kbd>Alt</kbd><span class="fc-shortcuts__plus">+</span><kbd>P</kbd></span>
                                 <span><b>P</b>ost Options</span>
                             </li>
                             <li>
@@ -203,9 +203,9 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Incomplete fence sections — choose to fix or continue to project plan. The section
+<?php /* Incomplete fence sections — choose to fix or continue to project plan. The section
      list is filled on show (events.js); the fallback copy stays visible when the two
-     completeness checks disagree and it comes back empty. -->
+     completeness checks disagree and it comes back empty. */ ?>
 <div class="modal fade fc-modal" id="fc-incomplete-sections-modal" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcIncompleteSectionsModalLabel" aria-describedby="fcIncompleteSectionsModalDesc" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
@@ -239,8 +239,8 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Load Quote Modal. The oversized League Gothic field stays; its placeholder does not —
-     "Enter Quote ID" at 3em overflowed the dialog, so the prompt moved to a real label. -->
+<?php /* Load Quote Modal. The oversized League Gothic field stays; its placeholder does not —
+     "Enter Quote ID" at 3em overflowed the dialog, so the prompt moved to a real label. */ ?>
 <form method="get">
     <div class="modal fade fc-modal" id="load-quote" tabindex="-1" aria-labelledby="fcLoadQuoteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
@@ -261,8 +261,8 @@ use Fc\Admin\Services\AppConfigService;
                         <span>Letters and numbers only. You will find it on the Fence Summary of the plan you saved.</span>
                     </p>
                 </div>
-                <!-- No Cancel: the header's X already backs out of a dialog that asks for one
-                     value, and it left the only action competing with a button that undoes it. -->
+                <?php /* No Cancel: the header's X already backs out of a dialog that asks for one
+                     value, and it left the only action competing with a button that undoes it. */ ?>
                 <div class="modal-footer fc-modal__footer">
                     <button type="submit" class="btn btn-orange text-uppercase px-3">
                         Load Now
@@ -274,9 +274,9 @@ use Fc\Admin\Services\AppConfigService;
 </form>
 
 
-<!-- Generic notice/error dialog. fcShowPopupAlertModal() writes .modal-title and
+<?php /* Generic notice/error dialog. fcShowPopupAlertModal() writes .modal-title and
      .modal-message and hides the measurement box; the footer used to be d-none too, which
-     left an error dialog with no way to acknowledge it but the X. -->
+     left an error dialog with no way to acknowledge it but the X. */ ?>
 <div class="modal fade fc-modal fc-popup-alert-modal" id="popup-alert" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcPopupAlertModalLabel" aria-describedby="fcPopupAlertModalDesc" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
@@ -343,9 +343,9 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Reset / Delete Section — destructive confirms, same shape and copy discipline as the Clear All
+<?php /* Reset / Delete Section — destructive confirms, same shape and copy discipline as the Clear All
      dialog in partials/footer.php: name what disappears rather than asking "are you sure?".
-     Gated in core/events.js, which re-fires the original click once confirmed. -->
+     Gated in core/events.js, which re-fires the original click once confirmed. */ ?>
 <div class="modal fade fc-modal" id="fc-reset-section-confirm" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcResetSectionTitle" aria-describedby="fcResetSectionDesc" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog">
         <div class="modal-content fc-modal__content">
@@ -416,10 +416,10 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Glass pool Panel Clamps — the solved panel gap is under the minimum a panel-to-panel clamp
+<?php /* Glass pool Panel Clamps — the solved panel gap is under the minimum a panel-to-panel clamp
      fits. Filled and shown by GlassPool.maybePromptClampGap (fences/glass_pool.js) only after an
      enforced dry-run proves a layout exists at this Overall Length; Adjust Gap is wired in
-     core/events.js. Cancel leaves Yes Clamps selected with nothing billed. -->
+     core/events.js. Cancel leaves Yes Clamps selected with nothing billed. */ ?>
 <div class="modal fade fc-modal" id="fc-clamp-gap-confirm" tabindex="-1" role="alertdialog" data-fc-role="alertdialog" aria-labelledby="fcClampGapTitle" aria-describedby="fcClampGapDesc" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--wide">
         <div class="modal-content fc-modal__content">
@@ -463,9 +463,9 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Step 2 "Important" notice, mobile only. The body is empty in the markup on purpose: the
+<?php /* Step 2 "Important" notice, mobile only. The body is empty in the markup on purpose: the
      notice copy changes with the fence style, so it is copied from the live panel in Step 2 each
-     time the dialog opens (see fcStep2ImportantModalShow in core/events.js). -->
+     time the dialog opens (see fcStep2ImportantModalShow in core/events.js). */ ?>
 <div class="modal fade fc-modal" id="fc-step2-important-modal" tabindex="-1" aria-labelledby="fcStep2ImportantTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
         <div class="modal-content fc-modal__content">
@@ -486,9 +486,9 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Download wizard "We'll email you the plans" note, mobile only. The panel it mirrors sits in
+<?php /* Download wizard "We'll email you the plans" note, mobile only. The panel it mirrors sits in
      Step 1 of #submit-modal and is hidden below md; the body is filled from that panel on show so
-     the sentence has one source (see fcDownloadIntroModalShow in core/events.js). -->
+     the sentence has one source (see fcDownloadIntroModalShow in core/events.js). */ ?>
 <div class="modal fade fc-modal" id="fc-download-intro-modal" tabindex="-1" aria-labelledby="fcDownloadIntroTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered fc-modal__dialog fc-modal__dialog--sm">
         <div class="modal-content fc-modal__content">
@@ -509,8 +509,8 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<!-- Planner notice toast ("Overall Length changed", …). The rule code is only rendered in
-     debug mode — see popupToast() in core/events.js. -->
+<?php /* Planner notice toast ("Overall Length changed", …). The rule code is only rendered in
+     debug mode — see popupToast() in core/events.js. */ ?>
 <div class="toast-container fc-toast-container position-fixed">
     <div id="liveToast" class="toast fc-toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-bs-config='{"delay":8000}'>
         <div class="toast-header fc-toast__header">

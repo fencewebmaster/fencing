@@ -1264,6 +1264,9 @@
         var el = document.getElementById('fc-planner-summary-modal');
         if (el && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
             var modal = bootstrap.Modal.getOrCreateInstance(el);
+            /* Bootstrap's lock pads the body and shifts the page; measure across show() and
+               correct it (FCModal.afterScrollLock). */
+            var fcBodyWidthBeforeLock = document.body.getBoundingClientRect().width;
             el.addEventListener('shown.bs.modal', function onShown() {
                 el.removeEventListener('shown.bs.modal', onShown);
                 var $active = $body.find('.fc-planner-summary-section--open').first();
@@ -1272,6 +1275,9 @@
                 }
             });
             modal.show();
+            if (typeof FCModal !== 'undefined' && FCModal && typeof FCModal.afterScrollLock === 'function') {
+                FCModal.afterScrollLock(fcBodyWidthBeforeLock);
+            }
         }
     }
 

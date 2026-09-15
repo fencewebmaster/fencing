@@ -104,9 +104,9 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                     ?>
                     <td<?php echo $product_image_attrs; ?>>
                         <?php if ( ! empty( $cart_item['optional'] ) ) : ?>
-                        <!-- Above the thumbnail rather than trailing the product name: in the name
+                        <?php /* Above the thumbnail rather than trailing the product name: in the name
                              it took a bite out of the title's line and pushed longer names onto an
-                             extra row. The image column is the narrow one and has the headroom. -->
+                             extra row. The image column is the narrow one and has the headroom. */ ?>
                         <span class="badge rounded-pill bg-secondary fc-cart-optional-badge">Optional</span>
                         <?php endif; ?>
                         <?php if ( $full_cart_image !== '' ) : ?>
@@ -137,24 +137,24 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                         <div class="small text-muted fc-cart-fence-style"><?php echo e($fence_style_label); ?></div>
                         <?php endif; ?>
 
-                        <!-- Quantity and stock read as one line on a phone: whichever of the two
+                        <?php /* Quantity and stock read as one line on a phone: whichever of the two
                              quantity states is showing sits on the left, stock to its right.
                              Flexed in CSS at mobile only; on desktop stock has its own column and
-                             both children here are d-md-none, so this stays an inert wrapper. -->
+                             both children here are d-md-none, so this stays an inert wrapper. */ ?>
                         <div class="fc-cart-qty-row">
 
-                        <!-- Wrapper so the stepper and the Add/Remove button come out the same
+                        <?php /* Wrapper so the stepper and the Add/Remove button come out the same
                              width on mobile without either being given a pixel figure: it shrinks
                              to its widest child, which is the button, and the stepper fills it.
                              Stepper first — on a phone the quantity is what is being edited, and
-                             the button acts on the result of it. -->
+                             the button acts on the result of it. */ ?>
                         <div class="fc-cart-qty-actions">
 
-                            <!-- Width gauge. Carries the button's own classes so it is sized by
+                            <?php /* Width gauge. Carries the button's own classes so it is sized by
                                  exactly the rules that size the button — no copy of its padding,
                                  font or border to keep in step, and rows with no button (most of
                                  them) still get the same width. Zero height and clipped in CSS,
-                                 so it is only ever a measurement. -->
+                                 so it is only ever a measurement. */ ?>
                             <span class="fc-cart-qty-gauge btn btn-sm text-uppercase" aria-hidden="true">Remove from cart</span>
 
                         <div class="fc-item-value d-md-none d-block fw-bold border rounded bg-light text-center p-1<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' text-muted' : ''; ?>">
@@ -198,7 +198,7 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                         </div>
                         <?php endif; ?>
 
-                        </div><!-- /.fc-cart-qty-actions -->
+                        </div><?php /* /.fc-cart-qty-actions */ ?>
 
                         <div class="d-block d-md-none fc-cart-stock-mobile">
                             <div class="fw-bold d-flex align-items-center">
@@ -210,7 +210,7 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                             </div>
                         </div>
 
-                        </div><!-- /.fc-cart-qty-row -->
+                        </div><?php /* /.fc-cart-qty-row */ ?>
 
                         <?php if( @$cart_item['qty'] != @$cart_item['original_qty'] ): ?>
                         <div class="qty-edited" data-toggle="toggle" title="Edited">

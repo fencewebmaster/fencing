@@ -6,6 +6,38 @@ let FCModal = {
        .js-fencing-modal — keying the lock off FCModal.el would leave the page scrolling behind
        #submit-modal. */
     modalEl: '.fencing-modal',
+    /* Drives the drawer slide (style.css "Option drawer"); every other modal ignores it. */
+    slidClass: 'fc-modal-slid',
+
+    //----------------------------------------------------------------------------------
+
+    /* A locked page keeps the scrollbar's gutter in the containing block, so a 100%-wide fixed
+       overlay stops short of the right edge; CSS cannot measure it, so the drawers read this. */
+    setScrollbarGap: function(px) {
+        document.documentElement.style.setProperty('--fc-scrollbar-gap', Math.max(0, px) + 'px');
+    },
+
+    //----------------------------------------------------------------------------------
+
+    /* A pick leaves the drawer open, since the drawing is beside it; the phone popup still
+       closes, and only the pick is held back - X, Escape, backdrop and Calculate all close. */
+    keepsOpenOnPick: function(el) {
+        if (!el || typeof el.closest !== 'function' || !el.closest('#fc-control-modal')) {
+            return false;
+        }
+        return window.matchMedia('(min-width: 768px)').matches;
+    },
+
+    //----------------------------------------------------------------------------------
+
+    /* Pad by what the body actually gained, not by the scrollbar's width: it does not widen
+       under the lock, and padding it anyway dragged the centred page 7.5px left. */
+    afterScrollLock: function(bodyWidthBeforeLock) {
+        var grew = document.body.getBoundingClientRect().width - bodyWidthBeforeLock;
+        /* Cleared rather than zeroed, so whatever the stylesheet sets comes back. */
+        $('body').css('padding-right', grew > 0 ? grew + 'px' : '');
+        FCModal.setScrollbarGap(window.innerWidth - document.documentElement.getBoundingClientRect().width);
+    },
 
     init: function() {
         FCModal.closeBtn();
@@ -24,15 +56,13 @@ let FCModal = {
         var open = $(FCModal.modalEl).filter(':visible').length > 0;
 
         if (open) {
-            /* Measured before the class goes on, while the scrollbar is still there. Hiding it
-               widens the viewport, and the overlay is translucent, so without the reserved width
-               the page visibly jumps sideways behind the modal as it opens (7px at 1100px).
-               Phones report 0 here — overlay scrollbars take no width — so nothing is added. */
-            var gap = window.innerWidth - document.documentElement.clientWidth;
-            if (gap > 0) {
-                $('body').css('padding-right', gap + 'px');
+            if (!$('body').hasClass('fc-modal-open')) {
+                /* Measured across the class going on, not read off the scrollbar.
+                   See FCModal.afterScrollLock for why those are different numbers. */
+                var wasWide = document.body.getBoundingClientRect().width;
+                $('body').addClass('fc-modal-open');
+                FCModal.afterScrollLock(wasWide);
             }
-            $('body').addClass('fc-modal-open');
             return;
         }
 
@@ -46,7 +76,20 @@ let FCModal = {
     open: function(target = false) {
 
         let el = target || FCModal.el;
-        $(el).fadeIn('fast');
+        let $el = $(el);
+        /* Reopening an already-open drawer swaps its contents; it must not slide in again. */
+        let wasOpen = $el.is(':visible');
+
+        if (!wasOpen) {
+            $el.removeClass(FCModal.slidClass);
+        }
+        $el.fadeIn('fast');
+        if (!wasOpen) {
+            /* Flush layout so the off-screen transform resolves before the class changes it;
+               rAF would do too, but is throttled in a background tab. */
+            $el.each(function() { void this.offsetWidth; });
+        }
+        $el.addClass(FCModal.slidClass);
         FCModal.syncScrollLock();
 
     },
@@ -55,6 +98,8 @@ let FCModal = {
 
     close: function(target = false) {
         let el = target || FCModal.el;
+        /* Class off first, so the drawer slides out while jQuery fades the overlay over it. */
+        $(el).removeClass(FCModal.slidClass);
         /* Synced after the fade, not before it: the element stays :visible while it animates out. */
         $(el).fadeOut('fast', FCModal.syncScrollLock);
         $(".fencing-btn-modal.fc-btn-active").removeClass('fc-btn-active');
@@ -64,7 +109,9 @@ let FCModal = {
 
     closeBtn: function() {
         $(document).on('click', FCModal.closeBtnEl, function() {
-            $(this).closest('.fencing-modal').fadeOut('fast', FCModal.syncScrollLock);
+            $(this).closest('.fencing-modal')
+                .removeClass(FCModal.slidClass)
+                .fadeOut('fast', FCModal.syncScrollLock);
             $('.fc-btn-active').removeClass('fc-btn-active');
         });
     }

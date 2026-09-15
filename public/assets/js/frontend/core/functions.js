@@ -4402,7 +4402,9 @@ function fcApplyStepUpPanelSelection(rakedKey) {
             btnCalculate();
         }
     } catch (eCalc) {}
-    if ($('.js-fencing-modal').length && !fcSuppressControlModalCloseOnFcSelectChange) {
+    if ($('.js-fencing-modal').length
+        && !fcSuppressControlModalCloseOnFcSelectChange
+        && !FCModal.keepsOpenOnPick(document.getElementById('fc-control-modal'))) {
         try {
             FCModal.close();
         } catch (eClose) {}

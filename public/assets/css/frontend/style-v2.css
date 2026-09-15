@@ -169,7 +169,8 @@
 
 /* Gate Options — Add/Remove Gate: field border/size match Gate Height */
 .fencing-modal-area--gate .custom-gate {
-    --fc-gate-field-radius: 8px;
+    /* The option modal's 3px, set on the token: the six rules reading it carry !important. */
+    --fc-gate-field-radius: 3px;
 }
 
 .fencing-modal-area--gate .custom-gate .fencing-mb-input {

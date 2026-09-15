@@ -46,9 +46,16 @@ final class DebugbarServer
 
     private static int $droppedPhpErrors = 0;
 
-    private static int $maxEntries = 200;
+    /** Capture knobs. Fixed: Debug Mode is the only console setting the admin exposes. */
+    private const MAX_ENTRIES = 200;
 
-    private static bool $verbose = false;
+    private const VERBOSE = false;
+
+    /** Keys whose captured values show as [redacted] (see DebugRedactor). */
+    private const REDACT_KEYS = [
+        'password', 'secret', 'token', 'nonce', 'key', 'auth',
+        'cookie', 'credential', 'db_password', 'database_password',
+    ];
 
     /**
      * Arm the collectors when Debug Mode is on. Called before dispatch by the frontend
@@ -72,8 +79,6 @@ final class DebugbarServer
 
         try {
             self::$startedAt = (float) ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
-            self::$maxEntries = ConsoleSettings::debugMaxEntries();
-            self::$verbose = ConsoleSettings::debugVerbose();
 
             // Record-only error handler: returning false hands every error straight back to
             // PHP's normal handling, so display/log behaviour stays byte-identical to today.
@@ -113,7 +118,7 @@ final class DebugbarServer
             self::$queryMs += $ms;
         }
 
-        if (count(self::$queries) >= self::$maxEntries) {
+        if (count(self::$queries) >= self::MAX_ENTRIES) {
             self::$droppedQueries++;
 
             return;
@@ -121,7 +126,7 @@ final class DebugbarServer
 
         try {
             $sql = trim($sql);
-            if (!self::$verbose) {
+            if (!self::VERBOSE) {
                 $sql = DebugRedactor::maskSqlLiterals($sql);
             }
             if (strlen($sql) > 2000) {
@@ -148,7 +153,7 @@ final class DebugbarServer
         // XAMPP masks E_DEPRECATED and this tree has known pre-existing deprecations
         // (Database's dynamic properties fire several per instantiation) - without this
         // filter the Log panel is all noise. Verbose Trace shows them.
-        if (!self::$verbose && in_array($severity, [E_DEPRECATED, E_USER_DEPRECATED], true)) {
+        if (!self::VERBOSE && in_array($severity, [E_DEPRECATED, E_USER_DEPRECATED], true)) {
             return;
         }
 
@@ -163,7 +168,7 @@ final class DebugbarServer
         // hence the mask test rather than a comparison against a fixed value. Everything
         // before head.php (bootstrap, controllers, models, the DB layer) still runs under the
         // php.ini mask and is captured normally; Verbose Trace captures the lot.
-        if (!self::$verbose && !(error_reporting() & $severity)) {
+        if (!self::VERBOSE && !(error_reporting() & $severity)) {
             return;
         }
 
@@ -206,12 +211,12 @@ final class DebugbarServer
         }
 
         try {
-            $redactKeys = ConsoleSettings::debugRedactKeys();
+            $redactKeys = self::REDACT_KEYS;
 
             return [
                 'config' => [
-                    'verbose' => self::$verbose,
-                    'maxEntries' => self::$maxEntries,
+                    'verbose' => self::VERBOSE,
+                    'maxEntries' => self::MAX_ENTRIES,
                     'redactKeys' => $redactKeys,
                 ],
                 'environment' => self::environment(),
@@ -446,17 +451,9 @@ final class DebugbarServer
         }
     }
 
-    /** Whether footer/head should emit Debugbar assets for this request. */
+    /** Whether footer/head should emit Debugbar assets: Debug Mode is the only switch. */
     public static function showDebugbar(): bool
     {
-        if (self::$enabled !== true) {
-            return false;
-        }
-
-        try {
-            return ConsoleSettings::showDebugbar();
-        } catch (\Throwable) {
-            return false;
-        }
+        return self::$enabled === true;
     }
 }

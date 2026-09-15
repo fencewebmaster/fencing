@@ -32,7 +32,7 @@
 
     </div>
 
-    <!-- [START] STYLES -->
+    <?php /* [START] STYLES */ ?>
     <div class="fencing-section__cmp fencing-styles">
         <div class="fencing-styles__area fencing-styles-slick-pending">
 
@@ -118,9 +118,9 @@
                             <div class="lq-icon">
                                 <i class="fa-solid fa-folder-open"></i>                                         
                             </div>
-                            <!-- Two sentences, two elements: as one run of text it wrapped mid-phrase
+                            <?php /* Two sentences, two elements: as one run of text it wrapped mid-phrase
                                  ("Already saved a / quote? Enter your / ID to continue"), so neither
-                                 idea read as a unit. Separate blocks break between them instead. -->
+                                 idea read as a unit. Separate blocks break between them instead. */ ?>
                             <span class="lq-lead">Already saved a quote?</span>
                             <span class="lq-hint">Enter your ID to continue</span>
                         </div>
@@ -146,6 +146,6 @@
 
         </div>          
     </div>
-    <!-- [END] STYLES -->
+    <?php /* [END] STYLES */ ?>
 
 </div>

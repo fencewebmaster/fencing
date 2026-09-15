@@ -26,7 +26,7 @@
 					</div>
 					<div class="fc-col-flex fc-text-center">
 						<div class="fc-move-post" data-move="delete">	
-							<p><span><i class="fa-solid fa-xmark"></i></span>
+							<p><span><i class="fa-regular fa-trash-can"></i></span>
 							Delete</p>
 						</div>
 					</div>

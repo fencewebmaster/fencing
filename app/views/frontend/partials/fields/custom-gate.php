@@ -48,7 +48,7 @@ use Fc\Admin\Services\AppConfigService;
         </div>
         <div class="col-md-6 col-12 px-1">
             <div class="fc-select-2 fc-select-left select-use_std fc-gate-modal-field w-100" data-val="custom">
-                <p class="mb-0"><strong>CUSTOM</strong> Gate (300-{{maxWidth}}mm)</p>
+                <p class="mb-0"><strong>CUSTOM</strong> Gate <span class="d-block">(300-{{maxWidth}}mm)</span></p>
             </div>
         </div>
     </div>

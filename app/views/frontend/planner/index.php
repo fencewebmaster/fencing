@@ -63,11 +63,11 @@ use Fc\Admin\Settings\ConsoleSettings;
                     </div>
                 </div>
 
-                <!-- [START] TABS -->
+                <?php /* [START] TABS */ ?>
                 <div class="fencing-tabs-container js-fencing-tabs-container fc-section-step fc-d-none fc-font-2 mt-3" data-tab="1">
-                    <!-- data-sticky-reserve: the scroll spy in events.js holds this strip's height
+                    <?php /* data-sticky-reserve: the scroll spy in events.js holds this strip's height
                          open in the container it leaves behind, so the page below it does not jump
-                         by 73px the moment it goes fixed. -->
+                         by 73px the moment it goes fixed. */ ?>
                     <div class="fencing-tabs-area bg-white" data-spy="scroll" data-screen="0" data-target=".js-fencing-tabs-container" data-sticky-reserve>
                         <div class="fencing-tabs fc-row-flex">
 
@@ -82,7 +82,7 @@ use Fc\Admin\Settings\ConsoleSettings;
                         </div>
                     </div>
                 </div>
-                <!-- [END] TABS -->
+                <?php /* [END] TABS */ ?>
 
                 <div class="fc-section-details">
 

@@ -1,4 +1,4 @@
-    <!-- [START] DISPLAY RESULT -->   
+    <?php /* [START] DISPLAY RESULT */ ?>   
     <div class="fencing-section fencing-section--no-padding fencing-section--has-border fc-position-relative js-fc-form-step fc-d-none" data-section="3" style="display: none;">
 
         <div class="fencing-section__top">
@@ -12,22 +12,22 @@
 
             <div class="fencing-section__cmp fencing-section--step3">
 
-                <!-- Step number and title are one block, with the zoom cluster beside the pair
+                <?php /* Step number and title are one block, with the zoom cluster beside the pair
                      rather than beside the title alone — the way Step 01 seats its Delete/Reset.
                      Sharing a row with the controls centred the 19px title inside their 37px box,
                      which pushed it 9px off "Step 03" and 9px off the rule below. On phones the
                      pair leaves no room beside it, so .fc-step3-head seats a smaller bar opposite
-                     "Step 03" instead, the way Step 02 seats its ? button (see style.css). -->
+                     "Step 03" instead, the way Step 02 seats its ? button (see style.css). */ ?>
                 <div class="fc-step3-head d-flex justify-content-between align-items-center flex-wrap gap-2 fc-mb-2">
                     <div class="fc-step3-heading">
                         <div class="step-label" data-action="scroll" data-target="[data-section=3]" data-offset="54">Step <span>03</span></div>
                         <h4 class="fencing-content-title mb-0">Configure this fence section</h4>
                     </div>
 
-                    <!-- The design-1 mockup's zoom bar (tests/mockup/design-1.html .toolbar): minus,
+                    <?php /* The design-1 mockup's zoom bar (tests/mockup/design-1.html .toolbar): minus,
                          readout, plus, Reset. The controls keep the hooks events.js and HELPER.zooming
                          drive — .fc-zoom-fence[data-zoom], the one .js-fc-zoom-progress readout, and
-                         .js-fc-zoom-reset, which HELPER keeps disabled at 100%. -->
+                         .js-fc-zoom-reset, which HELPER keeps disabled at 100%. */ ?>
                     <div class="fc-zoom-bar" role="group" aria-label="Zoom the fence editor">
                         <button type="button" class="fc-zoom-bar__btn fc-zoom-fence" data-zoom="out" aria-label="Zoom out" title="Zoom out (&minus;)">
                             <svg class="fc-zoom-bar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14"/></svg>
@@ -64,11 +64,11 @@
 
                 <div class="fc-project-plan-hscroll">
                     <div class="fc-result">
-                        <!-- Width dimension over each panel and gate — |—— 1,934W ——| — as the design-1
+                        <?php /* Width dimension over each panel and gate — |—— 1,934W ——| — as the design-1
                              mockup draws it, above the run the way the Overall line sits under it.
                              shared/panel-dimensions.js places one segment per drawn part from its
                              rendered box and reads the figure from the part's own label. Ships hidden
-                             until a part is drawn; aria-hidden — the parts' labels already carry it. -->
+                             until a part is drawn; aria-hidden — the parts' labels already carry it. */ ?>
                         <div class="fc-pdim js-fc-pdim fc-pdim--off" aria-hidden="true"></div>
 
                         <div class="fencing-panel-items">
@@ -79,38 +79,38 @@
                             <div id="pp-0" class="fencing-panel-container"></div>
                         </div>
 
-                        <!-- Dimension line under the drawing — <—— 6,000 OVERALL ——> — as the design-1
+                        <?php /* Dimension line under the drawing — <—— 6,000 OVERALL ——> — as the design-1
                              mockup draws it. Inside the scroll strip so it scrolls and zooms with the
                              run; shared/overall-dimension.js sizes it to the drawn parts and mirrors the
                              .fc-overall text into it. Ships hidden until there is a figure to show. The
                              figure sits on a zero-width anchor at the line's centre; on a run wider than
-                             the screen the script slides it to the middle of the visible stretch. -->
+                             the screen the script slides it to the middle of the visible stretch. */ ?>
                         <div class="fc-dim js-fc-dim fc-dim--off" aria-hidden="true"><span class="fc-dim__arm fc-dim__arm--start"></span><span class="fc-dim__anchor"><span class="fc-dim__label"><span class="fc-dim__num"></span> <span class="fc-dim__word"></span></span></span><span class="fc-dim__arm fc-dim__arm--end"></span></div>
                     </div>
                 </div>
 
             </div>
             <div class="err-message fencing-panel-solution-msg text-center text-danger px-2 py-2" role="alert"></div>
-            <!-- Glass pool panel-to-panel clamp status (size × qty, or why none are added); written by
-                 GlassPool.applyClampMessage, hidden while empty. -->
+            <?php /* Glass pool panel-to-panel clamp status (size × qty, or why none are added); written by
+                 GlassPool.applyClampMessage, hidden while empty. */ ?>
             <div class="fc-clamp-message fencing-panel-clamp-msg text-center px-2 py-1" role="status" aria-live="polite"></div>
             <div class="fc-overall pt-1 pb-2"><span class="d-oaw"></span> <span class="js-overall-label">Overall</span></div>
 
-            <!-- [START] PANEL CONTROLS -->   
+            <?php /* [START] PANEL CONTROLS */ ?>   
             <span class="fencing-section__cmp fencing-panel-controls"></span>
 
-            <!-- Detached scrollbar for the drawing strip above. The strip's own bar is hidden
+            <?php /* Detached scrollbar for the drawing strip above. The strip's own bar is hidden
                  (planner Step 3 only) and shared/hscroll-proxy.js mirrors it here, so the
                  scrollbar sits under the control buttons instead of splitting the drawing from
                  the Overall line. Ships hidden: the module un-hides it only while the drawing
                  actually overflows. aria-hidden — it duplicates scrolling the strip itself
-                 still offers by drag and keyboard. -->
+                 still offers by drag and keyboard. */ ?>
             <div class="fc-hscroll-proxy js-fc-hscroll-proxy fc-hscroll-proxy--off" aria-hidden="true">
                 <div class="fc-hscroll-proxy__inner"></div>
             </div>
 
 
-            <!-- [END] PANEL CONTROLS -->
+            <?php /* [END] PANEL CONTROLS */ ?>
         </div>
         
         <div class="fencing-section__bottom py-3 fc-step3-bottom">
@@ -180,4 +180,4 @@
 
         </div>
     </div>
-    <!-- [END] DISPLAY RESULT -->
+    <?php /* [END] DISPLAY RESULT */ ?>

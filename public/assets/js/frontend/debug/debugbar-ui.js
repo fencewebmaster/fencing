@@ -167,7 +167,6 @@
         tabButtons: {},
         badge: { calc: null, bom: null, warn: null, err: null, paused: null },
         open: prefs.open === true,
-        hidden: prefs.hidden === true,
         height: typeof prefs.height === 'number' ? prefs.height : 300,
         tab: TABS.indexOf(prefs.tab) !== -1 ? prefs.tab : 'Trace',
         theme: prefs.theme === 'dark' ? 'dark' : 'light',
@@ -187,7 +186,8 @@
 
     function persist() {
         prefs.open = ui.open;
-        prefs.hidden = ui.hidden;
+        // Retired switch; dropped so a stored hidden:true cannot keep the bar down.
+        delete prefs.hidden;
         prefs.height = ui.height;
         prefs.tab = ui.tab;
         prefs.theme = ui.theme;
@@ -328,8 +328,7 @@
     }
 
     // A height dragged tall on a big window is persisted verbatim; re-clamp on every layout
-    // pass (boot, resize, toggle) or an undocked laptop reopens the bar over the whole
-    // viewport, with matching body padding and no way back except the keyboard shortcut.
+    // pass or an undocked laptop reopens the bar over the whole viewport.
     function clampHeight() {
         var max = Math.max(140, Math.round(window.innerHeight * 0.8));
         ui.height = Math.max(140, Math.min(max, ui.height));
@@ -338,7 +337,6 @@
     function applyLayout() {
         if (!ui.root) { return; }
         clampHeight();
-        ui.root.hidden = ui.hidden;
         ui.root.classList.toggle('fc-debugbar--open', ui.open);
         ui.root.style.setProperty('--fc-debugbar-h', ui.height + 'px');
         // The chevron rotates in CSS off .fc-debugbar--open; the accessible name carries the
@@ -346,15 +344,11 @@
         var action = ui.open ? 'Collapse' : 'Expand';
         ui.toggleBtn.setAttribute('aria-expanded', ui.open ? 'true' : 'false');
         ui.toggleBtn.setAttribute('aria-label', action + ' Debugbar');
-        ui.toggleBtn.title = action + ' Debugbar  ·  Esc collapses  ·  Ctrl+Shift+D hides';
+        ui.toggleBtn.title = action + ' Debugbar  ·  Esc collapses';
         // Reserve space under the page so the bar never covers calculator controls.
-        var pad = ui.hidden ? 0 : (ui.open ? ui.height + 28 : 28);
-        if (pad > 0) {
-            doc.body.classList.add('fc-debugbar-padded');
-            doc.body.style.setProperty('--fc-debugbar-pad', pad + 'px');
-        } else {
-            doc.body.classList.remove('fc-debugbar-padded');
-        }
+        var pad = ui.open ? ui.height + 28 : 28;
+        doc.body.classList.add('fc-debugbar-padded');
+        doc.body.style.setProperty('--fc-debugbar-pad', pad + 'px');
         persist();
     }
 
@@ -363,12 +357,6 @@
         ui.open = !!open;
         applyLayout();
         if (ui.open) { renderActivePanel(); }
-    }
-
-    function setHidden(hidden) {
-        if (hidden) { closeViewer(); }
-        ui.hidden = !!hidden;
-        applyLayout();
     }
 
     function setTab(name) {
@@ -1291,9 +1279,8 @@
     }
 
     // ------------------------------------------------------------------
-    // Keyboard: Ctrl+Shift+D shows/hides (visibility ONLY — never touches Debug Mode),
-    // Esc collapses. Neither ever preventDefaults the app's own handlers except the
-    // browser chord for Ctrl+Shift+D itself.
+    // Keyboard: Esc collapses the bar. The bar itself has no hide key - it shows whenever
+    // Debug Mode is on - and Esc never preventDefaults the app's own handlers.
     // ------------------------------------------------------------------
 
     function anyModalVisible() {
@@ -1305,18 +1292,13 @@
     }
 
     doc.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
-            e.preventDefault();
-            setHidden(!ui.hidden);
-            return;
-        }
         if (e.key === 'Escape' && ui.viewer) {
             // The viewer is the innermost layer: Escape dismisses it, not the whole bar.
             e.stopPropagation();
             closeViewer();
             return;
         }
-        if (e.key === 'Escape' && !ui.hidden && ui.open) {
+        if (e.key === 'Escape' && ui.open) {
             // Yield to the app's own Escape handling when a calculator modal is up,
             // unless focus is inside the bar itself.
             var focusInBar = ui.root && ui.root.contains(doc.activeElement);
@@ -1337,7 +1319,7 @@
         // Shrinking the window (or rotating a phone) must not leave a persisted tall bar
         // covering the viewport — applyLayout re-clamps against the new innerHeight.
         window.addEventListener('resize', function () {
-            if (!ui.hidden) { applyLayout(); }
+            applyLayout();
         });
     }
 

@@ -1515,6 +1515,10 @@ _doc.on('click', '.fencing-modal .fc-select', fencingModalFcSelect);
 function fencingModalFcSelect() {
     // Ensure gate selections are persisted before closing (modal fields become non-visible after close).
     try { FENCE.call('update_custom_fence_gate'); } catch (err) {}
+    // The drawer stays open on a pick and keeps its opener lit; see FCModal.keepsOpenOnPick.
+    if (FCModal.keepsOpenOnPick(this)) {
+        return;
+    }
     FCModal.close();
     $('.fc-btn-active').removeClass('fc-btn-active');
 }
@@ -4253,7 +4257,9 @@ function fcSelectOption() {
         }
     }
 
-    if (_this.parents('.js-fencing-modal').length && !fcSuppressControlModalCloseOnFcSelectChange) {
+    if (_this.parents('.js-fencing-modal').length
+        && !fcSuppressControlModalCloseOnFcSelectChange
+        && !FCModal.keepsOpenOnPick(_this[0])) {
         FCModal.close();
     }
 }

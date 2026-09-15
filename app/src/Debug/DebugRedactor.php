@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Debug;
 
 /**
- * Key-based redaction for Debugbar payloads. The key list comes from
- * Settings -> Console -> Redaction keys (ConsoleSettings::debugRedactKeys()).
+ * Key-based redaction for Debugbar payloads. The key list is DebugbarServer::REDACT_KEYS.
  */
 final class DebugRedactor
 {

@@ -1722,6 +1722,279 @@ a div {
     max-width: 720px;
 }
 
+/* Option drawer */
+/* #fc-control-modal enters from the right at md+. Id-scoped on purpose: #submit-modal shares
+   these classes and stays centred, and below 768 the phone popup is untouched. */
+@media (min-width: 768px) {
+    /* Reclaim the scrollbar gutter a locked page still reserves; 100vw measures the same short
+       box, so the width comes from planner-modal.js (FCModal.setScrollbarGap). */
+    #fc-control-modal {
+        overflow: hidden;
+        width: calc(100% + var(--fc-scrollbar-gap, 0px));
+    }
+
+    #fc-control-modal .fc-modal-frame {
+        height: 100%;
+        padding: 0;
+        justify-content: flex-end;
+        align-items: stretch;
+    }
+
+    /* The panel holds still and .fc-modal-content scrolls inside it, so the close circle stays. */
+    #fc-control-modal .fencing-modal-content {
+        width: min(600px, 100%);
+        max-width: none;
+        height: 100%;
+        padding: 0;
+        overflow: hidden;
+        border-radius: 0;
+        box-shadow: -16px 0 40px var(--fc-a-black-28);
+        transform: translateX(100%);
+        transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    /* planner-modal.js adds this a layout flush after display: block, or there is no start
+       value to transition from. */
+    #fc-control-modal.fc-modal-slid .fencing-modal-content {
+        transform: none;
+    }
+
+    /* The exit rides jQuery's fadeOut('fast'), 200ms, so it must be over before display: none. */
+    #fc-control-modal:not(.fc-modal-slid) .fencing-modal-content {
+        transition-duration: 180ms;
+    }
+
+    /* Smaller, and given the band below so it stops sitting on the first card's corner. */
+    #fc-control-modal .fencing-modal-close {
+        top: 10px;
+        right: 16px;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    #fc-control-modal .fencing-modal-close::before,
+    #fc-control-modal .fencing-modal-close::after {
+        width: 13px;
+        height: 2px;
+        margin-top: -1px;
+        margin-left: -6.5px;
+    }
+
+    /* Inset below the button, not padded away from it: padding on a scroll container is
+       scrollable space, so content rode up under the button on the first scroll. */
+    /* Gate move buttons: an 18px glyph over a tight label, and a tinted fill on hover rather
+       than only a border swap. Delete carries the danger colour its icon already used. */
+    #fc-control-modal .fencing-modal-area--gate .fc-move-post {
+        padding: 12px 4px;
+        background-color: var(--fc-white);
+        border-color: var(--fc-gainsboro);
+    }
+
+    #fc-control-modal .fencing-modal-area--gate .fc-move-post p {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        line-height: 1;
+    }
+
+    #fc-control-modal .fencing-modal-area--gate .fc-move-post span {
+        margin: 0;
+        line-height: 1;
+    }
+
+    #fc-control-modal .fc-control-move .fc-move-post p i {
+        font-size: 18px;
+    }
+
+    #fc-control-modal .fencing-modal-area--gate .fc-move-post.disabled {
+        background-color: var(--fc-cultured);
+        border-color: var(--fc-platinum);
+    }
+
+    @media (hover: hover) {
+        #fc-control-modal .fencing-modal-area--gate .fc-move-post:not(.disabled):hover {
+            background-color: rgba(246, 121, 37, 0.08);
+            background-color: color-mix(in srgb, var(--fc-princeton-orange) 8%, transparent);
+        }
+
+        #fc-control-modal .fencing-modal-area--gate .fc-move-post[data-move="delete"]:not(.disabled):hover {
+            border-color: var(--fc-brand-primary);
+            color: var(--fc-brand-primary);
+            background-color: rgba(212, 17, 47, 0.08);
+            background-color: color-mix(in srgb, var(--fc-brand-primary) 8%, transparent);
+        }
+    }
+
+    #fc-control-modal .fencing-modal-area--gate .fc-move-post[data-move="delete"]:not(.disabled):active,
+    #fc-control-modal .fencing-modal-area--gate .fc-move-post[data-move="delete"].is-pressed:not(.disabled) {
+        border-color: var(--fc-brand-primary);
+        background-color: rgba(212, 17, 47, 0.14);
+        background-color: color-mix(in srgb, var(--fc-brand-primary) 14%, transparent);
+    }
+
+    /* Note and info type follows Step 02's Measurement Guide: a 12px uppercase name over
+       13px copy. The drawer's three flavours ran 15/16px titles over 14px Inter or Poppins. */
+    #fc-control-modal .fencing-modal-notes .fc-alert-gray.field-note > label,
+    #fc-control-modal .fencing-modal-area--gate .alert-gray > :first-child,
+    #fc-control-modal .fc-selection-details label {
+        font-size: 12px;
+        font-weight: 600 !important;
+        line-height: 18px;
+        letter-spacing: 0.48px;
+        text-transform: uppercase;
+        color: var(--fc-shark) !important;
+        margin-bottom: 4px !important;
+    }
+
+    #fc-control-modal .fencing-modal-notes .fc-alert-gray.field-note > label i,
+    #fc-control-modal .fencing-modal-area--gate .alert-gray > :first-child > i {
+        font-size: 13px;
+    }
+
+    #fc-control-modal .fencing-modal-notes .fc-alert-gray.field-note,
+    #fc-control-modal .fencing-modal-notes .fc-alert-gray.field-note .fc-modal-note-body,
+    #fc-control-modal .fencing-modal-notes .fc-alert-gray.field-note > p,
+    #fc-control-modal .fencing-modal-area--gate .alert-gray > p,
+    #fc-control-modal .fc-selection-details p {
+        font-family: "Poppins", sans-serif;
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--fc-dove-gray) !important;
+    }
+
+    /* Add Step-Up Panel's note image: no border box, and squared off to the note beside it.
+       !important throughout because .border, .p-2, .mb-3 and .align-items-center all carry it. */
+    #fc-control-modal .fencing-modal-area--step-up .fencing-modal-notes .row {
+        align-items: stretch !important;
+    }
+
+    #fc-control-modal .fencing-modal-area--step-up .fencing-modal-notes .note-img {
+        display: flex;
+    }
+
+    #fc-control-modal .fencing-modal-area--step-up .fencing-modal-notes .note-img img {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    /* Card header as a full-bleed band: negative margins cancel the card's padding so its
+       hairline reaches both corners, then the same values re-inset the title. */
+    #fc-control-modal .fencing-modal-area > .fencing-modal-header {
+        margin: -10px -10px 10px;
+        padding: 12px 24px;
+        background-color: var(--fc-cultured);
+        border-radius: 2px 2px 0 0;
+    }
+
+    /* Compact band: the 30px display face carried a 45px line box, two thirds of the 70px
+       header. 25px on 1.2 with tighter padding brings it to 49px. */
+    #fc-control-modal .fencing-modal-area > .fencing-modal-header {
+        padding-top: 9px;
+        padding-bottom: 9px;
+    }
+
+    #fc-control-modal .fencing-modal-area > .fencing-modal-header .fencing-modal-title {
+        font-size: 25px;
+        line-height: 1.2;
+        letter-spacing: 0.3px;
+    }
+
+    /* One 10px unit everywhere inside a card: the band's bleed hides the top padding, so a
+       15px bottom read 5px wider than the block rhythm above it. Sides stay. */
+    #fc-control-modal .fencing-modal-area {
+        padding: 10px;
+    }
+
+    /* Option grids gutter their rows with mb-2 on every column, so the last row left 8px of
+       dead space under the grid. Hand the gap to the row; a grid that is not its block's last
+       child keeps its margin, which is that block's own spacing. */
+    #fc-control-modal .fc-form-field:last-child:has(> [class*="col-"].mb-2) {
+        row-gap: 8px;
+    }
+
+    #fc-control-modal .fc-form-field:last-child > [class*="col-"].mb-2 {
+        margin-bottom: 0 !important;
+    }
+
+    /* One rhythm between the blocks of a card: mb-4 on some bodies made body-to-notes 28px
+       against the header's 10px. !important because Bootstrap's spacing utilities carry it. */
+    #fc-control-modal .fencing-modal-area > *:not(.fencing-modal-header) {
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* The second arm is for the last RENDERED block: a card whose notes div is empty still has
+       it as :last-child, which left the body's 10px as trailing space (35px vs 25px). */
+    #fc-control-modal .fencing-modal-area > *:last-child,
+    #fc-control-modal .fencing-modal-area > *:has(+ :last-child:empty) {
+        margin-bottom: 0 !important;
+    }
+
+    #fc-control-modal .fc-modal-content {
+        position: absolute;
+        top: 52px;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: auto;
+        padding: 0 0 20px;
+        overflow-y: auto;
+        /* A classic bar takes its gutter from the right alone, leaving scrolling forms 20px in
+           on the left and 35px on the right; both edges keeps every form even and equal width. */
+        scrollbar-gutter: stable both-edges;
+        /* Stops a flick at the end of the drawer's scroll from chaining out to the page. */
+        overscroll-behavior: contain;
+    }
+}
+
+/* The padding the drawer takes over from .fencing-modal--v2, which steps down at 992. */
+@media (min-width: 768px) and (max-width: 992px) {
+    #fc-control-modal .fc-modal-content {
+        padding: 0 16px 16px;
+    }
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+    #fc-control-modal .fencing-modal-content {
+        transition: none;
+    }
+}
+
+/* One radius for the option modal */
+/* 3px everywhere inside #fc-control-modal, replacing a 16/8/6/5px mix. The close circle and the
+   qty caps keep their own shapes below. */
+#fc-control-modal,
+#fc-control-modal * {
+    border-radius: 3px;
+}
+
+#fc-control-modal .fencing-modal-close {
+    border-radius: 50%;
+}
+
+#fc-control-modal .fencing-qty-minus {
+    border-radius: 3px 0 0 3px;
+}
+
+#fc-control-modal .fencing-qty-plus {
+    border-radius: 0 3px 3px 0;
+}
+
+/* Bootstrap's .rounded utility is !important, so the sweep above cannot reach the option images. */
+#fc-control-modal .rounded {
+    border-radius: 3px !important;
+}
+
 #fc-control-modal .fc-row-container {
     margin: auto;
 }
@@ -2378,6 +2651,7 @@ a.fc-tab-active {
 /* Form Input range */
 .fencing-input-range {
     display: flex;
+    align-items: center;
     justify-content: space-between;
 }
 
@@ -2386,20 +2660,37 @@ a.fc-tab-active {
     margin: 0 20px;
 }
 
+/* Stepper: an icon button like the qty steppers, not a 2em text glyph on a pale blue box -
+   the hyphen never balanced the plus, and the blue is the only one in the planner. */
 .fencing-input-range .fi-btn {
-    background: var(--fc-pattens-blue);
-    border: 0;
-    font-size: 2em;
-    font-weight: 400;
-    padding: 6px 15px;
-    width: 50px;
-    text-align: center;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--fc-gainsboro);
+    background: var(--fc-white);
+    color: var(--fc-cod-gray);
+    font-size: 14px;
     cursor: pointer;
 }
 
-.fencing-input-range .fi-btn:hover {
-    background: var(--fc-princeton-orange);
-    color: var(--fc-white);
+@media (hover: hover) {
+    .fencing-input-range .fi-btn:hover {
+        border-color: var(--fc-princeton-orange);
+        color: var(--fc-princeton-orange);
+        background: rgba(246, 121, 37, 0.08);
+        background: color-mix(in srgb, var(--fc-princeton-orange) 8%, transparent);
+    }
+}
+
+.fencing-input-range .fi-btn:active,
+.fencing-input-range .fi-btn.is-pressed {
+    border-color: var(--fc-princeton-orange);
+    background: rgba(246, 121, 37, 0.14);
+    background: color-mix(in srgb, var(--fc-princeton-orange) 14%, transparent);
 }
 
 .fir-input-group {
@@ -3267,7 +3558,7 @@ a.fc-tab-active {
 
 .fencing-panel-gate {
     max-width: 95px;
-    margin: 0 3px;
+    margin: 0 1px;
 }
 
 [data-group="a"] .fencing-panel-gate {
@@ -5045,6 +5336,18 @@ thead.fc-border th:last-child {
     margin-bottom: 5px;
     display: block;
 }
+
+/* Gate details header: the orange, flex-aligned note-header treatment every .field-note
+   label already has - this one alone rendered a dark inline glyph. */
+.fencing-modal-area--gate .alert-gray > :first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fencing-modal-area--gate .alert-gray > :first-child > i {
+    color: var(--fc-princeton-orange);
+}
 @media (max-width: 440px) {
     .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post {
         padding: 10px 5px 5px;
@@ -5060,6 +5363,18 @@ thead.fc-border th:last-child {
     .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post p {
         font-size: 12px;
     }
+}
+
+/* Gate Width pair: CUSTOM runs to two lines, so pass the row's height down to both tiles and
+   centre the copy (partials/fields/custom-gate.php). */
+.fc-gate-modal-std-custom-section .row > [class*="col-"] {
+    display: flex;
+}
+
+.fc-gate-modal-std-custom-section .fc-select-2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 @media (max-width: 992px) {
@@ -7798,6 +8113,47 @@ thead.fc-border th:last-child {
 
 #fc-planner-summary-modal .fc-planner-summary-modal__dialog {
     max-width: 720px;
+}
+
+/* Summary drawer */
+/* Same right-hand panel as #fc-control-modal at md+. Replaces Bootstrap's own
+   translate(0, -50px); below 768 .modal-fullscreen-md-down takes over untouched. */
+@media (min-width: 768px) {
+    /* Same gutter reclaim as #fc-control-modal; Bootstrap's lock hides the same scrollbar. */
+    #fc-planner-summary-modal {
+        width: calc(100% + var(--fc-scrollbar-gap, 0px));
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-modal__dialog {
+        width: min(600px, 100%);
+        max-width: none;
+        height: 100%;
+        min-height: 100%;
+        margin: 0 0 0 auto;
+        /* .modal-dialog-centered centres a short dialog; the drawer fills the height instead. */
+        align-items: stretch;
+    }
+
+    #fc-planner-summary-modal.fade .fc-planner-summary-modal__dialog {
+        transform: translateX(100%);
+        transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    #fc-planner-summary-modal.show .fc-planner-summary-modal__dialog {
+        transform: none;
+    }
+
+    #fc-planner-summary-modal .fc-planner-summary-modal__content {
+        height: 100%;
+        border-radius: 0;
+        box-shadow: -16px 0 40px var(--fc-a-black-28);
+    }
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+    #fc-planner-summary-modal.fade .fc-planner-summary-modal__dialog {
+        transition: none;
+    }
 }
 
 #fc-planner-summary-modal .fc-planner-summary-overview__grid {
@@ -16849,17 +17205,14 @@ div.fc-footer-app .app-version {
    chunky head that carries the red status eye and the key barrel, then the slim rod down to the
    magnetic catch at the foot. The rod stands proud of the top rail because the release has to
    clear a child's reach - gate and container are both overflow:visible and the overlay's z-index
-   keeps it over the post cap. The element is the assembly's bounding box; the rod and the post
-   bracket are background layers inside it. */
+   keeps it over the post cap. The element is the assembly's bounding box; the rod is a
+   background layer inside it. */
 .fc-gate-hw__latch {
     position: absolute;
-    top: -14px;
+    top: -6px;
     width: 9px;
-    height: 44px;
+    height: 36px;
     background:
-        /* post bracket */
-        linear-gradient(to bottom, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%)
-            no-repeat 50% 22px / 9px 4px,
         /* rod */
         linear-gradient(
                 to right,
@@ -16867,25 +17220,25 @@ div.fc-footer-app .app-version {
                 var(--hw-lit) 1px 2px,
                 var(--hw-body) 2px 100%
             )
-            no-repeat 50% 16px / 4px 24px;
+            no-repeat 50% 8px / 4px 24px;
 }
 
 /* Head housing: the mechanism body, wider than the rod, with the status eye and key barrel. */
 .fc-gate-hw__latch::before {
     content: "";
     position: absolute;
-    top: 5px;
-    left: 1px;
-    width: 7px;
-    height: 11px;
+    top: 2px;
+    left: 1.5px;
+    width: 6px;
+    height: 9px;
     border-radius: 1px;
     background:
         /* key barrel */
         radial-gradient(circle at 50% 50%, var(--hw-pin) 0 1.1px, transparent 1.3px)
-            no-repeat 5px 7px / 3px 3px,
+            no-repeat 4px 5px / 3px 3px,
         /* status eye */
         radial-gradient(circle at 50% 50%, var(--hw-alert) 0 1.1px, transparent 1.3px)
-            no-repeat 2px 3px / 3px 3px,
+            no-repeat 1.5px 2px / 3px 3px,
         linear-gradient(to right, var(--hw-shade) 0 1px, var(--hw-lit) 1px 2px, var(--hw-body) 2px 100%);
     box-shadow: 0 0 0 1px var(--hw-edge), 1px 1px 1px rgba(0, 0, 0, 0.35);
 }
@@ -16895,9 +17248,9 @@ div.fc-footer-app .app-version {
     content: "";
     position: absolute;
     top: 0;
-    left: 2px;
-    width: 5px;
-    height: 6px;
+    left: 2.5px;
+    width: 4px;
+    height: 4px;
     border-radius: 2px 2px 1px 1px;
     background: linear-gradient(to right, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%);
     box-shadow: 0 0 0 1px var(--hw-edge);
@@ -16968,6 +17321,9 @@ div.fc-footer-app .app-version {
     top: 3px;
     left: 2px;
     right: 1px;
+    /* left+right+width is over-constrained so `right` is inert; pinned because the narrower
+       base head would otherwise drag the slat cylinder down to 6px. */
+    width: 7px;
     height: 10px;
     border-radius: 0;
     box-shadow: none;

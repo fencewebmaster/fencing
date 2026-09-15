@@ -56,8 +56,8 @@ use Fc\Admin\Services\FenceCatalogService;
 									</div>
 								</td>
 							</tr>
-							<!-- State and Post Code pair up into one row on mobile; the class is the
-							     hook, the 50% split is in the stylesheet. -->
+							<?php /* State and Post Code pair up into one row on mobile; the class is the
+							     hook, the 50% split is in the stylesheet. */ ?>
 							<tr class="fc-cd-row--half">
 								<td width="100">State</td>
 								<td>
@@ -287,16 +287,16 @@ use Fc\Admin\Services\FenceCatalogService;
 					Edit Details
 				</button>
 
-				<!-- No mt-2: the footer already pads 14px, and the extra 8 stood the buttons 23px
+				<?php /* No mt-2: the footer already pads 14px, and the extra 8 stood the buttons 23px
 				     below the card above them against 14 beneath — where Edit Details, which this
-				     replaces, sits evenly on both. It also grew the footer by 8px on entering edit. -->
+				     replaces, sits evenly on both. It also grew the footer by 8px on entering edit. */ ?>
 				<div class="js-project-details-controls project-details-controls project-details-controls--edit-bar fc-d-none">
 					<button type="button" class="btn btn-sm btn-secondary text-uppercase fc-btn-cancel-project-details">
 						Cancel
 					</button>
 					<div class="project-details-controls__right">
-						<!-- Both start dead: there is nothing to save or undo until a field differs
-						     from the value its row still displays. -->
+						<?php /* Both start dead: there is nothing to save or undo until a field differs
+						     from the value its row still displays. */ ?>
 						<button type="button" data-action="update" class="btn btn-sm fc-btn-edit btn-orange text-uppercase btn-orange fc-w-700 disabled" aria-disabled="true" tabindex="-1">
 							Save Changes
 						</button>

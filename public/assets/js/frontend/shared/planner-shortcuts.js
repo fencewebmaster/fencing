@@ -8,9 +8,9 @@
  *
  * Ctrl on every platform, the Mac included: browsers there keep their own shortcuts on ⌘ and leave
  * Ctrl+letter free. Letters are read from e.key, so AZERTY and QWERTZ users press the letter printed
- * on the key; e.code stands in on non-Latin layouts, where e.key is not a Latin letter. Windows
- * reports AltGr as Ctrl+Alt, so Alt rules a combo out and typing é or ł is left alone. Firefox keeps
- * Ctrl+Shift+P for a private window and never hands it to a page.
+ * on the key; e.code stands in on non-Latin layouts, where e.key is not a Latin letter. Shift now
+ * rules a combo out, so Ctrl+Shift+P is left to Firefox's private window. Windows
+ * reports AltGr as Ctrl+Alt, so the four Ctrl+Alt combos below intercept AltGr+letter.
  *
  * Listed in #fc-shortcuts-modal (planner/modals.php); keep the two in step. Planner only.
  */
@@ -22,20 +22,20 @@
     /* Per combo, where to look for its button, in order; the first match that is on screen and
        enabled is pressed. Step 3's copies come first, and Step 1 carries its own Delete and Reset
        (but not the style card's ×, which is also a .fc-fence-reset-all). Glass pool labels its
-       post_options button "Spigot Options", so that button answers Ctrl+Shift+S there and
-       Ctrl+Shift+P only where it really is Post Options. */
+       post_options button "Spigot Options", so that button answers Ctrl+Alt+S there and
+       Ctrl+Alt+P only where it really is Post Options. */
     var SPIGOT = /spigot/i;
 
     var SHORTCUTS = {
         'a': ['[data-section="3"] .fencing-tab-add', '.fencing-tab-add'],
-        'shift+d': ['[data-section="3"] .js-btn-delete-fence', '.js-btn-delete-fence'],
-        'shift+r': ['[data-section="3"] .fc-fence-reset-all', '.fc-fence-reset-all:not(.js-fencing-style-btn)'],
+        'alt+d': ['[data-section="3"] .js-btn-delete-fence', '.js-btn-delete-fence'],
+        'alt+r': ['[data-section="3"] .fc-fence-reset-all', '.fc-fence-reset-all:not(.js-fencing-style-btn)'],
         'l': ['#btn-left_side'],
         'g': ['#btn-gate'],
         's': ['#btn-edit_spacing'],
-        'shift+s': ['#btn-spigot_options', { selector: '#btn-post_options', label: SPIGOT }],
+        'alt+s': ['#btn-spigot_options', { selector: '#btn-post_options', label: SPIGOT }],
         'p': ['#btn-panel_options', '#btn-panel_options_custom'],
-        'shift+p': [{ selector: '#btn-post_options', notLabel: SPIGOT }],
+        'alt+p': [{ selector: '#btn-post_options', notLabel: SPIGOT }],
         'r': ['#btn-right_side'],
         'm': ['#btn-planner-summary']
     };
@@ -87,12 +87,12 @@
 
     document.addEventListener('keydown', function(e) {
         /* A held combo auto-repeats: thirty new sections a second from one Ctrl+A. */
-        if (!e.ctrlKey || e.altKey || e.metaKey || e.repeat || e.isComposing || e.defaultPrevented) {
+        if (!e.ctrlKey || e.shiftKey || e.metaKey || e.repeat || e.isComposing || e.defaultPrevented) {
             return;
         }
 
         var letter = letterOf(e);
-        var combo = (e.shiftKey ? 'shift+' : '') + letter;
+        var combo = (e.altKey ? 'alt+' : '') + letter;
 
         if (!letter || !Object.prototype.hasOwnProperty.call(SHORTCUTS, combo)) {
             return;

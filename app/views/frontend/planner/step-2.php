@@ -1,29 +1,29 @@
 <?php
 use Fc\Admin\Services\AppConfigService;
 ?>
-<!-- [START] MEASUREMENT -->
+<?php /* [START] MEASUREMENT */ ?>
 <div class="fencing-section fencing-section--has-border js-fc-form-step fc-d-none" data-section="2" style="display: none;">
     
     <div class="fencing-measurement fencing-section--step2">
 
-        <!-- Top aligned, not centred: both columns open with the same header now, and centring
-             sizes them against each other so the two header rules can never meet. -->
+        <?php /* Top aligned, not centred: both columns open with the same header now, and centring
+             sizes them against each other so the two header rules can never meet. */ ?>
         <div class="row align-items-start">
             
             <div class="col-lg-5 col-md-6">
                 
-                <!-- Wrapped so the header is one box: it is what carries the ground and the rule out
+                <?php /* Wrapped so the header is one box: it is what carries the ground and the rule out
                      to the card edges, which loose siblings could not do between them. Mirrors
-                     .fc-step2-notes__header across the seam. -->
+                     .fc-step2-notes__header across the seam. */ ?>
                 <div class="fc-step2-measure__header">
 
-                    <!-- Step number and its mobile Important trigger share a row, so the chip sits
+                    <?php /* Step number and its mobile Important trigger share a row, so the chip sits
                          opposite "Step 02" rather than beside the subtitle. Below md the IMPORTANT
                          panel opposite is hidden and its content moves behind this button; the dialog
                          body is filled from that panel on show, since the copy changes with the fence
                          style.
                          No margin of its own: the gap to the title is .step-label's own 3px, the
-                         same one Step 01 opens, and an mb-2 here added 8px on top of it. -->
+                         same one Step 01 opens, and an mb-2 here added 8px on top of it. */ ?>
                     <div class="fc-step2-title-row d-flex align-items-center justify-content-between gap-2">
                         <div class="step-label" data-action="scroll" data-target="[data-section=2]" data-offset="54">Step <span>02</span></div>
 
@@ -78,8 +78,8 @@ use Fc\Admin\Services\AppConfigService;
 
                             </div>
 
-                            <!-- Inside the input frame, not the container: the container also holds
-                                 Calculate, so a container-anchored message sat over the button. -->
+                            <?php /* Inside the input frame, not the container: the container also holds
+                                 Calculate, so a container-anchored message sat over the button. */ ?>
                             <div class="fc-input-msg error-msg"></div>
 
                         </div>
@@ -93,21 +93,21 @@ use Fc\Admin\Services\AppConfigService;
             </div>
             <div class="col-lg-6 col-md-6">
 
-                <!-- Header outside the panel, so this column reads header-then-body the way Step 02
+                <?php /* Header outside the panel, so this column reads header-then-body the way Step 02
                      does across the seam, rather than the header being the panel's first line. Same
                      two elements as that header - .step-label over .fencing-content-title - so the
                      pair matches; the span is what colours it, the way "02" is coloured over there.
                      The subtitle repeats the one #fc-step2-important-modal carries, so the panel and
                      the dialog read alike. Nothing is stripped from the dialog's copy any more: it
-                     clones .alert-gray, which is notes only now. -->
+                     clones .alert-gray, which is notes only now. */ ?>
                 <div class="fc-step2-notes__header">
                     <div class="step-label"><span>Important</span></div>
                     <h4 class="fencing-content-title">Measurement Guide</h4>
                 </div>
 
-                <!-- No longer an .alert: it carried the grey ground and the padding that went with
+                <?php /* No longer an .alert: it carried the grey ground and the padding that went with
                      it, and with the header lifted out this is body copy sitting on the card like
-                     the fields opposite. fcStep2ImportantModalShow reads this element by name. -->
+                     the fields opposite. fcStep2ImportantModalShow reads this element by name. */ ?>
                 <div class="fc-step2-notes__body">
 
                     <div class="step-2_notes" data-action="change"></div>
@@ -127,4 +127,4 @@ use Fc\Admin\Services\AppConfigService;
     </div>
    
 </div>
-<!-- [END] MEASUREMENT -->
+<?php /* [END] MEASUREMENT */ ?>
