@@ -310,6 +310,13 @@ final class SiteRegistryService
                 'gtagID' => $cfg->sites->fencesnewcastle->gtag_id,
                 'gtmID'  => $cfg->sites->fencesnewcastle->gtm_id,
             ],
+            [
+                'id'     => 9,
+                'domain' => 'fencingsuppliers.au',
+                'url'    => UrlHelper::toUrl('fencingsuppliers.au'),
+                'logo'   => 'public/assets/img/logo/fencesperth.webp',
+                'name'   => 'Fencing Suppliers',
+            ],
         ];
 
         foreach ($data as &$row) {
