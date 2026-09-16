@@ -690,6 +690,16 @@ final class PlannerEntryPresenter
     }
 
     /**
+     * The entries list's explicit "no date filter" choice. Deliberately not a
+     * datePeriodOptions() key: that map is shared with the dashboard dropdown and the
+     * System -> Date Settings default-period select, neither of which offers unbounded.
+     */
+    public static function dateAllOptionLabel(): string
+    {
+        return 'From All Entries';
+    }
+
+    /**
      * @return array<string, string>
      */
     public static function dateFieldOptions(): array
@@ -1073,6 +1083,7 @@ final class PlannerEntryPresenter
      *   date_to:string,
      *   date_field:string,
      *   date_bounds:?array{from:string,to:string},
+     *   date_set:bool,
      *   page:int,
      *   per_page:int|string,
      *   is_all:bool,
@@ -1112,15 +1123,26 @@ final class PlannerEntryPresenter
         }
         $fenceTypes = self::normalizeFenceTypes($query['fence_type'] ?? []);
         $dateField = self::normalizeDateField((string) ($query['date_field'] ?? self::defaultDateField()));
-        // First visit (no date_period param) uses System → Date Settings default.
+        // Stamped by the date dropdown when the user applies a range; editing the search clears it.
+        $dateSet = !empty($query['date_set']);
+        // First visit (no date_period param) uses System → Date Settings default. URLs drop an
+        // empty date_period, so once the user has chosen, an absent one means From All Entries.
         $datePeriodRaw = array_key_exists('date_period', $query)
             ? (string) ($query['date_period'] ?? '')
-            : self::defaultDatePeriod();
+            : ($dateSet ? '' : self::defaultDatePeriod());
         $dateFilter = self::parseDateFilter(
             $datePeriodRaw,
             (string) ($query['date_from'] ?? ''),
             (string) ($query['date_to'] ?? '')
         );
+
+        // A search has to find the record wherever it sits, so it runs over every entry - unless
+        // the user picked a range since last editing the search, in which case that range applies.
+        // The dropdown follows the parsed period, so a widened search reads "From All Entries".
+        if ($q !== '' && !$dateSet) {
+            $dateFilter = self::parseDateFilter('');
+        }
+
         $paging = ViewHelper::parseListPagination($query, self::perPageOptions(), self::defaultPerPage());
 
         if ($timeframe !== '' && !array_key_exists($timeframe, PlannerOptionSettings::timeframes())) {
@@ -1149,6 +1171,7 @@ final class PlannerEntryPresenter
             'date_to' => $dateFilter['to'],
             'date_field' => $dateField,
             'date_bounds' => $dateFilter['bounds'],
+            'date_set' => $dateSet,
             'page' => $paging['page'],
             'per_page' => $paging['per_page_value'],
             'is_all' => $paging['is_all'],
@@ -1229,6 +1252,7 @@ final class PlannerEntryPresenter
             'date_from' => $request['date_from'] ?? '',
             'date_to' => $request['date_to'] ?? '',
             'date_field' => $request['date_field'] ?? self::defaultDateField(),
+            'date_set' => !empty($request['date_set']) ? '1' : '',
             'page' => $request['page'] ?? 1,
             'per_page' => $request['per_page'] ?? self::defaultPerPage(),
         ];
@@ -1635,6 +1659,7 @@ final class PlannerEntryPresenter
             'date_from' => '',
             'date_to' => '',
             'date_field' => self::defaultDateField(),
+            'date_set' => '',
             'fence_types' => [],
             'view' => $view,
             'page' => '',
@@ -1782,12 +1807,16 @@ final class PlannerEntryPresenter
             'count_label' => $countLabel,
             'selected_fence_types' => $selectedFenceTypes,
             'date_period' => $datePeriod,
+            'date_set' => !empty($request['date_set']) ? '1' : '',
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
             'date_field' => $dateField,
             'date_field_options' => self::dateFieldOptions(),
             'date_period_options' => self::datePeriodOptions(),
-            'date_filter_label' => self::dateFilterLabel($datePeriod, $dateFrom, $dateTo),
+            'date_all_label' => self::dateAllOptionLabel(),
+            'date_filter_label' => $datePeriod === ''
+                ? self::dateAllOptionLabel()
+                : self::dateFilterLabel($datePeriod, $dateFrom, $dateTo),
             'date_column_label' => $dateField === 'updated_at' ? 'Updated At' : 'Created At',
             'current_page' => $currentPage,
             'is_all' => $request['is_all'],
@@ -1867,6 +1896,9 @@ final class PlannerEntryPresenter
         }
         if (!in_array('date_to', $exclude, true) && ($req['date_to'] ?? '') !== '') {
             $parts[] = '<input type="hidden" name="date_to" value="' . StringHelper::escapeHtml((string) $req['date_to']) . '">';
+        }
+        if (!in_array('date_set', $exclude, true) && !empty($req['date_set'])) {
+            $parts[] = '<input type="hidden" name="date_set" value="1">';
         }
         if (
             !in_array('date_field', $exclude, true)

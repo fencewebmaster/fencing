@@ -11,6 +11,7 @@ use Fc\Admin\Controllers\Frontend\LookupController;
 use Fc\Admin\Controllers\Frontend\NotFoundController;
 use Fc\Admin\Controllers\Frontend\PlannerController;
 use Fc\Admin\Controllers\Frontend\ProjectPlanController;
+use Fc\Admin\Controllers\Frontend\ShareCartUrlController;
 use Fc\Admin\Controllers\Frontend\SubmitController;
 use Fc\Admin\Controllers\GalleryPageController;
 use Fc\Admin\Controllers\GroupPermissionsPageController;
@@ -161,6 +162,13 @@ return [
 
         $router->any('project-plan', static function (Request $request): void {
             (new ProjectPlanController($request))->index();
+        });
+
+        // Early-submission share link: re-materialises the saved quote's cart on the
+        // store and redirects into it (see ShareCartUrlController for the two-step flow).
+        $router->any('share-cart-url/{plannerId}', static function (Request $request, array $params): void {
+            $request->setQuery('planner_id', rawurldecode((string) ($params['plannerId'] ?? '')));
+            (new ShareCartUrlController($request))->index();
         });
 
         // AJAX endpoints — no page view of their own.

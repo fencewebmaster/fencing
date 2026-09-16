@@ -39,6 +39,10 @@
         return root.querySelector('[data-fc-entries-date-to]');
     }
 
+    function dateSetInput(root) {
+        return root.querySelector('[data-fc-entries-date-set]');
+    }
+
     function customFromInput(root) {
         return root.querySelector('[data-fc-entries-date-custom-from]');
     }
@@ -70,7 +74,8 @@
         }
 
         var value = period.value || '';
-        var label = DEFAULT_LABEL;
+        // Entries names its unbounded choice; the dashboard sets no attribute and keeps 'All dates'.
+        var label = root.getAttribute('data-fc-entries-date-default-label') || DEFAULT_LABEL;
 
         if (value && value !== 'custom') {
             label = PRESET_LABELS[value] || value;
@@ -137,6 +142,10 @@
     }
 
     function submitForm(root) {
+        // Every applied range goes through here; the stamp lets a later search keep it.
+        if (dateSetInput(root)) {
+            dateSetInput(root).value = '1';
+        }
         var form = getForm(root);
         if (form) {
             form.submit();
@@ -323,6 +332,14 @@
                 }
             });
         });
+
+        // Editing the search hands the range back to it, so the next search runs over all entries.
+        var searchInput = getForm(root) ? getForm(root).querySelector('input[name="q"]') : null;
+        if (searchInput && dateSetInput(root)) {
+            searchInput.addEventListener('input', function () {
+                dateSetInput(root).value = '';
+            });
+        }
 
         document.addEventListener('click', function () {
             closeDropdown(root);

@@ -309,10 +309,12 @@ $req  = $page['request'];
                     <div
                         class="fc-entries-date-dropdown<?php echo ($page['date_period'] ?? '') !== '' ? ' is-active' : ''; ?><?php echo ($page['date_period'] ?? '') === 'custom' ? ' is-custom' : ''; ?>"
                         data-fc-entries-date-dropdown
+                        data-fc-entries-date-default-label="<?php echo e((string) ($page['date_all_label'] ?? 'From All Entries')); ?>"
                     >
                         <input type="hidden" name="date_period" value="<?php echo e((string) ($page['date_period'] ?? '')); ?>" data-fc-entries-date-period>
                         <input type="hidden" name="date_from" value="<?php echo e((string) ($page['date_from'] ?? '')); ?>" data-fc-entries-date-from>
                         <input type="hidden" name="date_to" value="<?php echo e((string) ($page['date_to'] ?? '')); ?>" data-fc-entries-date-to>
+                        <input type="hidden" name="date_set" value="<?php echo e((string) ($page['date_set'] ?? '')); ?>" data-fc-entries-date-set>
                         <button
                             type="button"
                             class="fc-entries-page__filter fc-entries-date-dropdown__toggle"
@@ -333,6 +335,16 @@ $req  = $page['request'];
                             hidden
                         >
                             <div class="fc-entries-date-dropdown__presets">
+                                <button
+                                    type="button"
+                                    class="fc-entries-date-dropdown__option<?php echo ($page['date_period'] ?? '') === '' ? ' is-selected' : ''; ?>"
+                                    data-fc-entries-date-preset=""
+                                    role="option"
+                                    aria-selected="<?php echo ($page['date_period'] ?? '') === '' ? 'true' : 'false'; ?>"
+                                >
+                                    <span><?php echo e((string) ($page['date_all_label'] ?? 'From All Entries')); ?></span>
+                                    <i class="fa-solid fa-check fc-entries-date-dropdown__check" aria-hidden="true"></i>
+                                </button>
                                 <?php foreach ($page['date_period_options'] as $periodKey => $periodLabel) : ?>
                                 <?php if ($periodKey === 'custom') {
                                     continue;

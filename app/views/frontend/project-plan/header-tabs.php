@@ -1,31 +1,22 @@
 <?php /* [START] TABS */ ?>
-<div class="fencing-tabs-container fencing-tabs-container--project-plan fc-section-step fc-d-none fc-font-2 mt-3" data-tab="1">
-    <div class="fencing-tabs-area">
-        <div class="fencing-tabs fc-row-flex">
-        
-        <div class="fencing-tab-container fc-row-flex">
-            
-            <a href=".?step=3" class="fencing-tab fc-d-none">
-                <div class="fencing-tab-name">
-                    <span class="ftm-title">Section Details</span> 
-                </div>
-			</a>
+<?php /* Same folder strip as the planner's step 4 header tabs (.fc-header-tab), so the two
+     pages read as one flow. No fc-d-none here: this strip is always on, and the class only
+     looked inert on the old markup because a later .fencing-tabs-container rule outranked it. */ ?>
+<div class="fc-header-tab fc-section-step fc-font-2" data-tab="1">
+    <div class="fc-header-tab__area">
 
-			<a href=".?tab=2" class="fencing-tab fc-d-none">
-                <div class="fencing-tab-name">
-                    <span class="ftm-title">Project Options</span> 
-                </div>
-			</a>
+        <a href=".?step=3">
+            <div class="fencing-tab-name">Section Details</div>
+        </a>
 
-			<a href="#" class="fencing-tab  fencing-tab-selected fc-d-none">
-                <div class="fencing-tab-name">
-                    <span class="ftm-title">Project Plan & Cart</span> 
-                </div>
-			</a>
+        <a href=".?tab=2">
+            <div class="fencing-tab-name">Project Options</div>
+        </a>
 
-        </div>
+        <a class="fc-tab-active tab-selected">
+            <div class="fencing-tab-name">Project Plan &amp; Cart</div>
+        </a>
 
-    </div>
     </div>
 </div>
 <?php /* [END] TABS */ ?>

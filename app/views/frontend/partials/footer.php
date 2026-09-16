@@ -190,6 +190,11 @@ if ($fcChatraId !== '' || $fcChatraInCustomCode) :
 
         var reveal = function () {
             btn.classList.add('is-ready');
+            // Click-to-open only: collapse whatever Chatra restored or auto-expanded at
+            // boot. Dashboard-side targeted messages have no client-side off switch.
+            if (typeof window.Chatra === 'function') {
+                window.Chatra('minimizeWidget');
+            }
         };
 
         if (document.getElementById('chatra__iframe')) {

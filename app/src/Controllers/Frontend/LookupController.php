@@ -34,6 +34,7 @@ final class LookupController extends BaseFrontendController
             'fcLookupAppBase'  => $appBase,
             'fcLookupLogoUrl'  => $data['logoUrl'],
             'h'                => static fn (string $value): string => StringHelper::escapeHtml(StringHelper::decodeHtmlEntities($value)),
+            // Edit in pairs with ShareCartUrlController::renderPage()'s copy of this closure.
             'asset'            => static function (string $rel) use ($appBase): string {
                 $rel  = ltrim($rel, '/');
                 $path = FC_ROOT . '/' . $rel;

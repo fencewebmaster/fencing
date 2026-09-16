@@ -2254,7 +2254,7 @@ h2.fc-header-title+p {
     border: 2px solid var(--fc-gray);
     border-right: 0;
     border-bottom: 0;
-    padding: 10px 0 5px 0;
+    padding: 8px 0 8px 0;
     cursor: pointer;
     padding-left: 25px;
     padding-right: 25px;
@@ -2294,17 +2294,19 @@ a.fc-tab-active {
     color: var(--fc-black);
 }
 
-/* Inner title uses .fencing-tab-name (gray by default); keep Project Options black on tab 2 */
-.fc-planner-page .fc-header-tab a.fc-tab-active .fencing-tab-name {
+/* Inner title uses .fencing-tab-name (gray by default); keep the selected tab black. */
+.fc-planner-page .fc-header-tab a.fc-tab-active .fencing-tab-name,
+.fc-project-plan-page .fc-header-tab a.fc-tab-active .fencing-tab-name {
     color: var(--fc-black);
 }
 
 /* Header tabs take the section tabs' folder treatment: all rounded, seam one border wide, active pulled forward. */
-.fc-planner-page .fc-header-tab a {
+.fc-planner-page .fc-header-tab a,
+.fc-project-plan-page .fc-header-tab a {
     border: 2px solid var(--fc-gainsboro);
     border-bottom: 0;
     border-radius: 10px 10px 0 0;
-    margin-top: 4px;
+    margin-top: 8px;
     margin-right: 0;
     /* Zero alpha rather than none: box-shadow cannot interpolate from `none`. */
     box-shadow: 0 -3px 8px rgba(0, 0, 0, 0);
@@ -2317,16 +2319,20 @@ a.fc-tab-active {
         color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fc-planner-page .fc-header-tab a + a {
+.fc-planner-page .fc-header-tab a + a,
+.fc-project-plan-page .fc-header-tab a + a {
     margin-left: -2px;
 }
 
-.fc-planner-page .fc-header-tab a.fc-tab-active {
+.fc-planner-page .fc-header-tab a.fc-tab-active,
+.fc-project-plan-page .fc-header-tab a.fc-tab-active {
     position: relative;
     z-index: 1;
     margin-top: 0;
     border-radius: 10px 10px 0 0;
     box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.08);
+	display: flex;
+    align-items: center;
 }
 
 /* No hover lift here: these sit under the masthead, where 2px read as the header shifting. */
@@ -6840,63 +6846,9 @@ thead.fc-border th:last-child {
 }
 
 @media (max-width: 992px) {
-    .fencing-tabs-container--project-plan {
-        height: 41px;
-    }
-
     .fencing-tabs-container {
         height: 55px;
     }
-}
-
-.fc-project-plan-page .fencing-tabs-container--project-plan .fencing-tab-name {
-    text-transform: uppercase;
-}
-
-/* Project plan header tabs take the same folder treatment, one level shallower, and with no hover lift. */
-.fc-project-plan-page .fencing-tab-container {
-    border: 0;
-    border-radius: 0;
-}
-
-.fc-project-plan-page .fencing-tab-container .fencing-tab {
-    border: 2px solid var(--fc-gainsboro);
-    border-radius: 10px 10px 0 0;
-    align-self: stretch;
-    height: auto;
-    margin-top: 4px;
-    /* Zero alpha rather than none: box-shadow cannot interpolate from `none`. */
-    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0);
-    transition:
-        margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-        background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-        color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fc-project-plan-page .fencing-tab-container .fencing-tab:not(:first-child) {
-    margin-left: -2px;
-}
-
-/* Sized to match the planner's header pair, so the same three names measure the same. Desktop only. */
-@media (min-width: 993px) {
-    .fc-project-plan-page .fencing-tabs-container--project-plan {
-        /* 61, not 65: the tabs stretch into it less their 4px recess. */
-        height: 61px;
-    }
-
-    .fc-project-plan-page .fencing-tab-container .fencing-tab {
-        padding-left: 25px;
-        padding-right: 25px;
-    }
-}
-
-.fc-project-plan-page .fencing-tab-container .fencing-tab.fencing-tab-selected {
-    position: relative;
-    z-index: 1;
-    margin-top: 0;
-    box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.08);
 }
 
 .fencing-tabs-area {
@@ -7041,7 +6993,7 @@ thead.fc-border th:last-child {
 
     /* Small lift, same idea as the selected tab's forward pull. */
     .fc-planner-page .fencing-tab-container-area .fencing-tab:not(.fencing-tab-selected):hover {
-        transform: translateY(-2px);
+        border-color: var(--fc-princeton-orange);
     }
 }
 
@@ -7056,7 +7008,7 @@ thead.fc-border th:last-child {
     line-height: 1.2;
     position: relative;
     top: 1px;
-    padding: 8px 10px;
+    padding: 10px 10px;
     transition: color 0.25s ease;
 }
 
@@ -7168,7 +7120,7 @@ thead.fc-border th:last-child {
     border: 2px solid var(--fc-gainsboro);
     border-radius: 10px 10px 0 0;
     align-self: stretch;
-    margin-top: 4px;
+    margin-top: 10px;
     /* Zero alpha rather than absent so the shadow eases; timing is explicit and a touch slower than the base 0.2s. */
     box-shadow: 0 -3px 8px rgba(0, 0, 0, 0);
     transition:
@@ -16902,22 +16854,31 @@ div.fc-footer-app .app-version {
         margin-top: 12px;
     }
 
-    /* Two shrink-to-fit tabs left a dead strip at the right edge; split the row instead. */
-    .fc-planner-page .fc-header-tab a {
+    /* Not sticky here - the project plan has no step flow to hold - but it takes the same
+       lead-in so both pages start their tabs at the same height. */
+    .fc-project-plan-page .fc-header-tab {
+        margin-top: 12px;
+    }
+
+    /* Shrink-to-fit tabs left a dead strip at the right edge; split the row instead. */
+    .fc-planner-page .fc-header-tab a,
+    .fc-project-plan-page .fc-header-tab a {
         flex: 1 1 0;
         min-width: 0;
         padding: 7px 10px 6px;
         text-align: center;
     }
 
-    /* The label carries its own padding on top of the tab's; 20px/24px matches the project-plan page's strip. */
-    .fc-planner-page .fc-header-tab .fencing-tab-name {
+    /* The label carries its own padding on top of the tab's. */
+    .fc-planner-page .fc-header-tab .fencing-tab-name,
+    .fc-project-plan-page .fc-header-tab .fencing-tab-name {
         font-size: 20px;
         line-height: 24px;
         padding: 2px 0;
     }
 
-    .fc-planner-page .fc-header-tab a.fc-tab-active {
+    .fc-planner-page .fc-header-tab a.fc-tab-active,
+    .fc-project-plan-page .fc-header-tab a.fc-tab-active {
         border-radius: 10px 10px 0 0;
     }
 }

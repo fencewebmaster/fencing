@@ -54,6 +54,20 @@ final class SystemSettings
     }
 
     /**
+     * Planner Entries' copy of datePeriodChoices(): same keys, but the unbounded choice
+     * carries the name that list's own date dropdown shows. Dashboard keeps "All dates".
+     *
+     * @return array<string, string>
+     */
+    public static function entriesDatePeriodChoices(): array
+    {
+        $choices = self::datePeriodChoices();
+        $choices['all'] = \Fc\Admin\Presenters\PlannerEntryPresenter::dateAllOptionLabel();
+
+        return $choices;
+    }
+
+    /**
      * @return array<string, string>
      */
     public static function dateFieldChoices(): array
@@ -322,6 +336,7 @@ final class SystemSettings
             'system' => self::get(),
             'defaults' => self::defaults(),
             'datePeriodChoices' => self::datePeriodChoices(),
+            'entriesDatePeriodChoices' => self::entriesDatePeriodChoices(),
             'dateFieldChoices' => self::dateFieldChoices(),
             'dateFormatChoices' => self::dateFormatChoices(),
             'updatedAt' => ThemeSettings::updatedAt(),

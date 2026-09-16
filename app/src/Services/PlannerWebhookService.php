@@ -157,8 +157,9 @@ final class PlannerWebhookService
     /**
      * Same contacts/addresses/opportunities/cookies shape as the existing checkout-time
      * push (advanced-form-integration.php's `push_order()`), built from session data that's
-     * already populated by the time either trigger point runs. `share_cart_url` is always
-     * empty here — no WooCommerce cart exists yet at this stage. `installer` is always
+     * already populated by the time either trigger point runs. `share_cart_url` is the
+     * lazy /share-cart-url/{id} link (no Woo cart exists yet at this stage — the
+     * ShareCartUrlController materialises it on click). `installer` is always
      * empty — this app's modal never collects an installer preference.
      *
      * @return array<string, mixed>
@@ -185,6 +186,8 @@ final class PlannerWebhookService
         $fencingType = self::fencingTypeInfo();
 
         $submissionUrl = UrlHelper::baseUrl('planner?qid=' . rawurlencode($plannerId));
+        // Safe from /submit (one segment deep); the id is validated alnum so it is path-safe.
+        $shareCartUrl  = UrlHelper::baseUrl('share-cart-url/' . rawurlencode($plannerId));
 
         $summary = self::buildSummary($timeframeLabel, $notes, $otherItems);
 
@@ -217,7 +220,7 @@ final class PlannerWebhookService
                     'planner_url' => $submissionUrl,
                     'fencing_type' => $fencingType,
                     'timeframe' => $timeframeLabel,
-                    'share_cart_url' => '',
+                    'share_cart_url' => $shareCartUrl,
                     'submission_url' => $submissionUrl,
                 ],
             ],

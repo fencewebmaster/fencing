@@ -470,7 +470,7 @@ $tab = $fcSettingsPage;
                                     <label class="flex min-w-0 flex-col gap-1" for="fc-system-entriesDefaultDatePeriod">
                                         <span class="text-sm font-medium text-slate-700">Default date range</span>
                                         <select id="fc-system-entriesDefaultDatePeriod" data-fc-system-field="entriesDefaultDatePeriod" class="fc-settings-field">
-                                            <?php foreach (($tab['system_date_period_choices'] ?? []) as $value => $label) : ?>
+                                            <?php foreach (($tab['system_entries_date_period_choices'] ?? []) as $value => $label) : ?>
                                             <option value="<?php echo e((string) $value); ?>"><?php echo e((string) $label); ?></option>
                                             <?php endforeach; ?>
                                         </select>
