@@ -10,6 +10,22 @@ namespace Fc\Admin\Services;
 final class PlannerSessionService
 {
     /**
+     * Pin the current host's site row into the session. Only the page requests used to do
+     * this, so a lost session made /submit fatal on a missing $_SESSION['site'].
+     */
+    public static function ensureSite(): void
+    {
+        if (!empty($_SESSION['site']) && is_array($_SESSION['site'])) {
+            return;
+        }
+
+        $site = SiteRegistryService::all($_SERVER['HTTP_HOST'] ?? '', 'domain', true);
+        if (is_array($site)) {
+            $_SESSION['site'] = $site;
+        }
+    }
+
+    /**
      * @param array<string, array<string, mixed>> $fences
      * @return array<string, mixed>
      */
@@ -94,12 +110,7 @@ final class PlannerSessionService
             return;
         }
 
-        if (empty($_SESSION['site'])) {
-            $site = SiteRegistryService::all($_SERVER['HTTP_HOST'], 'domain', true);
-            if ($site) {
-                $_SESSION['site'] = $site;
-            }
-        }
+        self::ensureSite();
 
         if (empty($_SESSION['fc_data']) || !is_array($_SESSION['fc_data'])) {
             $_SESSION['fc_data'] = [];

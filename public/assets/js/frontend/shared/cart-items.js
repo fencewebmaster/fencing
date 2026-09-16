@@ -1171,9 +1171,13 @@ FENCES.cartItems = {
             if ($.inArray(tabInfo[0]?.fence, ['glass_pool']) !== -1) {
                 var spigots = $('.fencing-panel-spigot').length;
 
+                // Fixings suit a concrete/stone base only, so they are suggested per spigot rather
+                // than billed on every base-plated job - same treatment as the consumables below.
                 array.push({
                     "slug": "fixings_stone",
-                    "qty": spigots,
+                    "qty": 0,
+                    "optional": true,
+                    "suggested_qty": spigots,
                 });
 
                 // Consumables, not fence: an installer usually owns a cartridge gun already and

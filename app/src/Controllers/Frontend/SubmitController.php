@@ -7,6 +7,7 @@ namespace Fc\Admin\Controllers\Frontend;
 use Fc\Admin\Models\PlannerSubmissionModel;
 use Fc\Admin\Services\CartBuilderService;
 use Fc\Admin\Services\PlannerRecordService;
+use Fc\Admin\Services\PlannerSessionService;
 use Fc\Admin\Services\PlannerWebhookService;
 
 /**
@@ -18,6 +19,10 @@ final class SubmitController extends BaseFrontendController
     public function index(): void
     {
         $this->startSession();
+
+        // No page request guarantees this ran first: an expired or dropped session used to
+        // reach postProductSkus() with no site and take the whole save down with it.
+        PlannerSessionService::ensureSite();
 
         $fences = $this->fences();
 

@@ -13,6 +13,20 @@ use Fc\Admin\Helpers\FileHelper;
 final class CartBuilderService
 {
     /**
+     * Supplier code for this request. config.php keys it by host, so the session is only a
+     * shortcut - reading it unguarded is what made a missing site a fatal strtoupper(null).
+     */
+    private static function supplier(): string
+    {
+        $fromSession = $_SESSION['site']['supplier'] ?? null;
+        if (is_string($fromSession) && $fromSession !== '') {
+            return strtoupper($fromSession);
+        }
+
+        return SiteRegistryService::supplier((string) ($_SERVER['HTTP_HOST'] ?? ''), 'JG');
+    }
+
+    /**
      * @param array<int, array<string, mixed>> $data
      * @return array<int, array<string, mixed>>
      */
@@ -24,7 +38,7 @@ final class CartBuilderService
         foreach ($data as $d) {
             $items = $d['items'];
             $color = $d['color'];
-            $supplier = $_SESSION['site']['supplier'];
+            $supplier = self::supplier();
             $styleKey = FenceCatalogService::productsCsvStyleForFence($d['slug']);
 
             foreach ($items as $item) {
@@ -96,7 +110,7 @@ final class CartBuilderService
     public static function postProductSkus(array $cartItems = []): void
     {
         global $fences;
-        $supplier = strtoupper($_SESSION['site']['supplier']);
+        $supplier = self::supplier();
         $items = $carts = [];
         $skus = self::getProductSkus($cartItems);
 

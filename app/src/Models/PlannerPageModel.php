@@ -40,11 +40,7 @@ final class PlannerPageModel
      */
     public static function ensureSessionSite(): void
     {
-        if (!empty($_SESSION['site'])) {
-            return;
-        }
-
-        $_SESSION['site'] = SiteRegistryService::all($_SERVER['HTTP_HOST'] ?? '', 'domain', true);
+        PlannerSessionService::ensureSite();
     }
 
     /**
