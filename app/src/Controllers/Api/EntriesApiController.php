@@ -6,7 +6,9 @@ namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Core\JsonResponse;
 use Fc\Admin\Models\PlannerEntryModel;
+use Fc\Admin\Presenters\PlannerEntryPresenter;
 use Fc\Admin\Services\PlannerEntryMaintenanceService;
+use Fc\Admin\Services\PlannerWebhookService;
 
 final class EntriesApiController extends BaseApiController
 {
@@ -41,6 +43,9 @@ final class EntriesApiController extends BaseApiController
                     break;
                 case 'restore-duplicate':
                     $this->bulkRestoreDuplicate();
+                    break;
+                case 'send-pre-planner':
+                    $this->sendPrePlanner();
                     break;
                 default:
                     JsonResponse::error('Unknown action.', 400);
@@ -330,6 +335,30 @@ final class EntriesApiController extends BaseApiController
             'ok' => true,
             'updated' => $updated,
             'message' => $updated . ' ' . $noun . ' restored to All.',
+        ]);
+    }
+
+    private function sendPrePlanner(): void
+    {
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (!self::csrfOk($payload)) {
+            JsonResponse::error('Invalid security token. Refresh and try again.', 403);
+        }
+
+        $entryId = isset($payload['id']) && is_scalar($payload['id']) ? (int) $payload['id'] : 0;
+        $result = PlannerWebhookService::sendForEntry($entryId);
+        if (empty($result['ok'])) {
+            JsonResponse::error((string) ($result['error'] ?? 'Could not send the Pre-Planner submission.'), 400);
+        }
+
+        JsonResponse::ok([
+            'ok' => true,
+            'message' => (string) ($result['message'] ?? 'Pre-Planner submission sent.'),
+            'sent_at' => PlannerEntryPresenter::formatDatetime($result['sent_at'] ?? ''),
         ]);
     }
 }

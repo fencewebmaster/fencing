@@ -1427,6 +1427,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/entries/cart-filters.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/components/image-lightbox.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/entries/cart-gallery.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/entries/detail-actions.js'); ?>"></script>
     <?php endif; ?>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif (!empty($fcAdminIsUsers)) : ?>

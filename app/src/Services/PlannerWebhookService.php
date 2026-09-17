@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
+use Fc\Admin\Helpers\RequestHelper;
 use Fc\Admin\Helpers\UrlHelper;
+use Fc\Admin\Presenters\PlannerEntryPresenter;
 use Fc\Admin\Settings\IntegrationsSettings;
 use Fc\Admin\Settings\PlannerOptionSettings;
 
@@ -16,7 +18,8 @@ use Fc\Admin\Settings\PlannerOptionSettings;
  * `wp_planners.webhook_sent_at` so a given planner only notifies once per calendar day when
  * IntegrationsSettings::webhookSameDayDedup is on. IntegrationsSettings::webhookMode ('live'|'test')
  * picks which URL actually gets posted to — the real Webhook URL or the separate Test Webhook
- * URL — so this can be exercised without notifying Zapier.
+ * URL — so this can be exercised without notifying Zapier. Planner Entries can also resend a
+ * saved entry on demand (sendForEntry()).
  */
 final class PlannerWebhookService
 {
@@ -36,10 +39,7 @@ final class PlannerWebhookService
             return;
         }
 
-        $mode = (string) ($integrations['webhookMode'] ?? 'live');
-        $webhookUrl = trim((string) (
-            $mode === 'test' ? ($integrations['webhookTestUrl'] ?? '') : ($integrations['webhookUrl'] ?? '')
-        ));
+        $webhookUrl = self::modeWebhookUrl($integrations);
         if ($webhookUrl === '') {
             return;
         }
@@ -53,6 +53,148 @@ final class PlannerWebhookService
         // instead of silently blocking for the rest of the calendar day.
         if (!self::send($webhookUrl, self::buildZapierPayload($plannerId))) {
             self::releaseSlot($plannerId);
+        }
+    }
+
+    /**
+     * Admin "Send Pre-Planner Submission" on a Planner Entries detail page: posts the same
+     * payload built from the saved row. The Enable Pre-Planner toggle and same-day dedup are
+     * deliberately skipped — they govern the automatic customer trigger, not a confirmed resend.
+     *
+     * @return array{ok:bool,error?:string,message?:string,sent_at?:string}
+     */
+    public static function sendForEntry(int $entryId): array
+    {
+        // The payload links are built on this admin host, which isn't the switched site's domain.
+        if (AdminSiteRegistry::isSiteSwitched()) {
+            return ['ok' => false, 'error' => 'Switch back to your own site to send this entry. Its links would point to the wrong site.'];
+        }
+
+        $integrations = IntegrationsSettings::get();
+        $isTestMode = ($integrations['webhookMode'] ?? 'live') === 'test';
+        $webhookUrl = self::modeWebhookUrl($integrations);
+        if ($webhookUrl === '') {
+            return [
+                'ok' => false,
+                'error' => ($isTestMode ? 'Test mode is on but no Test Webhook URL is set.' : 'No Webhook URL is set.')
+                    . ' Add one in Settings → Integrations.',
+            ];
+        }
+
+        try {
+            $row = $entryId > 0 ? self::entryRow($entryId) : null;
+        } catch (\RuntimeException $e) {
+            error_log('FC webhook: could not load planner entry ' . $entryId . ' — ' . $e->getMessage());
+
+            return ['ok' => false, 'error' => 'Could not load this entry. Try again.'];
+        }
+        if ($row === null) {
+            return ['ok' => false, 'error' => 'Entry not found.'];
+        }
+
+        $plannerId = trim((string) ($row['planner_id'] ?? ''));
+        if (!PlannerRecordService::isValidPlannerId($plannerId)) {
+            return ['ok' => false, 'error' => 'This entry has no valid planner ID.'];
+        }
+        // Trashed quotes 404 on both ?qid= and /share-cart-url, so the CRM would get dead links.
+        if (PlannerRecordService::rowIsTrashed($row)) {
+            return ['ok' => false, 'error' => 'Restore this entry from the trash before sending it.'];
+        }
+
+        // Same fc_data keys hydrateFromRow() restores; extra falls back like the detail page shows it.
+        $fcData = [
+            'name' => $row['name'] ?? '',
+            'email' => $row['email'] ?? '',
+            'mobile' => $row['mobile'] ?? '',
+            'state' => $row['state'] ?? '',
+            'notes' => $row['notes'] ?? '',
+            'timeframe' => $row['timeframe'] ?? '',
+            'extra' => PlannerEntryPresenter::resolveExtraValue($row['extra'] ?? null, $row['project_plans_data'] ?? null),
+        ];
+        $colorRows = json_decode((string) ($row['color_data'] ?? ''), true);
+
+        // UrlHelper::baseUrl() would resolve to the /backend mount from here.
+        $appUrl = (RequestHelper::isHttps() ? 'https' : 'http') . '://'
+            . (string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '')
+            . UrlHelper::plannerAppBaseFromAdminScript() . '/';
+
+        // Empty cookies: the customer's aren't stored, and the admin's (session id included) must not leak.
+        $payload = self::buildPayload($plannerId, $fcData, is_array($colorRows) ? $colorRows : [], [], $appUrl);
+        if (!self::send($webhookUrl, $payload)) {
+            return ['ok' => false, 'error' => 'The webhook could not be delivered. Check the URL in Settings → Integrations and try again.'];
+        }
+
+        $sentAt = (new \DateTime('now'))->format('Y-m-d H:i:s');
+        self::stampSentAt($entryId, $sentAt);
+
+        return [
+            'ok' => true,
+            'message' => $isTestMode
+                ? 'Pre-Planner submission sent to the Test Webhook URL.'
+                : 'Pre-Planner submission sent.',
+            'sent_at' => $sentAt,
+        ];
+    }
+
+    /**
+     * The URL IntegrationsSettings::webhookMode currently selects ('' when that one is unset).
+     *
+     * @param array<string, mixed> $integrations
+     */
+    private static function modeWebhookUrl(array $integrations): string
+    {
+        $mode = (string) ($integrations['webhookMode'] ?? 'live');
+
+        return trim((string) (
+            $mode === 'test' ? ($integrations['webhookTestUrl'] ?? '') : ($integrations['webhookUrl'] ?? '')
+        ));
+    }
+
+    /**
+     * The saved columns sendForEntry() needs, or null for an unknown id. Throws on DB failure.
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function entryRow(int $entryId): ?array
+    {
+        $ctx = PlannerRecordService::openDb();
+        $stmt = $ctx['conn']->prepare(
+            'SELECT `planner_id`, `name`, `email`, `mobile`, `state`, `notes`, `timeframe`, `extra`,'
+            . ' `color_data`, `project_plans_data`, `trashed_at`'
+            . ' FROM `' . $ctx['table'] . '` WHERE `id` = ? LIMIT 1'
+        );
+        if (!$stmt) {
+            throw new \RuntimeException('Could not prepare the entry query.');
+        }
+
+        $stmt->bind_param('i', $entryId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result ? $result->fetch_assoc() : null;
+        $stmt->close();
+
+        return is_array($row) ? $row : null;
+    }
+
+    /**
+     * Record a manual send against the entry's own row — the detail page's "Webhook sent" line.
+     */
+    private static function stampSentAt(int $entryId, string $sentAt): void
+    {
+        try {
+            $ctx = PlannerRecordService::openDb();
+            $stmt = $ctx['conn']->prepare(
+                'UPDATE `' . $ctx['table'] . '` SET `webhook_sent_at` = ? WHERE `id` = ? LIMIT 1'
+            );
+            if (!$stmt) {
+                throw new \RuntimeException('Could not prepare the update.');
+            }
+            $stmt->bind_param('si', $sentAt, $entryId);
+            $stmt->execute();
+            $stmt->close();
+        } catch (\RuntimeException $e) {
+            // The webhook already went out; only the "last sent" display is left stale.
+            error_log('FC webhook: sent entry ' . $entryId . ' but could not stamp webhook_sent_at — ' . $e->getMessage());
         }
     }
 
@@ -168,6 +310,32 @@ final class PlannerWebhookService
     {
         $fcData = isset($_SESSION['fc_data']) && is_array($_SESSION['fc_data']) ? $_SESSION['fc_data'] : [];
 
+        // Safe from /submit (one segment deep).
+        return self::buildPayload(
+            $plannerId,
+            $fcData,
+            PlannerSessionService::colorRowsFromSession(),
+            $_COOKIE,
+            UrlHelper::baseUrl()
+        );
+    }
+
+    /**
+     * The payload shape itself, from fc_data-shaped fields — the live session on /submit, or a
+     * saved row's columns for sendForEntry(). $appUrl is the absolute app root with a trailing slash.
+     *
+     * @param array<string, mixed> $fcData
+     * @param array<mixed> $colorRows
+     * @param array<string, mixed> $cookies
+     * @return array<string, mixed>
+     */
+    private static function buildPayload(
+        string $plannerId,
+        array $fcData,
+        array $colorRows,
+        array $cookies,
+        string $appUrl
+    ): array {
         $name = trim((string) ($fcData['name'] ?? ''));
         $email = trim((string) ($fcData['email'] ?? ''));
         $mobile = trim((string) ($fcData['mobile'] ?? ''));
@@ -183,11 +351,11 @@ final class PlannerWebhookService
         );
         $otherItems = self::extraItemLabels($extraJson);
 
-        $fencingType = self::fencingTypeInfo();
+        $fencingType = self::fencingTypeInfo($colorRows);
 
-        $submissionUrl = UrlHelper::baseUrl('planner?qid=' . rawurlencode($plannerId));
-        // Safe from /submit (one segment deep); the id is validated alnum so it is path-safe.
-        $shareCartUrl  = UrlHelper::baseUrl('share-cart-url/' . rawurlencode($plannerId));
+        $submissionUrl = $appUrl . 'planner?qid=' . rawurlencode($plannerId);
+        // The id is validated alnum so it is path-safe.
+        $shareCartUrl  = $appUrl . 'share-cart-url/' . rawurlencode($plannerId);
 
         $summary = self::buildSummary($timeframeLabel, $notes, $otherItems);
 
@@ -206,7 +374,7 @@ final class PlannerWebhookService
                     'country' => 'AU',
                 ],
             ],
-            'cookies' => $_COOKIE,
+            'cookies' => $cookies,
             'opportunities' => [
                 [
                     'value' => 0,
@@ -255,14 +423,11 @@ final class PlannerWebhookService
 
     /**
      * "fence:color, fence:color, ..." — same shape as the plugin's fence_color_info.
+     *
+     * @param array<mixed> $rows
      */
-    private static function fencingTypeInfo(): string
+    private static function fencingTypeInfo(array $rows): string
     {
-        $rows = PlannerSessionService::colorRowsFromSession();
-        if (!is_array($rows)) {
-            return '';
-        }
-
         $parts = [];
         foreach ($rows as $row) {
             if (!is_array($row)) {

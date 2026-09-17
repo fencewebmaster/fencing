@@ -135,7 +135,8 @@ final class UrlHelper
      * four — baseUrl()/AssetHelper::assetUrl() use dirname(REQUEST_URI); FrontendApplication::basePath()
      * uses a single dirname(SCRIPT_NAME); resolveAdminMountBase() is REQUEST_URI-based;
      * GalleryPresenter::assetUrl()/BrandingSettings::logoUrl() are cache-bust-free media paths. Used by
-     * the two admin API endpoints (fence styles, dashboard) that resolve planner asset URLs from /backend.
+     * the two admin API endpoints (fence styles, dashboard) that resolve planner asset URLs from /backend,
+     * and by PlannerWebhookService::sendForEntry() for the planner links in an admin-sent webhook.
      */
     public static function plannerAppBaseFromAdminScript(): string
     {

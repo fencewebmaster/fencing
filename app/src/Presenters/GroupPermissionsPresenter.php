@@ -204,6 +204,7 @@ final class GroupPermissionsPresenter
                 'trash', 'restore', 'delete' => ['planner_entries.trash_delete_restore'],
                 'dedupe-scan', 'dedupe-apply', 'restore-duplicate' => ['planner_entries.find_duplicates'],
                 'export', 'import' => ['planner_entries.import_export'],
+                'send-pre-planner' => ['planner_entries.send_pre_planner'],
                 'get' => ['planner_entries.view'],
                 default => ['planner_entries.view_list'],
             },

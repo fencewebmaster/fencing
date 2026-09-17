@@ -81,6 +81,7 @@ final class GroupPermissionsModel
                     ['key' => 'import_export', 'label' => 'Import/Export'],
                     ['key' => 'trash_delete_restore', 'label' => 'Trash/Delete/Restore'],
                     ['key' => 'find_duplicates', 'label' => 'Find Duplicates'],
+                    ['key' => 'send_pre_planner', 'label' => 'Send Pre-Planner'],
                 ],
             ],
             [

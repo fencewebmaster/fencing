@@ -11,6 +11,7 @@ use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Services\WcProductCsvService;
+use Fc\Admin\Settings\IntegrationsSettings;
 use Fc\Admin\Settings\PlannerOptionSettings;
 use Fc\Admin\Settings\SystemSettings;
 
@@ -2077,6 +2078,10 @@ final class PlannerEntryPresenter
             )
         );
 
+        $canSendPrePlanner = is_array($item) && PermissionService::can('planner_entries.send_pre_planner');
+        $webhookTestMode = $canSendPrePlanner
+            && (IntegrationsSettings::get()['webhookMode'] ?? 'live') === 'test';
+
         $cartRows = [];
         foreach ($cartItems as $cartItem) {
             if (!is_array($cartItem)) {
@@ -2119,6 +2124,12 @@ final class PlannerEntryPresenter
             'planner_url' => is_array($item)
                 ? self::plannerUrl($appBase, (string) ($item['planner_id'] ?? ''))
                 : '#',
+            'api_url' => 'api.php?module=entries',
+            'csrf' => $canSendPrePlanner ? AuthService::csrfToken() : '',
+            'can_send_pre_planner' => $canSendPrePlanner,
+            'planner_id' => is_array($item) ? (string) ($item['planner_id'] ?? '') : '',
+            'webhook_mode_label' => $webhookTestMode ? 'Test' : 'Live',
+            'webhook_sent_label' => is_array($item) ? self::formatDatetime($item['webhook_sent_at'] ?? '') : '',
             'cart_item_count' => count($cartItems),
             'cart_total_qty' => $cartTotalQty,
             'cart_optional_count' => $cartOptionalCount,

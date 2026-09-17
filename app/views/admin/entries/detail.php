@@ -26,6 +26,40 @@ $item = $page['item'];
                 target="_blank"
                 rel="noopener noreferrer"
             >Open planner</a>
+            <?php if (!empty($page['can_send_pre_planner'])) : ?>
+            <div
+                class="fc-entries-toolbar-menu"
+                data-fc-entries-detail-menu
+                data-fc-entries-api="<?php echo e((string) ($page['api_url'] ?? 'api.php?module=entries')); ?>"
+                data-fc-entries-csrf="<?php echo e((string) ($page['csrf'] ?? '')); ?>"
+                data-fc-entry-id="<?php echo (int) ($page['entry_id'] ?? 0); ?>"
+            >
+                <button
+                    type="button"
+                    class="btn btn-sm btn-dark fw-semibold fc-entries-toolbar-menu__toggle"
+                    data-fc-entries-detail-menu-toggle
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-label="More actions"
+                    title="More actions"
+                >
+                    <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                </button>
+                <div class="fc-entries-toolbar-menu__panel" data-fc-entries-detail-menu-panel hidden>
+                    <button
+                        type="button"
+                        class="fc-entries-toolbar-menu__item"
+                        data-fc-entries-send-pre-planner
+                        data-fc-planner-id="<?php echo e((string) ($page['planner_id'] ?? '')); ?>"
+                        data-fc-webhook-mode="<?php echo e((string) ($page['webhook_mode_label'] ?? 'Live')); ?>"
+                        data-fc-webhook-sent-at="<?php echo e((string) ($page['webhook_sent_label'] ?? '')); ?>"
+                    >
+                        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                        <span>Send Pre-Planner Submission</span>
+                    </button>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
     </header>
@@ -57,7 +91,7 @@ $item = $page['item'];
                 <div class="fc-entries-detail-panel__body">
                 <div class="fc-entries-modal__meta fc-entries-modal__meta--detail">
                     <?php foreach ($page['detail_rows'] as $detailRow) : ?>
-                    <div class="fc-entries-modal__row fc-entries-detail-copy-row">
+                    <div class="fc-entries-modal__row fc-entries-detail-copy-row" data-fc-entries-detail-row="<?php echo e((string) ($detailRow['key'] ?? '')); ?>">
                         <div class="fc-entries-modal__label"><?php echo e((string) ($detailRow['label'] ?? '')); ?></div>
                         <div class="fc-entries-modal__value-wrap">
                             <div class="fc-entries-modal__value">

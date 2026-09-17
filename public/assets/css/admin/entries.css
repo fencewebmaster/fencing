@@ -3154,6 +3154,25 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
     color: #135e96;
 }
 
+.fc-entries-detail-page__actions {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+/* Send Pre-Planner confirm: webhook mode in the Integrations mode pill's red/green */
+.fc-entries-pre-planner-mode {
+    text-transform: uppercase;
+}
+
+.fc-entries-pre-planner-mode--test {
+    color: var(--fc-red, #f70000);
+}
+
+.fc-entries-pre-planner-mode--live {
+    color: var(--fc-green, #04a725);
+}
+
 .fc-entries-detail-page__body {
     flex: 1 1 auto;
     min-height: 0;

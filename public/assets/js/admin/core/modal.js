@@ -213,6 +213,26 @@
         };
     }
 
+    // Each {key} renders opts.emphasis[key] in bold: a string, or {text, className} where className
+    // replaces text-slate-900 (its dark-mode colour is !important). Template and values are escaped.
+    function messageHtml(message, emphasis) {
+        var html = escapeHtml(message);
+        if (!emphasis) {
+            return html;
+        }
+        return html.replace(/\{(\w+)\}/g, function (token, key) {
+            if (!Object.prototype.hasOwnProperty.call(emphasis, key)) {
+                return token;
+            }
+            var value = emphasis[key];
+            var styled = value !== null && typeof value === 'object';
+            var className = styled && value.className ? value.className : 'text-slate-900';
+            return '<strong class="font-semibold ' + escapeHtml(className) + '">' +
+                escapeHtml(styled ? value.text : value) +
+                '</strong>';
+        });
+    }
+
     function renderModal(opts) {
         var variant = opts.variant || 'info';
         var icon = iconForVariant(variant);
@@ -278,7 +298,7 @@
             : '';
 
         var bodyHtml = message
-            ? '<p class="text-base leading-relaxed text-slate-600">' + escapeHtml(message) + '</p>'
+            ? '<p class="text-base leading-relaxed text-slate-600">' + messageHtml(message, opts.emphasis) + '</p>'
             : '<p class="text-base leading-relaxed text-slate-500">&nbsp;</p>';
 
         if (mode === 'confirm' && confirmText) {
@@ -309,6 +329,16 @@
               '</footer>'
             : '';
 
+        // icon: false leaves the header with just the title.
+        var iconHtml = opts.icon === false
+            ? ''
+            : '<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full ' +
+              icon.wrap +
+              '">' +
+              '<i class="' +
+              icon.icon +
+              ' text-base" aria-hidden="true"></i></span>';
+
         return (
             '<div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 opacity-0 transition-opacity duration-200 pointer-events-auto" role="dialog" aria-modal="true" aria-labelledby="fc-admin-modal-title" data-fc-admin-modal-mode="' +
             escapeHtml(mode) +
@@ -323,12 +353,7 @@
             '<div class="relative w-full max-w-md scale-95 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-slate-200 transition-transform duration-200" data-fc-admin-modal-panel>' +
             closeBtnHtml +
             '<header data-fc-admin-modal-header class="flex items-center gap-3 border-b border-slate-200 px-6 py-4 pr-14">' +
-            '<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full ' +
-            icon.wrap +
-            '">' +
-            '<i class="' +
-            icon.icon +
-            ' text-base" aria-hidden="true"></i></span>' +
+            iconHtml +
             '<h3 id="fc-admin-modal-title" class="min-w-0 flex-1 text-lg font-semibold text-slate-900 sm:text-xl">' +
             escapeHtml(title) +
             '</h3>' +
