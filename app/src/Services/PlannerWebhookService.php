@@ -106,6 +106,8 @@ final class PlannerWebhookService
             'name' => $row['name'] ?? '',
             'email' => $row['email'] ?? '',
             'mobile' => $row['mobile'] ?? '',
+            'address' => $row['address'] ?? '',
+            'postcode' => $row['postcode'] ?? '',
             'state' => $row['state'] ?? '',
             'notes' => $row['notes'] ?? '',
             'timeframe' => $row['timeframe'] ?? '',
@@ -119,7 +121,14 @@ final class PlannerWebhookService
             . UrlHelper::plannerAppBaseFromAdminScript() . '/';
 
         // Empty cookies: the customer's aren't stored, and the admin's (session id included) must not leak.
-        $payload = self::buildPayload($plannerId, $fcData, is_array($colorRows) ? $colorRows : [], [], $appUrl);
+        $payload = self::buildPayload(
+            $plannerId,
+            $fcData,
+            is_array($colorRows) ? $colorRows : [],
+            [],
+            $appUrl,
+            (string) ($row['status'] ?? '')
+        );
         if (!self::send($webhookUrl, $payload)) {
             return ['ok' => false, 'error' => 'The webhook could not be delivered. Check the URL in Settings → Integrations and try again.'];
         }
@@ -159,8 +168,8 @@ final class PlannerWebhookService
     {
         $ctx = PlannerRecordService::openDb();
         $stmt = $ctx['conn']->prepare(
-            'SELECT `planner_id`, `name`, `email`, `mobile`, `state`, `notes`, `timeframe`, `extra`,'
-            . ' `color_data`, `project_plans_data`, `trashed_at`'
+            'SELECT `planner_id`, `status`, `name`, `email`, `mobile`, `address`, `postcode`, `state`, `notes`,'
+            . ' `timeframe`, `extra`, `color_data`, `project_plans_data`, `trashed_at`'
             . ' FROM `' . $ctx['table'] . '` WHERE `id` = ? LIMIT 1'
         );
         if (!$stmt) {
@@ -302,7 +311,11 @@ final class PlannerWebhookService
      * already populated by the time either trigger point runs. `share_cart_url` is the
      * lazy /share-cart-url/{id} link (no Woo cart exists yet at this stage — the
      * ShareCartUrlController materialises it on click). `installer` is always
-     * empty — this app's modal never collects an installer preference.
+     * empty — this app's modal never collects an installer preference. `fencing_type` holds the
+     * readable fence/colour names (FenceCatalogService::fenceColorLabels()); the plugin's push sends
+     * the same text, from the label CheckoutController adds to the store push. `planner_status`,
+     * `fence_types` (same names, kept for existing Zap mappings), `address_1` and `zipcode` are
+     * FC-only additions; the plugin's push doesn't send them.
      *
      * @return array<string, mixed>
      */
@@ -316,8 +329,34 @@ final class PlannerWebhookService
             $fcData,
             PlannerSessionService::colorRowsFromSession(),
             $_COOKIE,
-            UrlHelper::baseUrl()
+            UrlHelper::baseUrl(),
+            self::savedStatus($plannerId)
         );
+    }
+
+    /**
+     * Status of the row /submit just saved — read back rather than assumed ('' if unreadable).
+     */
+    private static function savedStatus(string $plannerId): string
+    {
+        try {
+            $ctx = PlannerRecordService::openDb();
+            $stmt = $ctx['conn']->prepare(
+                'SELECT `status` FROM `' . $ctx['table'] . '` WHERE `planner_id` = ? ORDER BY `id` DESC LIMIT 1'
+            );
+            if (!$stmt) {
+                return '';
+            }
+            $stmt->bind_param('s', $plannerId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result ? $result->fetch_row() : null;
+            $stmt->close();
+        } catch (\RuntimeException $e) {
+            return '';
+        }
+
+        return is_array($row) ? (string) $row[0] : '';
     }
 
     /**
@@ -334,11 +373,14 @@ final class PlannerWebhookService
         array $fcData,
         array $colorRows,
         array $cookies,
-        string $appUrl
+        string $appUrl,
+        string $plannerStatus
     ): array {
         $name = trim((string) ($fcData['name'] ?? ''));
         $email = trim((string) ($fcData['email'] ?? ''));
         $mobile = trim((string) ($fcData['mobile'] ?? ''));
+        $address = trim((string) ($fcData['address'] ?? ''));
+        $postcode = trim((string) ($fcData['postcode'] ?? ''));
         $state = trim((string) ($fcData['state'] ?? ''));
         $notes = trim((string) ($fcData['notes'] ?? ''));
 
@@ -351,7 +393,7 @@ final class PlannerWebhookService
         );
         $otherItems = self::extraItemLabels($extraJson);
 
-        $fencingType = self::fencingTypeInfo($colorRows);
+        $fenceTypes = FenceCatalogService::fenceColorLabels($colorRows);
 
         $submissionUrl = $appUrl . 'planner?qid=' . rawurlencode($plannerId);
         // The id is validated alnum so it is path-safe.
@@ -369,8 +411,10 @@ final class PlannerWebhookService
             ],
             'addresses' => [
                 [
+                    'address_1' => $address,
                     'city' => '',
                     'state' => $state,
+                    'zipcode' => $postcode,
                     'country' => 'AU',
                 ],
             ],
@@ -385,8 +429,10 @@ final class PlannerWebhookService
                     'other_items' => $otherItems,
                     'installer' => '',
                     'quote_id' => $plannerId,
+                    'planner_status' => strtoupper(trim($plannerStatus)),
                     'planner_url' => $submissionUrl,
-                    'fencing_type' => $fencingType,
+                    'fencing_type' => $fenceTypes,
+                    'fence_types' => $fenceTypes,
                     'timeframe' => $timeframeLabel,
                     'share_cart_url' => $shareCartUrl,
                     'submission_url' => $submissionUrl,
@@ -419,29 +465,6 @@ final class PlannerWebhookService
         }
 
         return $labels !== [] ? implode(', ', $labels) : 'Nothing Extra, Just Fencing';
-    }
-
-    /**
-     * "fence:color, fence:color, ..." — same shape as the plugin's fence_color_info.
-     *
-     * @param array<mixed> $rows
-     */
-    private static function fencingTypeInfo(array $rows): string
-    {
-        $parts = [];
-        foreach ($rows as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
-            $fence = trim((string) ($row['fence'] ?? ''));
-            $color = trim((string) ($row['color'] ?? ''));
-            if ($fence === '' && $color === '') {
-                continue;
-            }
-            $parts[] = $fence . ':' . $color;
-        }
-
-        return implode(', ', $parts);
     }
 
     private static function buildSummary(string $timeframeLabel, string $notes, string $otherItems): string

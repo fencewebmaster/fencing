@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
+use Fc\Admin\Settings\FenceColorSettings;
+
 /**
  * Fence style/color/height-tier resolution against the planner catalog.
  */
@@ -70,6 +72,41 @@ final class FenceCatalogService
         }
 
         return self::styleTitleFromSlug($cartItem['fence'], $fences);
+    }
+
+    /**
+     * "Barr - Black Satin, Slat - Woodland Grey Matt" from planner colour rows — the fence and
+     * colour names the project plan shows. The pre-planner webhook and the store push both send it,
+     * because the store plugin only ever receives the slugs.
+     *
+     * @param array<int|string, mixed> $colors Rows of ['fence' => slug, 'color' => slug].
+     * @param array<string, mixed>|null $fences Fence catalog.
+     */
+    public static function fenceColorLabels(array $colors, ?array $fences = null): string
+    {
+        $fences = $fences ?? FenceSettingsService::fences();
+        $colorNames = FenceColorSettings::legacyMap();
+
+        $labels = [];
+        foreach ($colors as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $fence = trim((string) ($row['fence'] ?? ''));
+            $color = trim((string) ($row['color'] ?? ''));
+            if ($fence === '' && $color === '') {
+                continue;
+            }
+            $colorLabel = isset($colorNames[$color])
+                ? trim($colorNames[$color]['title'] . ' ' . $colorNames[$color]['sub_title'])
+                : ucwords(str_replace(['_', '-'], ' ', $color));
+            $labels[] = implode(' - ', array_filter(
+                [self::styleTitleFromSlug($fence, $fences), $colorLabel],
+                static fn(string $part): bool => $part !== ''
+            ));
+        }
+
+        return implode(', ', array_unique($labels));
     }
 
     /**

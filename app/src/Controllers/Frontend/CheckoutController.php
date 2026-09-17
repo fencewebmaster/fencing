@@ -6,6 +6,7 @@ namespace Fc\Admin\Controllers\Frontend;
 
 use Fc\Admin\Models\CheckoutCartModel;
 use Fc\Admin\Models\PlannerSubmissionModel;
+use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PlannerRecordService;
 use Fc\Admin\Services\PlannerSessionService;
 use Fc\Admin\Services\SiteRegistryService;
@@ -65,6 +66,8 @@ final class CheckoutController extends BaseFrontendController
     {
         // Snapshot before the save — this is what gets pushed to the store.
         $info = $_SESSION;
+        // The store plugin only has the colour slugs; it sends these names as the Zap's fencing_type.
+        $info['fence_types'] = FenceCatalogService::fenceColorLabels(PlannerSessionService::colorRowsFromSession(), $fences);
 
         // Never mint an id here: an order push must attach to the quote that was already saved.
         $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($this->request->post('planner_id'), false);
