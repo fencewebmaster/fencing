@@ -52,6 +52,17 @@ $page = $fcFenceStylesPage;
                         <span class="fc-admin-fence-style-badge <?php echo e((string) ($card['badge_class'] ?? '')); ?>">
                             <?php echo e((string) ($card['badge_label'] ?? '')); ?>
                         </span>
+                        <?php if (!empty($card['has_swatches'])) : ?>
+                        <div class="fc-fs-card-colors" role="group" aria-label="<?php echo e(($card['title'] ?? '') . ' colors'); ?>">
+                            <?php foreach ($card['swatches'] as $swatch) : ?>
+                            <span
+                                class="fc-fs-card-colors__dot<?php echo !empty($swatch['is_default']) ? ' fc-fs-card-colors__dot--default' : ''; ?>"
+                                style="background:<?php echo e((string) ($swatch['css'] ?? '')); ?>"
+                                title="<?php echo e((string) ($swatch['label'] ?? '') . (!empty($swatch['is_default']) ? ' — Default' : '')); ?>"
+                            ></span>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <div class="fencing-style-title fw-bold"><?php echo e((string) ($card['title'] ?? '')); ?></div>
                 </div>

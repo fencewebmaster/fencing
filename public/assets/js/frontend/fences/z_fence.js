@@ -554,6 +554,11 @@ FENCE = {
             });
         }
 
+        // The drawing in the saved Step 4 colours; ProjectPlan.reload_load_fencing_items pairs this.
+        if (typeof fcApplyDiagramColors === 'function') {
+            fcApplyDiagramColors();
+        }
+
         var _gateRowForMsg = fd.info.filter(function(item) {
             return item.control_key == 'gate';
         })[0];
@@ -735,6 +740,10 @@ FENCE = {
 
         if (typeof fcEnsurePlannerSummaryButton === 'function') {
             fcEnsurePlannerSummaryButton();
+        }
+        // Not a settings key, so the loop above never adds it (functions.js).
+        if (typeof fcSyncPlannerColorButton === 'function') {
+            fcSyncPlannerColorButton();
         }
 
         FENCE.call('update_custom_fence_tab');

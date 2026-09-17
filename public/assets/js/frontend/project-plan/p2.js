@@ -127,15 +127,23 @@ let ProjectPlan = {
         for (let i = 0; i < sectionCount; i++) {
 
             var fenceStyleTitle = fcProjectPlanSectionFenceTitle(i);
+            // The section's colour rides the style line — "Slat Infill - Pearl White" — unbolded
+            // by CSS so the style stays the heading.
+            var fenceColorTitle =
+                typeof fcFenceSectionColorTitle === 'function' ? fcFenceSectionColorTitle(i) : '';
+            var fenceColorHtml =
+                fenceStyleTitle && fenceColorTitle
+                    ? ` <span class="fc-project-plan-section-style__color">- ${fcProjectPlanEscapeHtml(fenceColorTitle)}</span>`
+                    : '';
             var fenceStyleHtml = fenceStyleTitle
-                ? `<div class="fc-project-plan-section-style">${fcProjectPlanEscapeHtml(fenceStyleTitle)}</div>`
+                ? `<div class="fc-project-plan-section-style">${fcProjectPlanEscapeHtml(fenceStyleTitle)}${fenceColorHtml}</div>`
                 : '';
 
             /* The Actions menu names its section the way the head does — title over style, on two
                lines. Dropped entirely when the style is unknown, the same condition on which the
                head omits its own style line. */
             var fenceStyleMenuHtml = fenceStyleTitle
-                ? `<span class="fc-project-plan-menu-header__style">${fcProjectPlanEscapeHtml(fenceStyleTitle)}</span>`
+                ? `<span class="fc-project-plan-menu-header__style">${fcProjectPlanEscapeHtml(fenceStyleTitle)}${fenceColorHtml}</span>`
                 : '';
 
             var section = `<div class="border p-3 mb-4 fc-project-plan-section fc-project-plan-section--pending" data-section-index="${i}" aria-busy="true">
@@ -667,7 +675,9 @@ let ProjectPlan = {
             return item.slug == 'fence_height';
         });
 
-        if (fence_height_filtered_data) {
+        // .length as FENCE.load_fencing_items has it: an empty filter result is truthy, which put Slat and
+        // Slat Infill in .custom-height here only, tucking each panel's right side rail behind its post.
+        if (fence_height_filtered_data && fence_height_filtered_data.length) {
             $ppFc.addClass('custom-height');
         }
 
@@ -954,7 +964,8 @@ let ProjectPlan = {
             typeof GlassPool.clampStatus === 'function'
         ) {
             try {
-                GlassPool.applyClampDiagramState($ppFc, GlassPool.clampStatus(calc, { tabIndex: tab }).status);
+                var clampSt = GlassPool.clampStatus(calc, { tabIndex: tab });
+                GlassPool.applyClampDiagramState($ppFc, clampSt.status, clampSt);
             } catch (eClamp) {}
         }
 
@@ -971,6 +982,11 @@ let ProjectPlan = {
                 slug: i,
                 tabInfo: custom_fence_tab
             });
+        }
+
+        // Pair of the z_fence.js render call: the drawing in the saved Step 4 colours.
+        if (typeof fcApplyDiagramColors === 'function') {
+            fcApplyDiagramColors();
         }
 
         clearPlanSectionPending();

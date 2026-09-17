@@ -1822,6 +1822,7 @@ function fcConfirmRefire(el) {
 _doc.on('click', '.js-fc-clamp-gap-adjust', fcClampGapAdjust);
 _doc.on('click', '.js-fc-clamp-gap-manual', fcClampGapManual);
 _doc.on('click', '.js-fc-clamp-gap-prompt', fcClampGapPrompt);
+_doc.on('click', '.js-fc-clamp-edit-spacing', fcClampEditSpacing);
 
 function fcClampGapAdjust() {
     if (typeof GlassPool !== 'undefined' && typeof GlassPool.applyClampGapAdjust === 'function') {
@@ -1843,6 +1844,15 @@ function fcClampGapPrompt(e) {
     GlassPool.clampPromptState.key = '';
     GlassPool.armClampPrompt();
     GlassPool.maybePromptClampGap(calculate_fences(), getSelectedFenceData());
+}
+
+// The over-maximum tag's button. No dialog is open here, so it skips openMaxPanelSpacing's close wait.
+function fcClampEditSpacing(e) {
+    e.preventDefault();
+    var btn = document.getElementById('btn-edit_spacing');
+    if (btn) {
+        btn.click();
+    }
 }
 
 //----------------------------------------------------------------------------------
@@ -3632,6 +3642,34 @@ function fcSelectColor() {
             fcRefreshPlannerStep4ColorValidation();
         }
     } catch (err) {}
+}
+
+//----------------------------------------------------------------------------------
+
+// Step 3 Fence Color drawer. Its own classes, not .fencing-btn-modal / .fc-select-post, whose handlers
+// would save the pick as a section setting (update_custom_fence) instead of the style's colour.
+_doc.on('click', '.fc-fence-color-btn', function() {
+    fcOpenFenceColorDrawer($(this));
+});
+
+// Another control taking the drawer over only lights itself (fencingBtnModal).
+_doc.on('click', '.fencing-btn-modal', function() {
+    $('.fc-fence-color-btn').removeClass('fc-btn-active');
+});
+
+_doc.on('click', '.fc-fence-color-tile', fcSelectFenceColorTile);
+
+function fcSelectFenceColorTile() {
+    var $tile = $(this);
+    if ($tile.hasClass('fc-fence-color-tile--unavailable')) {
+        return;
+    }
+    fcSetFenceColor(String($tile.attr('data-fence') || ''), String($tile.attr('data-color') || ''));
+    // Same as the other drawer tiles: open beside the drawing at md+, closed on the phone popup.
+    if (!FCModal.keepsOpenOnPick(this)) {
+        FCModal.close('#fc-control-modal');
+        $('.fc-btn-active').removeClass('fc-btn-active');
+    }
 }
 
 //----------------------------------------------------------------------------------

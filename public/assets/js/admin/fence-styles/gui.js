@@ -743,7 +743,7 @@
         return sub ? label + ' · ' + sub : label;
     }
 
-    function renderColorSelectedRow(slug, index, catalogMap, appBase) {
+    function renderColorSelectedRow(slug, index, catalogMap, appBase, isDefault) {
         var item = catalogMap[slug];
         var bg = item ? fenceColorRowBackground(item) : '#e2e8f0';
         var previewUrl = item ? fenceColorPreviewUrl(item, appBase) : '';
@@ -753,6 +753,7 @@
         return (
             '<div class="fc-fs-color-selected-row' +
             missingClass +
+            (isDefault ? ' fc-fs-color-selected-row--default' : '') +
             '" data-gui-color-row data-gui-color-slug="' +
             escapeHtml(slug) +
             '" data-gui-color-idx="' +
@@ -769,7 +770,12 @@
             escapeHtml(label) +
             '</span>' +
             '<span class="fc-fs-color-selected-row__slug">' +
-            escapeHtml(slug) +
+            (isDefault
+                ? '<span class="fc-fs-color-selected-row__badge">Default</span>' +
+                  '<span class="fc-fs-color-selected-row__slug-text">' +
+                  escapeHtml(slug) +
+                  '</span>'
+                : escapeHtml(slug)) +
             '</span>' +
             '<button type="button" class="fc-fs-color-selected-row__remove" data-gui-color-remove aria-label="Remove ' +
             escapeHtml(label) +
@@ -779,7 +785,7 @@
         );
     }
 
-    function renderColorSelectedListHtml(colors, catalog, appBase) {
+    function renderColorSelectedListHtml(colors, catalog, appBase, defaultSlug) {
         var selected = Array.isArray(colors) ? colors : [];
         if (!selected.length) {
             return '<p class="fc-fs-color-selected-empty">No colors selected. Pick colors below.</p>';
@@ -787,9 +793,54 @@
         var catalogMap = fenceColorCatalogBySlug(catalog);
         return selected
             .map(function (slug, idx) {
-                return renderColorSelectedRow(String(slug || '').trim(), idx, catalogMap, appBase);
+                var key = String(slug || '').trim();
+                return renderColorSelectedRow(key, idx, catalogMap, appBase, !!key && key === defaultSlug);
             })
             .join('');
+    }
+
+    /** Default color choices: none, then the swatch list; a saved default missing from the list stays visible. */
+    function renderColorDefaultOptionsHtml(colors, current, catalog) {
+        var catalogMap = fenceColorCatalogBySlug(catalog);
+        var items = [{ value: '', label: 'None' }];
+        var listed = Object.create(null);
+        (Array.isArray(colors) ? colors : []).forEach(function (slug) {
+            var key = String(slug || '').trim();
+            if (key && !listed[key]) {
+                listed[key] = true;
+                items.push({ value: key, label: fenceColorDisplayLabel(catalogMap[key], key) });
+            }
+        });
+        current = String(current || '').trim();
+        if (current && !listed[current]) {
+            items.push({
+                value: current,
+                label: fenceColorDisplayLabel(catalogMap[current], current) + ' (not in swatch list)'
+            });
+        }
+        return selectOptions(items, current);
+    }
+
+    /** Sets or clears default_color, keeping it right after color so the saved fence file reads in order. */
+    function setDefaultColor(config, slug) {
+        slug = String(slug || '').trim();
+        delete config.default_color;
+        if (!slug) {
+            return;
+        }
+        var keys = Object.keys(config);
+        var at = keys.indexOf('color');
+        var moved = at === -1 ? [] : keys.slice(at + 1);
+        var values = moved.map(function (key) {
+            return config[key];
+        });
+        moved.forEach(function (key) {
+            delete config[key];
+        });
+        config.default_color = slug;
+        moved.forEach(function (key, i) {
+            config[key] = values[i];
+        });
     }
 
     function renderColorPickerGridHtml(colors, catalog, appBase) {
@@ -884,8 +935,17 @@
         var appBase = (state && state.appBase) || '';
         var selectedEl = wrap.querySelector('[data-gui-color-selected]');
         var pickerEl = wrap.querySelector('[data-gui-color-picker]');
+        var defaultEl = wrap.querySelector('[data-gui-color-default]');
+        var defaultSlug =
+            defaultEl && state && state.config
+                ? String(state.config[defaultEl.getAttribute('data-gui-path')] || '').trim()
+                : '';
+        if (defaultEl) {
+            defaultEl.innerHTML = renderColorDefaultOptionsHtml(colors, defaultSlug, catalog);
+            defaultEl.value = defaultSlug;
+        }
         if (selectedEl) {
-            selectedEl.innerHTML = renderColorSelectedListHtml(colors, catalog, appBase);
+            selectedEl.innerHTML = renderColorSelectedListHtml(colors, catalog, appBase, defaultSlug);
         }
         if (pickerEl) {
             pickerEl.innerHTML = renderColorPickerGridHtml(colors, catalog, appBase);
@@ -897,6 +957,7 @@
         opts = opts || {};
         var catalog = opts.fenceColorCatalog || [];
         var appBase = opts.appBase || '';
+        var defaultSlug = String(opts.defaultColor || '').trim();
         var settingsUrl =
             typeof fcAdminUrl === 'function'
                 ? fcAdminUrl('settings?tab=fence-colors')
@@ -933,10 +994,20 @@
             '<div class="fc-fs-color-picker-head">' +
             '<span class="fc-fs-color-picker-head__title">Planner swatch order</span>' +
             '<span class="fc-fs-color-picker-head__sub">Drag selected colors to reorder</span>' +
-            '</div></header>' +
+            '</div>' +
+            (opts.defaultPath
+                ? '<label class="fc-fs-color-default">' +
+                  '<span class="fc-fs-color-default__label">Default color</span>' +
+                  '<select class="fc-fs-input fc-fs-color-default__select" data-gui-path="' +
+                  escapeHtml(opts.defaultPath) +
+                  '" data-gui-color-default title="Colors the planner\'s fence drawings until the customer picks a color in Step 4">' +
+                  renderColorDefaultOptionsHtml(colors, defaultSlug, catalog) +
+                  '</select></label>'
+                : '') +
+            '</header>' +
             '<div class="fc-fs-color-picker-panel__body">' +
             '<div class="fc-fs-color-selected" data-gui-color-selected>' +
-            renderColorSelectedListHtml(colors, catalog, appBase) +
+            renderColorSelectedListHtml(colors, catalog, appBase, opts.defaultPath ? defaultSlug : '') +
             '</div></div></section>' +
             '</div></div>'
         );
@@ -1476,7 +1547,9 @@
                 renderColorTags(config.color || [], 'color', {
                     inGroup: true,
                     fenceColorCatalog: fenceColorCatalog,
-                    appBase: appBase
+                    appBase: appBase,
+                    defaultPath: 'default_color',
+                    defaultColor: config.default_color
                 }),
                 { bodyClass: 'fc-fs-field-group__body--flush' }
             ) +
@@ -2234,7 +2307,11 @@
         helpers = helpers || {};
 
         function applyPath(path, value) {
-            helpers.setByPath(state.config, path, value);
+            if (path === 'default_color') {
+                setDefaultColor(state.config, value);
+            } else {
+                helpers.setByPath(state.config, path, value);
+            }
             helpers.markDirty(state, true);
             if (path === 'title' || path === 'image' || path === 'live') {
                 helpers.syncPreview(state);
@@ -2305,6 +2382,12 @@
             }
             var path = el.getAttribute('data-gui-path');
             applyPath(path, coerceValue(path, el));
+
+            if (el.hasAttribute('data-gui-color-default')) {
+                var defaultWrap = el.closest('[data-gui-colors]');
+                refreshColorSection(defaultWrap, defaultWrap ? defaultWrap.getAttribute('data-gui-colors') : '');
+                return;
+            }
 
             if (el.type === 'checkbox' && el.checked) {
                 var optionCard = el.closest('.fc-fs-option-card');
@@ -2411,6 +2494,12 @@
                     }
                 }
                 applyPath(path, colors);
+                // A removed color can't stay the planner default.
+                var defaultSelect = wrap.querySelector('[data-gui-color-default]');
+                var defaultPath = defaultSelect ? defaultSelect.getAttribute('data-gui-path') : '';
+                if (slug && defaultPath && helpers.getByPath(state.config, defaultPath) === slug) {
+                    applyPath(defaultPath, '');
+                }
                 refreshColorSection(wrap, path);
                 return;
             }

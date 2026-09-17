@@ -83,6 +83,35 @@
         );
     }
 
+    /** The card's colour strip (server twin: admin/products/fence-styles.php); the default swatch is ringed. */
+    function renderCardColorsHtml(style) {
+        var swatches = Array.isArray(style.swatches) ? style.swatches : [];
+        if (!swatches.length) {
+            return '';
+        }
+        var dots = swatches
+            .map(function (swatch) {
+                var isDefault = !!(swatch && swatch.is_default);
+                return (
+                    '<span class="fc-fs-card-colors__dot' +
+                    (isDefault ? ' fc-fs-card-colors__dot--default' : '') +
+                    '" style="background:' +
+                    escapeHtml(String((swatch && swatch.css) || '')) +
+                    '" title="' +
+                    escapeHtml(String((swatch && swatch.label) || '') + (isDefault ? ' — Default' : '')) +
+                    '"></span>'
+                );
+            })
+            .join('');
+        return (
+            '<div class="fc-fs-card-colors" role="group" aria-label="' +
+            escapeHtml(String(style.title || '') + ' colors') +
+            '">' +
+            dots +
+            '</div>'
+        );
+    }
+
     function renderStyleCard(style, canEdit) {
         var liveBadge = style.live
             ? '<span class="fc-admin-fence-style-badge fc-admin-fence-style-badge--live">Live</span>'
@@ -99,6 +128,7 @@
             '<div class="fencing-style-img">' +
             imageHtml +
             liveBadge +
+            renderCardColorsHtml(style) +
             '</div>' +
             '<div class="fencing-style-title fw-bold">' +
             escapeHtml(style.title) +

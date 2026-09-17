@@ -224,10 +224,13 @@ function fcMeasureProjectPlanSectionCapture(sectionEl) {
     var hidden = strip ? Math.max(0, strip.scrollWidth - strip.clientWidth) : 0;
     var scrollbar = strip ? Math.max(0, strip.offsetHeight - strip.clientHeight) : 0;
 
+    var head = sectionEl.querySelector('.fc-project-plan-section-head');
+
     return {
         width: Math.ceil(sectionEl.offsetWidth + hidden),
         height: Math.ceil(sectionEl.offsetHeight - scrollbar),
-        stripWidth: strip ? Math.ceil(strip.scrollWidth) : 0
+        stripWidth: strip ? Math.ceil(strip.scrollWidth) : 0,
+        headHeight: head ? Math.ceil(head.offsetHeight) : 0
     };
 }
 
@@ -280,14 +283,18 @@ function fcPrepareProjectPlanSectionScreenshotClone(cloned, size) {
     }
 }
 
-function fcProjectPlanSectionScreenshotOptions(sectionEl) {
+function fcProjectPlanSectionScreenshotOptions(sectionEl, captureOpts) {
+    captureOpts = captureOpts || {};
     var size = fcMeasureProjectPlanSectionCapture(sectionEl);
 
     return {
-        scale: Math.min(window.devicePixelRatio || 1, 2),
+        /* Always 2x, not the screen's ratio: a 1x-display capture prints soft. */
+        scale: 2,
         backgroundColor: '#ffffff',
         width: size.width,
-        height: size.height,
+        /* Headless (wrapped-PDF) captures shrink the canvas too, or the removed band would
+           come back as white space under the run. */
+        height: captureOpts.excludeHead ? size.height - size.headHeight : size.height,
         timeout: 60000,
         features: {
             /* The strip is captured from its start at full width, wherever it is scrolled to on screen. */
@@ -305,12 +312,76 @@ function fcProjectPlanSectionScreenshotOptions(sectionEl) {
             if (el.classList.contains('fc-project-plan-skeleton')) {
                 return false;
             }
+            if (captureOpts.excludeHead && el.classList.contains('fc-project-plan-section-head')) {
+                return false;
+            }
             return true;
         },
         onCloneNode: function(cloned) {
             fcPrepareProjectPlanSectionScreenshotClone(cloned, size);
+            /* The section card's grey border would frame every wrapped row of the PDF. */
+            if (captureOpts.excludeHead && cloned && cloned.classList && cloned.classList.contains('fc-project-plan-section')) {
+                cloned.style.border = '0';
+            }
         }
     };
+}
+
+/**
+ * The section head alone, at its on-screen width: the wrapped PDF prints it as a constant-size
+ * band, where the in-strip copy would shrink with the run's length. Resolves null on failure so
+ * the pages still build, just headless.
+ */
+function fcCaptureProjectPlanSectionHead(sectionEl) {
+    var head = sectionEl ? sectionEl.querySelector('.fc-project-plan-section-head') : null;
+    if (!head || !window.modernScreenshot || typeof window.modernScreenshot.domToPng !== 'function') {
+        return Promise.resolve(null);
+    }
+
+    /* A fixed capture width, as the cart pages do: the band's proportions come from the page it
+       prints on, not from however narrow the customer's window happens to be. */
+    var captureW = fcProjectPlanA4LandscapePageSizePx().width;
+
+    return window.modernScreenshot
+        .domToPng(head, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            width: captureW,
+            timeout: 60000,
+            filter: function(node) {
+                if (!node || node.nodeType !== 1) {
+                    return true;
+                }
+                return !node.classList.contains('fc-project-plan-section-actions');
+            },
+            onCloneNode: function(cloned) {
+                if (cloned && cloned.classList && cloned.classList.contains('fc-project-plan-section-head')) {
+                    cloned.style.position = 'relative';
+                    cloned.style.boxShadow = 'none';
+                    cloned.style.width = captureW + 'px';
+                    cloned.classList.remove('fc-project-plan-section-head--stuck', 'fc-project-plan-section-head--dropdown-open');
+                    /* Pin the overall to the band's right edge. Absolutely, not text-align: the
+                       clone keeps the on-screen row widths, which overflow the fixed captureW. */
+                    var overall = cloned.querySelector('.fc-project-plan-section-head__overall');
+                    if (overall) {
+                        overall.style.position = 'absolute';
+                        overall.style.top = '0';
+                        overall.style.right = '16px';
+                        overall.style.bottom = '0';
+                        overall.style.width = 'auto';
+                        /* The clone bakes the on-screen height in; clear it so top/bottom rule. */
+                        overall.style.height = 'auto';
+                        overall.style.blockSize = 'auto';
+                        overall.style.display = 'flex';
+                        overall.style.alignItems = 'center';
+                        overall.style.justifyContent = 'flex-end';
+                    }
+                }
+            }
+        })
+        .catch(function() {
+            return null;
+        });
 }
 
 function fcCloseProjectPlanSectionDropdown(sectionEl) {
@@ -329,7 +400,7 @@ function fcCloseProjectPlanSectionDropdown(sectionEl) {
     }
 }
 
-function fcCaptureProjectPlanSection(sectionIndex) {
+function fcCaptureProjectPlanSection(sectionIndex, captureOpts) {
     return new Promise(function(resolve, reject) {
         function startCapture() {
             requestAnimationFrame(function() {
@@ -353,7 +424,7 @@ function fcCaptureProjectPlanSection(sectionIndex) {
                     fcCloseProjectPlanSectionDropdown(sectionEl);
 
                     window.modernScreenshot
-                        .domToPng(sectionEl, fcProjectPlanSectionScreenshotOptions(sectionEl))
+                        .domToPng(sectionEl, fcProjectPlanSectionScreenshotOptions(sectionEl, captureOpts))
                         .then(resolve)
                         .catch(reject);
                 });
@@ -365,6 +436,15 @@ function fcCaptureProjectPlanSection(sectionIndex) {
         } else {
             startCapture();
         }
+    });
+}
+
+/** Head band + headless run, captured back to back: the wrapped PDF pages draw from both. */
+function fcCaptureProjectPlanSectionParts(sectionIndex) {
+    return fcCaptureProjectPlanSection(sectionIndex, { excludeHead: true }).then(function(runUrl) {
+        return fcCaptureProjectPlanSectionHead(fcGetProjectPlanSectionEl(sectionIndex)).then(function(headUrl) {
+            return { run: runUrl, head: headUrl };
+        });
     });
 }
 
@@ -410,54 +490,358 @@ function fcDownloadDataUrlPng(dataUrl, filename) {
     }, 1000);
 }
 
+/** A4 landscape on the same ~96dpi px grid the portrait cart pages use. */
+function fcProjectPlanA4LandscapePageSizePx() {
+    var a4 = fcProjectPlanA4PageSizePx();
+    return { width: a4.height, height: a4.width };
+}
+
+/** The shared wrapped-page frame: A4 landscape with a content box Letter can also print at 100%. */
+function fcWrappedPageGeometry() {
+    var page = fcProjectPlanA4LandscapePageSizePx();
+    var pxPerMm = page.width / 297;
+    var contentW = 259.4 * pxPerMm;
+    var contentH = 190 * pxPerMm;
+
+    return {
+        page: page,
+        pxPerMm: pxPerMm,
+        contentW: contentW,
+        contentH: contentH,
+        marginX: (page.width - contentW) / 2,
+        marginY: (page.height - contentH) / 2,
+        headerGap: 10,
+        rowGap: 12,
+        rowsPerPage: 4,
+        overlapPaper: 5 * pxPerMm
+    };
+}
+
+/* The band keeps its capture aspect; the cap stops a runaway head eating the rows. */
+function fcWrappedHeaderHeight(geo, head) {
+    return head ? Math.min(geo.contentW * head.height / head.width, 30 * geo.pxPerMm) : 0;
+}
+
+function fcWrappedRowsNeeded(geo, run, rowH) {
+    var s = rowH / run.height;
+    var rowRunW = geo.contentW / s;
+    var stepRunW = rowRunW - geo.overlapPaper / s;
+
+    return run.width <= rowRunW ? 1 : 1 + Math.ceil((run.width - rowRunW) / stepRunW);
+}
+
+/* One run row: the slice for [row] clipped out of the whole image, drawn at scale s = rowH/run.height.
+   xShift centres a lone row that ends short of the content box. */
+function fcWrappedDrawRow(doc, geo, run, rowH, row, y, alias, xShift) {
+    var s = rowH / run.height;
+    var stepRunW = geo.contentW / s - geo.overlapPaper / s;
+    var startRun = row * stepRunW;
+    var sliceW = Math.min(geo.contentW, (run.width - startRun) * s);
+    var x = geo.marginX + (xShift || 0);
+
+    doc.saveGraphicsState();
+    doc.rect(x, y, sliceW, rowH, null);
+    doc.clip();
+    doc.discardPath();
+    doc.addImage(run.dataUrl, 'PNG', x - startRun * s, y, run.width * s, rowH, alias, 'FAST');
+    doc.restoreGraphicsState();
+}
+
+/* A one-row section sits centred in the content box; wrapped rows stay on the left margin. */
+function fcWrappedRowXShift(geo, run, rowH, totalRows) {
+    if (totalRows !== 1) {
+        return 0;
+    }
+    return Math.max(0, (geo.contentW - run.width * (rowH / run.height)) / 2);
+}
+
+function fcWrappedDrawHeader(doc, geo, parts, headerH, y, alias) {
+    doc.addImage(parts.head, 'PNG', geo.marginX, y, geo.contentW, headerH, alias ? alias + '-head' : undefined, 'FAST');
+}
+
+function fcWrappedSheetFooterText(label, sheet, sheets) {
+    return (label ? label + ' — ' : '') +
+        'sheet ' + sheet + ' of ' + sheets +
+        (sheet < sheets ? ' (drawing continues on the next sheet)' : '');
+}
+
+function fcWrappedSheetFooter(doc, geo, label, sheet, sheets) {
+    doc.setFontSize(9);
+    doc.setTextColor(130);
+    doc.text(
+        fcWrappedSheetFooterText(label, sheet, sheets),
+        geo.page.width - geo.marginX,
+        geo.page.height - geo.marginY / 2,
+        { align: 'right', baseline: 'middle' }
+    );
+}
+
 /**
- * Build a PDF from the same PNG data URL used for Download PNG (1:1 page size = image size).
+ * The run capture cropped to its drawn content (plus a small margin). Sections carry different
+ * amounts of vertical padding — a gate taller than the fence grows the baseline reserve, raked
+ * panels a top offset — and fitting those paddings into the shared row height printed one style
+ * smaller than the next. Falls back to the original on any failure.
  */
-function fcDownloadDataUrlPdf(dataUrl, filename) {
-    return new Promise(function(resolve, reject) {
-        if (!dataUrl) {
-            reject(new Error('No image data'));
-            return;
+function fcTrimRunCapture(dim) {
+    try {
+        var canvas = document.createElement('canvas');
+        canvas.width = dim.width;
+        canvas.height = dim.height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(dim.image, 0, 0);
+        var data = ctx.getImageData(0, 0, dim.width, dim.height).data;
+
+        var minX = dim.width;
+        var minY = dim.height;
+        var maxX = -1;
+        var maxY = -1;
+        for (var y = 0; y < dim.height; y++) {
+            for (var x = 0; x < dim.width; x++) {
+                var i = (y * dim.width + x) * 4;
+                /* Anything visibly darker than the white ground counts, the drawing grid included. */
+                if (data[i + 3] > 16 && (data[i] < 250 || data[i + 1] < 250 || data[i + 2] < 250)) {
+                    if (x < minX) { minX = x; }
+                    if (x > maxX) { maxX = x; }
+                    if (y < minY) { minY = y; }
+                    if (y > maxY) { maxY = y; }
+                }
+            }
+        }
+        if (maxX < 0 || maxX - minX < 40 || maxY - minY < 40) {
+            return dim;
         }
 
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            reject(new Error('jsPDF not loaded'));
-            return;
+        var pad = 8;
+        minX = Math.max(0, minX - pad);
+        minY = Math.max(0, minY - pad);
+        maxX = Math.min(dim.width - 1, maxX + pad);
+        maxY = Math.min(dim.height - 1, maxY + pad);
+
+        var out = document.createElement('canvas');
+        out.width = maxX - minX + 1;
+        out.height = maxY - minY + 1;
+        out.getContext('2d').drawImage(dim.image, -minX, -minY);
+
+        return { dataUrl: out.toDataURL('image/png'), width: out.width, height: out.height };
+    } catch (e) {
+        return dim;
+    }
+}
+
+function fcLoadSectionPartsDimensions(parts) {
+    var headLoad = parts.head
+        ? fcLoadProjectPlanCaptureDimensions(parts.head).catch(function() { return null; })
+        : Promise.resolve(null);
+
+    return Promise.all([fcLoadProjectPlanCaptureDimensions(parts.run), headLoad]).then(function(loaded) {
+        return { run: fcTrimRunCapture(loaded[0]), head: loaded[1] };
+    });
+}
+
+/**
+ * One section on standard sheets, wrapped like text: a constant-size header band, then the run
+ * sliced into up to four full-width rows, reading left to right down the page and continuing on
+ * the next sheet (header repeated) when four rows are not enough. A section needing fewer rows
+ * grows to fill the page instead of leaving it blank, capped by the width fit. Rows overlap 5mm
+ * at each wrap so a post on the break prints whole.
+ * opts: useCurrentPage draws the first sheet on the doc's fresh page; label feeds the footer;
+ * alias embeds each PNG once however many rows reuse it.
+ */
+/* One section's sheet layout, shared by the PDF pager and the PNG composer so the two
+   downloads cannot drift. */
+function fcWrappedSectionLayout(dim) {
+    var run = dim.run;
+    var geo = fcWrappedPageGeometry();
+    var headerH = fcWrappedHeaderHeight(geo, dim.head);
+    var headerGap = dim.head ? geo.headerGap : 0;
+    var rowsArea = geo.contentH - headerH - headerGap;
+    var rowHFull = (rowsArea - (geo.rowsPerPage - 1) * geo.rowGap) / geo.rowsPerPage;
+
+    var rowH = rowHFull;
+    var totalRows = fcWrappedRowsNeeded(geo, run, rowHFull);
+    if (totalRows < geo.rowsPerPage) {
+        // Grow-to-fill: the section's own rows share the whole area, unless the width fit
+        // binds first (a lone short row keeps the run's aspect rather than overshooting).
+        // The sharpness cap stops a small section (a lone gate) from being blown up past its
+        // pixels: half the 2x capture is its on-screen size, about 190dpi on paper.
+        var n = totalRows;
+        var grownH = (rowsArea - (n - 1) * geo.rowGap) / n;
+        var widthFitH = ((n * geo.contentW - (n - 1) * geo.overlapPaper) / run.width) * run.height;
+        var maxSharpH = run.height * 0.5;
+        rowH = Math.min(grownH, widthFitH, Math.max(maxSharpH, rowHFull));
+        totalRows = fcWrappedRowsNeeded(geo, run, rowH);
+        if (totalRows > n) {
+            rowH = rowHFull;
+            totalRows = fcWrappedRowsNeeded(geo, run, rowHFull);
         }
+    }
+
+    return {
+        geo: geo,
+        headerH: headerH,
+        headerGap: headerGap,
+        rowsArea: rowsArea,
+        rowH: rowH,
+        totalRows: totalRows,
+        sheets: Math.ceil(totalRows / geo.rowsPerPage),
+        xShift: fcWrappedRowXShift(geo, run, rowH, totalRows)
+    };
+}
+
+function fcAppendSectionWrappedPages(doc, parts, opts) {
+    opts = opts || {};
+
+    return fcLoadSectionPartsDimensions(parts).then(function(dim) {
+        var run = dim.run;
+        var head = dim.head;
+        var L = fcWrappedSectionLayout(dim);
+        var geo = L.geo;
+
+        for (var p = 0; p < L.sheets; p++) {
+            if (p > 0 || !opts.useCurrentPage) {
+                doc.addPage([geo.page.width, geo.page.height], 'landscape');
+            }
+
+            var y = geo.marginY;
+            if (head) {
+                fcWrappedDrawHeader(doc, geo, parts, L.headerH, y, opts.alias);
+                y += L.headerH + L.headerGap;
+            }
+
+            var first = p * geo.rowsPerPage;
+            var last = Math.min(L.totalRows, first + geo.rowsPerPage);
+            if (L.sheets === 1 && L.totalRows < geo.rowsPerPage) {
+                /* Grown rows sit centred in what is left; full sheets stack from the top. */
+                var block = (last - first) * L.rowH + (last - first - 1) * geo.rowGap;
+                y += Math.max(0, (L.rowsArea - block) / 2);
+            }
+
+            for (var r = first; r < last; r++) {
+                fcWrappedDrawRow(doc, geo, run, L.rowH, r, y, opts.alias, L.xShift);
+                y += L.rowH + geo.rowGap;
+            }
+
+            if (L.sheets > 1) {
+                fcWrappedSheetFooter(doc, geo, opts.label, p + 1, L.sheets);
+            }
+        }
+    });
+}
+
+/**
+ * Build an A4-landscape wrapped-row PDF from a section's head + run captures.
+ */
+function fcDownloadSectionPartsPdf(parts, filename, label) {
+    if (!parts || !parts.run) {
+        return Promise.reject(new Error('No image data'));
+    }
+
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        return Promise.reject(new Error('jsPDF not loaded'));
+    }
 
     window.jsPDF = window.jspdf.jsPDF;
 
-        var probe = new Image();
-        probe.onload = function() {
-            try {
-                var width = probe.width;
-                var height = probe.height;
-                var maxDim = 14400;
+    var page = fcProjectPlanA4LandscapePageSizePx();
+    var doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [page.width, page.height],
+        hotfixes: ['px_scaling']
+    });
 
-                if (width > maxDim || height > maxDim) {
-                    var scale = Math.min(maxDim / width, maxDim / height);
-                    width = Math.floor(width * scale);
-                    height = Math.floor(height * scale);
+    return fcAppendSectionWrappedPages(doc, parts, {
+        useCurrentPage: true,
+        label: label || '',
+        alias: 'fc-section-pdf'
+    }).then(function() {
+        doc.save(filename);
+    });
+}
+
+/**
+ * The per-section PDF sheets drawn onto one canvas, stacked top to bottom with a thin grey
+ * divider: the PNG download shows exactly what the PDF prints, in a single image.
+ */
+function fcComposeSectionWrappedPng(parts, label) {
+    return fcLoadSectionPartsDimensions(parts).then(function(dim) {
+        return new Promise(function(resolve, reject) {
+            var runImg = new Image();
+            runImg.onload = function() {
+                try {
+                    resolve(draw(runImg));
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            runImg.onerror = function() {
+                reject(new Error('Could not read captured image'));
+            };
+            runImg.src = dim.run.dataUrl;
+
+            function draw(img) {
+                var L = fcWrappedSectionLayout(dim);
+                var geo = L.geo;
+                var scale = 2;
+                var divider = 8;
+                var canvas = document.createElement('canvas');
+                canvas.width = Math.round(geo.page.width * scale);
+                canvas.height = Math.round((geo.page.height * L.sheets + divider * (L.sheets - 1)) * scale);
+                var ctx = canvas.getContext('2d');
+                ctx.scale(scale, scale);
+                ctx.fillStyle = '#d9d9d9';
+                ctx.fillRect(0, 0, geo.page.width, canvas.height / scale);
+
+                for (var p = 0; p < L.sheets; p++) {
+                    var top = p * (geo.page.height + divider);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, top, geo.page.width, geo.page.height);
+
+                    var y = top + geo.marginY;
+                    if (dim.head && dim.head.image) {
+                        ctx.drawImage(dim.head.image, geo.marginX, y, geo.contentW, L.headerH);
+                        y += L.headerH + L.headerGap;
+                    }
+
+                    var first = p * geo.rowsPerPage;
+                    var last = Math.min(L.totalRows, first + geo.rowsPerPage);
+                    if (L.sheets === 1 && L.totalRows < geo.rowsPerPage) {
+                        var block = (last - first) * L.rowH + (last - first - 1) * geo.rowGap;
+                        y += Math.max(0, (L.rowsArea - block) / 2);
+                    }
+
+                    var s = L.rowH / dim.run.height;
+                    var stepRunW = geo.contentW / s - geo.overlapPaper / s;
+                    for (var r = first; r < last; r++) {
+                        var startRun = r * stepRunW;
+                        var sliceW = Math.min(geo.contentW, (dim.run.width - startRun) * s);
+                        var x = geo.marginX + L.xShift;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.rect(x, y, sliceW, L.rowH);
+                        ctx.clip();
+                        ctx.drawImage(img, x - startRun * s, y, dim.run.width * s, L.rowH);
+                        ctx.restore();
+                        y += L.rowH + geo.rowGap;
+                    }
+
+                    if (L.sheets > 1) {
+                        /* 9pt in the PDF is 12px here. */
+                        ctx.fillStyle = 'rgb(130, 130, 130)';
+                        ctx.font = '12px Helvetica, Arial, sans-serif';
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(
+                            fcWrappedSheetFooterText(label, p + 1, L.sheets),
+                            geo.page.width - geo.marginX,
+                            top + geo.page.height - geo.marginY / 2
+                        );
+                    }
                 }
 
-                var doc = new jsPDF({
-                    orientation: width >= height ? 'landscape' : 'portrait',
-                    unit: 'px',
-                    format: [width, height],
-                    hotfixes: ['px_scaling']
-                });
-
-                doc.addImage(dataUrl, 'PNG', 0, 0, width, height, undefined, 'FAST');
-                doc.save(filename);
-                resolve();
-            } catch (err) {
-                reject(err);
+                return canvas.toDataURL('image/png');
             }
-        };
-        probe.onerror = function() {
-            reject(new Error('Could not read captured image'));
-        };
-        probe.src = dataUrl;
+        });
     });
 }
 
@@ -499,8 +883,11 @@ function fcProjectPlanDownloadPng(e) {
     var $dropdown = $(this).closest('.fc-project-plan-download');
     fcProjectPlanDownloadBusy($dropdown, true, 'png');
 
-    fcCaptureProjectPlanSection(sectionIndex).then(function(dataUrl) {
-        fcDownloadDataUrlPng(dataUrl, fcProjectPlanSectionFilename(sectionIndex, 'png'));
+    // Same head + wrapped-rows sheets as the PDF, composed into one image.
+    fcCaptureProjectPlanSectionParts(sectionIndex).then(function(parts) {
+        return fcComposeSectionWrappedPng(parts, 'Section ' + (sectionIndex + 1)).then(function(dataUrl) {
+            fcDownloadDataUrlPng(dataUrl, fcProjectPlanSectionFilename(sectionIndex, 'png'));
+        });
     }).catch(function() {
         window.alert('Could not capture this section. Wait for the diagram to finish loading, then try again.');
     }).finally(function() {
@@ -519,8 +906,8 @@ function fcProjectPlanDownloadPdf(e) {
     var $dropdown = $(this).closest('.fc-project-plan-download');
     fcProjectPlanDownloadBusy($dropdown, true, 'pdf');
 
-    fcCaptureProjectPlanSection(sectionIndex).then(function(dataUrl) {
-        return fcDownloadDataUrlPdf(dataUrl, fcProjectPlanSectionFilename(sectionIndex, 'pdf'));
+    fcCaptureProjectPlanSectionParts(sectionIndex).then(function(parts) {
+        return fcDownloadSectionPartsPdf(parts, fcProjectPlanSectionFilename(sectionIndex, 'pdf'), 'Section ' + (sectionIndex + 1));
     }).catch(function() {
         window.alert('Could not capture this section. Wait for the diagram to finish loading, then try again.');
     }).finally(function() {
@@ -613,7 +1000,11 @@ function fcPrepareProjectPlanCartScreenshotClone(cloned) {
     cloned.style.background = '#ffffff';
     cloned.style.boxSizing = 'border-box';
 
-    cloned.querySelectorAll('.fc-cart-toolbar, .js-fc-cart-toolbar, .fc-view-total-cost-bar, .fc-cart-edit-bar').forEach(function(el) {
+    cloned.querySelectorAll(
+        '.fc-cart-toolbar, .js-fc-cart-toolbar, .fc-view-total-cost-bar, .fc-cart-edit-bar, ' +
+        '.fc-cart-list-toolbar, .fc-cart-heading-actions, .fc-cart-optional-actions, ' +
+        '.fc-cart-qty-gauge, .fc-cancel-item, .fc-update-item, .fc-reset-item'
+    ).forEach(function(el) {
         el.style.display = 'none';
     });
 
@@ -633,11 +1024,68 @@ function fcPrepareProjectPlanCartScreenshotClone(cloned) {
     cloned.querySelectorAll('.table-cart .d-block.d-md-none').forEach(function(el) {
         el.style.display = 'none';
     });
+
+    /* Baked on-screen widths and heights keep the table from reflowing to the page width, so
+       it printed cut off at the right: clear the table and every wrapper up to the root. */
+    var tableEl = cloned.querySelector('.table-cart');
+    for (var wrapEl = tableEl; wrapEl && wrapEl !== cloned; wrapEl = wrapEl.parentElement) {
+        wrapEl.style.width = '100%';
+        wrapEl.style.inlineSize = '100%';
+        wrapEl.style.maxWidth = '100%';
+        wrapEl.style.maxInlineSize = '100%';
+        wrapEl.style.minWidth = '0';
+        wrapEl.style.minInlineSize = '0';
+        wrapEl.style.height = 'auto';
+        wrapEl.style.blockSize = 'auto';
+        wrapEl.style.overflow = 'visible';
+    }
+    cloned.querySelectorAll('.table-cart *').forEach(function(el) {
+        if (el.tagName === 'IMG') {
+            return;
+        }
+        el.style.width = 'auto';
+        el.style.inlineSize = 'auto';
+        el.style.height = 'auto';
+        el.style.blockSize = 'auto';
+        el.style.minWidth = '0';
+        el.style.minInlineSize = '0';
+        el.style.maxWidth = '100%';
+        el.style.maxInlineSize = '100%';
+        el.style.overflowWrap = 'break-word';
+    });
+
+    /* The sticky column head bakes its on-screen offset in and printed mid-row: back to flow.
+       Its dark band prints as a slab of ink, so it goes white with black text on paper. */
+    cloned.querySelectorAll('.table-cart thead, .table-cart thead tr, .table-cart thead th').forEach(function(el) {
+        el.style.position = 'static';
+        el.style.top = 'auto';
+        el.style.insetBlockStart = 'auto';
+        el.style.boxShadow = 'none';
+        el.style.background = '#ffffff';
+        el.style.color = '#212529';
+        /* The clone bakes -webkit-text-fill-color, which outranks color when painting. */
+        el.style.webkitTextFillColor = '#212529';
+    });
+
+    /* Keep "In-Stock" / "Low-Stock" to one line in the narrowed stock column. */
+    cloned.querySelectorAll('.table-cart .fw-boldx').forEach(function(el) {
+        el.style.whiteSpace = 'nowrap';
+    });
+
+    /* Fonts measure a hair wider in the capture than the baked heading box: one line, unclipped. */
+    cloned.querySelectorAll('.step-label').forEach(function(el) {
+        el.style.whiteSpace = 'nowrap';
+        el.style.width = 'auto';
+        el.style.inlineSize = 'auto';
+        el.style.maxWidth = 'none';
+        el.style.maxInlineSize = 'none';
+    });
 }
 
 function fcProjectPlanCartScreenshotOptions() {
     return {
-        scale: Math.min(window.devicePixelRatio || 1, 2),
+        /* Always 2x, not the screen's ratio: a 1x-display capture prints soft. */
+        scale: 2,
         backgroundColor: '#ffffff',
         width: fcProjectPlanCartCaptureWidthPx(),
         timeout: 60000,
@@ -671,6 +1119,15 @@ function fcProjectPlanCartScreenshotOptions() {
             if (el.classList.contains('fc-reset-item')) {
                 return false;
             }
+            if (el.classList.contains('fc-cart-list-toolbar')) {
+                return false;
+            }
+            if (el.classList.contains('fc-cart-optional-actions')) {
+                return false;
+            }
+            if (el.classList.contains('fc-cart-qty-gauge')) {
+                return false;
+            }
             return true;
         },
         onCloneNode: function(cloned) {
@@ -695,8 +1152,28 @@ function fcCaptureProjectPlanCartList() {
                         return;
                     }
 
+                    var options = fcProjectPlanCartScreenshotOptions();
+                    /* The capture canvas takes the cart's on-screen height, but the reflowed
+                       table is usually taller: stage a copy at the page width and use its height.
+                       The pager trims whatever blank is left at the foot. */
+                    try {
+                        var stage = document.createElement('div');
+                        stage.style.cssText = 'position:absolute;left:-100000px;top:0;width:' + fcProjectPlanCartCaptureWidthPx() + 'px;';
+                        var staged = cartEl.cloneNode(true);
+                        fcPrepareProjectPlanCartScreenshotClone(staged);
+                        stage.appendChild(staged);
+                        document.body.appendChild(stage);
+                        var stagedH = Math.ceil(staged.getBoundingClientRect().height);
+                        stage.remove();
+                        if (stagedH > 0) {
+                            options.height = stagedH + 40;
+                        }
+                    } catch (stageError) {
+                        /* The live height stays the fallback. */
+                    }
+
                     window.modernScreenshot
-                        .domToPng(cartEl, fcProjectPlanCartScreenshotOptions())
+                        .domToPng(cartEl, options)
                         .then(resolve)
                         .catch(reject);
                 });
@@ -848,36 +1325,26 @@ function fcBuildProjectPlanPdfFromCaptures(sectionCaptures, cartCapture) {
 
     window.jsPDF = window.jspdf.jsPDF;
 
-    return Promise.all(sectionCaptures.map(fcLoadProjectPlanCaptureDimensions)).then(function(dimensions) {
-        var doc = null;
-        var maxDim = 14400;
+    var page = fcProjectPlanA4LandscapePageSizePx();
+    var doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [page.width, page.height],
+        hotfixes: ['px_scaling']
+    });
 
-        dimensions.forEach(function(dim, index) {
-            var width = dim.width;
-            var height = dim.height;
-
-            if (width > maxDim || height > maxDim) {
-                var scale = Math.min(maxDim / width, maxDim / height);
-                width = Math.floor(width * scale);
-                height = Math.floor(height * scale);
-            }
-
-            var orientation = width >= height ? 'landscape' : 'portrait';
-
-            if (index === 0) {
-                doc = new jsPDF({
-                    orientation: orientation,
-                    unit: 'px',
-                    format: [width, height],
-                    hotfixes: ['px_scaling']
-                });
-            } else {
-                doc.addPage([width, height], orientation);
-            }
-
-            doc.addImage(dim.dataUrl, 'PNG', 0, 0, width, height, undefined, 'FAST');
+    // Each section prints exactly as its own "Download PDF" does — its own sheet(s), rows
+    // grown to fill the page. The first one takes the constructor's page so the doc doesn't
+    // open on a blank sheet.
+    return sectionCaptures.reduce(function(chain, parts, index) {
+        return chain.then(function() {
+            return fcAppendSectionWrappedPages(doc, parts, {
+                useCurrentPage: index === 0,
+                label: 'Section ' + (index + 1),
+                alias: 'fc-section-' + index
+            });
         });
-
+    }, Promise.resolve()).then(function() {
         var savePdf = function() {
             doc.save('project-plan-' + fcProjectPlanDownloadDateSuffix() + '.pdf');
         };
@@ -893,8 +1360,8 @@ function fcBuildProjectPlanPdfFromCaptures(sectionCaptures, cartCapture) {
 function fcCaptureAllProjectPlanSections(indices) {
     return indices.reduce(function(chain, sectionIndex) {
         return chain.then(function(captures) {
-            return fcCaptureProjectPlanSection(sectionIndex).then(function(dataUrl) {
-                captures.push(dataUrl);
+            return fcCaptureProjectPlanSectionParts(sectionIndex).then(function(parts) {
+                captures.push(parts);
                 return captures;
             });
         });

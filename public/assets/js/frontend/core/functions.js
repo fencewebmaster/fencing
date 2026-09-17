@@ -1112,6 +1112,30 @@ function fcFenceSectionStyleTitle(tabIdx0) {
     }
 }
 
+/** The colour title a section's style is shown in (the pick, else the style default), or ''. */
+function fcFenceSectionColorTitle(tabIdx0) {
+    var raw = localStorage.getItem('custom_fence-' + tabIdx0);
+    if (!raw) {
+        return '';
+    }
+    try {
+        var tab = JSON.parse(raw);
+        var slugRaw = tab && tab[0] ? tab[0].style || tab[0].fence || '' : '';
+        if (!slugRaw) {
+            return '';
+        }
+        var slug =
+            typeof normalizeFenceStyleSlug === 'function'
+                ? normalizeFenceStyleSlug(String(slugRaw))
+                : String(slugRaw);
+        var color = fcFenceColor(slug);
+        var swatch = color ? fcFenceColorSwatches()[color] : null;
+        return swatch && swatch.title ? swatch.title : '';
+    } catch (e) {
+        return '';
+    }
+}
+
 var FC_SECTION_TAB_STATUS_TOOLTIPS = {
     complete: 'This section is complete',
     incomplete: 'Missing overall length or Calculate not run'
@@ -6877,6 +6901,17 @@ function fcAllowedColorsForFenceStyle(styleSlug) {
     return restricted ? (allowed || []) : null;
 }
 
+/** A style's default colour (fence style editor), or '' when unset, off its colour list or ruled out by a panel option. */
+function fcDefaultFenceColor(styleSlug) {
+    var info = typeof fc_data !== 'undefined' ? fc_data[styleSlug] : null;
+    var color = String(info?.default_color || '');
+    if (!color || !Array.isArray(info.color) || info.color.indexOf(color) === -1) {
+        return '';
+    }
+    var allowed = fcAllowedColorsForFenceStyle(styleSlug);
+    return allowed === null || allowed.indexOf(color) !== -1 ? color : '';
+}
+
 /**
  * Step 4: grey out colours the selected panel option cannot be made in, and drop a selection that
  * has just become invalid so the plan cannot be submitted against it.
@@ -6914,6 +6949,15 @@ function fcApplyPanelOptionColorRestrictions($scope) {
                 $item.removeClass('fc-selected');
             }
         });
+
+        // One colour left is no longer a choice: it takes the selection (clones too, so whichever
+        // carousel copy is on screen shows it), and update_color_options below saves it.
+        if (allowed.length === 1 && !$items.filter('.fc-selected').length) {
+            var $sole = $items.filter('[data-slug="' + allowed[0] + '"]').addClass('fc-selected');
+            if (typeof fcSyncSlickOptionCopies === 'function' && $sole.length) {
+                fcSyncSlickOptionCopies($sole.first());
+            }
+        }
     });
 
     if (typeof update_color_options === 'function') {
@@ -7515,6 +7559,329 @@ function update_color_options() {
     color_data = fcCollectPlannerColorRowsFromDom();
     colorData = { color: color_data };
     updateOrCreateObjectInLocalStorage('project-plans', colorData);
+    // The diagrams repaint in the picked colour now, not on the next Calculate.
+    fcApplyDiagramColors();
+}
+
+/** The customer's own colour pick for a fence style (project-plans.color) while the panel options allow it, else ''. */
+function fcPickedFenceColor(fenceSlug) {
+    var color = '';
+    try {
+        var plans = JSON.parse(localStorage.getItem('project-plans')) || {};
+        (Array.isArray(plans.color) ? plans.color : []).forEach(function(row) {
+            if (row && row.fence === fenceSlug && row.color) {
+                color = String(row.color);
+            }
+        });
+        // A pick a panel option has since ruled out gives way, as Step 4 drops it on its next pass.
+        var allowed = color ? fcAllowedColorsForFenceStyle(fenceSlug) : null;
+        if (allowed && allowed.indexOf(color) === -1) {
+            color = '';
+        }
+    } catch (e) {}
+    return color;
+}
+
+/**
+ * When the panel options leave exactly one colour (Flat Top's Full Size Panels 3000W is black
+ * only), that colour becomes the saved pick — the customer has no choice left to make. Returns
+ * the colour it ensured, or '' when there is no such single colour.
+ */
+function fcAutoSelectSoleAllowedColor(fenceSlug) {
+    var info = typeof fc_data !== 'undefined' ? fc_data[fenceSlug] : null;
+    if (!info || !Array.isArray(info.color)) {
+        return '';
+    }
+    var allowed = fcAllowedColorsForFenceStyle(fenceSlug);
+    if (!allowed || allowed.length !== 1 || info.color.indexOf(allowed[0]) === -1) {
+        return '';
+    }
+    var sole = allowed[0];
+    if (fcPickedFenceColor(fenceSlug) === sole) {
+        return sole;
+    }
+    var plans = {};
+    try {
+        plans = JSON.parse(localStorage.getItem('project-plans')) || {};
+    } catch (e) {}
+    var found = false;
+    var rows = (Array.isArray(plans.color) ? plans.color : []).map(function(row) {
+        if (row && row.fence === fenceSlug) {
+            found = true;
+            return { fence: fenceSlug, color: sole };
+        }
+        return row;
+    });
+    if (!found) {
+        rows.push({ fence: fenceSlug, color: sole });
+    }
+    updateOrCreateObjectInLocalStorage('project-plans', { color: rows });
+    return sole;
+}
+
+/** The colour a fence style is drawn in: the pick, else the style's default, else ''. */
+function fcFenceColor(fenceSlug) {
+    var color = fcPickedFenceColor(fenceSlug);
+    // The default only reaches the drawings; Step 4, the drawer and the Fence Color badge wait for a pick.
+    if (!color) {
+        try {
+            color = fcDefaultFenceColor(fenceSlug);
+        } catch (e) {}
+    }
+    return color;
+}
+
+var fcFenceColorSwatchMap = null;
+
+/** Swatch data by colour slug from the color_options template, which the planner and project plan both emit. */
+function fcFenceColorSwatches() {
+    if (!fcFenceColorSwatchMap) {
+        fcFenceColorSwatchMap = {};
+        $($.parseHTML($('script[data-type="color_options"]').first().text() || '')).find('.fc-select-color[data-slug]').each(function() {
+            var $swatch = $(this);
+            fcFenceColorSwatchMap[$swatch.attr('data-slug')] = {
+                code: String($swatch.attr('data-color-code') || ''),
+                title: String($swatch.attr('data-color-title') || ''),
+                finish: String($swatch.attr('data-color-subtitle') || '')
+            };
+        });
+    }
+    return fcFenceColorSwatchMap;
+}
+
+/** A colour's swatch value: a hex, a gradient or a url(). */
+function fcFenceColorCode(colorSlug) {
+    var swatch = fcFenceColorSwatches()[colorSlug];
+    return swatch ? swatch.code : '';
+}
+
+/** [r, g, b] from a #rgb or #rrggbb swatch; null for a gradient or image swatch. */
+function fcHexToRgb(code) {
+    var m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(code || '').trim());
+    if (!m) {
+        return null;
+    }
+    var hex = m[1].length === 3 ? m[1].replace(/./g, '$&$&') : m[1];
+    return [0, 2, 4].map(function(i) {
+        return parseInt(hex.substr(i, 2), 16);
+    });
+}
+
+/** One drawn style's powder coat on <html> (style.css [data-fc-{key}-color]): the swatch colour and a darker edge. */
+function fcApplyFenceCoat(fenceSlug, key) {
+    var root = document.documentElement;
+    var slug = fcFenceColor(fenceSlug);
+    var rgb = fcHexToRgb(slug ? fcFenceColorCode(slug) : '');
+
+    if (!rgb) {
+        root.removeAttribute('data-fc-' + key + '-color');
+        root.removeAttribute('data-fc-' + key + '-tone');
+        root.style.removeProperty('--fc-' + key + '-color');
+        root.style.removeProperty('--fc-' + key + '-edge');
+        return;
+    }
+
+    // A light coat needs a deeper edge than a dark one to show on the white drawing ground.
+    var light = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 > 0.6;
+    var edge = rgb.map(function(c) {
+        return Math.round(c * (light ? 0.557 : 0.62));
+    });
+    root.setAttribute('data-fc-' + key + '-color', slug);
+    root.setAttribute('data-fc-' + key + '-tone', light ? 'light' : 'dark');
+    root.style.setProperty('--fc-' + key + '-color', 'rgb(' + rgb.join(', ') + ')');
+    root.style.setProperty('--fc-' + key + '-edge', 'rgb(' + edge.join(', ') + ')');
+}
+
+/** Diagram colours and the Step 3 colour badge follow the picks (glass hardware finish, powder coats); runs on a pick and after every render. */
+function fcApplyDiagramColors() {
+    // A panel option can leave one colour standing while Step 4 is not on screen to say so.
+    try {
+        ['flat_top', 'barr', 'slat', 'slat_fence_infill', 'glass_pool'].forEach(function(slug) {
+            fcAutoSelectSoleAllowedColor(slug);
+        });
+    } catch (e) {}
+    if (typeof GlassPool !== 'undefined' && typeof GlassPool.applyHardwareFinish === 'function') {
+        GlassPool.applyHardwareFinish();
+    }
+    // The styles whose drawings style.css can recolour: fence slug, then its key there.
+    fcApplyFenceCoat('flat_top', 'flat-top');
+    fcApplyFenceCoat('barr', 'barr');
+    fcApplyFenceCoat('slat', 'slat');
+    fcApplyFenceCoat('slat_fence_infill', 'slat-infill');
+    fcSyncPlannerColorButton();
+}
+
+/** The selected section's fence style when it has colours to pick from, else ''. */
+function fcPlannerColorStyleSlug() {
+    try {
+        var fd = getSelectedFenceData();
+        return fd && fd.data && Array.isArray(fd.data.color) && fd.data.color.length ? String(fd.slug) : '';
+    } catch (e) {
+        return '';
+    }
+}
+
+/**
+ * Step 3 "Fence Color" control, between the section's own controls and Edit Right Side. The row is
+ * rebuilt on every section render, so this re-adds it; the badge is the customer's colour pick.
+ */
+function fcSyncPlannerColorButton() {
+    var $controls = $('.fc-planner-page ' + (typeof FENCES !== 'undefined' && FENCES.el && FENCES.el.fencingPanelControls
+        ? FENCES.el.fencingPanelControls
+        : '.fencing-panel-controls'));
+    if (!$controls.length) {
+        return;
+    }
+    var slug = fcPlannerColorStyleSlug();
+    var $btn = $controls.find('#btn-fence_color');
+
+    // No style picked on this section yet. Slat Infill disables every other control but still has colours.
+    if (!slug) {
+        $btn.remove();
+        return;
+    }
+
+    if (!$btn.length) {
+        $btn = $('<button>', {
+            type: 'button',
+            id: 'btn-fence_color',
+            class: 'btn-fc btn-fc-outline-default fc-mb-1 fc-fence-color-btn',
+            'aria-haspopup': 'dialog'
+        }).append(
+            $('<span>', { class: 'fc-fence-color-dot', 'aria-hidden': 'true' }),
+            $('<span>').text('Fence'),
+            ' Color'
+        );
+        var $next = $controls.find('#btn-right_side, #btn-planner-shortcuts, #btn-planner-summary').first();
+        if ($next.length) {
+            $btn.insertBefore($next);
+        } else {
+            $btn.appendTo($controls);
+        }
+    }
+
+    var picked = fcPickedFenceColor(slug);
+    var swatch = picked ? fcFenceColorSwatches()[picked] : null;
+    // Until the customer picks, a dashed ring, even while the drawing shows the default.
+    $btn.find('.fc-fence-color-dot')
+        .attr('style', swatch && swatch.code ? 'background:' + swatch.code : null)
+        .toggleClass('fc-fence-color-dot--empty', !(swatch && swatch.code));
+    $btn.attr('title', swatch ? 'Fence color: ' + (swatch.title + ' ' + swatch.finish).trim() : 'No fence color selected yet');
+
+    // An open colour drawer follows a pick made elsewhere (Step 4, or a panel option ruling one out).
+    $('#fc-control-modal .fc-fence-color-tile[data-fence="' + slug + '"]').each(function() {
+        var $tile = $(this);
+        var on = $tile.attr('data-color') === picked && !$tile.hasClass('fc-fence-color-tile--unavailable');
+        $tile.toggleClass('fc-selected', on).attr('aria-checked', on ? 'true' : 'false');
+    });
+}
+
+/** Fills and opens the control drawer with the section style's colours as tiles, in its swatch order. */
+function fcOpenFenceColorDrawer($btn) {
+    var slug = fcPlannerColorStyleSlug();
+    if (!slug) {
+        return;
+    }
+
+    var info = fc_data[slug];
+    var swatches = fcFenceColorSwatches();
+    var allowed = fcAllowedColorsForFenceStyle(slug);
+    // Only the customer's own pick is marked; the default colours the drawing but is not a choice.
+    var current = fcPickedFenceColor(slug);
+    var $grid = $('<div>', { class: 'row px-2 fc-fence-color-grid', role: 'radiogroup', 'aria-label': 'Fence color' });
+
+    info.color.forEach(function(colorSlug) {
+        var swatch = swatches[colorSlug];
+        if (!swatch) {
+            return;
+        }
+        var ok = allowed === null || allowed.indexOf(colorSlug) !== -1;
+        var on = ok && colorSlug === current;
+        var $tile = $('<button>', {
+            type: 'button',
+            class: 'fc-fence-color-tile' + (on ? ' fc-selected' : '') + (ok ? '' : ' fc-fence-color-tile--unavailable'),
+            role: 'radio',
+            'aria-checked': on ? 'true' : 'false',
+            'aria-label': (swatch.title + ' ' + swatch.finish).trim(),
+            'data-fence': slug,
+            'data-color': colorSlug
+        }).attr('style', 'background:' + swatch.code);
+        if (!ok) {
+            // Same wording as the greyed-out Step 4 swatch.
+            $tile.attr({ 'aria-disabled': 'true', title: 'Not available with the panel option selected for this fence' });
+        }
+        $('<div>', { class: 'col-4 px-1 fc-fence-color-cell' })
+            .append(
+                $tile,
+                $('<p>', { class: 'fc-fence-color-name' }).text(swatch.title),
+                $('<p>', { class: 'fc-fence-color-finish' }).text(swatch.finish)
+            )
+            .appendTo($grid);
+    });
+
+    var $area = $('<div>', { class: 'fencing-modal-area fencing-modal-area--fence-color', 'data-field': 'fence_color' }).append(
+        $('<div>', { class: 'fencing-modal-header' }).append(
+            $('<div>', { class: 'fencing-modal-title fc-font-2' }).text('Fence Color')
+        ),
+        $('<div>', { class: 'fencing-modal-body fc-font-1 fc-p-0' }).append(
+            $('<div>', { class: 'fencing-form-group' }).append($grid)
+        ),
+        // The note the way addNotesOrInfo builds the other drawers': titled, icon-led, in the grey card.
+        $('<div>', { class: 'fencing-modal-notes' }).append(
+            $('<div>', { class: 'row align-items-center' }).append(
+                $('<div>', { class: 'col-sm' }).append(
+                    $('<div>', { class: 'fc-alert-gray field-note' }).append(
+                        $('<label>', { class: 'mb-2 fw-bold' }).append(
+                            $('<i>', { class: 'fa-solid fa-circle-exclamation me-1', 'aria-hidden': 'true' }),
+                            document.createTextNode('One Color Per Fence Style')
+                        ),
+                        $('<div>', { class: 'fc-text-gray fc-modal-note-body' }).text(
+                            'Your color applies to every ' + info.title + ' section in this plan, and matches the color selected in Step 4.'
+                        )
+                    )
+                )
+            )
+        )
+    );
+
+    $('#fc-control-modal .fc-modal-content').addClass('has-multiple-areas').empty().append($area);
+    FCModal.open('#fc-control-modal');
+    // The drawer swaps content in place, so whichever control lit it before goes dark.
+    $('.fc-btn-active').removeClass('fc-btn-active');
+    $btn.addClass('fc-btn-active');
+}
+
+/** A Step 3 drawer pick: saved to project-plans.color and mirrored into Step 4, which rebuilds that list from its own tiles. */
+function fcSetFenceColor(fenceSlug, colorSlug) {
+    if (!fenceSlug || !colorSlug) {
+        return;
+    }
+
+    var plans = {};
+    try {
+        plans = JSON.parse(localStorage.getItem('project-plans')) || {};
+    } catch (e) {}
+    var found = false;
+    var rows = (Array.isArray(plans.color) ? plans.color : []).map(function(row) {
+        if (row && row.fence === fenceSlug) {
+            found = true;
+            return { fence: fenceSlug, color: colorSlug };
+        }
+        return row;
+    });
+    if (!found) {
+        rows.push({ fence: fenceSlug, color: colorSlug });
+    }
+    updateOrCreateObjectInLocalStorage('project-plans', { color: rows });
+
+    // Slick clones included, so the carousel shows the pick whichever copy is on screen.
+    var $items = fcPlannerStep4Scope().find('.fc-color-options[data-slug="' + fenceSlug + '"] .fc-select-item');
+    if ($items.length) {
+        $items.removeClass('fc-selected').filter('[data-slug="' + colorSlug + '"]').addClass('fc-selected');
+        fcRefreshPlannerStep4ColorValidation();
+    }
+
+    fcApplyDiagramColors();
 }
 
 //----------------------------------------------------------------------------------

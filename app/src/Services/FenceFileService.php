@@ -81,6 +81,27 @@ final class FenceFileService
                 continue;
             }
 
+            // Comments hide their apostrophes from the string tracker: a "planner's" in a
+            // // comment opened a string that never closed, ate the block's closing bracket
+            // and failed every save of that fence with "Could not build updated fence file content."
+            if ($char === '/' && $i + 1 < $length && $content[$i + 1] === '/') {
+                $newline = strpos($content, "\n", $i);
+                if ($newline === false) {
+                    return null;
+                }
+                $i = $newline;
+                continue;
+            }
+
+            if ($char === '/' && $i + 1 < $length && $content[$i + 1] === '*') {
+                $close = strpos($content, '*/', $i + 2);
+                if ($close === false) {
+                    return null;
+                }
+                $i = $close + 1;
+                continue;
+            }
+
             if ($char === "'" || $char === '"') {
                 $inString = true;
                 $stringChar = $char;

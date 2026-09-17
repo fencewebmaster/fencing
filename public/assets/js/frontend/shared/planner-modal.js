@@ -102,7 +102,7 @@ let FCModal = {
         $(el).removeClass(FCModal.slidClass);
         /* Synced after the fade, not before it: the element stays :visible while it animates out. */
         $(el).fadeOut('fast', FCModal.syncScrollLock);
-        $(".fencing-btn-modal.fc-btn-active").removeClass('fc-btn-active');
+        $(".fencing-btn-modal.fc-btn-active, .fc-fence-color-btn.fc-btn-active").removeClass('fc-btn-active');
     },
     
     //----------------------------------------------------------------------------------

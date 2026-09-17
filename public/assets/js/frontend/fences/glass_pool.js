@@ -219,10 +219,11 @@ GlassPool = {
     //----------------------------------------------------------------------------------
 
     clampMessages: {
-        below_min:     'Panel gap <b>{{gap}}mm</b> is below the <b>{{min}}mm</b> minimum for a panel-to-panel clamp &mdash; no clamps added. <a href="#" class="js-fc-clamp-gap-prompt">Adjust gap</a>',
-        below_min_fixed:'No panel layout at this Overall Length gives the <b>{{min}}mm</b> minimum gap for a panel-to-panel clamp &mdash; no clamps added. Change the Overall Length or Max Panel Size.',
-        above_max:     'Panel gap <b>{{gap}}mm</b> is above the <b>{{max}}mm</b> maximum for a panel-to-panel clamp &mdash; no clamps added. Reduce <b>Max Panel Spacing</b> (Edit Spacing) or adjust the Overall Length.',
-        no_size:       'No panel-to-panel clamp is configured for a <b>{{gap}}mm</b> gap &mdash; no clamps added.',
+        included:      '<b>{{qty}} &times;</b> {{title}} panel clamp{{plural}} <span class="fc-clamp-note__meta">{{sizeMin}}&ndash;{{sizeMax}}mm gap</span>',
+        below_min:     '<b>Clamps not added.</b> Your <b>{{gap}}mm</b> panel gap is under the <b>{{min}}mm</b> clamp minimum. <a href="#" class="fc-clamp-note__action js-fc-clamp-gap-prompt">Adjust gap</a>',
+        below_min_fixed:'<b>Clamps not added.</b> No panel layout at this Overall Length gives the <b>{{min}}mm</b> clamp minimum. Change the Overall Length or Max Panel Size.',
+        above_max:     '<b>Clamps not added.</b> Your <b>{{gap}}mm</b> panel gap is over the <b>{{max}}mm</b> clamp maximum. <a href="#" class="fc-clamp-note__action js-fc-clamp-edit-spacing">Edit spacing</a>',
+        no_size:       '<b>Clamps not added.</b> No clamp size fits a <b>{{gap}}mm</b> panel gap.',
         adjusted_title:'Panel gap adjusted',
         adjusted:      'Panel widths were recalculated so the panel gap is <b>{{gap}}mm</b> (was <b>{{from}}mm</b>) &mdash; <b>{{title}}</b> panel-to-panel clamps will be included.'
     },
@@ -254,11 +255,18 @@ GlassPool = {
 
     //----------------------------------------------------------------------------------
 
-    /** {{token}} fill, the way FENCE.settings.message consumers do it. */
+    /** {{token}} fill, the way FENCE.settings.message consumers do it. Values are escaped: a size title is admin-entered. */
     clampMessage: function(key, vars) {
         var tpl = GlassPool.clampMessages[key] || '';
         Object.keys(vars || {}).forEach(function(name) {
-            tpl = tpl.replace(new RegExp('\\{\\{' + name + '\\}\\}', 'gi'), String(vars[name]));
+            var value = String(vars[name])
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+            tpl = tpl.replace(new RegExp('\\{\\{' + name + '\\}\\}', 'gi'), function() {
+                return value;
+            });
         });
         return tpl;
     },
@@ -605,17 +613,14 @@ GlassPool = {
 
     //----------------------------------------------------------------------------------
 
-    /** The .fc-clamp-message line for one status; empty for nothing-to-report states. */
+    /** The .fc-clamp-message tag: which clamps were added, or why none were; empty when not selected. */
     renderClampLine: function($line, st, status, fd) {
         if (!$line || !$line.length) {
             return;
         }
         $line.removeClass('fencing-panel-clamp-msg--warn');
 
-        // 'ok' says nothing the customer cannot already see: the clamps are drawn on the
-        // diagram and listed in the materials list. Only the states that add NO clamp get a
-        // line, because those need explaining.
-        if (!st || !st.selected || status === 'none' || status === 'invalid' || status === 'ok') {
+        if (!st || !st.selected || status === 'none' || status === 'invalid' || (status === 'ok' && !st.size)) {
             $line.html('');
             return;
         }
@@ -625,14 +630,33 @@ GlassPool = {
             min: st.minGapMm,
             max: st.maxGapMm,
             qty: st.junctions,
-            title: st.size ? st.size.title : ''
+            plural: st.junctions === 1 ? '' : 's',
+            title: st.size ? st.size.title : '',
+            sizeMin: st.size ? st.size.minGapMm : '',
+            sizeMax: st.size ? st.size.maxGapMm : ''
         };
+
+        // 'ok' still gets a tag: the diagram shows where the clamps sit, not which size or how many.
+        if (status === 'ok') {
+            $line.html(
+                '<span class="fc-clamp-note">' +
+                    '<span class="fc-clamp-glyph" aria-hidden="true"></span>' +
+                    '<span>' + GlassPool.clampMessage('included', vars) + '</span>' +
+                '</span>'
+            );
+            return;
+        }
 
         var copyKey = status;
         if (status === 'below_min' && GlassPool.clampPromptState.fixedKey && GlassPool.clampPromptState.fixedKey === GlassPool.clampPromptKey(fd, st)) {
             copyKey = 'below_min_fixed';
         }
-        $line.addClass('fencing-panel-clamp-msg--warn').html(GlassPool.clampMessage(copyKey, vars));
+        $line.addClass('fencing-panel-clamp-msg--warn').html(
+            '<span class="fc-clamp-note fc-clamp-note--warn">' +
+                '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>' +
+                '<span>' + GlassPool.clampMessage(copyKey, vars) + '</span>' +
+            '</span>'
+        );
     },
 
     /**
@@ -643,13 +667,23 @@ GlassPool = {
      * with it - the stripped end strip landed second and a bar sat on the run's end. Harmless
      * while the bars were decoration; now they mark a clamp the cart bills, so they follow the
      * final order: none on the ends, one on every inner strip (near-gate ones stay CSS-hidden).
+     * `st` (optional) names the clamp in each bar's hover title; the title rides on the root so
+     * the bars syncClampBars adds on a later pass pick it up too.
      */
-    applyClampDiagramState: function($root, status) {
+    applyClampDiagramState: function($root, status, st) {
         if (!$root || !$root.length) {
             return;
         }
+        var unsupported = status === 'below_min' || status === 'above_max' || status === 'no_size';
+        var title = '';
+        if (st && st.selected && status === 'ok' && st.size) {
+            title = st.size.title + ' panel clamp (' + st.size.minGapMm + '–' + st.size.maxGapMm + 'mm gap)';
+        } else if (st && st.selected && unsupported) {
+            title = 'Clamp not added: the ' + st.gapMm + 'mm panel gap is outside the clamp range';
+        }
+        $root.attr('data-fc-clamp-title', title);
         GlassPool.syncClampBars($root);
-        $root.toggleClass('fc-clamps-unsupported', status === 'below_min' || status === 'above_max' || status === 'no_size');
+        $root.toggleClass('fc-clamps-unsupported', unsupported);
     },
 
     /**
@@ -663,6 +697,7 @@ GlassPool = {
             return;
         }
         var strips = rootEl.querySelectorAll('.fencing-panel-spacing-number');
+        var title = rootEl.getAttribute('data-fc-clamp-title') || '';
         for (var i = 0; i < strips.length; i++) {
             var strip = strips[i];
             var bar = strip.querySelector('.fs-clamp');
@@ -676,8 +711,16 @@ GlassPool = {
                 if (bar) {
                     bar.remove();
                 }
-            } else if (!bar && /(^|\s)panel-opt-/.test(strip.className)) {
+                continue;
+            }
+            if (!bar && /(^|\s)panel-opt-/.test(strip.className)) {
                 strip.insertAdjacentHTML('beforeend', '<span class="fs-clamp"></span>');
+                bar = strip.querySelector('.fs-clamp');
+            }
+            if (bar && title) {
+                bar.setAttribute('title', title);
+            } else if (bar) {
+                bar.removeAttribute('title');
             }
         }
     },
@@ -705,7 +748,7 @@ GlassPool = {
         // Only a glass section owns clamp bars; a non-glass render clears the line and leaves
         // that section's diagram alone rather than walking strips it does not own.
         if (st) {
-            GlassPool.applyClampDiagramState($root, status);
+            GlassPool.applyClampDiagramState($root, status, st);
         }
         GlassPool.renderClampLine($line, st, status, fd);
 
@@ -716,6 +759,19 @@ GlassPool = {
         // One render per gesture: a Calculate that lands in range must not leave the prompt
         // armed for whichever section the next scripted tab switch happens to render.
         GlassPool.clampPromptState.armed = false;
+    },
+
+    //----------------------------------------------------------------------------------
+
+    /** Glass hardware finish (style.css [data-fc-glass-finish]) from the glass_pool colour (pick or default); none keeps it polished. */
+    applyHardwareFinish: function() {
+        var color = fcFenceColor('glass_pool');
+
+        if (color) {
+            document.documentElement.setAttribute('data-fc-glass-finish', color);
+        } else {
+            document.documentElement.removeAttribute('data-fc-glass-finish');
+        }
     },
 
     //----------------------------------------------------------------------------------
