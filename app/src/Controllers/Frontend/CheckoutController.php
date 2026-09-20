@@ -9,6 +9,7 @@ use Fc\Admin\Models\PlannerSubmissionModel;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PlannerRecordService;
 use Fc\Admin\Services\PlannerSessionService;
+use Fc\Admin\Services\PlannerWebhookService;
 use Fc\Admin\Services\SiteRegistryService;
 use Fc\Admin\Services\StorePushService;
 
@@ -68,6 +69,10 @@ final class CheckoutController extends BaseFrontendController
         $info = $_SESSION;
         // The store plugin only has the colour slugs; it sends these names as the Zap's fencing_type.
         $info['fence_types'] = FenceCatalogService::fenceColorLabels(PlannerSessionService::colorRowsFromSession(), $fences);
+        // Same reason for the extras: its label list is hardcoded and drifts from Planner Options.
+        $info['other_items'] = PlannerWebhookService::otherItemsLabel(
+            isset($info['fc_data']) && is_array($info['fc_data']) ? $info['fc_data'] : []
+        );
 
         // Never mint an id here: an order push must attach to the quote that was already saved.
         $planner_ref = PlannerRecordService::resolveSubmissionPlannerId($this->request->post('planner_id'), false);

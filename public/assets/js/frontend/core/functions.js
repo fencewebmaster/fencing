@@ -8629,7 +8629,7 @@ function fcOpenPostFinishDrawer($btn) {
                             document.createTextNode('Note')
                         ),
                         $('<div>', { class: 'fc-text-gray fc-modal-note-body' }).text(
-                            'Post finishes are for reference only and are not included with the products. Use this preview to see which post finish best complements your selected fence colour.'
+                            'Post finishes are for reference only and are not included with the products. Use this as a guide for your existing posts and select the closest match.'
                         )
                     )
                 )

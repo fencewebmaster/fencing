@@ -313,9 +313,13 @@ final class PlannerWebhookService
      * ShareCartUrlController materialises it on click). `installer` is always
      * empty — this app's modal never collects an installer preference. `fencing_type` holds the
      * readable fence/colour names (FenceCatalogService::fenceColorLabels()); the plugin's push sends
-     * the same text, from the label CheckoutController adds to the store push. `planner_status`,
-     * `fence_types` (same names, kept for existing Zap mappings), `address_1` and `zipcode` are
-     * FC-only additions; the plugin's push doesn't send them.
+     * the same text, from the label CheckoutController adds to the store push. `fence_types` repeats
+     * `fencing_type` under the name existing Zap mappings use.
+     *
+     * Both senders feed one Zap, so this payload and the plugin's are kept field-for-field
+     * identical — a field added on one side only arrives empty on the other side's events,
+     * which is how `planner_status`, `fence_types`, `address_1` and `zipcode` were blank in
+     * Close until Sep 2026. Add a field here and add it there in the same change.
      *
      * @return array<string, mixed>
      */
@@ -387,11 +391,7 @@ final class PlannerWebhookService
         $timeframeSlug = (string) ($fcData['timeframe'] ?? '');
         $timeframeLabel = PlannerOptionSettings::timeframeLabel($timeframeSlug) ?? $timeframeSlug;
 
-        $extraJson = PlannerRecordService::extraForDb(
-            $fcData['extra'] ?? null,
-            isset($fcData['nothing_extra']) ? (string) $fcData['nothing_extra'] : null
-        );
-        $otherItems = self::extraItemLabels($extraJson);
+        $otherItems = self::otherItemsLabel($fcData);
 
         $fenceTypes = FenceCatalogService::fenceColorLabels($colorRows);
 
@@ -439,6 +439,22 @@ final class PlannerWebhookService
                 ],
             ],
         ];
+    }
+
+    /**
+     * "Other Items Needed" text for a session's fc_data. The store plugin holds only the
+     * slugs against a hardcoded label list of its own, which drifts from Planner Options
+     * the moment either is edited — so the checkout push carries the resolved text instead,
+     * for the same reason it already carries fence_types.
+     *
+     * @param array<string, mixed> $fcData
+     */
+    public static function otherItemsLabel(array $fcData): string
+    {
+        return self::extraItemLabels(PlannerRecordService::extraForDb(
+            $fcData['extra'] ?? null,
+            isset($fcData['nothing_extra']) ? (string) $fcData['nothing_extra'] : null
+        ));
     }
 
     /**
