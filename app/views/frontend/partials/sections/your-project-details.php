@@ -121,7 +121,7 @@ use Fc\Admin\Services\FenceCatalogService;
 				<div class="fc-card">
 
 					<div class="fc-card-header fc-bg-dark fc-border-top">
-						Color Options
+						Colour Options
 					</div>
 
 					<div class="fc-edit-zone">
@@ -274,6 +274,25 @@ use Fc\Admin\Services\FenceCatalogService;
 								<?php endif; ?>
 							</td>
 						</tr>
+						<?php
+						// Step 3 Post Options (Slat Infill): a reference-only pick saved in project_plans, never a product.
+						$post_finish_lines = [];
+						$pp_post_raw       = isset( $info['project_plans'] ) ? $info['project_plans'] : '';
+						$pp_post           = is_array( $pp_post_raw ) ? $pp_post_raw : json_decode( (string) $pp_post_raw, true );
+						if ( is_array( $pp_post ) && ! empty( $pp_post['post_finish'] ) && is_array( $pp_post['post_finish'] ) ) {
+							foreach ( $pp_post['post_finish'] as $pf_row ) {
+								if ( is_array( $pf_row ) && ! empty( $pf_row['name'] ) ) {
+									$post_finish_lines[] = ( ! empty( $pf_row['category'] ) ? $pf_row['category'] . ' – ' : '' ) . $pf_row['name'];
+								}
+							}
+						}
+						if ( ! empty( $post_finish_lines ) ) :
+						?>
+						<tr>
+							<td>Post finish (reference only)</td>
+							<td><?php echo e( implode( ', ', $post_finish_lines ) ); ?></td>
+						</tr>
+						<?php endif; ?>
 					</table>
 
 				</div>

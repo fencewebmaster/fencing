@@ -27,6 +27,14 @@
         return visible + ' of ' + total + ' total units';
     }
 
+    function syncFenceChips(panel, selectedFences) {
+        panel.querySelectorAll('[data-fc-cart-fence-chip]').forEach(function (chip) {
+            var active = selectedFences.indexOf(chip.getAttribute('data-fc-cart-fence-chip')) !== -1;
+            chip.classList.toggle('is-active', active);
+            chip.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+    }
+
     function applyCartFilters(container) {
         var panel = container.closest('.fc-entries-detail-panel--cart');
         if (!panel) {
@@ -85,6 +93,8 @@
         if (clearBtn) {
             clearBtn.disabled = query === '' && selectedFences.length === 0;
         }
+
+        syncFenceChips(panel, selectedFences);
     }
 
     function clearCartFilters(container) {
@@ -128,6 +138,29 @@
                     return;
                 }
                 clearCartFilters(container);
+            });
+        }
+
+        // Row fence chips toggle the matching fence-style checkbox.
+        var panel = container.closest('.fc-entries-detail-panel--cart');
+        if (panel) {
+            panel.addEventListener('click', function (e) {
+                var chip = e.target.closest('[data-fc-cart-fence-chip]');
+                if (!chip) {
+                    return;
+                }
+                var slug = chip.getAttribute('data-fc-cart-fence-chip') || '';
+                var checkbox = null;
+                container.querySelectorAll('[data-fc-entries-fence-checkbox]').forEach(function (input) {
+                    if (input.value === slug) {
+                        checkbox = input;
+                    }
+                });
+                if (!checkbox) {
+                    return;
+                }
+                checkbox.checked = !checkbox.checked;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
             });
         }
 

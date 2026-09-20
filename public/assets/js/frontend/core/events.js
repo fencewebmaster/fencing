@@ -928,6 +928,10 @@ function fencingStyleItem_2(e) {
             if (typeof fcSyncPlannerUpdateButtonVisibility === 'function') {
                 fcSyncPlannerUpdateButtonVisibility();
             }
+            // After the save above, so a switch away from Slat Infill drops its post finish.
+            if (typeof fcPrunePostFinish === 'function') {
+                fcPrunePostFinish();
+            }
         } catch (err) {}
     }, 0);
 }
@@ -1960,6 +1964,9 @@ function fcFenceResetAll(e) {
             if (typeof fcSyncAllPlannerSectionTabStatuses === 'function') {
                 fcSyncAllPlannerSectionTabStatuses();
             }
+            if (typeof fcPrunePostFinish === 'function') {
+                fcPrunePostFinish();
+            }
         } catch (err) {}
     });
 }
@@ -2047,6 +2054,9 @@ function jsBtnDeleteFence(e) {
         try {
             if (typeof fcSyncPlannerUpdateButtonVisibility === 'function') {
                 fcSyncPlannerUpdateButtonVisibility();
+            }
+            if (typeof fcPrunePostFinish === 'function') {
+                fcPrunePostFinish();
             }
         } catch (err) {}
     }, 0);
@@ -3646,7 +3656,7 @@ function fcSelectColor() {
 
 //----------------------------------------------------------------------------------
 
-// Step 3 Fence Color drawer. Its own classes, not .fencing-btn-modal / .fc-select-post, whose handlers
+// Step 3 Fence Colour drawer. Its own classes, not .fencing-btn-modal / .fc-select-post, whose handlers
 // would save the pick as a section setting (update_custom_fence) instead of the style's colour.
 _doc.on('click', '.fc-fence-color-btn', function() {
     fcOpenFenceColorDrawer($(this));
@@ -3654,7 +3664,7 @@ _doc.on('click', '.fc-fence-color-btn', function() {
 
 // Another control taking the drawer over only lights itself (fencingBtnModal).
 _doc.on('click', '.fencing-btn-modal', function() {
-    $('.fc-fence-color-btn').removeClass('fc-btn-active');
+    $('.fc-fence-color-btn, .fc-post-finish-btn').removeClass('fc-btn-active');
 });
 
 _doc.on('click', '.fc-fence-color-tile', fcSelectFenceColorTile);
@@ -3671,6 +3681,126 @@ function fcSelectFenceColorTile() {
         $('.fc-btn-active').removeClass('fc-btn-active');
     }
 }
+
+//----------------------------------------------------------------------------------
+
+// Step 3 Post Finish drawer (Slat Infill). Own classes for the same reason as Fence Colour's, and it
+// only ever writes project-plans.post_finish (fcSetPostFinish), never a section setting.
+_doc.on('click', '.fc-post-finish-btn', function() {
+    fcOpenPostFinishDrawer($(this));
+});
+
+// A Slat Infill post in the drawing opens the same drawer. The drawing drags to scroll with the post riding under
+// the pointer, so a press that moved is a drag, not a pick.
+var FC_SLAT_INFILL_POST = '.fc-planner-page .fencing-display-result .fencing-panel-container[data-type="slat_fence_infill"] .panel-post';
+var fcSlatInfillPostDown = null;
+
+_doc.on('mousedown', FC_SLAT_INFILL_POST, function(e) {
+    fcSlatInfillPostDown = { x: e.clientX, y: e.clientY };
+});
+
+_doc.on('click', FC_SLAT_INFILL_POST, function(e) {
+    var down = fcSlatInfillPostDown;
+    fcSlatInfillPostDown = null;
+    var $btn = $('#btn-post_finish');
+    if (!$btn.length || (down && Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y) > 5)) {
+        return;
+    }
+    fcOpenPostFinishDrawer($btn);
+});
+
+_doc.on('click', '.fc-post-finish-tile, .fc-post-finish-none', fcSelectPostFinishTile);
+
+function fcSelectPostFinishTile() {
+    var $area = $(this).closest('.fencing-modal-area--post-finish');
+    var id = String($(this).attr('data-id') || '');
+    fcSetPostFinish(String($area.attr('data-fence') || ''), id ? fcPostFinishEntry(id) : null);
+    fcSavePostFinishToQuote();
+    if (!FCModal.keepsOpenOnPick(this)) {
+        FCModal.close('#fc-control-modal');
+        $('.fc-btn-active').removeClass('fc-btn-active');
+    }
+}
+
+_doc.on('click', '.fc-post-finish-tab', function() {
+    var $tab = $(this);
+    var $area = $tab.closest('.fencing-modal-area--post-finish');
+    // A tab leaves the search: it browses one category again.
+    $area.attr({ 'data-tab': $tab.attr('data-category'), 'data-query': '' });
+    $area.find('.fc-post-finish-search__input').val('').trigger('keyup');
+    fcRenderPostFinishGrid($area);
+    // Focus without the browser's own jump, then glide the picked card to the middle of the strip.
+    this.focus({ preventScroll: true });
+    // Only after the new grid's first paint: the heavy tile SVGs (brick, stone) stalled a slide
+    // that had already started, and its clock then caught up in one visible leap.
+    var tabEl = this;
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            fcCenterPostFinishTab(tabEl, true);
+        });
+    });
+});
+
+// The preview's colour swatches make the same pick Fence Colour makes; the drawer stays open to show it.
+_doc.on('click', '.fc-post-finish-color', function() {
+    var $area = $(this).closest('.fencing-modal-area--post-finish');
+    fcSetFenceColor(String($area.attr('data-fence') || ''), String($(this).attr('data-color') || ''));
+});
+
+// The arrows page the category strip by most of a viewport, keeping one card for continuity.
+_doc.on('click', '.fc-post-finish-cats__arrow', function() {
+    var strip = $(this).closest('.fc-post-finish-cats').find('.fc-post-finish-tabs')[0];
+    if (!strip) {
+        return;
+    }
+    var dir = $(this).hasClass('fc-post-finish-cats__arrow--next') ? 1 : -1;
+    fcStopPostFinishSlide(strip);
+    fcNormalizePostFinishStrip(strip, true);
+    strip.scrollBy({
+        left: dir * Math.max(100, Math.round(strip.clientWidth * 0.8)),
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    });
+});
+
+// Arrow keys, Home and End move along the tabs (WAI-ARIA tabs pattern).
+_doc.on('keydown', '.fc-post-finish-tab', function(e) {
+    var $tabs = $(this).closest('.fc-post-finish-tabs').find('.fc-post-finish-tab').not('.fc-post-finish-tab--clone');
+    var i = $tabs.index($tabs.filter('[data-category="' + this.getAttribute('data-category') + '"]'));
+    var next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: $tabs.length - 1 }[e.key];
+    if (next === undefined) {
+        return;
+    }
+    e.preventDefault();
+    $tabs.eq((next + $tabs.length) % $tabs.length).trigger('click');
+});
+
+_doc.on('input keyup', '.fc-post-finish-search__input', function(e) {
+    var $area = $(this).closest('.fencing-modal-area--post-finish');
+    var query = String(this.value || '');
+    if (e.type === 'keyup' && $area.attr('data-query') === query) {
+        return;
+    }
+    $area.attr('data-query', query);
+    fcRenderPostFinishGrid($area);
+});
+
+// The drawer is inside #fc-planning-form, so Enter here would submit the plan.
+_doc.on('keydown', '.fc-post-finish-search__input', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+    }
+});
+
+// Pointer devices preview a finish on the posts before it is picked; leaving the grid shows the pick again.
+_doc.on('mouseenter', '.fc-post-finish-tile', function() {
+    if (window.matchMedia('(hover: hover)').matches) {
+        fcRenderPostFinishPreview($(this).closest('.fencing-modal-area--post-finish'), fcPostFinishEntry(String($(this).attr('data-id') || '')));
+    }
+});
+
+_doc.on('mouseleave', '.fc-post-finish-panel', function() {
+    fcRenderPostFinishPreview($(this).closest('.fencing-modal-area--post-finish'), null);
+});
 
 //----------------------------------------------------------------------------------
 

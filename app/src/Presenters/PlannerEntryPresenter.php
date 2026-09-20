@@ -562,6 +562,29 @@ final class PlannerEntryPresenter
     }
 
     /**
+     * Step 3 Post Finish pick(s) saved in project_plans_data, as "Category – Name" lines, or ''.
+     * Reference only: the customer's post look, never a product in the cart.
+     *
+     * @param mixed $projectPlansRaw
+     */
+    public static function postFinishLabel($projectPlansRaw): string
+    {
+        $pp = self::decodeJsonField($projectPlansRaw);
+        $labels = [];
+
+        foreach (is_array($pp['post_finish'] ?? null) ? $pp['post_finish'] : [] as $pick) {
+            $name = is_array($pick) ? trim((string) ($pick['name'] ?? '')) : '';
+            if ($name === '') {
+                continue;
+            }
+            $category = trim((string) ($pick['category'] ?? ''));
+            $labels[] = ($category !== '' ? $category . ' – ' : '') . $name;
+        }
+
+        return implode("\n", $labels);
+    }
+
+    /**
      * Normalize extra / other-items value for detail rows (always a string).
      *
      * @param mixed $extra
@@ -611,6 +634,7 @@ final class PlannerEntryPresenter
             $row->fence_data ?? null,
             isset($row->section_count) ? (int) $row->section_count : 0
         );
+        $item['post_finish'] = self::postFinishLabel($row->project_plans_data ?? null);
         $item['cart_items'] = self::parseEntryCartItems($row);
 
         return $item;
@@ -1345,14 +1369,19 @@ final class PlannerEntryPresenter
         return 'fc-entries-status';
     }
 
-    public static function plannerUrl(string $appBase, string $plannerId): string
+    /**
+     * `$silent` is for admin "open" links only: the planner then skips markReloaded(), so a
+     * staff view never counts as the customer reopening their quote. Links that reach the
+     * customer (plannerShareUrl(), the webhook's planner_url) must never carry it.
+     */
+    public static function plannerUrl(string $appBase, string $plannerId, bool $silent = false): string
     {
         $plannerId = trim($plannerId);
         if ($plannerId === '') {
             return '#';
         }
 
-        return rtrim($appBase, '/') . '?qid=' . rawurlencode($plannerId);
+        return rtrim($appBase, '/') . '?qid=' . rawurlencode($plannerId) . ($silent ? '&silent=1' : '');
     }
 
     public static function plannerShareUrl(string $appBase, string $plannerId): string
@@ -1961,7 +1990,7 @@ final class PlannerEntryPresenter
             }
             $slug = trim((string) ($cartItem['fence_slug'] ?? ''));
             if ($slug !== '') {
-                $cartFenceSlugs[$slug] = true;
+                $cartFenceSlugs[$slug] = ($cartFenceSlugs[$slug] ?? 0) + 1;
             }
         }
 
@@ -1975,6 +2004,7 @@ final class PlannerEntryPresenter
                 $cartFenceOptions[] = [
                     'slug' => $slug,
                     'name' => (string) ($fenceOption['name'] ?? $slug),
+                    'count' => $cartFenceSlugs[$slug],
                 ];
             }
         }
@@ -1994,7 +2024,8 @@ final class PlannerEntryPresenter
             'state' => 'State',
             'fence_type' => 'Fence type',
             'timeframe' => 'Timeframe',
-            'extra' => 'Other Items Needed',
+            'extra' => 'Other items needed',
+            'post_finish' => 'Post finish (reference only)',
             'installer' => 'Installer',
             'ip_address' => 'IP address',
             'device' => 'Device',
@@ -2010,6 +2041,10 @@ final class PlannerEntryPresenter
             foreach ($detailFields as $fieldKey => $fieldLabel) {
                 $extraItems = null;
                 $raw = $item[$fieldKey] ?? '';
+                // Only Slat Infill quotes can carry a post finish; the rest would show an empty row.
+                if ($fieldKey === 'post_finish' && trim((string) $raw) === '') {
+                    continue;
+                }
                 if ($fieldKey === 'fence_type') {
                     $raw = (string) ($item['fence_type_label'] ?? '');
                     if ($raw === '') {
@@ -2036,6 +2071,12 @@ final class PlannerEntryPresenter
                 } elseif ($fieldKey === 'extra') {
                     $extraItems = self::extraItems($raw);
                     $raw = implode(', ', $extraItems);
+                } elseif ($fieldKey === 'post_finish') {
+                    $finishLines = array_values(array_filter(array_map('trim', explode("\n", (string) $raw))));
+                    if (count($finishLines) > 1) {
+                        $extraItems = $finishLines;
+                        $raw = implode(', ', $finishLines);
+                    }
                 } elseif ($fieldKey === 'user_agent') {
                     $raw = self::browserName((string) $raw);
                 } elseif (in_array($fieldKey, ['created_at', 'updated_at', 'webhook_sent_at'], true)) {
@@ -2050,22 +2091,49 @@ final class PlannerEntryPresenter
                 $deviceIcon = ($fieldKey === 'device' && $display !== '—')
                     ? self::deviceIcon($display)
                     : '';
+                $telDigits = $fieldKey === 'mobile' ? preg_replace('/[^0-9+]/', '', $display) : '';
                 $detailRows[] = [
                     'key' => $fieldKey,
                     'label' => $fieldLabel,
                     'display' => $display,
                     'copy' => $display,
+                    'value_class' => $display === '—' ? ' fc-entries-modal__value--empty' : '',
                     'display_items' => is_array($extraItems) ? $extraItems : null,
                     'status_class' => $fieldKey === 'status' ? self::statusClass((string) $raw) : '',
                     'planner_url' => ($fieldKey === 'planner_id' && $raw !== '')
-                        ? self::plannerUrl($appBase, (string) $raw)
+                        ? self::plannerUrl($appBase, (string) $raw, true)
                         : '',
                     'ipinfo_url' => $ipinfoUrl,
                     'device_icon' => $deviceIcon,
+                    'tel_url' => ($telDigits !== '' && $display !== '—') ? 'tel:' . $telDigits : '',
                     'is_link' => (
-                        in_array($fieldKey, ['planner_id', 'site_url', 'email'], true) && $raw !== ''
+                        in_array($fieldKey, ['planner_id', 'site_url', 'email', 'mobile'], true) && $raw !== ''
                     ) || ($fieldKey === 'ip_address' && $ipinfoUrl !== ''),
                     'link_type' => $fieldKey,
+                ];
+            }
+        }
+
+        // Grouped for the detail panel's sectioned layout; copy-all keeps the flat order.
+        $detailGroupDefs = [
+            'Planner' => ['planner_id', 'site_id', 'site_url', 'status', 'section_count', 'notes'],
+            'Customer' => ['name', 'mobile', 'email', 'address', 'postcode', 'state'],
+            'Project' => ['fence_type', 'timeframe', 'extra', 'post_finish', 'installer'],
+            'Activity' => ['ip_address', 'device', 'user_agent', 'quote_load_count', 'created_at', 'updated_at', 'webhook_sent_at'],
+        ];
+        $detailRowsByKey = array_column($detailRows, null, 'key');
+        $detailGroups = [];
+        foreach ($detailGroupDefs as $groupLabel => $groupKeys) {
+            $groupRows = [];
+            foreach ($groupKeys as $groupKey) {
+                if (isset($detailRowsByKey[$groupKey])) {
+                    $groupRows[] = $detailRowsByKey[$groupKey];
+                }
+            }
+            if ($groupRows !== []) {
+                $detailGroups[] = [
+                    'label' => $groupLabel,
+                    'rows' => $groupRows,
                 ];
             }
         }
@@ -2081,6 +2149,28 @@ final class PlannerEntryPresenter
         $canSendPrePlanner = is_array($item) && PermissionService::can('planner_entries.send_pre_planner');
         $webhookTestMode = $canSendPrePlanner
             && (IntegrationsSettings::get()['webhookMode'] ?? 'live') === 'test';
+
+        // Header identity block: planner ID + status chip + a one-line summary.
+        $headerStatus = is_array($item) ? trim((string) ($item['status'] ?? '')) : '';
+        $headerMetaParts = [];
+        if (is_array($item)) {
+            $headerName = trim((string) ($item['name'] ?? ''));
+            if ($headerName !== '') {
+                $headerMetaParts[] = $headerName;
+            }
+            $headerSections = (int) ($item['section_count'] ?? 0);
+            if ($headerSections > 0) {
+                $headerMetaParts[] = $headerSections . ' section' . ($headerSections === 1 ? '' : 's');
+            }
+            $headerCreated = self::formatDatetime($item['created_at'] ?? '');
+            if ($headerCreated !== '') {
+                $headerMetaParts[] = 'Created ' . $headerCreated;
+            }
+        }
+        $headerTitle = is_array($item) ? trim((string) ($item['planner_id'] ?? '')) : '';
+        if ($headerTitle === '' && is_array($item)) {
+            $headerTitle = 'Entry #' . $entryId;
+        }
 
         $cartRows = [];
         foreach ($cartItems as $cartItem) {
@@ -2122,19 +2212,23 @@ final class PlannerEntryPresenter
             'app_base' => $appBase,
             'list_url' => $listUrl,
             'planner_url' => is_array($item)
-                ? self::plannerUrl($appBase, (string) ($item['planner_id'] ?? ''))
+                ? self::plannerUrl($appBase, (string) ($item['planner_id'] ?? ''), true)
                 : '#',
             'api_url' => 'api.php?module=entries',
             'csrf' => $canSendPrePlanner ? AuthService::csrfToken() : '',
             'can_send_pre_planner' => $canSendPrePlanner,
             'planner_id' => is_array($item) ? (string) ($item['planner_id'] ?? '') : '',
+            'header_title' => $headerTitle,
+            'header_status_label' => $headerStatus,
+            'header_status_class' => $headerStatus !== '' ? self::statusClass($headerStatus) : '',
+            'header_meta' => implode(' · ', $headerMetaParts),
             'webhook_mode_label' => $webhookTestMode ? 'Test' : 'Live',
             'webhook_sent_label' => is_array($item) ? self::formatDatetime($item['webhook_sent_at'] ?? '') : '',
             'cart_item_count' => count($cartItems),
             'cart_total_qty' => $cartTotalQty,
             'cart_optional_count' => $cartOptionalCount,
             'cart_fence_options' => $cartFenceOptions,
-            'detail_rows' => $detailRows,
+            'detail_groups' => $detailGroups,
             'copy_all_text' => $copyAllText,
             'cart_rows' => $cartRows,
             'has_cart_items' => $cartItems !== [],

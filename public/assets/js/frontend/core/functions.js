@@ -4350,6 +4350,31 @@ function fcUnlockStep2OverallLengthField() {
     $box.closest('.fc-input-container').removeClass('fc-measurement-locked-gate-only');
 }
 
+/** The standard glass sheet height a step-up rakes back down to (the drawing's 120px panels). */
+var FC_GLASS_PANEL_HEIGHT_MM = 1200;
+
+/**
+ * Draws a glass step-up (raked) panel to scale: its real width, its tall end at the step-up height,
+ * and a rake that drops back to the standard sheet beside it. The sizes go on the side's
+ * .raked-panel wrapper as CSS variables that style.css builds the sheet from.
+ *
+ * @return {number} The step-up drop in px (0 when nothing was sized), for the headroom above the row.
+ */
+function fcSizeGlassRakedPanel($rakedWrap, widthMm, heightMm) {
+    var el = $rakedWrap && $rakedWrap[0];
+    var scale = (typeof FENCE !== 'undefined' && FENCE.get('item', 'base_margin')) || 0.1;
+    var w = parseFloat(widthMm);
+    var h = parseFloat(heightMm);
+    if (!el || !(w > 0) || !(h > FC_GLASS_PANEL_HEIGHT_MM)) {
+        return 0;
+    }
+    var dropPx = (h - FC_GLASS_PANEL_HEIGHT_MM) * scale;
+    el.style.setProperty('--fc-rake-w', (w * scale) + 'px');
+    el.style.setProperty('--fc-rake-h', (h * scale) + 'px');
+    el.style.setProperty('--fc-rake-drop', dropPx + 'px');
+    return dropPx;
+}
+
 /** Read left/right step-up selection from segment storage (side row or legacy add_step_up_panels row). */
 function fcResolveStepUpRakedSetting(custom_fence, rakedKey) {
     if (!Array.isArray(custom_fence) || (rakedKey !== 'left_raked' && rakedKey !== 'right_raked')) {
@@ -5851,6 +5876,7 @@ function fcInitLoadQuoteModalFromServer() {
             var u = new URL(window.location.href);
             if (u.searchParams.has('qid')) {
                 u.searchParams.delete('qid');
+                u.searchParams.delete('silent');
                 var qs = u.searchParams.toString();
                 history.replaceState({}, '', u.pathname + (qs ? '?' + qs : '') + u.hash);
             }
@@ -6648,6 +6674,10 @@ function submit_fence_planner(status = '', options) {
             }
 
             Object.entries(project_plans || {}).forEach(([key, value]) => {
+                // Reference only: it is saved inside project_plans above, never as an fc_data field the cart reads.
+                if (key === 'post_finish') {
+                    return;
+                }
                 if (typeof value === 'object') {
                     value = JSON.stringify(value);
                 }
@@ -7622,7 +7652,7 @@ function fcAutoSelectSoleAllowedColor(fenceSlug) {
 /** The colour a fence style is drawn in: the pick, else the style's default, else ''. */
 function fcFenceColor(fenceSlug) {
     var color = fcPickedFenceColor(fenceSlug);
-    // The default only reaches the drawings; Step 4, the drawer and the Fence Color badge wait for a pick.
+    // The default only reaches the drawings; Step 4, the drawer and the Fence Colour badge wait for a pick.
     if (!color) {
         try {
             color = fcDefaultFenceColor(fenceSlug);
@@ -7708,7 +7738,9 @@ function fcApplyDiagramColors() {
     fcApplyFenceCoat('barr', 'barr');
     fcApplyFenceCoat('slat', 'slat');
     fcApplyFenceCoat('slat_fence_infill', 'slat-infill');
+    fcApplyPostFinishCoat();
     fcSyncPlannerColorButton();
+    fcSyncPlannerPostFinishButton();
 }
 
 /** The selected section's fence style when it has colours to pick from, else ''. */
@@ -7722,7 +7754,7 @@ function fcPlannerColorStyleSlug() {
 }
 
 /**
- * Step 3 "Fence Color" control, between the section's own controls and Edit Right Side. The row is
+ * Step 3 "Fence Colour" control, between the section's own controls and Edit Right Side. The row is
  * rebuilt on every section render, so this re-adds it; the badge is the customer's colour pick.
  */
 function fcSyncPlannerColorButton() {
@@ -7750,7 +7782,7 @@ function fcSyncPlannerColorButton() {
         }).append(
             $('<span>', { class: 'fc-fence-color-dot', 'aria-hidden': 'true' }),
             $('<span>').text('Fence'),
-            ' Color'
+            ' Colour'
         );
         var $next = $controls.find('#btn-right_side, #btn-planner-shortcuts, #btn-planner-summary').first();
         if ($next.length) {
@@ -7766,7 +7798,7 @@ function fcSyncPlannerColorButton() {
     $btn.find('.fc-fence-color-dot')
         .attr('style', swatch && swatch.code ? 'background:' + swatch.code : null)
         .toggleClass('fc-fence-color-dot--empty', !(swatch && swatch.code));
-    $btn.attr('title', swatch ? 'Fence color: ' + (swatch.title + ' ' + swatch.finish).trim() : 'No fence color selected yet');
+    $btn.attr('title', swatch ? 'Fence colour: ' + (swatch.title + ' ' + swatch.finish).trim() : 'No fence colour selected yet');
 
     // An open colour drawer follows a pick made elsewhere (Step 4, or a panel option ruling one out).
     $('#fc-control-modal .fc-fence-color-tile[data-fence="' + slug + '"]').each(function() {
@@ -7788,7 +7820,7 @@ function fcOpenFenceColorDrawer($btn) {
     var allowed = fcAllowedColorsForFenceStyle(slug);
     // Only the customer's own pick is marked; the default colours the drawing but is not a choice.
     var current = fcPickedFenceColor(slug);
-    var $grid = $('<div>', { class: 'row px-2 fc-fence-color-grid', role: 'radiogroup', 'aria-label': 'Fence color' });
+    var $grid = $('<div>', { class: 'row px-2 fc-fence-color-grid', role: 'radiogroup', 'aria-label': 'Fence colour' });
 
     info.color.forEach(function(colorSlug) {
         var swatch = swatches[colorSlug];
@@ -7821,7 +7853,7 @@ function fcOpenFenceColorDrawer($btn) {
 
     var $area = $('<div>', { class: 'fencing-modal-area fencing-modal-area--fence-color', 'data-field': 'fence_color' }).append(
         $('<div>', { class: 'fencing-modal-header' }).append(
-            $('<div>', { class: 'fencing-modal-title fc-font-2' }).text('Fence Color')
+            $('<div>', { class: 'fencing-modal-title fc-font-2' }).text('Fence Colour')
         ),
         $('<div>', { class: 'fencing-modal-body fc-font-1 fc-p-0' }).append(
             $('<div>', { class: 'fencing-form-group' }).append($grid)
@@ -7833,10 +7865,10 @@ function fcOpenFenceColorDrawer($btn) {
                     $('<div>', { class: 'fc-alert-gray field-note' }).append(
                         $('<label>', { class: 'mb-2 fw-bold' }).append(
                             $('<i>', { class: 'fa-solid fa-circle-exclamation me-1', 'aria-hidden': 'true' }),
-                            document.createTextNode('One Color Per Fence Style')
+                            document.createTextNode('One Colour Per Fence Style')
                         ),
                         $('<div>', { class: 'fc-text-gray fc-modal-note-body' }).text(
-                            'Your color applies to every ' + info.title + ' section in this plan, and matches the color selected in Step 4.'
+                            'Your colour applies to every ' + info.title + ' section in this plan, and matches the colour selected in Step 4.'
                         )
                     )
                 )
@@ -7882,6 +7914,813 @@ function fcSetFenceColor(fenceSlug, colorSlug) {
     }
 
     fcApplyDiagramColors();
+    fcSaveFenceColorsToQuote();
+}
+
+//----------------------------------------------------------------------------------
+
+// Step 3 Post Options: a reference-only post finish per style, kept beside the colour in project-plans
+// and never priced, counted or sent to the cart. The catalog is data/post-finishes.js.
+var FC_POST_FINISH_STYLES = ['slat_fence_infill'];
+
+// Each category card shows a realistic sample from the swatch renderer: one representative finish, or four
+// colours side by side for Paint & Coatings, where a single flat colour would not read as paint.
+var FC_POST_FINISH_CAT_SAMPLES = {
+    aluminum: ['aluminum-brushed'],
+    brick: ['classic-red-brick'],
+    composite: ['composite-slat-screen'],
+    concrete: ['raw-cast-concrete'],
+    paint: ['paint-classic-cream-colorbond', 'paint-pale-eucalypt-colorbond', 'paint-headland-colorbond-heritage', 'paint-deep-ocean-colorbond'],
+    steel: ['corrugated-iron-galvanised'],
+    stone: ['sandstone-ledgestone-cladding'],
+    tile: ['glazed-ceramic-tile'],
+    wood: ['merbau']
+};
+
+/** A category card's 40px sample: its finishes side by side, or the category's first finish when none is listed. */
+function fcPostFinishCatSampleHtml(catId) {
+    if (typeof FCPostFinishSwatches === 'undefined') {
+        return '';
+    }
+    var entries = (FC_POST_FINISH_CAT_SAMPLES[catId] || []).map(fcPostFinishEntry).filter(Boolean);
+    if (!entries.length) {
+        entries = fcPostFinishCatalog().finishes.filter(function(f) {
+            return f.category === catId;
+        }).slice(0, 1);
+    }
+    return entries.map(function(entry) {
+        return FCPostFinishSwatches.svg(entry, { w: Math.round(40 / entries.length), h: 40 });
+    }).join('');
+}
+
+/** Hides the arrows when one run of cards already fits the strip. */
+function fcSyncPostFinishCatArrows($area) {
+    var $cats = $area.find('.fc-post-finish-cats');
+    var strip = $area.find('.fc-post-finish-tabs')[0];
+    if (!$cats.length || !strip) {
+        return;
+    }
+    $cats.toggleClass('fc-post-finish-cats--no-overflow', strip.scrollWidth / 3 <= strip.clientWidth + 1);
+}
+
+/** Scrolls the category strip so this card sits in its middle: a slide, or an instant jump when `smooth` is off. */
+function fcCenterPostFinishTab(tab, smooth) {
+    var strip = tab && tab.parentNode;
+    if (!strip) {
+        return;
+    }
+    var s = strip.getBoundingClientRect();
+    var t = tab.getBoundingClientRect();
+    var left = Math.max(0, strip.scrollLeft + (t.left + t.width / 2) - (s.left + strip.clientLeft + strip.clientWidth / 2));
+    if (smooth && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        fcSlidePostFinishStrip(strip, left);
+        return;
+    }
+    fcStopPostFinishSlide(strip);
+    strip.scrollLeft = left;
+}
+
+/** The strip's own eased slide: native smooth scrolling was cut short mid-glide by snapping and the loop reset. */
+function fcSlidePostFinishStrip(strip, left) {
+    fcStopPostFinishSlide(strip);
+    var from = strip.scrollLeft;
+    var dist = left - from;
+    if (Math.abs(dist) < 1) {
+        return;
+    }
+    // Longer trips take a little longer, within a range that still reads as one gesture.
+    var duration = Math.min(700, Math.max(420, Math.abs(dist)));
+    var elapsed = 0;
+    var prev = null;
+    strip.classList.add('fc-post-finish-tabs--sliding');
+    var step = function(now) {
+        // A stalled frame (a heavy grid render, GC) advances the slide one step, not the whole stall.
+        elapsed += prev === null ? 0 : Math.min(now - prev, 34);
+        prev = now;
+        var p = Math.min(1, elapsed / duration);
+        // Ease in and out (cubic), so the strip starts and settles gently.
+        strip.scrollLeft = from + dist * (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+        if (p < 1) {
+            strip.__fcSlide = requestAnimationFrame(step);
+            return;
+        }
+        fcStopPostFinishSlide(strip);
+        fcNormalizePostFinishStrip(strip, false);
+    };
+    strip.__fcSlide = requestAnimationFrame(step);
+}
+
+/** Ends a running slide where it is and hands the strip back to snapping and the loop reset. */
+function fcStopPostFinishSlide(strip) {
+    if (strip.__fcSlide) {
+        cancelAnimationFrame(strip.__fcSlide);
+        strip.__fcSlide = 0;
+    }
+    strip.classList.remove('fc-post-finish-tabs--sliding');
+}
+
+/** Keeps the endless strip inside its middle run; a one-run jump is invisible because the runs repeat. */
+function fcNormalizePostFinishStrip(strip, eager) {
+    var runW = strip.scrollWidth / 3;
+    if (!runW) {
+        return;
+    }
+    var sl = strip.scrollLeft;
+    if (sl < runW * (eager ? 0.5 : 0.25) || sl >= runW * (eager ? 1.5 : 1.9)) {
+        strip.scrollLeft = runW * 0.5 + ((sl - runW * 0.5) % runW + runW) % runW;
+    }
+}
+
+/** The selected section's style when it offers Post Options, else ''. */
+function fcPostFinishStyleSlug() {
+    try {
+        var fd = getSelectedFenceData();
+        return fd && FC_POST_FINISH_STYLES.indexOf(String(fd.slug)) !== -1 ? String(fd.slug) : '';
+    } catch (e) {
+        return '';
+    }
+}
+
+var fcPostFinishFenceColorsSynced = false;
+
+function fcPostFinishCatalog() {
+    if (typeof FC_POST_FINISH_CATALOG === 'undefined' || !FC_POST_FINISH_CATALOG || !Array.isArray(FC_POST_FINISH_CATALOG.finishes)) {
+        return { categories: [], finishes: [] };
+    }
+    // Entries tied to a fence colour take the planner's own swatch (once, before anything is drawn),
+    // so a post in "Monument Matt" is exactly the Monument Matt of the slats beside it.
+    if (!fcPostFinishFenceColorsSynced) {
+        fcPostFinishFenceColorsSynced = true;
+        var swatches = typeof fcFenceColorSwatches === 'function' ? fcFenceColorSwatches() : {};
+        FC_POST_FINISH_CATALOG.finishes.forEach(function(f) {
+            var sw = f.fenceColor ? swatches[f.fenceColor] : null;
+            var rgb = sw ? fcHexToRgb(sw.code) : null;
+            if (!rgb) {
+                return;
+            }
+            var toHex = function(parts) {
+                return '#' + parts.map(function(c) {
+                    return ('0' + Math.max(0, Math.min(255, Math.round(c))).toString(16)).slice(-2);
+                }).join('');
+            };
+            f.colors = Object.assign({}, f.colors, {
+                base: toHex(rgb),
+                accent: toHex(rgb.map(function(c) {
+                    return c * 0.9;
+                }))
+            });
+        });
+    }
+    return FC_POST_FINISH_CATALOG;
+}
+
+/** A catalog entry by id, or null. */
+function fcPostFinishEntry(id) {
+    var list = fcPostFinishCatalog().finishes;
+    for (var i = 0; i < list.length; i++) {
+        if (list[i] && list[i].id === id) {
+            return list[i];
+        }
+    }
+    return null;
+}
+
+function fcPostFinishCategoryName(categoryId) {
+    var cats = fcPostFinishCatalog().categories;
+    for (var i = 0; i < cats.length; i++) {
+        if (cats[i].id === categoryId) {
+            return String(cats[i].name);
+        }
+    }
+    return '';
+}
+
+/** The saved pick for a style, {fence, id, category, name}, or null. */
+function fcPickedPostFinish(fenceSlug) {
+    var picked = null;
+    try {
+        var plans = JSON.parse(localStorage.getItem('project-plans')) || {};
+        (Array.isArray(plans.post_finish) ? plans.post_finish : []).forEach(function(row) {
+            if (row && row.fence === fenceSlug && row.id) {
+                picked = row;
+            }
+        });
+    } catch (e) {}
+    return picked;
+}
+
+/** "Category – Name" for the summary line, or ''. */
+function fcPostFinishSummaryValue(fenceSlug) {
+    var row = fcPickedPostFinish(fenceSlug);
+    return row && row.name ? (row.category ? row.category + ' – ' : '') + row.name : '';
+}
+
+/** An entry's own photo as an absolute URL (CSS custom properties resolve relative ones elsewhere), or ''. */
+function fcPostFinishImageUrl(entry) {
+    if (!entry || !entry.image) {
+        return '';
+    }
+    try {
+        return new URL(String(entry.image), document.baseURI).href;
+    } catch (e) {
+        return '';
+    }
+}
+
+/** A finish as a CSS url() value, the photo when set, else its generated swatch drawn in a w x h box. */
+function fcPostFinishCssUrl(entry, w, h) {
+    var src = fcPostFinishImageUrl(entry);
+    if (!src && typeof FCPostFinishSwatches !== 'undefined') {
+        src = FCPostFinishSwatches.dataUri(entry, { w: w, h: h });
+    }
+    return src ? 'url("' + src.replace(/"/g, '%22') + '")' : '';
+}
+
+/** Saves a pick, or clears it with null. Only project-plans.post_finish changes: no product, price or cart data. */
+function fcSetPostFinish(fenceSlug, entry) {
+    if (!fenceSlug) {
+        return;
+    }
+    var plans = {};
+    try {
+        plans = JSON.parse(localStorage.getItem('project-plans')) || {};
+    } catch (e) {}
+    var rows = (Array.isArray(plans.post_finish) ? plans.post_finish : []).filter(function(row) {
+        return row && row.fence !== fenceSlug;
+    });
+    if (entry) {
+        rows.push({ fence: fenceSlug, id: entry.id, category: fcPostFinishCategoryName(entry.category), name: entry.name });
+    }
+    updateOrCreateObjectInLocalStorage('project-plans', { post_finish: rows });
+    fcApplyPostFinishCoat();
+    fcSyncPlannerPostFinishButton();
+}
+
+var fcPostFinishSaveTimer = null;
+var fcFenceColorSaveTimer = null;
+
+/** A colour pick goes straight into the saved quote too, so a reload keeps it (fcSetFenceColor calls this). */
+function fcSaveFenceColorsToQuote() {
+    if (!fcPlannerHasQuoteId()) {
+        return;
+    }
+    clearTimeout(fcFenceColorSaveTimer);
+    fcFenceColorSaveTimer = setTimeout(function() {
+        var rows = [];
+        try {
+            rows = (JSON.parse(localStorage.getItem('project-plans')) || {}).color || [];
+        } catch (e) {}
+        $.ajax({
+            url: 'ajax',
+            type: 'POST',
+            dataType: 'json',
+            data: { action: 'save-fence-colors', color: JSON.stringify(rows) }
+        }).done(function(res) {
+            if (!res || (!res.success && !res.skipped)) {
+                console.warn('Fence colour was not saved to the quote:', res && res.message);
+            }
+        }).fail(function() {
+            console.warn('Fence colour was not saved to the quote: request failed.');
+        });
+    }, 300);
+}
+
+/** A drawer pick goes straight into the saved quote, so a reload keeps it; with no quote yet the next /submit carries it. */
+function fcSavePostFinishToQuote() {
+    if (!fcPlannerHasQuoteId()) {
+        return;
+    }
+    // Quick successive picks send one request, with the last pick.
+    clearTimeout(fcPostFinishSaveTimer);
+    fcPostFinishSaveTimer = setTimeout(function() {
+        var rows = [];
+        try {
+            rows = (JSON.parse(localStorage.getItem('project-plans')) || {}).post_finish || [];
+        } catch (e) {}
+        $.ajax({
+            url: 'ajax',
+            type: 'POST',
+            dataType: 'json',
+            data: { action: 'save-post-finish', post_finish: JSON.stringify(rows) }
+        }).done(function(res) {
+            if (!res || (!res.success && !res.skipped)) {
+                console.warn('Post finish was not saved to the quote:', res && res.message);
+            }
+        }).fail(function() {
+            console.warn('Post finish was not saved to the quote: request failed.');
+        });
+    }, 300);
+}
+
+/** Drops picks for styles no section uses any more; run once a style change has been saved. */
+function fcPrunePostFinish() {
+    var plans;
+    try {
+        plans = JSON.parse(localStorage.getItem('project-plans')) || {};
+    } catch (e) {
+        return;
+    }
+    if (!Array.isArray(plans.post_finish) || !plans.post_finish.length) {
+        return;
+    }
+    var inUse = getActiveFencing().map(normalizeFenceStyleSlug);
+    var rows = plans.post_finish.filter(function(row) {
+        return row && inUse.indexOf(row.fence) !== -1;
+    });
+    if (rows.length === plans.post_finish.length) {
+        return;
+    }
+    updateOrCreateObjectInLocalStorage('project-plans', { post_finish: rows });
+    fcApplyPostFinishCoat();
+    fcSyncPlannerPostFinishButton();
+}
+
+/** Paints Slat Infill's drawn piers in the picked finish (style.css [data-fc-slat-infill-post-finish]). */
+function fcApplyPostFinishCoat() {
+    var root = document.documentElement;
+    var row = fcPickedPostFinish('slat_fence_infill');
+    var entry = row ? fcPostFinishEntry(row.id) : null;
+
+    // The texture is drawn at the piers' rendered height and painted 1:1, so a taller fence gets
+    // more brick courses or boards at the same size rather than a magnified pattern.
+    var texH = 240;
+    if (entry) {
+        var tallest = 0;
+        document.querySelectorAll(':is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .panel-post').forEach(function(p) {
+            tallest = Math.max(tallest, p.offsetHeight);
+        });
+        if (tallest) {
+            texH = Math.min(760, Math.max(120, Math.ceil(tallest / 8) * 8));
+        }
+    }
+
+    var css = entry ? fcPostFinishCssUrl(entry, 30, texH) : '';
+    var id = css ? entry.id : '';
+
+    // Runs after every render; the texture is only rebuilt when the pick or the pier height changes.
+    if ((root.getAttribute('data-fc-slat-infill-post-finish') || '') === id &&
+        (!id || root.getAttribute('data-fc-slat-infill-post-finish-h') === String(texH))) {
+        return;
+    }
+    // One rule rather than a custom property on <html>: every element would inherit the large data: URI,
+    // which slows each style copy the project plan's image export makes.
+    var style = document.getElementById('fc-post-finish-coat');
+    if (!style) {
+        style = document.createElement('style');
+        style.id = 'fc-post-finish-coat';
+        document.head.appendChild(style);
+    }
+    style.textContent = css
+        ? '[data-fc-slat-infill-post-finish] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] { --fc-slat-infill-post-tex-h: ' + texH + 'px; } ' +
+            '[data-fc-slat-infill-post-finish] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .panel-post::before { background-image: ' + css + '; }'
+        : '';
+    if (id) {
+        root.setAttribute('data-fc-slat-infill-post-finish', id);
+        root.setAttribute('data-fc-slat-infill-post-finish-h', String(texH));
+    } else {
+        root.removeAttribute('data-fc-slat-infill-post-finish');
+        root.removeAttribute('data-fc-slat-infill-post-finish-h');
+    }
+}
+
+/** Step 3 "Post Finish" control, always just before Fence Colour; the badge is the saved finish. */
+function fcSyncPlannerPostFinishButton() {
+    var $controls = $('.fc-planner-page ' + (typeof FENCES !== 'undefined' && FENCES.el && FENCES.el.fencingPanelControls
+        ? FENCES.el.fencingPanelControls
+        : '.fencing-panel-controls'));
+    if (!$controls.length) {
+        return;
+    }
+    var slug = fcPostFinishStyleSlug();
+    var $btn = $controls.find('#btn-post_finish');
+
+    if (!slug) {
+        $btn.remove();
+        return;
+    }
+
+    if (!$btn.length) {
+        $btn = $('<button>', {
+            type: 'button',
+            id: 'btn-post_finish',
+            class: 'btn-fc btn-fc-outline-default fc-mb-1 fc-post-finish-btn',
+            'aria-haspopup': 'dialog'
+        }).append(
+            $('<span>', { class: 'fc-post-finish-dot', 'aria-hidden': 'true' }),
+            $('<span>').text('Post'),
+            ' Finish'
+        );
+    }
+    // The colour button can be re-created after this one, so the order is re-checked every pass.
+    var $anchor = $controls.find('#btn-fence_color');
+    if (!$anchor.length) {
+        $anchor = $controls.find('#btn-right_side, #btn-planner-shortcuts, #btn-planner-summary').first();
+    }
+    if ($anchor.length) {
+        if ($btn.next()[0] !== $anchor[0]) {
+            $btn.insertBefore($anchor);
+        }
+    } else if (!$btn.parent().length) {
+        $btn.appendTo($controls);
+    }
+
+    var row = fcPickedPostFinish(slug);
+    var entry = row ? fcPostFinishEntry(row.id) : null;
+    var $dot = $btn.find('.fc-post-finish-dot');
+    // The badge is only redrawn when the pick changes, not on every render pass.
+    if (($dot.attr('data-finish') || '') !== (entry ? entry.id : '')) {
+        var dot = entry ? fcPostFinishCssUrl(entry, 48, 48) : '';
+        $dot.css('background-image', dot || '')
+            .toggleClass('fc-post-finish-dot--empty', !dot)
+            .attr('data-finish', dot ? entry.id : '');
+    }
+    $dot.toggleClass('fc-post-finish-dot--empty', !$dot.attr('data-finish'));
+    $btn.attr('title', row ? 'Post finish (reference only): ' + fcPostFinishSummaryValue(slug) : 'No post finish selected yet');
+
+    fcSyncPostFinishDrawer();
+}
+
+/** An open Post Options drawer follows the saved pick: tiles, No Preference and the match preview. */
+function fcSyncPostFinishDrawer() {
+    var $area = $('#fc-control-modal .fencing-modal-area--post-finish');
+    if (!$area.length) {
+        return;
+    }
+    var picked = fcPickedPostFinish(String($area.attr('data-fence') || ''));
+    var pickedId = picked ? String(picked.id) : '';
+    $area.find('.fc-post-finish-tile').each(function() {
+        var on = $(this).attr('data-id') === pickedId;
+        $(this).toggleClass('fc-selected', on).attr('aria-checked', on ? 'true' : 'false');
+    });
+    $area.find('.fc-post-finish-none').toggleClass('fc-selected', !pickedId).attr('aria-pressed', pickedId ? 'false' : 'true');
+    var colorSlug = fcPickedFenceColor(String($area.attr('data-fence') || ''));
+    $area.find('.fc-post-finish-color').each(function() {
+        var on = $(this).attr('data-color') === colorSlug;
+        $(this).toggleClass('fc-selected', on).attr('aria-checked', on ? 'true' : 'false');
+    });
+    fcRenderPostFinishPreview($area, null);
+}
+
+/** Tile swatch markup: the entry's photo when set, else its generated SVG. */
+function fcPostFinishSwatchHtml(entry) {
+    var src = fcPostFinishImageUrl(entry);
+    if (src) {
+        return $('<img>', { src: src, alt: '', loading: 'lazy' })[0].outerHTML;
+    }
+    return typeof FCPostFinishSwatches !== 'undefined' ? FCPostFinishSwatches.svg(entry) : '';
+}
+
+/** Slat fill for the match preview: the fence colour when picked (first hex of a gradient), else null. */
+function fcPostFinishSlatColor(fenceSlug) {
+    var colorSlug = fcPickedFenceColor(fenceSlug);
+    var swatch = colorSlug ? fcFenceColorSwatches()[colorSlug] : null;
+    if (!swatch) {
+        return null;
+    }
+    var hex = /#([0-9a-f]{6}|[0-9a-f]{3})\b/i.exec(String(swatch.code || ''));
+    return { fill: hex ? hex[0] : '#9ea1a4', title: (swatch.title + ' ' + swatch.finish).trim() };
+}
+
+/** Redraws the drawer's match preview: two posts in `hover` (or the saved finish) with the fence's slats between. */
+function fcRenderPostFinishPreview($area, hover) {
+    var $preview = $area.find('.fc-post-finish-preview');
+    if (!$preview.length) {
+        return;
+    }
+    var slug = String($area.attr('data-fence') || '');
+    var picked = fcPickedPostFinish(slug);
+    var entry = hover || (picked ? fcPostFinishEntry(picked.id) : null);
+    var slat = fcPostFinishSlatColor(slug);
+    var fill = slat ? slat.fill : '#b9bcc0';
+
+    var svg = '<svg viewBox="0 0 240 136" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">';
+    svg += '<rect x="0" y="129" width="240" height="7" fill="#d9d6cf"/>';
+    // Horizontal slats, as the planner draws Slat Infill.
+    for (var y = 22; y + 9 <= 128; y += 13) {
+        svg += '<rect x="44" y="' + y + '" width="152" height="9" fill="' + fill + '"/>' +
+            '<rect x="44" y="' + y + '" width="152" height="1.5" fill="#fff" opacity="0.35"/>' +
+            '<rect x="44" y="' + (y + 7.5) + '" width="152" height="1.5" fill="#000" opacity="0.18"/>';
+    }
+    [14, 196].forEach(function(x) {
+        if (entry) {
+            var src = fcPostFinishImageUrl(entry);
+            svg += src
+                ? '<image href="' + src.replace(/"/g, '&quot;') + '" x="' + x + '" y="8" width="30" height="121" preserveAspectRatio="xMidYMid slice"/>'
+                : '<svg x="' + x + '" y="8" width="30" height="121" viewBox="0 0 30 121" preserveAspectRatio="xMidYMid slice">' +
+                    (typeof FCPostFinishSwatches !== 'undefined' ? FCPostFinishSwatches.inner(entry, 30, 121) : '') + '</svg>';
+            svg += '<rect x="' + x + '" y="8" width="30" height="121" fill="none" stroke="#000" stroke-opacity="0.28"/>';
+        } else {
+            svg += '<rect x="' + x + '" y="8" width="30" height="121" fill="#eceae6" stroke="#9e9e9e" stroke-dasharray="4 3"/>';
+        }
+    });
+    svg += '</svg>';
+
+    $preview.find('.fc-post-finish-preview__art').html(svg);
+    $preview.find('.fc-post-finish-preview__post').text(entry ? entry.name : 'No post finish chosen');
+    $preview.find('.fc-post-finish-preview__post-label').text(hover && (!picked || hover.id !== picked.id) ? 'Previewing' : 'Posts');
+    $preview.find('.fc-post-finish-preview__slats').text(slat ? slat.title : 'Choose a fence colour to compare.')
+        .toggleClass('fc-post-finish-preview__slats--empty', !slat);
+}
+
+function fcPostFinishMatches(entry, query) {
+    return !query || String(entry.name).toLowerCase().indexOf(query) !== -1;
+}
+
+/**
+ * Display order for finishes: colour family (neutrals, warm, green, blue, violet), lighter to
+ * darker within it, and same-style finishes together inside a lightness band, so like sits with like.
+ */
+function fcPostFinishDisplayOrder(list) {
+    var keyOf = function(f) {
+        var m = /^#([0-9a-f]{6})$/i.exec(String((f.colors || {}).base || ''));
+        var r = 128;
+        var g = 128;
+        var b = 128;
+        if (m) {
+            r = parseInt(m[1].slice(0, 2), 16);
+            g = parseInt(m[1].slice(2, 4), 16);
+            b = parseInt(m[1].slice(4, 6), 16);
+        }
+        var mx = Math.max(r, g, b);
+        var mn = Math.min(r, g, b);
+        var light = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+        var fam = 0;
+        // Enough chroma to read as a colour rather than a white/grey/black.
+        if ((mx - mn) / 255 >= 0.09) {
+            var d = mx - mn;
+            var h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+            h *= 60;
+            fam = h < 75 || h >= 330 ? 1 : h < 165 ? 2 : h < 270 ? 3 : 4;
+        }
+        return { fam: fam, band: Math.round((1 - light) * 12), light: light, pattern: String(f.pattern || ''), name: String(f.name || '') };
+    };
+    var keys = {};
+    list.forEach(function(f) {
+        keys[f.id] = keyOf(f);
+    });
+    // Pinned entries (the fence colours) lead in their set order; the family sort follows.
+    var pin = function(f) {
+        return f.pinned ? Number(f.pinned) : Infinity;
+    };
+    return list.slice().sort(function(a, b) {
+        var ka = keys[a.id];
+        var kb = keys[b.id];
+        var pa = pin(a);
+        var pb = pin(b);
+        if (pa !== pb) {
+            return pa === Infinity ? 1 : pb === Infinity ? -1 : pa - pb;
+        }
+        return (ka.fam - kb.fam) ||
+            (ka.band - kb.band) ||
+            ka.pattern.localeCompare(kb.pattern) ||
+            (kb.light - ka.light) ||
+            ka.name.localeCompare(kb.name);
+    });
+}
+
+function fcPostFinishTile(entry, pickedId) {
+    var on = entry.id === pickedId;
+    return $('<button>', {
+        type: 'button',
+        class: 'fc-post-finish-tile' + (on ? ' fc-selected' : ''),
+        role: 'radio',
+        'aria-checked': on ? 'true' : 'false',
+        'aria-label': entry.name,
+        'data-id': entry.id
+    }).append(
+        $('<span>', { class: 'fc-post-finish-tile__swatch', 'aria-hidden': 'true' }).html(fcPostFinishSwatchHtml(entry)),
+        $('<span>', { class: 'fc-post-finish-tile__name', 'aria-hidden': 'true' }).text(entry.name)
+    );
+}
+
+/** Fills the tab counts and the grid: the active category, or every match grouped by category while searching. */
+function fcRenderPostFinishGrid($area) {
+    var catalog = fcPostFinishCatalog();
+    var picked = fcPickedPostFinish(String($area.attr('data-fence') || ''));
+    var pickedId = picked ? String(picked.id) : '';
+    var query = $.trim(String($area.find('.fc-post-finish-search__input').val() || '')).toLowerCase();
+    var active = String($area.attr('data-tab') || '');
+    var $panel = $area.find('.fc-post-finish-panel').empty();
+
+    $area.find('.fc-post-finish-tab').each(function() {
+        var $tab = $(this);
+        var catId = $tab.attr('data-category');
+        var count = catalog.finishes.filter(function(f) {
+            return f.category === catId && fcPostFinishMatches(f, query);
+        }).length;
+        var on = !query && catId === active;
+        // The count is only computed to fade a tab a search leaves empty; it is not shown.
+        $tab.toggleClass('fc-post-finish-tab--active', on)
+            .toggleClass('fc-post-finish-tab--none', !count)
+            .attr({ 'aria-selected': on ? 'true' : 'false', tabindex: on || (query && catId === catalog.categories[0].id) ? '0' : '-1' });
+        if ($tab.hasClass('fc-post-finish-tab--clone')) {
+            $tab.attr('tabindex', '-1').removeAttr('aria-selected');
+        }
+    });
+
+    if (!query) {
+        $panel.attr({ 'aria-labelledby': 'fc-post-finish-tab-' + active }).removeAttr('aria-label');
+        $('<div>', { class: 'fc-post-finish-grid', role: 'radiogroup', 'aria-label': fcPostFinishCategoryName(active) })
+            .append(fcPostFinishDisplayOrder(catalog.finishes.filter(function(f) {
+                return f.category === active;
+            })).map(function(f) {
+                return fcPostFinishTile(f, pickedId);
+            }))
+            .appendTo($panel);
+        return;
+    }
+
+    $panel.attr('aria-label', 'Search results').removeAttr('aria-labelledby');
+    var found = 0;
+    catalog.categories.forEach(function(cat) {
+        var items = fcPostFinishDisplayOrder(catalog.finishes.filter(function(f) {
+            return f.category === cat.id && fcPostFinishMatches(f, query);
+        }));
+        if (!items.length) {
+            return;
+        }
+        found += items.length;
+        $panel.append(
+            $('<p>', { class: 'fc-post-finish-group' }).text(cat.name + ' (' + items.length + ')'),
+            $('<div>', { class: 'fc-post-finish-grid', role: 'radiogroup', 'aria-label': cat.name }).append(items.map(function(f) {
+                return fcPostFinishTile(f, pickedId);
+            }))
+        );
+    });
+    if (!found) {
+        $('<p>', { class: 'fc-post-finish-empty', role: 'status' })
+            .text('No post finishes match "' + $.trim(String($area.find('.fc-post-finish-search__input').val())) + '".')
+            .appendTo($panel);
+    }
+}
+
+/** Fills and opens the control drawer with the post finish catalog, the way Fence Colour opens it. */
+function fcOpenPostFinishDrawer($btn) {
+    var slug = fcPostFinishStyleSlug();
+    var catalog = fcPostFinishCatalog();
+    if (!slug || !catalog.categories.length) {
+        return;
+    }
+
+    var picked = fcPickedPostFinish(slug);
+    var pickedEntry = picked ? fcPostFinishEntry(picked.id) : null;
+    // Opens on the saved finish's category; Paint & Coatings is the default before a pick.
+    var startTab = pickedEntry ? pickedEntry.category : 'paint';
+
+    // The preview's own colour row: the style's colours, restricted the way Fence Colour restricts them.
+    var pfSwatches = fcFenceColorSwatches();
+    var pfAllowed = fcAllowedColorsForFenceStyle(slug);
+    var $colorRow = $('<dd>', { class: 'fc-post-finish-preview__colors', role: 'radiogroup', 'aria-label': 'Fence colour' }).append(
+        (((typeof fc_data !== 'undefined' && fc_data[slug]) || {}).color || []).filter(function(colorSlug) {
+            return pfSwatches[colorSlug] && (pfAllowed === null || pfAllowed.indexOf(colorSlug) !== -1);
+        }).map(function(colorSlug) {
+            var sw = pfSwatches[colorSlug];
+            return $('<button>', {
+                type: 'button',
+                class: 'fc-post-finish-color',
+                role: 'radio',
+                'aria-checked': 'false',
+                'aria-label': (sw.title + ' ' + sw.finish).trim(),
+                'data-color': colorSlug
+            }).attr('style', 'background:' + sw.code);
+        })
+    );
+
+    var $tabs = $('<div>', { class: 'fc-post-finish-tabs', role: 'tablist', 'aria-label': 'Post finish categories' });
+    catalog.categories.forEach(function(cat) {
+        $('<button>', {
+            type: 'button',
+            class: 'fc-post-finish-tab',
+            id: 'fc-post-finish-tab-' + cat.id,
+            role: 'tab',
+            'aria-controls': 'fc-post-finish-panel',
+            'data-category': cat.id
+        }).append(
+            $('<span>', { class: 'fc-post-finish-tab__thumb', 'aria-hidden': 'true' }).html(fcPostFinishCatSampleHtml(cat.id)),
+            $('<span>', { class: 'fc-post-finish-tab__label' }).text(cat.name)
+        ).appendTo($tabs);
+    });
+    // Two cloned runs bracket the real one, so the strip loops; the clones are inert to Tab and readers.
+    var $realCards = $tabs.children();
+    var fcCloneRun = function() {
+        return $realCards.clone()
+            .addClass('fc-post-finish-tab--clone')
+            .attr({ 'aria-hidden': 'true', role: 'presentation', tabindex: -1 })
+            .removeAttr('id aria-controls aria-selected');
+    };
+    $tabs.prepend(fcCloneRun()).append(fcCloneRun());
+
+    var $area = $('<div>', {
+        class: 'fencing-modal-area fencing-modal-area--post-finish',
+        'data-field': 'post_finish',
+        'data-fence': slug,
+        'data-tab': startTab
+    }).append(
+        $('<div>', { class: 'fencing-modal-header' }).append(
+            $('<div>', { class: 'fencing-modal-title fc-font-2' }).text('Post Finish')
+        ),
+        // Fence Colour's note card (titled, icon-led, grey), kept above the preview rather than at the foot.
+        $('<div>', { class: 'fencing-modal-notes' }).append(
+            $('<div>', { class: 'row align-items-center' }).append(
+                $('<div>', { class: 'col-sm' }).append(
+                    $('<div>', { class: 'fc-alert-gray field-note', role: 'note' }).append(
+                        $('<label>', { class: 'mb-2 fw-bold' }).append(
+                            $('<i>', { class: 'fa-solid fa-circle-exclamation me-1', 'aria-hidden': 'true' }),
+                            document.createTextNode('Note')
+                        ),
+                        $('<div>', { class: 'fc-text-gray fc-modal-note-body' }).text(
+                            'Post finishes are for reference only and are not included with the products. Use this preview to see which post finish best complements your selected fence colour.'
+                        )
+                    )
+                )
+            )
+        ),
+        $('<div>', { class: 'fencing-modal-body fc-font-1 fc-p-0' }).append(
+            $('<div>', { class: 'fc-post-finish-preview' }).append(
+                $('<div>', { class: 'fc-post-finish-preview__art' }),
+                $('<dl>', { class: 'fc-post-finish-preview__text' }).append(
+                    $('<dt>', { class: 'fc-post-finish-preview__post-label' }).text('Posts'),
+                    $('<dd>', { class: 'fc-post-finish-preview__post' }),
+                    $('<dt>').text('Slats'),
+                    $('<dd>', { class: 'fc-post-finish-preview__slats' }),
+                    $colorRow
+                )
+            ),
+            $('<div>', { class: 'fc-post-finish-toolbar' }).append(
+                $('<div>', { class: 'fc-post-finish-search has-clear' }).append(
+                    $('<i>', { class: 'fa-solid fa-magnifying-glass', 'aria-hidden': 'true' }),
+                    // No name: #fc-control-modal sits inside #fc-planning-form, which posts and restores named fields.
+                    $('<input>', {
+                        type: 'text',
+                        class: 'form-control fc-post-finish-search__input',
+                        placeholder: 'Search finishes',
+                        autocomplete: 'off',
+                        'aria-label': 'Search post finishes'
+                    })
+                ),
+                $('<div>', { class: 'fc-post-finish-cats' }).append(
+                    $('<button>', {
+                        type: 'button',
+                        class: 'fc-post-finish-cats__arrow fc-post-finish-cats__arrow--prev',
+                        'aria-label': 'Scroll categories back'
+                    }).append($('<i>', { class: 'fa-solid fa-chevron-left', 'aria-hidden': 'true' })),
+                    $tabs,
+                    $('<button>', {
+                        type: 'button',
+                        class: 'fc-post-finish-cats__arrow fc-post-finish-cats__arrow--next',
+                        'aria-label': 'Scroll categories forward'
+                    }).append($('<i>', { class: 'fa-solid fa-chevron-right', 'aria-hidden': 'true' }))
+                )
+            ),
+            $('<div>', { class: 'fc-post-finish-panel', id: 'fc-post-finish-panel', role: 'tabpanel' }),
+            // Pinned to the drawer's foot (style.css), so it stays in reach while the finishes scroll.
+            $('<div>', { class: 'fc-post-finish-footer' }).append(
+                $('<button>', {
+                    type: 'button',
+                    class: 'fc-post-finish-none' + (picked ? '' : ' fc-selected'),
+                    'aria-pressed': picked ? 'false' : 'true',
+                    'data-id': ''
+                }).append(
+                    $('<i>', { class: 'fa-solid fa-ban', 'aria-hidden': 'true' }),
+                    $('<span>').text('No Preference - Choose Default')
+                )
+            )
+        )
+    );
+
+    $('#fc-control-modal .fc-modal-content').addClass('has-multiple-areas').empty().append($area);
+    fcRenderPostFinishGrid($area);
+    fcSyncPostFinishDrawer();
+    FCModal.open('#fc-control-modal');
+    // Swipes and arrow paging both land here; one frame per burst keeps the arrow state current.
+    $tabs.on('scroll', function() {
+        var el = this;
+        if (el.__fcCatRaf) {
+            return;
+        }
+        el.__fcCatRaf = requestAnimationFrame(function() {
+            el.__fcCatRaf = 0;
+            // A slide resets the loop itself once it lands; jumping a run mid-glide would break it.
+            if (!el.__fcSlide) {
+                fcNormalizePostFinishStrip(el, false);
+            }
+            fcSyncPostFinishCatArrows($area);
+        });
+    });
+    // A swipe, wheel or press takes over from a running slide.
+    ['wheel', 'touchstart', 'pointerdown'].forEach(function(type) {
+        $tabs[0].addEventListener(type, function() {
+            fcStopPostFinishSlide(this);
+        }, { passive: true });
+    });
+    // The sticky search and tabs pin just under the sticky header band (style.css).
+    $area[0].style.setProperty('--fc-post-finish-head-h', Math.round($area.children('.fencing-modal-header').outerHeight() || 49) + 'px');
+    // Centre the saved finish's card in the middle run once the strip has a layout.
+    fcCenterPostFinishTab($area.find('.fc-post-finish-tab--active').not('.fc-post-finish-tab--clone')[0], false);
+    fcSyncPostFinishCatArrows($area);
+    // The drawer swaps content in place, so whichever control lit it before goes dark.
+    $('.fc-btn-active').removeClass('fc-btn-active');
+    $btn.addClass('fc-btn-active');
 }
 
 //----------------------------------------------------------------------------------

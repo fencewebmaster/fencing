@@ -221,7 +221,7 @@ $groupHead = static function (
         <?php if ($colorTerms !== []) : ?>
         <?php $colorOpen = $filters['color_open']; ?>
         <div class="fc-lookup-filter-group<?php echo $colorOpen ? ' is-open' : ''; ?>" data-fc-lookup-filter-group>
-            <?php $groupHead('Color', $filters['colors_count'], $filters['clear_urls']['color'], $colorOpen); ?>
+            <?php $groupHead('Colour', $filters['colors_count'], $filters['clear_urls']['color'], $colorOpen); ?>
             <div class="fc-lookup-filter-group__body"<?php echo $colorOpen ? '' : ' hidden'; ?>>
                 <div class="fc-lookup-swatches">
                     <?php foreach ($colorTerms as $term) : ?>

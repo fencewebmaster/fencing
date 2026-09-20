@@ -285,6 +285,150 @@ final class PlannerRecordService
     }
 
     /**
+     * Step 3 Post Finish picks posted as JSON ([{fence, id, category, name}]), or null when malformed.
+     * Reference only: nothing here is a product, so the rows are kept as plain labels.
+     *
+     * @return list<array{fence:string,id:string,category:string,name:string}>|null
+     */
+    public static function normalizePostFinishRows($raw): ?array
+    {
+        $rows = is_array($raw) ? $raw : json_decode((string) $raw, true);
+        if (!is_array($rows) || count($rows) > 10) {
+            return null;
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                return null;
+            }
+            $fence    = trim((string) ($row['fence'] ?? ''));
+            $id       = trim((string) ($row['id'] ?? ''));
+            $category = trim((string) ($row['category'] ?? ''));
+            $name     = trim((string) ($row['name'] ?? ''));
+            if (!preg_match('/^[a-z0-9_]{1,40}$/', $fence) || !preg_match('/^[a-z0-9-]{1,80}$/', $id)
+                || $name === '' || mb_strlen($name) > 120 || mb_strlen($category) > 120) {
+                return null;
+            }
+            $out[] = ['fence' => $fence, 'id' => $id, 'category' => $category, 'name' => $name];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Step 3 colour picks posted as JSON ([{fence, color}]), or null when malformed.
+     *
+     * @return list<array{fence:string,color:string}>|null
+     */
+    public static function normalizeColorRows($raw): ?array
+    {
+        $rows = is_array($raw) ? $raw : json_decode((string) $raw, true);
+        if (!is_array($rows) || count($rows) > 10) {
+            return null;
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                return null;
+            }
+            $fence = trim((string) ($row['fence'] ?? ''));
+            $color = trim((string) ($row['color'] ?? ''));
+            if (!preg_match('/^[a-z0-9_]{1,40}$/', $fence) || !preg_match('/^[a-z0-9_]{1,60}$/', $color)) {
+                return null;
+            }
+            $out[] = ['fence' => $fence, 'color' => $color];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Writes the colour picks into a saved quote's color_data and project_plans_data, the two places a
+     * reload reads them from. The cart columns stay untouched: SKUs regroup on the next submit, as always.
+     *
+     * @param list<array{fence:string,color:string}> $rows
+     * @return array{success:bool,message:string}
+     */
+    public static function saveFenceColors(string $plannerId, array $rows): array
+    {
+        if (!self::isValidPlannerId($plannerId)) {
+            return ['success' => false, 'message' => 'Invalid planner ID.'];
+        }
+
+        $db  = new Database();
+        $row = $db->select_where('planners', '`planner_id`="' . $plannerId . '"');
+        if (!is_object($row) || self::rowIsTrashed($row)) {
+            return ['success' => false, 'message' => 'Planner not found.'];
+        }
+
+        $encoded = json_encode($rows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $plans   = json_decode((string) ($row->project_plans_data ?? ''), true);
+        $plans   = is_array($plans) ? $plans : [];
+        $plans['color'] = $rows;
+
+        $result = $db->update('planners', [
+            'color_data'         => $encoded,
+            'project_plans_data' => json_encode($plans, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'updated_at'         => date('Y-m-d H:i:s'),
+        ], ['planner_id' => $plannerId]);
+
+        if (!empty($result['success']) && isset($_SESSION['fc_data'])) {
+            // The string form hydrateFromRow uses, so later saves and renders read the same shape.
+            $_SESSION['fc_data']['color'] = $encoded;
+            if (isset($_SESSION['fc_data']['project_plans'])) {
+                $session = $_SESSION['fc_data']['project_plans'];
+                $session = is_array($session) ? $session : json_decode((string) $session, true);
+                $session = is_array($session) ? $session : [];
+                $session['color'] = $rows;
+                $_SESSION['fc_data']['project_plans'] = json_encode($session, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
+        }
+
+        return ['success' => !empty($result['success']), 'message' => (string) ($result['message'] ?? '')];
+    }
+
+    /**
+     * Writes the Post Finish picks into a saved quote's project_plans_data, and only there: no cart,
+     * price or colour column changes. Mirrors it into the session copy so later saves agree.
+     *
+     * @param list<array{fence:string,id:string,category:string,name:string}> $rows
+     * @return array{success:bool,message:string}
+     */
+    public static function savePostFinish(string $plannerId, array $rows): array
+    {
+        if (!self::isValidPlannerId($plannerId)) {
+            return ['success' => false, 'message' => 'Invalid planner ID.'];
+        }
+
+        $db  = new Database();
+        $row = $db->select_where('planners', '`planner_id`="' . $plannerId . '"');
+        if (!is_object($row) || self::rowIsTrashed($row)) {
+            return ['success' => false, 'message' => 'Planner not found.'];
+        }
+
+        $plans = json_decode((string) ($row->project_plans_data ?? ''), true);
+        $plans = is_array($plans) ? $plans : [];
+        $plans['post_finish'] = $rows;
+
+        $result = $db->update('planners', [
+            'project_plans_data' => json_encode($plans, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'updated_at'         => date('Y-m-d H:i:s'),
+        ], ['planner_id' => $plannerId]);
+
+        if (!empty($result['success']) && isset($_SESSION['fc_data']['project_plans'])) {
+            $session = $_SESSION['fc_data']['project_plans'];
+            $session = is_array($session) ? $session : json_decode((string) $session, true);
+            $session = is_array($session) ? $session : [];
+            $session['post_finish'] = $rows;
+            $_SESSION['fc_data']['project_plans'] = json_encode($session, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+
+        return ['success' => !empty($result['success']), 'message' => (string) ($result['message'] ?? '')];
+    }
+
+    /**
      * Whether the planners table exposes `trashed_at` (older tables predate the column).
      */
     public static function plannersHasTrashedColumn(\mysqli $conn, string $table): bool

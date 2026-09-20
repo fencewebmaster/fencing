@@ -46,9 +46,12 @@ final class PlannerPageModel
     /**
      * Load a saved quote by its public Quote ID and hydrate the session from it.
      *
+     * `$silent` skips markReloaded() — neither quote_load_count nor status moves, because
+     * an admin viewing the quote is not the customer reopening it.
+     *
      * @return array{res:object|array<mixed>,failed:bool,error:string,attempt:string}
      */
-    public static function loadQuote(string $qid): array
+    public static function loadQuote(string $qid, bool $silent = false): array
     {
         $qid = trim($qid);
 
@@ -64,7 +67,9 @@ final class PlannerPageModel
             $_SESSION['site'] = SiteRegistryService::all($_SERVER['HTTP_HOST'] ?? '', 'domain', true);
 
             PlannerSessionService::hydrateFromRow($res);
-            PlannerRecordService::markReloaded($qid);
+            if (!$silent) {
+                PlannerRecordService::markReloaded($qid);
+            }
 
             return [
                 'res'     => PlannerSessionService::rowToJsFenceInfo($res),

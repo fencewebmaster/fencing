@@ -19,7 +19,7 @@ use Fc\Admin\Services\CartBuilderService;
 
                 <div class="fc-form-plan" data-formtab="1">
                     
-                    <h5 class="fc-pp-modal-section__title">Color Options</h5>
+                    <h5 class="fc-pp-modal-section__title">Colour Options</h5>
 
                     <?php
                     $colors = CartBuilderService::convertInputs($info['color']);
@@ -42,7 +42,7 @@ use Fc\Admin\Services\CartBuilderService;
                             <?php if ( $_color_title_modal !== '' ) : ?>
                             - <?php echo e((string) $_color_title_modal); ?>
                             <?php else : ?>
-                            - Color Options
+                            - Colour Options
                             <?php endif; ?>
                         </h6>
 

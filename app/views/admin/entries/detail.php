@@ -14,10 +14,23 @@ $item = $page['item'];
 ?>
 <div class="fc-entries-detail-page">
     <header class="fc-entries-detail-page__header">
-        <a class="fc-entries-detail-page__back" href="<?php echo e((string) ($page['list_url'] ?? '')); ?>">
-            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-            Back to planner entries
-        </a>
+        <div class="fc-entries-detail-page__heading">
+            <a class="fc-entries-detail-page__back" href="<?php echo e((string) ($page['list_url'] ?? '')); ?>">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                Back to planner entries
+            </a>
+            <?php if (is_array($item)) : ?>
+            <div class="fc-entries-detail-page__title-row">
+                <h2 class="fc-entries-detail-page__title"><?php echo e((string) ($page['header_title'] ?? '')); ?></h2>
+                <?php if (($page['header_status_label'] ?? '') !== '') : ?>
+                <span class="<?php echo e((string) ($page['header_status_class'] ?? '')); ?>"><?php echo e((string) ($page['header_status_label'] ?? '')); ?></span>
+                <?php endif; ?>
+            </div>
+            <?php if (($page['header_meta'] ?? '') !== '') : ?>
+            <p class="fc-entries-detail-page__meta"><?php echo e((string) ($page['header_meta'] ?? '')); ?></p>
+            <?php endif; ?>
+            <?php endif; ?>
+        </div>
         <?php if (is_array($item)) : ?>
         <div class="fc-entries-detail-page__actions">
             <a
@@ -90,17 +103,22 @@ $item = $page['item'];
                 </header>
                 <div class="fc-entries-detail-panel__body">
                 <div class="fc-entries-modal__meta fc-entries-modal__meta--detail">
-                    <?php foreach ($page['detail_rows'] as $detailRow) : ?>
+                    <?php foreach ($page['detail_groups'] as $detailGroup) : ?>
+                    <section class="fc-entries-detail-group">
+                        <h4 class="fc-entries-detail-group__label"><?php echo e((string) ($detailGroup['label'] ?? '')); ?></h4>
+                    <?php foreach ($detailGroup['rows'] as $detailRow) : ?>
                     <div class="fc-entries-modal__row fc-entries-detail-copy-row" data-fc-entries-detail-row="<?php echo e((string) ($detailRow['key'] ?? '')); ?>">
                         <div class="fc-entries-modal__label"><?php echo e((string) ($detailRow['label'] ?? '')); ?></div>
                         <div class="fc-entries-modal__value-wrap">
-                            <div class="fc-entries-modal__value">
+                            <div class="fc-entries-modal__value<?php echo e((string) ($detailRow['value_class'] ?? '')); ?>">
                             <?php if (($detailRow['link_type'] ?? '') === 'planner_id' && ($detailRow['display'] ?? '') !== '—') : ?>
                             <a href="<?php echo e((string) ($detailRow['planner_url'] ?? '')); ?>" target="_blank" rel="noopener noreferrer"><?php echo cell($detailRow['display'] ?? ''); ?></a>
                             <?php elseif (($detailRow['link_type'] ?? '') === 'site_url' && ($detailRow['display'] ?? '') !== '—') : ?>
                             <a href="<?php echo e((string) ($detailRow['display'] ?? '')); ?>" target="_blank" rel="noopener noreferrer"><?php echo cell($detailRow['display'] ?? ''); ?></a>
                             <?php elseif (($detailRow['link_type'] ?? '') === 'email' && ($detailRow['display'] ?? '') !== '—') : ?>
                             <a href="mailto:<?php echo e((string) ($detailRow['display'] ?? '')); ?>"><?php echo cell($detailRow['display'] ?? ''); ?></a>
+                            <?php elseif (($detailRow['link_type'] ?? '') === 'mobile' && ($detailRow['tel_url'] ?? '') !== '') : ?>
+                            <a href="<?php echo e((string) ($detailRow['tel_url'] ?? '')); ?>"><?php echo cell($detailRow['display'] ?? ''); ?></a>
                             <?php elseif (($detailRow['link_type'] ?? '') === 'ip_address' && ($detailRow['ipinfo_url'] ?? '') !== '') : ?>
                             <a href="<?php echo e((string) ($detailRow['ipinfo_url'] ?? '')); ?>" target="_blank" rel="noopener noreferrer"><?php echo cell($detailRow['display'] ?? ''); ?></a>
                             <?php elseif (($detailRow['link_type'] ?? '') === 'status' && ($detailRow['display'] ?? '') !== '—') : ?>
@@ -138,6 +156,8 @@ $item = $page['item'];
                         </div>
                     </div>
                     <?php endforeach; ?>
+                    </section>
+                    <?php endforeach; ?>
                 </div>
                 </div>
             </section>
@@ -148,9 +168,6 @@ $item = $page['item'];
                         <h3 class="fc-entries-detail-panel__title">Cart items</h3>
                         <p class="fc-entries-detail-panel__subtitle"><?php echo e((string) ($page['cart_subtitle'] ?? '')); ?></p>
                     </div>
-                    <?php if ((int) ($page['cart_item_count'] ?? 0) > 0) : ?>
-                    <span class="fc-entries-detail-panel__count"><?php echo (int) ($page['cart_item_count'] ?? 0); ?></span>
-                    <?php endif; ?>
                 </header>
 
                 <div class="fc-entries-detail-panel__body fc-entries-detail-panel__body--flush fc-entries-detail-panel__body--cart">
@@ -212,6 +229,7 @@ $item = $page['item'];
                                         data-fc-entries-fence-checkbox
                                     >
                                     <span><?php echo e((string) ($fenceOption['name'] ?? '')); ?></span>
+                                    <span class="fc-entries-fence-dropdown__count"><?php echo (int) ($fenceOption['count'] ?? 0); ?></span>
                                 </label>
                                 <?php endforeach; ?>
                             </div>
@@ -291,7 +309,15 @@ $item = $page['item'];
                                     <?php if (($cartRow['sku'] ?? '') !== '') : ?>
                                     <div class="fc-entries-cart-table__sku"><?php echo cell($cartRow['sku'] ?? ''); ?></div>
                                     <?php endif; ?>
-                                    <?php if (($cartRow['fence_label'] ?? '') !== '') : ?>
+                                    <?php if (($cartRow['fence_label'] ?? '') !== '' && ($cartRow['fence_slug'] ?? '') !== '') : ?>
+                                    <button
+                                        type="button"
+                                        class="fc-entries-cart-table__fence fc-entries-cart-table__fence--btn"
+                                        data-fc-cart-fence-chip="<?php echo e((string) ($cartRow['fence_slug'] ?? '')); ?>"
+                                        title="Filter by <?php echo e((string) ($cartRow['fence_label'] ?? '')); ?>"
+                                        aria-pressed="false"
+                                    ><?php echo e((string) ($cartRow['fence_label'] ?? '')); ?></button>
+                                    <?php elseif (($cartRow['fence_label'] ?? '') !== '') : ?>
                                     <span class="fc-entries-cart-table__fence"><?php echo e((string) ($cartRow['fence_label'] ?? '')); ?></span>
                                     <?php endif; ?>
                                 </td>

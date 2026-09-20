@@ -1528,6 +1528,9 @@ let ProjectPlan = {
 
         var center_post = FENCE.settings.item.center_point;
 
+        // Tallest glass step-up peak above the panel row, in px (fcSizeGlassRakedPanel).
+        var rakedPeakPx = 0;
+
         $(side).each(function(k, v) {
 
             // Side
@@ -1590,6 +1593,10 @@ let ProjectPlan = {
 
                     if(panel_h) {
                         $('#pp-' + tab + ' .' + v + '-panel').html(tpl);
+
+                        if (info.panel_group == 'a' && typeof fcSizeGlassRakedPanel === 'function') {
+                            rakedPeakPx = Math.max(rakedPeakPx, fcSizeGlassRakedPanel($('#pp-' + tab + ' .' + v + '-panel'), panel_w, panel_h));
+                        }
                     }
 
                 }
@@ -1669,12 +1676,16 @@ let ProjectPlan = {
         $('#pp-' + tab + ' .fc-result').css({ 'padding': '' });
 
         if ($('#pp-' + tab + ' .raked-panel .fencing-raked-panel').length && $('#pp-' + tab + ' .fc-result').css('margin-top') != '70px') {
-            $('#pp-' + tab + ' .fc-result').css({ 'padding-top': '40px' });
+            // A glass step-up's peak needs all of this padding above the row.
+            $('#pp-' + tab + ' .fc-result').css({ 'padding-top': Math.max(40, Math.ceil(rakedPeakPx) + 1) + 'px' });
         } else {
             $('#pp-' + tab + ' .fc-result').css({ 'margin-top': '' });
         }
 
-        $('#pp-' + tab + ' .raked-panel .fencing-panel-item').css({ 'width': 1200 * 0.10 });
+        // Glass step-ups are drawn at their real width (fcSizeGlassRakedPanel); the rest keep the stock 1200.
+        if (info.panel_group != 'a') {
+            $('#pp-' + tab + ' .raked-panel .fencing-panel-item').css({ 'width': 1200 * 0.10 });
+        }
     },
 
     //----------------------------------------------------------------------------------

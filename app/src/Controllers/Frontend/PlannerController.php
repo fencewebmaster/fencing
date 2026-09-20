@@ -43,7 +43,8 @@ final class PlannerController extends BaseFrontendController
 
         $qid = $this->request->input('qid', '');
         if ($qid) {
-            $quote = PlannerPageModel::loadQuote((string) $qid);
+            // &silent=1 comes only from the admin entry page's planner links — see PlannerEntryPresenter::plannerUrl().
+            $quote = PlannerPageModel::loadQuote((string) $qid, !empty($this->request->input('silent', '')));
         } elseif (!empty($_SESSION['planner_id'])) {
             // Returning from project-plan: reload the saved quote so session + JS match latest edits.
             $reloaded = PlannerPageModel::reloadSessionQuote();

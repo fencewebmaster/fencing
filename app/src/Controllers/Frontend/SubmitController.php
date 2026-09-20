@@ -41,8 +41,8 @@ final class SubmitController extends BaseFrontendController
         $_SESSION['planner_id'] = $planner_id;
 
         // This save fires automatically right after a `?qid=` reload (see p1.js: fcRunQuoteReloadSubmit).
-        // The planner page already set status='reloaded' for this same request cycle — don't clobber
-        // it back to 'planning'.
+        // The planner page already set status='reloaded' for this same request cycle (or, on an admin
+        // `&silent=1` open, deliberately left the status alone) — don't clobber it back to 'planning'.
         $is_quote_reload = !empty($this->request->post('is_quote_reload'));
 
         $payload = PlannerSubmissionModel::payload($fences, $planner_id, ['status' => !$is_quote_reload]);

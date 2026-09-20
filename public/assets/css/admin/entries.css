@@ -1091,6 +1091,14 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
     flex-shrink: 0;
 }
 
+.fc-entries-fence-dropdown__count {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    color: inherit;
+    opacity: 0.65;
+}
+
 .fc-entries-fence-dropdown__footer {
     display: flex;
     justify-content: flex-end;
@@ -3154,6 +3162,35 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
     color: #135e96;
 }
 
+.fc-entries-detail-page__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.fc-entries-detail-page__title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.fc-entries-detail-page__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.fc-entries-detail-page__meta {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #646970;
+}
+
 .fc-entries-detail-page__actions {
     display: flex;
     align-items: stretch;
@@ -3184,10 +3221,12 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
 .fc-entries-detail-page__grid {
     display: grid;
     grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    /* row tracks the fixed-height admin shell — a vh constant here clipped the panel bottoms */
+    grid-template-rows: minmax(0, 1fr);
     gap: 1rem;
     align-items: stretch;
     flex: 1 1 auto;
-    min-height: calc(100vh - 11rem);
+    min-height: 0;
 }
 
 .fc-entries-detail-panel {
@@ -3231,21 +3270,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
     line-height: 1.4;
 }
 
-.fc-entries-detail-panel__count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    min-width: 1.75rem;
-    height: 1.75rem;
-    padding: 0 0.5rem;
-    border-radius: 9999px;
-    background: var(--fc-princeton-orange, #f67925);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
 .fc-entries-detail-panel__body {
     flex: 1 1 auto;
     min-height: 0;
@@ -3254,6 +3278,8 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
 
 .fc-entries-detail-panel--entry .fc-entries-detail-panel__body {
     overflow-y: auto;
+    /* sticky group labels sit flush under the panel head */
+    padding-top: 0;
 }
 
 .fc-entries-detail-panel__body--flush {
@@ -3294,6 +3320,43 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
 .fc-entries-modal__meta--detail {
     display: block;
     gap: 0;
+    /* absorb the last row's full padding so panel spacing stays put */
+    margin-bottom: -0.5rem;
+}
+
+.fc-entries-detail-group__label {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 -1.125rem;
+    padding: 0.45rem 1.125rem;
+    background: #f6f7f7;
+    border-top: 1px solid #f0f0f1;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #646970;
+}
+
+/* the panel head already draws this border */
+.fc-entries-detail-group:first-child .fc-entries-detail-group__label {
+    border-top: 0;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-detail-group__label {
+    background: var(--fc-admin-surface-muted);
+    border-color: var(--fc-admin-border);
+    color: var(--fc-admin-text-muted);
+}
+
+.fc-entries-modal__value--empty {
+    color: #a7aaad;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-modal__value--empty {
+    color: var(--fc-admin-text-faint);
 }
 
 .fc-entries-modal__meta--detail .fc-entries-modal__row {
@@ -3315,13 +3378,9 @@ html[data-fc-admin-theme='dark'] .fc-entries-modal__meta--detail .fc-entries-mod
     background: var(--fc-sidebar-active-bg);
 }
 
-.fc-entries-modal__meta--detail .fc-entries-modal__row:first-child {
-    padding-top: 0;
-}
-
+/* first/last rows keep full padding — zeroing it clipped the hover highlight */
 .fc-entries-modal__meta--detail .fc-entries-modal__row:last-child {
     border-bottom: 0;
-    padding-bottom: 0;
 }
 
 .fc-entries-modal__meta--detail .fc-entries-modal__label {
@@ -3348,7 +3407,7 @@ html[data-fc-admin-theme='dark'] .fc-entries-modal__meta--detail .fc-entries-mod
 
 .fc-entries-modal__value-wrap {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.35rem;
     min-width: 0;
 }
@@ -3356,10 +3415,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-modal__meta--detail .fc-entries-mod
 .fc-entries-modal__value-wrap .fc-entries-modal__value {
     flex: 1 1 auto;
     min-width: 0;
-}
-
-.fc-entries-modal__value-wrap .fc-entries-detail-copy-btn {
-    margin-top: 0.1rem;
 }
 
 .fc-entries-device {
@@ -4055,9 +4110,31 @@ body.fc-entries-cart-gallery-open {
     line-height: 1.3;
 }
 
+.fc-entries-cart-table__fence--btn {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.fc-entries-cart-table__fence--btn:hover {
+    background: #ffedd5;
+}
+
+.fc-entries-cart-table__fence--btn:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 1px;
+}
+
+.fc-entries-cart-table__fence--btn.is-active {
+    background: var(--fc-princeton-orange, #f67925);
+    color: #fff;
+}
+
 @media (max-width: 1023px) {
     .fc-entries-detail-page__grid {
         grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
         min-height: 0;
     }
 }
@@ -4068,6 +4145,14 @@ html[data-fc-admin-theme='dark'] .fc-entries-detail-page__header {
 
 html[data-fc-admin-theme='dark'] .fc-entries-detail-page__back {
     color: var(--fc-admin-link);
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-detail-page__title {
+    color: var(--fc-admin-text-heading);
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-detail-page__meta {
+    color: var(--fc-admin-text-muted);
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-detail-panel {
@@ -4153,6 +4238,15 @@ html[data-fc-admin-theme='dark'] .fc-entries-cart-table__sku {
 html[data-fc-admin-theme='dark'] .fc-entries-cart-table__fence {
     background: rgba(246, 121, 37, 0.15);
     color: #fdba74;
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-cart-table__fence--btn:hover {
+    background: rgba(246, 121, 37, 0.28);
+}
+
+html[data-fc-admin-theme='dark'] .fc-entries-cart-table__fence--btn.is-active {
+    background: var(--fc-princeton-orange, #f67925);
+    color: #fff;
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-cart-table__image,

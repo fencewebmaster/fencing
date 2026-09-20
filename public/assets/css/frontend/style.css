@@ -11118,6 +11118,8 @@ body.fc-restoring-selection .fencing-tab-name {
     width: 140%;
     aspect-ratio: 1;
     z-index: -2;
+    /* Centred without the animation too: reduced motion drops it, which left the rim orange on the bottom-right corner only. */
+    transform: translate(-50%, -50%);
     background: conic-gradient(
         from 0deg,
         transparent 0deg,
@@ -12851,7 +12853,9 @@ body.fc-restoring-selection .fencing-tab-name {
    the panels. */
 .fencing-panel-container[data-type="slat_fence_infill"] {
     --fc-slat-infill-post-w: 30px;
-    --fc-slat-infill-post-rise: 10px;
+    /* The end piers stand tallest; the runs between rise less, so the wall reads as framed by its ends. */
+    --fc-slat-infill-post-rise: 16px;
+    --fc-slat-infill-post-rise-mid: 6px;
 }
 
 /* Slat Fence Infill: render posts as a stone wall. The [data-cart-key] lines match the slat
@@ -12871,14 +12875,20 @@ body.fc-restoring-selection .fencing-tab-name {
 /* The wall stands proud of the panels: taller by the rise and lifted by it, so its foot stays put.
    These out-rank the slat post-height rules they restate. */
 .fencing-panel-container[data-type="slat_fence_infill"] .panel-post[data-cart-key] {
-    margin-top: calc(-1 * var(--fc-slat-infill-post-rise));
-    min-height: calc(var(--fc-slat-post-height-px, 125px) + var(--fc-slat-infill-post-rise)) !important;
-    height: calc(var(--fc-slat-post-height-px, 125px) + var(--fc-slat-infill-post-rise));
+    --fc-pier-rise: var(--fc-slat-infill-post-rise-mid);
+    margin-top: calc(-1 * var(--fc-pier-rise));
+    min-height: calc(var(--fc-slat-post-height-px, 125px) + var(--fc-pier-rise)) !important;
+    height: calc(var(--fc-slat-post-height-px, 125px) + var(--fc-pier-rise));
+}
+
+/* The first and last piers take the full rise. */
+.fencing-panel-container[data-type="slat_fence_infill"] .panel-post[data-cart-key]:is(.post-left, .post-right) {
+    --fc-pier-rise: var(--fc-slat-infill-post-rise);
 }
 
 .fencing-panel-container[data-type="slat_fence_infill"] .panel-post[data-cart-key]:is(.opt-3, .opt-3-1, .opt-5, .opt-5-1) {
-    min-height: calc(var(--fc-slat-post-above-px, 125px) + var(--fc-slat-infill-post-rise)) !important;
-    height: calc(var(--fc-slat-post-above-px, 125px) + var(--fc-slat-infill-post-rise));
+    min-height: calc(var(--fc-slat-post-above-px, 125px) + var(--fc-pier-rise)) !important;
+    height: calc(var(--fc-slat-post-above-px, 125px) + var(--fc-pier-rise));
 }
 
 /* The project plan's strip clips above the run, so the container makes room for the rise. */
@@ -12891,6 +12901,28 @@ body.fc-restoring-selection .fencing-tab-name {
 [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] {
     --fc-wall: var(--fc-limestone);
     --fc-wall-edge: var(--fc-a-black-28);
+}
+
+/* A Step 3 Post Options pick (reference only) paints the piers in that finish instead of the stone
+   courses; fcApplyPostFinishCoat's #fc-post-finish-coat rule supplies the image and its 1:1 height,
+   bottom-anchored so every pier shows the pattern at the same scale whatever the fence height. */
+[data-fc-slat-infill-post-finish] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .panel-post::before {
+    background: center bottom / 100% var(--fc-slat-infill-post-tex-h, 240px) no-repeat;
+}
+
+/* A planner post opens the Post Finish drawer (events.js): a pointer and the orange hover edge other posts get, grabbing mid-drag. */
+.fc-planner-page .fencing-display-result .fencing-panel-container[data-type="slat_fence_infill"] .panel-post {
+    cursor: pointer;
+}
+
+.fc-planner-page .grabbing .fencing-panel-container[data-type="slat_fence_infill"] .panel-post {
+    cursor: grabbing;
+}
+
+@media (min-width: 1024px) {
+    .fc-planner-page .fencing-display-result .fencing-panel-container[data-type="slat_fence_infill"] .panel-post:hover {
+        border-color: var(--fc-princeton-orange);
+    }
 }
 
 /* Fence config `hide_post_value`: suppress post width on spacing + Centers (Slat Infill). */
@@ -13297,16 +13329,15 @@ body.fc-restoring-selection .fencing-tab-name {
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] {
     --fc-glass-edge: rgba(96, 141, 153, 0.7);
 }
-
-/* Aqua-cast body under two diagonal specular streaks; a polished 1px inner line and side/bottom
-   thickness shading. Pure background layers: cart scrape and click targets untouched. */
+/* Light aqua body (grid shows through) under a soft corner sheen and two specular streaks, polished inner line, side/bottom shading. The
+   streaks ride a repeating 200% tile parked at 50%, so the hover sweep never brings a tile edge into view. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-panel-item {
     border: 1px solid var(--fc-glass-edge);
     border-radius: 2px;
     background:
-        linear-gradient(112deg, transparent 14%, rgba(255, 255, 255, 0.5) 18%, rgba(255, 255, 255, 0.12) 27%, transparent 31%),
-        linear-gradient(112deg, transparent 57%, rgba(255, 255, 255, 0.33) 62%, transparent 68%),
-        linear-gradient(180deg, rgba(219, 240, 244, 0.82) 0%, rgba(186, 222, 232, 0.55) 55%, rgba(203, 231, 239, 0.72) 100%);
+        linear-gradient(112deg, transparent 29.1%, rgba(255, 255, 255, 0.5) 31.4%, rgba(255, 255, 255, 0.12) 36.6%, transparent 39%, transparent 54.1%, rgba(255, 255, 255, 0.33) 57%, transparent 60.5%) 50% 0 / 200% 100% repeat-x,
+        linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 45%),
+        linear-gradient(180deg, rgba(219, 240, 244, 0.6) 0%, rgba(196, 228, 236, 0.4) 55%, rgba(184, 220, 230, 0.54) 100%);
     box-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.7),
         inset 4px 0 8px -4px var(--fc-glass-edge),
@@ -13317,18 +13348,59 @@ body.fc-restoring-selection .fencing-tab-name {
 /* Hover keeps the glass: the base rule's lavender fill would read as frosted. Border stays 1px so
    the sheet does not jump. */
 @media (min-width: 1024px) {
-    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-panel-item:hover {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-panel-item:hover,
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-o-a, .fencing-right-panel-o-a):hover > .fencing-panel-item {
         border: 1px solid var(--fc-princeton-orange);
         background-color: transparent;
     }
 }
 
-/* Raked sheets: the outline layer behind the clip becomes the glass edge, and the straight side
-   borders thin to match; hover keeps its orange via the existing !important rules. */
+/* Raked sheets to scale (fcSizeGlassRakedPanel): --fc-rake-w/-h are the real width and tall-end height,
+   --fc-rake-drop the step-up the rake falls back to the 1200 panels. Fallbacks = the old stock sheet. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .raked-panel .fencing-raked-panel {
+    width: var(--fc-rake-w, 120px);
+    height: var(--fc-rake-h, 159px) !important;
+}
+
+/* Lifts the sheet so its bottom sits on the panels' line: the 120px panel less the wrapper's 1px padding. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .raked-panel-container {
+    top: calc(119px - var(--fc-rake-h, 159px));
+}
+
+/* Cut like real raked glass: flat along the tall end's top 40%, then one straight rake down to the
+   neighbouring panel's height (the base shape adds the aluminium step). Wrapper and sheet share it. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-o-a, .fencing-left-panel-a) {
+    -webkit-clip-path: polygon(0 0, 40% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 0 100%);
+    clip-path: polygon(0 0, 40% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 0 100%);
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-right-panel-o-a, .fencing-right-panel-a) {
+    -webkit-clip-path: polygon(0 var(--fc-rake-drop, 25%), 60% 0, 100% 0, 100% 100%, 0 100%);
+    clip-path: polygon(0 var(--fc-rake-drop, 25%), 60% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* The wrapper stays unpainted: behind the translucent glass its fill tinted the whole sheet darker
+   than the flat ones. Its 1px padding keeps the sheet's vertical fit. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-left-panel-o-a,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-right-panel-o-a {
-    background: var(--fc-glass-edge);
+    background: transparent;
     padding-top: 1px;
+}
+
+/* The wrapper's clip (also its hover area) is the glass shape widened 1px each side: the sheet's
+   -1px side margins overhang it, and a flush clip trimmed off the sheet's side borders. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-left-panel-o-a {
+    -webkit-clip-path: polygon(-1px 0, 40% 0, calc(100% + 1px) var(--fc-rake-drop, 25%), calc(100% + 1px) 100%, -1px 100%);
+    clip-path: polygon(-1px 0, 40% 0, calc(100% + 1px) var(--fc-rake-drop, 25%), calc(100% + 1px) 100%, -1px 100%);
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-right-panel-o-a {
+    -webkit-clip-path: polygon(-1px var(--fc-rake-drop, 25%), 60% 0, calc(100% + 1px) 0, calc(100% + 1px) 100%, -1px 100%);
+    clip-path: polygon(-1px var(--fc-rake-drop, 25%), 60% 0, calc(100% + 1px) 0, calc(100% + 1px) 100%, -1px 100%);
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-a, .fencing-right-panel-a) {
+    --fc-glass-rake-edge: var(--fc-glass-edge);
 }
 
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-left-panel-a {
@@ -13337,6 +13409,127 @@ body.fc-restoring-selection .fencing-tab-name {
 
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-right-panel-a {
     border-right: 1px solid var(--fc-glass-edge);
+}
+
+/* The top edge (the raked sheet has no top border) drawn like the bordered edges: a 1px teal line with
+   the polished white line inside it, along the flat top run and then the rake, which is the 60%-wide,
+   drop-high band's corner-to-corner diagonal, exactly the clip's cut. Insets = border box. The rake's
+   lines sit on the glass side of the cut (the clip would take an outer half), and every stop fades over
+   0.6px: hard stops on a diagonal are not anti-aliased and stair-step. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-a, .fencing-right-panel-a)::after {
+    content: "";
+    position: absolute;
+    inset: 0 -1px -1px;
+    pointer-events: none;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-left-panel-a::after {
+    background:
+        linear-gradient(var(--fc-glass-rake-edge), var(--fc-glass-rake-edge)) top left / 40% 1px no-repeat,
+        linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) left 0 top 1px / 40% 1px no-repeat,
+        linear-gradient(to top right, transparent calc(50% - 2.6px), rgba(255, 255, 255, 0.7) calc(50% - 2px), rgba(255, 255, 255, 0.7) calc(50% - 1.3px), var(--fc-glass-rake-edge) calc(50% - 0.7px), var(--fc-glass-rake-edge) 50%, transparent calc(50% + 0.6px)) top right / 60% var(--fc-rake-drop, 25%) no-repeat;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-right-panel-a::after {
+    background:
+        linear-gradient(var(--fc-glass-rake-edge), var(--fc-glass-rake-edge)) top right / 40% 1px no-repeat,
+        linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)) right 0 top 1px / 40% 1px no-repeat,
+        linear-gradient(to top left, transparent calc(50% - 2.6px), rgba(255, 255, 255, 0.7) calc(50% - 2px), rgba(255, 255, 255, 0.7) calc(50% - 1.3px), var(--fc-glass-rake-edge) calc(50% - 0.7px), var(--fc-glass-rake-edge) 50%, transparent calc(50% + 0.6px)) top left / 60% var(--fc-rake-drop, 25%) no-repeat;
+}
+
+/* A raked sheet's hover also comes from its wrapper: the project plan turns off pointer events on
+   .fencing-btn-modal (it would open the edit modal), and the raked sheet itself carries that class. */
+
+/* The base raked hover's !important 3px edge widened the sheet 2px and shoved the row sideways:
+   glass keeps a 1px edge on hover, orange from 1024px like the flat sheets' border. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-a:hover, .fencing-left-panel-o-a:hover > .fencing-left-panel-a) {
+    border-left: 1px solid var(--fc-glass-edge) !important;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-right-panel-a:hover, .fencing-right-panel-o-a:hover > .fencing-right-panel-a) {
+    border-right: 1px solid var(--fc-glass-edge) !important;
+}
+
+/* The whole raked outline goes orange, cut edge included, matching the flat sheets' hover border. */
+@media (min-width: 1024px) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-a:hover, .fencing-right-panel-a:hover, .fencing-left-panel-o-a:hover > .fencing-left-panel-a, .fencing-right-panel-o-a:hover > .fencing-right-panel-a) {
+        --fc-glass-rake-edge: var(--fc-princeton-orange);
+    }
+
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-a:hover, .fencing-left-panel-o-a:hover > .fencing-left-panel-a) {
+        border-left-color: var(--fc-princeton-orange) !important;
+    }
+
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-right-panel-a:hover, .fencing-right-panel-o-a:hover > .fencing-right-panel-a) {
+        border-right-color: var(--fc-princeton-orange) !important;
+    }
+}
+
+/* The project plan greys its hover border (#place_order-section .fencing-panel-item:hover); raked sheets
+   follow, cut edge included. !important to outrank the orange straight edges above. */
+#place_order-section .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-a:hover, .fencing-right-panel-a:hover, .fencing-left-panel-o-a:hover > .fencing-left-panel-a, .fencing-right-panel-o-a:hover > .fencing-right-panel-a) {
+    --fc-glass-rake-edge: var(--fc-alto);
+    border-color: var(--fc-alto) !important;
+}
+
+/* ===== Glass Pool: hover shine (panel, raked, gate, and the Step 1 style card) ===== */
+/* Sheets: the resting streaks sweep one tile period right, running off and re-entering to rest.
+   Card: its glass is a photo with no streaks, so a fixed 3:4 glint tile slides across it instead. */
+@keyframes fc-glass-streak-sweep {
+    from { background-position: 50% 0, 0 0, 0 0; }
+    to   { background-position: -150% 0, 0 0, 0 0; }
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) {
+    /* Stops stay inside 36-62%: at 112deg on a 3:4 tile, a wider band meets the tile edge as a hard line. */
+    --fc-glass-shine: linear-gradient(
+        112deg,
+        rgba(255, 255, 255, 0) 36%,
+        rgba(255, 255, 255, 0.15) 40%,
+        rgba(255, 255, 255, 0.85) 46%,
+        rgba(255, 255, 255, 0.15) 51%,
+        rgba(255, 255, 255, 0) 54%,
+        rgba(255, 255, 255, 0.5) 58%,
+        rgba(255, 255, 255, 0) 62%
+    );
+}
+
+/* The card's glass is an <img>, which a background would sit under, so its glint is an overlay. */
+.fc-planner-page .fencing-style-item[data-slug="glass_pool"]:not(.fencing-style-item--unavailable) .fencing-style-img {
+    position: relative;
+}
+
+.fc-planner-page .fencing-style-item[data-slug="glass_pool"]:not(.fencing-style-item--unavailable) .fencing-style-img::after {
+    --fc-glass-shine-w: 240px;
+    --fc-glass-shine-h: 320px;
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--fc-glass-shine) left calc(-1 * var(--fc-glass-shine-w)) top 0 / var(--fc-glass-shine-w) var(--fc-glass-shine-h) no-repeat;
+    transition: background-position 0.35s linear;
+}
+
+/* hover: hover only, as with the button glint - on touch the state latches. */
+@media (hover: hover) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] .fencing-panel-item:hover,
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-left-panel-o-a, .fencing-right-panel-o-a):hover > .fencing-panel-item {
+        animation: fc-glass-streak-sweep 0.6s ease-in-out;
+    }
+
+    .fc-planner-page .fencing-style-item[data-slug="glass_pool"]:not(.fencing-style-item--unavailable):hover .fencing-style-img::after {
+        background-position: right calc(-1 * var(--fc-glass-shine-w)) top 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="glass_pool"] :is(.fencing-panel-item, .fencing-left-panel-o-a:hover > .fencing-panel-item, .fencing-right-panel-o-a:hover > .fencing-panel-item) {
+        animation: none;
+    }
+
+    .fc-planner-page .fencing-style-item[data-slug="glass_pool"]:not(.fencing-style-item--unavailable) .fencing-style-img::after {
+        transition: none;
+    }
 }
 
 /* Spigot */
@@ -15695,6 +15888,55 @@ input[type="number"] {
     transform: none;
 }
 
+/* The Order Within box's rim sweep while a download builds: a conic square spins under an inset ::after that leaves 2px. */
+.fc-download-toast {
+    isolation: isolate;
+    overflow: hidden;
+    border-color: var(--fc-a-orange-35);
+}
+
+/* Centred by its own transform as well, so the square still covers the card when reduced motion drops the spin. */
+.fc-download-toast::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 140%;
+    aspect-ratio: 1;
+    z-index: -2;
+    transform: translate(-50%, -50%);
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 70deg,
+        var(--fc-a-orange-35) 120deg,
+        var(--fc-princeton-orange) 160deg,
+        transparent 160deg,
+        transparent 250deg,
+        var(--fc-a-orange-35) 300deg,
+        var(--fc-princeton-orange) 340deg,
+        transparent 340deg,
+        transparent 360deg
+    );
+    animation: fc-countdown-border-sweep 3.5s linear infinite;
+    /* Paused while the toast is hidden, then resumes where it stopped. */
+    animation-play-state: paused;
+}
+
+.fc-download-toast.is-visible::before {
+    animation-play-state: running;
+}
+
+/* Repaints the card inside the rim; 11px stays concentric with the 14px corner less the 1px border. */
+.fc-download-toast::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: 11px;
+    background-color: var(--fc-white);
+}
+
 /* Same dual-ring spinner as the submission loader, sized for a toast. */
 .fc-download-toast .fc-download-toast__spinner {
     flex: 0 0 auto;
@@ -15749,6 +15991,12 @@ input[type="number"] {
     .fc-download-toast .fc-download-toast__spinner::before,
     .fc-download-toast .fc-download-toast__spinner::after {
         animation-duration: 2.4s;
+    }
+
+    /* The rim holds still as a plain accent edge. */
+    .fc-download-toast::before {
+        animation: none;
+        background: var(--fc-princeton-orange);
     }
 }
 /* Planner notice toast: the same card as the rest of the family, rather than a dark Bootstrap bar under every modal. */
@@ -16073,7 +16321,7 @@ input[type="number"] {
     color: var(--fc-gray-chateau);
 }
 
-/* ===== Step 3 Fence Color control and drawer ===== */
+/* ===== Step 3 Fence Colour control and drawer ===== */
 /* The badge dot stands in for the glyph; its white ring keeps it clear of the orange hover and active fills. */
 .fencing-panel-controls #btn-fence_color::before {
     content: none;
@@ -16226,6 +16474,659 @@ input[type="number"] {
     font-size: 12px;
     line-height: 1.5;
     color: var(--fc-dim-gray);
+}
+
+/* ===== Step 3 Post Options control and drawer ===== */
+/* Like Fence Colour, a badge stands in for the glyph: the picked finish, else the same broken ring. */
+.fencing-panel-controls #btn-post_finish::before {
+    content: none;
+}
+
+.fencing-panel-controls .fc-post-finish-dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    vertical-align: -2px;
+    border: 1px solid var(--fc-a-black-28);
+    border-radius: 50%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    box-shadow: 0 0 0 1px var(--fc-white);
+}
+
+/* No finish picked yet: Fence Colour's broken ring, so the two badges read as a pair. */
+.fencing-panel-controls .fc-post-finish-dot--empty {
+    border: 1.5px dashed currentColor;
+    box-shadow: none;
+}
+
+@media (max-width: 768px) {
+    .fc-planner-page .fencing-panel-controls .fc-post-finish-dot {
+        display: block;
+        width: 18px;
+        height: 18px;
+        margin: 0 auto 4px;
+    }
+}
+
+/* The note card sits above the preview; this spaces it on phones, and from 768px the drawer's 10px rhythm takes over. */
+#fc-control-modal .fencing-modal-area--post-finish > .fencing-modal-notes {
+    margin: 0 0 12px;
+}
+
+#fc-control-modal .fc-post-finish-preview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--fc-gainsboro);
+    background: var(--fc-cultured);
+}
+
+#fc-control-modal .fc-post-finish-preview__art {
+    flex: 0 0 210px;
+}
+
+#fc-control-modal .fc-post-finish-preview__art svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+#fc-control-modal .fc-post-finish-preview__text {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
+#fc-control-modal .fc-post-finish-preview__text dt {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fc-dim-gray);
+}
+
+#fc-control-modal .fc-post-finish-preview__text dd {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--fc-dark-charcoal);
+}
+
+#fc-control-modal .fc-post-finish-preview__text dd:last-child {
+    margin-bottom: 0;
+}
+
+#fc-control-modal .fc-post-finish-preview__slats--empty {
+    font-weight: 400;
+    font-style: italic;
+    color: var(--fc-dim-gray);
+}
+
+/* The colour pick lives in the preview too: the style's own swatches in a wrapping row. */
+#fc-control-modal .fc-post-finish-preview__colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+}
+
+#fc-control-modal .fc-post-finish-color {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--fc-a-black-28);
+    box-shadow: inset 0 0 0 1px var(--fc-white);
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#fc-control-modal .fc-post-finish-color.fc-selected {
+    border-color: var(--fc-princeton-orange);
+    box-shadow: inset 0 0 0 1px var(--fc-white), 0 0 0 2px var(--fc-a-orange-22);
+}
+
+@media (hover: hover) {
+    #fc-control-modal .fc-post-finish-color:not(.fc-selected):hover {
+        border-color: var(--fc-princeton-orange);
+        transform: translateY(-1px);
+    }
+}
+
+#fc-control-modal .fc-post-finish-color:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+@media (max-width: 575.98px) {
+    #fc-control-modal .fc-post-finish-preview {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    #fc-control-modal .fc-post-finish-preview__art {
+        flex-basis: auto;
+        max-width: 260px;
+        width: 100%;
+        margin: 0 auto;
+    }
+}
+
+/* Not a scroll box of its own: the drawer scrolls, so there is one scrollbar and the toolbar can pin to it. */
+#fc-control-modal .fencing-modal-area--post-finish > .fencing-modal-body {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    max-height: none;
+    overflow: visible;
+}
+
+/* The card fills the drawer's height however few finishes a search leaves, with the footer at its foot. */
+#fc-control-modal .fencing-modal-area--post-finish {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding-bottom: 0;
+}
+
+/* The drawer's own bottom padding would leave the pinned footer floating above its edge. */
+#fc-control-modal .fc-modal-content:has(> .fencing-modal-area--post-finish) {
+    padding-bottom: 0;
+}
+
+/* Phones: the popup takes the screen's height, and the card stretches inside it. */
+@media (max-width: 767.98px) {
+    #fc-control-modal .fencing-modal-content:has(.fencing-modal-area--post-finish) {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100dvh - 60px);
+    }
+
+    #fc-control-modal .fencing-modal-content:has(.fencing-modal-area--post-finish) > .fc-modal-content {
+        flex: 1 0 auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #fc-control-modal .fencing-modal-area--post-finish {
+        flex: 1 0 auto;
+    }
+}
+
+/* No Preference stays pinned at the foot while the finishes scroll under it. */
+#fc-control-modal .fc-post-finish-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: auto;
+    padding: 12px 0 16px;
+    background: var(--fc-white);
+    box-shadow: 0 -10px 12px -12px var(--fc-a-black-28);
+}
+
+#fc-control-modal .fc-post-finish-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 10px;
+    background: var(--fc-white);
+}
+
+/* The "Post Finish" band stays at the top while the drawer scrolls. */
+#fc-control-modal .fencing-modal-area--post-finish > .fencing-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background-color: var(--fc-white);
+}
+
+/* Search and tabs stay in reach under the header band; its height is measured when the drawer opens. */
+@media (min-width: 768px) {
+    #fc-control-modal .fencing-modal-area--post-finish > .fencing-modal-header {
+        background-color: var(--fc-cultured);
+    }
+
+    #fc-control-modal .fc-post-finish-toolbar {
+        position: sticky;
+        top: var(--fc-post-finish-head-h, 49px);
+        z-index: 2;
+        padding-top: 6px;
+    }
+}
+
+#fc-control-modal .fc-post-finish-search {
+    position: relative;
+}
+
+#fc-control-modal .fc-post-finish-search > .fa-magnifying-glass {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    font-size: 14px;
+    color: var(--fc-dim-gray);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.fc-planner-page #fc-control-modal .fc-post-finish-search__input {
+    padding-left: 36px !important;
+    padding-right: 36px !important;
+}
+
+/* !important: the global .form-control:focus rule unsets box-shadow with it. */
+#fc-control-modal .fc-post-finish-search__input:focus {
+    border-color: var(--fc-princeton-orange) !important;
+    box-shadow: 0 0 0 3px var(--fc-a-orange-22) !important;
+}
+
+#fc-control-modal .fc-post-finish-search .form-control-clear {
+    top: 50%;
+    right: 12px;
+    margin-top: -8px;
+}
+
+/* Category cards ride one swipeable strip; the arrows page it and go quiet at their end. */
+#fc-control-modal .fc-post-finish-cats {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+}
+
+#fc-control-modal .fc-post-finish-cats__arrow {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    margin: 4px 0;
+    padding: 0;
+    border: 1px solid var(--fc-gainsboro);
+    background: var(--fc-white);
+    color: var(--fc-dim-gray);
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+/* Everything fits: nothing to page, so the arrows go. */
+#fc-control-modal .fc-post-finish-cats--no-overflow .fc-post-finish-cats__arrow {
+    display: none;
+}
+
+@media (hover: hover) {
+    #fc-control-modal .fc-post-finish-cats__arrow:hover {
+        border-color: var(--fc-princeton-orange);
+        color: var(--fc-princeton-orange);
+    }
+}
+
+#fc-control-modal .fc-post-finish-cats__arrow:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+/* The strip: swipe or drag on touch, arrows or a trackpad on desktop; no scrollbar of its own.
+   The padding keeps the cards' focus ring and hover lift inside the scroll box. */
+#fc-control-modal .fc-post-finish-tabs {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 4px 2px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+#fc-control-modal .fc-post-finish-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+/* Snapping waits while the strip runs its own slide (fcSlidePostFinishStrip), so it cannot tug the glide. */
+#fc-control-modal .fc-post-finish-tabs--sliding {
+    scroll-snap-type: none;
+}
+
+#fc-control-modal .fc-post-finish-tab {
+    flex: none;
+    /* Centre snap, matching the click that glides a picked card to the middle (fcCenterPostFinishTab). */
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Sample on top, a divider, then the label centred in a fixed-height band below it. */
+    justify-content: flex-start;
+    gap: 0;
+    width: 94px;
+    padding: 0;
+    border: 1px solid var(--fc-gainsboro);
+    background: var(--fc-white);
+    color: var(--fc-dark-charcoal);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+        box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* A realistic sample of the category's material: rounded like a physical chip, with a soft drop shadow. */
+#fc-control-modal .fc-post-finish-tab__thumb {
+    position: relative;
+    display: flex;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    /* Equal space above and below every sample. */
+    margin: 10px 0;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--fc-cultured);
+    box-shadow: 0 1px 3px var(--fc-a-black-28);
+    /* See-through and a size smaller at rest; the hovered and picked cards bring their sample to full strength. */
+    opacity: 0.4;
+    transform: scale(0.85);
+    /* One smooth ease-out for size, strength and ring, so picking and unpicking a category both glide. */
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, opacity 0.35s ease;
+}
+
+#fc-control-modal .fc-post-finish-tab__thumb svg {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+}
+
+/* A hairline edge so pale finishes keep their outline, and a faint sheen across the top like a real sample. */
+#fc-control-modal .fc-post-finish-tab__thumb::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(160deg, var(--fc-a-white-22), transparent 45%);
+    box-shadow: inset 0 0 0 1px var(--fc-a-black-8);
+    pointer-events: none;
+}
+
+/* The label band spans the card under a divider, two lines tall, so one-line labels sit in its middle. */
+#fc-control-modal .fc-post-finish-tab__label {
+    display: flex;
+    flex: 1 1 auto;
+    align-self: stretch;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: calc(2.5em + 14px);
+    padding: 7px 6px;
+    border-top: 1px solid var(--fc-gainsboro);
+    /* Square, not the drawer's blanket 3px, so the divider runs straight to the card's edges. */
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+    transition: border-color 0.15s ease;
+}
+
+#fc-control-modal .fc-post-finish-tab--active {
+    border-color: var(--fc-princeton-orange);
+    background: var(--fc-princeton-orange);
+    color: var(--fc-white);
+    box-shadow: 0 0 0 3px var(--fc-a-orange-22);
+}
+
+#fc-control-modal .fc-post-finish-tab--active .fc-post-finish-tab__label {
+    border-top-color: var(--fc-a-white-45);
+}
+
+/* On the orange card a white ring keeps the sample clear of it. */
+#fc-control-modal .fc-post-finish-tab--active .fc-post-finish-tab__thumb {
+    box-shadow: 0 0 0 2px var(--fc-white), 0 2px 6px var(--fc-a-black-28);
+    opacity: 1;
+    transform: none;
+}
+
+/* A category with no search matches stays in place, faded. */
+#fc-control-modal .fc-post-finish-tab--none {
+    opacity: 0.45;
+}
+
+/* Hover: the card lifts with an orange edge, the label follows, and the sample springs up. */
+@media (hover: hover) {
+    #fc-control-modal .fc-post-finish-tab:not(.fc-post-finish-tab--active):hover {
+        border-color: var(--fc-princeton-orange);
+        color: var(--fc-princeton-orange);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px var(--fc-a-orange-22);
+    }
+
+    #fc-control-modal .fc-post-finish-tab:not(.fc-post-finish-tab--active):hover .fc-post-finish-tab__label {
+        border-top-color: var(--fc-a-orange-35);
+    }
+
+    #fc-control-modal .fc-post-finish-tab:not(.fc-post-finish-tab--active):hover .fc-post-finish-tab__thumb {
+        transform: translateY(-1px) scale(0.94);
+        opacity: 1;
+    }
+}
+
+#fc-control-modal .fc-post-finish-tab:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+#fc-control-modal .fc-post-finish-group {
+    margin: 12px 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fc-dim-gray);
+}
+
+#fc-control-modal .fc-post-finish-empty {
+    margin: 0;
+    padding: 18px 0;
+    text-align: center;
+    color: var(--fc-dim-gray);
+}
+
+/* About 3 across on phones and 5-6 in the drawer; the padding leaves room for the hover lift and the glow. */
+#fc-control-modal .fc-post-finish-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 10px;
+    padding: 5px 3px;
+}
+
+@media (min-width: 480px) {
+    #fc-control-modal .fc-post-finish-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 768px) {
+    #fc-control-modal .fc-post-finish-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 993px) {
+    #fc-control-modal .fc-post-finish-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+#fc-control-modal .fc-post-finish-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--fc-dark-charcoal);
+    text-align: center;
+    cursor: pointer;
+}
+
+#fc-control-modal .fc-post-finish-tile__swatch {
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 2px solid var(--fc-gainsboro);
+    background: var(--fc-cultured);
+    transition: border-color 0.2s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+#fc-control-modal .fc-post-finish-tile__swatch svg,
+#fc-control-modal .fc-post-finish-tile__swatch img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Small and light enough to show every name in full rather than cutting it off; the row grows to the longest. */
+#fc-control-modal .fc-post-finish-tile__name {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--fc-dove-gray);
+    overflow-wrap: break-word;
+}
+
+/* The pick carries Fence Colour's selected radio: an orange dot in a white ring on an orange rim. */
+#fc-control-modal .fc-post-finish-tile::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    box-sizing: border-box;
+    border: 1px solid var(--fc-princeton-orange);
+    border-radius: 50%;
+    background: var(--fc-princeton-orange);
+    box-shadow: inset 0 0 0 3px var(--fc-white);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+#fc-control-modal .fc-post-finish-tile.fc-selected::after {
+    opacity: 1;
+    transform: none;
+}
+
+#fc-control-modal .fc-post-finish-tile.fc-selected .fc-post-finish-tile__swatch {
+    border-color: var(--fc-princeton-orange);
+    box-shadow: 0 0 0 3px var(--fc-a-orange-22);
+}
+
+@media (hover: hover) {
+    #fc-control-modal .fc-post-finish-tile:hover .fc-post-finish-tile__swatch {
+        border-color: var(--fc-princeton-orange);
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 16px var(--fc-a-orange-22),
+            0 2px 6px var(--fc-a-black-8);
+    }
+
+    #fc-control-modal .fc-post-finish-tile:hover .fc-post-finish-tile__name {
+        color: var(--fc-princeton-orange);
+    }
+}
+
+#fc-control-modal .fc-post-finish-tile:active .fc-post-finish-tile__swatch {
+    transform: scale(0.96);
+    transition-duration: 0.1s;
+}
+
+#fc-control-modal .fc-post-finish-tile:focus-visible {
+    outline: none;
+}
+
+#fc-control-modal .fc-post-finish-tile:focus-visible .fc-post-finish-tile__swatch {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+#fc-control-modal .fc-post-finish-none {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px dashed var(--fc-dark-gray);
+    background: var(--fc-white);
+    color: var(--fc-dark-charcoal);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#fc-control-modal .fc-post-finish-none i {
+    color: var(--fc-dim-gray);
+}
+
+#fc-control-modal .fc-post-finish-none.fc-selected {
+    border: 1px solid var(--fc-princeton-orange);
+    box-shadow: 0 0 0 3px var(--fc-a-orange-22);
+    color: var(--fc-princeton-orange);
+}
+
+#fc-control-modal .fc-post-finish-none.fc-selected i {
+    color: var(--fc-princeton-orange);
+}
+
+@media (hover: hover) {
+    #fc-control-modal .fc-post-finish-none:hover {
+        border-color: var(--fc-princeton-orange);
+        color: var(--fc-princeton-orange);
+    }
+}
+
+#fc-control-modal .fc-post-finish-none:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #fc-control-modal .fc-post-finish-tile::after,
+    #fc-control-modal .fc-post-finish-tile__swatch,
+    #fc-control-modal .fc-post-finish-tab,
+    #fc-control-modal .fc-post-finish-cats__arrow,
+    #fc-control-modal .fc-post-finish-color,
+    #fc-control-modal .fc-post-finish-none {
+        transition: none;
+    }
+
+    #fc-control-modal .fc-post-finish-tile:hover .fc-post-finish-tile__swatch,
+    #fc-control-modal .fc-post-finish-tab:hover,
+    #fc-control-modal .fc-post-finish-color:hover {
+        transform: none;
+    }
+
+    #fc-control-modal .fc-post-finish-tab:not(.fc-post-finish-tab--active):hover .fc-post-finish-tab__thumb {
+        transform: scale(0.85);
+    }
+
+    #fc-control-modal .fc-post-finish-tab__thumb {
+        transition: none;
+    }
+
+    #fc-control-modal .fc-post-finish-tabs {
+        scroll-behavior: auto;
+    }
 }
 
 /* The legacy width/margin overrides at these breakpoints predate the gap row. */

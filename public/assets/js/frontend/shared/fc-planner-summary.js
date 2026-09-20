@@ -20,6 +20,16 @@
             .replace(/"/g, '&quot;');
     }
 
+    // Config option titles carry simple markup ('Core-Drilled<br>285mm'): escape everything, then restore
+    // only attribute-less tags. The <br> class tells the copy text to read it as a space, not a new row.
+    var FC_SUMMARY_INLINE_TAGS = 'b|strong|i|em|u|small|sub|sup';
+
+    function formatSummaryInlineHtml(value) {
+        return escapeHtml(value)
+            .replace(/&lt;br\s*\/?&gt;/gi, '<br class="fc-planner-summary-soft-br">')
+            .replace(new RegExp('&lt;(\\/?)(' + FC_SUMMARY_INLINE_TAGS + ')&gt;', 'gi'), '<$1$2>');
+    }
+
     function buildQuoteShareUrl(quoteId) {
         var id = String(quoteId == null ? '' : quoteId).trim();
         if (!id) {
@@ -276,7 +286,7 @@
                         '<span class="fc-planner-summary-no-post">' + escapeHtml(line) + '</span>'
                     );
                 }
-                return escapeHtml(line);
+                return formatSummaryInlineHtml(line);
             })
             .join('<br>');
     }
@@ -816,7 +826,7 @@
 
     function renderSectionTitleHtml(section) {
         var label = escapeHtml(section.sectionLabel || '');
-        var name = section.fenceName ? escapeHtml(section.fenceName) : '';
+        var name = section.fenceName ? formatSummaryInlineHtml(section.fenceName) : '';
         var html = '<span class="fc-planner-summary-section__title">';
         html += '<span class="fc-planner-summary-section__badge">' + label + '</span>';
         if (name) {
@@ -959,6 +969,11 @@
             });
         }
 
+        // Step 3 Post Options: reference only, so it is listed with the options and never priced.
+        if (isSlatInfill && typeof fcPostFinishSummaryValue === 'function') {
+            pushRowIf(rows, 'Post finish (reference only)', fcPostFinishSummaryValue(slug));
+        }
+
         if (calc?.selected_values?.message) {
             pushRowIf(rows, 'Notes', String(calc.selected_values.message), { warn: true });
         }
@@ -1045,7 +1060,7 @@
                     '</dt>';
                 var val = row.multiline
                     ? formatSummaryMultilineHtml(row.value)
-                    : escapeHtml(row.value);
+                    : formatSummaryInlineHtml(row.value);
                 var ddClass = [];
                 if (row.warn) {
                     ddClass.push('text-danger');
@@ -1076,11 +1091,13 @@
             return '';
         }
 
+        // A title's own line break (formatSummaryInlineHtml) is a space in plain text, not a new row.
+        var html = ($dd.html() || '').replace(/<br class="fc-planner-summary-soft-br">/gi, ' ');
+
         if (!$dd.hasClass('fc-planner-summary-multiline')) {
-            return $dd.text().replace(/\s+/g, ' ').trim();
+            return $('<div>').html(html).text().replace(/\s+/g, ' ').trim();
         }
 
-        var html = $dd.html() || '';
         var parts = html
             .split(/<br\s*\/?>/i)
             .map(function(part) {

@@ -464,6 +464,8 @@ let Planner = {
                 var u = new URL(window.location.href);
                 if (u.searchParams.has('qid')) {
                     u.searchParams.delete('qid');
+                    // `silent` (admin open) only qualifies the qid load it arrived with.
+                    u.searchParams.delete('silent');
                     var qs = u.searchParams.toString();
                     history.replaceState({}, '', u.pathname + (qs ? '?' + qs : '') + u.hash);
                 }

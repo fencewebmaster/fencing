@@ -745,6 +745,9 @@ FENCE = {
         if (typeof fcSyncPlannerColorButton === 'function') {
             fcSyncPlannerColorButton();
         }
+        if (typeof fcSyncPlannerPostFinishButton === 'function') {
+            fcSyncPlannerPostFinishButton();
+        }
 
         FENCE.call('update_custom_fence_tab');
 
@@ -2171,6 +2174,9 @@ FENCE = {
 
         var calc = calculate_fences();
 
+        // Tallest glass step-up peak above the panel row, in px (fcSizeGlassRakedPanel).
+        var rakedPeakPx = 0;
+
         $(side).each(function(k, v) {
 
             // Side
@@ -2244,6 +2250,10 @@ FENCE = {
 
                     if(panel_h) {
                         $('.' + v + '-panel').html(tpl);
+
+                        if (info.panel_group == 'a' && typeof fcSizeGlassRakedPanel === 'function') {
+                            rakedPeakPx = Math.max(rakedPeakPx, fcSizeGlassRakedPanel($('.' + v + '-panel'), panel_w, panel_h));
+                        }
                     }
 
                 }
@@ -2339,14 +2349,18 @@ FENCE = {
         if ($fcResult.length) {
             $fcResult.css({ 'padding': '', 'margin-top': '' });
             if ($('.raked-panel .fencing-raked-panel').length && $fcResult.css('margin-top') !== '70px') {
-                $fcResult.css({ 'padding-top': '40px' });
+                // The hscroll clips above this padding, so a glass step-up's peak needs all of it.
+                $fcResult.css({ 'padding-top': Math.max(40, Math.ceil(rakedPeakPx) + 1) + 'px' });
             } else {
                 $fcResult.css({ 'padding-top': '' });
             }
         }
         $('.fencing-display-result').css({ 'padding': '', 'margin-top': '' });
 
-        $('.raked-panel .fencing-panel-item').css({ 'width': 1200 * FENCE.get('item', 'base_margin') });
+        // Glass step-ups are drawn at their real width (fcSizeGlassRakedPanel); the rest keep the stock 1200.
+        if (info.panel_group != 'a') {
+            $('.raked-panel .fencing-panel-item').css({ 'width': 1200 * FENCE.get('item', 'base_margin') });
+        }
     },
 
     //----------------------------------------------------------------------------------

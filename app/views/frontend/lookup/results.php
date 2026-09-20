@@ -115,7 +115,7 @@ $badgeLabels = $results['badge_labels'];
                 <?php endif; ?>
 
                 <?php if ($colors !== []) : ?>
-                <div class="fc-lookup-card__colors" aria-label="Colors">
+                <div class="fc-lookup-card__colors" aria-label="Colours">
                     <?php foreach (array_slice($colors, 0, 6) as $color) : ?>
                     <span
                         class="fc-lookup-dot"
