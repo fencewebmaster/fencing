@@ -14,5 +14,9 @@ DirectoryIndex index.php
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
+    # A deleted asset must 404: the fallback below boots the admin app, whose login redirect made
+    # old image URLs "ask to log in" — and minted an admin session cookie for every probing bot.
+    RewriteRule ^assets/ - [R=404,L]
+
     RewriteRule ^ index.php [L]
 </IfModule>
