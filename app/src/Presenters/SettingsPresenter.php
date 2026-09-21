@@ -203,6 +203,7 @@ final class SettingsPresenter
             $fenceRows[] = [
                 'index' => (int) $index,
                 'slug' => $slug,
+                'initial' => (string) ($row['initial'] ?? ''),
                 'label' => (string) ($row['label'] ?? ''),
                 'sub_label' => (string) ($row['subLabel'] ?? ''),
                 'color' => (string) ($row['color'] ?? ''),
@@ -425,6 +426,7 @@ final class SettingsPresenter
     {
         return [
             ['id' => 'slug', 'label' => 'Slug'],
+            ['id' => 'initial', 'label' => 'Initial'],
             ['id' => 'label', 'label' => 'Label'],
             ['id' => 'subLabel', 'label' => 'Sub label'],
             ['id' => 'color', 'label' => 'Color'],

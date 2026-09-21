@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Helpers\StringHelper;
+use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Helpers\ViewHelper;
 use Fc\Admin\Models\StoreProductModel;
 use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\FenceCatalogService;
+use Fc\Admin\Services\MissingSkuScanService;
 use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Settings\FenceColorSettings;
 
@@ -54,6 +56,34 @@ final class StoreProductPresenter
                 $title = ViewHelper::formatHeader($styleKey);
             }
             $cache[$styleKey] = $title;
+        }
+
+        return $cache;
+    }
+
+    /**
+     * products.csv STYLE => the fence's feature image path, relative to the planner app root.
+     *
+     * @return array<string, string>
+     */
+    public static function styleImages(): array
+    {
+        static $cache = null;
+        if (is_array($cache)) {
+            return $cache;
+        }
+
+        $cache = [];
+        foreach (PlannerEntryPresenter::fenceCatalog() as $fenceKey => $info) {
+            if (!is_array($info)) {
+                continue;
+            }
+            $image = ltrim(trim((string) ($info['image'] ?? '')), '/');
+            if ($image === '') {
+                continue;
+            }
+            $plannerSlug = (string) ($info['slug'] ?? $fenceKey);
+            $cache[FenceCatalogService::productsCsvStyleForFence($plannerSlug)] = $image;
         }
 
         return $cache;
@@ -121,6 +151,67 @@ final class StoreProductPresenter
         }
 
         return '#cbd5e1';
+    }
+
+    /**
+     * The colour's code inside a product SKU (XP-6100-S65-BS-CTS -> BS), as set in
+     * Settings -> Fence colours. Empty when that colour has none.
+     */
+    public static function colorInitial(string $csvColumn): string
+    {
+        $slug = self::csvColumnToColorSlug($csvColumn);
+        $colors = FenceColorSettings::legacyMap();
+
+        return is_array($colors[$slug] ?? null)
+            ? strtoupper(trim((string) ($colors[$slug]['initial'] ?? '')))
+            : '';
+    }
+
+    /**
+     * Every colour's SKU code, keyed by CSV header, for the JS that labels SKU fields.
+     * Colours without an initial are left out so the client can test with a plain lookup.
+     *
+     * @return array<string, string>
+     */
+    public static function colorInitialsMap(): array
+    {
+        static $cache = null;
+        if (is_array($cache)) {
+            return $cache;
+        }
+
+        $cache = [];
+        foreach (FenceColorSettings::legacyMap() as $slug => $info) {
+            $initial = strtoupper(trim((string) (is_array($info) ? ($info['initial'] ?? '') : '')));
+            if ($initial !== '') {
+                $cache[self::colorSlugToCsvColumn((string) $slug)] = $initial;
+            }
+        }
+
+        return $cache;
+    }
+
+    /**
+     * Every colour's swatch background, keyed by CSV header, for the JS that labels SKU fields.
+     *
+     * @return array<string, string>
+     */
+    public static function colorBackgroundsMap(): array
+    {
+        static $cache = null;
+        if (is_array($cache)) {
+            return $cache;
+        }
+
+        $cache = [];
+        foreach (FenceColorSettings::legacyMap() as $slug => $info) {
+            $background = trim((string) (is_array($info) ? ($info['background_color'] ?? '') : ''));
+            if ($background !== '') {
+                $cache[self::colorSlugToCsvColumn((string) $slug)] = rtrim($background, '; ');
+            }
+        }
+
+        return $cache;
     }
 
     public static function colorLabel(string $csvColumn): string
@@ -829,6 +920,8 @@ final class StoreProductPresenter
                 'total'       => $total,
                 'file'        => (string) ($payload['file'] ?? 'products.csv'),
                 'styleColors' => $styleColors,
+                'colorInitials' => self::colorInitialsMap(),
+                'colorBackgrounds' => self::colorBackgroundsMap(),
                 'filters'     => array_merge($filters, [
                     'page'     => $currentPage,
                     'per_page' => $perPageUrlValue,
@@ -836,6 +929,174 @@ final class StoreProductPresenter
                 'canReorder'  => $canReorder,
                 'canEdit'     => $canEdit,
                 'csrf'        => AuthService::csrfToken(),
+            ]),
+        ];
+    }
+
+    /**
+     * Missing SKUs page (route products/system-products/missing-sku): the System Products rows
+     * whose colour SKUs are still blank or unknown to the store catalogue, each with its own inline
+     * SKU fields. Rows where every colour is filled or deliberately OFF never reach this page.
+     *
+     * @param array<string, string> $query
+     * @return array<string, mixed>
+     */
+    public static function missingSkuViewData(string $adminBase, array $query = []): array
+    {
+        $filterMeta = StoreProductModel::filterOptions();
+        $filters = [
+            'supplier'   => trim((string) ($query['supplier'] ?? '')),
+            'style'      => trim((string) ($query['style'] ?? '')),
+            'q'          => trim((string) ($query['q'] ?? '')),
+            'colors'     => [],
+            'sort'       => '',
+            'dir'        => 'asc',
+            // The page is the filter: the Model keeps only rows worth reviewing.
+            'incomplete' => true,
+        ];
+        $hasActiveFilters = $filters['supplier'] !== '' || $filters['style'] !== '' || $filters['q'] !== '';
+
+        $payload = StoreProductModel::query($filters, 1, 50, true);
+        $error = !empty($payload['ok']) ? '' : (string) ($payload['error'] ?? 'Could not load system products.');
+        $columns = is_array($payload['columns'] ?? null) ? $payload['columns'] : [];
+        $styleColors = is_array($payload['styleColors'] ?? null) ? $payload['styleColors'] : [];
+        $styleLabels = self::styleLabels();
+        $styleImages = self::styleImages();
+        // Fence images live under the planner app root, two levels up from the admin script.
+        $plannerBase = UrlHelper::plannerAppBaseFromAdminScript();
+        $skuSet = $error === '' ? \Fc\Admin\Services\WcProductSkuIndex::skuLookup() : [];
+        $proposals = MissingSkuScanService::proposals();
+
+        $scanFillable = 0;
+        $rows = [];
+        foreach (is_array($payload['rows'] ?? null) ? $payload['rows'] : [] as $row) {
+            $summary = self::skusSummary($row, $columns, $styleColors, $skuSet);
+            // The Model also keeps rows that are complete but carry an OFF colour; those are settled.
+            if (($summary['total'] ?? 0) === 0 || !empty($summary['complete'])) {
+                continue;
+            }
+
+            $rowIndex = (int) ($row['_rowIndex'] ?? -1);
+            $fields = [];
+            foreach (self::allowedColorColumns($row, $columns, $styleColors) as $column) {
+                $value = trim((string) ($row[$column] ?? ''));
+                $isOff = strtoupper($value) === 'OFF';
+                $isGap = !$isOff && ($value === '' || !isset($skuSet[$value]));
+                // The status the JS would paint anyway, so the page reads correctly before it runs.
+                $status = $isOff ? 'off' : ($value === '' ? 'empty' : ($isGap ? 'missing' : 'found'));
+
+                // A researched proposal, re-checked against the catalogue here so a hand-edited
+                // missing-products CSV cannot put an unknown SKU in front of anyone.
+                $proposal = $proposals[(string) ($row['SLUG'] ?? '') . '|' . $column] ?? null;
+                $scanSku = '';
+                $scanNote = '';
+                if ($isGap && is_array($proposal)) {
+                    $scanNote = (string) $proposal['note'];
+                    $candidate = (string) $proposal['sku'];
+                    if ($candidate !== '' && isset($skuSet[$candidate])) {
+                        $scanSku = $candidate;
+                        $scanFillable++;
+                    }
+                }
+
+                $fields[] = [
+                    'column'      => $column,
+                    'label'       => ViewHelper::formatHeader($column),
+                    'initial'     => self::colorInitial($column),
+                    'value'       => $value,
+                    'id'          => 'fc-ms-' . $rowIndex . '-' . strtolower(str_replace(['-', ' '], '_', $column)),
+                    'swatch'      => self::colorBackground($column),
+                    'is_off'      => $isOff,
+                    'is_gap'      => $isGap,
+                    'scan_sku'    => $scanSku,
+                    'scan_note'   => $scanNote,
+                    'check_class' => 'fc-sp-sku-check--' . $status,
+                    'check_icon'  => [
+                        'off'     => 'fa-solid fa-circle',
+                        'found'   => 'fa-solid fa-check',
+                        'missing' => 'fa-solid fa-xmark',
+                        'empty'   => 'fa-solid fa-exclamation',
+                    ][$status],
+                    'check_title' => [
+                        'off'     => 'Set to OFF — counted as complete',
+                        'found'   => 'Found in store catalogue — click for similar SKUs',
+                        'missing' => 'Not in store catalogue — click for similar SKUs',
+                        'empty'   => 'No SKU — click for similar catalogue SKUs',
+                    ][$status],
+                ];
+            }
+
+            // Same order as the edit modal's SKU section: by colour label, not the style's own list order.
+            usort($fields, static fn(array $a, array $b): int => strcasecmp($a['label'], $b['label']));
+
+            $missing = 0;
+            foreach ($fields as $field) {
+                if (!empty($field['is_gap'])) {
+                    $missing++;
+                }
+            }
+
+            $style = (string) ($row['STYLE'] ?? '');
+            $supplier = strtoupper(trim((string) ($row['SUPPLIER'] ?? '')));
+            $styleImage = $styleImages[$style] ?? '';
+
+            $rows[] = [
+                'row_index'     => $rowIndex,
+                'slug'          => (string) ($row['SLUG'] ?? ''),
+                'product'       => (string) ($row['PRODUCT'] ?? ''),
+                'supplier'      => $supplier,
+                'supplier_class' => $supplier === '' ? '' : ' fc-ms-chip--' . strtolower($supplier),
+                'style'         => $style,
+                'style_label'   => self::styleLabel($style, $styleLabels),
+                'style_image'   => $styleImage === '' ? '' : $plannerBase . '/' . $styleImage,
+                'fields'        => $fields,
+                'missing_count' => $missing,
+                'total_count'   => count($fields),
+                'missing_label' => $missing . ' of ' . count($fields) . ' missing',
+            ];
+        }
+
+        $total = count($rows);
+        $filledRows = 0;
+        foreach ($rows as $listed) {
+            if ((int) $listed['missing_count'] === 0) {
+                $filledRows++;
+            }
+        }
+
+        $supplierValues = is_array($filterMeta['suppliers'] ?? null) ? $filterMeta['suppliers'] : [];
+        $styleValues = is_array($filterMeta['styles'] ?? null) ? $filterMeta['styles'] : [];
+
+        return [
+            'error'            => $error,
+            'rows'             => $rows,
+            'total'            => $total,
+            'count_label'      => $total . ' product' . ($total === 1 ? '' : 's'),
+            'filters'          => $filters,
+            'has_filters'      => $hasActiveFilters,
+            'empty_message'    => $hasActiveFilters
+                ? 'No products with missing SKUs match your filters.'
+                : 'Every system product has its colour SKUs filled in.',
+            'form_action'      => ViewHelper::adminUrl($adminBase, 'products/system-products/missing-sku'),
+            'filled_rows'      => $filledRows,
+            'filled_label'     => $filledRows . '/' . $total,
+            'scan_available'   => PermissionService::can('products.system_products.edit'),
+            // Its own gate, not scan_available reused: Deep Scan writes nothing and may one day
+            // be opened to anyone who can read the page.
+            'deep_scan_available' => PermissionService::can('products.system_products.edit'),
+            'fill_available'   => MissingSkuScanService::isAvailable() && $scanFillable > 0,
+            'fill_count'       => $scanFillable,
+            'fill_label'       => $scanFillable === 0
+                ? 'Nothing to fill'
+                : 'Fill ' . $scanFillable . ' SKU' . ($scanFillable === 1 ? '' : 's'),
+            'supplier_options' => self::selectOptions($supplierValues, $filters['supplier'], 'All suppliers'),
+            'style_options'    => self::selectOptionsLabeled($styleValues, $filters['style'], 'All styles', $styleLabels),
+            'can_edit'         => PermissionService::can('products.system_products.edit'),
+            'bootstrap_json'   => ViewHelper::bootstrapJson([
+                'ok'      => $error === '',
+                'total'   => $total,
+                'canEdit' => PermissionService::can('products.system_products.edit'),
+                'csrf'    => AuthService::csrfToken(),
             ]),
         ];
     }

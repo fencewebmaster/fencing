@@ -10,7 +10,7 @@ namespace Fc\Admin\Services;
 final class WcProductSkuIndex
 {
     /** Bump to invalidate previously written SKU index cache files. */
-    private const CACHE_VERSION = 3;
+    private const CACHE_VERSION = 4;
 
     /**
      * @return list<string>
@@ -88,8 +88,11 @@ final class WcProductSkuIndex
     }
 
     /**
-     * @param list<array{sku:string,name:string,image:string}> $products
-     * @return list<array{sku:string,name:string,image:string}>
+     * Colour and description are optional: a CSV written before the exporter carried those
+     * columns still loads, it just leaves them empty.
+     *
+     * @param list<array{sku:string,name:string,image:string,colour?:string,description?:string}> $products
+     * @return list<array{sku:string,name:string,image:string,colour:string,description:string}>
      */
     public static function normalizeProductEntries(array $products): array
     {
@@ -112,6 +115,12 @@ final class WcProductSkuIndex
                     'UTF-8'
                 ),
                 'image' => trim((string) ($row['image'] ?? '')),
+                'colour' => trim((string) ($row['colour'] ?? '')),
+                'description' => html_entity_decode(
+                    trim((string) ($row['description'] ?? '')),
+                    ENT_QUOTES | ENT_HTML5,
+                    'UTF-8'
+                ),
             ];
         }
 
@@ -121,7 +130,7 @@ final class WcProductSkuIndex
     /**
      * Build / load mtime-cached catalogue entries for one WC source.
      *
-     * @return list<array{sku:string,name:string,image:string}>
+     * @return list<array{sku:string,name:string,image:string,colour:string,description:string}>
      */
     public static function entriesForSource(string $source): array
     {
@@ -153,6 +162,10 @@ final class WcProductSkuIndex
         $skuIndex = 1;
         $nameIndex = 2;
         $imagesIndex = 3;
+        // -1 until the header names them: these columns post-date the first exports, and a CSV
+        // downloaded before them must still load.
+        $colourIndex = -1;
+        $descriptionIndex = -1;
         if (is_array($header)) {
             foreach ($header as $i => $col) {
                 $key = strtoupper(trim((string) $col));
@@ -162,6 +175,10 @@ final class WcProductSkuIndex
                     $nameIndex = (int) $i;
                 } elseif ($key === 'IMAGES') {
                     $imagesIndex = (int) $i;
+                } elseif ($key === 'COLOUR' || $key === 'COLOR') {
+                    $colourIndex = (int) $i;
+                } elseif ($key === 'DESCRIPTION') {
+                    $descriptionIndex = (int) $i;
                 }
             }
         }
@@ -185,6 +202,14 @@ final class WcProductSkuIndex
                     'UTF-8'
                 ),
                 'image' => self::firstImageUrl((string) ($row[$imagesIndex] ?? '')),
+                'colour' => $colourIndex < 0 ? '' : trim((string) ($row[$colourIndex] ?? '')),
+                'description' => $descriptionIndex < 0
+                    ? ''
+                    : html_entity_decode(
+                        trim((string) ($row[$descriptionIndex] ?? '')),
+                        ENT_QUOTES | ENT_HTML5,
+                        'UTF-8'
+                    ),
             ];
         }
         fclose($handle);
@@ -212,7 +237,7 @@ final class WcProductSkuIndex
     /**
      * Union of catalogue entries across GO + JG (first SKU wins).
      *
-     * @return list<array{sku:string,name:string,image:string}>
+     * @return list<array{sku:string,name:string,image:string,colour:string,description:string}>
      */
     public static function catalogueUnion(): array
     {
@@ -254,11 +279,22 @@ final class WcProductSkuIndex
     }
 
     /**
+     * The browser's copy of the catalogue. Colour and description stay server-side: the client
+     * uses neither, and 2,800 descriptions would add megabytes to a payload every admin page
+     * that touches a SKU field downloads.
+     *
      * @return array{ok:bool,skus:list<string>,products:list<array{sku:string,name:string,image:string}>}
      */
     public static function indexPayload(): array
     {
-        $products = self::catalogueUnion();
+        $products = array_map(
+            static fn (array $row): array => [
+                'sku' => $row['sku'],
+                'name' => $row['name'],
+                'image' => $row['image'],
+            ],
+            self::catalogueUnion()
+        );
 
         return [
             'ok' => true,

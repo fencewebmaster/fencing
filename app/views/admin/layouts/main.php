@@ -51,6 +51,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/lazy.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/fence-styles.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/store-products.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/missing-sku.css'); ?>">
     <?php
     $fcFavicon = BrandingSettings::faviconUrl($fcAppBase ?? '');
     if ($fcFavicon !== '') : ?>
@@ -926,7 +927,20 @@ use Fc\Admin\Settings\ThemeSettings;
                                     data-title="System Products"
                                     class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'products/system-products' ? ' is-active' : ''; ?>"
                                 >
-                                    System Products
+                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-boxes-stacked"></i></span>
+                                    <span class="fc-sidebar-nav__label">System Products</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href="<?php echo e($fcAdminBase . '/products/system-products/missing-sku'); ?>"
+                                    data-nav-child
+                                    data-route="products/system-products/missing-sku"
+                                    data-title="Missing SKUs"
+                                    class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'products/system-products/missing-sku' ? ' is-active' : ''; ?>"
+                                >
+                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                                    <span class="fc-sidebar-nav__label">Missing SKUs</span>
                                 </a>
                             </li>
                             <?php endif; ?>
@@ -939,7 +953,8 @@ use Fc\Admin\Settings\ThemeSettings;
                                     data-title="Store Products"
                                     class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'products/store-products' ? ' is-active' : ''; ?>"
                                 >
-                                    Store Products
+                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-store"></i></span>
+                                    <span class="fc-sidebar-nav__label">Store Products</span>
                                 </a>
                             </li>
                             <?php endif; ?>
@@ -952,7 +967,8 @@ use Fc\Admin\Settings\ThemeSettings;
                                     data-title="Fence Styles"
                                     class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'products/fence-styles' || str_starts_with((string) $fcAdminRoute, 'products/fence-styles/') ? ' is-active' : ''; ?>"
                                 >
-                                    Fence Styles
+                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-swatchbook"></i></span>
+                                    <span class="fc-sidebar-nav__label">Fence Styles</span>
                                 </a>
                             </li>
                             <?php endif; ?>
@@ -1036,7 +1052,8 @@ use Fc\Admin\Settings\ThemeSettings;
                                     data-title="All Users"
                                     class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'users' ? ' is-active' : ''; ?>"
                                 >
-                                    All Users
+                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                                    <span class="fc-sidebar-nav__label">All Users</span>
                                 </a>
                             </li>
                             <?php endif; ?>
@@ -1050,7 +1067,8 @@ use Fc\Admin\Settings\ThemeSettings;
                                     data-title="Group Permissions"
                                     class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'users/group-permissions' ? ' is-active' : ''; ?>"
                                 >
-                                    Group Permissions
+                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-user-shield"></i></span>
+                                    <span class="fc-sidebar-nav__label">Group Permissions</span>
                                 </a>
                             </li>
                             <?php endif; ?>
@@ -1349,6 +1367,9 @@ use Fc\Admin\Settings\ThemeSettings;
                     <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
                     data-route="products/store-products"
                     data-fc-system-products-server="1"
+                    <?php elseif ($fcAdminRoute === 'products/system-products/missing-sku' && is_array($fcMissingSkuPage)) : ?>
+                    data-route="products/system-products/missing-sku"
+                    data-fc-missing-sku-server="1"
                     <?php elseif ($fcAdminRoute === 'products/system-products' && is_array($fcStoreProductsPage)) : ?>
                     data-route="products/system-products"
                     data-fc-store-products-server="1"
@@ -1385,6 +1406,8 @@ use Fc\Admin\Settings\ThemeSettings;
                     <?php view('admin.products.fence-styles', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
                     <?php view('admin.products.system-products', get_defined_vars()); ?>
+                <?php elseif ($fcAdminRoute === 'products/system-products/missing-sku' && is_array($fcMissingSkuPage)) : ?>
+                    <?php view('admin.products.missing-sku', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/system-products' && is_array($fcStoreProductsPage)) : ?>
                     <?php view('admin.products.store-products', get_defined_vars()); ?>
                 <?php endif; ?>
@@ -1466,6 +1489,11 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/components/image-lightbox.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/products/system-products.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
+    <?php elseif ($fcAdminRoute === 'products/system-products/missing-sku') : ?>
+    <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/products/store-products.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/products/missing-sku.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminRoute === 'products/system-products') : ?>
     <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>

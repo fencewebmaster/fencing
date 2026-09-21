@@ -557,6 +557,24 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-edit-section-title {
     font-size: 0.625rem;
     color: #94a3b8;
 }
+/* The colour itself, so a SKU field is identifiable before reading its name. */
+#fc-sp-edit-modal .fc-sp-field__swatch,
+#fc-gallery-attach-modal .fc-sp-field__swatch {
+    width: 0.65rem;
+    height: 0.65rem;
+    border: 1px solid rgba(15, 23, 42, 0.18);
+    flex-shrink: 0;
+}
+
+/* The colour's code inside the SKU, so the label matches what you're typing in the field. */
+#fc-sp-edit-modal .fc-sp-field__initial,
+#fc-gallery-attach-modal .fc-sp-field__initial {
+    margin-left: -0.15rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--fc-princeton-orange, #f67925);
+}
 #fc-sp-edit-modal .fc-sp-field__help,
 #fc-sp-edit-modal .fc-sp-field__intro,
 #fc-gallery-attach-modal .fc-sp-field__help,
@@ -1088,6 +1106,12 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-suggest__sku {
     border-style: dashed;
     color: #94a3b8;
 }
+/* Blank or not in the store catalogue — the same tint the Missing SKUs page uses. OFF is settled. */
+#fc-sp-edit-modal .fc-sp-field--gap .fc-sp-field-control--sku,
+#fc-gallery-attach-modal .fc-sp-field--gap .fc-sp-field-control--sku {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
 #fc-sp-edit-modal .fc-sp-field-copy,
 #fc-gallery-attach-modal .fc-sp-field-copy {
     display: inline-flex;
@@ -1153,6 +1177,12 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-field-control--readonl
 html[data-fc-admin-theme='dark'] #fc-gallery-attach-modal .fc-sp-field-control--readonly {
     background: var(--fc-admin-surface-subtle);
     color: var(--fc-admin-text-muted);
+}
+/* theme.css paints every dark input from these tokens with !important, so retint via the tokens. */
+html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-field--gap .fc-sp-field-control--sku,
+html[data-fc-admin-theme='dark'] #fc-gallery-attach-modal .fc-sp-field--gap .fc-sp-field-control--sku {
+    --fc-admin-input-bg: rgba(127, 29, 29, 0.25);
+    --fc-admin-border: #7f1d1d;
 }
 html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-field-copy,
 html[data-fc-admin-theme='dark'] #fc-gallery-attach-modal .fc-sp-field-copy {

@@ -11,6 +11,7 @@ writable/.wc-products-*-job.json
 writable/.wc-products-*.lock
 writable/wc-products-*
 writable/products*
+writable/missing-products*.csv
 writable/groups-permissions/*.json
 writable/theme.json
 writable/fences/*.php

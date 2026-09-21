@@ -248,6 +248,10 @@ $tab = $fcSettingsPage;
                                                         <span class="fc-fs-gui-field__label">Slug</span>
                                                         <input type="text" class="fc-fs-input fc-fs-input--mono<?php echo !empty($row['is_original']) ? ' fc-fs-input--readonly' : ''; ?>" data-fc-fence-color-field="slug" data-fc-fence-color-index="<?php echo (int) $row['index']; ?>" value="<?php echo e((string) $row['slug']); ?>" spellcheck="false" placeholder="monument_matt" autocomplete="off"<?php echo !empty($row['is_original']) ? ' readonly aria-readonly="true" title="Original color slugs cannot be changed"' : ''; ?> />
                                                     </label>
+                                                    <label class="fc-fs-gui-field fc-settings-fence-colors__initial-cell">
+                                                        <span class="fc-fs-gui-field__label">Initial</span>
+                                                        <input type="text" class="fc-fs-input fc-fs-input--mono" data-fc-fence-color-field="initial" data-fc-fence-color-index="<?php echo (int) $row['index']; ?>" value="<?php echo e((string) $row['initial']); ?>" spellcheck="false" placeholder="BS" maxlength="6" autocomplete="off" title="The colour's code inside a product SKU, e.g. XP-6100-S65-BS-CTS" />
+                                                    </label>
                                                     <label class="fc-fs-gui-field">
                                                         <span class="fc-fs-gui-field__label">Label</span>
                                                         <input type="text" class="fc-fs-input" data-fc-fence-color-field="label" data-fc-fence-color-index="<?php echo (int) $row['index']; ?>" value="<?php echo e((string) $row['label']); ?>" placeholder="Black" autocomplete="off" />

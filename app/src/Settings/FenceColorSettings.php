@@ -24,120 +24,140 @@ final class FenceColorSettings
                 'sub_title' => 'Satin',
                 'background_color' => '#404040',
                 'text_color' => '#fff',
+                'initial' => 'B',
             ],
             'white' => [
                 'title' => 'Pearl White',
                 'sub_title' => 'Gloss',
                 'background_color' => '#ffffff',
                 'text_color' => '#000',
+                'initial' => 'W',
             ],
             'surfmist' => [
                 'title' => 'Surfmist',
                 'sub_title' => 'Matt',
                 'background_color' => '#ebefe9',
                 'text_color' => '#000',
+                'initial' => 'SM',
             ],
             'dune' => [
                 'title' => 'Dune',
                 'sub_title' => 'Satin',
                 'background_color' => '#c4c5be',
                 'text_color' => '#000',
+                'initial' => 'D',
             ],
             'basalt' => [
                 'title' => 'Basalt',
                 'sub_title' => 'Satin',
                 'background_color' => '#828989',
                 'text_color' => '#fff',
+                'initial' => 'BS',
             ],
             'woodland_grey' => [
                 'title' => 'Woodland Grey',
                 'sub_title' => 'Matt',
                 'background_color' => '#868983',
                 'text_color' => '#fff',
+                'initial' => 'G',
             ],
             'monument' => [
                 'title' => 'Monument',
                 'sub_title' => 'Matt',
                 'background_color' => '#6e6e6a',
                 'text_color' => '#fff',
+                'initial' => 'M',
             ],
             'kwila' => [
                 'title' => 'Kwila',
                 'sub_title' => 'Textured',
                 'background_color' => '#785e4a',
                 'text_color' => '#fff',
+                'initial' => 'KWI',
             ],
             'western_red_cedar' => [
                 'title' => 'Western Red Cedar',
                 'sub_title' => 'Textured',
                 'background_color' => '#9a6b50',
                 'text_color' => '#fff',
+                'initial' => 'WRC',
             ],
             'pearl_white_gloss' => [
                 'title' => 'Pearl White',
                 'sub_title' => 'Gloss',
                 'background_color' => '#ffffff',
                 'text_color' => '#000',
+                'initial' => 'W',
             ],
             'surfmist_matt' => [
                 'title' => 'Surfmist',
                 'sub_title' => 'Matt',
                 'background_color' => '#ebefe9',
                 'text_color' => '#000',
+                'initial' => 'SM',
             ],
             'dune_satin' => [
                 'title' => 'Dune',
                 'sub_title' => 'Satin',
                 'background_color' => '#c4c5be',
                 'text_color' => '#000',
+                'initial' => 'D',
             ],
             'basalt_satin' => [
                 'title' => 'Basalt',
                 'sub_title' => 'Satin',
                 'background_color' => '#828989',
                 'text_color' => '#fff',
+                'initial' => 'BS',
             ],
             'woodland_grey_matt' => [
                 'title' => 'Woodland Grey',
                 'sub_title' => 'Matt',
                 'background_color' => '#868983',
                 'text_color' => '#fff',
+                'initial' => 'G',
             ],
             'monument_matt' => [
                 'title' => 'Monument',
                 'sub_title' => 'Matt',
                 'background_color' => '#6e6e6a',
                 'text_color' => '#fff',
+                'initial' => 'MN',
             ],
             'black_satin' => [
                 'title' => 'Black',
                 'sub_title' => 'Satin',
                 'background_color' => '#404040',
                 'text_color' => '#fff',
+                'initial' => 'B',
             ],
             'kwila_textured' => [
                 'title' => 'Kwila',
                 'sub_title' => 'Textured',
                 'background_color' => '#785e4a',
                 'text_color' => '#fff',
+                'initial' => 'KWI',
             ],
             'matt_black' => [
                 'title' => 'Black',
                 'sub_title' => 'Matt',
                 'background_color' => '#000',
                 'text_color' => '#fff',
+                'initial' => 'B',
             ],
             'polished_stainless_steel' => [
                 'title' => 'Polished',
                 'sub_title' => 'Stainless Steel',
                 'background_color' => 'linear-gradient(90deg, rgba(168,168,168,1) 0%, rgba(251,251,251,1) 36%, rgba(255,255,255,1) 60%, rgba(168,168,168,1) 100%);',
                 'text_color' => '#000',
+                'initial' => 'P',
             ],
             'satin_stainless_steel' => [
                 'title' => 'Satin',
                 'sub_title' => 'Stainless Steel',
                 'background_color' => 'url(https://www.rigidized.com/wp-content/uploads/4Satin-01.jpg);',
                 'text_color' => '#000',
+                'initial' => 'S',
             ],
         ];
     }
@@ -156,8 +176,8 @@ final class FenceColorSettings
     }
 
     /**
-     * @param array{title:string,sub_title:string,background_color:string,text_color:string} $legacy
-     * @return array{slug:string,label:string,subLabel:string,color:string,image:string}
+     * @param array{title:string,sub_title:string,background_color:string,text_color:string,initial?:string} $legacy
+     * @return array{slug:string,label:string,subLabel:string,initial:string,color:string,image:string}
      */
     public static function legacyToItem(string $slug, array $legacy): array
     {
@@ -177,6 +197,7 @@ final class FenceColorSettings
             'slug' => $slug,
             'label' => trim($legacy['title']),
             'subLabel' => trim($legacy['sub_title']),
+            'initial' => strtoupper(trim((string) ($legacy['initial'] ?? ''))),
             'color' => $color,
             'image' => $image,
         ];
@@ -210,7 +231,7 @@ final class FenceColorSettings
 
     /**
      * @param array<string, mixed> $row
-     * @return array{slug:string,label:string,subLabel:string,color:string,image:string}|null
+     * @return array{slug:string,label:string,subLabel:string,initial:string,color:string,image:string}|null
      */
     public static function normalizeRow(array $row): ?array
     {
@@ -239,6 +260,12 @@ final class FenceColorSettings
             $subLabel = mb_substr($subLabel, 0, 120);
         }
 
+        // The colour's code inside a product SKU (XP-6100-S65-BS-CTS -> BS). Upper case, short.
+        $initial = strtoupper(trim((string) ($row['initial'] ?? '')));
+        if ($initial !== '' && !preg_match('/^[A-Z0-9]{1,6}$/', $initial)) {
+            $initial = '';
+        }
+
         $color = trim((string) ($row['color'] ?? ''));
         $image = trim((string) ($row['image'] ?? ''));
 
@@ -257,6 +284,7 @@ final class FenceColorSettings
             'slug' => $slug,
             'label' => $label,
             'subLabel' => $subLabel,
+            'initial' => $initial,
             'color' => $color,
             'image' => $image,
         ];
@@ -280,7 +308,7 @@ final class FenceColorSettings
 
     /**
      * @param list<array<string, mixed>> $rows
-     * @return array{ok:bool,fenceColors?:list<array{slug:string,label:string,subLabel:string,color:string,image:string}>,error?:string}
+     * @return array{ok:bool,fenceColors?:list<array{slug:string,label:string,subLabel:string,initial:string,color:string,image:string}>,error?:string}
      */
     public static function save(array $rows): array
     {
@@ -335,7 +363,7 @@ final class FenceColorSettings
     }
 
     /**
-     * @return array<string, array{title:string,sub_title:string,background_color:string,text_color:string}>
+     * @return array<string, array{title:string,sub_title:string,initial:string,background_color:string,text_color:string}>
      */
     public static function legacyMap(): array
     {
@@ -346,6 +374,7 @@ final class FenceColorSettings
             $out[$slug] = [
                 'title' => trim($item['label']),
                 'sub_title' => trim($item['subLabel'] ?? ''),
+                'initial' => trim($item['initial'] ?? ''),
                 'background_color' => $bg,
                 'text_color' => self::textColor($item, $bg),
             ];

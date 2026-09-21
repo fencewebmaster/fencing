@@ -11,19 +11,44 @@ use Fc\Admin\Models\SystemProductModel;
 
 /**
  * Exports WooCommerce products from the WordPress MySQL database into
- * writable/wc-products-{GO|JG}.csv (ID,Slug,SKU,Name,Images).
+ * writable/wc-products-{GO|JG}.csv (ID,Slug,SKU,Name,Images,Colour,Description).
  *
  * Uses the database rather than the public Store API so private/draft products
  * are included (3000+ rows), matching the full WooCommerce catalogue. Variable
  * product variations are included too, one CSV row per variation SKU — each
- * variation's Name/Images fall back to its parent product where it has none
- * of its own (see fetchProductsPage()).
+ * variation's Name/Images/Colour/Description fall back to its parent product
+ * where it has none of its own (see fetchProductsPage()).
+ *
+ * Colour and Description exist for MissingSkuDeepScan: the colour constrains which
+ * catalogue rows may answer a gap, the description gives its title matcher more words
+ * to work with. Both were appended to the end of the header — every reader of this file
+ * looks columns up by name or keeps a fixed subset, so order stays free.
  */
 final class WooCommerceProductExportService
 {
     private const SOURCES = ['GO', 'JG'];
 
     private const PER_PAGE = 100;
+
+    /** Written by start(), re-checked by finalize() — the two must never drift. */
+    private const CSV_HEADER = ['ID', 'Slug', 'SKU', 'Name', 'Images', 'Colour', 'Description'];
+
+    /**
+     * Enough words for a title matcher without turning a 650KB catalogue into a 5MB one.
+     * WooCommerce descriptions run to several paragraphs of marketing copy.
+     */
+    private const DESCRIPTION_LIMIT = 600;
+
+    /** Variation colour attribute meta keys, in the order they are preferred. */
+    private const COLOR_ATTRIBUTE_KEYS = [
+        'attribute_pa_color',
+        'attribute_pa_colour',
+        'attribute_color',
+        'attribute_colour',
+    ];
+
+    /** Product colour taxonomies, for the rows that are not variations. */
+    private const COLOR_TAXONOMIES = ['pa_color', 'pa_colour'];
 
     /** Post types included in the export. */
     private const POST_TYPES = ['product', 'product_variation'];
@@ -72,7 +97,7 @@ final class WooCommerceProductExportService
                 return self::error('Unable to create the downloading CSV file.');
             }
 
-            $headerWritten = fputcsv($handle, ['ID', 'Slug', 'SKU', 'Name', 'Images']);
+            $headerWritten = fputcsv($handle, self::CSV_HEADER);
             fflush($handle);
             fclose($handle);
             if ($headerWritten === false) {
@@ -179,6 +204,8 @@ final class WooCommerceProductExportService
                     (string) ($product['sku'] ?? ''),
                     (string) ($product['name'] ?? ''),
                     (string) ($product['images'] ?? ''),
+                    (string) ($product['colour'] ?? ''),
+                    (string) ($product['description'] ?? ''),
                 ];
                 if (fputcsv($handle, $row) === false) {
                     fclose($handle);
@@ -447,7 +474,8 @@ final class WooCommerceProductExportService
 
         try {
             $stmt = $pdo->prepare(
-                "SELECT p.ID, p.post_title, p.post_name, p.post_type, p.post_parent
+                "SELECT p.ID, p.post_title, p.post_name, p.post_type, p.post_parent,
+                        p.post_content, p.post_excerpt
                  FROM `{$posts}` p
                  WHERE p.post_type IN ({$typePlaceholders})
                    AND p.post_status IN ({$statusPlaceholders})
@@ -493,6 +521,10 @@ final class WooCommerceProductExportService
         ]);
         $variationAttrs = self::fetchVariationAttributes($pdo, $postmeta, array_keys($variationParents));
 
+        // A variation carries its colour in postmeta; a plain product carries it as a taxonomy
+        // term, so both halves of the catalogue need asking separately.
+        $termColors = self::fetchColorTerms($pdo, $prefix, array_merge($ids, $parentIds));
+
         $attachmentIds = [];
         foreach ($ids as $id) {
             self::collectAttachmentIds($metaByPost[$id] ?? [], $attachmentIds);
@@ -517,6 +549,11 @@ final class WooCommerceProductExportService
                     'sku' => (string) ($meta['_sku'] ?? ''),
                     'name' => (string) ($row['post_title'] ?? ''),
                     'images' => implode(', ', self::resolveImageList($meta, $urls)),
+                    'colour' => $termColors[$id] ?? '',
+                    'description' => self::plainText(
+                        (string) ($row['post_content'] ?? ''),
+                        (string) ($row['post_excerpt'] ?? '')
+                    ),
                 ];
                 continue;
             }
@@ -553,12 +590,33 @@ final class WooCommerceProductExportService
                 $imageList = self::resolveImageList($parentMeta[$parentId] ?? [], $urls);
             }
 
+            // A variation's own colour attribute is the precise one; the parent's colour terms
+            // only stand in when the variation does not vary by colour at all.
+            $colour = self::colourFromAttributes($attrs);
+            if ($colour === '') {
+                $colour = $termColors[$parentId] ?? '';
+            }
+
+            // Variations are nearly always described by their parent, so try it first here.
+            $description = self::plainText(
+                (string) ($row['post_content'] ?? ''),
+                (string) ($row['post_excerpt'] ?? '')
+            );
+            if ($description === '' && $parentId > 0) {
+                $description = self::plainText(
+                    (string) ($parentPosts[$parentId]['content'] ?? ''),
+                    (string) ($parentPosts[$parentId]['excerpt'] ?? '')
+                );
+            }
+
             $products[] = [
                 'id' => $id,
                 'slug' => $slug,
                 'sku' => (string) ($meta['_sku'] ?? ''),
                 'name' => $name,
                 'images' => implode(', ', $imageList),
+                'colour' => $colour,
+                'description' => $description,
             ];
         }
 
@@ -600,13 +658,13 @@ final class WooCommerceProductExportService
     }
 
     /**
-     * Batched wp_posts.post_title/post_name lookup — used for a variation's parent-name and
-     * parent-slug fallback. No post_status/post_type filter: a parent that exists but was
+     * Batched wp_posts lookup — used for a variation's parent-name, parent-slug and
+     * parent-description fallback. No post_status/post_type filter: a parent that exists but was
      * excluded by our own filters (e.g. trashed) is still valid fallback data; only a truly
      * deleted parent (no row at all) falls through to the variation's own post_title/post_name.
      *
      * @param list<int> $postIds
-     * @return array<int, array{title:string,slug:string}>
+     * @return array<int, array{title:string,slug:string,content:string,excerpt:string}>
      */
     private static function loadPostTitlesAndSlugs(PDO $pdo, string $posts, array $postIds): array
     {
@@ -620,7 +678,8 @@ final class WooCommerceProductExportService
 
         $placeholders = implode(',', array_fill(0, count($postIds), '?'));
         $stmt = $pdo->prepare(
-            "SELECT ID, post_title, post_name FROM `{$posts}` WHERE ID IN ({$placeholders})"
+            "SELECT ID, post_title, post_name, post_content, post_excerpt
+             FROM `{$posts}` WHERE ID IN ({$placeholders})"
         );
         $stmt->execute($postIds);
 
@@ -631,11 +690,112 @@ final class WooCommerceProductExportService
                 $out[$id] = [
                     'title' => (string) ($row['post_title'] ?? ''),
                     'slug' => (string) ($row['post_name'] ?? ''),
+                    'content' => (string) ($row['post_content'] ?? ''),
+                    'excerpt' => (string) ($row['post_excerpt'] ?? ''),
                 ];
             }
         }
 
         return $out;
+    }
+
+    /**
+     * Batched colour-taxonomy lookup for the rows that are not variations. A product with
+     * several colour terms keeps them all, comma separated — MissingSkuDeepScan reads the cell
+     * as a set, so "Black, White" is a product that answers either gap.
+     *
+     * @param list<int> $postIds
+     * @return array<int, string>
+     */
+    private static function fetchColorTerms(PDO $pdo, string $prefix, array $postIds): array
+    {
+        $postIds = array_values(array_unique(array_filter(
+            array_map('intval', $postIds),
+            static fn(int $id): bool => $id > 0
+        )));
+        if ($postIds === []) {
+            return [];
+        }
+
+        $relationships = $prefix . 'term_relationships';
+        $taxonomy = $prefix . 'term_taxonomy';
+        $terms = $prefix . 'terms';
+        $idPlaceholders = implode(',', array_fill(0, count($postIds), '?'));
+        $taxPlaceholders = implode(',', array_fill(0, count(self::COLOR_TAXONOMIES), '?'));
+
+        try {
+            $stmt = $pdo->prepare(
+                "SELECT tr.object_id, t.name
+                 FROM `{$relationships}` tr
+                 INNER JOIN `{$taxonomy}` tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+                 INNER JOIN `{$terms}` t ON t.term_id = tt.term_id
+                 WHERE tr.object_id IN ({$idPlaceholders})
+                   AND tt.taxonomy IN ({$taxPlaceholders})"
+            );
+            $stmt->execute(array_merge($postIds, self::COLOR_TAXONOMIES));
+        } catch (Throwable $e) {
+            // A store with no colour taxonomy is not an export failure — the column stays empty
+            // and the deep scan falls back to reading the colour out of the SKU.
+            return [];
+        }
+
+        $byPost = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $id = (int) ($row['object_id'] ?? 0);
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($id > 0 && $name !== '') {
+                $byPost[$id][$name] = true;
+            }
+        }
+
+        $out = [];
+        foreach ($byPost as $id => $names) {
+            $out[$id] = implode(', ', array_keys($names));
+        }
+
+        return $out;
+    }
+
+    /**
+     * The colour out of a variation's attribute meta. Falls back to nothing rather than guessing
+     * from another attribute — a size or a length in the colour column would reject every gap.
+     *
+     * @param array<string, string> $attrs
+     */
+    private static function colourFromAttributes(array $attrs): string
+    {
+        foreach (self::COLOR_ATTRIBUTE_KEYS as $key) {
+            $value = self::humanizeAttributeValue((string) ($attrs[$key] ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * WooCommerce descriptions are HTML with shortcodes and block comments. This keeps the words
+     * and drops everything else, so the CSV cell stays one readable line.
+     */
+    private static function plainText(string $content, string $fallback = ''): string
+    {
+        foreach ([$content, $fallback] as $raw) {
+            $text = (string) preg_replace('/<!--.*?-->/s', ' ', $raw);
+            $text = (string) preg_replace('/\[[^\]]*\]/', ' ', $text);
+            $text = strip_tags($text);
+            $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $text = trim((string) preg_replace('/\s+/u', ' ', $text));
+            if ($text === '') {
+                continue;
+            }
+
+            return mb_strlen($text, 'UTF-8') > self::DESCRIPTION_LIMIT
+                ? rtrim(mb_substr($text, 0, self::DESCRIPTION_LIMIT, 'UTF-8'))
+                : $text;
+        }
+
+        return '';
     }
 
     /**
@@ -889,7 +1049,7 @@ final class WooCommerceProductExportService
         fclose($handle);
 
         if (
-            $header !== ['ID', 'Slug', 'SKU', 'Name', 'Images']
+            $header !== self::CSV_HEADER
             || $rows !== $expectedRows
             || ($storeTotal > 0 && $rows !== $storeTotal)
             || $hasInvalidId

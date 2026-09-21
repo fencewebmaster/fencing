@@ -836,6 +836,10 @@
     function renderPage(data) {
         var columns = data.columns || [];
         var styleColorsMap = data.styleColors || {};
+        // CSV header -> the colour's code inside a SKU, from Settings > Fence colours.
+        var colorInitialsMap = data.colorInitials || {};
+        // CSV header -> that colour's swatch background, for the SKU field labels.
+        var colorBackgroundsMap = data.colorBackgrounds || {};
         var allRows = (data.rows || []).slice();
         var phpMode = !!data.phpMode;
         var csrf = String(data.csrf || '');
@@ -1137,7 +1141,7 @@
                 setEditFormDirty(true);
                 syncFieldFilledState(e.target);
                 if (e.target && e.target.classList && e.target.classList.contains('fc-sp-field-control--sku')) {
-                    scheduleSkuStatusRefresh(e.target);
+                    scheduleSkuStatusRefresh();
                     if (activeSkuSuggestWrap && activeSkuSuggestWrap.contains(e.target)) {
                         refreshOpenSkuSuggest(e.target);
                     }
@@ -1297,211 +1301,6 @@
             return result;
         }
 
-        function scrollSkuGalleryThumbIntoView() {
-            if (!skuGalleryEl) {
-                return;
-            }
-            var thumbsEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-thumbs]');
-            if (!thumbsEl || thumbsEl.hidden) {
-                return;
-            }
-            var activeThumb = thumbsEl.querySelector('[data-fc-sku-gallery-thumb].is-active');
-            if (!activeThumb) {
-                return;
-            }
-            activeThumb.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-        }
-
-        function renderSkuGalleryThumbs() {
-            if (!skuGalleryEl) {
-                return;
-            }
-            var thumbsEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-thumbs]');
-            if (!thumbsEl) {
-                return;
-            }
-            if (skuGalleryState.slides.length <= 1) {
-                thumbsEl.hidden = true;
-                thumbsEl.innerHTML = '';
-                return;
-            }
-            thumbsEl.hidden = false;
-            thumbsEl.innerHTML = skuGalleryState.slides
-                .map(function (slide, index) {
-                    return (
-                        '<button type="button" class="fc-entries-cart-gallery__thumb' +
-                        (index === skuGalleryState.index ? ' is-active' : '') +
-                        '" data-fc-sku-gallery-thumb="' +
-                        index +
-                        '" aria-label="View ' +
-                        escapeHtml(slide.color || 'image ' + (index + 1)) +
-                        '"><img src="' +
-                        escapeHtml(slide.url) +
-                        '" alt="" loading="lazy" decoding="async"></button>'
-                    );
-                })
-                .join('');
-            requestAnimationFrame(scrollSkuGalleryThumbIntoView);
-        }
-
-        function renderSkuGallerySlide() {
-            if (!skuGalleryEl || !skuGalleryState.slides.length) {
-                return;
-            }
-
-            var slide = skuGalleryState.slides[skuGalleryState.index];
-            var imageEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-image]');
-            var colorEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-color]');
-            var skuEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-sku]');
-            var counterEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-counter]');
-            var prevBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-prev]');
-            var nextBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-next]');
-
-            if (imageEl) {
-                imageEl.src = slide.url;
-                imageEl.alt = slide.color || 'Product image';
-            }
-            if (colorEl) {
-                colorEl.textContent = slide.color ? 'Color: ' + slide.color : '';
-                colorEl.hidden = !slide.color;
-            }
-            if (skuEl) {
-                skuEl.textContent = slide.sku ? 'SKU: ' + slide.sku : '';
-                skuEl.hidden = !slide.sku;
-            }
-            if (counterEl) {
-                counterEl.textContent = skuGalleryState.index + 1 + ' / ' + skuGalleryState.slides.length;
-                counterEl.hidden = skuGalleryState.slides.length <= 1;
-            }
-            if (prevBtn) {
-                prevBtn.disabled = skuGalleryState.slides.length <= 1;
-            }
-            if (nextBtn) {
-                nextBtn.disabled = skuGalleryState.slides.length <= 1;
-            }
-
-            skuGalleryEl.querySelectorAll('[data-fc-sku-gallery-thumb]').forEach(function (btn) {
-                var thumbIndex = parseInt(btn.getAttribute('data-fc-sku-gallery-thumb') || '-1', 10);
-                btn.classList.toggle('is-active', thumbIndex === skuGalleryState.index);
-            });
-
-            scrollSkuGalleryThumbIntoView();
-        }
-
-        function showSkuGallerySlide(index) {
-            if (!skuGalleryState.slides.length) {
-                return;
-            }
-            if (index < 0) {
-                index = skuGalleryState.slides.length - 1;
-            } else if (index >= skuGalleryState.slides.length) {
-                index = 0;
-            }
-            skuGalleryState.index = index;
-            renderSkuGallerySlide();
-        }
-
-        function closeSkuImageGallery() {
-            if (!skuGalleryEl) {
-                return;
-            }
-            if (skuGalleryKeydownHandler) {
-                document.removeEventListener('keydown', skuGalleryKeydownHandler);
-                skuGalleryKeydownHandler = null;
-            }
-            skuGalleryEl.remove();
-            skuGalleryEl = null;
-            skuGalleryState.slides = [];
-            skuGalleryState.index = 0;
-            document.body.classList.remove(GALLERY_BODY_CLASS);
-        }
-
-        function openSkuImageGallery(slides, startIndex) {
-            if (!slides || !slides.length) {
-                return;
-            }
-            closeSkuImageGallery();
-
-            skuGalleryState.slides = slides;
-            skuGalleryState.index = Math.max(0, Math.min(startIndex || 0, slides.length - 1));
-
-            skuGalleryEl = document.createElement('div');
-            skuGalleryEl.className = 'fc-entries-cart-gallery';
-            skuGalleryEl.setAttribute('role', 'dialog');
-            skuGalleryEl.setAttribute('aria-modal', 'true');
-            skuGalleryEl.setAttribute('aria-label', 'Product images');
-            skuGalleryEl.innerHTML =
-                '<div class="fc-entries-cart-gallery__backdrop" data-fc-sku-gallery-close aria-hidden="true"></div>' +
-                '<button type="button" class="fencing-modal-close" data-fc-sku-gallery-close aria-label="Close"></button>' +
-                '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--prev" data-fc-sku-gallery-prev aria-label="Previous image">' +
-                '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>' +
-                '<div class="fc-entries-cart-gallery__stage">' +
-                '<img class="fc-entries-cart-gallery__image" data-fc-sku-gallery-image src="" alt="">' +
-                '<p class="fc-entries-cart-gallery__caption" data-fc-sku-gallery-caption>' +
-                '<span class="fc-sp-gallery-caption__color" data-fc-sku-gallery-color></span>' +
-                '<span class="fc-sp-gallery-caption__sku" data-fc-sku-gallery-sku></span>' +
-                '</p>' +
-                '<span class="fc-entries-cart-gallery__counter" data-fc-sku-gallery-counter hidden></span>' +
-                '</div>' +
-                '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--next" data-fc-sku-gallery-next aria-label="Next image">' +
-                '<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>' +
-                '<div class="fc-entries-cart-gallery__thumbs" data-fc-sku-gallery-thumbs hidden></div>';
-
-            document.body.appendChild(skuGalleryEl);
-            document.body.classList.add(GALLERY_BODY_CLASS);
-
-            skuGalleryEl.querySelectorAll('[data-fc-sku-gallery-close]').forEach(function (btn) {
-                btn.addEventListener('click', closeSkuImageGallery);
-            });
-
-            var prevBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-prev]');
-            if (prevBtn) {
-                prevBtn.addEventListener('click', function () {
-                    showSkuGallerySlide(skuGalleryState.index - 1);
-                });
-            }
-
-            var nextBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-next]');
-            if (nextBtn) {
-                nextBtn.addEventListener('click', function () {
-                    showSkuGallerySlide(skuGalleryState.index + 1);
-                });
-            }
-
-            skuGalleryEl.addEventListener('click', function (e) {
-                var thumbBtn = e.target.closest('[data-fc-sku-gallery-thumb]');
-                if (!thumbBtn) {
-                    return;
-                }
-                e.preventDefault();
-                showSkuGallerySlide(parseInt(thumbBtn.getAttribute('data-fc-sku-gallery-thumb') || '0', 10));
-            });
-
-            skuGalleryKeydownHandler = function (e) {
-                if (!skuGalleryEl) {
-                    return;
-                }
-                if (e.key === 'Escape') {
-                    e.preventDefault();
-                    closeSkuImageGallery();
-                } else if (e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    showSkuGallerySlide(skuGalleryState.index - 1);
-                } else if (e.key === 'ArrowRight') {
-                    e.preventDefault();
-                    showSkuGallerySlide(skuGalleryState.index + 1);
-                }
-            };
-            document.addEventListener('keydown', skuGalleryKeydownHandler);
-
-            renderSkuGalleryThumbs();
-            renderSkuGallerySlide();
-        }
-
-        /**
-         * Swap a SKU field's thumbnail in place (img <-> placeholder). Fields are built before the WC
-         * SKU index resolves, so every slot starts as a placeholder and is filled in from here.
-         */
         function paintSkuThumb(field, value) {
             if (!field) {
                 return;
@@ -1531,6 +1330,12 @@
             checkBtn.classList.toggle('fc-sp-sku-check--empty', empty);
             checkBtn.classList.toggle('fc-sp-sku-check--found', found);
             checkBtn.classList.toggle('fc-sp-sku-check--missing', missing);
+
+            // Same gap tint as the Missing SKUs page: anything not in the catalogue, OFF aside.
+            var skuField = checkBtn.closest('.fc-sp-field--sku');
+            if (skuField) {
+                skuField.classList.toggle('fc-sp-field--gap', empty || missing);
+            }
 
             var icon = checkBtn.querySelector('i');
             if (icon) {
@@ -1591,13 +1396,15 @@
             });
         }
 
-        function scheduleSkuStatusRefresh(input) {
+        function scheduleSkuStatusRefresh() {
             if (skuStatusTimer) {
                 window.clearTimeout(skuStatusTimer);
             }
             skuStatusTimer = window.setTimeout(function () {
                 skuStatusTimer = null;
-                refreshSkuStatusForInput(input);
+                // One timer serves the whole form, so moving to a second field within the debounce
+                // used to cancel the first field's repaint and strand its tint. Repaint them all.
+                refreshAllSkuStatuses();
             }, 150);
         }
 
@@ -2158,14 +1965,28 @@
                         ? '<i class="fa-solid fa-lock fc-sp-field__lock" aria-hidden="true"></i>'
                         : '';
 
+                    var initial = isSku ? String(colorInitialsMap[col] || '') : '';
+                    var swatch = isSku ? String(colorBackgroundsMap[col] || '') : '';
+
                     var labelAndControl =
                         '<label class="fc-sp-field__label" for="' +
                         escapeHtml(id) +
                         '">' +
                         labelPrefix +
+                        (swatch
+                            ? '<span class="fc-sp-field__swatch" style="background: ' +
+                              escapeHtml(swatch) +
+                              ';" aria-hidden="true"></span>'
+                            : '') +
                         '<span>' +
                         escapeHtml(formatHeader(col)) +
-                        '</span></label>' +
+                        '</span>' +
+                        (initial
+                            ? '<span class="fc-sp-field__initial" title="SKU code for this colour">(' +
+                              escapeHtml(initial) +
+                              ')</span>'
+                            : '') +
+                        '</label>' +
                         fieldHtml +
                         (isSlug
                             ? '<p class="fc-sp-field__help">Unique identifier — cannot be changed after creation.</p>'
@@ -3016,6 +2837,8 @@
                 columns: bootstrap.columns || [],
                 rows: bootstrap.rows || [],
                 styleColors: bootstrap.styleColors || {},
+                colorInitials: bootstrap.colorInitials || {},
+                colorBackgrounds: bootstrap.colorBackgrounds || {},
                 filters: bootstrap.filters || {},
                 total: bootstrap.total || 0,
                 file: bootstrap.file || 'products.csv',
@@ -3090,6 +2913,230 @@
                 return false;
             });
     }
+
+    /* Missing SKUs renders the same SKU fields on its own page; it borrows the catalogue index and
+       the SKU semantics from here so "missing", "OFF" and the suggestions cannot drift between them. */
+    /* The SKU image gallery is shared: the edit modal and the Missing SKUs page both open it,
+       so it lives at module scope rather than inside renderPage. */
+    function scrollSkuGalleryThumbIntoView() {
+        if (!skuGalleryEl) {
+            return;
+        }
+        var thumbsEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-thumbs]');
+        if (!thumbsEl || thumbsEl.hidden) {
+            return;
+        }
+        var activeThumb = thumbsEl.querySelector('[data-fc-sku-gallery-thumb].is-active');
+        if (!activeThumb) {
+            return;
+        }
+        activeThumb.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    }
+
+    function renderSkuGalleryThumbs() {
+        if (!skuGalleryEl) {
+            return;
+        }
+        var thumbsEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-thumbs]');
+        if (!thumbsEl) {
+            return;
+        }
+        if (skuGalleryState.slides.length <= 1) {
+            thumbsEl.hidden = true;
+            thumbsEl.innerHTML = '';
+            return;
+        }
+        thumbsEl.hidden = false;
+        thumbsEl.innerHTML = skuGalleryState.slides
+            .map(function (slide, index) {
+                return (
+                    '<button type="button" class="fc-entries-cart-gallery__thumb' +
+                    (index === skuGalleryState.index ? ' is-active' : '') +
+                    '" data-fc-sku-gallery-thumb="' +
+                    index +
+                    '" aria-label="View ' +
+                    escapeHtml(slide.color || 'image ' + (index + 1)) +
+                    '"><img src="' +
+                    escapeHtml(slide.url) +
+                    '" alt="" loading="lazy" decoding="async"></button>'
+                );
+            })
+            .join('');
+        requestAnimationFrame(scrollSkuGalleryThumbIntoView);
+    }
+
+    function renderSkuGallerySlide() {
+        if (!skuGalleryEl || !skuGalleryState.slides.length) {
+            return;
+        }
+
+        var slide = skuGalleryState.slides[skuGalleryState.index];
+        var imageEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-image]');
+        var colorEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-color]');
+        var skuEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-sku]');
+        var counterEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-counter]');
+        var prevBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-prev]');
+        var nextBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-next]');
+
+        if (imageEl) {
+            imageEl.src = slide.url;
+            imageEl.alt = slide.color || 'Product image';
+        }
+        if (colorEl) {
+            colorEl.textContent = slide.color ? 'Color: ' + slide.color : '';
+            colorEl.hidden = !slide.color;
+        }
+        if (skuEl) {
+            skuEl.textContent = slide.sku ? 'SKU: ' + slide.sku : '';
+            skuEl.hidden = !slide.sku;
+        }
+        if (counterEl) {
+            counterEl.textContent = skuGalleryState.index + 1 + ' / ' + skuGalleryState.slides.length;
+            counterEl.hidden = skuGalleryState.slides.length <= 1;
+        }
+        if (prevBtn) {
+            prevBtn.disabled = skuGalleryState.slides.length <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = skuGalleryState.slides.length <= 1;
+        }
+
+        skuGalleryEl.querySelectorAll('[data-fc-sku-gallery-thumb]').forEach(function (btn) {
+            var thumbIndex = parseInt(btn.getAttribute('data-fc-sku-gallery-thumb') || '-1', 10);
+            btn.classList.toggle('is-active', thumbIndex === skuGalleryState.index);
+        });
+
+        scrollSkuGalleryThumbIntoView();
+    }
+
+    function showSkuGallerySlide(index) {
+        if (!skuGalleryState.slides.length) {
+            return;
+        }
+        if (index < 0) {
+            index = skuGalleryState.slides.length - 1;
+        } else if (index >= skuGalleryState.slides.length) {
+            index = 0;
+        }
+        skuGalleryState.index = index;
+        renderSkuGallerySlide();
+    }
+
+    function closeSkuImageGallery() {
+        if (!skuGalleryEl) {
+            return;
+        }
+        if (skuGalleryKeydownHandler) {
+            document.removeEventListener('keydown', skuGalleryKeydownHandler);
+            skuGalleryKeydownHandler = null;
+        }
+        skuGalleryEl.remove();
+        skuGalleryEl = null;
+        skuGalleryState.slides = [];
+        skuGalleryState.index = 0;
+        document.body.classList.remove(GALLERY_BODY_CLASS);
+    }
+
+    function openSkuImageGallery(slides, startIndex) {
+        if (!slides || !slides.length) {
+            return;
+        }
+        closeSkuImageGallery();
+
+        skuGalleryState.slides = slides;
+        skuGalleryState.index = Math.max(0, Math.min(startIndex || 0, slides.length - 1));
+
+        skuGalleryEl = document.createElement('div');
+        skuGalleryEl.className = 'fc-entries-cart-gallery';
+        skuGalleryEl.setAttribute('role', 'dialog');
+        skuGalleryEl.setAttribute('aria-modal', 'true');
+        skuGalleryEl.setAttribute('aria-label', 'Product images');
+        skuGalleryEl.innerHTML =
+            '<div class="fc-entries-cart-gallery__backdrop" data-fc-sku-gallery-close aria-hidden="true"></div>' +
+            '<button type="button" class="fencing-modal-close" data-fc-sku-gallery-close aria-label="Close"></button>' +
+            '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--prev" data-fc-sku-gallery-prev aria-label="Previous image">' +
+            '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>' +
+            '<div class="fc-entries-cart-gallery__stage">' +
+            '<img class="fc-entries-cart-gallery__image" data-fc-sku-gallery-image src="" alt="">' +
+            '<p class="fc-entries-cart-gallery__caption" data-fc-sku-gallery-caption>' +
+            '<span class="fc-sp-gallery-caption__color" data-fc-sku-gallery-color></span>' +
+            '<span class="fc-sp-gallery-caption__sku" data-fc-sku-gallery-sku></span>' +
+            '</p>' +
+            '<span class="fc-entries-cart-gallery__counter" data-fc-sku-gallery-counter hidden></span>' +
+            '</div>' +
+            '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--next" data-fc-sku-gallery-next aria-label="Next image">' +
+            '<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>' +
+            '<div class="fc-entries-cart-gallery__thumbs" data-fc-sku-gallery-thumbs hidden></div>';
+
+        document.body.appendChild(skuGalleryEl);
+        document.body.classList.add(GALLERY_BODY_CLASS);
+
+        skuGalleryEl.querySelectorAll('[data-fc-sku-gallery-close]').forEach(function (btn) {
+            btn.addEventListener('click', closeSkuImageGallery);
+        });
+
+        var prevBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-prev]');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function () {
+                showSkuGallerySlide(skuGalleryState.index - 1);
+            });
+        }
+
+        var nextBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-next]');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function () {
+                showSkuGallerySlide(skuGalleryState.index + 1);
+            });
+        }
+
+        skuGalleryEl.addEventListener('click', function (e) {
+            var thumbBtn = e.target.closest('[data-fc-sku-gallery-thumb]');
+            if (!thumbBtn) {
+                return;
+            }
+            e.preventDefault();
+            showSkuGallerySlide(parseInt(thumbBtn.getAttribute('data-fc-sku-gallery-thumb') || '0', 10));
+        });
+
+        skuGalleryKeydownHandler = function (e) {
+            if (!skuGalleryEl) {
+                return;
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeSkuImageGallery();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                showSkuGallerySlide(skuGalleryState.index - 1);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                showSkuGallerySlide(skuGalleryState.index + 1);
+            }
+        };
+        document.addEventListener('keydown', skuGalleryKeydownHandler);
+
+        renderSkuGalleryThumbs();
+        renderSkuGallerySlide();
+    }
+
+    /**
+     * Swap a SKU field's thumbnail in place (img <-> placeholder). Fields are built before the WC
+     * SKU index resolves, so every slot starts as a placeholder and is filled in from here.
+     */
+
+
+    global.FcAdminSkuFields = {
+        ensureIndex: ensureWcSkuIndex,
+        meta: metaForSku,
+        normalize: normalizeSkuValue,
+        isOff: isSkuOffValue,
+        countsAsComplete: skuCountsAsComplete,
+        existsInCatalogue: skuExistsInCatalogue,
+        suggest: suggestSkusFor,
+        productName: formatProductName,
+        openGallery: openSkuImageGallery,
+        closeGallery: closeSkuImageGallery
+    };
 
     global.FC.PageRegistry.register('products/system-products', pageController);
 })(window);

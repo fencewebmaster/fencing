@@ -12,6 +12,7 @@
 
     var FENCE_COLOR_SORT_COLUMNS = [
         { id: 'slug', label: 'Slug' },
+        { id: 'initial', label: 'Initial' },
         { id: 'label', label: 'Label' },
         { id: 'subLabel', label: 'Sub label' },
         { id: 'color', label: 'Color' },
@@ -33,6 +34,7 @@
             return (list || []).map(function (row) {
                 return {
                     slug: row.slug || '',
+                    initial: row.initial || '',
                     label: row.label || '',
                     subLabel: row.subLabel || row.sub_label || '',
                     color: row.color || '',
@@ -209,6 +211,14 @@
                 '" spellcheck="false" placeholder="monument_matt" autocomplete="off"' +
                 slugInputAttrs +
                 ' />' +
+                '</label>' +
+                '<label class="fc-fs-gui-field fc-settings-fence-colors__initial-cell">' +
+                '<span class="fc-fs-gui-field__label">Initial</span>' +
+                '<input type="text" class="fc-fs-input fc-fs-input--mono" data-fc-fence-color-field="initial" data-fc-fence-color-index="' +
+                index +
+                '" value="' +
+                escapeHtml(row.initial || '') +
+                '" spellcheck="false" placeholder="BS" maxlength="6" autocomplete="off" title="The colour\'s code inside a product SKU, e.g. XP-6100-S65-BS-CTS" />' +
                 '</label>' +
                 '<label class="fc-fs-gui-field">' +
                 '<span class="fc-fs-gui-field__label">Label</span>' +
@@ -591,7 +601,7 @@
             var addBtn = document.getElementById('fc-fence-colors-add');
             if (addBtn) {
                 addBtn.addEventListener('click', function () {
-                    self.state.fenceColors.push({ slug: '', label: '', subLabel: '', color: '', image: '' });
+                    self.state.fenceColors.push({ slug: '', initial: '', label: '', subLabel: '', color: '', image: '' });
                     self.refreshTable();
                     self.setDirty(true);
                 });

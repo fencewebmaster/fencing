@@ -186,6 +186,8 @@ final class GroupPermissionsPresenter
             'products', 'productsController' => match ($action) {
                 'update-store-product',
                 'reorder-store-products',
+                'scan-missing-skus',
+                'deep-scan-missing-skus',
                 'download-store-products-csv',
                 'import-store-products-csv' => ['products.system_products.edit'],
                 'download-products-start',

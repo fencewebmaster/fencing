@@ -57,6 +57,9 @@ final class AdminContext
     public ?array $systemProductsPage = null;
 
     /** @var array<string, mixed>|null */
+    public ?array $missingSkuPage = null;
+
+    /** @var array<string, mixed>|null */
     public ?array $dashboardPage = null;
 
     /** @var array<string, mixed>|null */
@@ -126,6 +129,7 @@ final class AdminContext
             'fcFenceStylesPage'           => $this->fenceStylesPage,
             'fcStoreProductsPage'         => $this->storeProductsPage,
             'fcSystemProductsPage'        => $this->systemProductsPage,
+            'fcMissingSkuPage'            => $this->missingSkuPage,
             'fcDashboardPage'             => $this->dashboardPage,
             'fcUsersPage'                 => $this->usersPage,
             'fcGroupPermissionsPage'      => $this->groupPermissionsPage,

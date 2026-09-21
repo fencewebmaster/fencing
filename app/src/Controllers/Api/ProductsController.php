@@ -11,6 +11,8 @@ use Fc\Admin\Models\StoreProductModel;
 use Fc\Admin\Models\SystemProductModel;
 use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
+use Fc\Admin\Services\MissingSkuDeepScan;
+use Fc\Admin\Services\MissingSkuScanService;
 use Fc\Admin\Services\StoreProductMaintenanceService;
 use Fc\Admin\Services\WcProductSkuIndex;
 use Fc\Admin\Services\WooCommerceProductExportService;
@@ -80,7 +82,11 @@ final class ProductsController extends BaseApiController
                 return;
             }
 
-            if ($action === 'reorder-store-products' || $action === 'update-store-product') {
+            if ($action === 'reorder-store-products'
+                || $action === 'update-store-product'
+                || $action === 'scan-missing-skus'
+                || $action === 'deep-scan-missing-skus'
+            ) {
                 if (
                     !self::csrfOk($payload)
                 ) {
@@ -91,6 +97,31 @@ final class ProductsController extends BaseApiController
                     ], JSON_UNESCAPED_UNICODE);
                     return;
                 }
+            }
+
+            if ($action === 'scan-missing-skus') {
+                $result = MissingSkuScanService::scan();
+                if (!$result['ok']) {
+                    http_response_code(500);
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                    return;
+                }
+
+                // The page's proposals are stamped into the markup, so hand back the fresh set.
+                $result['proposals'] = MissingSkuScanService::proposals();
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            // Advisory only — the suggestions are never written to disk, so the page gets them
+            // in the response or not at all.
+            if ($action === 'deep-scan-missing-skus') {
+                $result = MissingSkuDeepScan::scan();
+                if (!$result['ok']) {
+                    http_response_code(500);
+                }
+                echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                return;
             }
 
             if ($action === 'reorder-store-products') {

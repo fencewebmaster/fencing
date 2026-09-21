@@ -141,6 +141,11 @@ return [
             $router->get('system-products', static function (AdminContext $context): void {
                 (new ProductsPageController(new Request()))->systemProducts($context);
             });
+
+            // Nested under system-products so keysForRoute()'s prefix arm already guards it.
+            $router->get('system-products/missing-sku', static function (AdminContext $context): void {
+                (new ProductsPageController(new Request()))->missingSku($context);
+            });
         });
     },
 

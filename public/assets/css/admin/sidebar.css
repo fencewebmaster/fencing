@@ -889,14 +889,25 @@ html:not(.fc-admin-nav-ready) .fc-sidebar-nav__submenu {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.4375rem 0.625rem 0.4375rem 3.4375rem;
+    gap: 0.75rem;
+    padding: 0.4375rem 0.625rem;
     border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 500;
     color: var(--fc-sidebar-text);
     text-decoration: none;
     transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.fc-sidebar-nav__icon--sub {
+    width: 2.25rem;
+    height: 1.75rem;
+    font-size: 0.8125rem;
+}
+
+.fc-sidebar-nav__sublink:hover .fc-sidebar-nav__icon,
+.fc-sidebar-nav__sublink.is-active .fc-sidebar-nav__icon {
+    color: inherit;
 }
 
 .fc-sidebar-nav__sublink:hover {

@@ -30,7 +30,7 @@ final class StoreProductModel
     }
 
     /**
-     * @return array{ok:bool,columns:list<string>,rows:list<array<string,string>>,total:int,file:string,styleColors?:array<string,list<string>>,error?:string}
+     * @return array{ok:bool,columns:list<string>,rows:list<array<string,string>>,total:int,file:string,styleColors?:array<string,list<string>>,colorInitials?:array<string,string>,colorBackgrounds?:array<string,string>,error?:string}
      */
     public static function all(): array
     {
@@ -106,6 +106,8 @@ final class StoreProductModel
             'total' => count($rows),
             'file' => 'products.csv',
             'styleColors' => StoreProductPresenter::styleColorsMap(),
+            'colorInitials' => StoreProductPresenter::colorInitialsMap(),
+            'colorBackgrounds' => StoreProductPresenter::colorBackgroundsMap(),
         ];
     }
 
