@@ -137,6 +137,74 @@ final class StoreProductMaintenanceService
         ];
     }
 
+    /**
+     * Writes derived values onto many rows in one pass, for the System Products page's "Update
+     * Products". Keyed by row index, never by SLUG — products.csv carries several rows per slug
+     * (one per option/size), so a slug would rewrite the wrong ones.
+     *
+     * Only PRODUCT and DESCRIPTION may be written this way: SLUG identifies the row, and the
+     * colour columns are SKUs that belong to the Missing SKUs tooling. A field missing from a
+     * row's map, or blank, keeps what it has — this never empties a cell.
+     *
+     * @param array<int, array<string, string>> $fieldsByIndex
+     * @return array{ok:bool,total?:int,updated?:int,error?:string}
+     */
+    public static function updateFields(array $fieldsByIndex): array
+    {
+        $writable = ['PRODUCT', 'DESCRIPTION'];
+        $load = StoreProductModel::all();
+        if (!$load['ok']) {
+            return [
+                'ok' => false,
+                'error' => $load['error'] ?? 'Could not read products.csv.',
+            ];
+        }
+
+        $columns = $load['columns'];
+        $targets = array_values(array_intersect($writable, $columns));
+        if ($targets === []) {
+            return [
+                'ok' => false,
+                'error' => 'products.csv has no PRODUCT or DESCRIPTION column.',
+            ];
+        }
+
+        $rows = [];
+        $updated = 0;
+        foreach ($load['rows'] as $i => $row) {
+            $line = [];
+            foreach ($columns as $column) {
+                $line[$column] = (string) ($row[$column] ?? '');
+            }
+            $index = (int) ($row['_rowIndex'] ?? $i);
+            $fields = $fieldsByIndex[$index] ?? null;
+            if (is_array($fields)) {
+                foreach ($targets as $column) {
+                    if (!array_key_exists($column, $fields)) {
+                        continue;
+                    }
+                    $value = trim((string) $fields[$column]);
+                    if ($value !== '') {
+                        $line[$column] = self::sanitizeCsvFieldValue($value);
+                        $updated++;
+                    }
+                }
+            }
+            $rows[] = $line;
+        }
+
+        $written = self::writeCsv($columns, $rows);
+        if (!$written['ok']) {
+            return $written;
+        }
+
+        return [
+            'ok' => true,
+            'total' => count($rows),
+            'updated' => $updated,
+        ];
+    }
+
     public static function invalidateCache(): void
     {
         $cacheDir = CacheStorageService::cacheDir('products');

@@ -57,20 +57,76 @@ $canEdit         = $page['can_edit'];
                     <input type="checkbox" data-fc-ms-only-filled>
                     <span class="fc-ms-filled">Filled Rows <strong data-fc-ms-filled-count><?php echo e((string) $page['filled_label']); ?></strong></span>
                 </label>
-                <?php if (!empty($page['scan_available'])) : ?>
-                <button type="button" class="fc-ms-scan fc-ms-scan--catalogue" data-fc-ms-rescan>
-                    <i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i><span>Scan</span>
-                </button>
-                <?php endif; ?>
-                <?php if (!empty($page['deep_scan_available'])) : ?>
-                <button type="button" class="fc-ms-scan fc-ms-scan--deep" data-fc-ms-deep-scan title="Rank the catalogue by product title for the gaps Scan could not place — suggestions only, nothing is filled in">
-                    <i class="fa-solid fa-brain" aria-hidden="true"></i><span>Deep Scan</span>
-                </button>
-                <?php endif; ?>
-                <?php if ($canEdit) : ?>
-                <button type="button" class="fc-ms-scan" data-fc-ms-scan<?php echo empty($page['fill_available']) ? ' disabled' : ''; ?>>
-                    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span><?php echo e((string) $page['fill_label']); ?></span>
-                </button>
+                <?php if (!empty($page['menu_available'])) : ?>
+                <div class="fc-entries-date-dropdown fc-ms-actions shrink-0" data-fc-ms-actions>
+                    <button
+                        type="button"
+                        class="fc-entries-date-dropdown__toggle fc-ms-actions__toggle"
+                        id="fc-ms-actions-toggle"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="fc-ms-actions-panel"
+                        aria-label="Scan actions"
+                        title="Scan actions"
+                        data-fc-ms-actions-toggle
+                    >
+                        <i class="fa-solid fa-gear fc-entries-date-dropdown__icon" aria-hidden="true"></i>
+                        <i class="fa-solid fa-chevron-down fc-entries-date-dropdown__caret fc-ms-actions__caret" aria-hidden="true"></i>
+                    </button>
+                    <div
+                        class="fc-entries-date-dropdown__panel fc-ms-actions__panel"
+                        id="fc-ms-actions-panel"
+                        role="menu"
+                        aria-labelledby="fc-ms-actions-toggle"
+                        hidden
+                    >
+                        <div class="fc-ms-actions__head">
+                            <span class="fc-ms-actions__head-title">Scan actions</span>
+                            <span class="fc-ms-actions__head-hint">Nothing is saved until you press Save on a row</span>
+                        </div>
+                        <div class="fc-entries-date-dropdown__presets fc-ms-actions__presets">
+                            <?php if (!empty($page['scan_available'])) : ?>
+                            <button type="button" class="fc-entries-date-dropdown__option fc-ms-actions__option" role="menuitem" data-fc-ms-rescan>
+                                <span class="fc-ms-actions__option-icon" aria-hidden="true"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
+                                <span class="fc-ms-actions__option-text">
+                                    <span class="fc-ms-actions__option-label" data-fc-ms-label>Scan</span>
+                                    <span class="fc-ms-actions__option-meta"><?php echo e((string) $page['scan_meta']); ?></span>
+                                </span>
+                            </button>
+                            <?php endif; ?>
+                            <?php if (!empty($page['deep_scan_available'])) : ?>
+                            <button type="button" class="fc-entries-date-dropdown__option fc-ms-actions__option fc-ms-actions__option--deep" role="menuitem" data-fc-ms-deep-scan>
+                                <span class="fc-ms-actions__option-icon" aria-hidden="true"><i class="fa-solid fa-brain"></i></span>
+                                <span class="fc-ms-actions__option-text">
+                                    <span class="fc-ms-actions__option-label" data-fc-ms-label>Deep Scan</span>
+                                    <span class="fc-ms-actions__option-meta"><?php echo e((string) $page['deep_scan_meta']); ?></span>
+                                </span>
+                            </button>
+                            <?php endif; ?>
+                            <?php if ($canEdit) : ?>
+                            <button type="button" class="fc-entries-date-dropdown__option fc-ms-actions__option" role="menuitem" data-fc-ms-scan<?php echo empty($page['fill_available']) ? ' disabled aria-disabled="true"' : ''; ?>>
+                                <span class="fc-ms-actions__option-icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                                <span class="fc-ms-actions__option-text">
+                                    <span class="fc-ms-actions__option-label" data-fc-ms-label><?php echo e((string) $page['fill_label']); ?></span>
+                                    <span class="fc-ms-actions__option-meta" data-fc-ms-fill-meta><?php echo e((string) $page['fill_meta']); ?></span>
+                                </span>
+                            </button>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (!empty($page['clear_available'])) : ?>
+                        <div class="fc-ms-actions__divider" role="separator"></div>
+                        <div class="fc-ms-actions__footer">
+                            <button type="button" class="fc-entries-date-dropdown__option fc-ms-actions__option fc-ms-actions__option--clear" role="menuitem" data-fc-ms-clear<?php echo empty($page['clear_enabled']) ? ' disabled aria-disabled="true"' : ''; ?>>
+                                <span class="fc-ms-actions__option-icon" aria-hidden="true"><i class="fa-solid fa-trash-can"></i></span>
+                                <span class="fc-ms-actions__option-text">
+                                    <span class="fc-ms-actions__option-label" data-fc-ms-label>Clear Scan</span>
+                                    <span class="fc-ms-actions__option-meta" data-fc-ms-clear-meta><?php echo e((string) $page['clear_meta']); ?></span>
+                                </span>
+                            </button>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
                 <?php endif; ?>
             </div>
         </form>

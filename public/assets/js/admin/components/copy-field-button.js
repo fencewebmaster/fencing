@@ -85,7 +85,9 @@
 
         /**
          * Copies `control`'s value to the clipboard and shows feedback on `btn`.
-         * @param {HTMLInputElement|HTMLTextAreaElement} control
+         * Falls back to text content, so a read-only block reading as rendered HTML copies the
+         * words rather than nothing.
+         * @param {HTMLInputElement|HTMLTextAreaElement|Element} control
          * @param {Element} btn
          */
         copy(control, btn) {
@@ -93,7 +95,9 @@
                 return;
             }
             var self = this;
-            var text = String(control.value != null ? control.value : '');
+            var text = String(
+                control.value != null ? control.value : control.textContent || ''
+            );
 
             function onCopied() {
                 self._showFeedback(btn);

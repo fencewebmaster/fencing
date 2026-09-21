@@ -187,6 +187,14 @@ $fcStoreCsvName  = $page['csv_name'];
                         >
                             <span>Import CSV</span>
                         </button>
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option"
+                            role="menuitem"
+                            data-fc-desc-update-open
+                        >
+                            <span>Update Products</span>
+                        </button>
                     </div>
                     <input
                         type="file"
@@ -278,5 +286,82 @@ $fcStoreCsvName  = $page['csv_name'];
             <?php endif; ?>
         </div>
     </footer>
+    <?php endif; ?>
+
+    <?php if (!empty($page['can_edit'])) : ?>
+    <div class="fc-desc-update" data-fc-desc-update-modal hidden>
+        <div class="fc-desc-update__backdrop" aria-hidden="true"></div>
+        <section
+            class="fc-desc-update__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fc-desc-update-title"
+            tabindex="-1"
+        >
+            <button type="button" class="fencing-modal-close" data-fc-desc-update-close aria-label="Close"></button>
+            <header class="fc-desc-update__header">
+                <span class="fc-desc-update__icon" aria-hidden="true"><i class="fa-solid fa-pen-to-square"></i></span>
+                <div>
+                    <h2 id="fc-desc-update-title">Update Products</h2>
+                    <p>Rebuilds the product name and description from the store catalogue.</p>
+                </div>
+            </header>
+            <div class="fc-desc-update__body">
+                <p class="fc-desc-update__intro" data-fc-desc-update-intro>
+                    Each product is matched to the store catalogue through its own colour SKUs.
+                    The <strong>product name</strong> is the WooCommerce name with the colour taken
+                    out of it, and the <strong>description</strong> is the WooCommerce description
+                    written for those SKUs. A row with no usable SKU keeps what it has, and nothing
+                    is ever blanked. Nothing is written to <strong>products.csv</strong> until you
+                    review the list and press Apply.
+                </p>
+
+                <div class="fc-desc-update__progress" data-fc-desc-update-progress hidden>
+                    <div class="fc-desc-update__status">
+                        <strong data-fc-desc-update-status>Reading products…</strong>
+                        <span data-fc-desc-update-percent>0%</span>
+                    </div>
+                    <div
+                        class="fc-desc-update__track"
+                        role="progressbar"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="0"
+                        data-fc-desc-update-track
+                    >
+                        <span data-fc-desc-update-bar></span>
+                    </div>
+                    <dl class="fc-desc-update__details">
+                        <div><dt>Scanned</dt><dd data-fc-desc-update-scanned>0 of 0</dd></div>
+                        <div><dt>To update</dt><dd data-fc-desc-update-count>0</dd></div>
+                        <div><dt>Product names</dt><dd data-fc-desc-update-names>0</dd></div>
+                        <div><dt>Descriptions</dt><dd data-fc-desc-update-descs>0</dd></div>
+                        <div><dt>Left alone</dt><dd data-fc-desc-update-skipped>0</dd></div>
+                        <div><dt>Elapsed</dt><dd data-fc-desc-update-elapsed>0s</dd></div>
+                    </dl>
+                </div>
+
+                <div class="fc-desc-update__changes" data-fc-desc-update-changes hidden>
+                    <p class="fc-desc-update__changes-head">
+                        <span data-fc-desc-update-changes-label>Proposed changes</span>
+                    </p>
+                    <ul class="fc-desc-update__list" data-fc-desc-update-list></ul>
+                </div>
+
+                <div class="fc-desc-update__error" data-fc-desc-update-error hidden role="alert"></div>
+            </div>
+            <footer class="fc-desc-update__footer">
+                <button type="button" class="btn btn-sm btn-light fw-semibold" data-fc-desc-update-close>Close</button>
+                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-desc-update-scan>
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span>Preview changes</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-orange fw-semibold" data-fc-desc-update-apply hidden>
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    <span>Apply to products.csv</span>
+                </button>
+            </footer>
+        </section>
+    </div>
     <?php endif; ?>
 </div>

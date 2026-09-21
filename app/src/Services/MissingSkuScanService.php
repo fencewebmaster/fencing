@@ -35,6 +35,31 @@ final class MissingSkuScanService
     }
 
     /**
+     * Throws the researched proposals away. An absent file is a valid state — every gap simply
+     * reads as unresearched again — so this only starts the research over; products.csv, where
+     * the SKUs people have actually saved live, is never touched.
+     *
+     * Rows a person marked `manual` go with it, which is why the page asks first.
+     *
+     * @return array{ok:bool,removed:bool,error?:string}
+     */
+    public static function clear(): array
+    {
+        $path = self::csvPath();
+        // Dropped before the unlink, so a caller reading back cannot be served the old map.
+        self::$cache = null;
+
+        if (!is_file($path)) {
+            return ['ok' => true, 'removed' => false];
+        }
+        if (!@unlink($path)) {
+            return ['ok' => false, 'removed' => false, 'error' => 'Could not delete missing-products.csv.'];
+        }
+
+        return ['ok' => true, 'removed' => true];
+    }
+
+    /**
      * Proposals keyed "<slug>|<COLUMN>", the same key the page builds per field.
      *
      * @return array<string, array{sku:string,confidence:string,name:string,note:string,source:string}>

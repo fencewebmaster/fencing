@@ -34,10 +34,13 @@ final class WooCommerceProductExportService
     private const CSV_HEADER = ['ID', 'Slug', 'SKU', 'Name', 'Images', 'Colour', 'Description'];
 
     /**
-     * Enough words for a title matcher without turning a 650KB catalogue into a 5MB one.
-     * WooCommerce descriptions run to several paragraphs of marketing copy.
+     * Enough for the formatted description without turning a 650KB catalogue into a 5MB one.
+     * Measured on the live store: median 172 characters, 90th percentile 1,216, four over 4,000.
      */
-    private const DESCRIPTION_LIMIT = 600;
+    private const DESCRIPTION_LIMIT = 4000;
+
+    /** The formatting worth keeping out of a storefront description. */
+    private const DESCRIPTION_TAGS = '<p><br><ul><ol><li><strong><b><em><i><u><h3><h4><h5>';
 
     /** Variation colour attribute meta keys, in the order they are preferred. */
     private const COLOR_ATTRIBUTE_KEYS = [
@@ -550,7 +553,7 @@ final class WooCommerceProductExportService
                     'name' => (string) ($row['post_title'] ?? ''),
                     'images' => implode(', ', self::resolveImageList($meta, $urls)),
                     'colour' => $termColors[$id] ?? '',
-                    'description' => self::plainText(
+                    'description' => self::richText(
                         (string) ($row['post_content'] ?? ''),
                         (string) ($row['post_excerpt'] ?? '')
                     ),
@@ -598,12 +601,12 @@ final class WooCommerceProductExportService
             }
 
             // Variations are nearly always described by their parent, so try it first here.
-            $description = self::plainText(
+            $description = self::richText(
                 (string) ($row['post_content'] ?? ''),
                 (string) ($row['post_excerpt'] ?? '')
             );
             if ($description === '' && $parentId > 0) {
-                $description = self::plainText(
+                $description = self::richText(
                     (string) ($parentPosts[$parentId]['content'] ?? ''),
                     (string) ($parentPosts[$parentId]['excerpt'] ?? '')
                 );
@@ -775,27 +778,74 @@ final class WooCommerceProductExportService
     }
 
     /**
-     * WooCommerce descriptions are HTML with shortcodes and block comments. This keeps the words
-     * and drops everything else, so the CSV cell stays one readable line.
+     * A WooCommerce description, kept as formatted markup rather than flattened to one line.
+     *
+     * Three things in the source carry the formatting and all three have to survive:
+     *  - <strong> around each bullet's lead-in;
+     *  - underlines, written as <span style="text-decoration: underline"> — style attributes are
+     *    dropped here, so the one that means something is promoted to <u> before that happens;
+     *  - the line breaks, which are plain newlines in post_content because WordPress runs
+     *    wpautop() on the way to the storefront. Nothing runs wpautop here, so they become <br>.
+     *
+     * Entities are deliberately NOT decoded: "&amp;" is already correct markup, and decoding
+     * would turn an escaped "&lt;script&gt;" in someone's copy into a live tag.
      */
-    private static function plainText(string $content, string $fallback = ''): string
+    private static function richText(string $content, string $fallback = ''): string
     {
         foreach ([$content, $fallback] as $raw) {
-            $text = (string) preg_replace('/<!--.*?-->/s', ' ', $raw);
+            $text = (string) $raw;
+            $text = (string) preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', ' ', $text);
+            $text = (string) preg_replace('/<!--.*?-->/s', ' ', $text);
             $text = (string) preg_replace('/\[[^\]]*\]/', ' ', $text);
-            $text = strip_tags($text);
-            $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $text = trim((string) preg_replace('/\s+/u', ' ', $text));
-            if ($text === '') {
+            $text = (string) preg_replace(
+                '#<span[^>]*text-decoration\s*:\s*underline[^>]*>(.*?)</span>#is',
+                '<u>$1</u>',
+                $text
+            );
+            $text = strip_tags($text, self::DESCRIPTION_TAGS);
+            // No surviving tag needs an attribute, and dropping them all is cheaper to be sure of
+            // than deciding which are safe.
+            $text = (string) preg_replace('/<([a-z0-9]+)\s[^>]*?(\/?)>/i', '<$1$2>', $text);
+
+            // Runs of spaces go, newlines stay: they are the structure.
+            $text = str_replace(["\r\n", "\r"], "\n", $text);
+            $text = (string) preg_replace('/[ \t]+/', ' ', $text);
+            $text = (string) preg_replace('/ *\n */', "\n", $text);
+            $text = trim($text);
+            $text = (string) preg_replace('/\n{2,}/', '<br><br>', $text);
+            $text = str_replace("\n", '<br>', $text);
+            $text = (string) preg_replace('#(<br>\s*){3,}#i', '<br><br>', $text);
+
+            if (trim(strip_tags($text)) === '') {
                 continue;
             }
+            // Cutting markup at a character count leaves tags hanging open, so anything this long
+            // falls back to its words.
+            if (mb_strlen($text, 'UTF-8') > self::DESCRIPTION_LIMIT) {
+                return self::plainText($raw);
+            }
 
-            return mb_strlen($text, 'UTF-8') > self::DESCRIPTION_LIMIT
-                ? rtrim(mb_substr($text, 0, self::DESCRIPTION_LIMIT, 'UTF-8'))
-                : $text;
+            return $text;
         }
 
         return '';
+    }
+
+    /**
+     * The words alone, for a description too long to keep as markup.
+     */
+    private static function plainText(string $content): string
+    {
+        $text = (string) preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', ' ', $content);
+        $text = (string) preg_replace('/<!--.*?-->/s', ' ', $text);
+        $text = (string) preg_replace('/\[[^\]]*\]/', ' ', $text);
+        $text = strip_tags($text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = trim((string) preg_replace('/\s+/u', ' ', $text));
+
+        return mb_strlen($text, 'UTF-8') > self::DESCRIPTION_LIMIT
+            ? rtrim(mb_substr($text, 0, self::DESCRIPTION_LIMIT, 'UTF-8'))
+            : $text;
     }
 
     /**

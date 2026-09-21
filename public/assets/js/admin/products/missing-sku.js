@@ -12,6 +12,7 @@
     var API_UPDATE = fcApiUrl('products', 'action=update-store-product');
     var API_SCAN = fcApiUrl('products', 'action=scan-missing-skus');
     var API_DEEP_SCAN = fcApiUrl('products', 'action=deep-scan-missing-skus');
+    var API_CLEAR = fcApiUrl('products', 'action=clear-missing-skus');
     var SKU = global.FcAdminSkuFields || null;
     var escapeHtml = global.FC.util.escapeHtml;
 
@@ -42,6 +43,7 @@
 
         destroy() {
             closeSuggest();
+            closeActionsMenu();
             if (SKU && typeof SKU.closeGallery === 'function') {
                 SKU.closeGallery();
             }
@@ -70,6 +72,11 @@
 
     function inputIn(field) {
         return field.querySelector('.fc-sp-field-control--sku');
+    }
+
+    /* The menu options wrap their label beside an icon, so it has to be asked for by name. */
+    function labelOf(btn) {
+        return btn ? btn.querySelector('[data-fc-ms-label]') : null;
     }
 
     /* ---------------------------------------------------------------- status + thumbnails */
@@ -600,7 +607,7 @@
 
         if (btn) {
             btn.disabled = true;
-            var label = btn.querySelector('span');
+            var label = labelOf(btn);
             if (label) {
                 label.textContent = filled === 0 ? 'Nothing to fill' : 'Filled ' + filled;
             }
@@ -620,7 +627,7 @@
         if (!canEdit || btn.disabled) {
             return;
         }
-        var label = btn.querySelector('span');
+        var label = labelOf(btn);
         var was = label ? label.textContent : '';
         btn.disabled = true;
         if (label) {
@@ -692,11 +699,17 @@
         var fillBtn = document.querySelector('[data-fc-ms-scan]');
         if (fillBtn) {
             fillBtn.disabled = fillable === 0;
-            var label = fillBtn.querySelector('span');
+            var label = labelOf(fillBtn);
             if (label) {
                 label.textContent = fillable === 0
                     ? 'Nothing to fill'
                     : 'Fill ' + fillable + (fillable === 1 ? ' SKU' : ' SKUs');
+            }
+            var meta = fillBtn.querySelector('[data-fc-ms-fill-meta]');
+            if (meta) {
+                meta.textContent = fillable === 0
+                    ? 'Run Scan to find proposals'
+                    : 'Fills the fields for review — nothing is saved';
             }
         }
     }
@@ -710,7 +723,7 @@
         if (btn.disabled) {
             return;
         }
-        var label = btn.querySelector('span');
+        var label = labelOf(btn);
         var was = label ? label.textContent : '';
         btn.disabled = true;
         if (label) {
@@ -819,6 +832,111 @@
         });
 
         return out;
+    }
+
+    /* ----------------------------------------------------------------------- actions menu */
+
+    function actionsMenu() {
+        return document.querySelector('[data-fc-ms-actions]');
+    }
+
+    function closeActionsMenu() {
+        var menu = actionsMenu();
+        var panel = menu ? menu.querySelector('.fc-ms-actions__panel') : null;
+        if (!panel || panel.hidden) {
+            return false;
+        }
+        global.FC.components.DropdownRegistry.notifyClosed(menu);
+        panel.hidden = true;
+        menu.classList.remove('is-open');
+        var toggle = menu.querySelector('[data-fc-ms-actions-toggle]');
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+        return true;
+    }
+
+    function openActionsMenu(menu) {
+        var panel = menu.querySelector('.fc-ms-actions__panel');
+        if (!panel) {
+            return;
+        }
+        // The admin allows one dropdown at a time, so the topbar's menus close as this one opens.
+        global.FC.components.DropdownRegistry.openExclusive(menu, closeActionsMenu);
+        panel.hidden = false;
+        menu.classList.add('is-open');
+        var toggle = menu.querySelector('[data-fc-ms-actions-toggle]');
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    /* Throws away writable/missing-products.csv. Rows a person decided by hand go with it, which
+       is why this asks first; the SKUs already saved into products.csv are untouched. */
+    function runClear(btn) {
+        if (!canEdit || btn.disabled) {
+            return;
+        }
+        if (!global.confirm(
+            'Clear the saved scan?\n\nThis deletes missing-products.csv, including any rows decided '
+            + 'by hand. SKUs already saved on a row are not affected.'
+        )) {
+            return;
+        }
+
+        var label = labelOf(btn);
+        var was = label ? label.textContent : '';
+        var cleared = false;
+        btn.disabled = true;
+        if (label) {
+            label.textContent = 'Clearing…';
+        }
+
+        fetch(API_CLEAR, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ csrf: csrf })
+        })
+            .then(function (res) {
+                return res.json().then(function (body) {
+                    if (!res.ok || !body.ok) {
+                        throw new Error((body && body.error) || 'Clear failed');
+                    }
+                    return body;
+                });
+            })
+            .then(function (body) {
+                cleared = true;
+                // The proposals stamped into the markup came from the file that just went.
+                applyProposals({});
+                var meta = btn.querySelector('[data-fc-ms-clear-meta]');
+                if (meta) {
+                    meta.textContent = 'No saved scan to clear';
+                }
+                var T = global.FcAdminToast;
+                if (T) {
+                    T.success(body.removed
+                        ? 'Scan cleared — missing-products.csv deleted.'
+                        : 'There was no saved scan to clear.');
+                }
+            })
+            .catch(function (err) {
+                var T = global.FcAdminToast;
+                if (T) {
+                    T.error(err.message || 'Clear failed');
+                }
+            })
+            .finally(function () {
+                if (label) {
+                    label.textContent = was;
+                }
+                // Nothing left to clear once the file is gone.
+                btn.disabled = cleared;
+                if (cleared) {
+                    btn.setAttribute('aria-disabled', 'true');
+                }
+            });
     }
 
     function saveRow(row) {
@@ -965,9 +1083,25 @@
                 return;
             }
 
+            var actionsToggle = target.closest('[data-fc-ms-actions-toggle]');
+            if (actionsToggle) {
+                e.preventDefault();
+                // Or the document handler below would close it again in the same click.
+                e.stopPropagation();
+                var menu = actionsMenu();
+                var panel = menu ? menu.querySelector('.fc-ms-actions__panel') : null;
+                if (panel && panel.hidden) {
+                    openActionsMenu(menu);
+                } else {
+                    closeActionsMenu();
+                }
+                return;
+            }
+
             var rescanBtn = target.closest('[data-fc-ms-rescan]');
             if (rescanBtn) {
                 e.preventDefault();
+                closeActionsMenu();
                 runRescan(rescanBtn);
                 return;
             }
@@ -975,13 +1109,23 @@
             var deepBtn = target.closest('[data-fc-ms-deep-scan]');
             if (deepBtn) {
                 e.preventDefault();
+                closeActionsMenu();
                 runDeepScan(deepBtn);
+                return;
+            }
+
+            var clearBtn = target.closest('[data-fc-ms-clear]');
+            if (clearBtn) {
+                e.preventDefault();
+                closeActionsMenu();
+                runClear(clearBtn);
                 return;
             }
 
             var scanBtn = target.closest('[data-fc-ms-scan]');
             if (scanBtn) {
                 e.preventDefault();
+                closeActionsMenu();
                 // The index decides found vs missing, so wait for it or the tint would be guesswork.
                 if (SKU) {
                     SKU.ensureIndex().then(function () {
@@ -1053,7 +1197,7 @@
 
         // Enter saves the row it was pressed in, the way the edit modal's form submit does.
         root.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && (closePreview() || closeSuggest())) {
+            if (e.key === 'Escape' && (closePreview() || closeSuggest() || closeActionsMenu())) {
                 e.preventDefault();
                 return;
             }
@@ -1081,6 +1225,10 @@
         if (!docClickBound) {
             docClickBound = true;
             document.addEventListener('click', function (e) {
+                var menu = actionsMenu();
+                if (menu && !menu.contains(e.target)) {
+                    closeActionsMenu();
+                }
                 if (!openSuggestWrap) {
                     return;
                 }

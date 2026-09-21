@@ -1196,3 +1196,372 @@ html[data-fc-admin-theme='dark'] #fc-gallery-attach-modal .fc-sp-field-copy:hove
     border-color: var(--fc-admin-link);
     color: var(--fc-admin-link);
 }
+
+/* ===== Update Description modal (System Products) ===== */
+/* Same shell as the products download modal, with a change list in place of its file details. */
+
+.fc-desc-update {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+}
+
+.fc-desc-update[hidden] {
+    display: none;
+}
+
+.fc-desc-update__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.64);
+    backdrop-filter: blur(2px);
+}
+
+.fc-desc-update__dialog {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: min(44rem, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    border: 1px solid var(--fc-admin-border, #dcdcde);
+    border-radius: 0.875rem;
+    background: var(--fc-admin-surface, #fff);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.3);
+    overflow: hidden;
+}
+
+.fc-desc-update__header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    flex: 0 0 auto;
+    padding: 1.25rem 4.5rem 1rem 1.25rem;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+.fc-desc-update__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.625rem;
+    background: rgba(246, 121, 37, 0.12);
+    color: var(--fc-princeton-orange, #f67925);
+    font-size: 1.1rem;
+}
+
+.fc-desc-update__header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+.fc-desc-update__header p {
+    margin: 0.2rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--fc-admin-text-muted, #646970);
+}
+
+.fc-desc-update__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.fc-desc-update__intro {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--fc-admin-text-muted, #50575e);
+}
+
+.fc-desc-update__status {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+.fc-desc-update__track {
+    height: 0.65rem;
+    border-radius: 9999px;
+    background: var(--fc-admin-surface-muted, #e2e8f0);
+    overflow: hidden;
+}
+
+.fc-desc-update__track > span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--fc-princeton-orange, #f67925), #fb923c);
+    transition: width 0.25s ease;
+}
+
+.fc-desc-update__details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 1rem 0 0;
+}
+
+.fc-desc-update__details > div {
+    min-width: 0;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 0.5rem;
+    background: var(--fc-admin-surface-subtle, #f8fafc);
+}
+
+.fc-desc-update__details dt {
+    margin-bottom: 0.2rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-desc-update__details dd {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+.fc-desc-update__changes {
+    margin-top: 1.25rem;
+}
+
+.fc-desc-update__changes-head {
+    margin: 0 0 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+.fc-desc-update__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-height: 18rem;
+    overflow-y: auto;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 0.5rem;
+}
+
+.fc-desc-update__item {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+.fc-desc-update__item:last-child {
+    border-bottom: 0;
+}
+
+.fc-desc-update__item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.fc-desc-update__item-head code {
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+    background: transparent;
+}
+
+/* Which of the two sources answered, so a row derived from marketing copy is obvious at a glance. */
+.fc-desc-update__source {
+    flex-shrink: 0;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.fc-desc-update__source--product {
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.fc-desc-update__was,
+.fc-desc-update__now {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.fc-desc-update__was {
+    color: #b91c1c;
+    text-decoration: line-through;
+    text-decoration-color: rgba(185, 28, 28, 0.4);
+}
+
+.fc-desc-update__now {
+    color: #15803d;
+    font-weight: 600;
+}
+
+.fc-desc-update__error {
+    margin-top: 1rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    background: #fef2f2;
+    font-size: 0.8125rem;
+    color: #b91c1c;
+}
+
+.fc-desc-update__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+    padding: 0.9rem 1.25rem;
+    border-top: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-subtle, #f8fafc);
+}
+
+html[data-fc-admin-theme='dark'] .fc-desc-update__was {
+    color: #fca5a5;
+    text-decoration-color: rgba(252, 165, 165, 0.4);
+}
+
+html[data-fc-admin-theme='dark'] .fc-desc-update__now {
+    color: #86efac;
+}
+
+html[data-fc-admin-theme='dark'] .fc-desc-update__source {
+    border-color: #1e3a8a;
+    background: rgba(30, 58, 138, 0.3);
+    color: #93c5fd;
+}
+
+html[data-fc-admin-theme='dark'] .fc-desc-update__source--product {
+    border-color: #065f46;
+    background: rgba(6, 95, 70, 0.3);
+    color: #6ee7b7;
+}
+
+html[data-fc-admin-theme='dark'] .fc-desc-update__error {
+    border-color: #7f1d1d;
+    background: rgba(127, 29, 29, 0.3);
+    color: #fca5a5;
+}
+
+/* ===== Edit modal: description as rendered copy ===== */
+/* The description is written in WooCommerce and pulled in by Update Description, so the modal
+   reads it rather than offering a field that would only ever be overwritten on the next run. */
+
+#fc-sp-edit-modal .fc-sp-field-input-wrap--description {
+    position: relative;
+}
+
+/* No inner scrollbar: the description shows in full and the modal body scrolls if it has to. */
+#fc-sp-edit-modal .fc-sp-description {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: 0.6rem 2.75rem 0.6rem 0.75rem;
+    border: 1px solid var(--fc-admin-border, #dcdcde);
+    border-radius: 3px;
+    background: var(--fc-admin-surface-subtle, #f6f7f7);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--fc-admin-text, #2c3338);
+    overflow-wrap: anywhere;
+}
+
+#fc-sp-edit-modal .fc-sp-description:focus-visible {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+#fc-sp-edit-modal .fc-sp-description > :first-child {
+    margin-top: 0;
+}
+
+#fc-sp-edit-modal .fc-sp-description > :last-child {
+    margin-bottom: 0;
+}
+
+#fc-sp-edit-modal .fc-sp-description p {
+    margin: 0 0 0.6rem;
+}
+
+#fc-sp-edit-modal .fc-sp-description ul,
+#fc-sp-edit-modal .fc-sp-description ol {
+    margin: 0 0 0.6rem;
+    padding-left: 1.25rem;
+}
+
+#fc-sp-edit-modal .fc-sp-description li {
+    margin: 0 0 0.2rem;
+}
+
+#fc-sp-edit-modal .fc-sp-description strong,
+#fc-sp-edit-modal .fc-sp-description b {
+    font-weight: 700;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+#fc-sp-edit-modal .fc-sp-description h3,
+#fc-sp-edit-modal .fc-sp-description h4,
+#fc-sp-edit-modal .fc-sp-description h5 {
+    margin: 0.75rem 0 0.35rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+#fc-sp-edit-modal .fc-sp-description a {
+    color: var(--fc-princeton-orange, #f67925);
+    text-decoration: underline;
+}
+
+#fc-sp-edit-modal .fc-sp-description__empty {
+    margin: 0;
+    color: var(--fc-admin-text-muted, #8c8f94);
+    font-style: italic;
+}
+
+html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-description {
+    border-color: var(--fc-admin-border, #334155);
+    background: var(--fc-admin-surface-muted, #1e293b);
+    color: var(--fc-admin-text, #e2e8f0);
+}
+
+/* ===== System Products: clamped description cell ===== */
+/* Descriptions run to paragraphs, so the table shows the first three lines as plain text; the
+   whole thing, formatting and all, is in the edit modal the row already opens. */
+
+.fc-sys-product-desc-cell .fc-sys-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+

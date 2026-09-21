@@ -540,6 +540,23 @@
 
     var escapeHtml = global.FC.util.escapeHtml;
 
+    /* The words out of a stored description. Table cells and tooltips take text, not markup, and
+       not the tick and toolbox icons either — decoration on a storefront, noise in a cell. Only
+       the edit modal renders the real thing. Parsed in a detached document, so nothing runs. */
+    function descriptionToText(value) {
+        var text = String(value == null ? '' : value);
+        if (text.indexOf('<') !== -1) {
+            var doc = document.implementation.createHTMLDocument('');
+            doc.body.innerHTML = text.replace(/<br\s*\/?>/gi, ' ');
+            text = doc.body.textContent || '';
+        }
+
+        return text
+            .replace(/[\u{2190}-\u{2BFF}\u{1F000}-\u{1FAFF}\u{FE0F}\u{200D}]/gu, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     function decodeHtmlEntities(text) {
         var raw = String(text == null ? '' : text);
         if (raw.indexOf('&') === -1) {
@@ -797,14 +814,27 @@
                                     );
                                 }
                                 var val = row[col] != null ? row[col] : '';
+                                // The description is stored as markup; a table cell wants the
+                                // words, or every row prints its own tags.
+                                if (col === 'DESCRIPTION') {
+                                    val = descriptionToText(val);
+                                }
                                 var empty = val === '';
                                 return (
                                     '<td class="border-b border-slate-100 px-3 py-2' +
                                     (col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '') +
                                     sticky +
                                     (empty ? ' text-slate-300' : '') +
-                                    '">' +
-                                    (empty ? '—' : escapeHtml(val)) +
+                                    '"' +
+                                    (col === 'DESCRIPTION' && !empty
+                                        ? ' title="' + escapeHtml(val) + '"'
+                                        : '') +
+                                    '>' +
+                                    (col === 'DESCRIPTION' && !empty
+                                        ? '<span class="fc-sys-desc">' + escapeHtml(val) + '</span>'
+                                        : empty
+                                          ? '—'
+                                          : escapeHtml(val)) +
                                     '</td>'
                                 );
                             })
@@ -1862,6 +1892,68 @@
             input.focus();
         }
 
+        /* Tags the description may keep when it renders. Everything else becomes its own text. */
+        var DESCRIPTION_TAGS = {
+            P: 1, BR: 1, DIV: 1, SPAN: 1, UL: 1, OL: 1, LI: 1, STRONG: 1, B: 1,
+            EM: 1, I: 1, U: 1, SMALL: 1, H3: 1, H4: 1, H5: 1, A: 1
+        };
+
+        /* Dropped whole rather than unwrapped: their text is code, not copy, and unwrapping a
+           <script> would print its body into the description as if it were words. */
+        var DESCRIPTION_DROP_TAGS = {
+            SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, NOSCRIPT: 1, TEMPLATE: 1
+        };
+
+        /* products.csv holds whatever the store wrote, so the modal renders it through an
+           allowlist rather than trusting it: unknown elements are unwrapped to their words, and
+           every attribute goes except a plain http(s) href. Parsed in a detached document, which
+           runs no scripts and fetches nothing. */
+        function sanitizeDescriptionHtml(raw) {
+            var doc = document.implementation.createHTMLDocument('');
+            doc.body.innerHTML = String(raw == null ? '' : raw);
+
+            (function walk(parent) {
+                var child = parent.firstChild;
+                while (child) {
+                    var next = child.nextSibling;
+                    if (child.nodeType === 1) {
+                        if (DESCRIPTION_DROP_TAGS[child.tagName]) {
+                            parent.removeChild(child);
+                            child = next;
+                            continue;
+                        }
+                        if (!DESCRIPTION_TAGS[child.tagName]) {
+                            while (child.firstChild) {
+                                parent.insertBefore(child.firstChild, child);
+                            }
+                            parent.removeChild(child);
+                            child = next;
+                            continue;
+                        }
+                        Array.prototype.slice.call(child.attributes).forEach(function (attr) {
+                            var isSafeHref =
+                                child.tagName === 'A' &&
+                                attr.name.toLowerCase() === 'href' &&
+                                /^https?:\/\//i.test(String(attr.value).trim());
+                            if (!isSafeHref) {
+                                child.removeAttribute(attr.name);
+                            }
+                        });
+                        if (child.tagName === 'A' && child.getAttribute('href')) {
+                            child.setAttribute('target', '_blank');
+                            child.setAttribute('rel', 'noopener noreferrer');
+                        }
+                        walk(child);
+                    } else if (child.nodeType !== 3) {
+                        parent.removeChild(child);
+                    }
+                    child = next;
+                }
+            })(doc.body);
+
+            return doc.body.innerHTML;
+        }
+
         function buildFieldControl(col, val) {
             var id = 'fc-sp-field-' + col.replace(/[^a-zA-Z0-9_-]/g, '_');
             var isSlug = col === 'SLUG';
@@ -1879,19 +1971,23 @@
                 }
             }
 
+            // Read-only and rendered: the description is the store's copy, edited in WooCommerce
+            // and pulled in by Update Description, so the modal shows it rather than offering to
+            // overwrite it. Omitting the field also leaves saveEditProduct() round-tripping the
+            // row's own value, so saving the modal cannot blank it.
             if (isDescription) {
-                fieldClass += ' fc-sp-field-control--textarea';
+                var descHtml = sanitizeDescriptionHtml(val);
                 return (
-                    '<div class="fc-sp-field-input-wrap fc-sp-field-input-wrap--textarea">' +
-                    '<textarea id="' +
+                    '<div class="fc-sp-field-input-wrap fc-sp-field-input-wrap--description">' +
+                    '<div class="fc-sp-description" id="' +
                     escapeHtml(id) +
-                    '" name="' +
-                    escapeHtml(col) +
-                    '" rows="4" class="' +
-                    fieldClass +
-                    '" autocomplete="off" placeholder="Product description shown in quotes and plans">' +
-                    escapeHtml(val) +
-                    '</textarea>' +
+                    '" tabindex="0" role="region" aria-label="' +
+                    escapeHtml(formatHeader(col)) +
+                    '">' +
+                    (descHtml.trim() === ''
+                        ? '<p class="fc-sp-description__empty">No description</p>'
+                        : descHtml) +
+                    '</div>' +
                     buildFieldCopyButton(id, formatHeader(col), { compact: true }) +
                     '</div>'
                 );
@@ -2633,6 +2729,363 @@
         }
     }
 
+    /* ------------------------------------------------------------------ update description */
+
+    /* Rebuilds the DESCRIPTION column from the catalogue. The scan runs a slice at a time so the
+       bar tracks real work, and the file is only written once the proposed changes are accepted. */
+    var DESC_CHUNK = 50;
+    var descState = null;
+
+    function openDescriptionUpdate(csrf) {
+        var modal = document.querySelector('[data-fc-desc-update-modal]');
+        if (!modal) {
+            return;
+        }
+
+        var el = {
+            modal: modal,
+            intro: modal.querySelector('[data-fc-desc-update-intro]'),
+            progress: modal.querySelector('[data-fc-desc-update-progress]'),
+            status: modal.querySelector('[data-fc-desc-update-status]'),
+            percent: modal.querySelector('[data-fc-desc-update-percent]'),
+            track: modal.querySelector('[data-fc-desc-update-track]'),
+            bar: modal.querySelector('[data-fc-desc-update-bar]'),
+            scanned: modal.querySelector('[data-fc-desc-update-scanned]'),
+            count: modal.querySelector('[data-fc-desc-update-count]'),
+            names: modal.querySelector('[data-fc-desc-update-names]'),
+            descs: modal.querySelector('[data-fc-desc-update-descs]'),
+            skipped: modal.querySelector('[data-fc-desc-update-skipped]'),
+            elapsed: modal.querySelector('[data-fc-desc-update-elapsed]'),
+            changes: modal.querySelector('[data-fc-desc-update-changes]'),
+            changesLabel: modal.querySelector('[data-fc-desc-update-changes-label]'),
+            list: modal.querySelector('[data-fc-desc-update-list]'),
+            error: modal.querySelector('[data-fc-desc-update-error]'),
+            scanBtn: modal.querySelector('[data-fc-desc-update-scan]'),
+            applyBtn: modal.querySelector('[data-fc-desc-update-apply]')
+        };
+
+        descState = { csrf: csrf, el: el, running: false, changes: [], total: 0, startedAt: 0 };
+        resetDescriptionModal(el);
+        modal.hidden = false;
+        global.FcAdminModal.lockScroll();
+        var dialog = modal.querySelector('.fc-desc-update__dialog');
+        if (dialog) {
+            dialog.focus();
+        }
+
+        if (modal.dataset.fcBound !== '1') {
+            modal.dataset.fcBound = '1';
+            modal.querySelectorAll('[data-fc-desc-update-close]').forEach(function (btn) {
+                btn.addEventListener('click', closeDescriptionUpdate);
+            });
+            var backdrop = modal.querySelector('.fc-desc-update__backdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', closeDescriptionUpdate);
+            }
+            modal.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closeDescriptionUpdate();
+                }
+            });
+            if (el.scanBtn) {
+                el.scanBtn.addEventListener('click', function () {
+                    runDescriptionScan();
+                });
+            }
+            if (el.applyBtn) {
+                el.applyBtn.addEventListener('click', function () {
+                    runDescriptionApply();
+                });
+            }
+        }
+    }
+
+    function closeDescriptionUpdate() {
+        // A scan in flight owns the file for another moment; let it finish rather than half-apply.
+        if (descState && descState.running) {
+            return;
+        }
+        var modal = document.querySelector('[data-fc-desc-update-modal]');
+        if (modal) {
+            modal.hidden = true;
+        }
+        global.FcAdminModal.unlockScroll();
+        descState = null;
+    }
+
+    function resetDescriptionModal(el) {
+        if (el.progress) {
+            el.progress.hidden = true;
+        }
+        if (el.changes) {
+            el.changes.hidden = true;
+        }
+        if (el.list) {
+            el.list.innerHTML = '';
+        }
+        if (el.error) {
+            el.error.hidden = true;
+            el.error.textContent = '';
+        }
+        if (el.applyBtn) {
+            el.applyBtn.hidden = true;
+        }
+        if (el.scanBtn) {
+            el.scanBtn.hidden = false;
+            el.scanBtn.disabled = false;
+        }
+        if (el.intro) {
+            el.intro.hidden = false;
+        }
+        paintDescriptionProgress(el, 0, 0, 0, 0, 0);
+    }
+
+    function paintDescriptionProgress(el, scanned, total, updates, names, descs) {
+        var percent = total > 0 ? Math.round((scanned / total) * 100) : 0;
+        if (el.percent) {
+            el.percent.textContent = percent + '%';
+        }
+        if (el.bar) {
+            el.bar.style.width = percent + '%';
+        }
+        if (el.track) {
+            el.track.setAttribute('aria-valuenow', String(percent));
+        }
+        if (el.scanned) {
+            el.scanned.textContent = scanned + ' of ' + total;
+        }
+        if (el.count) {
+            el.count.textContent = String(updates);
+        }
+        if (el.names) {
+            el.names.textContent = String(names);
+        }
+        if (el.descs) {
+            el.descs.textContent = String(descs);
+        }
+        if (el.skipped) {
+            // Rows, not field changes: one product can contribute two of those, so subtracting
+            // them from the row count goes negative.
+            var touched = {};
+            (descState && descState.changes ? descState.changes : []).forEach(function (change) {
+                touched[change.index] = true;
+            });
+            el.skipped.textContent = String(
+                Math.max(0, scanned - Object.keys(touched).length)
+            );
+        }
+    }
+
+    function descriptionError(message) {
+        if (!descState) {
+            return;
+        }
+        var el = descState.el;
+        if (el.error) {
+            el.error.hidden = false;
+            el.error.textContent = message;
+        }
+        if (el.scanBtn) {
+            el.scanBtn.disabled = false;
+        }
+        descState.running = false;
+    }
+
+    function runDescriptionScan() {
+        if (!descState || descState.running) {
+            return;
+        }
+        var el = descState.el;
+        descState.running = true;
+        descState.changes = [];
+        descState.startedAt = Date.now();
+        var names = 0;
+        var descs = 0;
+
+        if (el.error) {
+            el.error.hidden = true;
+        }
+        if (el.intro) {
+            el.intro.hidden = true;
+        }
+        if (el.progress) {
+            el.progress.hidden = false;
+        }
+        if (el.changes) {
+            el.changes.hidden = true;
+        }
+        if (el.scanBtn) {
+            el.scanBtn.disabled = true;
+        }
+        if (el.status) {
+            el.status.textContent = 'Reading products…';
+        }
+
+        function step(offset) {
+            return fetch(fcApiUrl('products', 'action=preview-descriptions'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ csrf: descState.csrf, offset: offset, limit: DESC_CHUNK })
+            })
+                .then(function (res) {
+                    return res.json().then(function (body) {
+                        if (!res.ok || !body.ok) {
+                            throw new Error((body && body.error) || 'Could not read products.csv.');
+                        }
+                        return body;
+                    });
+                })
+                .then(function (body) {
+                    if (!descState) {
+                        return null;
+                    }
+                    descState.total = Number(body.total || 0);
+                    descState.changes = descState.changes.concat(body.changes || []);
+                    names += Number(body.names || 0);
+                    descs += Number(body.from_description || 0) + Number(body.from_name || 0);
+                    paintDescriptionProgress(
+                        el,
+                        Number(body.next || 0),
+                        descState.total,
+                        descState.changes.length,
+                        names,
+                        descs
+                    );
+                    if (el.elapsed) {
+                        el.elapsed.textContent =
+                            Math.max(0, Math.round((Date.now() - descState.startedAt) / 1000)) + 's';
+                    }
+                    if (body.done) {
+                        return null;
+                    }
+                    return step(Number(body.next || 0));
+                });
+        }
+
+        step(0)
+            .then(function () {
+                if (!descState) {
+                    return;
+                }
+                descState.running = false;
+                renderDescriptionChanges();
+            })
+            .catch(function (error) {
+                descriptionError((error && error.message) || 'Preview failed.');
+            });
+    }
+
+    function renderDescriptionChanges() {
+        var el = descState.el;
+        var changes = descState.changes;
+        if (el.status) {
+            el.status.textContent = changes.length === 0 ? 'Nothing to change' : 'Preview ready';
+        }
+        if (el.changesLabel) {
+            // Counted by field, not by row: one product can have both its name and its
+            // description rewritten, and the list shows those as two entries.
+            var rows = {};
+            changes.forEach(function (change) {
+                rows[change.index] = true;
+            });
+            var rowCount = Object.keys(rows).length;
+            el.changesLabel.textContent =
+                changes.length === 0
+                    ? 'Every row already matches what its SKUs say.'
+                    : changes.length +
+                      (changes.length === 1 ? ' change across ' : ' changes across ') +
+                      rowCount +
+                      (rowCount === 1 ? ' row' : ' rows') +
+                      ' — ' +
+                      Math.max(0, descState.total - rowCount) +
+                      ' left alone';
+        }
+        if (el.changes) {
+            el.changes.hidden = false;
+        }
+        if (el.list) {
+            el.list.innerHTML = changes
+                .map(function (change) {
+                    return (
+                        '<li class="fc-desc-update__item">' +
+                        '<div class="fc-desc-update__item-head">' +
+                        '<code>' +
+                        escapeHtml(String(change.slug || '')) +
+                        '</code>' +
+                        '<span class="fc-desc-update__source fc-desc-update__source--' +
+                        (change.field === 'PRODUCT' ? 'product' : 'description') +
+                        '">' +
+                        (change.field === 'PRODUCT' ? 'product name' : 'description') +
+                        '</span>' +
+                        '</div>' +
+                        '<div class="fc-desc-update__was">' +
+                        escapeHtml(String(change.was || '')) +
+                        '</div>' +
+                        '<div class="fc-desc-update__now">' +
+                        escapeHtml(String(change.now || '')) +
+                        '</div>' +
+                        '</li>'
+                    );
+                })
+                .join('');
+        }
+        if (el.scanBtn) {
+            el.scanBtn.hidden = true;
+        }
+        if (el.applyBtn) {
+            el.applyBtn.hidden = changes.length === 0;
+        }
+    }
+
+    function runDescriptionApply() {
+        if (!descState || descState.running) {
+            return;
+        }
+        var el = descState.el;
+        descState.running = true;
+        if (el.applyBtn) {
+            el.applyBtn.disabled = true;
+        }
+        if (el.status) {
+            el.status.textContent = 'Writing products.csv…';
+        }
+
+        fetch(fcApiUrl('products', 'action=apply-descriptions'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ csrf: descState.csrf })
+        })
+            .then(function (res) {
+                return res.json().then(function (body) {
+                    if (!res.ok || !body.ok) {
+                        throw new Error((body && body.error) || 'Could not save products.csv.');
+                    }
+                    return body;
+                });
+            })
+            .then(function (body) {
+                descState.running = false;
+                reloadWithNotice(
+                    'Updated ' +
+                        body.names +
+                        (body.names === 1 ? ' product name and ' : ' product names and ') +
+                        (Number(body.updated) - Number(body.names)) +
+                        ' descriptions — ' +
+                        body.skipped +
+                        ' rows left alone.',
+                    'success'
+                );
+            })
+            .catch(function (error) {
+                if (el.applyBtn) {
+                    el.applyBtn.disabled = false;
+                }
+                descriptionError((error && error.message) || 'Could not save products.csv.');
+            });
+    }
+
     function bindStoreProductsCsvActions(bootstrap) {
         var dropdown = document.querySelector('[data-fc-store-products-download-dropdown]');
         if (!dropdown || dropdown.dataset.fcBound === '1') {
@@ -2770,6 +3223,15 @@
                         importInput.value = '';
                     }
                 });
+        }
+
+        var descTrigger = dropdown.querySelector('[data-fc-desc-update-open]');
+        if (descTrigger) {
+            descTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                closeMenu();
+                openDescriptionUpdate(csrf);
+            });
         }
 
         if (toggle && panel) {

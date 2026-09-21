@@ -107,6 +107,75 @@ final class CartBuilderService
     /**
      * @param array<int, array<string, mixed>> $cartItems
      */
+    /**
+     * Re-reads every cart line's title from products.csv.
+     *
+     * A saved quote stores its cart with the titles baked in, so reloading one brings back
+     * whatever each line was called at the time — including the old WooCommerce variant name,
+     * colour and all. products.csv is the current answer, so a restored cart has to look its
+     * titles up again rather than trust what it carries.
+     *
+     * Matched on slug AND sku together first: several products.csv rows share a slug (one per
+     * option or size) and a SKU can serve more than one of them, so neither alone is unique.
+     *
+     * @param array<int, array<string, mixed>> $items
+     */
+    public static function refreshCartItemNames(array &$items): void
+    {
+        if ($items === []) {
+            return;
+        }
+
+        $rows = FileHelper::loadCsv('writable/products.csv');
+        if (!is_array($rows) || $rows === []) {
+            return;
+        }
+
+        // Everything that is not one of the detail columns is a colour column holding a SKU.
+        $detail = ['slug', 'product', 'description', 'supplier', 'style'];
+        $byPair = [];
+        $bySku = [];
+        $bySlug = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $name = trim((string) ($row['product'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $slug = trim((string) ($row['slug'] ?? ''));
+            if ($slug !== '' && !isset($bySlug[$slug])) {
+                $bySlug[$slug] = $name;
+            }
+            foreach ($row as $col => $value) {
+                if (in_array($col, $detail, true)) {
+                    continue;
+                }
+                $sku = trim((string) $value);
+                if ($sku === '' || strtolower($sku) === 'off') {
+                    continue;
+                }
+                $byPair[$slug . '|' . $sku] = $name;
+                if (!isset($bySku[$sku])) {
+                    $bySku[$sku] = $name;
+                }
+            }
+        }
+
+        foreach ($items as $i => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $slug = trim((string) ($item['slug'] ?? ''));
+            $sku = trim((string) ($item['sku'] ?? ''));
+            $name = $byPair[$slug . '|' . $sku] ?? ($bySku[$sku] ?? ($bySlug[$slug] ?? ''));
+            if ($name !== '') {
+                $items[$i]['name'] = $name;
+            }
+        }
+    }
+
     public static function postProductSkus(array $cartItems = []): void
     {
         global $fences;
@@ -177,9 +246,16 @@ final class CartBuilderService
 
             if ($lineQty || $isOptional) {
                 $sku = $customFenceProduct['sku'];
-                $displayName = ($key !== false && !empty($items[$key]['name']))
-                    ? $items[$key]['name']
-                    : ($customFenceProduct['product_name'] ?? $sku);
+                // products.csv first: it is the name an admin curates on System Products, and
+                // Update Products takes the colour out of it, so a white fence's line does not
+                // read "… Black" the way the raw WooCommerce variant name does. The catalogue
+                // name only stands in where that column is empty.
+                $displayName = trim((string) ($customFenceProduct['product_name'] ?? ''));
+                if ($displayName === '') {
+                    $displayName = ($key !== false && !empty($items[$key]['name']))
+                        ? $items[$key]['name']
+                        : $sku;
+                }
                 $displayImage = ($key !== false) ? ($items[$key]['image'] ?? '') : '';
                 if ($displayImage === '') {
                     $displayImage = WcProductCsvService::imageUrlForSku($sku, $supplier);

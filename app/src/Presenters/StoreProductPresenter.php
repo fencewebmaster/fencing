@@ -625,13 +625,28 @@ final class StoreProductPresenter
                 $displayVal = $col === 'STYLE'
                     ? self::styleLabel($val, $styleLabels)
                     : $val;
+                // The description is stored as markup; a table cell wants the words, or every row
+                // prints its own tags. Only the edit modal renders it.
+                if ($col === 'DESCRIPTION') {
+                    $displayVal = self::descriptionToText($displayVal);
+                    $empty = trim($displayVal) === '';
+                }
                 $cellClass = 'border-b border-slate-100 px-3 py-2' . $sticky
                     . ($empty ? ' text-slate-300' : '')
                     . ($col === 'DESCRIPTION' ? ' fc-sys-product-desc-cell' : '');
+                if ($col === 'DESCRIPTION' && !$empty) {
+                    // Clamped to three lines and left alone: the full text is in the edit modal,
+                    // which the row already opens.
+                    $cellBody = '<span class="fc-sys-desc">'
+                        . StringHelper::escapeHtml($displayVal)
+                        . '</span>';
+                } else {
+                    $cellBody = $empty ? '—' : StringHelper::escapeHtml($displayVal);
+                }
                 $tbody .= '<td class="' . trim($cellClass) . '"'
                     . ($col === 'DESCRIPTION' && !$empty ? ' title="' . StringHelper::escapeHtml($displayVal) . '"' : '')
                     . '>'
-                    . ($empty ? '—' : StringHelper::escapeHtml($displayVal))
+                    . $cellBody
                     . '</td>';
             }
             $tbody .= '</tr>';
@@ -934,6 +949,25 @@ final class StoreProductPresenter
     }
 
     /**
+     * The words out of a stored description, for a table cell or a tooltip. A <br> becomes a space
+     * rather than nothing, so the bullet lines do not run together into one word, and the tick and
+     * toolbox icons go with the markup — they are decoration on a storefront and noise in a cell.
+     */
+    public static function descriptionToText(string $value): string
+    {
+        $text = (string) preg_replace('#<br\s*/?>#i', ' ', $value);
+        $text = strip_tags($text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = (string) preg_replace(
+            '/[\x{2190}-\x{2BFF}\x{1F000}-\x{1FAFF}\x{FE0F}\x{200D}]/u',
+            ' ',
+            $text
+        );
+
+        return trim((string) preg_replace('/\s+/u', ' ', $text));
+    }
+
+    /**
      * Missing SKUs page (route products/system-products/missing-sku): the System Products rows
      * whose colour SKUs are still blank or unknown to the store catalogue, each with its own inline
      * SKU fields. Rows where every colour is filled or deliberately OFF never reach this page.
@@ -1084,11 +1118,23 @@ final class StoreProductPresenter
             // Its own gate, not scan_available reused: Deep Scan writes nothing and may one day
             // be opened to anyone who can read the page.
             'deep_scan_available' => PermissionService::can('products.system_products.edit'),
+            'clear_available'  => PermissionService::can('products.system_products.edit'),
+            'clear_enabled'    => MissingSkuScanService::isAvailable(),
+            'clear_meta'       => MissingSkuScanService::isAvailable()
+                ? 'Deletes missing-products.csv'
+                : 'No saved scan to clear',
+            // The gear only earns its place once something can go in it.
+            'menu_available'   => PermissionService::can('products.system_products.edit'),
+            'scan_meta'        => 'Match every gap against the store catalogue',
+            'deep_scan_meta'   => 'Rank the catalogue by name and description',
             'fill_available'   => MissingSkuScanService::isAvailable() && $scanFillable > 0,
             'fill_count'       => $scanFillable,
             'fill_label'       => $scanFillable === 0
                 ? 'Nothing to fill'
                 : 'Fill ' . $scanFillable . ' SKU' . ($scanFillable === 1 ? '' : 's'),
+            'fill_meta'        => $scanFillable === 0
+                ? 'Run Scan to find proposals'
+                : 'Fills the fields for review — nothing is saved',
             'supplier_options' => self::selectOptions($supplierValues, $filters['supplier'], 'All suppliers'),
             'style_options'    => self::selectOptionsLabeled($styleValues, $filters['style'], 'All styles', $styleLabels),
             'can_edit'         => PermissionService::can('products.system_products.edit'),

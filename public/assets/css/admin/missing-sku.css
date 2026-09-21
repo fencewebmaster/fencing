@@ -66,47 +66,163 @@
     color: #15803d;
 }
 
-/* Pushed to the right end of the toolbar row. */
-.fc-ms-scan {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+/* ----- Scan actions menu ----- */
+
+/* Pushed to the right end of the toolbar row. Overrides the entries dropdown base, which sizes
+   itself as a wide select; this one is a gear the width of its own icon. */
+.fc-ms-actions {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
     margin-left: auto;
-    padding: 0.35rem 0.75rem;
-    border: 1px solid var(--fc-admin-border, #e2e8f0);
-    border-radius: 3px;
-    background: var(--fc-admin-surface, #fff);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--fc-admin-text-heading, #1e293b);
-    cursor: pointer;
 }
 
-.fc-ms-scan--catalogue i {
+.fc-ms-actions__toggle {
+    gap: 0.35rem;
+    width: auto;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.5rem;
+    justify-content: center;
+}
+
+.fc-ms-actions__toggle .fc-entries-date-dropdown__icon {
+    font-size: 0.875rem;
     color: var(--fc-admin-text-muted, #646970);
 }
 
-/* Violet, not the orange of the buttons that change data — Deep Scan only suggests. */
-.fc-ms-scan--deep i {
-    color: #7c3aed;
+.fc-ms-actions__caret {
+    font-size: 0.6rem;
+    opacity: 0.7;
+    transition: transform 0.15s ease;
 }
 
-.fc-ms-scan + .fc-ms-scan {
-    margin-left: 0;
+.fc-ms-actions.is-open .fc-ms-actions__caret {
+    transform: rotate(180deg);
 }
 
-.fc-ms-scan:hover:not(:disabled) {
-    border-color: var(--fc-princeton-orange, #f67925);
+/* Right-anchored: the gear sits at the end of the toolbar, so a left-anchored panel would hang
+   off the page. */
+.fc-ms-actions__panel {
+    left: auto;
+    right: 0;
+    width: min(21rem, calc(100vw - 2rem));
+    padding: 0;
+}
+
+.fc-ms-actions__head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 0.85rem 0.55rem;
+}
+
+.fc-ms-actions__head-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+.fc-ms-actions__head-hint {
+    font-size: 0.71875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--fc-admin-text-muted, #646970);
+}
+
+.fc-ms-actions__presets {
+    padding: 0.2rem 0.4rem 0.35rem;
+}
+
+.fc-ms-actions__divider {
+    height: 1px;
+    margin: 0.15rem 0.75rem;
+    background: var(--fc-admin-border, #e2e4e7);
+}
+
+.fc-ms-actions__footer {
+    padding: 0.35rem 0.4rem 0.45rem;
+}
+
+.fc-ms-actions__option {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.55rem 0.6rem;
+    border: 1px solid transparent;
+}
+
+.fc-ms-actions__option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.45rem;
+    background: #f0f0f1;
+    color: #50575e;
+    font-size: 0.75rem;
+}
+
+.fc-ms-actions__option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fc-ms-actions__option-label {
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.fc-ms-actions__option-meta {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--fc-admin-text-muted, #646970);
+}
+
+.fc-ms-actions__option:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 15%, transparent);
+    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 35%, transparent);
     color: var(--fc-princeton-orange, #f67925);
 }
 
-.fc-ms-scan:disabled {
+.fc-ms-actions__option:hover:not(:disabled) .fc-ms-actions__option-icon {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 22%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-ms-actions__option:disabled {
     opacity: 0.55;
     cursor: default;
 }
 
-.fc-ms-scan i {
-    color: var(--fc-princeton-orange, #f67925);
+/* Violet, not the orange of the actions that change data — Deep Scan only suggests. */
+.fc-ms-actions__option--deep .fc-ms-actions__option-icon {
+    color: #7c3aed;
+}
+
+/* The one option that destroys something reads red, and never takes the orange hover. */
+.fc-ms-actions__option--clear .fc-ms-actions__option-icon {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.fc-ms-actions__option--clear:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+.fc-ms-actions__option--clear:hover:not(:disabled) .fc-ms-actions__option-icon {
+    background: #fee2e2;
+    color: #b91c1c;
 }
 
 .fc-ms-empty {
@@ -216,6 +332,36 @@
     align-self: center;
 }
 
+
+html[data-fc-admin-theme='dark'] .fc-ms-actions__option-icon {
+    background: var(--fc-admin-surface-muted, #1e293b);
+    color: var(--fc-admin-text-muted, #94a3b8);
+}
+
+html[data-fc-admin-theme='dark'] .fc-ms-actions__option:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 25%, transparent);
+    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 45%, transparent);
+}
+
+html[data-fc-admin-theme='dark'] .fc-ms-actions__option--deep .fc-ms-actions__option-icon {
+    color: #a78bfa;
+}
+
+html[data-fc-admin-theme='dark'] .fc-ms-actions__option--clear .fc-ms-actions__option-icon {
+    background: rgba(127, 29, 29, 0.3);
+    color: #fca5a5;
+}
+
+html[data-fc-admin-theme='dark'] .fc-ms-actions__option--clear:hover:not(:disabled) {
+    background: rgba(127, 29, 29, 0.3);
+    border-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+html[data-fc-admin-theme='dark'] .fc-ms-actions__option--clear:hover:not(:disabled) .fc-ms-actions__option-icon {
+    background: rgba(127, 29, 29, 0.45);
+    color: #fca5a5;
+}
 
 html[data-fc-admin-theme='dark'] .fc-ms-chip--jg {
     border-color: #065f46;

@@ -130,6 +130,9 @@ final class PlannerSessionService
         if ($cartData !== '' && $cartData !== null) {
             $decodedCart = is_string($cartData) ? json_decode($cartData, true) : $cartData;
             if (is_array($decodedCart)) {
+                // The row carries the titles this cart was saved with; products.csv is the
+                // current answer, so an old quote does not reopen under its old product names.
+                CartBuilderService::refreshCartItemNames($decodedCart);
                 $_SESSION['fc_cart']['items'] = $decodedCart;
             }
         }

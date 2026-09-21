@@ -13,6 +13,7 @@ use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\MissingSkuDeepScan;
 use Fc\Admin\Services\MissingSkuScanService;
+use Fc\Admin\Services\ProductSyncService;
 use Fc\Admin\Services\StoreProductMaintenanceService;
 use Fc\Admin\Services\WcProductSkuIndex;
 use Fc\Admin\Services\WooCommerceProductExportService;
@@ -86,6 +87,9 @@ final class ProductsController extends BaseApiController
                 || $action === 'update-store-product'
                 || $action === 'scan-missing-skus'
                 || $action === 'deep-scan-missing-skus'
+                || $action === 'clear-missing-skus'
+                || $action === 'preview-descriptions'
+                || $action === 'apply-descriptions'
             ) {
                 if (
                     !self::csrfOk($payload)
@@ -109,6 +113,38 @@ final class ProductsController extends BaseApiController
 
                 // The page's proposals are stamped into the markup, so hand back the fresh set.
                 $result['proposals'] = MissingSkuScanService::proposals();
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            // One slice per call, so the modal's progress tracks real work rather than a guess.
+            if ($action === 'preview-descriptions') {
+                $result = ProductSyncService::preview(
+                    (int) ($payload['offset'] ?? 0),
+                    (int) ($payload['limit'] ?? 50)
+                );
+                if (!$result['ok']) {
+                    http_response_code(500);
+                }
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            // Derives the file again server-side; a preview is something to read, not a payload.
+            if ($action === 'apply-descriptions') {
+                $result = ProductSyncService::apply();
+                if (!$result['ok']) {
+                    http_response_code(500);
+                }
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if ($action === 'clear-missing-skus') {
+                $result = MissingSkuScanService::clear();
+                if (!$result['ok']) {
+                    http_response_code(500);
+                }
                 echo json_encode($result, JSON_UNESCAPED_UNICODE);
                 return;
             }
