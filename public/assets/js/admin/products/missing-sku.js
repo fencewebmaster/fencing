@@ -967,10 +967,34 @@
 
     /* Resolves true only when the row reached disk, so a bulk run can tally what landed.
        `quiet` keeps the per-row toast out of the way when the toolbar is saving many. */
+    /* Collapses a finished row out of the list. Height has to be pinned to its measured value
+       first, because a transition from `auto` never runs; the negative bottom margin closes the
+       list's own 0.75rem gap as it goes, so the rows below slide up smoothly rather than jumping
+       once it is removed. The row stays in the DOM so the toolbar tallies still count it. */
+    var RETIRE_MS = 320;
+
+    function retireRow(row) {
+        if (row.classList.contains('is-retiring') || row.classList.contains('is-retired')) {
+            return;
+        }
+        row.style.height = row.getBoundingClientRect().height + 'px';
+        // Read it back, so the pinned height is the transition's start value rather than its end.
+        void row.offsetHeight;
+        row.classList.add('is-retiring');
+        row.style.height = '0px';
+
+        global.setTimeout(function () {
+            row.classList.remove('is-retiring');
+            row.classList.add('is-retired');
+            row.style.height = '';
+        }, RETIRE_MS);
+    }
+
     /* products.csv is read whole, edited and written whole on every save, and takes no lock. Two
        saves in flight at once means the second one's read pre-dates the first one's write, so the
        first row's edit is silently dropped — the file stays valid, the change just vanishes. Every
-       save on the page therefore queues here: the toolbar's run, and Enter inside a SKU field. */
+       save on the page therefore queues here: a row's own button, the toolbar's run, and Enter
+       inside a SKU field. */
     var saveQueue = Promise.resolve();
 
     function queueSave(task) {
@@ -990,8 +1014,12 @@
             return Promise.resolve(false);
         }
 
+        var btn = row.querySelector('[data-fc-ms-save]');
         row.setAttribute('data-saving', '1');
         row.classList.add('is-saving');
+        if (btn) {
+            btn.disabled = true;
+        }
         setRowStatus(row, 'Saving…', '');
 
         return queueSave(function () {
@@ -1023,6 +1051,10 @@
             });
         })
             .then(function () {
+                // Read before the scan marks are cleared below: the retire rule turns on whether
+                // Fill put these SKUs here, not on whether someone typed them.
+                var wasFilled = row.classList.contains('has-scanned');
+
                 row.classList.remove('is-dirty');
                 // The row keeps its place until the next load, so the list cannot jump under the cursor.
                 row.classList.add('is-saved');
@@ -1037,10 +1069,19 @@
                 });
                 paintRow(row);
                 refreshFilledCount();
+                // Filled by Fill and saved with nothing left over: the row's work is done, so it
+                // leaves the list. A row typed by hand stays put, complete or not — nobody asked
+                // the page to clear it away.
+                if (wasFilled && fieldsIn(row).every(function (field) {
+                    return !field.classList.contains('fc-ms-field--gap');
+                })) {
+                    retireRow(row);
+                }
                 var T = global.FcAdminToast;
                 if (T && !quiet) {
                     T.success('Saved to products.csv');
                 }
+
                 return true;
             })
             .catch(function (err) {
@@ -1054,6 +1095,9 @@
             .finally(function () {
                 row.removeAttribute('data-saving');
                 row.classList.remove('is-saving');
+                if (btn) {
+                    btn.disabled = false;
+                }
             });
     }
 
@@ -1377,6 +1421,16 @@
                     closeSuggest();
                 } else {
                     openSuggest(checkWrap);
+                }
+                return;
+            }
+
+            var saveBtn = target.closest('[data-fc-ms-save]:not([data-fc-ms-save-all])');
+            if (saveBtn) {
+                e.preventDefault();
+                var saveRowEl = saveBtn.closest('[data-fc-ms-row]');
+                if (saveRowEl) {
+                    saveRow(saveRowEl);
                 }
                 return;
             }

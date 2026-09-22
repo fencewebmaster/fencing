@@ -214,6 +214,9 @@ $canEdit         = $page['can_edit'];
                     </div>
                     <?php if ($canEdit) : ?>
                     <div class="fc-ms-row__actions">
+                        <button type="button" class="btn btn-sm btn-orange fw-semibold fc-ms-save" data-fc-ms-save>
+                            <i class="fa-solid fa-check" aria-hidden="true"></i><span>Save</span>
+                        </button>
                         <span class="fc-ms-row__status" data-fc-ms-status role="status" aria-live="polite"></span>
                     </div>
                     <label class="fc-ms-pick" title="Include this row when you press Save">

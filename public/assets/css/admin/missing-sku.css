@@ -237,9 +237,11 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    counter-reset: fc-ms-row;
 }
 
 .fc-ms-row {
+    counter-increment: fc-ms-row;
     padding: 0.625rem 0.75rem 0.75rem;
     border: 1px solid #8c8f94;
     border-left: 3px solid #8c8f94;
@@ -298,6 +300,55 @@
     align-items: center;
     gap: 0.625rem;
     min-width: 0;
+}
+
+/* Counted in CSS rather than stamped by the view, so the list always reads 1..N of what is on
+   screen: a row the filter hides or a save has retired drops out of the sequence instead of
+   leaving a hole. Square and 1px-bordered like the style tile beside it, on the row's own surface
+   so it reads as inset against the head. Tabular figures and a min-width keep every image below
+   the last one once the count reaches three digits. */
+.fc-ms-row__ident::before {
+    content: counter(fc-ms-row);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* 2.75rem square, the style tile's own size, so the two sit as a matched pair; min-width
+       rather than width leaves room to grow if the list ever runs past three digits. */
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0 0.35rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface, #fff);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--fc-admin-text-muted, #64748b);
+    transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+/* The number doubles as the row's state, and the two states cannot overlap: saving a row clears
+   its tick. Grey means untouched, orange means Save will write it, green means it is on disk. */
+.fc-ms-row.is-picked .fc-ms-row__ident::before {
+    border-color: var(--fc-princeton-orange, #f67925);
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 18%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-ms-row.is-saved .fc-ms-row__ident::before {
+    border-color: #16a34a;
+    background: color-mix(in srgb, #16a34a 15%, transparent);
+    color: #15803d;
+}
+
+.fc-ms-row:hover .fc-ms-row__ident::before {
+    border-color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-ms-row.is-picked:hover .fc-ms-row__ident::before,
+.fc-ms-row.is-saved:hover .fc-ms-row__ident::before {
+    border-color: inherit;
 }
 
 .fc-ms-row__names {
@@ -443,7 +494,20 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
     font-weight: 600;
 }
 
-/* The page's only Save. It says how many rows are waiting, so it reads as disabled rather than
+/* Quiet until the row is in play, so 493 orange buttons do not compete with the SKU fields. */
+.fc-ms-save {
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.fc-ms-row:hover .fc-ms-save,
+.fc-ms-row:focus-within .fc-ms-save,
+.fc-ms-row.is-dirty .fc-ms-save,
+.fc-ms-save:focus-visible {
+    opacity: 1;
+}
+
+/* The toolbar Save. It says how many rows are waiting, so it reads as disabled rather than
    disappearing. Something at this end of the toolbar has to carry the auto margin that pushes the
    group right; leaving it on more than one would split the free space and strand them apart. The
    select-all leads the group, so it holds the margin and Save gives it up. */
@@ -1210,4 +1274,37 @@ html[data-fc-admin-theme='dark'] .fc-ms-chip--done {
    same way in both themes. Outranks the head's default surface on specificity alone. */
 .fc-ms-row.is-picked .fc-ms-row__head {
     background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 12%, transparent);
+}
+
+/* ----- Leaving the list ----- */
+
+/* A row saved with no gaps left has nothing more to do here. Height is pinned by retireRow()
+   before this class lands, or the collapse would not animate; the negative bottom margin closes
+   the list's 0.75rem gap in step, so the rows below glide up instead of snapping. */
+.fc-ms-row.is-retiring {
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(1.5rem);
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: -0.75rem;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    box-shadow: none;
+    transition:
+        height 0.32s ease,
+        opacity 0.22s ease,
+        transform 0.28s ease,
+        padding 0.32s ease,
+        margin 0.32s ease;
+}
+
+.fc-ms-row.is-retired {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-ms-row.is-retiring {
+        transition: none;
+    }
 }
