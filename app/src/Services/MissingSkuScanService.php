@@ -60,6 +60,85 @@ final class MissingSkuScanService
     }
 
     /**
+     * Records leads a Deep Scan run produced, so its picks reach the Fill button the same way a
+     * catalogue scan's do instead of being selected one field at a time.
+     *
+     * A person's own decision (source `manual`) is never talked over. Everything else is replaced:
+     * the rows a deep run has anything to say about are the gaps its own settledKeys() left open,
+     * which are mostly `not-stocked` rows carrying no SKU at all — skipping those on the grounds
+     * that the key already exists would drop every lead the run just found.
+     *
+     * @param array<string, array{sku:string,current?:string,name?:string,note?:string}> $picks
+     *        keyed "<slug>|<COLUMN>"
+     * @return int How many leads were recorded.
+     */
+    public static function addProposals(array $picks): int
+    {
+        if ($picks === []) {
+            return 0;
+        }
+
+        $rows = self::readRows();
+        $at = [];
+        foreach ($rows as $i => $row) {
+            $slug = trim((string) ($row['SLUG'] ?? ''));
+            $column = strtoupper(trim((string) ($row['COLUMN'] ?? '')));
+            if ($slug !== '' && $column !== '') {
+                $at[$slug . '|' . $column] = $i;
+            }
+        }
+
+        $added = 0;
+        foreach ($picks as $key => $pick) {
+            $sku = trim((string) ($pick['sku'] ?? ''));
+            if ($sku === '' || !str_contains($key, '|')) {
+                continue;
+            }
+            [$slug, $column] = explode('|', $key, 2);
+            $slug = trim($slug);
+            $column = strtoupper(trim($column));
+            if ($slug === '' || $column === '') {
+                continue;
+            }
+
+            $existing = isset($at[$key]) ? $rows[$at[$key]] : null;
+            if (is_array($existing)
+                && strtolower(trim((string) ($existing['SOURCE'] ?? ''))) === 'manual'
+            ) {
+                continue;
+            }
+
+            $row = self::rowFrom(
+                $slug,
+                $column,
+                (string) ($pick['current'] ?? ($existing['CURRENT'] ?? '')),
+                [
+                    'sku'        => $sku,
+                    'confidence' => 'medium',
+                    'name'       => (string) ($pick['name'] ?? ''),
+                    'note'       => (string) ($pick['note'] ?? ''),
+                    'source'     => 'deep',
+                ]
+            );
+            if ($existing !== null) {
+                $rows[$at[$key]] = $row;
+            } else {
+                $rows[] = $row;
+                $at[$key] = array_key_last($rows);
+            }
+            $added++;
+        }
+
+        if ($added === 0) {
+            return 0;
+        }
+        // Dropped before the write so the caller reading proposals back gets the new rows.
+        self::$cache = null;
+
+        return self::write($rows) ? $added : 0;
+    }
+
+    /**
      * Proposals keyed "<slug>|<COLUMN>", the same key the page builds per field.
      *
      * @return array<string, array{sku:string,confidence:string,name:string,note:string,source:string}>

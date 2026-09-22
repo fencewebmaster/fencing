@@ -968,9 +968,10 @@ final class StoreProductPresenter
     }
 
     /**
-     * Missing SKUs page (route products/system-products/missing-sku): the System Products rows
-     * whose colour SKUs are still blank or unknown to the store catalogue, each with its own inline
-     * SKU fields. Rows where every colour is filled or deliberately OFF never reach this page.
+     * Product SKUs page (route products/product-skus): every System Products row with its own
+     * inline SKU fields. The SKU switch narrows the list to the rows still worth reviewing — the
+     * ones whose colour SKUs are blank or unknown to the store catalogue — and reads the same
+     * `incomplete` parameter, off by default, that the System Products list uses.
      *
      * @param array<string, string> $query
      * @return array<string, mixed>
@@ -978,6 +979,9 @@ final class StoreProductPresenter
     public static function missingSkuViewData(string $adminBase, array $query = []): array
     {
         $filterMeta = StoreProductModel::filterOptions();
+        $incompleteOnly = array_key_exists('incomplete', $query)
+            ? in_array(strtolower(trim((string) $query['incomplete'])), ['1', 'true', 'on', 'yes'], true)
+            : false;
         $filters = [
             'supplier'   => trim((string) ($query['supplier'] ?? '')),
             'style'      => trim((string) ($query['style'] ?? '')),
@@ -985,10 +989,12 @@ final class StoreProductPresenter
             'colors'     => [],
             'sort'       => '',
             'dir'        => 'asc',
-            // The page is the filter: the Model keeps only rows worth reviewing.
-            'incomplete' => true,
+            'incomplete' => $incompleteOnly,
         ];
-        $hasActiveFilters = $filters['supplier'] !== '' || $filters['style'] !== '' || $filters['q'] !== '';
+        $hasActiveFilters = $filters['supplier'] !== ''
+            || $filters['style'] !== ''
+            || $filters['q'] !== ''
+            || $incompleteOnly;
 
         $payload = StoreProductModel::query($filters, 1, 50, true);
         $error = !empty($payload['ok']) ? '' : (string) ($payload['error'] ?? 'Could not load system products.');
@@ -1005,8 +1011,13 @@ final class StoreProductPresenter
         $rows = [];
         foreach (is_array($payload['rows'] ?? null) ? $payload['rows'] : [] as $row) {
             $summary = self::skusSummary($row, $columns, $styleColors, $skuSet);
-            // The Model also keeps rows that are complete but carry an OFF colour; those are settled.
-            if (($summary['total'] ?? 0) === 0 || !empty($summary['complete'])) {
+            // A row with no colour columns has no SKU fields to edit, so it never belongs here.
+            if (($summary['total'] ?? 0) === 0) {
+                continue;
+            }
+            // Only the switch hides settled rows now — the Model also keeps rows that are complete
+            // but carry an OFF colour, and those read as done.
+            if ($incompleteOnly && !empty($summary['complete'])) {
                 continue;
             }
 
@@ -1091,12 +1102,6 @@ final class StoreProductPresenter
         }
 
         $total = count($rows);
-        $filledRows = 0;
-        foreach ($rows as $listed) {
-            if ((int) $listed['missing_count'] === 0) {
-                $filledRows++;
-            }
-        }
 
         $supplierValues = is_array($filterMeta['suppliers'] ?? null) ? $filterMeta['suppliers'] : [];
         $styleValues = is_array($filterMeta['styles'] ?? null) ? $filterMeta['styles'] : [];
@@ -1108,12 +1113,16 @@ final class StoreProductPresenter
             'count_label'      => $total . ' product' . ($total === 1 ? '' : 's'),
             'filters'          => $filters,
             'has_filters'      => $hasActiveFilters,
+            'incomplete_sku'   => $incompleteOnly,
             'empty_message'    => $hasActiveFilters
-                ? 'No products with missing SKUs match your filters.'
-                : 'Every system product has its colour SKUs filled in.',
-            'form_action'      => ViewHelper::adminUrl($adminBase, 'products/system-products/missing-sku'),
-            'filled_rows'      => $filledRows,
-            'filled_label'     => $filledRows . '/' . $total,
+                ? ($incompleteOnly
+                    ? 'Every system product matching your filters has its colour SKUs filled in.'
+                    : 'No products match your filters.')
+                : 'No system products to show.',
+            'form_action'      => ViewHelper::adminUrl($adminBase, 'products/product-skus'),
+            // Counts the rows worked on in this visit, which is none until the page is used;
+            // refreshFilledCount() in missing-sku.js keeps it from there.
+            'filled_label'     => '0/' . $total,
             'scan_available'   => PermissionService::can('products.system_products.edit'),
             // Its own gate, not scan_available reused: Deep Scan writes nothing and may one day
             // be opened to anyone who can read the page.
@@ -1133,7 +1142,7 @@ final class StoreProductPresenter
                 ? 'Nothing to fill'
                 : 'Fill ' . $scanFillable . ' SKU' . ($scanFillable === 1 ? '' : 's'),
             'fill_meta'        => $scanFillable === 0
-                ? 'Run Scan to find proposals'
+                ? 'Run Scan or Deep Scan to find proposals'
                 : 'Fills the fields for review — nothing is saved',
             'supplier_options' => self::selectOptions($supplierValues, $filters['supplier'], 'All suppliers'),
             'style_options'    => self::selectOptionsLabeled($styleValues, $filters['style'], 'All styles', $styleLabels),

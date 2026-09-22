@@ -67,8 +67,8 @@ final class ProductsPageController extends BaseController
     /** System Products rows whose colour SKUs are still missing, edited inline. */
     public function missingSku(AdminContext $context): void
     {
-        $context->pageTitle      = 'Missing SKUs';
-        $context->route          = 'products/system-products/missing-sku';
+        $context->pageTitle      = 'Product SKUs';
+        $context->route          = 'products/product-skus';
         $context->isProductsPage = true;
         $context->missingSkuPage = StoreProductPresenter::missingSkuViewData(
             $context->adminBase,

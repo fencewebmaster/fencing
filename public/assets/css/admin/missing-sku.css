@@ -39,9 +39,12 @@
     accent-color: var(--fc-princeton-orange, #f67925);
 }
 
-/* A view filter only — the rows stay in the DOM so the tally still counts them. `has-scanned`
-   keeps a row the scan filled visible even when one of its colours had no match. */
-[data-fc-missing-sku-server].is-only-filled .fc-ms-row:not(.is-filled):not(.has-scanned) {
+/* A view filter only — the rows stay in the DOM so the tally still counts them. It keeps the rows
+   you worked on here: filled by Fill (`has-scanned`), typed into (`is-dirty`) or saved this visit
+   (`is-saved`). Not `is-filled`: the page lists every product now, so that would keep the hundreds
+   that arrived complete and bury the handful the run just touched. */
+[data-fc-missing-sku-server].is-only-filled
+    .fc-ms-row:not(.has-scanned):not(.is-dirty):not(.is-saved) {
     display: none;
 }
 
@@ -56,7 +59,7 @@
     gap: 0.5rem 0.6rem;
 }
 
-/* Turns green once every listed row is filled, so finishing the list is visible at a glance. */
+/* Turns green once nothing you touched is still short a SKU, so finishing is visible at a glance. */
 .fc-ms-filled strong {
     font-weight: 700;
     color: var(--fc-admin-text-heading, #1e293b);
@@ -260,7 +263,7 @@
 
 .fc-ms-row__head {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
     align-items: start;
     gap: 0.4rem 1rem;
     margin: -0.625rem -0.75rem 0.625rem;
@@ -440,16 +443,28 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
     font-weight: 600;
 }
 
-.fc-ms-save {
-    opacity: 0;
-    transition: opacity 0.12s ease;
+/* The page's only Save. It says how many rows are waiting, so it reads as disabled rather than
+   disappearing. Something at this end of the toolbar has to carry the auto margin that pushes the
+   group right; leaving it on more than one would split the free space and strand them apart. The
+   select-all leads the group, so it holds the margin and Save gives it up. */
+.fc-ms-save-all {
+    min-height: 2.25rem;
+    white-space: nowrap;
+    margin-left: auto;
 }
 
-.fc-ms-row:hover .fc-ms-save,
-.fc-ms-row:focus-within .fc-ms-save,
-.fc-ms-row.is-dirty .fc-ms-save,
-.fc-ms-save:focus-visible {
-    opacity: 1;
+.fc-ms-pick--all + .fc-ms-save-all {
+    margin-left: 0;
+}
+
+/* Only the row's own flex gap between the pair, so they read as one control group. */
+.fc-ms-save-all + .fc-ms-actions {
+    margin-left: 0;
+}
+
+.fc-ms-save-all:disabled {
+    opacity: 0.45;
+    cursor: default;
 }
 
 /* ----- SKU fields (the edit modal's SKU section, re-scoped to this page) ----- */
@@ -1087,4 +1102,112 @@ html[data-fc-admin-theme='dark'] .fc-ms-chip--done {
     border-color: #14532d;
     background: rgba(20, 83, 45, 0.3);
     color: #86efac;
+}
+
+/* ----- Row select ----- */
+
+/* The native box is hidden rather than restyled: only a drawn box can carry the tick, the dash
+   and the focus ring consistently across browsers. Same trick as the SKU toggle in entries.css. */
+.fc-ms-pick {
+    /* Load-bearing: the input below is absolutely positioned, so without this its containing block
+       is the scroll container and it lands hundreds of pixels down the list. Clicking the label
+       focuses it there, and the browser scrolls that phantom position into view — the row you
+       clicked jumps off screen. */
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    /* A 34px target around an 18px box, pulled back out so the row head keeps its height. */
+    padding: 0.5rem;
+    margin: -0.5rem;
+}
+
+/* Last cell of the head row. The grid aligns to `start`, so this centres itself against the Save
+   button rather than riding up to the top of the product name. */
+.fc-ms-row__head > .fc-ms-pick {
+    align-self: center;
+}
+
+.fc-ms-pick--all {
+    margin-left: auto;
+    margin-right: -0.25rem;
+}
+
+.fc-ms-pick__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.fc-ms-pick__box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 1.5px solid var(--fc-admin-text-muted, #64748b);
+    border-radius: 0.3rem;
+    background: var(--fc-admin-surface, #fff);
+    color: transparent;
+    font-size: 0.625rem;
+    line-height: 1;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.fc-ms-pick:hover .fc-ms-pick__input:not(:disabled) + .fc-ms-pick__box {
+    border-color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-ms-pick__input:checked + .fc-ms-pick__box,
+.fc-ms-pick__input:indeterminate + .fc-ms-pick__box {
+    border-color: var(--fc-princeton-orange, #f67925);
+    background: var(--fc-princeton-orange, #f67925);
+    color: #fff;
+}
+
+/* Some of the selectable rows, not all — the bar reads as "partly", where a tick would lie. */
+.fc-ms-pick__input:indeterminate + .fc-ms-pick__box i {
+    display: none;
+}
+
+.fc-ms-pick__input:indeterminate + .fc-ms-pick__box::after {
+    content: "";
+    width: 0.5rem;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+}
+
+.fc-ms-pick__input:focus-visible + .fc-ms-pick__box {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc-princeton-orange, #f67925) 30%, transparent);
+}
+
+/* Nothing to save in this row, so the box reads as not-applicable rather than broken — most of
+   the list is in this state on a page nobody has edited yet. */
+.fc-ms-pick__input:disabled + .fc-ms-pick__box {
+    border-color: var(--fc-admin-border, #e2e4e7);
+    background: var(--fc-admin-surface-subtle, #f1f5f9);
+}
+
+.fc-ms-pick:has(.fc-ms-pick__input:disabled) {
+    cursor: default;
+}
+
+/* Ticked rows get the orange edge the hover state uses, so the set Save will write is readable
+   by scrolling rather than by counting. */
+.fc-ms-row.is-picked {
+    border-left-color: var(--fc-princeton-orange, #f67925);
+}
+
+/* Tinted rather than filled, so the row's own surface still shows through and the head reads the
+   same way in both themes. Outranks the head's default surface on specificity alone. */
+.fc-ms-row.is-picked .fc-ms-row__head {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 12%, transparent);
 }

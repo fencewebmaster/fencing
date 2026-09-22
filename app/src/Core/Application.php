@@ -175,6 +175,16 @@ final class Application
             Response::redirect($destination, 301);
         }
 
+        // Missing SKUs became Product SKUs; the page is bookmarked from the sidebar.
+        if ($tail === 'products/system-products/missing-sku') {
+            $destination = $context->adminBase . '/products/product-skus';
+            $query = $_SERVER['QUERY_STRING'] ?? '';
+            if ($query !== '') {
+                $destination .= '?' . $query;
+            }
+            Response::redirect($destination, 301);
+        }
+
         return false;
     }
 }

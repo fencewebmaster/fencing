@@ -232,7 +232,7 @@
 
     function isProductsRoute(route) {
         return route === 'products/system-products' ||
-            route === 'products/system-products/missing-sku' ||
+            route === 'products/product-skus' ||
             route === 'products/store-products' ||
             route === 'products/fence-styles' ||
             route.indexOf('products/fence-styles/') === 0;
@@ -398,7 +398,7 @@
             marker: '[data-fc-store-products-server]',
             viewport: 'fill'
         },
-        'products/system-products/missing-sku': {
+        'products/product-skus': {
             serverAttr: 'data-fc-missing-sku-server',
             marker: '[data-fc-missing-sku-server]',
             viewport: 'fill'

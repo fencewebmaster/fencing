@@ -1,8 +1,8 @@
 <?php
 /**
- * FC Admin — Missing SKUs (route products/system-products/missing-sku).
- * The System Products rows whose colour SKUs are still blank or unknown to the store
- * catalogue, each row editable inline — no modal.
+ * FC Admin — Product SKUs (route products/product-skus).
+ * Every System Products row with its colour SKU fields editable inline — no modal. The SKU
+ * switch narrows the list to the rows still blank or unknown to the store catalogue.
  *
  * Read-only template: StoreProductPresenter::missingSkuViewData() guarantees every shape
  * here. Escaping via the global e() helper; the layout's is_array() check is the render gate.
@@ -52,11 +52,58 @@ $canEdit         = $page['can_edit'];
                     </option>
                     <?php endforeach; ?>
                 </select>
+                <label
+                    class="fc-entries-page__filter fc-sp-incomplete-toggle<?php echo !empty($page['incomplete_sku']) ? ' is-active' : ''; ?>"
+                    title="Show all products — turn off to show only products missing a store SKU"
+                >
+                    <input type="hidden" name="incomplete" value="1">
+                    <input
+                        type="checkbox"
+                        class="fc-sp-incomplete-toggle__input"
+                        name="incomplete"
+                        value="0"
+                        onchange="this.form.submit()"
+                        <?php echo empty($page['incomplete_sku']) ? ' checked' : ''; ?>
+                    >
+                    <span class="fc-sp-incomplete-toggle__track" aria-hidden="true">
+                        <span class="fc-sp-incomplete-toggle__thumb"></span>
+                    </span>
+                    <span class="fc-sp-incomplete-toggle__label">SKU</span>
+                </label>
                 <span class="fc-ms-count"><?php echo e((string) $page['count_label']); ?></span>
-                <label class="fc-ms-only-filled" title="Show only the rows that have SKUs filled in"<?php echo empty($page['filled_rows']) ? ' hidden' : ''; ?>>
+                <?php /* Hidden until you have worked on a row here: the page lists every product,
+                     so on a page nobody has touched there is nothing for this to count or filter to.
+                     refreshFilledToggle() in missing-sku.js reveals it. */ ?>
+                <label class="fc-ms-only-filled" title="Show only the rows you filled or edited here" hidden>
                     <input type="checkbox" data-fc-ms-only-filled>
                     <span class="fc-ms-filled">Filled Rows <strong data-fc-ms-filled-count><?php echo e((string) $page['filled_label']); ?></strong></span>
                 </label>
+                <?php if ($canEdit) : ?>
+                <?php /* Select-all for the toolbar Save. Only rows with unsaved edits are ever
+                     selectable, so this is disabled alongside Save until there is something
+                     to write. refreshPicks() in missing-sku.js drives all three states. */ ?>
+                <label class="fc-ms-pick fc-ms-pick--all" title="Select or clear every row with unsaved edits">
+                    <input
+                        type="checkbox"
+                        class="fc-ms-pick__input"
+                        data-fc-ms-pick-all
+                        disabled
+                        aria-label="Select every row with unsaved edits"
+                    >
+                    <span class="fc-ms-pick__box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                </label>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-orange fw-semibold fc-ms-save-all shrink-0"
+                    data-fc-ms-save-all
+                    disabled
+                    aria-disabled="true"
+                    title="Save the rows you have ticked"
+                >
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    <span data-fc-ms-save-all-label>Save</span>
+                </button>
+                <?php endif; ?>
                 <?php if (!empty($page['menu_available'])) : ?>
                 <div class="fc-entries-date-dropdown fc-ms-actions shrink-0" data-fc-ms-actions>
                     <button
@@ -167,11 +214,18 @@ $canEdit         = $page['can_edit'];
                     </div>
                     <?php if ($canEdit) : ?>
                     <div class="fc-ms-row__actions">
-                        <button type="button" class="btn btn-sm btn-orange fw-semibold fc-ms-save" data-fc-ms-save>
-                            <i class="fa-solid fa-check" aria-hidden="true"></i><span>Save</span>
-                        </button>
                         <span class="fc-ms-row__status" data-fc-ms-status role="status" aria-live="polite"></span>
                     </div>
+                    <label class="fc-ms-pick" title="Include this row when you press Save">
+                        <input
+                            type="checkbox"
+                            class="fc-ms-pick__input"
+                            data-fc-ms-pick
+                            disabled
+                            aria-label="Include <?php echo e((string) $row['product']); ?> in the bulk save"
+                        >
+                        <span class="fc-ms-pick__box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                    </label>
                     <?php endif; ?>
                 </div>
 

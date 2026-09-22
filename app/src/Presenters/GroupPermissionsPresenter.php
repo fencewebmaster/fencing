@@ -158,6 +158,11 @@ final class GroupPermissionsPresenter
         if ($route === 'products/system-products' || str_starts_with($route, 'products/system-products/')) {
             return ['products.system_products.view'];
         }
+        // Product SKUs edits System Products rows, so it takes that page's key even though it no
+        // longer sits under the prefix above.
+        if ($route === 'products/product-skus') {
+            return ['products.system_products.view'];
+        }
         if ($route === 'products/store-products' || str_starts_with($route, 'products/store-products/')) {
             return ['products.store_products.view'];
         }

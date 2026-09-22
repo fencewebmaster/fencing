@@ -113,6 +113,8 @@ final class ProductsController extends BaseApiController
 
                 // The page's proposals are stamped into the markup, so hand back the fresh set.
                 $result['proposals'] = MissingSkuScanService::proposals();
+                // Clear Scan is only meaningful while a saved scan exists, and this run made one.
+                $result['hasScan'] = MissingSkuScanService::isAvailable();
                 echo json_encode($result, JSON_UNESCAPED_UNICODE);
                 return;
             }
@@ -149,13 +151,35 @@ final class ProductsController extends BaseApiController
                 return;
             }
 
-            // Advisory only — the suggestions are never written to disk, so the page gets them
-            // in the response or not at all.
+            // The ranked list stays advisory — it is what the per-field popover offers. The top
+            // pick for each gap is also recorded as a proposal so Fill can apply the run in bulk,
+            // the way a catalogue scan's matches already do.
             if ($action === 'deep-scan-missing-skus') {
                 $result = MissingSkuDeepScan::scan();
                 if (!$result['ok']) {
                     http_response_code(500);
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    return;
                 }
+
+                $picks = [];
+                foreach ($result['suggestions'] as $key => $hits) {
+                    $top = is_array($hits) ? ($hits[0] ?? null) : null;
+                    if (!is_array($top) || trim((string) ($top['sku'] ?? '')) === '') {
+                        continue;
+                    }
+                    $picks[$key] = [
+                        'sku'  => (string) $top['sku'],
+                        'name' => (string) ($top['name'] ?? ''),
+                        'note' => 'Deep Scan — covers ' . (int) ($top['percent'] ?? 0) . '% of the title.',
+                    ];
+                }
+                $result['recorded'] = MissingSkuScanService::addProposals($picks);
+                // The page restamps its fields from this, exactly as it does after a scan.
+                $result['proposals'] = MissingSkuScanService::proposals();
+                // A run that recorded nothing leaves no file behind, so ask rather than assume.
+                $result['hasScan'] = MissingSkuScanService::isAvailable();
+
                 echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 return;
             }

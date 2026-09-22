@@ -1,5 +1,5 @@
 /**
- * FC Admin — Missing SKUs (route products/system-products/missing-sku).
+ * FC Admin — Product SKUs (route products/product-skus).
  *
  * The server renders every row and its colour SKU fields; this file only enhances them:
  * catalogue status ticks, thumbnails, a suggestions popover and a per-row save. SKU semantics
@@ -158,40 +158,49 @@
 
     /* ------------------------------------------------------------------------ suggestions */
 
-    /* The toolbar's "Filled Rows n/total". A row counts once none of its SKU fields is a gap,
-       which is the same test the row's own "All filled" chip uses. */
+    /* The toolbar's "Filled Rows n/total". `n` is the rows you worked on here — filled by Fill,
+       typed into, or saved this visit — which is exactly the set the toggle filters to, so the
+       count and the filter always describe the same rows. Not "rows with no gaps": the page lists
+       every product now, so that counted the hundreds that arrived complete. */
     function refreshFilledCount() {
         var el = document.querySelector('[data-fc-ms-filled-count]');
         if (!el) {
             return;
         }
         var rows = rowsIn(document);
-        var filled = 0;
-        var eligible = 0;
+        var touched = 0;
+        var touchedFilled = 0;
         rows.forEach(function (row) {
             var isFilled = fieldsIn(row).every(function (field) {
                 return !field.classList.contains('fc-ms-field--gap');
             });
-            // The "Filled Rows" toggle hides on this class, so it follows the tally automatically.
+            // The row's own "All filled" chip reads this, and it is still per-row completeness.
             row.classList.toggle('is-filled', isFilled);
-            if (isFilled) {
-                filled++;
-            }
-            if (isFilled || row.classList.contains('has-scanned')) {
-                eligible++;
+
+            if (row.classList.contains('has-scanned')
+                || row.classList.contains('is-dirty')
+                || row.classList.contains('is-saved')) {
+                touched++;
+                if (isFilled) {
+                    touchedFilled++;
+                }
             }
         });
 
-        el.textContent = filled + '/' + rows.length;
+        el.textContent = touched + '/' + rows.length;
         var wrap = el.closest('.fc-ms-filled');
         if (wrap) {
-            wrap.classList.toggle('is-complete', rows.length > 0 && filled === rows.length);
+            // Green once nothing you touched is still short a SKU — the work in hand is done.
+            wrap.classList.toggle('is-complete', touched > 0 && touchedFilled === touched);
         }
-        refreshFilledToggle(eligible);
+        refreshFilledToggle(touched);
+        // Every path that changes a row's dirty state lands here, so the toolbar Save rides along.
+        refreshSaveAll();
     }
 
-    /* The toggle means nothing until something is filled, so it stays out of the toolbar until then.
-       Losing the last filled row also clears the filter, or it would hide every row with no way back. */
+    /* The toggle means nothing until you have filled something, so it stays out of the toolbar
+       until then. Losing the last such row also clears the filter, or it would hide every row
+       with no way back. */
     function refreshFilledToggle(eligible) {
         var toggle = document.querySelector('[data-fc-ms-only-filled]');
         if (!toggle) {
@@ -596,10 +605,11 @@
 
             if (touched > 0) {
                 filled += touched;
+                // No status line: the dashed frame, the marked fields and the row's own tick already
+                // say the row was filled, and the toolbar reports the run's total.
                 row.classList.add('is-dirty', 'has-scanned');
                 row.classList.remove('is-saved');
                 paintRow(row);
-                setRowStatus(row, touched + (touched === 1 ? ' SKU filled' : ' SKUs filled') + ' — review, then Save', '');
             }
         });
 
@@ -618,7 +628,7 @@
             if (filled === 0) {
                 T.show('No SKUs to fill — every proposal is already applied.');
             } else {
-                T.success(filled + (filled === 1 ? ' SKU filled' : ' SKUs filled') + ' — nothing saved yet, press Save on each row.');
+                T.success(filled + (filled === 1 ? ' SKU filled' : ' SKUs filled') + ' — nothing saved yet, press Save in the toolbar.');
             }
         }
     }
@@ -650,6 +660,7 @@
             })
             .then(function (body) {
                 applyProposals(body.proposals || {});
+                setClearState(!!body.hasScan);
                 var T = global.FcAdminToast;
                 if (T) {
                     T.success(
@@ -708,7 +719,7 @@
             var meta = fillBtn.querySelector('[data-fc-ms-fill-meta]');
             if (meta) {
                 meta.textContent = fillable === 0
-                    ? 'Run Scan to find proposals'
+                    ? 'Run Scan or Deep Scan to find proposals'
                     : 'Fills the fields for review — nothing is saved';
             }
         }
@@ -746,6 +757,10 @@
             })
             .then(function (body) {
                 var shown = applyDeepSuggestions(body.suggestions || {});
+                // The run's top pick per gap is recorded server-side, so Fill can apply the lot
+                // rather than the popover being opened field by field.
+                applyProposals(body.proposals || {});
+                setClearState(!!body.hasScan);
                 var T = global.FcAdminToast;
                 if (!T) {
                     return;
@@ -758,7 +773,7 @@
                 } else if (shown === 0) {
                     T.show(tally + ', none on this page — clear the filters to see them.');
                 } else {
-                    T.success(tally + ' — open a marked field to review. Nothing was filled in.');
+                    T.success(tally + ' — press Fill to apply them, or open a marked field to pick another.');
                 }
             })
             .catch(function (err) {
@@ -873,6 +888,21 @@
 
     /* Throws away writable/missing-products.csv. Rows a person decided by hand go with it, which
        is why this asks first; the SKUs already saved into products.csv are untouched. */
+    /* Clear Scan only means something while a saved scan exists. Scan and Deep Scan both create
+       one, so the menu has to follow them without waiting for a reload. */
+    function setClearState(available) {
+        var btn = document.querySelector('[data-fc-ms-clear]');
+        if (!btn) {
+            return;
+        }
+        btn.disabled = !available;
+        btn.setAttribute('aria-disabled', available ? 'false' : 'true');
+        var meta = btn.querySelector('[data-fc-ms-clear-meta]');
+        if (meta) {
+            meta.textContent = available ? 'Deletes missing-products.csv' : 'No saved scan to clear';
+        }
+    }
+
     function runClear(btn) {
         if (!canEdit || btn.disabled) {
             return;
@@ -910,10 +940,7 @@
                 cleared = true;
                 // The proposals stamped into the markup came from the file that just went.
                 applyProposals({});
-                var meta = btn.querySelector('[data-fc-ms-clear-meta]');
-                if (meta) {
-                    meta.textContent = 'No saved scan to clear';
-                }
+                setClearState(false);
                 var T = global.FcAdminToast;
                 if (T) {
                     T.success(body.removed
@@ -931,53 +958,70 @@
                 if (label) {
                     label.textContent = was;
                 }
-                // Nothing left to clear once the file is gone.
-                btn.disabled = cleared;
-                if (cleared) {
-                    btn.setAttribute('aria-disabled', 'true');
+                // Nothing left to clear once the file is gone; a failed run can be retried.
+                if (!cleared) {
+                    setClearState(true);
                 }
             });
     }
 
-    function saveRow(row) {
+    /* Resolves true only when the row reached disk, so a bulk run can tally what landed.
+       `quiet` keeps the per-row toast out of the way when the toolbar is saving many. */
+    /* products.csv is read whole, edited and written whole on every save, and takes no lock. Two
+       saves in flight at once means the second one's read pre-dates the first one's write, so the
+       first row's edit is silently dropped — the file stays valid, the change just vanishes. Every
+       save on the page therefore queues here: the toolbar's run, and Enter inside a SKU field. */
+    var saveQueue = Promise.resolve();
+
+    function queueSave(task) {
+        var run = saveQueue.then(task, task);
+        // A failed save must not poison the queue for the ones behind it.
+        saveQueue = run.catch(function () {});
+
+        return run;
+    }
+
+    function saveRow(row, quiet) {
         if (!canEdit || row.getAttribute('data-saving') === '1') {
-            return;
+            return Promise.resolve(false);
         }
         var rowIndex = parseInt(row.getAttribute('data-row-index'), 10);
         if (!Number.isFinite(rowIndex)) {
-            return;
+            return Promise.resolve(false);
         }
 
-        var fields = {};
-        fieldsIn(row).forEach(function (field) {
-            var input = inputIn(field);
-            if (input) {
-                fields[input.name] = input.value;
-            }
-        });
-
-        var btn = row.querySelector('[data-fc-ms-save]');
         row.setAttribute('data-saving', '1');
         row.classList.add('is-saving');
-        if (btn) {
-            btn.disabled = true;
-        }
         setRowStatus(row, 'Saving…', '');
 
-        fetch(API_UPDATE, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify({ rowIndex: rowIndex, fields: fields, csrf: csrf })
-        })
-            .then(function (res) {
+        return queueSave(function () {
+            // Read when the turn comes, not when the button was pressed: anything typed while this
+            // waited behind another save still reaches the file.
+            var fields = {};
+            fieldsIn(row).forEach(function (field) {
+                var input = inputIn(field);
+                if (input) {
+                    fields[input.name] = input.value;
+                }
+            });
+
+            // The body is read inside the queued task, not after it: fetch settles on the headers,
+            // and the next save must not start until this one's response is fully in.
+            return fetch(API_UPDATE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ rowIndex: rowIndex, fields: fields, csrf: csrf })
+            }).then(function (res) {
                 return res.json().then(function (body) {
                     if (!res.ok || !body.ok) {
                         throw new Error((body && body.error) || 'Update failed');
                     }
+
                     return body;
                 });
-            })
+            });
+        })
             .then(function () {
                 row.classList.remove('is-dirty');
                 // The row keeps its place until the next load, so the list cannot jump under the cursor.
@@ -994,23 +1038,157 @@
                 paintRow(row);
                 refreshFilledCount();
                 var T = global.FcAdminToast;
-                if (T) {
+                if (T && !quiet) {
                     T.success('Saved to products.csv');
                 }
+                return true;
             })
             .catch(function (err) {
                 setRowStatus(row, err.message || 'Save failed', 'error');
                 var T = global.FcAdminToast;
-                if (T) {
+                if (T && !quiet) {
                     T.error(err.message || 'Save failed');
                 }
+                return false;
             })
             .finally(function () {
                 row.removeAttribute('data-saving');
                 row.classList.remove('is-saving');
-                if (btn) {
-                    btn.disabled = false;
+            });
+    }
+
+    /* The toolbar Save: how many rows are ticked, and whether it can be pressed. Every path that
+       changes a row's dirty state funnels through here, so the ticks are refreshed first. */
+    function refreshSaveAll() {
+        refreshPicks();
+
+        var btn = document.querySelector('[data-fc-ms-save-all]');
+        if (!btn) {
+            return;
+        }
+        var pending = pickedRows().length;
+        btn.disabled = pending === 0;
+        btn.setAttribute('aria-disabled', pending === 0 ? 'true' : 'false');
+        var label = btn.querySelector('[data-fc-ms-save-all-label]');
+        if (label) {
+            label.textContent = pending === 0 ? 'Save' : 'Save ' + pending;
+        }
+    }
+
+    /* A row is tickable only while it has unsaved edits — ticking a row with nothing to write
+       would just rewrite products.csv for no reason. A row that has only now become editable is
+       ticked for you, so Fill then Save still takes no clicking; saving one clears its tick. */
+    function refreshPicks() {
+        var selectable = 0;
+        var picked = 0;
+
+        rowsIn(document).forEach(function (row) {
+            var pick = row.querySelector('[data-fc-ms-pick]');
+            if (!pick) {
+                return;
+            }
+            var editable = row.classList.contains('is-dirty');
+            if (editable) {
+                // Was not selectable a moment ago, so this is the row's first tick.
+                if (pick.disabled) {
+                    pick.checked = true;
                 }
+                selectable++;
+                if (pick.checked) {
+                    picked++;
+                }
+            } else {
+                pick.checked = false;
+            }
+            pick.disabled = !editable;
+            row.classList.toggle('is-picked', pick.checked);
+        });
+
+        var all = document.querySelector('[data-fc-ms-pick-all]');
+        if (all) {
+            all.disabled = selectable === 0;
+            all.checked = selectable > 0 && picked === selectable;
+            all.indeterminate = picked > 0 && picked < selectable;
+        }
+    }
+
+    function dirtyRows() {
+        return rowsIn(document).filter(function (row) {
+            return row.classList.contains('is-dirty');
+        });
+    }
+
+    /** The rows Save writes: edited and left ticked. */
+    function pickedRows() {
+        return dirtyRows().filter(function (row) {
+            var pick = row.querySelector('[data-fc-ms-pick]');
+
+            return !pick || pick.checked;
+        });
+    }
+
+    /* products.csv is rewritten whole on every save and takes no lock, so the rows go one at a
+       time — sending them together would have each write drop the edits of the one before it. */
+    function saveAllDirty(btn) {
+        if (!canEdit || btn.getAttribute('data-saving') === '1') {
+            return;
+        }
+        var rows = pickedRows();
+        if (rows.length === 0) {
+            return;
+        }
+
+        var label = btn.querySelector('[data-fc-ms-save-all-label]');
+        var was = label ? label.textContent : '';
+        btn.setAttribute('data-saving', '1');
+        btn.disabled = true;
+
+        var saved = 0;
+        var skipped = 0;
+        rows
+            .reduce(function (chain, row, i) {
+                return chain.then(function () {
+                    // Its own Save button may have written it while this run waited its turn, and
+                    // every save rewrites the whole file — so don't write it a second time.
+                    if (!row.classList.contains('is-dirty')) {
+                        skipped++;
+
+                        return undefined;
+                    }
+                    if (label) {
+                        label.textContent = 'Saving ' + (i + 1) + '/' + rows.length;
+                    }
+
+                    return saveRow(row, true).then(function (ok) {
+                        if (ok) {
+                            saved++;
+                        }
+                    });
+                });
+            }, Promise.resolve())
+            .then(function () {
+                var T = global.FcAdminToast;
+                if (!T) {
+                    return;
+                }
+                var attempted = rows.length - skipped;
+                var failed = attempted - saved;
+                if (attempted === 0) {
+                    T.show('Nothing left to save — those rows were already written.');
+                } else if (saved === 0) {
+                    T.error('Nothing saved — ' + failed + ' row' + (failed === 1 ? '' : 's') + ' failed.');
+                } else if (failed > 0) {
+                    T.show('Saved ' + saved + ' of ' + attempted + ' rows — ' + failed + ' failed.');
+                } else {
+                    T.success('Saved ' + saved + ' row' + (saved === 1 ? '' : 's') + ' to products.csv');
+                }
+            })
+            .finally(function () {
+                btn.removeAttribute('data-saving');
+                if (label) {
+                    label.textContent = was;
+                }
+                refreshSaveAll();
             });
     }
 
@@ -1063,9 +1241,27 @@
         });
 
         root.addEventListener('change', function (e) {
-            var toggle = e.target.closest
-                ? e.target.closest('[data-fc-ms-only-filled]')
-                : null;
+            var target = e.target;
+
+            var pickAll = target.closest ? target.closest('[data-fc-ms-pick-all]') : null;
+            if (pickAll) {
+                var want = pickAll.checked;
+                rowsIn(root).forEach(function (row) {
+                    var pick = row.querySelector('[data-fc-ms-pick]');
+                    if (pick && !pick.disabled) {
+                        pick.checked = want;
+                    }
+                });
+                refreshSaveAll();
+                return;
+            }
+
+            if (target.closest && target.closest('[data-fc-ms-pick]')) {
+                refreshSaveAll();
+                return;
+            }
+
+            var toggle = target.closest ? target.closest('[data-fc-ms-only-filled]') : null;
             if (!toggle) {
                 return;
             }
@@ -1185,13 +1381,11 @@
                 return;
             }
 
-            var saveBtn = target.closest('[data-fc-ms-save]');
-            if (saveBtn) {
+            var saveAllBtn = target.closest('[data-fc-ms-save-all]');
+            if (saveAllBtn) {
                 e.preventDefault();
-                var saveRowEl = saveBtn.closest('[data-fc-ms-row]');
-                if (saveRowEl) {
-                    saveRow(saveRowEl);
-                }
+                saveAllDirty(saveAllBtn);
+                return;
             }
         });
 
@@ -1263,5 +1457,5 @@
         });
     }
 
-    global.FC.PageRegistry.register('products/system-products/missing-sku', new MissingSkuPage());
+    global.FC.PageRegistry.register('products/product-skus', new MissingSkuPage());
 })(window);

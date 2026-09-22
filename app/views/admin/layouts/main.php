@@ -933,14 +933,14 @@ use Fc\Admin\Settings\ThemeSettings;
                             </li>
                             <li>
                                 <a
-                                    href="<?php echo e($fcAdminBase . '/products/system-products/missing-sku'); ?>"
+                                    href="<?php echo e($fcAdminBase . '/products/product-skus'); ?>"
                                     data-nav-child
-                                    data-route="products/system-products/missing-sku"
-                                    data-title="Missing SKUs"
-                                    class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'products/system-products/missing-sku' ? ' is-active' : ''; ?>"
+                                    data-route="products/product-skus"
+                                    data-title="Product SKUs"
+                                    class="fc-sidebar-nav__sublink<?php echo $fcAdminRoute === 'products/product-skus' ? ' is-active' : ''; ?>"
                                 >
-                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                                    <span class="fc-sidebar-nav__label">Missing SKUs</span>
+                                    <span class="fc-sidebar-nav__icon fc-sidebar-nav__icon--sub" aria-hidden="true"><i class="fa-solid fa-tags"></i></span>
+                                    <span class="fc-sidebar-nav__label">Product SKUs</span>
                                 </a>
                             </li>
                             <?php endif; ?>
@@ -1367,8 +1367,8 @@ use Fc\Admin\Settings\ThemeSettings;
                     <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
                     data-route="products/store-products"
                     data-fc-system-products-server="1"
-                    <?php elseif ($fcAdminRoute === 'products/system-products/missing-sku' && is_array($fcMissingSkuPage)) : ?>
-                    data-route="products/system-products/missing-sku"
+                    <?php elseif ($fcAdminRoute === 'products/product-skus' && is_array($fcMissingSkuPage)) : ?>
+                    data-route="products/product-skus"
                     data-fc-missing-sku-server="1"
                     <?php elseif ($fcAdminRoute === 'products/system-products' && is_array($fcStoreProductsPage)) : ?>
                     data-route="products/system-products"
@@ -1406,7 +1406,7 @@ use Fc\Admin\Settings\ThemeSettings;
                     <?php view('admin.products.fence-styles', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
                     <?php view('admin.products.system-products', get_defined_vars()); ?>
-                <?php elseif ($fcAdminRoute === 'products/system-products/missing-sku' && is_array($fcMissingSkuPage)) : ?>
+                <?php elseif ($fcAdminRoute === 'products/product-skus' && is_array($fcMissingSkuPage)) : ?>
                     <?php view('admin.products.missing-sku', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/system-products' && is_array($fcStoreProductsPage)) : ?>
                     <?php view('admin.products.store-products', get_defined_vars()); ?>
@@ -1490,7 +1490,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/components/image-lightbox.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/products/system-products.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
-    <?php elseif ($fcAdminRoute === 'products/system-products/missing-sku') : ?>
+    <?php elseif ($fcAdminRoute === 'products/product-skus') : ?>
     <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/products/store-products.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/products/missing-sku.js'); ?>"></script>
