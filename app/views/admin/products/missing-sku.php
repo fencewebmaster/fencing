@@ -70,7 +70,7 @@ $canEdit         = $page['can_edit'];
                     </span>
                     <span class="fc-sp-incomplete-toggle__label">SKU</span>
                 </label>
-                <span class="fc-ms-count"><?php echo e((string) $page['count_label']); ?></span>
+                <span class="fc-ms-count" data-fc-ms-count><?php echo e((string) $page['count_label']); ?></span>
                 <?php /* Hidden until you have worked on a row here: the page lists every product,
                      so on a page nobody has touched there is nothing for this to count or filter to.
                      refreshFilledToggle() in missing-sku.js reveals it. */ ?>

@@ -484,11 +484,6 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
     color: var(--fc-admin-text-muted, #64748b);
 }
 
-.fc-ms-row__status.is-saved {
-    color: #15803d;
-    font-weight: 600;
-}
-
 .fc-ms-row__status.is-error {
     color: #b91c1c;
     font-weight: 600;
@@ -498,6 +493,43 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
 .fc-ms-save {
     opacity: 0;
     transition: opacity 0.12s ease;
+}
+
+/* Saving spins the button itself. Its contents go `visibility: hidden` rather than `display: none`
+   so the button keeps its width and nothing in the head shifts under the cursor. */
+.fc-ms-row.is-saving .fc-ms-save {
+    position: relative;
+    pointer-events: none;
+}
+
+.fc-ms-row.is-saving .fc-ms-save > * {
+    visibility: hidden;
+}
+
+.fc-ms-row.is-saving .fc-ms-save::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.875rem;
+    height: 0.875rem;
+    margin: -0.4375rem 0 0 -0.4375rem;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: fc-ms-save-spin 0.6s linear infinite;
+}
+
+@keyframes fc-ms-save-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-ms-row.is-saving .fc-ms-save::after {
+        animation: none;
+    }
 }
 
 .fc-ms-row:hover .fc-ms-save,

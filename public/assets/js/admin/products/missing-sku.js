@@ -167,7 +167,12 @@
         if (!el) {
             return;
         }
-        var rows = rowsIn(document);
+        // Retired rows are out of the list, so they are out of both halves of the tally. Leaving
+        // them in strands the Filled Rows filter on an empty page: it would still see rows to
+        // show, so it would not switch itself off, and nothing would be left to look at.
+        var rows = rowsIn(document).filter(function (row) {
+            return !row.classList.contains('is-retired');
+        });
         var touched = 0;
         var touchedFilled = 0;
         rows.forEach(function (row) {
@@ -537,7 +542,6 @@
         }
         el.textContent = message || '';
         el.classList.toggle('is-error', state === 'error');
-        el.classList.toggle('is-saved', state === 'saved');
     }
 
     /* Every image in this row, so the gallery opens on the one clicked and pages the rest. */
@@ -967,6 +971,29 @@
 
     /* Resolves true only when the row reached disk, so a bulk run can tally what landed.
        `quiet` keeps the per-row toast out of the way when the toolbar is saving many. */
+    /* The toolbar's "N products". Retired rows have left the list for good, so they leave the
+       count with them. Rows the Filled Rows filter is merely hiding still count: that filter
+       changes what you are looking at, not what the page holds. Wording matches the presenter's
+       count_label, which renders the same string on load. */
+    function refreshCount() {
+        var el = document.querySelector('[data-fc-ms-count]');
+        if (!el) {
+            return;
+        }
+        var n = rowsIn(document).filter(function (row) {
+            return !row.classList.contains('is-retired');
+        }).length;
+        el.textContent = n + ' product' + (n === 1 ? '' : 's');
+    }
+
+    /** True while the SKU switch is narrowing the page to products still missing a store SKU. */
+    function needsSkuListOnly() {
+        var toggle = document.querySelector('.fc-sp-incomplete-toggle__input[name="incomplete"]');
+
+        // The switch reads "show all products", so unchecked is the narrowed list.
+        return !!toggle && !toggle.checked;
+    }
+
     /* Collapses a finished row out of the list. Height has to be pinned to its measured value
        first, because a transition from `auto` never runs; the negative bottom margin closes the
        list's own 0.75rem gap as it goes, so the rows below slide up smoothly rather than jumping
@@ -987,6 +1014,9 @@
             row.classList.remove('is-retiring');
             row.classList.add('is-retired');
             row.style.height = '';
+            refreshCount();
+            // The tallies and the Filled Rows filter describe the list, which just got shorter.
+            refreshFilledCount();
         }, RETIRE_MS);
     }
 
@@ -1020,7 +1050,9 @@
         if (btn) {
             btn.disabled = true;
         }
-        setRowStatus(row, 'Saving…', '');
+        // No "Saving..." line: the button spins in place instead, so the feedback sits where the
+        // click landed. `is-saving` on the row is what drives it.
+        setRowStatus(row, '', '');
 
         return queueSave(function () {
             // Read when the turn comes, not when the button was pressed: anything typed while this
@@ -1058,7 +1090,9 @@
                 row.classList.remove('is-dirty');
                 // The row keeps its place until the next load, so the list cannot jump under the cursor.
                 row.classList.add('is-saved');
-                setRowStatus(row, 'Saved', 'saved');
+                // No "Saved" line: the green number badge and left edge already say so, and the
+                // text only cleared on the next edit, so it lingered long after it was news.
+                setRowStatus(row, '', '');
                 // The scan marks have done their job once the row is on disk.
                 row.classList.remove('has-scanned');
                 fieldsIn(row).forEach(function (field) {
@@ -1069,10 +1103,12 @@
                 });
                 paintRow(row);
                 refreshFilledCount();
-                // Filled by Fill and saved with nothing left over: the row's work is done, so it
-                // leaves the list. A row typed by hand stays put, complete or not — nobody asked
-                // the page to clear it away.
-                if (wasFilled && fieldsIn(row).every(function (field) {
+                // Saved with nothing left over, so the row may have outlived the list it is in.
+                // With the SKU switch off the list is "products still missing a SKU", and a
+                // completed row no longer belongs there however it was completed. With the switch
+                // on the list is every product, where a completed row still belongs — so only the
+                // ones Fill worked on clear themselves away.
+                if ((needsSkuListOnly() || wasFilled) && fieldsIn(row).every(function (field) {
                     return !field.classList.contains('fc-ms-field--gap');
                 })) {
                     retireRow(row);
