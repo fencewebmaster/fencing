@@ -111,18 +111,33 @@ $page = $fcFenceStylesPage;
                         data-fc-fs-card-gear-toggle
                         aria-haspopup="menu"
                         aria-expanded="false"
-                        aria-label="Import or export fence styles"
-                        title="Import or export fence styles"
+                        aria-label="Actions"
+                        title="Actions"
                     >
-                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                        <span>Actions</span>
+                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
                     </button>
-                    <div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel" role="menu" hidden>
-                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-bulk-import-trigger>
-                            <span>Import Fence Styles</span>
-                        </button>
-                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-fs-bulk-export-all>
-                            <span>Export Fence Styles</span>
-                        </button>
+                    <div class="fc-products-download-dropdown__panel fc-fs-card-gear__panel fc-admin-menu__panel" role="menu" hidden>
+                        <div class="fc-admin-menu__head">
+                            <span class="fc-admin-menu__head-title">Fence style actions</span>
+                            <span class="fc-admin-menu__head-hint">Styles carry their own colours, panels and product SKUs</span>
+                        </div>
+                        <div class="fc-admin-menu__group">
+                            <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-fs-bulk-export-all>
+                                <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-download"></i></span>
+                                <span class="fc-admin-menu__option-text">
+                                    <span class="fc-admin-menu__option-label">Export Fence Styles</span>
+                                    <span class="fc-admin-menu__option-meta">Save every style as one .json file</span>
+                                </span>
+                            </button>
+                            <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-fs-bulk-import-trigger>
+                                <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-file-import"></i></span>
+                                <span class="fc-admin-menu__option-text">
+                                    <span class="fc-admin-menu__option-label">Import Fence Styles</span>
+                                    <span class="fc-admin-menu__option-meta">Load styles from a .json file</span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                     <input
                         type="file"

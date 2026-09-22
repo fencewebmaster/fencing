@@ -12349,26 +12349,22 @@ body.fc-restoring-selection .fencing-tab-name {
    their bars looked skinnier and denser). Safe because the rake is a clip-path on a rectangle,
    not a skew — vertical bars stay vertical and the slope just clips them. Ground stays WHITE,
    not transparent: the .fencing-*-panel-o-b wrapper behind the clip is the black outline/hover
-   layer, and transparent gaps would show it, not the grid. TWO top-rail runs, both the regular
-   panel's 2px bar: one at y=0 (the clip crops it to the tall side's flat top) and one on the
-   25% line anchored right, covering the lower flat run PAST the slope — without it that edge
-   showed the bare outline beside a neighbour showing outline + rail, so the bar sizes did not
-   match. The slope between them keeps the wrapper's outline (a horizontal bar cannot follow
-   it). The clip polygons run 37%..70% / 36.5%..69%, so the 30%-wide run stays clear of the
-   slope on both shapes; the right panel's wrapper is scaleX-flipped, which mirrors this layer
-   to the correct side on its own. */
+   layer, and transparent gaps would show it, not the grid. ONE top-rail run, the regular panel's
+   2px bar at y=0, which the clip crops to the tall side's flat top; the slope then runs
+   unbroken into the post, so the rail that used to cover a lower flat run has no run left to
+   sit on and would poke out past the slope. The slope itself keeps the wrapper's outline (a
+   horizontal bar cannot follow it). */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally.fencing-raked-panel {
     background-color: var(--fc-white);
     background-image:
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
-        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
         repeating-linear-gradient(90deg,
             var(--fc-tundora) 0 2.5px,
             transparent 2.5px 10px);
-    background-size: 100% 2px, 30% 2px, 100% 2px, auto;
-    background-position: 0 0, 100% 25%, 0 100%, 0 0;
-    background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+    background-size: 100% 2px, 100% 2px, auto;
+    background-position: 0 0, 0 100%, 0 0;
+    background-repeat: no-repeat, no-repeat, repeat;
 }
 
 /* The raked outline (the black band along the slope and steps) is the wrapper showing between
@@ -12378,16 +12374,104 @@ body.fc-restoring-selection .fencing-tab-name {
    wrapper's polygon, EXCEPT the slope run, whose two vertices sit a fixed 4px lower: with the
    wrapper's 2px padding that makes a ~6px vertical band along the slope — reading as the same
    weight as the flat runs' outline+rail stack — and, being a px offset, it stays constant at
-   every panel width. The extra 37%/70% vertices drop into and climb out of the slope band so
-   the flat runs on either side keep their exact geometry. */
+   every panel width. The extra 37%/36.5% vertex drops into the slope band so the tall flat run
+   keeps its exact geometry.
+   The slope runs to 100%, not 70%: it has to land on the post the way the glass step-up does,
+   so there is no lower flat run before the neighbouring panel. Both the wrapper silhouette
+   below and the barr/slat base polygon keep their own shapes. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-b {
-    -webkit-clip-path: polygon(37% 0, 37% 2px, 70% calc(25% + 4px), 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-    clip-path: polygon(37% 0, 37% 2px, 70% calc(25% + 4px), 70% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    -webkit-clip-path: polygon(37% 0, 37% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    clip-path: polygon(37% 0, 37% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
 }
 
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-b {
-    -webkit-clip-path: polygon(36.5% 0, 36.5% 2px, 70% calc(25% + 4px), 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-    clip-path: polygon(36.5% 0, 36.5% 2px, 70% calc(25% + 4px), 69% 25%, 100% 25%, 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    -webkit-clip-path: polygon(36.5% 0, 36.5% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    clip-path: polygon(36.5% 0, 36.5% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+}
+
+/* The wrapper is the outline the inner clip shows through, so its silhouette has to lose the
+   lower flat run too. Scoped to flat_top: the shared base polygon still serves barr and slat. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b {
+    -webkit-clip-path: polygon(37% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    clip-path: polygon(37% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b {
+    -webkit-clip-path: polygon(36.5% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+    clip-path: polygon(36.5% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+}
+
+/* The slope's rail is the wrapper showing past the sheet's clip, and a background is one flat
+   fill — so on a light colour the rake read as solid edge-grey while every other rail is coat
+   between two edge lines. This lays a coat-coloured strip down the slope, inset 1.5px from each
+   side of that band, so the wrapper reads as the rail's two edges and the rake closes like a bar.
+   A strip, not a fill to the bottom: everywhere else the wrapper must keep showing as it always
+   did, and only the slope changes. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b {
+    position: relative;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--fc-coat, var(--fc-tundora));
+    -webkit-clip-path: polygon(37% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 37% 2.5px);
+    clip-path: polygon(37% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 37% 2.5px);
+    pointer-events: none;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--fc-coat, var(--fc-tundora));
+    -webkit-clip-path: polygon(36.5% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 36.5% 2.5px);
+    clip-path: polygon(36.5% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 36.5% 2.5px);
+    pointer-events: none;
+}
+
+/* The wrapper's hover fill is the band; the overlay has to take it too or only the 1.5px edge
+   would light up. */
+@media (min-width: 1024px) {
+    #fc-planning-form .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b:hover::before,
+    #fc-planning-form .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b:hover::before {
+        background: var(--fc-princeton-orange);
+    }
+}
+
+/* Raked panels to scale (fcSizeGlassRakedPanel), like the glass step-ups: --fc-rake-h is the tall
+   end, --fc-rake-drop the fall back to the 1200 panels. Every value below reduces to the old fixed
+   sheet at 159px, so an unsized panel draws exactly as before. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .fencing-raked-panel {
+    height: var(--fc-rake-h, 159px) !important;
+}
+
+/* Lifts the sheet so its bottom sits on the panels' line (120px panel less the wrapper's 2px
+   padding); the margin hands back the extra height so a tall rake overflows into .fc-result's
+   headroom instead of growing the row and stretching every post below the fence line. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .raked-panel-container {
+    top: calc(118px - var(--fc-rake-h, 159px));
+    margin-bottom: calc(159px - var(--fc-rake-h, 159px));
+}
+
+/* The post cannot stretch to the row any more (it is in .raked-panel's own flex line, which no
+   longer grows), so it is sized outright: the sheet plus the 11px cap and 13px foot it always had,
+   and a negative bottom margin keeps it from inflating that line in turn. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .raked-panel-post {
+    align-self: flex-start;
+    height: calc(var(--fc-rake-h, 159px) + 24px) !important;
+    margin-top: calc(109px - var(--fc-rake-h, 159px)) !important;
+    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 24px)) !important;
+}
+
+/* Cement-in sinks a post 15px deeper (min-height 155px against the 140px the others stretch to).
+   This one is sized outright, so it has to take that depth itself or its footing line sits high
+   of the centre posts'. The top is unchanged — only the foot goes further down. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .raked-panel-post:is(.opt-2, .opt-2-1) {
+    height: calc(var(--fc-rake-h, 159px) + 39px) !important;
+    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 39px)) !important;
 }
 
 /* The raked outline band (slope, steps and the 2px lip along the flat tops) is the wrapper's own
@@ -12543,9 +12627,9 @@ body.fc-restoring-selection .fencing-tab-name {
         var(--fc-coat-pickets);
 }
 
+/* Layer count tracks the uncoated rule above — the lower flat run's rail went with the slope. */
 [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally.fencing-raked-panel {
     background-image:
-        linear-gradient(to bottom, var(--fc-coat) 0 1.5px, var(--fc-coat-edge) 1.5px 2px),
         linear-gradient(to bottom, var(--fc-coat) 0 1.5px, var(--fc-coat-edge) 1.5px 2px),
         linear-gradient(to bottom, var(--fc-coat-edge) 0 0.5px, var(--fc-coat) 0.5px 2px),
         var(--fc-coat-pickets);
@@ -13560,9 +13644,12 @@ body.fc-restoring-selection .fencing-tab-name {
     bottom: -20px;
 }
 
+/* The raked wrapper is lifted by its own step-up height, so its box bottom hangs below the row's
+   ground line by (peak drop - this panel's drop); take that back out or a shorter step-up's spigots
+   sit low. 19px, not the flat panels' 20px: their 1px bottom border already lifts their padding box. */
 [data-group="a"] .raked-panel .fencing-panel-spigot:first-child,
 [data-group="a"] .raked-panel .fencing-panel-spigot:last-child {
-    bottom: -14px;
+    bottom: calc(var(--fc-rake-peak, var(--fc-rake-drop, 0px)) - var(--fc-rake-drop, 0px) - 19px);
 }
 
 .fc-empty-spacing {

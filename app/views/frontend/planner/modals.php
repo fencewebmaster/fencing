@@ -258,7 +258,7 @@ use Fc\Admin\Services\AppConfigService;
                     <input type="text" id="fc-load-quote-id" name="qid" class="form-control form-control-lg no-space text-center" maxlength="64" spellcheck="false" autocomplete="off" autocorrect="off" aria-describedby="fc-load-quote-hint" data-fc-autofocus required>
                     <p class="fc-modal__note" id="fc-load-quote-hint">
                         <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                        <span>Letters and numbers only. You will find it on the Fence Summary of the plan you saved.</span>
+                        <span>Letters and numbers only. You can find the Quote ID on the Project Plan &amp; Cart page.</span>
                     </p>
                 </div>
                 <?php /* No Cancel: the header's X already backs out of a dialog that asks for one

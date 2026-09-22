@@ -78,25 +78,40 @@ $tab = $fcSettingsPage;
                         aria-haspopup="menu"
                         aria-expanded="false"
                         aria-controls="fc-settings-io-menu"
-                        aria-label="Import or export settings"
-                        title="Import or export settings"
+                        aria-label="Actions"
+                        title="Actions"
                         id="fc-settings-io-toggle"
                     >
-                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                        <span>Actions</span>
+                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
                     </button>
                     <div
-                        class="fc-products-download-dropdown__panel"
+                        class="fc-products-download-dropdown__panel fc-admin-menu__panel"
                         id="fc-settings-io-menu"
                         role="menu"
                         aria-labelledby="fc-settings-io-toggle"
                         hidden
                     >
-                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-settings-export>
-                            <span>Export Settings</span>
-                        </button>
-                        <button type="button" class="fc-products-download-dropdown__option" role="menuitem" data-fc-settings-import>
-                            <span>Import Settings</span>
-                        </button>
+                        <div class="fc-admin-menu__head">
+                            <span class="fc-admin-menu__head-title">Settings actions</span>
+                            <span class="fc-admin-menu__head-hint">Importing overwrites every group and reloads the page</span>
+                        </div>
+                        <div class="fc-admin-menu__group">
+                            <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-settings-export>
+                                <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-download"></i></span>
+                                <span class="fc-admin-menu__option-text">
+                                    <span class="fc-admin-menu__option-label">Export Settings</span>
+                                    <span class="fc-admin-menu__option-meta">Save every group as one .json file</span>
+                                </span>
+                            </button>
+                            <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-settings-import>
+                                <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-file-import"></i></span>
+                                <span class="fc-admin-menu__option-text">
+                                    <span class="fc-admin-menu__option-label">Import Settings</span>
+                                    <span class="fc-admin-menu__option-meta">Replace every group from a .json file</span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                     <input
                         type="file"

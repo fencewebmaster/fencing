@@ -329,7 +329,8 @@
     }
 
     function syncExportButtonLabel() {
-        var label = document.querySelector('[data-fc-gp-export-json] span');
+        // Not the first span — that one is the icon square, and writing text into it wipes the icon.
+        var label = document.querySelector('[data-fc-gp-export-json] .fc-admin-menu__option-label');
         if (!label) {
             return;
         }

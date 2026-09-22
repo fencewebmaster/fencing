@@ -69,7 +69,7 @@
 /* ----- Scan actions menu ----- */
 
 /* Pushed to the right end of the toolbar row. Overrides the entries dropdown base, which sizes
-   itself as a wide select; this one is a gear the width of its own icon. */
+   itself as a wide select; this one is only as wide as its own button. */
 .fc-ms-actions {
     flex: 0 0 auto;
     width: auto;
@@ -78,23 +78,18 @@
     margin-left: auto;
 }
 
+/* Matches the System Products Actions button, but keeps this toolbar's 2.25rem control height so it
+   still lines up with the search box and the two filters beside it. */
 .fc-ms-actions__toggle {
-    gap: 0.35rem;
+    gap: 0.45rem;
     width: auto;
-    min-width: 2.25rem;
     height: 2.25rem;
-    padding: 0 0.5rem;
-    justify-content: center;
-}
-
-.fc-ms-actions__toggle .fc-entries-date-dropdown__icon {
-    font-size: 0.875rem;
-    color: var(--fc-admin-text-muted, #646970);
+    white-space: nowrap;
 }
 
 .fc-ms-actions__caret {
-    font-size: 0.6rem;
-    opacity: 0.7;
+    font-size: 0.7rem;
+    opacity: 0.9;
     transition: transform 0.15s ease;
 }
 
@@ -102,7 +97,7 @@
     transform: rotate(180deg);
 }
 
-/* Right-anchored: the gear sits at the end of the toolbar, so a left-anchored panel would hang
+/* Right-anchored: the button sits at the end of the toolbar, so a left-anchored panel would hang
    off the page. */
 .fc-ms-actions__panel {
     left: auto;

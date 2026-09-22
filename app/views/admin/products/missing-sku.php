@@ -61,17 +61,17 @@ $canEdit         = $page['can_edit'];
                 <div class="fc-entries-date-dropdown fc-ms-actions shrink-0" data-fc-ms-actions>
                     <button
                         type="button"
-                        class="fc-entries-date-dropdown__toggle fc-ms-actions__toggle"
+                        class="btn btn-sm btn-orange fw-semibold fc-ms-actions__toggle"
                         id="fc-ms-actions-toggle"
                         aria-haspopup="menu"
                         aria-expanded="false"
                         aria-controls="fc-ms-actions-panel"
-                        aria-label="Scan actions"
-                        title="Scan actions"
+                        aria-label="Actions"
+                        title="Actions"
                         data-fc-ms-actions-toggle
                     >
-                        <i class="fa-solid fa-gear fc-entries-date-dropdown__icon" aria-hidden="true"></i>
-                        <i class="fa-solid fa-chevron-down fc-entries-date-dropdown__caret fc-ms-actions__caret" aria-hidden="true"></i>
+                        <span>Actions</span>
+                        <i class="fa-solid fa-chevron-down fc-ms-actions__caret" aria-hidden="true"></i>
                     </button>
                     <div
                         class="fc-entries-date-dropdown__panel fc-ms-actions__panel"

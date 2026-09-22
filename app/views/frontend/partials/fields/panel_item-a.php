@@ -15,6 +15,7 @@
 		data-target="#fc-control-modal">
 
 		<div class="fencing-panel-item-size">
+			{{panel_fence_height}}
 			<span class="fc-panel-size">{{panel_size}}</span>
 			<span class="fc-panel-unit">{{panel_unit}}</span>
 		</div>

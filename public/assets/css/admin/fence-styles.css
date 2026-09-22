@@ -340,8 +340,9 @@
     transition: transform 0.2s ease;
 }
 
+/* Was a quarter turn for the gear this button used to hold; it carries a chevron now, so it flips. */
 .fc-fs-card-gear.is-open [data-fc-fs-card-gear-toggle] i {
-    transform: rotate(90deg);
+    transform: rotate(180deg);
 }
 
 /* —— Fixed bulk-action footer (visuals reused from .fc-entries-page__footer) —— */

@@ -253,6 +253,13 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-sku-status--off {
 .fc-sp-toolbar .fc-entries-page__count {
     flex-shrink: 0;
 }
+/* Three filters, the SKU toggle and the labelled Actions button leave no slack at 1440px, so the
+   search box gives up width rather than wrapping Actions onto a row of its own. */
+[data-fc-store-products-php] .fc-entries-page__search-wrap {
+    flex: 0 1 18.5rem;
+    width: 18.5rem;
+}
+
 .fc-sys-toolbar-meta {
     display: flex;
     flex-direction: column;

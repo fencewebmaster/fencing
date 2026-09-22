@@ -43,43 +43,62 @@ $bootstrap         = $page['bootstrap'];
                     aria-haspopup="menu"
                     aria-expanded="false"
                     aria-controls="fc-gp-download-menu"
-                    aria-label="Import or export group permissions"
-                    title="Import or export group permissions"
+                    aria-label="Actions"
+                    title="Actions"
                     id="fc-gp-download-toggle"
                 >
-                    <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                    <span>Actions</span>
+                    <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
                 </button>
                 <div
-                    class="fc-products-download-dropdown__panel"
+                    class="fc-products-download-dropdown__panel fc-admin-menu__panel"
                     id="fc-gp-download-menu"
                     role="menu"
                     aria-labelledby="fc-gp-download-toggle"
                     hidden
                 >
-                    <button
-                        type="button"
-                        class="fc-products-download-dropdown__option"
-                        role="menuitem"
-                        data-fc-gp-export-json
-                    >
-                        <span>Export <?php echo e($selectedRoleLabel); ?></span>
-                    </button>
-                    <button
-                        type="button"
-                        class="fc-products-download-dropdown__option"
-                        role="menuitem"
-                        data-fc-gp-export-all-json
-                    >
-                        <span>Export All Permissions</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="fc-products-download-dropdown__option"
-                        role="menuitem"
-                        data-fc-gp-import-json
-                    >
-                        <span>Import Permissions</span>
-                    </button>
+                    <div class="fc-admin-menu__head">
+                        <span class="fc-admin-menu__head-title">Permission actions</span>
+                        <span class="fc-admin-menu__head-hint">Importing discards any unsaved changes on this page</span>
+                    </div>
+                    <div class="fc-admin-menu__group">
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option fc-admin-menu__option"
+                            role="menuitem"
+                            data-fc-gp-export-json
+                        >
+                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-user-shield"></i></span>
+                            <span class="fc-admin-menu__option-text">
+                                <span class="fc-admin-menu__option-label">Export <?php echo e($selectedRoleLabel); ?></span>
+                                <span class="fc-admin-menu__option-meta">Save this role alone as a .json file</span>
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option fc-admin-menu__option"
+                            role="menuitem"
+                            data-fc-gp-export-all-json
+                        >
+                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
+                            <span class="fc-admin-menu__option-text">
+                                <span class="fc-admin-menu__option-label">Export All Permissions</span>
+                                <span class="fc-admin-menu__option-meta">Save every role as one .json file</span>
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            class="fc-products-download-dropdown__option fc-admin-menu__option"
+                            role="menuitem"
+                            data-fc-gp-import-json
+                        >
+                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-file-import"></i></span>
+                            <span class="fc-admin-menu__option-text">
+                                <span class="fc-admin-menu__option-label">Import Permissions</span>
+                                <span class="fc-admin-menu__option-meta">Replace roles from a .json file</span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
                 <input
                     type="file"

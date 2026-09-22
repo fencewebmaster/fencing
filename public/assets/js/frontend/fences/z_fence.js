@@ -2251,7 +2251,9 @@ FENCE = {
                     if(panel_h) {
                         $('.' + v + '-panel').html(tpl);
 
-                        if (info.panel_group == 'a' && typeof fcSizeGlassRakedPanel === 'function') {
+                        // Glass sheets and flat top's raked panels both draw to the step-up height;
+                        // the rest keep the stock sheet, so they never read the vars this sets.
+                        if ((info.panel_group == 'a' || info?.slug == 'flat_top') && typeof fcSizeGlassRakedPanel === 'function') {
                             rakedPeakPx = Math.max(rakedPeakPx, fcSizeGlassRakedPanel($('.' + v + '-panel'), panel_w, panel_h));
                         }
                     }
@@ -2348,6 +2350,11 @@ FENCE = {
         }
         if ($fcResult.length) {
             $fcResult.css({ 'padding': '', 'margin-top': '' });
+            // Each raked wrapper is lifted by its own step-up, so style.css subtracts the row's
+            // tallest drop back out to keep its spigots on the flat panels' line.
+            $fcResult.each(function () {
+                this.style.setProperty('--fc-rake-peak', rakedPeakPx + 'px');
+            });
             if ($('.raked-panel .fencing-raked-panel').length && $fcResult.css('margin-top') !== '70px') {
                 // The hscroll clips above this padding, so a glass step-up's peak needs all of it.
                 $fcResult.css({ 'padding-top': Math.max(40, Math.ceil(rakedPeakPx) + 1) + 'px' });

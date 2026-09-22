@@ -1306,7 +1306,8 @@ function fcSyncPlannerTabFenceStyle($tab, tabIdx0, titleOverride) {
 
 /**
  * First line of panel size label (Step 3 / project plan): e.g. &lt;span class="fc-panel-fence-height"&gt;1200H&lt;/span&gt;&lt;br&gt;
- * Slat: calculated panel height (max height → slat rows → panel H); Barr uses fence height from calc.
+ * Slat: calculated panel height (max height → slat rows → panel H); Barr, flat top and glass pool
+ * use the fence height from calc.
  */
 function fcGetPanelLabelFenceHeightLineHtml(slug, calc, opts) {
     opts = opts || {};
@@ -1317,13 +1318,19 @@ function fcGetPanelLabelFenceHeightLineHtml(slug, calc, opts) {
             return slatLine;
         }
     }
-    if (canon !== 'barr') {
+    if (['barr', 'flat_top', 'glass_pool'].indexOf(canon) === -1) {
         return '';
     }
     var raw = calc && calc.fence_size ? calc.fence_size.height : '';
     var h = Math.round(Number(String(raw).replace(/,/g, '')));
     if (!Number.isFinite(h) || h <= 0) {
-        return '';
+        // Barr carries a Step 2 fence height, so a missing one means nothing to print. Flat top and
+        // glass pool have no height control at all — their panels are the stock sheet the step-ups
+        // rake back down to, which is the height to show.
+        if (canon !== 'flat_top' && canon !== 'glass_pool') {
+            return '';
+        }
+        h = FC_GLASS_PANEL_HEIGHT_MM;
     }
     return '<span class="fc-panel-fence-height">' + String(h) + 'H</span><br>';
 }
@@ -4350,13 +4357,15 @@ function fcUnlockStep2OverallLengthField() {
     $box.closest('.fc-input-container').removeClass('fc-measurement-locked-gate-only');
 }
 
-/** The standard glass sheet height a step-up rakes back down to (the drawing's 120px panels). */
+/** The standard sheet height a step-up rakes back down to (the drawing's 120px panels). Flat top
+ *  and glass pool have no height control, so this is also the height their panel labels print. */
 var FC_GLASS_PANEL_HEIGHT_MM = 1200;
 
 /**
- * Draws a glass step-up (raked) panel to scale: its real width, its tall end at the step-up height,
+ * Draws a step-up (raked) panel to scale: its real width, its tall end at the step-up height,
  * and a rake that drops back to the standard sheet beside it. The sizes go on the side's
- * .raked-panel wrapper as CSS variables that style.css builds the sheet from.
+ * .raked-panel wrapper as CSS variables that style.css builds the sheet from. Glass pool and
+ * flat top both read them; the styles that keep the stock sheet simply never reference them.
  *
  * @return {number} The step-up drop in px (0 when nothing was sized), for the headroom above the row.
  */

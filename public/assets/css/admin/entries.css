@@ -1157,6 +1157,12 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
     transform: rotate(90deg);
 }
 
+/* The rule above spins a gear a quarter turn; these menus carry a chevron instead, which has to
+   flip rather than point sideways. */
+.fc-entries-toolbar-menu__toggle[aria-expanded='true'] .fc-products-download-dropdown__caret {
+    transform: rotate(180deg);
+}
+
 .fc-entries-toolbar-menu__toggle i {
     line-height: inherit;
 }
@@ -1728,10 +1734,6 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
 @media (max-width: 520px) {
     .fc-products-download-progress__details {
         grid-template-columns: 1fr;
-    }
-
-    .fc-products-download-trigger span {
-        display: none;
     }
 }
 
@@ -4437,3 +4439,157 @@ html[data-fc-admin-theme='dark'] .fc-users-permissions-notice {
     z-index: 100;
 }
 
+/* —— Rich dropdown menu: head, then icon / label / meta rows —— */
+/* Layers over either panel base (.fc-products-download-dropdown__panel or
+   .fc-entries-toolbar-menu__panel), which keep owning position and chrome. Last in the file so it
+   outranks those bases' own option rules, which sit further up. */
+.fc-admin-menu__panel {
+    gap: 0;
+    width: min(21rem, calc(100vw - 2rem));
+    min-width: 0;
+    max-width: min(21rem, calc(100vw - 2rem));
+    padding: 0;
+}
+
+.fc-admin-menu__head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 0.85rem 0.55rem;
+}
+
+.fc-admin-menu__head-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--fc-admin-text-heading, #1d2327);
+}
+
+.fc-admin-menu__head-hint {
+    font-size: 0.71875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--fc-admin-text-muted, #646970);
+}
+
+.fc-admin-menu__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.2rem 0.4rem 0.35rem;
+}
+
+.fc-admin-menu__divider {
+    height: 1px;
+    margin: 0.15rem 0.75rem;
+    background: var(--fc-admin-border, #e2e4e7);
+}
+
+.fc-admin-menu__option {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.55rem 0.6rem;
+    border: 1px solid transparent;
+    border-radius: 0.45rem;
+    font-weight: 600;
+}
+
+.fc-admin-menu__option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.45rem;
+    background: #f0f0f1;
+    color: #50575e;
+    font-size: 0.75rem;
+}
+
+/* Both panel bases size and colour a bare inline icon; inside the tinted square the wrapper owns
+   both, so the nested rule has to outrank them on specificity as well as order. */
+.fc-admin-menu__option .fc-admin-menu__option-icon i {
+    width: auto;
+    color: inherit;
+}
+
+.fc-admin-menu__option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fc-admin-menu__option-label {
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.fc-admin-menu__option-meta {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--fc-admin-text-muted, #646970);
+}
+
+.fc-admin-menu__option:hover:not(:disabled):not(.is-disabled) {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 15%, transparent);
+    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 35%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-admin-menu__option:hover:not(:disabled):not(.is-disabled) .fc-admin-menu__option-icon {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 22%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-admin-menu__option:disabled,
+.fc-admin-menu__option.is-disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+/* Violet marks an action that only proposes — nothing is written until it is confirmed. */
+.fc-admin-menu__option--accent .fc-admin-menu__option-icon {
+    color: #7c3aed;
+}
+
+/* An option that destroys something reads red, and never takes the orange hover. */
+.fc-admin-menu__option--danger .fc-admin-menu__option-icon {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.fc-admin-menu__option--danger:hover:not(:disabled):not(.is-disabled) {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+.fc-admin-menu__option--danger:hover:not(:disabled):not(.is-disabled) .fc-admin-menu__option-icon {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+html[data-fc-admin-theme='dark'] .fc-admin-menu__option-icon {
+    background: #2c3338;
+    color: #c3c4c7;
+}
+
+html[data-fc-admin-theme='dark'] .fc-admin-menu__option:hover:not(:disabled):not(.is-disabled) {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 25%, transparent);
+}
+
+html[data-fc-admin-theme='dark'] .fc-admin-menu__option--accent .fc-admin-menu__option-icon {
+    color: #a78bfa;
+}
+
+html[data-fc-admin-theme='dark'] .fc-admin-menu__option--danger .fc-admin-menu__option-icon {
+    background: #3f1d1d;
+    color: #fca5a5;
+}

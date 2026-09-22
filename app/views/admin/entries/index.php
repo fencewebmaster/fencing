@@ -90,38 +90,56 @@ $req  = $page['request'];
                             data-fc-entries-toolbar-menu-toggle
                             aria-haspopup="true"
                             aria-expanded="false"
-                            title="More actions"
+                            title="Actions"
                         >
-                            <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                            <span>Actions</span>
+                            <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
                         </button>
-                        <div class="fc-entries-toolbar-menu__panel" data-fc-entries-toolbar-menu-panel hidden>
+                        <div class="fc-entries-toolbar-menu__panel fc-admin-menu__panel" data-fc-entries-toolbar-menu-panel hidden>
+                            <div class="fc-admin-menu__head">
+                                <span class="fc-admin-menu__head-title">Entry actions</span>
+                                <span class="fc-admin-menu__head-hint">Nothing is removed until you confirm it in the dialog</span>
+                            </div>
                             <?php if (!empty($page['can_import'])) : ?>
-                            <button
-                                type="button"
-                                class="fc-entries-toolbar-menu__item"
-                                data-fc-entries-import-open
-                            >
-                                <i class="fa-solid fa-file-import" aria-hidden="true"></i>
-                                <span>Import</span>
-                            </button>
-                            <input
-                                type="file"
-                                class="fc-entries-import-file"
-                                data-fc-entries-import-file
-                                accept="application/json,.json"
-                                hidden
-                            >
+                            <div class="fc-admin-menu__group">
+                                <button
+                                    type="button"
+                                    class="fc-entries-toolbar-menu__item fc-admin-menu__option"
+                                    data-fc-entries-import-open
+                                >
+                                    <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-file-import"></i></span>
+                                    <span class="fc-admin-menu__option-text">
+                                        <span class="fc-admin-menu__option-label">Import</span>
+                                        <span class="fc-admin-menu__option-meta">Load planner entries from a .json file</span>
+                                    </span>
+                                </button>
+                                <input
+                                    type="file"
+                                    class="fc-entries-import-file"
+                                    data-fc-entries-import-file
+                                    accept="application/json,.json"
+                                    hidden
+                                >
+                            </div>
+                            <?php endif; ?>
+                            <?php if (!empty($page['can_import']) && !empty($page['can_remove_duplicates'])) : ?>
+                            <div class="fc-admin-menu__divider" role="separator"></div>
                             <?php endif; ?>
                             <?php if (!empty($page['can_remove_duplicates'])) : ?>
-                            <button
-                                type="button"
-                                class="fc-entries-toolbar-menu__item fc-entries-toolbar-menu__item--danger"
-                                data-fc-entries-dedupe-open
-                                data-fc-entries-dedupe-candidates="<?php echo (int) ($page['duplicate_candidate_count'] ?? 0); ?>"
-                            >
-                                <i class="fa-solid fa-clone" aria-hidden="true"></i>
-                                <span>Find Duplicates</span>
-                            </button>
+                            <div class="fc-admin-menu__group">
+                                <button
+                                    type="button"
+                                    class="fc-entries-toolbar-menu__item fc-entries-toolbar-menu__item--danger fc-admin-menu__option fc-admin-menu__option--danger"
+                                    data-fc-entries-dedupe-open
+                                    data-fc-entries-dedupe-candidates="<?php echo (int) ($page['duplicate_candidate_count'] ?? 0); ?>"
+                                >
+                                    <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-clone"></i></span>
+                                    <span class="fc-admin-menu__option-text">
+                                        <span class="fc-admin-menu__option-label">Find Duplicates</span>
+                                        <span class="fc-admin-menu__option-meta">Scan the list for repeated entries</span>
+                                    </span>
+                                </button>
+                            </div>
                             <?php endif; ?>
                         </div>
                     </div>

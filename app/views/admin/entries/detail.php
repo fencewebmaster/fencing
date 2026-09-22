@@ -53,23 +53,38 @@ $item = $page['item'];
                     data-fc-entries-detail-menu-toggle
                     aria-haspopup="true"
                     aria-expanded="false"
-                    aria-label="More actions"
-                    title="More actions"
+                    aria-label="Actions"
+                    title="Actions"
                 >
-                    <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                    <span>Actions</span>
+                    <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
                 </button>
-                <div class="fc-entries-toolbar-menu__panel" data-fc-entries-detail-menu-panel hidden>
-                    <button
-                        type="button"
-                        class="fc-entries-toolbar-menu__item"
-                        data-fc-entries-send-pre-planner
-                        data-fc-planner-id="<?php echo e((string) ($page['planner_id'] ?? '')); ?>"
-                        data-fc-webhook-mode="<?php echo e((string) ($page['webhook_mode_label'] ?? 'Live')); ?>"
-                        data-fc-webhook-sent-at="<?php echo e((string) ($page['webhook_sent_label'] ?? '')); ?>"
-                    >
-                        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-                        <span>Send Pre-Planner Submission</span>
-                    </button>
+                <div class="fc-entries-toolbar-menu__panel fc-admin-menu__panel" data-fc-entries-detail-menu-panel hidden>
+                    <div class="fc-admin-menu__head">
+                        <span class="fc-admin-menu__head-title">Entry actions</span>
+                        <span class="fc-admin-menu__head-hint">Sends to the <?php echo e((string) ($page['webhook_mode_label'] ?? 'Live')); ?> webhook — a real send either way</span>
+                    </div>
+                    <div class="fc-admin-menu__group">
+                        <button
+                            type="button"
+                            class="fc-entries-toolbar-menu__item fc-admin-menu__option"
+                            data-fc-entries-send-pre-planner
+                            data-fc-planner-id="<?php echo e((string) ($page['planner_id'] ?? '')); ?>"
+                            data-fc-webhook-mode="<?php echo e((string) ($page['webhook_mode_label'] ?? 'Live')); ?>"
+                            data-fc-webhook-sent-at="<?php echo e((string) ($page['webhook_sent_label'] ?? '')); ?>"
+                        >
+                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-paper-plane"></i></span>
+                            <span class="fc-admin-menu__option-text">
+                                <span class="fc-admin-menu__option-label">Send Pre-Planner Submission</span>
+                                <span class="fc-admin-menu__option-meta"><?php
+                                    $fcWebhookSent = (string) ($page['webhook_sent_label'] ?? '');
+                                    echo $fcWebhookSent !== ''
+                                        ? 'Last sent ' . e($fcWebhookSent)
+                                        : 'Not sent yet';
+                                ?></span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
             <?php endif; ?>
