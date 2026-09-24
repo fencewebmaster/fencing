@@ -6,7 +6,7 @@
 
 
 	<div class="text-center">
-		<img src="{{image}}" class="d-inline-block">
+		<img src="{{image}}" class="d-inline-block" alt="">
 	</div>
 
 	<div class="fencing-form-group fencing-input-range">	

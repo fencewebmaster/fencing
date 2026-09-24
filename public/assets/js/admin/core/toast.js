@@ -139,12 +139,32 @@
 
     /** Fades a toast element out and removes it from the DOM once the transition ends. */
     function fadeOutAndRemove(toast) {
+        toast.setAttribute('data-toast-leaving', '1');
+        window.clearTimeout(toast._fcTimer);
         toast.classList.add('opacity-0', '-translate-x-4');
         window.setTimeout(function () {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
             }
         }, FADE_OUT_MS);
+    }
+
+    /** A still-visible toast with the same type and message, so repeats don't stack. */
+    function findVisibleToast(container, key) {
+        for (var i = 0; i < container.children.length; i++) {
+            var child = container.children[i];
+            if (child.getAttribute('data-toast-key') === key && !child.hasAttribute('data-toast-leaving')) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    function armTimer(toast, duration) {
+        window.clearTimeout(toast._fcTimer);
+        if (duration > 0) {
+            toast._fcTimer = window.setTimeout(toast._fcDismiss, duration);
+        }
     }
 
     function dismiss(id) {
@@ -156,7 +176,8 @@
     }
 
     /**
-     * @param {string|{message?:string,type?:string,duration?:number,id?:string}} opts
+     * @param {string|{message?:string,type?:string,duration?:number,id?:string,unique?:boolean}} opts
+     *   unique (default true): re-arm an identical visible toast instead of stacking a duplicate
      * @returns {string|undefined} toast id when opts.id is set
      */
     function show(opts) {
@@ -181,7 +202,16 @@
         var container = ensureContainer();
         updateContainerPosition(container);
 
+        var key = type + '|' + message;
+        // Id'd toasts already replace themselves above; deduping them could orphan a later dismiss(id).
+        var dupe = !id && opts.unique !== false ? findVisibleToast(container, key) : null;
+        if (dupe) {
+            armTimer(dupe, duration);
+            return id || undefined;
+        }
+
         var toast = document.createElement('div');
+        toast.setAttribute('data-toast-key', key);
         toast.className =
             'pointer-events-auto flex translate-x-0 items-start gap-3 rounded-lg border px-4 py-3 shadow-lg ring-1 ring-black/5 transition-all duration-200 ' +
             stylesForType(type);
@@ -216,11 +246,9 @@
             closeBtn.addEventListener('click', dismissToast);
         }
 
+        toast._fcDismiss = dismissToast;
         container.appendChild(toast);
-
-        if (duration > 0) {
-            window.setTimeout(dismissToast, duration);
-        }
+        armTimer(toast, duration);
 
         return id || undefined;
     }

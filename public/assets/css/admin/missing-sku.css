@@ -366,11 +366,44 @@
     white-space: nowrap;
 }
 
+/* The style tile and the name both open the details modal. */
+.fc-ms-row__view {
+    flex-shrink: 0;
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.fc-ms-row__view:hover .fc-ms-row__style-image,
+.fc-ms-row__view:focus-visible .fc-ms-row__style-image {
+    border-color: var(--fc-princeton-orange, #f67925);
+}
+
 .fc-ms-row__product {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: inherit;
     font-size: 0.875rem;
     font-weight: 600;
     line-height: 1.3;
+    text-align: left;
     color: var(--fc-admin-text-heading, #1e293b);
+    cursor: pointer;
+}
+
+.fc-ms-row__product:hover {
+    color: var(--fc-princeton-orange, #f67925);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.fc-ms-row__view:focus-visible,
+.fc-ms-row__product:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
 }
 
 .fc-ms-row__meta {
@@ -706,25 +739,26 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
 
 /* A gap still to fill reads red until it resolves to a catalogue SKU. */
 /* --scanned keeps the tint after the status repaint, so what the scan filled stays identifiable
-   until the row is saved. */
+   until the row is saved. Not in the Filled Rows view, where every row shown was worked on. */
 .fc-ms-field--gap .fc-sp-field-control--sku,
-.fc-ms-field--scanned .fc-sp-field-control--sku {
+.fc-ms-field--scanned:not(:where(.is-only-filled .fc-ms-field--scanned)) .fc-sp-field-control--sku {
     border-color: #fca5a5;
     background: #fef2f2;
 }
 
 /* Orange border separates "the scan filled this" from "this is still missing". */
-.fc-ms-field--scanned .fc-sp-field-control--sku {
+.fc-ms-field--scanned:not(:where(.is-only-filled .fc-ms-field--scanned)) .fc-sp-field-control--sku {
     border-color: var(--fc-princeton-orange, #f67925);
 }
 
 /* A uniform 2px dashed frame rather than the thick left edge; the padding absorbs the 1px
    difference so scanned rows stay aligned with the rest of the list. */
-.fc-ms-row.has-scanned .fc-ms-row__head {
+/* Left off in the Filled Rows view, where every row shown was worked on; :where adds no specificity. */
+.fc-ms-row.has-scanned:not(:where(.is-only-filled .fc-ms-row)) .fc-ms-row__head {
     border-bottom-color: var(--fc-princeton-orange, #f67925);
 }
 
-.fc-ms-row.has-scanned {
+.fc-ms-row.has-scanned:not(:where(.is-only-filled .fc-ms-row)) {
     border-color: var(--fc-princeton-orange, #f67925);
     border-style: dashed;
     border-width: 2px;
@@ -1100,12 +1134,12 @@ html[data-fc-admin-theme='dark'] .fc-ms-row .fc-sp-field-copy {
 
 /* theme.css paints every dark input from these tokens with !important, so retint via the tokens. */
 html[data-fc-admin-theme='dark'] .fc-ms-field--gap .fc-sp-field-control--sku,
-html[data-fc-admin-theme='dark'] .fc-ms-field--scanned .fc-sp-field-control--sku {
+html[data-fc-admin-theme='dark'] .fc-ms-field--scanned:not(:where(.is-only-filled .fc-ms-field--scanned)) .fc-sp-field-control--sku {
     --fc-admin-input-bg: rgba(127, 29, 29, 0.25);
     --fc-admin-border: #7f1d1d;
 }
 
-html[data-fc-admin-theme='dark'] .fc-ms-field--scanned .fc-sp-field-control--sku {
+html[data-fc-admin-theme='dark'] .fc-ms-field--scanned:not(:where(.is-only-filled .fc-ms-field--scanned)) .fc-sp-field-control--sku {
     --fc-admin-border: var(--fc-princeton-orange, #f67925);
 }
 
@@ -1339,4 +1373,523 @@ html[data-fc-admin-theme='dark'] .fc-ms-chip--done {
     .fc-ms-row.is-retiring {
         transition: none;
     }
+}
+
+/* ----- Save lock ----- */
+
+/* lockPage() makes the toolbar and list inert while a save runs; these rules only show it. */
+[data-fc-missing-sku-server].is-busy .fc-entries-page__toolbar,
+[data-fc-missing-sku-server].is-busy .fc-ms-scroll {
+    cursor: progress;
+}
+
+/* Delayed, so a quick single-row save does not flash the toolbar. */
+[data-fc-missing-sku-server].is-busy .fc-entries-page__toolbar-row > :not(.fc-ms-count):not([data-saving]),
+[data-fc-missing-sku-server].is-busy .fc-ms-row.is-dirty:not(.is-saving) .fc-ms-save,
+[data-fc-missing-sku-server].is-busy .fc-ms-row .fc-ms-pick {
+    opacity: 0.5;
+    transition: opacity 0.15s ease 0.15s;
+}
+
+/* ----- Product details modal ----- */
+
+/* Same layer as the edit modal: above the admin chrome, below the image gallery (1200). */
+.fc-ms-details {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.fc-ms-details.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.2s ease, visibility 0s;
+}
+
+.fc-ms-details__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(2px);
+}
+
+.fc-ms-details__panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(58rem, 100%);
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 1rem;
+    background: var(--fc-admin-surface, #fff);
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+    transform: scale(0.97) translateY(0.5rem);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fc-ms-details.is-open .fc-ms-details__panel {
+    transform: none;
+}
+
+.fc-ms-details__panel:focus {
+    outline: none;
+}
+
+.fc-ms-details__content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.fc-ms-details__head {
+    flex-shrink: 0;
+    padding: 0.875rem 3.75rem 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+.fc-ms-details__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-ms-details__sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    margin-top: 0.3rem;
+}
+
+/* Copy buttons sit at the right end of their row, as in the Store Products details modal. */
+.fc-ms-details__sub .fc-sp-field-copy,
+.fc-ms-details__colour-sku .fc-sp-field-copy {
+    margin-left: auto;
+}
+
+.fc-ms-details__slug,
+.fc-ms-details__code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+    overflow-wrap: anywhere;
+}
+
+.fc-ms-details__unsaved {
+    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 45%, transparent);
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 12%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-ms-details__body {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 1rem 1.25rem;
+    min-height: 0;
+    padding: 1rem 1.25rem 1.25rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Stays in view while a long colour list scrolls past it. */
+.fc-ms-details__aside {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-width: 0;
+}
+
+.fc-ms-details__feature {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    padding: 0.5rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-muted, #f8fafc);
+    cursor: zoom-in;
+}
+
+.fc-ms-details__feature img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.fc-ms-details__feature--empty,
+.fc-ms-details__thumb--empty {
+    cursor: default;
+    background:
+        linear-gradient(135deg, #f8fafc 25%, transparent 25%) -0.5rem 0 / 1rem 1rem,
+        linear-gradient(225deg, #f8fafc 25%, transparent 25%) -0.5rem 0 / 1rem 1rem,
+        linear-gradient(315deg, #f8fafc 25%, transparent 25%) 0 0 / 1rem 1rem,
+        linear-gradient(45deg, #f8fafc 25%, #e2e8f0 25%) 0 0 / 1rem 1rem;
+}
+
+.fc-ms-details__facts {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+}
+
+.fc-ms-details__fact dt,
+.fc-ms-details__section-title {
+    margin: 0 0 0.2rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-ms-details__fact dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.4rem;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--fc-admin-text, #1e293b);
+}
+
+.fc-ms-details__main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.fc-ms-details__section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.fc-ms-details__section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+}
+
+.fc-ms-details__count {
+    padding: 0 0.35rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+}
+
+.fc-ms-details__description {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-muted, #f8fafc);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--fc-admin-text, #1e293b);
+    overflow-wrap: anywhere;
+}
+
+.fc-ms-details__description > :first-child {
+    margin-top: 0;
+}
+
+.fc-ms-details__description > :last-child {
+    margin-bottom: 0;
+}
+
+.fc-ms-details__description p,
+.fc-ms-details__description ul,
+.fc-ms-details__description ol {
+    margin: 0 0 0.6rem;
+}
+
+.fc-ms-details__description ul,
+.fc-ms-details__description ol {
+    padding-left: 1.25rem;
+    list-style: disc;
+}
+
+.fc-ms-details__description ol {
+    list-style: decimal;
+}
+
+/* The store's autop leaves <br>s between list items; here they only add blank lines. */
+.fc-ms-details__description ul > br,
+.fc-ms-details__description ol > br {
+    display: none;
+}
+
+.fc-ms-details__description li {
+    margin: 0 0 0.2rem;
+}
+
+.fc-ms-details__description strong,
+.fc-ms-details__description b,
+.fc-ms-details__description h3,
+.fc-ms-details__description h4,
+.fc-ms-details__description h5 {
+    font-weight: 700;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-ms-details__description h3,
+.fc-ms-details__description h4,
+.fc-ms-details__description h5 {
+    margin: 0.75rem 0 0.35rem;
+    font-size: 0.875rem;
+}
+
+.fc-ms-details__description a {
+    color: var(--fc-princeton-orange, #f67925);
+    text-decoration: underline;
+}
+
+.fc-ms-details__empty {
+    margin: 0;
+    font-style: italic;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-ms-details__colours {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fc-ms-details__colour {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+    padding: 0.4rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface, #fff);
+    transition: background-color 0.12s ease;
+}
+
+.fc-ms-details__colour:hover {
+    background: var(--fc-admin-surface-subtle, #f1f5f9);
+}
+
+/* Gaps read red, as they do in the row's own fields; hovered, they deepen rather than turn grey. */
+.fc-ms-details__colour--missing,
+.fc-ms-details__colour--empty {
+    border-color: color-mix(in srgb, #dc2626 35%, var(--fc-admin-border, #e2e8f0));
+    background: color-mix(in srgb, #dc2626 5%, var(--fc-admin-surface, #fff));
+}
+
+.fc-ms-details__colour--missing:hover,
+.fc-ms-details__colour--empty:hover {
+    background: color-mix(in srgb, #dc2626 10%, var(--fc-admin-surface, #fff));
+}
+
+.fc-ms-details__thumb {
+    flex-shrink: 0;
+    display: block;
+    width: 3.25rem;
+    height: 3.25rem;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-muted, #f8fafc);
+    cursor: zoom-in;
+}
+
+.fc-ms-details__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fc-ms-details__feature:hover,
+.fc-ms-details__thumb:not(.fc-ms-details__thumb--empty):hover {
+    border-color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-ms-details__feature:focus-visible,
+.fc-ms-details__thumb:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 1px;
+}
+
+.fc-ms-details__colour-main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.fc-ms-details__colour-label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-ms-details__colour-sku {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.fc-ms-details__status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 0.85rem;
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+.fc-ms-details__colour--found .fc-ms-details__status {
+    color: #16a34a;
+}
+
+.fc-ms-details__colour--missing .fc-ms-details__status,
+.fc-ms-details__colour--off .fc-ms-details__status {
+    color: #dc2626;
+}
+
+.fc-ms-details__colour--off .fc-ms-details__status i {
+    font-size: 0.45rem;
+}
+
+.fc-ms-details__sku {
+    min-width: 0;
+    overflow: hidden;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-ms-details__sku--none {
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-ms-details__colour-note {
+    overflow: hidden;
+    font-size: 0.71875rem;
+    line-height: 1.3;
+    color: var(--fc-admin-text-muted, #64748b);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-ms-details .fc-sp-field-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--fc-admin-surface, #fff);
+    font-size: 0.6875rem;
+    color: var(--fc-admin-text-muted, #64748b);
+    cursor: pointer;
+    opacity: 0;
+    transition: color 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+/* Out of sight until its row is hovered or tabbed into; kept up while it shows the tick. */
+.fc-ms-details__sub:hover .fc-sp-field-copy,
+.fc-ms-details__sub:focus-within .fc-sp-field-copy,
+.fc-ms-details__section--description:hover .fc-sp-field-copy,
+.fc-ms-details__section--description:focus-within .fc-sp-field-copy,
+.fc-ms-details__colour:hover .fc-sp-field-copy,
+.fc-ms-details__colour:focus-within .fc-sp-field-copy,
+.fc-ms-details .fc-sp-field-copy--copied {
+    opacity: 1;
+}
+
+/* No hover on a touch screen, so the buttons stay put there. */
+@media (hover: none) {
+    .fc-ms-details .fc-sp-field-copy {
+        opacity: 1;
+    }
+}
+
+.fc-ms-details .fc-sp-field-copy:hover,
+.fc-ms-details .fc-sp-field-copy:focus-visible {
+    outline: none;
+    border-color: #2271b1;
+    color: #2271b1;
+}
+
+.fc-ms-details .fc-sp-field-copy--copied {
+    border-color: #16a34a;
+    color: #15803d;
+}
+
+.fc-ms-details .fc-sp-field-copy i {
+    font-size: inherit;
+}
+
+@media (max-width: 767px) {
+    .fc-ms-details__body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Image beside the facts rather than above them, so the description is still near the top. */
+    .fc-ms-details__aside {
+        position: static;
+        display: grid;
+        grid-template-columns: 6.5rem minmax(0, 1fr);
+        align-items: start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-ms-details,
+    .fc-ms-details__panel {
+        transition: none;
+    }
+}
+
+html[data-fc-admin-theme='dark'] .fc-ms-details__feature--empty,
+html[data-fc-admin-theme='dark'] .fc-ms-details__thumb--empty {
+    background: var(--fc-admin-surface-muted);
+}
+
+html[data-fc-admin-theme='dark'] .fc-ms-details .fc-sp-field-copy:hover,
+html[data-fc-admin-theme='dark'] .fc-ms-details .fc-sp-field-copy:focus-visible {
+    border-color: #60a5fa;
+    color: #93c5fd;
 }

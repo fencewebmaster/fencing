@@ -12,7 +12,8 @@ use Fc\Admin\Models\GalleryModel;
  */
 final class GalleryMaintenanceService
 {
-    private const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
+    // Public for Settings → Site Health, which warns when PHP's own upload limits sit below it.
+    public const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
     private const MAX_FILE_COUNT = 2000;
 
     /** @return array{ok:bool,item?:array<string,mixed>,message?:string,error?:string} */

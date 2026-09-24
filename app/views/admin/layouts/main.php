@@ -1478,7 +1478,9 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/pages/tabs/system-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/integration-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/seo-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/console-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/site-health-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminIsGallery) : ?>
     <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>
@@ -1533,7 +1535,9 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/pages/tabs/system-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/integration-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/seo-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/console-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/site-health-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php endif; ?>
 </body>

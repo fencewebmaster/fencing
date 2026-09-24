@@ -1,3 +1,4 @@
 @charset "UTF-8";
 
+/* Admin only. The public pages link these families from app/views/frontend/partials/webfonts.php - edit the two in pairs. */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=League+Gothic&family=Poppins:wght@400;500;600;700;800&display=swap");

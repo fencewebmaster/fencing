@@ -1,8 +1,9 @@
 <?php
 /**
  * FC Admin — Product SKUs (route products/product-skus).
- * Every System Products row with its colour SKU fields editable inline — no modal. The SKU
- * switch narrows the list to the rows still blank or unknown to the store catalogue.
+ * Every System Products row with its colour SKU fields editable inline — no edit modal; the
+ * image and name open a read-only details modal. The SKU switch narrows the list to the rows
+ * still blank or unknown to the store catalogue.
  *
  * Read-only template: StoreProductPresenter::missingSkuViewData() guarantees every shape
  * here. Escaping via the global e() helper; the layout's is_array() check is the render gate.
@@ -190,26 +191,34 @@ $canEdit         = $page['can_edit'];
             <li class="fc-ms-row" data-fc-ms-row data-row-index="<?php echo e((string) $row['row_index']); ?>" data-slug="<?php echo e((string) $row['slug']); ?>" data-style="<?php echo e((string) $row['style']); ?>">
                 <div class="fc-ms-row__head">
                     <div class="fc-ms-row__ident">
-                        <?php if ((string) $row['style_image'] !== '') : ?>
-                        <img
-                            class="fc-ms-row__style-image"
-                            src="<?php echo e((string) $row['style_image']); ?>"
-                            alt=""
-                            title="<?php echo e((string) $row['style_label']); ?>"
-                            loading="lazy"
-                            decoding="async"
+                        <button
+                            type="button"
+                            class="fc-ms-row__view"
+                            data-fc-ms-details
+                            aria-haspopup="dialog"
+                            aria-label="View details for <?php echo e((string) $row['product']); ?>"
                         >
-                        <?php else : ?>
-                        <span class="fc-ms-row__style-image fc-ms-row__style-image--empty" aria-hidden="true"></span>
-                        <?php endif; ?>
+                            <?php if ((string) $row['style_image'] !== '') : ?>
+                            <img
+                                class="fc-ms-row__style-image"
+                                src="<?php echo e((string) $row['style_image']); ?>"
+                                alt=""
+                                title="<?php echo e((string) $row['style_label']); ?>"
+                                loading="lazy"
+                                decoding="async"
+                            >
+                            <?php else : ?>
+                            <span class="fc-ms-row__style-image fc-ms-row__style-image--empty" aria-hidden="true"></span>
+                            <?php endif; ?>
+                        </button>
                         <span class="fc-ms-row__names">
-                            <span class="fc-ms-row__product"><?php echo e((string) $row['product']); ?></span>
+                            <button type="button" class="fc-ms-row__product" data-fc-ms-details aria-haspopup="dialog"><?php echo e((string) $row['product']); ?></button>
                             <span class="fc-ms-row__slug"><?php echo e((string) $row['slug']); ?></span>
                         </span>
                     </div>
                     <div class="fc-ms-row__meta">
-                        <span class="fc-ms-chip"><?php echo e((string) $row['style_label']); ?></span>
-                        <span class="fc-ms-chip<?php echo e((string) $row['supplier_class']); ?>"><?php echo e((string) $row['supplier']); ?></span>
+                        <span class="fc-ms-chip" data-fc-ms-chip="style"><?php echo e((string) $row['style_label']); ?></span>
+                        <span class="fc-ms-chip<?php echo e((string) $row['supplier_class']); ?>" data-fc-ms-chip="supplier"><?php echo e((string) $row['supplier']); ?></span>
                         <span class="fc-ms-chip fc-ms-chip--gap" data-fc-ms-missing-label><?php echo e((string) $row['missing_label']); ?></span>
                     </div>
                     <?php if ($canEdit) : ?>
@@ -287,6 +296,8 @@ $canEdit         = $page['can_edit'];
                     </div>
                     <?php endforeach; ?>
                 </div>
+                <?php /* Inert until the details modal reads it; escaped here, sanitised there. */ ?>
+                <template data-fc-ms-description><?php echo e((string) $row['description']); ?></template>
             </li>
             <?php endforeach; ?>
         </ul>

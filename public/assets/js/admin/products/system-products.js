@@ -1423,6 +1423,226 @@
         });
     }
 
+    /* ------------------------------------------------------------ product details modal */
+
+    var PRODUCT_MODAL_ID = 'fc-sys-product-modal';
+    var productModalEl = null;
+    var productModalTrigger = null;
+    var productModalImages = [];
+    var productModalName = '';
+
+    var copyFieldButton = new global.FC.components.CopyFieldButton({
+        buttonClass: 'fc-sys-product-modal__copy',
+        dataAttr: 'data-fc-sp-copy-for',
+        onCopied: function () {
+            var T = global.FcAdminToast;
+            if (T) {
+                T.success('Copied to clipboard');
+            }
+        }
+    });
+
+    function productModalOpen() {
+        return !!productModalEl && productModalEl.classList.contains('fc-sp-edit-modal--visible');
+    }
+
+    /* One fact: its label above the value as text, with a copy button when there is one to copy. */
+    function productFactHtml(key, label, value) {
+        var id = 'fc-sys-product-' + key;
+        return (
+            '<div class="fc-sys-product-modal__fact">' +
+            '<dt>' + escapeHtml(label) + '</dt>' +
+            '<dd>' +
+            (value
+                ? '<span class="fc-sys-product-modal__value" id="' + id + '">' + escapeHtml(value) + '</span>' +
+                  copyFieldButton.markup(id, label)
+                : '<span class="fc-sys-product-modal__value fc-sys-product-modal__value--empty">—</span>') +
+            '</dd>' +
+            '</div>'
+        );
+    }
+
+    /* The first image large, the rest as thumbnails under it; each opens the lightbox on itself. */
+    function productImagesHtml(images, name) {
+        if (!images.length) {
+            return '<div class="fc-sys-product-modal__image fc-sys-product-modal__image--empty">No images</div>';
+        }
+        return (
+            '<button type="button" class="fc-sys-product-modal__image" data-fc-sys-product-image="0" aria-label="View larger image of ' +
+            escapeHtml(name) + '">' +
+            '<img src="' + escapeHtml(images[0]) + '" alt="" decoding="async"></button>' +
+            (images.length > 1
+                ? '<div class="fc-sys-product-modal__thumbs">' +
+                  images
+                      .slice(1)
+                      .map(function (url, index) {
+                          return (
+                              '<button type="button" class="fc-sys-product-modal__thumb" data-fc-sys-product-image="' + (index + 1) +
+                              '" aria-label="View image ' + (index + 2) + ' of ' + images.length + '">' +
+                              '<img src="' + escapeHtml(url) + '" alt="" loading="lazy" decoding="async"></button>'
+                          );
+                      })
+                      .join('') +
+                  '</div>'
+                : '')
+        );
+    }
+
+    function productContentHtml(product) {
+        var images = Array.isArray(product.images) ? product.images : [];
+        var name = product.name || product.sku || 'Store product';
+        var description = global.FC.util.sanitizeDescriptionHtml(product.description || '');
+        var hasDescription = description.trim() !== '';
+
+        return (
+            '<header class="fc-sys-product-modal__head">' +
+            '<h2 class="fc-sys-product-modal__title">' +
+            '<span id="fc-sys-product-name">' + escapeHtml(name) + '</span>' +
+            (product.name ? copyFieldButton.markup('fc-sys-product-name', 'Name') : '') +
+            '</h2>' +
+            '</header>' +
+            '<div class="fc-sys-product-modal__body fc-sp-edit-panels">' +
+            '<div class="fc-sys-product-modal__media">' + productImagesHtml(images, name) + '</div>' +
+            '<dl class="fc-sys-product-modal__facts">' +
+            productFactHtml('sku', 'SKU', product.sku || '') +
+            productFactHtml('id', 'ID', product.id || '') +
+            productFactHtml('slug', 'Slug', product.slug || '') +
+            '</dl>' +
+            '<section class="fc-sys-product-modal__description">' +
+            '<div class="fc-sys-product-modal__section-head">' +
+            '<h3 class="fc-sys-product-modal__label">Description</h3>' +
+            (hasDescription ? copyFieldButton.markup('fc-sys-product-description', 'Description') : '') +
+            '</div>' +
+            '<div class="fc-sp-description" id="fc-sys-product-description" tabindex="0" role="region" aria-label="Description">' +
+            (hasDescription ? description : '<p class="fc-sp-description__empty">No description</p>') +
+            '</div>' +
+            '</section>' +
+            '</div>'
+        );
+    }
+
+    function productActionsHtml(product) {
+        var btn = global.FcAdminBtn || {};
+        return (
+            (product.url
+                ? '<a class="' + (btn.primary || 'btn btn-sm btn-orange fw-semibold') + '" href="' + escapeHtml(product.url) +
+                  '" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>' +
+                  '<span>View Product</span></a>'
+                : '') +
+            '<button type="button" class="' + (btn.secondary || 'btn btn-sm btn-dark fw-semibold') + '" data-fc-sys-product-close>Close</button>'
+        );
+    }
+
+    function onProductModalClick(e) {
+        var target = e.target;
+
+        if (target.closest('[data-fc-sys-product-close]')) {
+            e.preventDefault();
+            closeProductModal();
+            return;
+        }
+
+        var copyBtn = target.closest('[data-fc-sp-copy-for]');
+        if (copyBtn) {
+            e.preventDefault();
+            copyFieldButton.copy(document.getElementById(copyBtn.getAttribute('data-fc-sp-copy-for')), copyBtn);
+            return;
+        }
+
+        var thumb = target.closest('[data-fc-sys-product-image]');
+        if (thumb) {
+            e.preventDefault();
+            openGalleryModal(productModalImages, productModalName, parseInt(thumb.getAttribute('data-fc-sys-product-image'), 10) || 0);
+        }
+    }
+
+    function onProductModalKeydown(e) {
+        // The image lightbox opens above the modal and takes its own Escape first.
+        if (e.key !== 'Escape' || e.defaultPrevented || !productModalOpen() || document.querySelector('.fc-entries-cart-gallery')) {
+            return;
+        }
+        e.preventDefault();
+        closeProductModal();
+    }
+
+    function ensureProductModal() {
+        if (productModalEl) {
+            return;
+        }
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            '<div id="' + PRODUCT_MODAL_ID + '" class="fixed inset-0 z-[100] items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="fc-sys-product-name" aria-hidden="true">' +
+            '<div class="fc-sp-edit-backdrop absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" data-fc-sys-product-close aria-hidden="true"></div>' +
+            '<div class="fc-sp-edit-panel relative flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl" tabindex="-1">' +
+            '<button type="button" class="fencing-modal-close" data-fc-sys-product-close aria-label="Close"></button>' +
+            '<div class="fc-sys-product-modal__content" data-fc-sys-product-content></div>' +
+            '<div class="fc-sys-product-modal__foot">' +
+            '<p class="fc-sys-product-modal__hint">Press Esc to close</p>' +
+            '<div class="fc-sys-product-modal__actions" data-fc-sys-product-actions></div>' +
+            '</div>' +
+            '</div>' +
+            '</div>'
+        );
+        productModalEl = document.getElementById(PRODUCT_MODAL_ID);
+        productModalEl.addEventListener('click', onProductModalClick);
+        document.addEventListener('keydown', onProductModalKeydown);
+    }
+
+    function openProductModal(product, trigger) {
+        ensureProductModal();
+        productModalTrigger = trigger || null;
+        productModalImages = Array.isArray(product.images) ? product.images : [];
+        productModalName = product.name || product.sku || 'Product images';
+
+        productModalEl.querySelector('[data-fc-sys-product-content]').innerHTML = productContentHtml(product);
+        productModalEl.querySelector('[data-fc-sys-product-actions]').innerHTML = productActionsHtml(product);
+
+        productModalEl.setAttribute('aria-hidden', 'false');
+        // Read back so a first open still fades in rather than appearing at full opacity.
+        void productModalEl.offsetWidth;
+        productModalEl.classList.add('fc-sp-edit-modal--visible');
+        productModalEl.querySelector('.fc-sp-edit-panel').focus({ preventScroll: true });
+    }
+
+    /* The row carries its ID, slug and raw description; the rest is read back from its cells. */
+    function productFromRow(tr) {
+        var nameBtn = tr.querySelector('[data-fc-sys-product-open]');
+        var skuEl = tr.querySelector('.fc-sys-sku-value');
+        var viewLink = tr.querySelector('.fc-sys-sku-view-link');
+        var imagesBtn = tr.querySelector('[data-fc-sys-images]');
+        var tpl = tr.querySelector('template[data-fc-sys-product-description]');
+        var images = [];
+        try {
+            images = imagesBtn ? JSON.parse(imagesBtn.getAttribute('data-fc-sys-images') || '[]') : [];
+        } catch (err) {
+            images = [];
+        }
+
+        return {
+            id: tr.getAttribute('data-fc-sys-id') || '',
+            sku: skuEl ? skuEl.textContent.trim() : '',
+            name: nameBtn ? nameBtn.getAttribute('title') || '' : '',
+            slug: tr.getAttribute('data-fc-sys-slug') || '',
+            images: Array.isArray(images) ? images : [],
+            url: viewLink ? viewLink.getAttribute('href') || '' : '',
+            description: tpl ? tpl.content.textContent : ''
+        };
+    }
+
+    function closeProductModal() {
+        if (!productModalOpen()) {
+            return false;
+        }
+        productModalEl.classList.remove('fc-sp-edit-modal--visible');
+        productModalEl.setAttribute('aria-hidden', 'true');
+        var trigger = productModalTrigger;
+        productModalTrigger = null;
+        if (trigger && document.body.contains(trigger)) {
+            trigger.focus({ preventScroll: true });
+        }
+        return true;
+    }
+
     function bindPhpRenderedPage(container) {
         var wrap = document.getElementById('fc-system-products-table-wrap');
         var bottomScrollSync = null;
@@ -1521,6 +1741,22 @@
             });
         }
 
+        if (wrap && !wrap.dataset.fcSysProductBound) {
+            wrap.dataset.fcSysProductBound = '1';
+            wrap.addEventListener('click', function (e) {
+                // The image and View Product link keep their own jobs; a drag-select is someone copying.
+                if (e.target.closest('a, button:not([data-fc-sys-product-open])') || String(global.getSelection() || '').trim() !== '') {
+                    return;
+                }
+                var tr = e.target.closest('tr[data-fc-sys-product]');
+                if (!tr) {
+                    return;
+                }
+                e.preventDefault();
+                openProductModal(productFromRow(tr), tr.querySelector('[data-fc-sys-product-open]'));
+            });
+        }
+
         if (wrap && wrap.querySelector('.fc-sp-table-layout')) {
             initBottomHorizontalScroll(wrap);
         }
@@ -1529,6 +1765,7 @@
         pageController.destroy = function () {
             destroyBottomHorizontalScroll();
             destroyGalleryModal();
+            closeProductModal();
         };
 
         container.removeAttribute('aria-busy');

@@ -6,10 +6,11 @@ namespace Fc\Admin\Controllers;
 
 use Fc\Admin\Presenters\SettingsPresenter;
 use Fc\Admin\Services\AdminContext;
+use Fc\Admin\Services\PermissionService;
 
 final class SettingsPageController extends BaseController
 {
-    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'project-plan', 'console'];
+    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'project-plan', 'seo', 'console'];
 
     // Legacy/alternate ?tab= spellings still linked from old bookmarks and JS.
     private const TAB_ALIASES = [
@@ -20,11 +21,15 @@ final class SettingsPageController extends BaseController
         'dev-mode' => 'console',
         'devmode' => 'console',
         'dev' => 'console',
+        'health' => 'site-health',
+        'sitehealth' => 'site-health',
     ];
 
     public function index(AdminContext $context): void
     {
-        $initialTab = $this->resolveInitialTab();
+        // Site Health is the Super Admin's alone; anyone else asking for it lands on Theme.
+        $siteHealth = PermissionService::isSuperAdmin();
+        $initialTab = $this->resolveInitialTab($siteHealth);
 
         $context->pageTitle    = 'Settings';
         $context->route        = 'settings';
@@ -32,12 +37,15 @@ final class SettingsPageController extends BaseController
         $context->settingsPage = SettingsPresenter::viewData(
             $context->adminBase,
             $context->appBase,
-            $initialTab
+            $initialTab,
+            $siteHealth
         );
     }
 
-    private function resolveInitialTab(): string
+    private function resolveInitialTab(bool $siteHealth): string
     {
-        return $this->resolveTabParam(self::TABS, 'theme', self::TAB_ALIASES, true);
+        $tabs = $siteHealth ? [...self::TABS, 'site-health'] : self::TABS;
+
+        return $this->resolveTabParam($tabs, 'theme', self::TAB_ALIASES, true);
     }
 }

@@ -308,6 +308,9 @@
         save() {
             var self = this;
             var state = this.state;
+            if (!this.startSaving('fc-integration-save')) {
+                return;
+            }
             global.FC.util.toast('saving', 'Saving integration settings…', TOAST_INTEGRATIONS);
             fetch(API_INTEGRATIONS, {
                 method: 'POST',
@@ -345,6 +348,7 @@
                     }
                 })
                 .catch(function (err) {
+                    self.stopSaving('fc-integration-save');
                     global.FC.util.toast('error', err.message || 'Could not save integration settings.', TOAST_INTEGRATIONS);
                 });
         }

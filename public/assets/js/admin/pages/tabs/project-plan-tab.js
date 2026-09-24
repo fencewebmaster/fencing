@@ -494,6 +494,9 @@
         save() {
             var self = this;
             var state = this.state;
+            if (!this.startSaving('fc-project-plan-save')) {
+                return;
+            }
             global.FC.util.toast('saving', 'Saving Project Plan settings…', TOAST_PROJECT_PLAN);
             fetch(API_PROJECT_PLAN, {
                 method: 'POST',
@@ -527,6 +530,7 @@
                     window.location.reload();
                 })
                 .catch(function (err) {
+                    self.stopSaving('fc-project-plan-save');
                     global.FC.util.toast('error', err.message || 'Could not save Project Plan settings.', TOAST_PROJECT_PLAN);
                 });
         }

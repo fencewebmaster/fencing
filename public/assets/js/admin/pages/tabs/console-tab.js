@@ -37,12 +37,11 @@
             var enabled = !!(state.console && state.console.debugMode);
             document.querySelectorAll('[data-fc-debug-mode]').forEach(function (btn) {
                 var value = btn.getAttribute('data-fc-debug-mode') === '1';
-                var active = value === enabled;
-                btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-                btn.classList.toggle('fc-debug-toggle--active', active);
-                btn.classList.toggle('shadow-sm', active);
-                btn.classList.toggle('text-slate-600', !active);
-                btn.classList.toggle('hover:text-slate-900', !active);
+                btn.setAttribute('aria-pressed', value === enabled ? 'true' : 'false');
+            });
+            // The switch between the Off and On labels; its position and colour come from aria-checked.
+            document.querySelectorAll('[data-fc-debug-mode-toggle]').forEach(function (toggle) {
+                toggle.setAttribute('aria-checked', enabled ? 'true' : 'false');
             });
             this.applyDebugModeFlag(enabled);
         }
@@ -268,6 +267,11 @@
             buttons.forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     self.saveDebugMode(btn.getAttribute('data-fc-debug-mode') === '1');
+                });
+            });
+            document.querySelectorAll('[data-fc-debug-mode-toggle]').forEach(function (toggle) {
+                toggle.addEventListener('click', function () {
+                    self.saveDebugMode(!(state.console && state.console.debugMode));
                 });
             });
             this.paintDebugModeToggle();

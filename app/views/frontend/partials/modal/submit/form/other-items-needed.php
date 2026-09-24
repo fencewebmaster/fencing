@@ -45,7 +45,8 @@ $fc_other_items_is_nothing = $fc_other_items_nothing_extra === 'nothing'
             <div class="fc-form-check-img fc-rounded mb-3">
                 <label class="fc-form-check">
                 <?php if ($extra_image_url !== '') : ?>
-                <img class="fc-rounded" src="<?php echo e($extra_image_url); ?>">
+                <?php /* Lazy: the modal is hidden on load, and this is the page's heaviest image (the pump enclosure PNG). */ ?>
+                <img class="fc-rounded" src="<?php echo e($extra_image_url); ?>" alt="" loading="lazy" decoding="async">
                 <?php else : ?>
                 <div class="fc-empty-img fc-rounded"><span>No image</span></div>
                 <?php endif; ?>

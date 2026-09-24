@@ -1283,11 +1283,14 @@
                 }
 
                 saveBtn.disabled = true;
+                global.FC.util.setSaving(saveBtn, true);
                 handlers.onSave(state.config, function () {
                     saveBtn.disabled = false;
+                    global.FC.util.setSaving(saveBtn, false);
                     markDirty(state, false);
                 }, function () {
                     saveBtn.disabled = false;
+                    global.FC.util.setSaving(saveBtn, false);
                 });
             });
         }

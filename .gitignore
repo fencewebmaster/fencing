@@ -28,7 +28,11 @@ public/assets/uploads/**
 !public/assets/uploads/.htaccess
 !public/assets/uploads/.gitkeep
 
-# Build tooling — incl. the Tailwind standalone CLI binary (~40MB, platform-specific;
-# download via build/tailwind/README.md). The three sources in build/tailwind/ predate
-# this rule and stay tracked, so the documented rebuild command still works on a clean clone.
-build/
+# Build tooling binaries — the Tailwind standalone CLI (~40MB) and esbuild (~10MB), both
+# platform-specific; each folder's README says where to get it. The scripts, configs and
+# READMEs beside them stay tracked, so the documented commands work on a clean clone.
+build/*
+!build/tailwind/
+!build/minify/
+build/tailwind/tailwindcss*
+build/minify/esbuild*

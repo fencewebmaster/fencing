@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Frontend;
 
+use Fc\Admin\Helpers\AssetHelper;
 use Fc\Admin\Helpers\StringHelper;
 use Fc\Admin\Models\LookupPageModel;
 
@@ -31,12 +32,13 @@ final class LookupController extends BaseFrontendController
             'quickView'        => $data['quickView'],
             'emptyState'       => $data['emptyState'],
             'fcLookupPageTitle' => $data['title'],
+            'fcLookupRobots'   => $data['robots'],
             'fcLookupAppBase'  => $appBase,
             'fcLookupLogoUrl'  => $data['logoUrl'],
             'h'                => static fn (string $value): string => StringHelper::escapeHtml(StringHelper::decodeHtmlEntities($value)),
             // Edit in pairs with ShareCartUrlController::renderPage()'s copy of this closure.
             'asset'            => static function (string $rel) use ($appBase): string {
-                $rel  = ltrim($rel, '/');
+                $rel  = AssetHelper::minified(ltrim($rel, '/'));
                 $path = FC_ROOT . '/' . $rel;
                 $url  = $appBase !== '' ? $appBase . '/' . $rel : '/' . $rel;
 

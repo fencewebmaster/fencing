@@ -110,7 +110,7 @@ $bootstrap         = $page['bootstrap'];
                 >
             </div>
             <button type="button" id="fc-gp-save" class="btn btn-sm btn-orange fw-semibold"<?php echo $isLocked ? ' disabled' : ''; ?>>
-                Save Permissions
+                <span>Save Permissions</span>
             </button>
         </div>
     </header>

@@ -73,3 +73,41 @@
     background: var(--fc-a-orange-3, rgba(246, 121, 37, 0.08)) !important;
     box-shadow: 0 0 0 2px var(--fc-a-orange-22, rgba(246, 121, 37, 0.22));
 }
+
+/* Save in flight: the button spins in place. Contents hide via `visibility` so its width holds. */
+.fc-admin-page .btn.is-saving,
+.fc-admin-page .btn.is-saving:disabled {
+    position: relative;
+    pointer-events: none;
+    opacity: 1;
+}
+
+.fc-admin-page .btn.is-saving > * {
+    visibility: hidden;
+}
+
+.fc-admin-page .btn.is-saving::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.875rem;
+    height: 0.875rem;
+    margin: -0.4375rem 0 0 -0.4375rem;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: var(--fc-white);
+    border-radius: 50%;
+    animation: fc-btn-saving-spin 0.6s linear infinite;
+}
+
+@keyframes fc-btn-saving-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-admin-page .btn.is-saving::after {
+        animation: none;
+    }
+}

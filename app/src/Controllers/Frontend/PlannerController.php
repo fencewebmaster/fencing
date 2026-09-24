@@ -80,6 +80,8 @@ final class PlannerController extends BaseFrontendController
             'load_quote_failed'        => $quote['failed'],
             'load_quote_error'         => $quote['error'],
             'load_quote_attempt'       => $quote['attempt'],
+            'seo'                      => PlannerPageModel::seo($site_info, (string) $qid !== ''),
+            'style_image_sizes'        => PlannerPageModel::styleImageSizes($fences),
         ]);
     }
 

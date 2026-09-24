@@ -225,6 +225,8 @@ final class GroupPermissionsPresenter
             },
             'settings', 'settingsController' => match ($action) {
                 'dev-console', 'git-pull' => ['settings.dev_console'],
+                // SettingsController narrows this one further, to the Super Admin alone.
+                'site-health' => ['settings.settings'],
                 default => ['settings.settings'],
             },
             'cache', 'cacheController' => ['settings.cache'],

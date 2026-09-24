@@ -107,11 +107,27 @@ final class SystemProductPresenter
         }
 
         if ($col === 'Name') {
+            // A button so the details modal the row opens is also reachable from the keyboard.
             return [
-                'html' => '<span class="block max-w-md truncate" title="' . StringHelper::escapeHtml($val) . '">'
-                    . StringHelper::escapeHtml($val) . '</span>',
+                'html' => '<button type="button" class="fc-sys-name-open block max-w-md truncate" data-fc-sys-product-open aria-haspopup="dialog" title="'
+                    . StringHelper::escapeHtml($val) . '">'
+                    . StringHelper::escapeHtml($val) . '</button>',
                 'empty' => false,
             ];
+        }
+
+        if ($col === 'Description') {
+            // The words only, clamped to three lines. The raw markup waits, inert, for the details
+            // modal, which sanitises it client-side as the System Products edit modal does.
+            $text = StoreProductPresenter::descriptionToText($val);
+
+            return $text === ''
+                ? ['html' => '—', 'empty' => true]
+                : [
+                    'html' => '<span class="fc-sys-desc">' . StringHelper::escapeHtml($text) . '</span>'
+                        . '<template data-fc-sys-product-description>' . StringHelper::escapeHtml($val) . '</template>',
+                    'empty' => false,
+                ];
         }
 
         return ['html' => StringHelper::escapeHtml($val), 'empty' => false];
@@ -152,6 +168,7 @@ final class SystemProductPresenter
                 'Images' => 'fc-sys-images-col',
                 'SKU' => 'fc-sys-sku-col',
                 'Name' => 'fc-sys-name-col',
+                'Description' => 'fc-sys-desc-col',
                 default => in_array($col, $primaryColumns, true) ? 'min-w-[8rem]' : 'min-w-[6rem]',
             };
             $colgroup .= '<col class="' . $widthClass . '" />';
@@ -169,7 +186,10 @@ final class SystemProductPresenter
         $tbody = '<tbody class="divide-y divide-slate-100 text-sm text-slate-700">';
         foreach ($rows as $rowIdx => $row) {
             $stripeBg = $rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
-            $tbody .= '<tr class="' . $stripeBg . '/50">';
+            // Only what the cells do not already show rides on the row; the modal reads the rest back.
+            $tbody .= '<tr class="fc-system-products-row ' . $stripeBg . '/50" data-fc-sys-product'
+                . ' data-fc-sys-id="' . StringHelper::escapeHtml((string) ($row['ID'] ?? '')) . '"'
+                . ' data-fc-sys-slug="' . StringHelper::escapeHtml((string) ($row['Slug'] ?? '')) . '">';
             foreach ($columns as $colIndex => $col) {
                 $val = (string) ($row[$col] ?? '');
                 $formatted = self::cellHtml($col, $val, $row);
@@ -179,7 +199,8 @@ final class SystemProductPresenter
                     . ($col === 'Images' ? ' fc-sys-images-cell' : ' px-3 py-2')
                     . ($col === 'SKU' ? ' fc-sys-sku-cell' : '')
                     . ($col === 'Name' ? ' fc-sys-name-cell' : '')
-                    . (in_array($col, ['Name', 'Images', 'SKU'], true) ? '' : ' whitespace-nowrap');
+                    . ($col === 'Description' ? ' fc-sys-product-desc-cell' : '')
+                    . (in_array($col, ['Name', 'Images', 'SKU', 'Description'], true) ? '' : ' whitespace-nowrap');
                 $tbody .= '<td class="' . trim($class) . '">' . $formatted['html'] . '</td>';
             }
             $tbody .= '</tr>';
@@ -286,10 +307,11 @@ final class SystemProductPresenter
         $perPage = $paging['per_page'];
         $page = $paging['page_or_first'];
 
-        $displayColumns = ['Images', 'SKU', 'Name'];
-        // 'Slug' rides along on each row (for the SKU cell's "View Product" link) without
-        // becoming its own header column — stripped back out of $columns below.
-        $fetchColumns = array_merge($displayColumns, ['Slug']);
+        $displayColumns = ['Images', 'SKU', 'Name', 'Description'];
+        // 'Slug' and 'ID' ride along on each row (the SKU cell's "View Product" link and the details
+        // modal) without becoming header columns — stripped back out of $columns below.
+        $rideAlongColumns = ['Slug', 'ID'];
+        $fetchColumns = array_merge($displayColumns, $rideAlongColumns);
 
         $tabs = [];
         foreach (['GO', 'JG'] as $tab) {
@@ -323,7 +345,7 @@ final class SystemProductPresenter
         $columns = self::orderColumns(
             array_values(array_filter(
                 is_array($payload['columns'] ?? null) ? $payload['columns'] : [],
-                static fn($col): bool => is_string($col) && $col !== 'Slug'
+                static fn($col): bool => is_string($col) && !in_array($col, $rideAlongColumns, true)
             ))
         );
         $rows = is_array($payload['rows'] ?? null) ? $payload['rows'] : [];

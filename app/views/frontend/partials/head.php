@@ -9,8 +9,27 @@ use Fc\Admin\Settings\ThemeSettings;
 <meta charset="UTF-8">
 <?php
 $fcBranding = BrandingSettings::get();
+// Pages that pass no $seo (the project plan) show a visitor's own quote: bare app name, never indexed.
+$fcSeo = $seo ?? ['title' => $fcBranding['appName'], 'description' => '', 'canonical' => '', 'robots' => 'noindex, nofollow', 'meta' => [], 'json_ld' => ''];
 ?>
-<title><?php echo e($fcBranding['appName']); ?></title>
+<title><?php echo e($fcSeo['title']); ?></title>
+<?php if ($fcSeo['description'] !== '') : ?>
+<meta name="description" content="<?php echo e($fcSeo['description']); ?>">
+<?php endif; ?>
+<?php if ($fcSeo['canonical'] !== '') : ?>
+<link rel="canonical" href="<?php echo e($fcSeo['canonical']); ?>">
+<?php endif; ?>
+<?php if ($fcSeo['robots'] !== '') : ?>
+<meta name="robots" content="<?php echo e($fcSeo['robots']); ?>">
+<?php endif; ?>
+<?php /* Social cards and webmaster verification (Settings -> SEO); attr is 'name' or 'property'. */ ?>
+<?php foreach ($fcSeo['meta'] as $fcSeoMeta) : ?>
+<meta <?php echo e($fcSeoMeta['attr']); ?>="<?php echo e($fcSeoMeta['key']); ?>" content="<?php echo e($fcSeoMeta['content']); ?>">
+<?php endforeach; ?>
+<?php if ($fcSeo['json_ld'] !== '') : ?>
+<?php /* Encoded with JSON_HEX_TAG, so no value can close this script element early. */ ?>
+<script type="application/ld+json"><?php echo $fcSeo['json_ld']; ?></script>
+<?php endif; ?>
 
 <?php
 if( !AppConfigService::all()->app->debug ):
@@ -22,7 +41,7 @@ endif;
 <?php $fc_route = FrontendApplication::currentRoute(); ?>
 
 <?php /* jQuery loads here, not deferred, so it's ready before GTM tags run */ ?>
-<script src="<?php echo asset('public/assets/js/vendor/jquery-3.3.1.min.js'); ?>"></script>
+<script src="<?php echo asset('public/assets/js/vendor/jquery-3.7.1.min.js'); ?>"></script>
 
 <?php if( $gtmID = @$site_info['gtmID'] ): ?>
 <?php /* Google Tag Manager */ ?>
@@ -52,18 +71,19 @@ if ($fcFavicon !== '') {
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
-<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/fonts.css'); ?>">
+<?php include view_path('frontend.partials.webfonts'); ?>
 
 <link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/frontend/style.css'); ?>">
 <link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/frontend/style-v2.css'); ?>">
 <?php
 echo ThemeSettings::cssBlock();
 ?>
-<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/fonts/fa/css/all.min.css'); ?>">
+<?php /* Font Awesome trimmed to the icons these pages use (build/minify/icons.php). The full class list follows
+     deferred, so an icon added since the last build still shows, from the full font, just after first paint. */ ?>
+<link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/fonts/fa/css/subset.min.css'); ?>">
+<?php AssetHelper::deferStylesheet(asset('public/assets/fonts/fa/css/icons.min.css')); ?>
 
 <link href="<?php echo asset('public/assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
 

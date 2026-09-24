@@ -7,6 +7,7 @@ namespace Fc\Admin\Models;
 use Fc\Admin\Core\FrontendApplication;
 use Fc\Admin\Settings\BrandingSettings;
 use Fc\Admin\Settings\CatalogSettings;
+use Fc\Admin\Settings\SeoSettings;
 use Fc\Admin\Services\ProductLookupService;
 
 /**
@@ -18,7 +19,7 @@ final class LookupPageModel
      * Build every value app/views/frontend/lookup/index.php renders from.
      *
      * @param array<string, mixed> $query Raw $_GET.
-     * @return array{page:array<string,mixed>,catalog:array<string,mixed>,title:string,appBase:string,logoUrl:string,toolbar:array<string,mixed>}
+     * @return array{page:array<string,mixed>,catalog:array<string,mixed>,title:string,robots:string,appBase:string,logoUrl:string,toolbar:array<string,mixed>}
      */
     public static function build(array $query): array
     {
@@ -31,11 +32,14 @@ final class LookupPageModel
         }
 
         $appBase = self::appBase();
+        $seo     = SeoSettings::get();
 
         return [
             'page'       => $page,
             'catalog'    => $catalog,
             'title'      => $title,
+            // Off by default (Settings -> SEO -> Indexing): results and quick views duplicate the stores' own product pages.
+            'robots'     => SeoSettings::robots($seo, $seo['indexLookup']),
             'appBase'    => $appBase,
             'logoUrl'    => BrandingSettings::logoUrl($appBase),
             'toolbar'    => self::toolbarData($page),

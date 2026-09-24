@@ -210,6 +210,9 @@
         save() {
             var self = this;
             var state = this.state;
+            if (!this.startSaving('fc-theme-save')) {
+                return;
+            }
             global.FC.util.toast('saving', 'Saving theme…', TOAST_THEME);
             fetch(API_THEME, {
                 method: 'POST',
@@ -247,6 +250,7 @@
                     }
                 })
                 .catch(function (err) {
+                    self.stopSaving('fc-theme-save');
                     global.FC.util.toast('error', err.message || 'Could not save theme.', TOAST_THEME);
                 });
         }

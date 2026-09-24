@@ -465,50 +465,62 @@ html[data-fc-admin-theme='dark'] #fc-system-products-table-wrap .fc-sys-images-p
 [data-fc-system-products-php] .fc-system-products-footer {
     margin-top: 0;
 }
-#fc-sp-edit-modal {
+#fc-sp-edit-modal,
+#fc-sys-product-modal {
     display: flex;
     visibility: hidden;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.28s ease, visibility 0s linear 0.28s;
 }
-#fc-sp-edit-modal.fc-sp-edit-modal--visible {
+#fc-sp-edit-modal.fc-sp-edit-modal--visible,
+#fc-sys-product-modal.fc-sp-edit-modal--visible {
     visibility: visible;
     opacity: 1;
     pointer-events: auto;
     transition: opacity 0.28s ease, visibility 0s;
 }
-#fc-sp-edit-modal .fc-sp-edit-backdrop {
+#fc-sp-edit-modal .fc-sp-edit-backdrop,
+#fc-sys-product-modal .fc-sp-edit-backdrop {
     opacity: 0;
     transition: opacity 0.28s ease;
 }
-#fc-sp-edit-modal.fc-sp-edit-modal--visible .fc-sp-edit-backdrop {
+#fc-sp-edit-modal.fc-sp-edit-modal--visible .fc-sp-edit-backdrop,
+#fc-sys-product-modal.fc-sp-edit-modal--visible .fc-sp-edit-backdrop {
     opacity: 1;
 }
-#fc-sp-edit-modal .fc-sp-edit-panel {
+#fc-sp-edit-modal .fc-sp-edit-panel,
+#fc-sys-product-modal .fc-sp-edit-panel {
     opacity: 0;
     transform: scale(0.96) translateY(0.75rem);
     transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
-#fc-sp-edit-modal.fc-sp-edit-modal--visible .fc-sp-edit-panel {
+#fc-sp-edit-modal.fc-sp-edit-modal--visible .fc-sp-edit-panel,
+#fc-sys-product-modal.fc-sp-edit-modal--visible .fc-sp-edit-panel {
     opacity: 1;
     transform: scale(1) translateY(0);
 }
 @media (prefers-reduced-motion: reduce) {
     #fc-sp-edit-modal,
+    #fc-sys-product-modal,
     #fc-sp-edit-modal .fc-sp-edit-backdrop,
-    #fc-sp-edit-modal .fc-sp-edit-panel {
+    #fc-sys-product-modal .fc-sp-edit-backdrop,
+    #fc-sp-edit-modal .fc-sp-edit-panel,
+    #fc-sys-product-modal .fc-sp-edit-panel {
         transition-duration: 0.01ms !important;
     }
 }
-#fc-sp-edit-modal .fc-sp-edit-panels {
+#fc-sp-edit-modal .fc-sp-edit-panels,
+#fc-sys-product-modal .fc-sp-edit-panels {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f8fafc;
 }
-#fc-sp-edit-modal .fc-sp-edit-panels::-webkit-scrollbar {
+#fc-sp-edit-modal .fc-sp-edit-panels::-webkit-scrollbar,
+#fc-sys-product-modal .fc-sp-edit-panels::-webkit-scrollbar {
     width: 8px;
 }
-#fc-sp-edit-modal .fc-sp-edit-panels::-webkit-scrollbar-thumb {
+#fc-sp-edit-modal .fc-sp-edit-panels::-webkit-scrollbar-thumb,
+#fc-sys-product-modal .fc-sp-edit-panels::-webkit-scrollbar-thumb {
     border-radius: 4px;
     background: #cbd5e1;
 }
@@ -1487,7 +1499,8 @@ html[data-fc-admin-theme='dark'] .fc-desc-update__error {
 }
 
 /* No inner scrollbar: the description shows in full and the modal body scrolls if it has to. */
-#fc-sp-edit-modal .fc-sp-description {
+#fc-sp-edit-modal .fc-sp-description,
+#fc-sys-product-modal .fc-sp-description {
     width: 100%;
     min-width: 0;
     height: auto;
@@ -1501,61 +1514,90 @@ html[data-fc-admin-theme='dark'] .fc-desc-update__error {
     overflow-wrap: anywhere;
 }
 
-#fc-sp-edit-modal .fc-sp-description:focus-visible {
+#fc-sp-edit-modal .fc-sp-description:focus-visible,
+#fc-sys-product-modal .fc-sp-description:focus-visible {
     outline: none;
     border-color: #2271b1;
     box-shadow: 0 0 0 1px #2271b1;
 }
 
-#fc-sp-edit-modal .fc-sp-description > :first-child {
+#fc-sp-edit-modal .fc-sp-description > :first-child,
+#fc-sys-product-modal .fc-sp-description > :first-child {
     margin-top: 0;
 }
 
-#fc-sp-edit-modal .fc-sp-description > :last-child {
+#fc-sp-edit-modal .fc-sp-description > :last-child,
+#fc-sys-product-modal .fc-sp-description > :last-child {
     margin-bottom: 0;
 }
 
-#fc-sp-edit-modal .fc-sp-description p {
+#fc-sp-edit-modal .fc-sp-description p,
+#fc-sys-product-modal .fc-sp-description p {
     margin: 0 0 0.6rem;
 }
 
 #fc-sp-edit-modal .fc-sp-description ul,
-#fc-sp-edit-modal .fc-sp-description ol {
+#fc-sys-product-modal .fc-sp-description ul,
+#fc-sp-edit-modal .fc-sp-description ol,
+#fc-sys-product-modal .fc-sp-description ol {
     margin: 0 0 0.6rem;
     padding-left: 1.25rem;
+    list-style: disc;
 }
 
-#fc-sp-edit-modal .fc-sp-description li {
+#fc-sp-edit-modal .fc-sp-description ol,
+#fc-sys-product-modal .fc-sp-description ol {
+    list-style: decimal;
+}
+
+/* The store's autop leaves <br>s between list items; here they only add blank lines. */
+#fc-sp-edit-modal .fc-sp-description ul > br,
+#fc-sys-product-modal .fc-sp-description ul > br,
+#fc-sp-edit-modal .fc-sp-description ol > br,
+#fc-sys-product-modal .fc-sp-description ol > br {
+    display: none;
+}
+
+#fc-sp-edit-modal .fc-sp-description li,
+#fc-sys-product-modal .fc-sp-description li {
     margin: 0 0 0.2rem;
 }
 
 #fc-sp-edit-modal .fc-sp-description strong,
-#fc-sp-edit-modal .fc-sp-description b {
+#fc-sys-product-modal .fc-sp-description strong,
+#fc-sp-edit-modal .fc-sp-description b,
+#fc-sys-product-modal .fc-sp-description b {
     font-weight: 700;
     color: var(--fc-admin-text-heading, #1d2327);
 }
 
 #fc-sp-edit-modal .fc-sp-description h3,
+#fc-sys-product-modal .fc-sp-description h3,
 #fc-sp-edit-modal .fc-sp-description h4,
-#fc-sp-edit-modal .fc-sp-description h5 {
+#fc-sys-product-modal .fc-sp-description h4,
+#fc-sp-edit-modal .fc-sp-description h5,
+#fc-sys-product-modal .fc-sp-description h5 {
     margin: 0.75rem 0 0.35rem;
     font-size: 0.9375rem;
     font-weight: 700;
     color: var(--fc-admin-text-heading, #1d2327);
 }
 
-#fc-sp-edit-modal .fc-sp-description a {
+#fc-sp-edit-modal .fc-sp-description a,
+#fc-sys-product-modal .fc-sp-description a {
     color: var(--fc-princeton-orange, #f67925);
     text-decoration: underline;
 }
 
-#fc-sp-edit-modal .fc-sp-description__empty {
+#fc-sp-edit-modal .fc-sp-description__empty,
+#fc-sys-product-modal .fc-sp-description__empty {
     margin: 0;
     color: var(--fc-admin-text-muted, #8c8f94);
     font-style: italic;
 }
 
-html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-description {
+html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-description,
+html[data-fc-admin-theme='dark'] #fc-sys-product-modal .fc-sp-description {
     border-color: var(--fc-admin-border, #334155);
     background: var(--fc-admin-surface-muted, #1e293b);
     color: var(--fc-admin-text, #e2e8f0);
@@ -1572,3 +1614,338 @@ html[data-fc-admin-theme='dark'] #fc-sp-edit-modal .fc-sp-description {
     overflow: hidden;
 }
 
+/* ===== Store Products: description column and details modal ===== */
+
+#fc-system-products-table-wrap col.fc-sys-desc-col {
+    width: 22rem;
+}
+
+#fc-system-products-table-wrap .fc-sys-product-desc-cell {
+    line-height: 1.35;
+    white-space: normal;
+}
+
+/* Every row opens the details modal, the way System Products rows open the edit modal. */
+#fc-system-products-table-wrap tbody tr.fc-system-products-row {
+    cursor: pointer;
+}
+
+#fc-system-products-table-wrap tbody tr.fc-system-products-row:hover td {
+    background-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, var(--fc-admin-surface, #fff)) !important;
+}
+
+/* The name doubles as the keyboard way into the details modal. */
+#fc-system-products-table-wrap .fc-sys-name-open {
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+#fc-system-products-table-wrap .fc-sys-name-open:hover {
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+#fc-system-products-table-wrap .fc-sys-name-open:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+/* A read-out, not a form: the product's name heads it and every value is plain text. */
+#fc-sys-product-modal .fc-sp-edit-panel {
+    max-width: 48rem;
+}
+
+/* Focus lands on the panel only to move it into the dialog; a ring round all of it says nothing. */
+#fc-sys-product-modal .fc-sp-edit-panel:focus {
+    outline: none;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__head {
+    flex-shrink: 0;
+    padding: 0.875rem 3.75rem 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__body {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: 1rem 1.25rem;
+    min-height: 0;
+    padding: 1rem 1.25rem 1.25rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__media {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-self: start;
+    min-width: 0;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    padding: 0.35rem;
+    overflow: hidden;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-muted, #f8fafc);
+    cursor: zoom-in;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__image--empty {
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--fc-admin-text-muted, #64748b);
+    cursor: default;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__thumb {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-muted, #f8fafc);
+    cursor: zoom-in;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__image:not(.fc-sys-product-modal__image--empty):hover,
+#fc-sys-product-modal .fc-sys-product-modal__thumb:hover {
+    border-color: var(--fc-princeton-orange, #f67925);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__image:focus-visible,
+#fc-sys-product-modal .fc-sys-product-modal__thumb:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+/* Beside the image: each fact is its label over its value. */
+#fc-sys-product-modal .fc-sys-product-modal__facts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    align-self: start;
+    min-width: 0;
+    margin: 0;
+}
+
+/* Pulled out by its own padding, so the hover tint frames the text without moving it. */
+#fc-sys-product-modal .fc-sys-product-modal__fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    margin: 0 -0.5rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.12s ease;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__fact:hover {
+    background: var(--fc-admin-surface-subtle, #f1f5f9);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__fact dt,
+#fc-sys-product-modal .fc-sys-product-modal__label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__fact dd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-width: 0;
+    margin: 0;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__value {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--fc-admin-text-heading, #0f172a);
+    overflow-wrap: anywhere;
+}
+
+/* Below the image and facts, across the full width, so the copy reads in long lines. */
+#fc-sys-product-modal .fc-sys-product-modal__description {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__value--empty {
+    font-family: inherit;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+/* Its copy button sits in the section head here, so the box needs no room kept for it. */
+#fc-sys-product-modal .fc-sp-description {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--fc-admin-surface, #fff);
+    font-size: 0.6875rem;
+    color: var(--fc-admin-text-muted, #64748b);
+    cursor: pointer;
+    opacity: 0;
+    transition: color 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+/* Out of sight until its row is hovered or tabbed into; kept up while it shows the tick. */
+#fc-sys-product-modal .fc-sys-product-modal__head:hover .fc-sys-product-modal__copy,
+#fc-sys-product-modal .fc-sys-product-modal__head:focus-within .fc-sys-product-modal__copy,
+#fc-sys-product-modal .fc-sys-product-modal__fact:hover .fc-sys-product-modal__copy,
+#fc-sys-product-modal .fc-sys-product-modal__fact:focus-within .fc-sys-product-modal__copy,
+#fc-sys-product-modal .fc-sys-product-modal__description:hover .fc-sys-product-modal__copy,
+#fc-sys-product-modal .fc-sys-product-modal__description:focus-within .fc-sys-product-modal__copy,
+#fc-sys-product-modal .fc-sys-product-modal__copy--copied {
+    opacity: 1;
+}
+
+/* No hover on a touch screen, so the buttons stay put there. */
+@media (hover: none) {
+    #fc-sys-product-modal .fc-sys-product-modal__copy {
+        opacity: 1;
+    }
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__copy:hover,
+#fc-sys-product-modal .fc-sys-product-modal__copy:focus-visible {
+    outline: none;
+    border-color: #2271b1;
+    color: #2271b1;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__copy--copied {
+    border-color: #16a34a;
+    color: #15803d;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__copy i {
+    font-size: inherit;
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__foot {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+    padding: 0.65rem 1.25rem;
+    border-top: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-muted, #f8fafc);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-subtle, #94a3b8);
+}
+
+#fc-sys-product-modal .fc-sys-product-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+@media (max-width: 639px) {
+    #fc-sys-product-modal .fc-sys-product-modal__body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Image beside its thumbnails, so the facts still start near the top on a phone. */
+    #fc-sys-product-modal .fc-sys-product-modal__media {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    #fc-sys-product-modal .fc-sys-product-modal__image {
+        flex-shrink: 0;
+        width: 6.5rem;
+    }
+}
+
+html[data-fc-admin-theme='dark'] #fc-sys-product-modal .fc-sys-product-modal__copy:hover,
+html[data-fc-admin-theme='dark'] #fc-sys-product-modal .fc-sys-product-modal__copy:focus-visible {
+    border-color: #60a5fa;
+    color: #93c5fd;
+}

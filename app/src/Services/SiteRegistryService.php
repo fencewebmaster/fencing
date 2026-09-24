@@ -26,6 +26,33 @@ final class SiteRegistryService
     }
 
     /**
+     * Why search engines must not index this request — 'localhost', 'staging' (a staging.* host) or
+     * 'demo' (a demo stage path) — or '' when they may. Those copies must never compete with the
+     * live stores in search results, whatever Settings → SEO says.
+     */
+    public static function searchBlockReason(): string
+    {
+        $host = strtolower((string) parse_url('//' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST));
+
+        if ($host === '' || $host === 'localhost' || $host === '127.0.0.1') {
+            return 'localhost';
+        }
+        if (str_starts_with($host, 'staging.')) {
+            return 'staging';
+        }
+
+        return UrlHelper::inUriSegment(self::demoStages()) ? 'demo' : '';
+    }
+
+    /**
+     * Whether search engines may index this request (see searchBlockReason()).
+     */
+    public static function isSearchIndexable(): bool
+    {
+        return self::searchBlockReason() === '';
+    }
+
+    /**
      * Config site key derived from a domain (matches admin mysql key rules).
      * Staging hosts (staging.example.com) resolve to the production key (example).
      */

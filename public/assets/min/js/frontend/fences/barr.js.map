@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../../../../js/frontend/fences/barr.js"],
+  "mappings": "AAAA,KAAO,CAIH,KAAM,SAASA,EAAMC,EAAGC,EAAGC,EAAGC,EAAGC,EAAG,EAAG,CACnC,OAAO,gBAAgB,KAAML,EAAMC,EAAGC,EAAGC,EAAGC,EAAGC,EAAG,CAAC,CACvD,EAIA,KAAM,UAAW,CACb,QAAQ,IAAI,QAAS,aAAa,CACtC,CAIJ",
+  "names": ["func", "a", "b", "c", "d", "e"]
+}

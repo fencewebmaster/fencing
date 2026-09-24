@@ -5,8 +5,8 @@
  * Rendered by Controllers\Frontend\ShareCartUrlController. Standalone <head>: this is a
  * nested public route, so asset URLs come from the controller's basePath()-built closure,
  * never the one-segment-deep asset()/baseUrl() helpers (same reason /lookup/view/{slug}
- * carries its own head). style.css owns every .fc-loader-* rule; fonts.css supplies the
- * League Gothic the loader lines are set in.
+ * carries its own head). style.css owns every .fc-loader-* rule; partials/webfonts.php supplies
+ * the League Gothic the loader lines are set in.
  *
  * @var string   $fcShareCartError Error message; '' renders the loader + auto-continue.
  * @var string   $fcShareCartGoUrl Same-path URL that performs the push and redirect.
@@ -15,19 +15,20 @@
 
 declare(strict_types=1);
 
+use Fc\Admin\Settings\SeoSettings;
 use Fc\Admin\Settings\ThemeSettings;
 
 $asset = $fcShareCartAsset;
 $goUrl = $fcShareCartGoUrl;
 $error = $fcShareCartError;
 ?><!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo e(SeoSettings::language()); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Loading Your Quote</title>
-    <link rel="stylesheet" href="<?php echo e($asset('public/assets/css/fonts.css')); ?>">
+    <?php include view_path('frontend.partials.webfonts'); ?>
     <link rel="stylesheet" href="<?php echo e($asset('public/assets/css/frontend/style.css')); ?>">
     <?php echo ThemeSettings::cssBlock(); ?>
     <?php if ($error === '') : ?>

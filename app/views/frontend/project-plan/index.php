@@ -12,6 +12,7 @@
  */
 
 use Fc\Admin\Settings\ConsoleSettings;
+use Fc\Admin\Settings\SeoSettings;
 use Fc\Admin\Services\PlannerSessionService;
 
 // Field templates must be in the DOM before p2.js runs
@@ -19,7 +20,7 @@ include view_path('frontend.partials.fields.index');
 ?>
 
 <!DOCTYPE html>
-<html data-fc-debug="<?php echo ConsoleSettings::debugMode() ? '1' : '0'; ?>">
+<html lang="<?php echo e(SeoSettings::language()); ?>" data-fc-debug="<?php echo ConsoleSettings::debugMode() ? '1' : '0'; ?>">
 	<head>
 	<?php include view_path('frontend.partials.head'); ?>
 	<script>window.FC_DEBUG = document.documentElement.getAttribute('data-fc-debug') === '1';</script>

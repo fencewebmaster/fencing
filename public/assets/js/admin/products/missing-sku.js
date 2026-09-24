@@ -42,6 +42,7 @@
         }
 
         destroy() {
+            closeDetails();
             closeSuggest();
             closeActionsMenu();
             if (SKU && typeof SKU.closeGallery === 'function') {
@@ -582,6 +583,263 @@
         SKU.openGallery(picked.slides, picked.startIndex);
     }
 
+    /* ---------------------------------------------------------------------- details modal */
+
+    var detailsEl = null;
+    var detailsRow = null;
+    var detailsTrigger = null;
+
+    var DETAILS_STATUS = {
+        found: { icon: 'fa-solid fa-check', title: 'Found in store catalogue' },
+        missing: { icon: 'fa-solid fa-xmark', title: 'Not in store catalogue' },
+        empty: { icon: 'fa-solid fa-exclamation', title: 'No SKU' },
+        off: { icon: 'fa-solid fa-circle', title: 'Set to OFF — counted as complete' }
+    };
+
+    function detailsOpen() {
+        return !!detailsEl && detailsEl.classList.contains('is-open');
+    }
+
+    /* Rebuilt from class and text, so the modal never carries the row's data hooks. */
+    function detailsChipHtml(chip) {
+        return chip
+            ? '<span class="' + escapeHtml(chip.className) + '">' + escapeHtml(chip.textContent.trim()) + '</span>'
+            : '';
+    }
+
+    function detailsFactHtml(label, valueHtml) {
+        return '<div class="fc-ms-details__fact"><dt>' + escapeHtml(label) + '</dt><dd>' + valueHtml + '</dd></div>';
+    }
+
+    /* Reads the row's live inputs, so unsaved edits show as they stand. */
+    function detailsColourHtml(field, index) {
+        var input = inputIn(field);
+        var value = input ? input.value : '';
+        var sku = SKU ? SKU.normalize(value) : String(value).trim();
+        var state = SKU && SKU.isOff(value)
+            ? 'off'
+            : sku === ''
+              ? 'empty'
+              : SKU && SKU.existsInCatalogue(value) ? 'found' : 'missing';
+        var status = DETAILS_STATUS[state];
+        var meta = SKU && sku !== '' ? SKU.meta(sku) : { name: '', image: '' };
+        var image = String(meta.image || '').trim();
+        var label = field.querySelector('.fc-sp-field__label');
+        var nameEl = label ? label.querySelector('span:not([class])') : null;
+        var swatch = label ? label.querySelector('.fc-ms-swatch') : null;
+        var initial = label ? label.querySelector('.fc-ms-initial') : null;
+        var colour = nameEl
+            ? nameEl.textContent.trim()
+            : global.FC.util.formatHeader(field.getAttribute('data-column') || '');
+        var note = {
+            found: (SKU && SKU.productName(meta.name)) || 'In store catalogue',
+            missing: 'Not in store catalogue',
+            empty: 'No SKU set',
+            off: 'Not sold in this colour'
+        }[state];
+        var skuId = 'fc-ms-details-sku-' + index;
+
+        return (
+            '<li class="fc-ms-details__colour fc-ms-details__colour--' + state + '">' +
+            (image
+                ? '<button type="button" class="fc-ms-details__thumb" data-fc-ms-details-thumb="' + index +
+                  '" aria-label="View larger image of ' + escapeHtml(colour) + '">' +
+                  '<img src="' + escapeHtml(image) + '" alt="" loading="lazy" decoding="async"></button>'
+                : '<span class="fc-ms-details__thumb fc-ms-details__thumb--empty" aria-hidden="true"></span>') +
+            '<div class="fc-ms-details__colour-main">' +
+            '<div class="fc-ms-details__colour-label">' +
+            (swatch ? swatch.outerHTML : '') +
+            '<span>' + escapeHtml(colour) + '</span>' +
+            (initial ? initial.outerHTML : '') +
+            '</div>' +
+            '<div class="fc-ms-details__colour-sku">' +
+            '<span class="fc-ms-details__status" role="img" aria-label="' + escapeHtml(status.title) +
+            '" title="' + escapeHtml(status.title) + '"><i class="' + status.icon + '" aria-hidden="true"></i></span>' +
+            (sku === ''
+                ? '<span class="fc-ms-details__sku fc-ms-details__sku--none">No SKU</span>'
+                : '<code class="fc-ms-details__sku" id="' + skuId + '">' + escapeHtml(sku) + '</code>' +
+                  (state === 'off' ? '' : copyFieldButton.markup(skuId, colour + ' SKU', { compact: true }))) +
+            '</div>' +
+            '<div class="fc-ms-details__colour-note" title="' + escapeHtml(note) + '">' + escapeHtml(note) + '</div>' +
+            '</div>' +
+            '</li>'
+        );
+    }
+
+    function detailsColoursHtml(row) {
+        return fieldsIn(row).map(detailsColourHtml).join('');
+    }
+
+    function detailsContentHtml(row) {
+        var productEl = row.querySelector('.fc-ms-row__product');
+        var product = productEl ? productEl.textContent.trim() : '';
+        var slug = row.getAttribute('data-slug') || '';
+        var styleKey = row.getAttribute('data-style') || '';
+        var styleChip = row.querySelector('[data-fc-ms-chip="style"]');
+        var styleLabel = styleChip ? styleChip.textContent.trim() : styleKey;
+        var featureEl = row.querySelector('.fc-ms-row__style-image');
+        var feature = featureEl && featureEl.tagName === 'IMG' ? featureEl.getAttribute('src') || '' : '';
+        var tpl = row.querySelector('template[data-fc-ms-description]');
+        var description = tpl ? global.FC.util.sanitizeDescriptionHtml(tpl.content.textContent) : '';
+        var hasDescription = description.trim() !== '';
+        var colourCount = fieldsIn(row).length;
+
+        return (
+            '<header class="fc-ms-details__head">' +
+            '<h2 class="fc-ms-details__title" id="fc-ms-details-title">' + escapeHtml(product || slug) + '</h2>' +
+            '<div class="fc-ms-details__sub">' +
+            '<code class="fc-ms-details__slug" id="fc-ms-details-slug">' + escapeHtml(slug) + '</code>' +
+            (row.classList.contains('is-dirty')
+                ? '<span class="fc-ms-chip fc-ms-details__unsaved" title="The SKUs below include edits you have not saved yet">Unsaved edits</span>'
+                : '') +
+            (slug ? copyFieldButton.markup('fc-ms-details-slug', 'Slug', { compact: true }) : '') +
+            '</div>' +
+            '</header>' +
+            '<div class="fc-ms-details__body">' +
+            '<aside class="fc-ms-details__aside">' +
+            (feature
+                ? '<button type="button" class="fc-ms-details__feature" data-fc-ms-details-feature="' + escapeHtml(feature) +
+                  '" aria-label="View larger featured image">' +
+                  '<img src="' + escapeHtml(feature) + '" alt="' + escapeHtml(styleLabel) + '" decoding="async"></button>'
+                : '<span class="fc-ms-details__feature fc-ms-details__feature--empty" aria-hidden="true"></span>') +
+            '<dl class="fc-ms-details__facts">' +
+            detailsFactHtml(
+                'Fence style',
+                '<span>' + escapeHtml(styleLabel) + '</span>' +
+                (styleKey && styleKey !== styleLabel ? '<code class="fc-ms-details__code">' + escapeHtml(styleKey) + '</code>' : '')
+            ) +
+            detailsFactHtml('Supplier', detailsChipHtml(row.querySelector('[data-fc-ms-chip="supplier"]')) || '—') +
+            detailsFactHtml('SKUs', detailsChipHtml(row.querySelector('[data-fc-ms-missing-label]'))) +
+            '</dl>' +
+            '</aside>' +
+            '<div class="fc-ms-details__main">' +
+            '<section class="fc-ms-details__section fc-ms-details__section--description">' +
+            '<div class="fc-ms-details__section-head">' +
+            '<h3 class="fc-ms-details__section-title">Description</h3>' +
+            (hasDescription ? copyFieldButton.markup('fc-ms-details-description', 'Description', { compact: true }) : '') +
+            '</div>' +
+            '<div class="fc-ms-details__description" id="fc-ms-details-description">' +
+            (hasDescription ? description : '<p class="fc-ms-details__empty">No description</p>') +
+            '</div>' +
+            '</section>' +
+            '<section class="fc-ms-details__section">' +
+            '<div class="fc-ms-details__section-head">' +
+            '<h3 class="fc-ms-details__section-title">Colours <span class="fc-ms-details__count">' + colourCount + '</span></h3>' +
+            '</div>' +
+            '<ul class="fc-ms-details__colours" data-fc-ms-details-colours>' + detailsColoursHtml(row) + '</ul>' +
+            '</section>' +
+            '</div>' +
+            '</div>'
+        );
+    }
+
+    function onDetailsClick(e) {
+        var target = e.target;
+
+        if (target.closest('[data-fc-ms-details-close]')) {
+            e.preventDefault();
+            closeDetails();
+            return;
+        }
+
+        var copyBtn = target.closest('[data-fc-sp-copy-for]');
+        if (copyBtn) {
+            e.preventDefault();
+            copyFieldButton.copy(document.getElementById(copyBtn.getAttribute('data-fc-sp-copy-for')), copyBtn);
+            return;
+        }
+
+        if (!SKU || typeof SKU.openGallery !== 'function') {
+            return;
+        }
+
+        var thumb = target.closest('[data-fc-ms-details-thumb]');
+        if (thumb && detailsRow) {
+            e.preventDefault();
+            var field = fieldsIn(detailsRow)[parseInt(thumb.getAttribute('data-fc-ms-details-thumb'), 10)];
+            var picked = gallerySlidesFor(detailsRow, field);
+            SKU.openGallery(picked.slides, picked.startIndex);
+            return;
+        }
+
+        var feature = target.closest('[data-fc-ms-details-feature]');
+        if (feature) {
+            e.preventDefault();
+            SKU.openGallery([{ url: feature.getAttribute('data-fc-ms-details-feature'), color: '', sku: '' }], 0);
+        }
+    }
+
+    function onDetailsKeydown(e) {
+        // The image gallery opens above the modal and takes its own Escape first.
+        if (e.key !== 'Escape' || e.defaultPrevented || !detailsOpen() || document.querySelector('.fc-entries-cart-gallery')) {
+            return;
+        }
+        e.preventDefault();
+        closeDetails();
+    }
+
+    function ensureDetailsModal() {
+        if (detailsEl) {
+            return;
+        }
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            '<div class="fc-ms-details" id="fc-ms-details" role="dialog" aria-modal="true" aria-labelledby="fc-ms-details-title" aria-hidden="true">' +
+            '<div class="fc-ms-details__backdrop" data-fc-ms-details-close aria-hidden="true"></div>' +
+            '<div class="fc-ms-details__panel" tabindex="-1">' +
+            '<button type="button" class="fencing-modal-close" data-fc-ms-details-close aria-label="Close"></button>' +
+            '<div class="fc-ms-details__content" data-fc-ms-details-content></div>' +
+            '</div>' +
+            '</div>'
+        );
+        detailsEl = document.getElementById('fc-ms-details');
+        detailsEl.addEventListener('click', onDetailsClick);
+        document.addEventListener('keydown', onDetailsKeydown);
+    }
+
+    function openDetails(row, trigger) {
+        closeSuggest();
+        closeActionsMenu();
+        ensureDetailsModal();
+        detailsRow = row;
+        detailsTrigger = trigger || null;
+
+        var content = detailsEl.querySelector('[data-fc-ms-details-content]');
+        content.innerHTML = detailsContentHtml(row);
+        // Read back so a first open still transitions in rather than appearing at full opacity.
+        void detailsEl.offsetWidth;
+        detailsEl.classList.add('is-open');
+        detailsEl.setAttribute('aria-hidden', 'false');
+        detailsEl.querySelector('.fc-ms-details__panel').focus({ preventScroll: true });
+
+        // Statuses and images need the catalogue index; repaint the colours once it is in.
+        if (SKU) {
+            SKU.ensureIndex().then(function () {
+                var list = detailsRow === row && detailsOpen()
+                    ? detailsEl.querySelector('[data-fc-ms-details-colours]')
+                    : null;
+                if (list) {
+                    list.innerHTML = detailsColoursHtml(row);
+                }
+            });
+        }
+    }
+
+    function closeDetails() {
+        if (!detailsOpen()) {
+            return false;
+        }
+        detailsEl.classList.remove('is-open');
+        detailsEl.setAttribute('aria-hidden', 'true');
+        var trigger = detailsTrigger;
+        detailsRow = null;
+        detailsTrigger = null;
+        if (trigger && document.body.contains(trigger)) {
+            trigger.focus({ preventScroll: true });
+        }
+        return true;
+    }
+
     /* ------------------------------------------------------------------------------- scan */
 
     /* Fills the researched SKUs from writable/missing-products-*.csv. Nothing is written to
@@ -1027,6 +1285,45 @@
        inside a SKU field. */
     var saveQueue = Promise.resolve();
 
+    // Saves in flight, row and toolbar alike; the page stays locked until the last one lands.
+    var busyCount = 0;
+    var busyFocus = null;
+
+    /* Inert rather than disabled, so the tick and Save logic that owns `disabled` is left alone. */
+    function lockPage(on) {
+        if (!pageRoot) {
+            return;
+        }
+        if (on) {
+            closeSuggest();
+            closeActionsMenu();
+            busyFocus = pageRoot.contains(document.activeElement) ? document.activeElement : null;
+        }
+        pageRoot.classList.toggle('is-busy', on);
+        pageRoot.querySelectorAll('.fc-entries-page__toolbar-form, [data-fc-missing-sku-list]').forEach(function (el) {
+            el.toggleAttribute('inert', on);
+        });
+        // Inert took focus away from the field or button that started the save; hand it back.
+        if (!on && busyFocus && busyFocus.isConnected) {
+            busyFocus.focus({ preventScroll: true });
+        }
+        if (!on) {
+            busyFocus = null;
+        }
+    }
+
+    function beginBusy() {
+        if (busyCount++ === 0) {
+            lockPage(true);
+        }
+    }
+
+    function endBusy() {
+        if (busyCount > 0 && --busyCount === 0) {
+            lockPage(false);
+        }
+    }
+
     function queueSave(task) {
         var run = saveQueue.then(task, task);
         // A failed save must not poison the queue for the ones behind it.
@@ -1044,6 +1341,7 @@
             return Promise.resolve(false);
         }
 
+        beginBusy();
         var btn = row.querySelector('[data-fc-ms-save]');
         row.setAttribute('data-saving', '1');
         row.classList.add('is-saving');
@@ -1134,6 +1432,7 @@
                 if (btn) {
                     btn.disabled = false;
                 }
+                endBusy();
             });
     }
 
@@ -1144,6 +1443,10 @@
 
         var btn = document.querySelector('[data-fc-ms-save-all]');
         if (!btn) {
+            return;
+        }
+        // Mid-run it is the progress readout and stays disabled; the run's finally recomputes it.
+        if (btn.getAttribute('data-saving') === '1') {
             return;
         }
         var pending = pickedRows().length;
@@ -1218,6 +1521,8 @@
             return;
         }
 
+        // Held across the whole run, so the page does not unlock between one row and the next.
+        beginBusy();
         var label = btn.querySelector('[data-fc-ms-save-all-label]');
         var was = label ? label.textContent : '';
         btn.setAttribute('data-saving', '1');
@@ -1269,6 +1574,7 @@
                     label.textContent = was;
                 }
                 refreshSaveAll();
+                endBusy();
             });
     }
 
@@ -1280,6 +1586,14 @@
         }
         root.setAttribute('data-fc-ms-bound', '1');
         pageRoot = root;
+
+        // The sidebar stays live during a save; leaving mid-run would drop the rows still queued.
+        global.addEventListener('beforeunload', function (e) {
+            if (busyCount > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
 
         root.addEventListener('input', function (e) {
             var filterInput = e.target.closest
@@ -1356,6 +1670,16 @@
             if (thumbView) {
                 e.preventDefault();
                 openThumbGallery(thumbView);
+                return;
+            }
+
+            var detailsBtn = target.closest('[data-fc-ms-details]');
+            if (detailsBtn) {
+                e.preventDefault();
+                var detailsRowEl = detailsBtn.closest('[data-fc-ms-row]');
+                if (detailsRowEl) {
+                    openDetails(detailsRowEl, detailsBtn);
+                }
                 return;
             }
 

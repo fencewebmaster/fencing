@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../../../../js/frontend/fences/flat_top.js"],
+  "mappings": "AAAA,QAAU,CAIN,KAAM,SAASA,EAAMC,EAAGC,EAAG,EAAGC,EAAG,EAAGC,EAAG,CACnC,OAAO,gBAAgB,KAAMJ,EAAMC,EAAGC,EAAG,EAAGC,EAAG,EAAGC,CAAC,CACvD,EAIA,KAAM,UAAW,CACb,QAAQ,IAAI,YAAa,gBAAgB,CAC7C,CAIJ",
+  "names": ["func", "a", "b", "d", "f"]
+}

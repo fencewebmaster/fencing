@@ -6,27 +6,31 @@ namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Helpers\ColorHelper;
 use Fc\Admin\Services\AuthService;
+use Fc\Admin\Services\SiteHealthService;
+use Fc\Admin\Services\SiteRegistryService;
 use Fc\Admin\Settings\BrandingSettings;
 use Fc\Admin\Settings\CatalogSettings;
 use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Settings\FenceColorSettings;
 use Fc\Admin\Settings\IntegrationsSettings;
 use Fc\Admin\Settings\PlannerOptionSettings;
+use Fc\Admin\Settings\SeoSettings;
 use Fc\Admin\Settings\SystemSettings;
 use Fc\Admin\Settings\ThemeSettings;
 
 /**
  * Settings page — pure formatting + page orchestration. The underlying settings groups
- * (theme/branding/fence-colors/catalog/system/integrations/console) are shared,
+ * (theme/branding/fence-colors/catalog/system/integrations/seo/console) are shared,
  * cross-cutting infrastructure used far beyond this page; this class only calls their
  * apiPayload()/defaults()/choices() methods and never mutates them.
  */
 final class SettingsPresenter
 {
     /**
+     * @param bool $siteHealth whether to show the Site Health tab (the Super Admin only)
      * @return array<string, mixed>
      */
-    public static function viewData(string $adminBase, string $appBase, string $initialTab): array
+    public static function viewData(string $adminBase, string $appBase, string $initialTab, bool $siteHealth = false): array
     {
         $theme = ThemeSettings::apiPayload();
         $brandingPayload = BrandingSettings::apiPayload();
@@ -82,6 +86,9 @@ final class SettingsPresenter
         $fenceDefaults = is_array($fencePayload['defaults'] ?? null) ? $fencePayload['defaults'] : [];
         $catalog = is_array($catalogPayload['catalog'] ?? null) ? $catalogPayload['catalog'] : CatalogSettings::defaults();
         $system = is_array($systemPayload['system'] ?? null) ? $systemPayload['system'] : SystemSettings::defaults();
+        $seoPayload = SeoSettings::apiPayload();
+        $seo = $seoPayload['seo'];
+        $seoContext = self::seoContext($appBase, $branding);
 
         $bootstrap = [
             'activeTab' => $initialTab,
@@ -119,6 +126,9 @@ final class SettingsPresenter
             'projectPlanDefaults' => $projectPlanDefaults,
             'projectPlanStock' => $projectPlanStock,
             'projectPlanStockDefaults' => $projectPlanStockDefaults,
+            'seo' => $seo,
+            'seoDefaults' => $seoPayload['defaults'],
+            'seoContext' => $seoContext,
             'console' => $console,
             'consoleDefaults' => $consolePayload['defaults'] ?? ConsoleSettings::defaults(),
             'csrf' => AuthService::csrfToken(),
@@ -168,8 +178,10 @@ final class SettingsPresenter
             }
             $themeGroups[] = [
                 'key' => (string) $groupKey,
-                'label' => (string) ($group['label'] ?? $groupKey),
-                'fields' => $fields,
+                // Card titles are Title Case across the Settings page.
+                'label' => ucwords((string) ($group['label'] ?? $groupKey)),
+                // Two fields to a row, the card's section lines running between rows.
+                'rows' => array_chunk($fields, 2),
             ];
         }
 
@@ -218,6 +230,21 @@ final class SettingsPresenter
 
         $showPreview = self::showPreview($initialTab);
 
+        $tabs = [
+            'theme' => 'Theme',
+            'branding' => 'Branding',
+            'fence-colors' => 'Fence colors',
+            'catalog' => 'Catalog',
+            'system' => 'System',
+            'project-plan' => 'Project Plan',
+            'integration' => 'Integration',
+            'seo' => 'SEO',
+            'console' => 'Console',
+        ];
+        if ($siteHealth) {
+            $tabs['site-health'] = 'Site Health';
+        }
+
         return [
             'initial_tab' => $initialTab,
             'active_tab' => $initialTab,
@@ -228,16 +255,7 @@ final class SettingsPresenter
             'preview_hidden' => $showPreview ? '' : 'hidden ',
             'preview_mode' => $initialTab === 'branding' ? 'branding' : '',
             'bootstrap_json' => json_encode($bootstrap, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'tabs' => [
-                'theme' => 'Theme',
-                'branding' => 'Branding',
-                'fence-colors' => 'Fence colors',
-                'catalog' => 'Catalog',
-                'system' => 'System',
-                'project-plan' => 'Project Plan',
-                'integration' => 'Integration',
-                'console' => 'Console',
-            ],
+            'tabs' => $tabs,
             'btn_secondary' => 'btn btn-sm btn-dark fw-semibold',
             'btn_primary' => 'btn btn-sm btn-orange fw-semibold',
             'presets' => $presets,
@@ -262,7 +280,10 @@ final class SettingsPresenter
             'system_date_field_choices' => $systemPayload['dateFieldChoices'] ?? SystemSettings::dateFieldChoices(),
             'system_date_format_choices' => $systemPayload['dateFormatChoices'] ?? SystemSettings::dateFormatChoices(),
             'integrations' => $integrationsData,
-            'integration_webhook_mode_choices' => $integrationsPayload['webhookModeChoices'] ?? IntegrationsSettings::webhookModeChoices(),
+            'integration_webhook_options' => self::webhookOptions(
+                $integrationsData,
+                $integrationsPayload['webhookModeChoices'] ?? IntegrationsSettings::webhookModeChoices()
+            ),
             'super_admin' => is_array($integrationsPayload['superAdmin'] ?? null)
                 ? $integrationsPayload['superAdmin']
                 : [],
@@ -271,7 +292,25 @@ final class SettingsPresenter
             'project_plan_stock_defaults' => $projectPlanStockDefaults,
             'project_plan_stock_hours_min' => PlannerOptionSettings::ORDER_WITHIN_HOURS_MIN,
             'project_plan_stock_hours_max' => PlannerOptionSettings::ORDER_WITHIN_HOURS_MAX,
+            'seo' => $seo,
+            'seo_defaults' => $seoPayload['defaults'],
+            'seo_context' => $seoContext,
+            'seo_visible' => !empty($seo['searchEngineVisible']),
+            'seo_checks' => self::seoChecks(),
+            // Google's and Facebook's testers fetch the page from outside, which a localhost copy can't serve.
+            'seo_tests_enabled' => $seoContext['blockReason'] !== 'localhost',
+            'seo_pages' => self::seoPages($seo),
+            'seo_placeholders' => self::seoPlaceholders($seoPayload['placeholders']),
+            'seo_verification' => self::seoVerificationFields($seo, $seoPayload['verificationServices']),
+            'seo_same_as' => implode("\n", $seo['schemaSameAs']),
+            'seo_language_choices' => $seoPayload['languageChoices'],
+            'seo_image_preview_choices' => $seoPayload['imagePreviewChoices'],
+            'seo_twitter_card_choices' => $seoPayload['twitterCardChoices'],
+            'seo_title_limit' => SeoSettings::TITLE_LIMIT,
+            'seo_description_limit' => SeoSettings::DESCRIPTION_LIMIT,
             'console' => $console,
+            'site_health_enabled' => $siteHealth,
+            'site_health_groups' => self::siteHealthGroups(),
             'panel_class' => [
                 'theme' => $initialTab === 'theme' ? '' : 'hidden ',
                 'branding' => $initialTab === 'branding' ? '' : 'hidden ',
@@ -280,7 +319,9 @@ final class SettingsPresenter
                 'system' => $initialTab === 'system' ? '' : 'hidden ',
                 'integration' => $initialTab === 'integration' ? '' : 'hidden ',
                 'project_plan' => $initialTab === 'project-plan' ? '' : 'hidden ',
+                'seo' => $initialTab === 'seo' ? '' : 'hidden ',
                 'console' => $initialTab === 'console' ? '' : 'hidden ',
+                'site_health' => $initialTab === 'site-health' ? '' : 'hidden ',
             ],
             'header_actions_class' => [
                 'theme' => $initialTab === 'theme' ? 'flex' : 'hidden',
@@ -290,10 +331,213 @@ final class SettingsPresenter
                 'system' => $initialTab === 'system' ? 'flex' : 'hidden',
                 'integration' => $initialTab === 'integration' ? 'flex' : 'hidden',
                 'project_plan' => $initialTab === 'project-plan' ? 'flex' : 'hidden',
+                'seo' => $initialTab === 'seo' ? 'flex' : 'hidden',
                 'console' => $initialTab === 'console' ? 'flex' : 'hidden',
+                'site_health' => $initialTab === 'site-health' ? 'flex' : 'hidden',
             ],
             'bootstrap' => $bootstrap,
         ];
+    }
+
+    /**
+     * One row per webhook for the Integrations tab: its radio picks webhookMode, its field holds
+     * the URL. Both the planner's submit and the checkout push follow the mode picked here.
+     *
+     * @param array<string, mixed> $integrations
+     * @param array<string, string> $choices webhook modes the settings group accepts
+     * @return list<array<string, mixed>>
+     */
+    private static function webhookOptions(array $integrations, array $choices): array
+    {
+        $rows = [
+            'live' => [
+                'title'       => 'LIVE Webhook',
+                'hint'        => 'Planner submissions and checkout orders post here.',
+                'field'       => 'webhookUrl',
+                'placeholder' => 'https://hooks.zapier.com/hooks/catch/…',
+                'copy_label'  => 'Copy webhook URL',
+            ],
+            'test' => [
+                'title'       => 'TEST Webhook',
+                'hint'        => 'Select to post submissions and orders here instead, e.g. while testing a Zap.',
+                'field'       => 'webhookTestUrl',
+                'placeholder' => 'https://webhook.site/…',
+                'copy_label'  => 'Copy test webhook URL',
+            ],
+        ];
+        $mode = (string) ($integrations['webhookMode'] ?? 'live');
+
+        $options = [];
+        foreach (array_keys($choices) as $value) {
+            if (!isset($rows[$value])) {
+                continue;
+            }
+            $options[] = $rows[$value] + [
+                'mode'     => (string) $value,
+                'input_id' => 'fc-integration-' . $rows[$value]['field'],
+                'url'      => (string) ($integrations[$rows[$value]['field']] ?? ''),
+                'checked'  => (string) $value === $mode,
+            ];
+        }
+
+        return $options;
+    }
+
+    /**
+     * What the SEO tab's previews need to fill the templates the way PlannerPageModel::seo() does:
+     * the Branding values, this host's registry name and logo, and the planner's own address. The
+     * admin shares its host with the planner, so the registry row is the one visitors get.
+     *
+     * @param array<string, mixed> $branding
+     * @return array<string, string>
+     */
+    private static function seoContext(string $appBase, array $branding): array
+    {
+        $host   = (string) ($_SERVER['HTTP_HOST'] ?? '');
+        $site   = SiteRegistryService::all($host, 'domain', true);
+        $site   = is_array($site) ? $site : null;
+        $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http';
+        $logo   = SiteRegistryService::logoForDomain($host, trim((string) ($site['logo'] ?? '')));
+
+        return [
+            'appName'      => (string) ($branding['appName'] ?? ''),
+            'tagline'      => (string) ($branding['tagline'] ?? ''),
+            'autoSiteName' => SeoSettings::autoSiteName($site),
+            'plannerUrl'   => $scheme . '://' . $host . rtrim($appBase, '/') . '/planner',
+            'storeUrl'     => trim((string) ($site['url'] ?? '')),
+            'logoPath'     => $logo,
+            'logoUrl'      => BrandingSettings::logoUrl($appBase, ['logo' => $logo]),
+            'faviconUrl'   => BrandingSettings::faviconUrl($appBase, $branding),
+            'blockReason'  => SiteRegistryService::searchBlockReason(),
+        ];
+    }
+
+    /**
+     * The header's at-a-glance checks and the field each one jumps to. seo-tab.js works out every
+     * tile's state and wording from the live form, so the tiles follow unsaved edits.
+     *
+     * @return list<array{key:string, label:string, target:string}>
+     */
+    private static function seoChecks(): array
+    {
+        return [
+            ['key' => 'listing',     'label' => 'Search listing',   'target' => 'fc-seo-indexPlanner'],
+            ['key' => 'title',       'label' => 'SEO title',        'target' => 'fc-seo-titleTemplate'],
+            ['key' => 'description', 'label' => 'Meta description', 'target' => 'fc-seo-descriptionTemplate'],
+            ['key' => 'canonical',   'label' => 'Canonical URL',    'target' => 'fc-seo-canonicalEnabled'],
+            ['key' => 'shareImage',  'label' => 'Share image',      'target' => 'fc-seo-socialImage'],
+            ['key' => 'schema',      'label' => 'Structured data',  'target' => 'fc-seo-schemaEnabled'],
+        ];
+    }
+
+    /**
+     * The Indexing list: the two pages an admin may open to search engines, then the ones kept out
+     * for good because they hold a visitor's own quote or are the admin itself.
+     *
+     * @param array<string, mixed> $seo
+     * @return list<array{label:string, path:string, hint:string, field:string, checked:bool, locked:bool}>
+     */
+    private static function seoPages(array $seo): array
+    {
+        return [
+            [
+                'label'   => 'Planner',
+                'path'    => '/planner',
+                'hint'    => 'The fence planner. Quote links (?qid=) stay hidden either way.',
+                'field'   => 'indexPlanner',
+                'checked' => !empty($seo['indexPlanner']),
+                'locked'  => false,
+            ],
+            [
+                'label'   => 'Product Lookup',
+                'path'    => '/lookup',
+                'hint'    => "Repeats the store's own product pages, so leave it off unless the store does not list them.",
+                'field'   => 'indexLookup',
+                'checked' => !empty($seo['indexLookup']),
+                'locked'  => false,
+            ],
+            [
+                'label'   => 'Project plans',
+                'path'    => '/project-plan',
+                'hint'    => "A visitor's own quote and materials list.",
+                'field'   => '',
+                'checked' => false,
+                'locked'  => true,
+            ],
+            [
+                'label'   => 'Shared cart links',
+                'path'    => '/share-cart-url/…',
+                'hint'    => "Rebuilds a saved quote's cart in the store.",
+                'field'   => '',
+                'checked' => false,
+                'locked'  => true,
+            ],
+            [
+                'label'   => 'Admin',
+                'path'    => '/backend',
+                'hint'    => 'Including the login page.',
+                'field'   => '',
+                'checked' => false,
+                'locked'  => true,
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string, string> $placeholders token => what it stands for
+     * @return list<array{token:string, label:string}>
+     */
+    private static function seoPlaceholders(array $placeholders): array
+    {
+        $chips = [];
+        foreach ($placeholders as $token => $label) {
+            $chips[] = ['token' => (string) $token, 'label' => (string) $label];
+        }
+
+        return $chips;
+    }
+
+    /**
+     * @param array<string, mixed> $seo
+     * @param array<string, array{label:string, meta:string, hint:string}> $services
+     * @return list<array{key:string, field_id:string, label:string, meta:string, hint:string, value:string}>
+     */
+    private static function seoVerificationFields(array $seo, array $services): array
+    {
+        $fields = [];
+        foreach ($services as $key => $service) {
+            $fields[] = [
+                'key'      => (string) $key,
+                'field_id' => 'fc-seo-' . $key,
+                'label'    => $service['label'],
+                'meta'     => $service['meta'],
+                'hint'     => $service['hint'],
+                'value'    => (string) ($seo[$key] ?? ''),
+            ];
+        }
+
+        return $fields;
+    }
+
+    /**
+     * One Site Health card per check group, in SiteHealthService::GROUPS order. The cards fill in
+     * once site-health-tab.js has run their checks; Security has the most rows, so it spans the row.
+     *
+     * @return list<array{key:string,label:string,title_id:string,card_class:string}>
+     */
+    private static function siteHealthGroups(): array
+    {
+        $groups = [];
+        foreach (SiteHealthService::GROUPS as $key => $label) {
+            $groups[] = [
+                'key' => $key,
+                'label' => $label,
+                'title_id' => 'fc-health-title-' . $key,
+                'card_class' => $key === 'security' ? 'fc-health-card--wide' : '',
+            ];
+        }
+
+        return $groups;
     }
 
     private static function themeFieldId(string $varName): string

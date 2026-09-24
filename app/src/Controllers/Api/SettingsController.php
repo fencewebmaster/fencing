@@ -1,7 +1,7 @@
 <?php
 /**
  * FC Admin — settings API (the settings groups, settings import/export, Cloudflare verify,
- * and the dev console).
+ * the dev console, and the Site Health checks).
  */
 
 declare(strict_types=1);
@@ -16,7 +16,10 @@ use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Services\DevConsoleService;
 use Fc\Admin\Settings\FenceColorSettings;
 use Fc\Admin\Settings\IntegrationsSettings;
+use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Settings\PlannerOptionSettings;
+use Fc\Admin\Settings\SeoSettings;
+use Fc\Admin\Services\SiteHealthService;
 use Fc\Admin\Settings\SystemSettings;
 use Fc\Admin\Settings\ThemeSettings;
 
@@ -56,6 +59,16 @@ final class SettingsController extends BaseApiController
 
         if ($action === 'integrations') {
             $this->handleIntegrations($method);
+            return;
+        }
+
+        if ($action === 'seo') {
+            $this->handleSeo($method);
+            return;
+        }
+
+        if ($action === 'site-health') {
+            $this->handleSiteHealth($method);
             return;
         }
 
@@ -401,6 +414,89 @@ final class SettingsController extends BaseApiController
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
     }
 
+    private function handleSeo(string $method): void
+    {
+        if ($method === 'GET') {
+            echo json_encode(SeoSettings::apiPayload(), JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if ($method === 'POST') {
+            $payload = $this->request->jsonBody();
+            if (!is_array($payload) || !isset($payload['seo']) || !is_array($payload['seo'])) {
+                http_response_code(400);
+                echo json_encode([
+                    'ok' => false,
+                    'error' => 'Invalid JSON. Expected { "seo": { "searchEngineVisible": true } }.',
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (!self::csrfOk($payload)) {
+                http_response_code(403);
+                echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $result = SeoSettings::save($payload['seo']);
+            if (!$result['ok']) {
+                http_response_code(400);
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            $response = SeoSettings::apiPayload();
+            $response['message'] = 'SEO settings saved.';
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        http_response_code(405);
+        echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * One Site Health card's checks (?group=server|database|security). Read-only, so a GET with
+     * no CSRF token; the Super Admin check is here because the report maps the server's weak spots
+     * and settings.settings alone would open it to every role that can edit settings.
+     */
+    private function handleSiteHealth(string $method): void
+    {
+        if ($method !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!PermissionService::isSuperAdmin()) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Only the Super Admin can run Site Health.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $group = (string) $this->request->query('group', '');
+        if (!array_key_exists($group, SiteHealthService::GROUPS)) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Unknown check group.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        try {
+            $checks = SiteHealthService::run($group);
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'error' => 'The checks stopped: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+            return;
+        }
+
+        // Error-log lines can carry invalid UTF-8, which would otherwise blank the whole response.
+        echo json_encode([
+            'ok' => true,
+            'group' => $group,
+            'checks' => $checks,
+        ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+    }
+
     private function handleCloudflareVerify(string $method): void
     {
         if ($method !== 'POST') {
@@ -520,6 +616,7 @@ final class SettingsController extends BaseApiController
             'integrations' => IntegrationsSettings::get(),
             'projectPlan'  => PlannerOptionSettings::extraItems(),
             'projectPlanStock' => PlannerOptionSettings::stock(),
+            'seo'          => SeoSettings::get(),
             'console'      => ConsoleSettings::get(),
         ];
 
@@ -604,7 +701,7 @@ final class SettingsController extends BaseApiController
         $appliedCount = 0;
         $failedSections = [];
 
-        foreach (['theme', 'branding', 'fenceColors', 'catalog', 'system', 'integrations', 'projectPlan', 'console'] as $key) {
+        foreach (['theme', 'branding', 'fenceColors', 'catalog', 'system', 'integrations', 'projectPlan', 'seo', 'console'] as $key) {
             if (!array_key_exists($key, $settings) || !is_array($settings[$key])) {
                 continue;
             }
@@ -618,6 +715,7 @@ final class SettingsController extends BaseApiController
                 'system' => SystemSettings::save($value),
                 'integrations' => IntegrationsSettings::save($value, ''),
                 'projectPlan' => PlannerOptionSettings::saveExtraItems($value),
+                'seo' => SeoSettings::save($value),
                 'console' => ConsoleSettings::save($value),
                 default => ['ok' => false, 'error' => 'Unknown section.'],
             };

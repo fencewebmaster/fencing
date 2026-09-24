@@ -10291,6 +10291,41 @@ function initAutocompleteAddress() {
     autocomplete.addListener("place_changed", fillInAddress);
 }
 
+// Maps is fetched on demand (footer.php holds the URL); its callback is initAutocompleteAddress above.
+function fcLoadGoogleMaps() {
+    if (fcLoadGoogleMaps.requested || !window.fcGoogleMapsSrc) {
+        return;
+    }
+
+    fcLoadGoogleMaps.requested = true;
+
+    var script = document.createElement('script');
+    script.src = window.fcGoogleMapsSrc;
+    script.async = true;
+    document.head.appendChild(script);
+}
+
+// Fetch it when #address takes focus, or as soon as it nears the viewport (the plans modal opening),
+// so the suggestions are usually ready by the time the visitor starts typing.
+document.addEventListener('focusin', function (e) {
+    if (e.target && e.target.id === 'address') {
+        fcLoadGoogleMaps();
+    }
+});
+
+if (typeof IntersectionObserver === 'function' && document.querySelector('#address')) {
+    var fcAddressObserver = new IntersectionObserver(function (entries) {
+        if (entries.some(function (entry) { return entry.isIntersecting; })) {
+            fcAddressObserver.disconnect();
+            fcLoadGoogleMaps();
+        }
+    }, { rootMargin: '300px' });
+
+    document.querySelectorAll('#address').forEach(function (field) {
+        fcAddressObserver.observe(field);
+    });
+}
+
 //----------------------------------------------------------------------------------
 
 /**

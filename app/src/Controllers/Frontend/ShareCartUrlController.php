@@ -6,6 +6,7 @@ namespace Fc\Admin\Controllers\Frontend;
 
 use Fc\Admin\Core\FrontendApplication;
 use Fc\Admin\Core\NotFoundHandler;
+use Fc\Admin\Helpers\AssetHelper;
 use Fc\Admin\Models\ProjectPlanPageModel;
 use Fc\Admin\Services\Database;
 use Fc\Admin\Services\PlannerRecordService;
@@ -149,7 +150,7 @@ final class ShareCartUrlController extends BaseFrontendController
             // Nested route: basePath()-built asset URLs, never the one-segment asset()
             // helper. Edit in pairs with LookupController::index()'s copy of this closure.
             'fcShareCartAsset' => static function (string $rel) use ($appBase): string {
-                $rel  = ltrim($rel, '/');
+                $rel  = AssetHelper::minified(ltrim($rel, '/'));
                 $path = FC_ROOT . '/' . $rel;
                 $url  = $appBase !== '' ? $appBase . '/' . $rel : '/' . $rel;
 

@@ -18,7 +18,9 @@
         'system',
         'integration',
         'project-plan',
-        'console'
+        'seo',
+        'console',
+        'site-health'
     ];
     var SETTINGS_DEFAULT_TAB = 'theme';
     var SETTINGS_URL_TAB_KEY = 'tab';
@@ -60,6 +62,12 @@
         integrationsRevision: '',
         integrationDirty: false,
         integrationFormBound: false,
+        seo: {},
+        seoInitial: {},
+        seoDefaults: {},
+        seoContext: {},
+        seoDirty: false,
+        seoFormBound: false,
         console: { debugMode: false },
         consoleDefaults: { debugMode: false },
         consoleFormBound: false,
@@ -85,6 +93,9 @@
         }
         if (normalized === 'dev-mode' || normalized === 'devmode' || normalized === 'dev') {
             normalized = 'console';
+        }
+        if (normalized === 'health' || normalized === 'sitehealth') {
+            normalized = 'site-health';
         }
         return SETTINGS_TABS.indexOf(normalized) !== -1 ? normalized : SETTINGS_DEFAULT_TAB;
     }
@@ -461,7 +472,9 @@
         var systemActions = document.getElementById('fc-settings-header-actions-system');
         var integrationActions = document.getElementById('fc-settings-header-actions-integration');
         var projectPlanActions = document.getElementById('fc-settings-header-actions-project-plan');
+        var seoActions = document.getElementById('fc-settings-header-actions-seo');
         var consoleActions = document.getElementById('fc-settings-header-actions-console');
+        var siteHealthActions = document.getElementById('fc-settings-header-actions-site-health');
         var themeDirty = document.getElementById('fc-settings-theme-dirty');
         var brandingDirty = document.getElementById('fc-settings-branding-dirty');
         var fenceColorsDirty = document.getElementById('fc-settings-fence-colors-dirty');
@@ -469,6 +482,7 @@
         var systemDirty = document.getElementById('fc-settings-system-dirty');
         var integrationDirty = document.getElementById('fc-settings-integration-dirty');
         var projectPlanDirty = document.getElementById('fc-settings-project-plan-dirty');
+        var seoDirty = document.getElementById('fc-settings-seo-dirty');
         var themeReset = document.getElementById('fc-theme-reset');
         var brandingReset = document.getElementById('fc-branding-reset');
         var fenceColorsReset = document.getElementById('fc-fence-colors-reset');
@@ -476,6 +490,7 @@
         var systemReset = document.getElementById('fc-system-reset');
         var integrationReset = document.getElementById('fc-integration-reset');
         var projectPlanReset = document.getElementById('fc-project-plan-reset');
+        var seoReset = document.getElementById('fc-seo-reset');
 
         if (themeActions) {
             themeActions.classList.toggle('hidden', state.activeTab !== 'theme');
@@ -505,9 +520,17 @@
             projectPlanActions.classList.toggle('hidden', state.activeTab !== 'project-plan');
             projectPlanActions.classList.toggle('flex', state.activeTab === 'project-plan');
         }
+        if (seoActions) {
+            seoActions.classList.toggle('hidden', state.activeTab !== 'seo');
+            seoActions.classList.toggle('flex', state.activeTab === 'seo');
+        }
         if (consoleActions) {
             consoleActions.classList.toggle('hidden', state.activeTab !== 'console');
             consoleActions.classList.toggle('flex', state.activeTab === 'console');
+        }
+        if (siteHealthActions) {
+            siteHealthActions.classList.toggle('hidden', state.activeTab !== 'site-health');
+            siteHealthActions.classList.toggle('flex', state.activeTab === 'site-health');
         }
         if (themeDirty) {
             themeDirty.classList.toggle('hidden', state.activeTab !== 'theme' || !state.themeDirty);
@@ -539,6 +562,9 @@
                 state.activeTab !== 'project-plan' || !state.projectPlanItemsDirty
             );
         }
+        if (seoDirty) {
+            seoDirty.classList.toggle('hidden', state.activeTab !== 'seo' || !state.seoDirty);
+        }
         if (themeReset) {
             themeReset.disabled = !state.themeDirty;
         }
@@ -560,6 +586,9 @@
         if (projectPlanReset) {
             projectPlanReset.disabled = !state.projectPlanItemsDirty;
         }
+        if (seoReset) {
+            seoReset.disabled = !state.seoDirty;
+        }
     }
 
     function switchTab(tabId) {
@@ -571,7 +600,9 @@
         var systemPanel = document.getElementById('fc-settings-panel-system');
         var integrationPanel = document.getElementById('fc-settings-panel-integration');
         var projectPlanPanel = document.getElementById('fc-settings-panel-project-plan');
+        var seoPanel = document.getElementById('fc-settings-panel-seo');
         var consolePanel = document.getElementById('fc-settings-panel-console');
+        var siteHealthPanel = document.getElementById('fc-settings-panel-site-health');
         var preview = document.getElementById('fc-settings-preview');
         var layout = document.getElementById('fc-settings-layout');
         var showPreview = tabId === 'branding';
@@ -597,8 +628,14 @@
         if (projectPlanPanel) {
             projectPlanPanel.classList.toggle('hidden', tabId !== 'project-plan');
         }
+        if (seoPanel) {
+            seoPanel.classList.toggle('hidden', tabId !== 'seo');
+        }
         if (consolePanel) {
             consolePanel.classList.toggle('hidden', tabId !== 'console');
+        }
+        if (siteHealthPanel) {
+            siteHealthPanel.classList.toggle('hidden', tabId !== 'site-health');
         }
         if (layout) {
             layout.classList.toggle('lg:grid-cols-2', showPreview);
@@ -634,6 +671,9 @@
         if (tabId === 'project-plan') {
             // The Low Stock editor could not size itself while this panel was hidden.
             global.FC.Settings.tabs.projectPlan.mountEditor();
+        }
+        if (tabId === 'site-health') {
+            global.FC.Settings.tabs.siteHealth.ensureRun();
         }
     }
 
@@ -702,6 +742,11 @@
         state.projectPlanStock = Object.assign({}, data.projectPlanStock || {});
         state.projectPlanStockDefaults = Object.assign({}, data.projectPlanStockDefaults || {});
 
+        state.seo = global.FC.Settings.tabs.seo.clone(data.seo || {});
+        state.seoInitial = global.FC.Settings.tabs.seo.clone(data.seo || {});
+        state.seoDefaults = global.FC.Settings.tabs.seo.clone(data.seoDefaults || {});
+        state.seoContext = Object.assign({}, data.seoContext || {});
+
         state.console = Object.assign(
             { debugMode: false },
             data.console || {}
@@ -718,12 +763,14 @@
         state.systemDirty = false;
         state.integrationDirty = false;
         state.projectPlanItemsDirty = false;
+        state.seoDirty = false;
         state.fenceColorsSort = { column: null, direction: 'asc' };
         global.FC.Settings.tabs.fenceColors.tableBound = false;
         state.catalogFormBound = false;
         state.systemFormBound = false;
         state.integrationFormBound = false;
         state.projectPlanFormBound = false;
+        state.seoFormBound = false;
         state.consoleFormBound = false;
         state.consoleSaving = false;
 
@@ -753,7 +800,9 @@
         global.FC.Settings.tabs.system.bind();
         global.FC.Settings.tabs.integration.bind();
         global.FC.Settings.tabs.projectPlan.bind();
+        global.FC.Settings.tabs.seo.bind();
         global.FC.Settings.tabs.console.bind();
+        global.FC.Settings.tabs.siteHealth.bind();
         global.FC.Settings.tabs.theme.updatePresetCards();
         global.FC.Settings.tabs.theme.applyLiveTheme();
         global.FC.Settings.tabs.branding.updatePreview();
@@ -761,10 +810,14 @@
         global.FC.Settings.tabs.system.paint();
         global.FC.Settings.tabs.integration.paint();
         global.FC.Settings.tabs.projectPlan.paint();
+        global.FC.Settings.tabs.seo.paint();
         if (state.activeTab === 'catalog') {
             global.FC.Settings.tabs.catalog.ensureOptions().then(function () {
                 global.FC.Settings.tabs.catalog.paint();
             });
+        }
+        if (state.activeTab === 'site-health') {
+            global.FC.Settings.tabs.siteHealth.ensureRun();
         }
         container.removeAttribute('aria-busy');
         // Show flash notice if present (from previous save)

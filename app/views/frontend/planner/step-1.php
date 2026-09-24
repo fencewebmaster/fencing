@@ -69,6 +69,7 @@
                 $fence_draft_link_text = 'Learn more';
             }
             $fence_draft_new_tab = ! empty( $fence_draft['new_tab'] );
+            $fence_img_size = $style_image_sizes[ (string) $fence['slug'] ] ?? null;
             ?>
             <div class="fencing-style-item fencing-styles-slide<?php echo $fence_is_live ? '' : ' fencing-style-item--unavailable'; ?>"
                 data-slug="<?php echo e((string) $fence['slug']); ?>"
@@ -77,7 +78,7 @@
                 <div>
 
                     <div class="fencing-style-img">
-                        <img src="<?php echo url() . $fence['image']; ?>" alt="<?php echo e((string) $fence['title']); ?>">
+                        <img src="<?php echo url() . $fence['image']; ?>" alt="<?php echo e((string) $fence['title']); ?>"<?php if ( $fence_img_size !== null ) : ?> width="<?php echo (int) $fence_img_size[0]; ?>" height="<?php echo (int) $fence_img_size[1]; ?>"<?php endif; ?>>
                         <?php if ( ! $fence_is_live ) : ?>
                         <div class="fencing-style-unavailable">
                             <span class="fencing-style-unavailable__text"><?php echo e($fence_draft_description); ?></span>
@@ -113,7 +114,7 @@
                 <div>
 
                     <div class="fencing-style-img">
-                        <img src="<?php echo url(); ?>public/assets/img/webp/plain-white.webp">  
+                        <img src="<?php echo url(); ?>public/assets/img/webp/plain-white.webp" alt="" width="157" height="222">
                         <div class="lq-mid-desc">
                             <div class="lq-icon">
                                 <i class="fa-solid fa-folder-open"></i>                                         

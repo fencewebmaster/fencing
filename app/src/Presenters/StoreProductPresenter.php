@@ -1094,6 +1094,8 @@ final class StoreProductPresenter
                 'style'         => $style,
                 'style_label'   => self::styleLabel($style, $styleLabels),
                 'style_image'   => $styleImage === '' ? '' : $plannerBase . '/' . $styleImage,
+                // Raw store markup for the details modal, which sanitises it client-side like the edit modal.
+                'description'   => (string) ($row['DESCRIPTION'] ?? ''),
                 'fields'        => $fields,
                 'missing_count' => $missing,
                 'total_count'   => count($fields),

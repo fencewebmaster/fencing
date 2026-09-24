@@ -418,6 +418,9 @@
         save() {
             var self = this;
             var state = this.state;
+            if (!this.startSaving('fc-catalog-save')) {
+                return;
+            }
             global.FC.util.toast('saving', 'Saving catalog settings…', TOAST_CATALOG);
             fetch(API_CATALOG, {
                 method: 'POST',
@@ -455,6 +458,7 @@
                     }
                 })
                 .catch(function (err) {
+                    self.stopSaving('fc-catalog-save');
                     global.FC.util.toast('error', err.message || 'Could not save catalog settings.', TOAST_CATALOG);
                 });
         }

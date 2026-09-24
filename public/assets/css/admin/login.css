@@ -509,33 +509,30 @@ html[data-fc-admin-theme='dark'] .form-checkbox input[type='checkbox']:checked {
     margin-top: 0.1rem;
 }
 
-.spinner {
-    width: 1rem;
-    height: 1rem;
-    display: inline-block;
+/* Signing in spins the button in place, matching the admin's Save buttons (buttons.css `.btn.is-saving`). */
+.btn-primary.is-saving,
+.btn-primary.is-saving:disabled {
     position: relative;
+    opacity: 1;
+    cursor: progress;
 }
 
-.spinner::before,
-.spinner::after {
+.btn-primary.is-saving > * {
+    visibility: hidden;
+}
+
+.btn-primary.is-saving::after {
     content: "";
     position: absolute;
-    inset: 0;
+    top: 50%;
+    left: 50%;
+    width: 0.875rem;
+    height: 0.875rem;
+    margin: -0.4375rem 0 0 -0.4375rem;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: var(--fc-white, #fff);
     border-radius: 50%;
-    border: 2px solid transparent;
-}
-
-.spinner::before {
-    border-top-color: #fff;
-    border-right-color: rgba(255, 255, 255, 0.75);
-    animation: fc-login-spin 0.7s linear infinite;
-}
-
-.spinner::after {
-    inset: 3px;
-    border-bottom-color: rgba(255, 255, 255, 0.5);
-    border-left-color: rgba(255, 255, 255, 0.3);
-    animation: fc-login-spin 1s linear infinite reverse;
+    animation: fc-login-spin 0.6s linear infinite;
 }
 
 @keyframes fc-login-spin {
@@ -545,8 +542,7 @@ html[data-fc-admin-theme='dark'] .form-checkbox input[type='checkbox']:checked {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .spinner::before,
-    .spinner::after {
+    .btn-primary.is-saving::after {
         animation: none;
     }
 }

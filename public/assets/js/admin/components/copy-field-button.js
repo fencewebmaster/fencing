@@ -85,8 +85,7 @@
 
         /**
          * Copies `control`'s value to the clipboard and shows feedback on `btn`.
-         * Falls back to text content, so a read-only block reading as rendered HTML copies the
-         * words rather than nothing.
+         * A read-only block of rendered HTML (no `value`) copies as formatted content, not markup.
          * @param {HTMLInputElement|HTMLTextAreaElement|Element} control
          * @param {Element} btn
          */
@@ -95,8 +94,9 @@
                 return;
             }
             var self = this;
+            var isField = control.value != null;
             var text = String(
-                control.value != null ? control.value : control.textContent || ''
+                isField ? control.value : control.innerText || control.textContent || ''
             );
 
             function onCopied() {
@@ -121,6 +121,47 @@
                     /* fall through */
                 }
                 self.onError();
+            }
+
+            // Formatted paste target gets text/html; plain-text targets get the words, never the tags.
+            function fallbackRichCopy(html) {
+                function onCopy(e) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/html', html);
+                    e.clipboardData.setData('text/plain', text);
+                }
+                document.addEventListener('copy', onCopy);
+                try {
+                    if (document.execCommand('copy')) {
+                        onCopied();
+                        return;
+                    }
+                } catch (err) {
+                    /* fall through */
+                } finally {
+                    document.removeEventListener('copy', onCopy);
+                }
+                self.onError();
+            }
+
+            if (!isField) {
+                var html = control.innerHTML;
+                if (navigator.clipboard && typeof navigator.clipboard.write === 'function' && typeof global.ClipboardItem === 'function') {
+                    navigator.clipboard
+                        .write([
+                            new global.ClipboardItem({
+                                'text/html': new Blob([html], { type: 'text/html' }),
+                                'text/plain': new Blob([text], { type: 'text/plain' })
+                            })
+                        ])
+                        .then(onCopied)
+                        .catch(function () {
+                            fallbackRichCopy(html);
+                        });
+                    return;
+                }
+                fallbackRichCopy(html);
+                return;
             }
 
             if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {

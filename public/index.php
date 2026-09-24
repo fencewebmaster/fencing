@@ -4,6 +4,9 @@ require __DIR__ . '/../app/bootstrap.php';
 use Fc\Admin\Core\Application;
 use Fc\Admin\Settings\ConsoleSettings;
 
+// The admin, login page included, must never show up in search results.
+header('X-Robots-Tag: noindex, nofollow');
+
 // Fatal errors/uncaught exceptions are controlled by display_errors, not error_reporting() —
 // without this, an unhandled error in the admin panel leaks a full stack trace (absolute
 // server paths, internal class layout) to the browser whenever the server's own php.ini

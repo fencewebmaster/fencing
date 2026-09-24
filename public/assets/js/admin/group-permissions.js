@@ -410,6 +410,10 @@
             toast('error', state.lockNotice || 'This role cannot be edited.');
             return;
         }
+        var saveBtn = document.getElementById('fc-gp-save');
+        if (!window.FC.util.setSaving(saveBtn, true)) {
+            return;
+        }
         toast('loading', 'Saving permissions…');
         fetch(state.apiUrl + (state.apiUrl.indexOf('?') >= 0 ? '&' : '?') + 'action=save', {
             method: 'POST',
@@ -443,6 +447,7 @@
                 }
             })
             .catch(function (err) {
+                window.FC.util.setSaving(saveBtn, false);
                 toast('error', err.message || 'Could not save permissions.');
             });
     }

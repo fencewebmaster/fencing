@@ -58,6 +58,15 @@
             return null;
         }
 
+        /** @returns {boolean} false when that save is already in flight (see FC.util.setSaving) */
+        startSaving(buttonId) {
+            return FC.util.setSaving(document.getElementById(buttonId), true);
+        }
+
+        stopSaving(buttonId) {
+            FC.util.setSaving(document.getElementById(buttonId), false);
+        }
+
         /** Populates this tab's DOM fields from state. Override in subclasses. */
         paint() {}
 

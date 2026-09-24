@@ -644,6 +644,9 @@
         save() {
             var self = this;
             var state = this.state;
+            if (!this.startSaving('fc-fence-colors-save')) {
+                return;
+            }
             global.FC.util.toast('saving', 'Saving fence colors…', TOAST_FENCE_COLORS);
             fetch(API_FENCE_COLORS, {
                 method: 'POST',
@@ -676,6 +679,7 @@
                     }
                 })
                 .catch(function (err) {
+                    self.stopSaving('fc-fence-colors-save');
                     global.FC.util.toast('error', err.message || 'Could not save fence colors.', TOAST_FENCE_COLORS);
                 });
         }

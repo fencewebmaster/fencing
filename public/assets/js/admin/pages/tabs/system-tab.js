@@ -85,6 +85,9 @@
         save() {
             var self = this;
             var state = this.state;
+            if (!this.startSaving('fc-system-save')) {
+                return;
+            }
             global.FC.util.toast('saving', 'Saving system settings…', TOAST_SYSTEM);
             fetch(API_SYSTEM, {
                 method: 'POST',
@@ -117,6 +120,7 @@
                     }
                 })
                 .catch(function (err) {
+                    self.stopSaving('fc-system-save');
                     global.FC.util.toast('error', err.message || 'Could not save system settings.', TOAST_SYSTEM);
                 });
         }

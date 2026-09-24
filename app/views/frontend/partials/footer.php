@@ -79,8 +79,9 @@ use Fc\Admin\Services\SiteRegistryService;
 <script defer src="<?php echo asset('public/assets/js/vendor/jquery-scrollspy.min.js'); ?>"></script>
 
 <?php /* Plugins */ ?>
-<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo e((string) AppConfigService::all()->apikey->google_map); ?>&libraries=places&loading=async&callback=initAutocompleteAddress"
-    async defer></script>
+<?php /* Google Maps only feeds the Places autocomplete on #address, so fcLoadGoogleMaps() in functions.js
+     fetches it once that field is in play instead of every visitor downloading ~300 KB up front. */ ?>
+<script>window.fcGoogleMapsSrc = <?php echo json_encode('https://maps.googleapis.com/maps/api/js?key=' . rawurlencode((string) AppConfigService::all()->apikey->google_map) . '&libraries=places&loading=async&callback=initAutocompleteAddress', JSON_UNESCAPED_SLASHES | JSON_HEX_TAG); ?>;</script>
 
 <script defer src="<?php echo asset('public/assets/js/vendor/bootstrap.bundle.min.js'); ?>"></script>
 

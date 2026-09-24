@@ -8,6 +8,7 @@
  * @var array    $catalog           Catalog display settings.
  * @var array    $toolbar           LookupPageModel::toolbarData() — sort/layout/per-page controls.
  * @var string   $fcLookupPageTitle
+ * @var string   $fcLookupRobots    LookupPageModel::build() — robots meta content (Settings → SEO → Indexing).
  * @var string   $fcLookupAppBase   Web path the page is mounted at.
  * @var string   $fcLookupLogoUrl
  * @var callable $h                 HTML escaper.
@@ -16,17 +17,19 @@
 
 declare(strict_types=1);
 
+use Fc\Admin\Settings\SeoSettings;
 use Fc\Admin\Settings\ThemeSettings;
 
 $adminCssBase = 'public/assets/css/admin/';
 ?><!DOCTYPE html>
-<html lang="en" data-fc-admin-theme="light">
+<html lang="<?php echo $h(SeoSettings::language()); ?>" data-fc-admin-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $h($fcLookupPageTitle); ?></title>
+    <meta name="robots" content="<?php echo $h($fcLookupRobots); ?>">
     <?php echo ThemeSettings::cssBlock(); ?>
-    <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/fonts.css')); ?>">
+    <?php include view_path('frontend.partials.webfonts'); ?>
     <link href="<?php echo $h($asset('public/assets/css/vendor/bootstrap/bootstrap.min.css')); ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/vendor/fontawesome/css/all.min.css')); ?>">
     <link rel="stylesheet" href="<?php echo $h($asset($adminCssBase . 'buttons.css')); ?>">

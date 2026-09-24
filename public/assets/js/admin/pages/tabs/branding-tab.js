@@ -102,13 +102,16 @@
             this.updateLogoPreview();
         }
 
-        /** Static sidebar preview markup — built once when the Branding tab becomes active. */
+        /** Static sidebar preview markup, built when the Branding tab becomes active. Same markup as the view's server copy: edit in pairs. */
         renderPreview() {
             return (
-                '<div class="rounded-xl border border-slate-200 bg-white p-4">' +
-                '<p class="mb-3 text-sm font-semibold text-slate-800">Live preview</p>' +
-                '<div class="space-y-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-sm">' +
-                '<div class="border-b border-slate-200 px-3 py-3">' +
+                '<section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-branding-preview-heading">' +
+                '<header class="fc-settings-card__head">' +
+                '<div class="fc-settings-card__heading">' +
+                '<h3 class="fc-settings-card__title" id="fc-branding-preview-heading">Live Preview</h3>' +
+                '</div>' +
+                '</header>' +
+                '<div class="fc-settings-card__body fc-settings-card__body--sections text-sm">' +
                 '<div class="flex items-start gap-4">' +
                 '<div class="flex flex-col items-start">' +
                 '<p class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Logo</p>' +
@@ -120,23 +123,24 @@
                 '<div id="fc-branding-preview-favicon" class="fc-settings-branding-logo__preview fc-settings-branding-logo__preview--sidebar fc-settings-branding-logo__preview--empty">' +
                 '<span class="fc-settings-branding-logo__preview-fallback" aria-hidden="true"><i class="fa-solid fa-image"></i></span>' +
                 '</div></div>' +
-                '</div></div>' +
-                '<div class="border-b border-slate-200 px-3 py-3">' +
+                '</div>' +
+                '<div>' +
                 '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">App name</p>' +
                 '<p id="fc-branding-preview-title" class="truncate font-bold leading-snug text-slate-900">Fencing Calculator</p>' +
                 '</div>' +
-                '<div class="border-b border-slate-200 px-3 py-3">' +
+                '<div>' +
                 '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Tagline</p>' +
                 '<p id="fc-branding-preview-tagline" class="leading-snug text-slate-600">Calculate your fence cost and the materials needed.</p>' +
                 '</div>' +
-                '<div class="px-3 py-3">' +
+                '<div>' +
                 '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Footer</p>' +
                 '<p id="fc-branding-preview-footer" class="truncate text-xs text-slate-500">' +
                 '<span id="fc-branding-preview-footer-name">Fencing Calculator</span> ' +
                 '<span id="fc-branding-preview-version">v10.0.0 beta</span>' +
-                '</p></div></div>' +
-                '<p class="mt-3 text-xs text-slate-500">Saved branding applies on the <a class="font-medium text-indigo-600 hover:text-indigo-700" href="../planner" target="_blank" rel="noopener">planner</a> after save (refresh if already open).</p>' +
-                '</div>'
+                '</p></div>' +
+                '<p class="text-xs text-slate-500">Saved branding applies on the <a class="font-medium text-indigo-600 hover:text-indigo-700" href="../planner" target="_blank" rel="noopener">planner</a> after save (refresh if already open).</p>' +
+                '</div>' +
+                '</section>'
             );
         }
 
@@ -258,6 +262,9 @@
         save() {
             var self = this;
             var state = this.state;
+            if (!this.startSaving('fc-branding-save')) {
+                return;
+            }
             global.FC.util.toast('saving', 'Saving branding…', TOAST_BRANDING);
             fetch(API_BRANDING, {
                 method: 'POST',
@@ -291,6 +298,7 @@
                     }
                 })
                 .catch(function (err) {
+                    self.stopSaving('fc-branding-save');
                     global.FC.util.toast('error', err.message || 'Could not save branding.', TOAST_BRANDING);
                 });
         }

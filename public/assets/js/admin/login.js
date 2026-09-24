@@ -164,7 +164,9 @@
 
             var btn = document.getElementById('login-btn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Signing in...';
+            btn.classList.add('is-saving');
+            btn.setAttribute('aria-busy', 'true');
+            var signedIn = false;
 
             var cfg = window.FC_LOGIN || {};
             fetch(cfg.api || 'api.php?module=auth&action=login', {
@@ -190,6 +192,7 @@
                 .then(function (result) {
                     var data = result.data || {};
                     if (data.ok) {
+                        signedIn = true;
                         clearLoginError();
                         toast('ok', data.message || 'Login successful!');
                         var redirect = '';
@@ -220,8 +223,13 @@
                     showLoginError('Connection error. Please check your network and try again.');
                 })
                 .finally(function () {
+                    // Keep spinning through the redirect delay after a successful sign-in.
+                    if (signedIn) {
+                        return;
+                    }
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> Sign in';
+                    btn.classList.remove('is-saving');
+                    btn.removeAttribute('aria-busy');
                 });
         });
 

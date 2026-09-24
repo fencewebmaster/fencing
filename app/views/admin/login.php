@@ -136,7 +136,7 @@ $version = $page['version'];
                         </div>
 
                         <button type="submit" id="login-btn" class="w-full btn-primary btn-lg">
-                            <i class="fas fa-arrow-right-to-bracket"></i> Sign in
+                            <i class="fas fa-arrow-right-to-bracket"></i> <span>Sign in</span>
                         </button>
                     </form>
                 </div>

@@ -784,24 +784,79 @@ html[data-fc-admin-theme='dark'] .fc-admin-modal-confirm-field label {
     color: var(--fc-admin-text, #e2e8f0);
 }
 
-/* Integrations tab — Webhook Mode pill: green = live, red = test */
-input[name="fc-integration-webhookMode"][value="live"]:checked + .fc-mode-pill {
-    background: var(--fc-green, #04a725);
+/* Settings — Debug Mode: the Pre-Planner switch, with a label on each side. */
+.fc-mode-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
-input[name="fc-integration-webhookMode"][value="test"]:checked + .fc-mode-pill {
-    background: var(--fc-red, #f70000);
+.fc-mode-switch__side {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    color: var(--fc-admin-text-subtle, #94a3b8);
+    cursor: pointer;
+    transition: color 0.15s ease;
 }
 
-/* Console tab — Debug Mode toggle: red = off, green = on */
-[data-fc-debug-mode="0"].fc-debug-toggle--active {
-    background: var(--fc-red, #f70000);
-    color: #fff;
+.fc-mode-switch__side:hover {
+    color: var(--fc-admin-text, #1e293b);
 }
 
-[data-fc-debug-mode="1"].fc-debug-toggle--active {
-    background: var(--fc-green, #04a725);
-    color: #fff;
+.fc-mode-switch__side[aria-pressed="true"] {
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-mode-switch__track {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.fc-mode-switch__thumb {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    transition: transform 0.2s ease;
+}
+
+.fc-mode-switch__track[aria-checked="true"] {
+    background: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-mode-switch__track[aria-checked="true"] .fc-mode-switch__thumb {
+    transform: translateX(1.25rem);
+}
+
+.fc-mode-switch__track:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--fc-princeton-orange, #f67925);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-mode-switch__track,
+    .fc-mode-switch__thumb {
+        transition: none;
+    }
 }
 
 /* Native selects: the option list is drawn by the browser, so the checked row is the only part that

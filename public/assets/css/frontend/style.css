@@ -1,5 +1,5 @@
 @charset "UTF-8";
-/* Webfonts: assets/css/fonts.css (loaded first in views/partials/head.php). */
+/* Webfonts: app/views/frontend/partials/webfonts.php (included before this file in partials/head.php). */
 
 :root {
     /* Brand & semantic */
@@ -2194,7 +2194,7 @@ label.error {
     display: none !important;
 }
 
-h2.fc-header-title {
+h1.fc-header-title {
     font-family: "League Gothic", sans-serif !important;
     font-size: 48px;
     font-style: normal;
@@ -2206,19 +2206,19 @@ h2.fc-header-title {
 }
 
 @media (max-width: 992px) {
-    h2.fc-header-title {
+    h1.fc-header-title {
         font-size: 40px;
         line-height: 38px;
     }
 }
 
-h2.fc-header-title+p {
+h1.fc-header-title+p {
     font-size: 18px;
     color: var(--fc-granite-gray);
 }
 
 @media (max-width: 992px) {
-    h2.fc-header-title+p {
+    h1.fc-header-title+p {
         font-size: 14px;
     }
 }
@@ -9099,6 +9099,12 @@ thead.fc-border th:last-child {
     pointer-events: none;
 }
 
+/* Steps 2-3 wait for the Step 1 skeleton too: a restored section opens them before Slick is up.
+   visibility, not display, so the Step 3 drawing still lays out and measures while hidden. */
+.fc-planner-page .fencing-section[data-section="1"]:has(.fencing-styles__area.fencing-styles-slick-pending:not(.fencing-styles-slick-ready)) ~ .js-fc-form-step {
+    visibility: hidden;
+}
+
 .fc-planner-page .fencing-styles__area.fencing-styles-slick-ready .js-fencing-styles-slick.slick-initialized,
 .fc-planner-page .fencing-styles.fencing-styles-slick-ready .js-fencing-styles-slick.slick-initialized {
     position: relative;
@@ -9415,6 +9421,8 @@ thead.fc-border th:last-child {
 
 .fencing-style-img img {
     width: 100%;
+    /* The tag's width/height attributes reserve the tile's height before the image arrives; auto keeps the ratio. */
+    height: auto;
     display: block;
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -10820,7 +10828,7 @@ body.fc-restoring-selection .fencing-tab-name {
     font-weight: 600;
 }
 
-/* <b> against this button's 600 resolves to 900, which fonts.css never loads, so it was synthesised. 700 is a real face. */
+/* <b> against this button's 600 resolves to 900, which the webfont link never loads, so it was synthesised. 700 is a real face. */
 .fc-planner-page .btn.fc-btn-next-step b {
     font-weight: 700;
 }
@@ -11519,6 +11527,14 @@ body.fc-restoring-selection .fencing-tab-name {
 @media (min-width: 768px) {
     .fc-planner-page [data-section="1"] .fencing-section__cmp.fencing-styles {
         margin-bottom: -26px;
+    }
+}
+
+/* 992-1200px: as the generic inline-block its baseline set the card's height (33px deeper under Slick than the
+   pre-Slick row), so the handover jumped. As a block it closes 20px below the tiles, as it does above 1200px. */
+@media (min-width: 992px) {
+    .fc-planner-page [data-section="1"] .fencing-section__cmp.fencing-styles {
+        display: block;
     }
 }
 

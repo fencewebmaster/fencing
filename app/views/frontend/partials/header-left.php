@@ -4,7 +4,7 @@ use Fc\Admin\Settings\BrandingSettings;
 
 $fcBranding = BrandingSettings::get();
 ?>
-<h2 class="fc-header-title"><?php echo e($fcBranding['appName']); ?></h2>
+<h1 class="fc-header-title"><?php echo e($fcBranding['appName']); ?></h1>
 
 <p class="mb-2"><?php echo e($fcBranding['tagline']); ?></p>
 

@@ -13,13 +13,16 @@
  * @var bool         $load_quote_failed
  * @var string       $load_quote_error
  * @var string       $load_quote_attempt
+ * @var array        $seo                      PlannerPageModel::seo() — title, description, canonical, robots, meta tags, JSON-LD.
+ * @var array        $style_image_sizes        slug => [width, height] of each Step 1 style image.
  */
 
 use Fc\Admin\Services\PlannerSessionService;
 use Fc\Admin\Settings\ConsoleSettings;
+use Fc\Admin\Settings\SeoSettings;
 ?>
 <!DOCTYPE html>
-<html data-fc-debug="<?php echo ConsoleSettings::debugMode() ? '1' : '0'; ?>">
+<html lang="<?php echo e(SeoSettings::language()); ?>" data-fc-debug="<?php echo ConsoleSettings::debugMode() ? '1' : '0'; ?>">
     <head>
         <?php include view_path('frontend.partials.head'); ?>
         <script>window.FC_DEBUG = document.documentElement.getAttribute('data-fc-debug') === '1';</script>
