@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../../../../js/admin/core/page-controller.js"],
+  "mappings": "CAWC,SAAUA,EAAQ,CACf,aAEA,IAAIC,EAAKD,EAAO,GAAKA,EAAO,IAAM,CAAC,EAEnC,MAAME,CAAe,CAOjB,QAAQC,EAAW,CAAC,CAOpB,SAAU,CAAC,CACf,CAEA,IAAIC,EAAW,CAAC,EAEZC,EAAe,CAKf,SAAU,SAAUC,EAAUC,EAAY,CACtCH,EAASE,CAAQ,EAAIC,GAAc,IAAIL,CAC3C,EAEA,IAAK,SAAUI,EAAU,CACrB,OAAOF,EAASE,CAAQ,GAAK,IACjC,CACJ,EAEAL,EAAG,eAAiBC,EACpBD,EAAG,aAAeI,CACtB,GAAG,MAAM",
+  "names": ["global", "FC", "PageController", "contentEl", "registry", "PageRegistry", "routeKey", "controller"]
+}

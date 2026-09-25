@@ -8,8 +8,10 @@
 
     var API_INTEGRATIONS = global.fcApiUrl('settings', 'action=integrations');
     var API_CLOUDFLARE_VERIFY = global.fcApiUrl('settings', 'action=cloudflare-verify');
+    var API_CLOUDFLARE_PURGE = global.fcApiUrl('settings', 'action=cloudflare-purge');
     var TOAST_INTEGRATIONS = 'fc-integrations-save';
     var TOAST_CLOUDFLARE_VERIFY = 'fc-cloudflare-verify';
+    var TOAST_CLOUDFLARE_PURGE = 'fc-cloudflare-purge';
 
     class IntegrationTabController extends global.FC.Settings.TabController {
         clone(value) {
@@ -51,7 +53,30 @@
                 input.value = site && field ? site[field] || '' : '';
             });
 
+            var self = this;
+            sites.forEach(function (site) {
+                self.paintSiteLogo(String(site.key || ''));
+            });
+
             this.syncPrePlannerDependents();
+            this.syncCloudflareButtons();
+        }
+
+        /** The Sites table thumbnail: the site's own logo, else its default, else an image icon. */
+        paintSiteLogo(siteKey) {
+            var preview = document.querySelector('[data-fc-integration-site-logo-preview="' + siteKey + '"]');
+            var sites = Array.isArray(this.state.integrations.sites) ? this.state.integrations.sites : [];
+            var site = sites.find(function (row) {
+                return String(row.key || '') === siteKey;
+            });
+            if (!preview || !site) {
+                return;
+            }
+            var path = String(site.logo || '').trim() || String(site.logoDefault || '').trim();
+            var url = path ? global.FC.Settings.tabs.fenceColors.previewUrl({ image: path }, this.getAppBase()) : '';
+            preview.innerHTML = url
+                ? '<img src="' + global.FC.util.escapeHtml(url) + '" alt="" decoding="async">'
+                : '<i class="fa-solid fa-image" aria-hidden="true"></i>';
         }
 
         syncPrePlannerDependents() {
@@ -72,7 +97,32 @@
             }
         }
 
-        showVerifyFeedback(btn, ok) {
+        // Verify and Purge need the API token and this row's 32-character Zone ID, as typed; the tooltip says what is missing.
+        syncCloudflareButtons() {
+            var token = String(this.state.integrations.cloudflareApiToken || '').trim();
+            document.querySelectorAll('[data-fc-cloudflare-verify], [data-fc-cloudflare-purge]').forEach(function (btn) {
+                if (btn.classList.contains('is-verifying')) {
+                    return;
+                }
+                if (btn.getAttribute('data-fc-cloudflare-title') === null) {
+                    btn.setAttribute('data-fc-cloudflare-title', btn.title);
+                }
+                var zoneInput = document.getElementById(btn.getAttribute('data-fc-cloudflare-zone-for') || '');
+                var zone = zoneInput ? String(zoneInput.value || '').trim() : '';
+                var reason = '';
+                if (!token) {
+                    reason = 'Add the Cloudflare API token under API Keys first';
+                } else if (!zone) {
+                    reason = 'Enter a Cloudflare Zone ID for this site first';
+                } else if (!/^[a-f0-9]{32}$/i.test(zone)) {
+                    reason = 'A Cloudflare Zone ID is 32 characters (0-9, a-f)';
+                }
+                btn.disabled = reason !== '';
+                btn.title = reason || btn.getAttribute('data-fc-cloudflare-title');
+            });
+        }
+
+        showVerifyFeedback(btn, ok, idleIcon) {
             if (!btn) {
                 return;
             }
@@ -89,7 +139,7 @@
                 btn.classList.add('is-verify-failed');
             }
             window.setTimeout(function () {
-                icon.className = 'fa-solid fa-plug';
+                icon.className = idleIcon || 'fa-solid fa-plug';
                 btn.classList.remove('is-verified', 'is-verify-failed');
             }, 2000);
         }
@@ -149,8 +199,8 @@
                     });
                 })
                 .then(function (result) {
-                    btn.disabled = false;
                     btn.classList.remove('is-verifying');
+                    self.syncCloudflareButtons();
                     if (T) {
                         T.dismiss(TOAST_CLOUDFLARE_VERIFY);
                     }
@@ -171,13 +221,95 @@
                     self.showVerifyFeedback(btn, false);
                 })
                 .catch(function () {
-                    btn.disabled = false;
                     btn.classList.remove('is-verifying');
+                    self.syncCloudflareButtons();
                     if (T) {
                         T.dismiss(TOAST_CLOUDFLARE_VERIFY);
                         T.error('Cloudflare zone check failed.');
                     }
                     self.showVerifyFeedback(btn, false);
+                });
+        }
+
+        // Same inputs as verifyCloudflareZone(): the Zone ID as typed in this row and the token as typed.
+        purgeCloudflareZone(btn) {
+            var self = this;
+            var state = this.state;
+            if (!btn || btn.disabled || btn.classList.contains('is-verifying')) {
+                return;
+            }
+
+            var zoneInputId = btn.getAttribute('data-fc-cloudflare-zone-for') || '';
+            var zoneInput = zoneInputId ? document.getElementById(zoneInputId) : null;
+            var zoneId = zoneInput ? String(zoneInput.value || '').trim() : '';
+            var siteKey = btn.getAttribute('data-fc-cloudflare-site') || '';
+            var siteLabel = btn.getAttribute('data-fc-cloudflare-site-label') || siteKey || 'this site';
+            var token = String(state.integrations.cloudflareApiToken || '').trim();
+            var T = global.FcAdminToast;
+            var idleIcon = 'fa-solid fa-broom';
+
+            if (!zoneId) {
+                if (T) {
+                    T.error('Enter a Cloudflare Zone ID first.');
+                }
+                self.showVerifyFeedback(btn, false, idleIcon);
+                return;
+            }
+
+            // One click purges, like the top-bar Cloudflare option; purgeZone() still refuses another site's zone.
+            var icon = btn.querySelector('i');
+            btn.disabled = true;
+            btn.classList.add('is-verifying');
+            btn.classList.remove('is-verified', 'is-verify-failed');
+            if (icon) {
+                icon.className = 'fa-solid fa-spinner fa-spin';
+            }
+            if (T) {
+                T.loading('Purging the Cloudflare cache for ' + siteLabel + '…', TOAST_CLOUDFLARE_PURGE);
+            }
+
+            function finish(ok, message) {
+                btn.classList.remove('is-verifying');
+                self.syncCloudflareButtons();
+                if (T) {
+                    T.dismiss(TOAST_CLOUDFLARE_PURGE);
+                    if (ok) {
+                        T.success(message);
+                    } else {
+                        T.error(message);
+                    }
+                }
+                self.showVerifyFeedback(btn, ok, idleIcon);
+            }
+
+            fetch(API_CLOUDFLARE_PURGE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    cloudflareApiToken: token,
+                    cloudflareZoneId: zoneId,
+                    siteKey: siteKey,
+                    csrf: state.csrf || ''
+                })
+            })
+                .then(function (res) {
+                    return res.json().catch(function () {
+                        return { ok: false, error: 'Invalid response from server.' };
+                    });
+                })
+                .then(function (data) {
+                    if (data && data.ok) {
+                        finish(true, data.message || 'Cloudflare cache purged for ' + siteLabel + '.');
+                        return;
+                    }
+                    finish(false, String((data && data.error) || 'Cloudflare purge failed.'));
+                })
+                .catch(function () {
+                    finish(false, 'Cloudflare purge failed.');
                 });
         }
 
@@ -204,6 +336,13 @@
                 }
             });
 
+            var tokenInput = document.getElementById('fc-integration-cloudflareApiToken');
+            if (tokenInput) {
+                tokenInput.addEventListener('input', function () {
+                    self.syncCloudflareButtons();
+                });
+            }
+
             var prePlannerInput = document.getElementById('fc-integration-webhookPrePlannerEnabled');
             if (prePlannerInput) {
                 prePlannerInput.addEventListener('change', function () {
@@ -227,6 +366,65 @@
                 }
                 input.addEventListener('input', syncSiteField);
                 input.addEventListener('change', syncSiteField);
+                if (input.getAttribute('data-fc-integration-site-field') === 'cloudflareZoneId') {
+                    input.addEventListener('input', function () {
+                        self.syncCloudflareButtons();
+                    });
+                }
+                if (input.getAttribute('data-fc-integration-site-field') === 'logo') {
+                    input.addEventListener('change', function () {
+                        self.paintSiteLogo(input.getAttribute('data-fc-integration-site'));
+                    });
+                }
+            });
+
+            // The thumbnail opens its row's logo drawer; the row scrolls back so the drawer is in view.
+            document.querySelectorAll('[data-fc-integration-site-logo-toggle]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var panel = document.getElementById(btn.getAttribute('aria-controls') || '');
+                    if (!panel) {
+                        return;
+                    }
+                    var open = panel.hidden;
+                    panel.hidden = !open;
+                    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    var row = btn.closest('[data-fc-integration-site-row]');
+                    if (row) {
+                        row.classList.toggle('is-open', open);
+                    }
+                    if (open) {
+                        var table = btn.closest('[data-fc-integration-sites]');
+                        if (table) {
+                            table.scrollLeft = 0;
+                        }
+                        var field = panel.querySelector('input');
+                        if (field) {
+                            field.focus();
+                        }
+                    }
+                });
+            });
+
+            var sitesTable = document.querySelector('[data-fc-integration-sites]');
+            if (sitesTable) {
+                sitesTable.addEventListener('scroll', function () {
+                    sitesTable.classList.toggle('is-scrolled', sitesTable.scrollLeft > 0);
+                }, { passive: true });
+            }
+
+            document.querySelectorAll('[data-fc-integration-site-logo-default]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var siteKey = btn.getAttribute('data-fc-integration-site-logo-default');
+                    var input = document.querySelector(
+                        '[data-fc-integration-site="' + siteKey + '"][data-fc-integration-site-field="logo"]'
+                    );
+                    if (!input || input.value === '') {
+                        return;
+                    }
+                    input.value = '';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    self.paintSiteLogo(siteKey);
+                });
             });
 
             document.querySelectorAll('[data-fc-integration-site-logo-pick]').forEach(function (btn) {
@@ -251,15 +449,7 @@
                                 site.logo = path;
                             }
                             input.dispatchEvent(new Event('input', { bubbles: true }));
-                            var preview = document.querySelector(
-                                '[data-fc-integration-site-logo-preview="' + siteKey + '"]'
-                            );
-                            if (preview) {
-                                var url = global.FC.Settings.tabs.fenceColors.previewUrl({ image: path }, self.getAppBase());
-                                preview.innerHTML = url
-                                    ? global.FC.Settings.buildViewableImgHtml(url, site ? site.label || siteKey : siteKey)
-                                    : '';
-                            }
+                            self.paintSiteLogo(siteKey);
                             self.setDirty(true);
                         }
                     });
@@ -286,6 +476,12 @@
             document.querySelectorAll('[data-fc-cloudflare-verify]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     self.verifyCloudflareZone(btn);
+                });
+            });
+
+            document.querySelectorAll('[data-fc-cloudflare-purge]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    self.purgeCloudflareZone(btn);
                 });
             });
 

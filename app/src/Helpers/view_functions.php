@@ -50,6 +50,9 @@ if (!function_exists('asset')) {
      *   asset('assets/…')         admin: the bare path plus its ?v= stamp, resolved by
      *                             the browser against the layout's <base href>.
      *
+     * Either one points at the public/assets/min/ copy instead while Settings → Minify
+     * CSS & JS serves it (AssetHelper::minified()).
+     *
      * The two outputs are NOT interchangeable — the app has five deliberately distinct
      * base-URL builders, and pasting a frontend call into an admin view (or vice versa)
      * produces a silently wrong URL. The dispatch is deterministic: same argument, same
@@ -60,6 +63,7 @@ if (!function_exists('asset')) {
         if (str_starts_with($file, 'public/')) {
             return \Fc\Admin\Helpers\AssetHelper::assetUrl($file);
         }
+        $file = \Fc\Admin\Helpers\AssetHelper::minified($file);
 
         return $file . '?v=' . \Fc\Admin\Helpers\UrlHelper::assetVersion($file);
     }

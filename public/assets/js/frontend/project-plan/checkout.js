@@ -1180,10 +1180,19 @@ function fcCaptureProjectPlanCartList() {
             });
         }
 
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(startCapture).catch(startCapture);
+        function whenFontsReady() {
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(startCapture).catch(startCapture);
+            } else {
+                startCapture();
+            }
+        }
+
+        // Thumbnails load lazily; rows never scrolled to would come out as empty frames.
+        if (window.FCLazyImages) {
+            window.FCLazyImages.loadAll(document.getElementById('update_cart-list')).then(whenFontsReady, whenFontsReady);
         } else {
-            startCapture();
+            whenFontsReady();
         }
     });
 }

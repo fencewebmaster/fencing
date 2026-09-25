@@ -110,13 +110,16 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                         <span class="badge rounded-pill bg-secondary fc-cart-optional-badge">Optional</span>
                         <?php endif; ?>
                         <?php if ( $full_cart_image !== '' ) : ?>
-                        <img src="<?php echo e($full_cart_image); ?>"
+                        <?php /* shared/lazy-images.js swaps in the real image as the row nears the viewport; the frame shimmers until then. */ ?>
+                        <span class="fc-lazy-thumb is-loading">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-fc-lazy-src="<?php echo e($full_cart_image); ?>"
                              alt=""
                              class="fc-cart-product-thumb"
-                             loading="lazy"
                              decoding="async"
                              width="100"
                              height="100">
+                        </span>
                         <?php endif; ?>
                     </td>
                     <td class="align-top" style="width: max-content;">

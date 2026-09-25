@@ -19,6 +19,7 @@ tests/*
 
 # Generated storage (keep directory placeholders)
 writable/storage/cache/**/*.json
+writable/storage/cache/*.lock
 writable/storage/sessions/sess_*
 writable/storage/presence/*.json
 !writable/storage/**/.gitkeep

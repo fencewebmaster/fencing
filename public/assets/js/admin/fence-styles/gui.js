@@ -22,6 +22,18 @@
         'number-field': true
     };
 
+    // Step 3's section nav icons, keyed like writable/fences settings; an unknown key gets the sliders.
+    var MODAL_SECTION_ICONS = {
+        rail_options: 'fa-grip-lines',
+        left_side: 'fa-arrow-left',
+        gate: 'fa-door-open',
+        panel_options: 'fa-table-columns',
+        panel_options_custom: 'fa-table-columns',
+        post_options: 'fa-grip-lines-vertical',
+        right_side: 'fa-arrow-right',
+        edit_spacing: 'fa-arrows-left-right'
+    };
+
     // Mirrors GlassPoolCalc.clampDefaults() in frontend fences/calc/glass_pool.js — the planner
     // falls back to these when a config has no panel_clamps, so the editor seeds the same rows.
     // A fresh object per call: the seeded object is edited in place through setByPath.
@@ -1575,23 +1587,32 @@
             html += '<p class="text-sm text-slate-500">No modal settings for this style.</p>';
         } else {
             html += '<div class="fc-fs-gui-modals-layout">';
-            html += '<nav class="fc-fs-gui-modals-nav">';
+            html +=
+                '<nav class="fc-fs-gui-modals-nav" aria-label="Step 3 sections">' +
+                '<div class="fc-fs-gui-modals-nav__inner">' +
+                '<span class="fc-fs-gui-modals-nav__heading" aria-hidden="true">Sections</span>';
             settingKeys.forEach(function (key, idx) {
                 var section = settings[key];
+                var navLabel = section.label || section.title || labelize(key);
+                // The key line only earns its place where it tells two same-named sections apart.
+                var navKey = labelize(key) !== navLabel ? labelize(key) : '';
                 html +=
                     '<button type="button" class="fc-fs-gui-modals-nav__item' +
                     (idx === 0 ? ' is-active' : '') +
                     '" data-gui-section-nav="' +
                     escapeHtml(key) +
                     '">' +
-                    '<span>' +
-                    escapeHtml(section.label || section.title || labelize(key)) +
+                    '<i class="fa-solid ' +
+                    (MODAL_SECTION_ICONS[key] || 'fa-sliders') +
+                    ' fc-fs-gui-modals-nav__icon" aria-hidden="true"></i>' +
+                    '<span class="fc-fs-gui-modals-nav__text">' +
+                    '<span class="fc-fs-gui-modals-nav__label">' +
+                    escapeHtml(navLabel) +
                     '</span>' +
-                    '<small>' +
-                    escapeHtml(labelize(key)) +
-                    '</small></button>';
+                    (navKey ? '<small class="fc-fs-gui-modals-nav__key">' + escapeHtml(navKey) + '</small>' : '') +
+                    '</span></button>';
             });
-            html += '</nav><div class="fc-fs-gui-modals-main">';
+            html += '</div></nav><div class="fc-fs-gui-modals-main">';
             settingKeys.forEach(function (key, idx) {
                 html += renderSettingsSection(key, settings[key], appBase, idx === 0);
             });

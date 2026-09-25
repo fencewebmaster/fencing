@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
-use Fc\Admin\Helpers\AssetHelper;
 use Fc\Admin\Helpers\FileHelper;
 use Fc\Admin\Helpers\FormatHelper;
 use Fc\Admin\Helpers\RequestHelper;
@@ -16,6 +15,7 @@ use Fc\Admin\Models\SystemProductModel;
 use Fc\Admin\Models\UserModel;
 use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Settings\IntegrationsSettings;
+use Fc\Admin\Settings\MinifySettings;
 use Fc\Admin\Settings\ThemeSettings;
 
 /**
@@ -80,6 +80,7 @@ final class SiteHealthService
         'plannerExtraOptions' => 'Project Plan items',
         'projectPlanStock' => 'Stock & Delivery',
         'seo' => 'SEO',
+        'minify' => 'Minify CSS & JS',
     ];
 
     /** Must never open in a browser. Each is requested only when it exists on disk. */
@@ -158,7 +159,7 @@ final class SiteHealthService
             self::attempt('settings', 'Saved settings', static fn (): array => self::settingsFile()),
             self::attempt('fences', 'Fence styles', static fn (): array => self::fenceStyles()),
             self::attempt('products', 'Product files', static fn (): array => self::productFiles()),
-            self::attempt('minified', 'Minified frontend files', static fn (): ?array => self::minifiedAssets()),
+            self::attempt('minified', 'Minified CSS and JS', static fn (): ?array => self::minifiedAssets()),
             self::attempt('storage', 'Cache and sessions', static fn (): array => self::storage()),
             self::attempt('errors', 'PHP error log', static fn (): array => self::errorLog($local)),
             self::attempt('webhook', 'CRM webhook', static fn (): array => self::webhook($local)),
@@ -435,37 +436,31 @@ final class SiteHealthService
 
     private static function minifiedAssets(): ?array
     {
-        $root = str_replace('\\', '/', (string) FC_ROOT) . '/';
-        $total = 0;
-        $stale = [];
-        foreach (['js', 'css'] as $type) {
-            $dir = FC_ROOT . '/public/assets/' . $type . '/frontend';
-            if (!is_dir($dir)) {
-                continue;
-            }
-            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
-            foreach ($files as $file) {
-                $path = str_replace('\\', '/', $file->getPathname());
-                if (!str_ends_with($path, '.' . $type) || str_ends_with($path, '.min.' . $type)) {
-                    continue;
-                }
-                $relative = substr($path, strlen($root));
-                $total++;
-                // asset() falls back to the source whenever the min/ copy is missing or older.
-                if (AssetHelper::minified($relative) === $relative) {
-                    $stale[] = substr($relative, strlen('public/assets/'));
-                }
-            }
-        }
-
-        if ($total === 0) {
+        $files = MinifyService::files();
+        if ($files === []) {
             return null;
         }
+
+        // Only switched-on groups count: a group that is off serves its originals by choice (the admin's are off by default).
+        $on = array_filter($files, static fn (array $file): bool => MinifySettings::enabled($file['group']));
+        $off = [];
+        foreach (MinifyService::GROUPS as $group => $meta) {
+            if (!MinifySettings::enabled($group)) {
+                $off[] = $meta['area'] . ' ' . strtoupper($meta['type']);
+            }
+        }
+        $offNote = $off === [] ? '' : ' Switched off under Settings → Minify CSS & JS, so served as originals: ' . implode(', ', $off) . '.';
+
+        if ($on === []) {
+            return ['info', 'Switched off', 'The original CSS and JS are served; turn the copies on under Settings → Minify CSS & JS.'];
+        }
+        // asset() falls back to the source whenever the min/ copy is missing or older.
+        $stale = array_column(array_filter($on, static fn (array $file): bool => !$file['fresh']), 'path');
         if ($stale !== []) {
-            return ['warn', count($stale) . ' of ' . $total . ' unminified', 'Visitors download the full-size ' . self::listSome($stale) . ' until php build/minify/build.php is run.'];
+            return ['warn', count($stale) . ' of ' . count($on) . ' unminified', 'The full-size ' . self::listSome($stale) . ' are served until they are rebuilt under Settings → Minify CSS & JS (or php build/minify/build.php).' . $offNote];
         }
 
-        return ['good', 'All ' . $total . ' up to date', ''];
+        return ['good', 'All ' . count($on) . ' up to date', trim($offNote)];
     }
 
     private static function storage(): array

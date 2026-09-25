@@ -366,6 +366,11 @@
                 if (value) {
                     value.textContent = result[1];
                 }
+                // The pinned bar's chip mirrors its tile (short label shown, full one and status in the tooltip) and is not scored again.
+                if (tile.classList.contains('fc-overview-pin__tile')) {
+                    tile.title = tile.getAttribute('data-fc-seo-label') + ': ' + result[1];
+                    return;
+                }
                 if (result[0] === 'info') {
                     return;
                 }
@@ -377,8 +382,8 @@
                 }
             });
 
-            var score = document.querySelector('[data-fc-seo-score]');
-            if (score) {
+            // The overview card and the pinned bar carry the same score.
+            document.querySelectorAll('[data-fc-seo-score]').forEach(function (score) {
                 score.setAttribute('data-state', worst);
                 var scoreText = score.querySelector('[data-fc-seo-score-text]');
                 if (scoreText) {
@@ -390,7 +395,7 @@
                 if (fill) {
                     fill.style.width = (scored ? Math.round((good / scored) * 100) : 0) + '%';
                 }
-            }
+            });
 
             // The testers follow the canonical URL, so they check the address search engines are given.
             var pageUrl = encodeURIComponent(this.pageUrl());
@@ -457,6 +462,10 @@
                 return;
             }
             state.seoFormBound = true;
+            var panel = document.getElementById('fc-settings-panel-seo');
+            if (panel) {
+                this.pinOverview(panel.querySelector('[data-fc-overview-pin]'), panel.querySelector('[data-fc-seo-overview]'));
+            }
 
             document.querySelectorAll('[data-fc-seo-field]').forEach(function (el) {
                 var onFieldChange = function () {

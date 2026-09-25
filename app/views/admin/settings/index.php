@@ -18,30 +18,48 @@ $tab = $fcSettingsPage;
     <script type="application/json" id="fc-settings-bootstrap"><?php echo $tab['bootstrap_json']; ?></script>
 
     <div id="fc-settings-root" class="flex h-full min-h-0 flex-col">
-        <div class="flex h-full min-h-0 flex-col">
-            <div class="fc-admin-sticky-header sticky top-0 z-20 flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
-                <div class="flex min-w-0 flex-wrap items-center gap-3">
-                    <div class="flex flex-wrap rounded-lg bg-slate-200/80 p-1" role="tablist" aria-label="Settings sections">
-                        <?php foreach ($tab['tabs'] as $tabId => $tabLabel) : ?>
-                            <button
-                                type="button"
-                                role="tab"
-                                data-fc-settings-tab="<?php echo e((string) $tabId); ?>"
-                                aria-selected="<?php echo $tab['active_tab'] === $tabId ? 'true' : 'false'; ?>"
-                                class="rounded-md px-4 py-2 text-sm font-medium transition <?php echo $tab['active_tab'] === $tabId ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'; ?>"
-                            ><?php echo e((string) $tabLabel); ?></button>
-                        <?php endforeach; ?>
-                    </div>
-                    <span id="fc-settings-theme-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
-                    <span id="fc-settings-branding-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
-                    <span id="fc-settings-fence-colors-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
-                    <span id="fc-settings-catalog-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
-                    <span id="fc-settings-system-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
-                    <span id="fc-settings-integration-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
-                    <span id="fc-settings-project-plan-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
-                    <span id="fc-settings-seo-dirty" class="hidden text-xs font-medium text-amber-600">Unsaved changes</span>
+        <div class="fc-settings-shell">
+            <?php /* A rail beside the panels when the page has room for one, else a sideways strip above them (entries.css). */ ?>
+            <div class="fc-settings-nav" data-fc-admin-side-rail>
+                <div class="fc-settings-nav__list" role="tablist" aria-label="Settings sections" aria-orientation="vertical" data-fc-settings-tablist>
+                    <?php foreach ($tab['nav_groups'] as $group) : ?>
+                    <span class="fc-settings-nav__group" aria-hidden="true"><?php echo e((string) $group['label']); ?></span>
+                    <?php foreach ($group['items'] as $item) : ?>
+                    <button
+                        type="button"
+                        role="tab"
+                        id="<?php echo e((string) $item['tab_id']); ?>"
+                        data-fc-settings-tab="<?php echo e((string) $item['id']); ?>"
+                        data-fc-settings-tab-description="<?php echo e((string) $item['description']); ?>"
+                        aria-selected="<?php echo $item['is_active'] ? 'true' : 'false'; ?>"
+                        aria-controls="<?php echo e((string) $item['panel_id']); ?>"
+                        tabindex="<?php echo $item['is_active'] ? '0' : '-1'; ?>"
+                        class="fc-settings-nav__item<?php echo $item['is_active'] ? ' is-active' : ''; ?>"
+                    >
+                        <i class="fa-solid <?php echo e((string) $item['icon']); ?> fc-settings-nav__icon" aria-hidden="true"></i>
+                        <span class="fc-settings-nav__label"><?php echo e((string) $item['label']); ?></span>
+                        <span class="fc-settings-nav__dirty" data-fc-settings-tab-dirty="<?php echo e((string) $item['id']); ?>" title="Unsaved changes" hidden><span class="sr-only">, unsaved changes</span></span>
+                    </button>
+                    <?php endforeach; ?>
+                    <?php endforeach; ?>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
+            </div>
+
+            <div class="fc-settings-main">
+            <div class="fc-settings-head fc-admin-sticky-header">
+                <div class="fc-settings-head__text">
+                    <h2 class="fc-settings-head__title" id="fc-settings-section-title"><?php echo e((string) $tab['section']['label']); ?></h2>
+                    <p class="fc-settings-head__desc" id="fc-settings-section-desc"><?php echo e((string) $tab['section']['description']); ?></p>
+                </div>
+                <div class="fc-settings-head__actions">
+                <span id="fc-settings-theme-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
+                <span id="fc-settings-branding-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
+                <span id="fc-settings-fence-colors-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
+                <span id="fc-settings-catalog-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
+                <span id="fc-settings-system-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
+                <span id="fc-settings-integration-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
+                <span id="fc-settings-project-plan-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
+                <span id="fc-settings-seo-dirty" class="fc-settings-dirty hidden">Unsaved changes</span>
                 <div id="fc-settings-header-actions-theme" class="<?php echo e((string) $tab['header_actions_class']['theme']); ?> flex-wrap gap-2">
                     <button type="button" id="fc-theme-reset" class="<?php echo e((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
                     <button type="button" id="fc-theme-save" class="<?php echo e((string) $tab['btn_primary']); ?>"><span>Save Changes</span></button>
@@ -75,6 +93,15 @@ $tab = $fcSettingsPage;
                     <button type="button" id="fc-seo-save" class="<?php echo e((string) $tab['btn_primary']); ?>"><span>Save Changes</span></button>
                 </div>
                 <div id="fc-settings-header-actions-console" class="<?php echo e((string) $tab['header_actions_class']['console']); ?> flex-wrap gap-2"></div>
+                <div id="fc-settings-header-actions-minify" class="<?php echo e((string) $tab['header_actions_class']['minify']); ?> flex-wrap gap-2">
+                    <button type="button" id="fc-minify-refresh" class="<?php echo e((string) $tab['btn_secondary']); ?>"><span>Refresh Status</span></button>
+                    <?php if ($tab['minify']['can_build']) : ?>
+                    <button type="button" id="fc-minify-build-all" class="<?php echo e((string) $tab['btn_primary']); ?>" data-fc-minify-build="all"><span>Minify All</span></button>
+                    <?php else : ?>
+                    <?php /* Never a disabled primary: production has no esbuild binary, and that is not an error. */ ?>
+                    <span id="fc-minify-unavailable" class="fc-minify__unavailable" title="<?php echo e((string) $tab['minify']['build_unavailable_title']); ?>"><?php echo e((string) $tab['minify']['build_unavailable_text']); ?></span>
+                    <?php endif; ?>
+                </div>
                 <?php if ($tab['site_health_enabled']) : ?>
                 <div id="fc-settings-header-actions-site-health" class="<?php echo e((string) $tab['header_actions_class']['site_health']); ?> flex-wrap gap-2">
                     <button type="button" id="fc-health-copy" class="<?php echo e((string) $tab['btn_secondary']); ?>" disabled>Copy Report</button>
@@ -137,10 +164,10 @@ $tab = $fcSettingsPage;
             </div>
             <div data-fc-settings-notice hidden class="fc-entries-page__notice fc-entries-page__notice--success" aria-hidden="true"></div>
 
-            <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="fc-settings-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden" data-fc-settings-scroll>
                 <div id="fc-settings-layout" class="grid w-full grid-cols-1 gap-6 p-4 sm:p-6 lg:items-start <?php echo e((string) $tab['layout_class']); ?>">
                     <div class="min-w-0 space-y-5">
-                        <div id="fc-settings-panel-theme" class="<?php echo e((string) $tab['panel_class']['theme']); ?>space-y-5 mt-[1.25rem]">
+                        <div id="fc-settings-panel-theme" role="tabpanel" aria-labelledby="fc-settings-tab-theme" class="<?php echo e((string) $tab['panel_class']['theme']); ?>space-y-5 mt-[1.25rem]">
                             <div class="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-stretch">
                             <?php if (!empty($tab['presets'])) : ?>
                             <section class="fc-settings-card flex h-full flex-col border border-slate-200 bg-white">
@@ -213,7 +240,7 @@ $tab = $fcSettingsPage;
                             </div>
                         </div>
 
-                        <div id="fc-settings-panel-branding" class="<?php echo e((string) $tab['panel_class']['branding']); ?>space-y-5">
+                        <div id="fc-settings-panel-branding" role="tabpanel" aria-labelledby="fc-settings-tab-branding" class="<?php echo e((string) $tab['panel_class']['branding']); ?>space-y-5">
                             <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-branding-heading">
                                 <header class="fc-settings-card__head">
                                     <div class="fc-settings-card__heading">
@@ -254,7 +281,7 @@ $tab = $fcSettingsPage;
                             </section>
                         </div>
 
-                        <div id="fc-settings-panel-fence-colors" class="<?php echo e((string) $tab['panel_class']['fence_colors']); ?>fc-settings-fence-colors">
+                        <div id="fc-settings-panel-fence-colors" role="tabpanel" aria-labelledby="fc-settings-tab-fence-colors" class="<?php echo e((string) $tab['panel_class']['fence_colors']); ?>fc-settings-fence-colors">
                             <article class="fc-fs-field-group fc-fs-field-group--outer fc-fs-field-group--full fc-fs-field-group--kv-table">
                                 <header class="fc-fs-field-group__head">
                                     <div class="fc-fs-field-group__head-copy">
@@ -346,7 +373,7 @@ $tab = $fcSettingsPage;
                             </article>
                         </div>
 
-                        <div id="fc-settings-panel-catalog" class="<?php echo e((string) $tab['panel_class']['catalog']); ?>space-y-5">
+                        <div id="fc-settings-panel-catalog" role="tabpanel" aria-labelledby="fc-settings-tab-catalog" class="<?php echo e((string) $tab['panel_class']['catalog']); ?>space-y-5">
                             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5 lg:items-stretch">
                                 <section class="fc-settings-card flex h-full flex-col border border-slate-200 bg-white">
                                     <header class="fc-settings-card__head">
@@ -515,7 +542,7 @@ $tab = $fcSettingsPage;
                             </p>
                         </div>
 
-                        <div id="fc-settings-panel-system" class="<?php echo e((string) $tab['panel_class']['system']); ?>space-y-5">
+                        <div id="fc-settings-panel-system" role="tabpanel" aria-labelledby="fc-settings-tab-system" class="<?php echo e((string) $tab['panel_class']['system']); ?>space-y-5">
                             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5 lg:items-stretch">
                             <section class="fc-settings-card flex h-full flex-col border border-slate-200 bg-white">
                                 <header class="fc-settings-card__head">
@@ -633,7 +660,7 @@ $tab = $fcSettingsPage;
                         </div>
 
                         <?php $integrations = is_array($tab['integrations'] ?? null) ? $tab['integrations'] : []; ?>
-                        <div id="fc-settings-panel-integration" class="<?php echo e((string) $tab['panel_class']['integration']); ?>space-y-5">
+                        <div id="fc-settings-panel-integration" role="tabpanel" aria-labelledby="fc-settings-tab-integration" class="<?php echo e((string) $tab['panel_class']['integration']); ?>space-y-5">
                             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5 lg:items-stretch">
                             <section class="fc-settings-card flex h-full flex-col border border-slate-200 bg-white">
                                 <header class="fc-settings-card__head">
@@ -780,71 +807,90 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
 
-                            <div class="overflow-x-auto border border-slate-200 bg-white">
-                                    <div class="grid min-w-[68rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)_minmax(8rem,0.6fr)] border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                        <span>Site</span><span>Logo</span><span>Supplier</span><span>Gtag ID</span><span>GTM ID</span><span>Cloudflare Zone ID</span><span>PID Prefix</span>
+                            <?php /* Compact sites table: copy buttons show on hover, the logo path lives in a drawer the thumbnail opens. */ ?>
+                            <section class="fc-settings-card border border-slate-200 bg-white" aria-labelledby="fc-integration-sites-title">
+                                <header class="fc-settings-card__head">
+                                    <div class="fc-settings-card__heading">
+                                        <h3 class="fc-settings-card__title" id="fc-integration-sites-title">Sites</h3>
                                     </div>
-                                    <?php foreach (($integrations['sites'] ?? []) as $site) : ?>
-                                    <?php
-                                    $siteFieldId = preg_replace('/[^a-zA-Z0-9_-]+/', '-', (string) ($site['key'] ?? 'site'));
-                                    $siteSupplier = strtoupper(trim((string) ($site['supplier'] ?? '')));
-                                    if ($siteSupplier !== 'GO' && $siteSupplier !== 'JG') {
-                                        $siteSupplier = '';
-                                    }
-                                    ?>
-                                    <div class="grid min-w-[68rem] grid-cols-[minmax(11rem,1fr)_minmax(12rem,1.1fr)_minmax(6.5rem,0.55fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(14rem,1.2fr)_minmax(8rem,0.6fr)] items-center gap-3 border-b border-slate-200 px-3 py-2.5 last:border-b-0">
-                                        <div class="min-w-0 flex items-center gap-2.5">
-                                            <span class="fc-settings-site-logo shrink-0" data-fc-integration-site-logo-preview="<?php echo e((string) ($site['key'] ?? '')); ?>">
-                                                <?php if (!empty($site['logoUrl'])) : ?>
-                                                <img src="<?php echo e((string) $site['logoUrl']); ?>" alt="" loading="lazy" decoding="async" tabindex="0" role="button" data-fc-settings-image-view data-fc-settings-image-view-label="<?php echo e((string) ($site['label'] ?? $site['key'] ?? '')); ?>" aria-label="View larger image for <?php echo e((string) ($site['label'] ?? $site['key'] ?? '')); ?>">
-                                                <?php endif; ?>
-                                            </span>
-                                            <span class="min-w-0">
-                                                <span class="block truncate text-sm font-semibold text-slate-800"><?php echo e((string) ($site['label'] ?? $site['key'] ?? '')); ?></span>
-                                                <code class="block truncate text-[11px] text-slate-400"><?php echo e((string) ($site['key'] ?? '')); ?></code>
+                                    <span class="fc-settings-card__aside fc-sites__count"><?php echo e((string) $tab['integration_sites_label']); ?></span>
+                                </header>
+                                <div class="fc-sites" data-fc-integration-sites>
+                                    <div class="fc-sites__row fc-sites__row--head" aria-hidden="true">
+                                        <span class="fc-sites__cell fc-sites__cell--site">Site</span>
+                                        <span class="fc-sites__cell">Supplier</span>
+                                        <span class="fc-sites__cell">PID Prefix</span>
+                                        <span class="fc-sites__cell">Gtag ID</span>
+                                        <span class="fc-sites__cell">GTM ID</span>
+                                        <span class="fc-sites__cell">Cloudflare Zone ID</span>
+                                    </div>
+                                    <?php foreach ($tab['integration_sites'] as $site) : ?>
+                                    <div class="fc-sites__row" data-fc-integration-site-row="<?php echo e($site['key']); ?>">
+                                        <div class="fc-sites__cell fc-sites__cell--site">
+                                            <button type="button" class="fc-sites__logo" data-fc-integration-site-logo-toggle aria-expanded="false" aria-controls="<?php echo e($site['ids']['logo_panel']); ?>" aria-label="Edit <?php echo e($site['label']); ?> logo" title="Edit logo">
+                                                <span class="fc-settings-site-logo" data-fc-integration-site-logo-preview="<?php echo e($site['key']); ?>">
+                                                    <?php if ($site['logo_url'] !== '') : ?>
+                                                    <img src="<?php echo e($site['logo_url']); ?>" alt="" loading="lazy" decoding="async">
+                                                    <?php else : ?>
+                                                    <i class="fa-solid fa-image" aria-hidden="true"></i>
+                                                    <?php endif; ?>
+                                                </span>
+                                                <span class="fc-sites__logo-edit" aria-hidden="true"><i class="fa-solid fa-pen"></i></span>
+                                            </button>
+                                            <span class="fc-sites__name">
+                                                <span class="fc-sites__label" title="<?php echo e($site['label']); ?>"><?php echo e($site['label']); ?></span>
+                                                <code class="fc-sites__key" title="<?php echo e($site['key']); ?>"><?php echo e($site['key']); ?></code>
                                             </span>
                                         </div>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="text" id="fc-integration-<?php echo e((string) $siteFieldId); ?>-logo" data-fc-integration-site="<?php echo e((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="logo" value="<?php echo e((string) ($site['logo'] ?? '')); ?>" class="fc-settings-field font-mono" placeholder="<?php echo e((string) ($site['logoDefault'] ?? 'public/assets/img/… or URL')); ?>" autocomplete="off" spellcheck="false" aria-label="<?php echo e((string) ($site['label'] ?? 'Site')); ?> logo" />
-                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-site-logo-pick="<?php echo e((string) ($site['key'] ?? '')); ?>" aria-label="Set <?php echo e((string) ($site['label'] ?? 'Site')); ?> logo" title="Set logo"><i class="fa-solid fa-image" aria-hidden="true"></i></button>
-                                        </span>
-                                        <label class="min-w-0">
-                                            <span class="sr-only"><?php echo e((string) ($site['label'] ?? 'Site')); ?> supplier</span>
-                                            <select
-                                                id="fc-integration-<?php echo e((string) $siteFieldId); ?>-supplier"
-                                                data-fc-integration-site="<?php echo e((string) ($site['key'] ?? '')); ?>"
-                                                data-fc-integration-site-field="supplier"
-                                                class="fc-settings-field"
-                                                aria-label="<?php echo e((string) ($site['label'] ?? 'Site')); ?> supplier"
-                                            >
-                                                <option value="JG"<?php echo $siteSupplier === 'JG' ? ' selected' : ''; ?>>JG</option>
-                                                <option value="GO"<?php echo $siteSupplier === 'GO' ? ' selected' : ''; ?>>GO</option>
+                                        <div class="fc-sites__cell">
+                                            <select id="<?php echo e($site['ids']['supplier']); ?>" data-fc-integration-site="<?php echo e($site['key']); ?>" data-fc-integration-site-field="supplier" class="fc-settings-field" aria-label="<?php echo e($site['label']); ?> supplier">
+                                                <option value="JG"<?php echo $site['supplier'] === 'JG' ? ' selected' : ''; ?>>JG</option>
+                                                <option value="GO"<?php echo $site['supplier'] === 'GO' ? ' selected' : ''; ?>>GO</option>
                                             </select>
-                                        </label>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="text" id="fc-integration-<?php echo e((string) $siteFieldId); ?>-gtag" data-fc-integration-site="<?php echo e((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="gtagId" value="<?php echo e((string) ($site['gtagId'] ?? '')); ?>" class="fc-settings-field font-mono uppercase" placeholder="AW-123456789" autocomplete="off" spellcheck="false" aria-label="<?php echo e((string) ($site['label'] ?? 'Site')); ?> Gtag ID" />
-                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo e((string) $siteFieldId); ?>-gtag" aria-label="Copy <?php echo e((string) ($site['label'] ?? 'Site')); ?> Gtag ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                        </span>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="text" id="fc-integration-<?php echo e((string) $siteFieldId); ?>-gtm" data-fc-integration-site="<?php echo e((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="gtmId" value="<?php echo e((string) ($site['gtmId'] ?? '')); ?>" class="fc-settings-field font-mono uppercase" placeholder="GTM-XXXXXXX" autocomplete="off" spellcheck="false" aria-label="<?php echo e((string) ($site['label'] ?? 'Site')); ?> GTM ID" />
-                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo e((string) $siteFieldId); ?>-gtm" aria-label="Copy <?php echo e((string) ($site['label'] ?? 'Site')); ?> GTM ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                        </span>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="text" id="fc-integration-<?php echo e((string) $siteFieldId); ?>-cfzone" data-fc-integration-site="<?php echo e((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="cloudflareZoneId" value="<?php echo e((string) ($site['cloudflareZoneId'] ?? '')); ?>" class="fc-settings-field font-mono" placeholder="32-char zone id" autocomplete="off" spellcheck="false" aria-label="<?php echo e((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" />
-                                            <button type="button" class="fc-settings-field-copy fc-settings-field-verify" data-fc-cloudflare-verify data-fc-cloudflare-site="<?php echo e((string) ($site['key'] ?? '')); ?>" data-fc-cloudflare-zone-for="fc-integration-<?php echo e((string) $siteFieldId); ?>-cfzone" aria-label="Verify <?php echo e((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" title="Verify Cloudflare connection"><i class="fa-solid fa-plug" aria-hidden="true"></i></button>
-                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo e((string) $siteFieldId); ?>-cfzone" aria-label="Copy <?php echo e((string) ($site['label'] ?? 'Site')); ?> Cloudflare Zone ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                        </span>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="text" id="fc-integration-<?php echo e((string) $siteFieldId); ?>-pidprefix" data-fc-integration-site="<?php echo e((string) ($site['key'] ?? '')); ?>" data-fc-integration-site-field="pidPrefix" value="<?php echo e((string) ($site['pidPrefix'] ?? '')); ?>" class="fc-settings-field font-mono uppercase" placeholder="e.g. PER" maxlength="10" autocomplete="off" spellcheck="false" aria-label="<?php echo e((string) ($site['label'] ?? 'Site')); ?> PID Prefix" />
-                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-<?php echo e((string) $siteFieldId); ?>-pidprefix" aria-label="Copy <?php echo e((string) ($site['label'] ?? 'Site')); ?> PID Prefix" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                        </span>
+                                        </div>
+                                        <div class="fc-sites__cell">
+                                            <span class="fc-sites__field">
+                                                <input type="text" id="<?php echo e($site['ids']['pid']); ?>" data-fc-integration-site="<?php echo e($site['key']); ?>" data-fc-integration-site-field="pidPrefix" value="<?php echo e($site['pid_prefix']); ?>" class="fc-settings-field font-mono uppercase" placeholder="—" title="e.g. PER" maxlength="10" autocomplete="off" spellcheck="false" aria-label="<?php echo e($site['label']); ?> PID Prefix" />
+                                                <button type="button" class="fc-settings-field-copy fc-sites__copy" data-fc-settings-copy-for="<?php echo e($site['ids']['pid']); ?>" aria-label="Copy <?php echo e($site['label']); ?> PID Prefix" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                            </span>
+                                        </div>
+                                        <div class="fc-sites__cell">
+                                            <span class="fc-sites__field">
+                                                <input type="text" id="<?php echo e($site['ids']['gtag']); ?>" data-fc-integration-site="<?php echo e($site['key']); ?>" data-fc-integration-site-field="gtagId" value="<?php echo e($site['gtag_id']); ?>" class="fc-settings-field font-mono uppercase" placeholder="Not set" title="e.g. AW-123456789" autocomplete="off" spellcheck="false" aria-label="<?php echo e($site['label']); ?> Gtag ID" />
+                                                <button type="button" class="fc-settings-field-copy fc-sites__copy" data-fc-settings-copy-for="<?php echo e($site['ids']['gtag']); ?>" aria-label="Copy <?php echo e($site['label']); ?> Gtag ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                            </span>
+                                        </div>
+                                        <div class="fc-sites__cell">
+                                            <span class="fc-sites__field">
+                                                <input type="text" id="<?php echo e($site['ids']['gtm']); ?>" data-fc-integration-site="<?php echo e($site['key']); ?>" data-fc-integration-site-field="gtmId" value="<?php echo e($site['gtm_id']); ?>" class="fc-settings-field font-mono uppercase" placeholder="Not set" title="e.g. GTM-XXXXXXX" autocomplete="off" spellcheck="false" aria-label="<?php echo e($site['label']); ?> GTM ID" />
+                                                <button type="button" class="fc-settings-field-copy fc-sites__copy" data-fc-settings-copy-for="<?php echo e($site['ids']['gtm']); ?>" aria-label="Copy <?php echo e($site['label']); ?> GTM ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                            </span>
+                                        </div>
+                                        <div class="fc-sites__cell">
+                                            <span class="fc-sites__field">
+                                                <input type="text" id="<?php echo e($site['ids']['zone']); ?>" data-fc-integration-site="<?php echo e($site['key']); ?>" data-fc-integration-site-field="cloudflareZoneId" value="<?php echo e($site['cloudflare_zone_id']); ?>" class="fc-settings-field font-mono" placeholder="Not set" title="The 32-character zone ID from Cloudflare" autocomplete="off" spellcheck="false" aria-label="<?php echo e($site['label']); ?> Cloudflare Zone ID" />
+                                                <button type="button" class="fc-settings-field-copy fc-sites__copy" data-fc-settings-copy-for="<?php echo e($site['ids']['zone']); ?>" aria-label="Copy <?php echo e($site['label']); ?> Cloudflare Zone ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                            </span>
+                                            <button type="button" class="fc-settings-field-copy fc-sites__action" data-fc-cloudflare-verify data-fc-cloudflare-site="<?php echo e($site['key']); ?>" data-fc-cloudflare-zone-for="<?php echo e($site['ids']['zone']); ?>" aria-label="Verify <?php echo e($site['label']); ?> Cloudflare Zone ID" title="Verify Cloudflare connection"<?php echo $site['cloudflare_ready'] ? '' : ' disabled'; ?>><i class="fa-solid fa-plug" aria-hidden="true"></i></button>
+                                            <?php if ($tab['cloudflare_purge_enabled']) : ?>
+                                            <button type="button" class="fc-settings-field-copy fc-sites__action" data-fc-cloudflare-purge data-fc-cloudflare-site="<?php echo e($site['key']); ?>" data-fc-cloudflare-site-label="<?php echo e($site['label']); ?>" data-fc-cloudflare-zone-for="<?php echo e($site['ids']['zone']); ?>" aria-label="Purge <?php echo e($site['label']); ?> Cloudflare cache" title="Purge Cloudflare cache"<?php echo $site['cloudflare_ready'] ? '' : ' disabled'; ?>><i class="fa-solid fa-broom" aria-hidden="true"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="fc-sites__drawer" id="<?php echo e($site['ids']['logo_panel']); ?>" hidden>
+                                            <label class="fc-sites__drawer-label" for="<?php echo e($site['ids']['logo']); ?>">Logo</label>
+                                            <input type="text" id="<?php echo e($site['ids']['logo']); ?>" data-fc-integration-site="<?php echo e($site['key']); ?>" data-fc-integration-site-field="logo" value="<?php echo e($site['logo']); ?>" class="fc-settings-field font-mono" placeholder="<?php echo e($site['logo_default']); ?>" autocomplete="off" spellcheck="false" aria-describedby="<?php echo e($site['ids']['logo_panel']); ?>-hint" />
+                                            <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-integration-site-logo-pick="<?php echo e($site['key']); ?>"><i class="fa-solid fa-image me-1" aria-hidden="true"></i>Choose image</button>
+                                            <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-integration-site-logo-default="<?php echo e($site['key']); ?>">Use default</button>
+                                            <span class="fc-sites__drawer-hint" id="<?php echo e($site['ids']['logo_panel']); ?>-hint">An image path or URL. Leave blank to use the default shown.</span>
+                                        </div>
                                     </div>
                                     <?php endforeach; ?>
                                 </div>
+                            </section>
 
                         </div>
 
-                        <div id="fc-settings-panel-project-plan" class="<?php echo e((string) $tab['panel_class']['project_plan']); ?>space-y-5">
+                        <div id="fc-settings-panel-project-plan" role="tabpanel" aria-labelledby="fc-settings-tab-project-plan" class="<?php echo e((string) $tab['panel_class']['project_plan']); ?>space-y-5">
                             <div class="overflow-x-auto border border-slate-200 bg-white">
                                 <div class="grid min-w-[52rem] grid-cols-[1.5rem_2.5rem_minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.4fr)_2.25rem] items-center gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                                     <span></span><span></span><span>Slug</span><span>Label</span><span>Image</span><span></span>
@@ -1007,8 +1053,24 @@ $tab = $fcSettingsPage;
                             </section>
                         </div>
 
-                        <div id="fc-settings-panel-seo" class="<?php echo e((string) $tab['panel_class']['seo']); ?>space-y-5">
-                            <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-seo-hero-title">
+                        <div id="fc-settings-panel-seo" role="tabpanel" aria-labelledby="fc-settings-tab-seo" class="<?php echo e((string) $tab['panel_class']['seo']); ?>space-y-5">
+                            <?php /* Pinned like the Minify tab's; seo-tab.js paints its score and chips with the card's, and a chip jumps to its field. */ ?>
+                            <div class="fc-overview-pin" data-fc-overview-pin>
+                                <div class="fc-overview-pin__bar" role="region" aria-label="SEO overview" inert>
+                                    <span class="fc-overview-pin__title">SEO Overview</span>
+                                    <div class="fc-seo-score" data-fc-seo-score data-state="good">
+                                        <span class="fc-seo-score__text" data-fc-seo-score-text></span>
+                                        <span class="fc-seo-score__bar" aria-hidden="true"><span class="fc-seo-score__fill" data-fc-seo-score-fill></span></span>
+                                    </div>
+                                    <div class="fc-overview-pin__tiles">
+                                        <?php foreach ($tab['seo_checks'] as $check) : ?>
+                                        <button type="button" class="fc-seo-chip fc-overview-pin__tile" data-fc-seo-check="<?php echo e($check['key']); ?>" data-fc-seo-jump="<?php echo e($check['target']); ?>" data-fc-seo-label="<?php echo e($check['label']); ?>" data-state="info" title="<?php echo e($check['label']); ?>"><?php echo e($check['short']); ?><span class="sr-only">: <span data-fc-seo-check-value></span></span></button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-seo-hero-title" data-fc-seo-overview>
                                 <header class="fc-settings-card__head">
                                     <div class="fc-settings-card__heading">
                                         <h2 class="fc-settings-card__title" id="fc-seo-hero-title">SEO Overview</h2>
@@ -1399,7 +1461,7 @@ $tab = $fcSettingsPage;
                             </div>
                         </div>
 
-                        <div id="fc-settings-panel-console" class="<?php echo e((string) $tab['panel_class']['console']); ?>space-y-5">
+                        <div id="fc-settings-panel-console" role="tabpanel" aria-labelledby="fc-settings-tab-console" class="<?php echo e((string) $tab['panel_class']['console']); ?>space-y-5">
                             <?php
                             $consoleSettings = is_array($tab['console'] ?? null) ? $tab['console'] : [];
                             $debugModeOn = !empty($consoleSettings['debugMode']);
@@ -1463,9 +1525,161 @@ $tab = $fcSettingsPage;
                             </section>
                         </div>
 
+                        <div id="fc-settings-panel-minify" role="tabpanel" aria-labelledby="fc-settings-tab-minify" class="<?php echo e((string) $tab['panel_class']['minify']); ?>space-y-5 fc-minify" data-fc-minify data-fc-minify-snapshot="<?php echo e((string) $tab['minify']['snapshot']); ?>">
+                            <?php /* The overview in brief, pinned to the top of the scroll area once the card below has scrolled away. A zero-height slot, so pinning it never shifts the page. */ ?>
+                            <div class="fc-overview-pin" data-fc-overview-pin>
+                                <div class="fc-overview-pin__bar" role="region" aria-label="Minify overview" inert>
+                                    <span class="fc-overview-pin__title">Minify Overview</span>
+                                    <div class="fc-seo-score" data-fc-minify-score data-state="<?php echo e((string) $tab['minify']['overview']['state']); ?>">
+                                        <span class="fc-seo-score__text" data-fc-minify-score-short><?php echo e((string) $tab['minify']['overview']['short']); ?></span>
+                                        <span class="fc-seo-score__bar" aria-hidden="true"><span class="fc-seo-score__fill" data-fc-minify-score-fill style="width: <?php echo (int) $tab['minify']['overview']['percent']; ?>%"></span></span>
+                                    </div>
+                                    <div class="fc-overview-pin__tiles">
+                                        <?php foreach ($tab['minify']['overview']['tiles'] as $tile) : ?>
+                                        <button type="button" class="fc-seo-chip fc-overview-pin__tile" data-fc-minify-tile="<?php echo e((string) $tile['key']); ?>" data-state="<?php echo e((string) $tile['state']); ?>" title="<?php echo e((string) $tile['title']); ?>"><?php echo e((string) $tile['label']); ?><span class="sr-only">: <span data-fc-minify-tile-value><?php echo e((string) $tile['value']); ?></span></span></button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <?php /* Same markup as the Site Health overview: a score over every file, a tile per group that jumps to its card. */ ?>
+                            <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-minify-overview-title" data-fc-minify-overview>
+                                <header class="fc-settings-card__head">
+                                    <div class="fc-settings-card__heading">
+                                        <h3 class="fc-settings-card__title" id="fc-minify-overview-title">Minify Overview</h3>
+                                    </div>
+                                    <span class="fc-settings-card__aside fc-health-checked" data-fc-minify-checked></span>
+                                </header>
+                                <div class="fc-settings-card__body fc-settings-card__body--sections">
+                                    <div class="fc-seo-health">
+                                        <div class="fc-seo-health__head">
+                                            <h4 class="fc-seo-health__title">Served minified</h4>
+                                            <div class="fc-seo-score" data-fc-minify-score data-state="<?php echo e((string) $tab['minify']['overview']['state']); ?>">
+                                                <span class="fc-seo-score__text" data-fc-minify-score-text aria-live="polite"><?php echo e((string) $tab['minify']['overview']['text']); ?></span>
+                                                <span class="fc-seo-score__bar" aria-hidden="true"><span class="fc-seo-score__fill" data-fc-minify-score-fill style="width: <?php echo (int) $tab['minify']['overview']['percent']; ?>%"></span></span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-seo-checks fc-minify__tiles">
+                                            <?php foreach ($tab['minify']['overview']['tiles'] as $tile) : ?>
+                                            <button type="button" class="fc-seo-check fc-health-tile" data-fc-minify-tile="<?php echo e((string) $tile['key']); ?>" data-state="<?php echo e((string) $tile['state']); ?>">
+                                                <span class="fc-seo-check__icon" aria-hidden="true"><i class="fa-solid <?php echo e((string) $tile['icon']); ?>" data-fc-minify-tile-icon></i></span>
+                                                <span class="fc-seo-check__text">
+                                                    <span class="fc-seo-check__label"><?php echo e((string) $tile['label']); ?></span>
+                                                    <span class="fc-seo-check__value" data-fc-minify-tile-value><?php echo e((string) $tile['value']); ?></span>
+                                                </span>
+                                                <i class="fa-solid fa-chevron-right fc-seo-check__go" aria-hidden="true"></i>
+                                            </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <?php /* Grouped by area, then one card per file type; the card's switch names both ("Minify admin CSS"). */ ?>
+                            <?php foreach ($tab['minify']['areas'] as $area) : ?>
+                            <section class="fc-minify__area" data-fc-minify-area="<?php echo e((string) $area['key']); ?>" aria-labelledby="<?php echo e((string) $area['title_id']); ?>">
+                                <header class="fc-minify__area-head">
+                                    <div class="fc-minify__area-text">
+                                        <h3 class="fc-minify__area-title" id="<?php echo e((string) $area['title_id']); ?>"><?php echo e((string) $area['label']); ?></h3>
+                                        <p class="fc-minify__area-desc"><?php echo e((string) $area['description']); ?></p>
+                                    </div>
+                                    <span class="fc-seo-chip" data-fc-minify-area-chip data-state="<?php echo e((string) $area['chip_state']); ?>"><?php echo e((string) $area['chip_text']); ?></span>
+                                </header>
+                                <?php foreach ($area['groups'] as $group) : ?>
+                                <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" data-fc-minify-card="<?php echo e((string) $group['key']); ?>" aria-labelledby="<?php echo e((string) $group['title_id']); ?>">
+                                    <header class="fc-settings-card__head">
+                                        <div class="fc-settings-card__heading">
+                                            <h4 class="fc-settings-card__title" id="<?php echo e((string) $group['title_id']); ?>"><?php echo e((string) $group['label']); ?></h4>
+                                            <p class="fc-minify__meta" data-fc-minify-meta><?php echo e((string) $group['meta']); ?></p>
+                                        </div>
+                                        <div class="fc-settings-card__aside fc-minify__controls">
+                                            <span class="fc-seo-chip" data-fc-minify-chip data-state="<?php echo e((string) $group['chip_state']); ?>"><?php echo e((string) $group['chip_text']); ?></span>
+                                            <div class="fc-mode-switch" role="group" aria-label="<?php echo e((string) $group['full_label']); ?>">
+                                                <button
+                                                    type="button"
+                                                    data-fc-minify-mode="<?php echo e((string) $group['key']); ?>"
+                                                    data-fc-minify-value="0"
+                                                    aria-pressed="<?php echo $group['enabled'] ? 'false' : 'true'; ?>"
+                                                    class="fc-mode-switch__side"
+                                                >Off</button>
+                                                <button
+                                                    type="button"
+                                                    data-fc-minify-toggle="<?php echo e((string) $group['key']); ?>"
+                                                    role="switch"
+                                                    aria-checked="<?php echo $group['enabled'] ? 'true' : 'false'; ?>"
+                                                    aria-label="<?php echo e((string) $group['full_label']); ?>"
+                                                    class="fc-mode-switch__track"
+                                                ><span class="fc-mode-switch__thumb"></span></button>
+                                                <button
+                                                    type="button"
+                                                    data-fc-minify-mode="<?php echo e((string) $group['key']); ?>"
+                                                    data-fc-minify-value="1"
+                                                    aria-pressed="<?php echo $group['enabled'] ? 'true' : 'false'; ?>"
+                                                    class="fc-mode-switch__side"
+                                                >On</button>
+                                            </div>
+                                        </div>
+                                    </header>
+                                    <div class="fc-settings-card__body fc-health-body">
+                                        <div class="fc-health-row fc-minify__status" data-fc-minify-status data-state="<?php echo e((string) $group['status']['state']); ?>">
+                                            <span class="fc-health-row__icon" aria-hidden="true"><i class="fa-solid <?php echo e((string) $group['status']['icon']); ?>" data-fc-minify-status-icon></i></span>
+                                            <div class="fc-health-row__text">
+                                                <div class="fc-health-row__head">
+                                                    <span class="fc-health-row__label" data-fc-minify-status-label><?php echo e((string) $group['status']['label']); ?></span>
+                                                    <span class="fc-health-row__value" data-fc-minify-status-value title="<?php echo e((string) $group['status']['value_title']); ?>"><?php echo e((string) $group['status']['value']); ?></span>
+                                                </div>
+                                                <p class="fc-health-row__detail" data-fc-minify-status-detail><?php echo e((string) $group['status']['detail']); ?></p>
+                                            </div>
+                                            <?php if ($tab['minify']['can_build']) : ?>
+                                            <button type="button" class="<?php echo e((string) $tab['btn_secondary']); ?> fc-minify__status-action" data-fc-minify-build="<?php echo e((string) $group['key']); ?>" aria-label="<?php echo e((string) $group['full_label']); ?> now"><span><?php echo e((string) $group['build_label']); ?></span></button>
+                                            <?php endif; ?>
+                                        </div>
+                                        <?php /* Rendered even for a type with no files (hidden): a file added later lists after Refresh Status. */ ?>
+                                        <div class="fc-minify__filters" role="group" aria-label="Show files" data-fc-minify-filters<?php echo $group['count'] > 0 ? '' : ' hidden'; ?>>
+                                            <?php foreach ($group['filters'] as $filter) : ?>
+                                            <button type="button" class="fc-minify__filter" data-fc-minify-filter="<?php echo e((string) $filter['key']); ?>" aria-pressed="<?php echo $filter['key'] === 'all' ? 'true' : 'false'; ?>" title="<?php echo e((string) $filter['title']); ?>"<?php echo $filter['disabled'] ? ' disabled' : ''; ?>><?php echo e((string) $filter['label']); ?> <span data-fc-minify-count="<?php echo e((string) $filter['key']); ?>"><?php echo (int) $filter['count']; ?></span></button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <div class="fc-sites fc-minify__table" data-fc-minify-table role="table" aria-labelledby="<?php echo e((string) $group['title_id']); ?>"<?php echo $group['count'] > 0 ? '' : ' hidden'; ?>>
+                                            <div class="fc-sites__row fc-sites__row--head" role="row">
+                                                <?php foreach ($tab['minify']['columns'] as $column) : ?>
+                                                <span class="fc-sites__cell<?php echo $column['key'] === 'file' ? ' fc-sites__cell--site' : ''; ?>" role="columnheader" aria-sort="none">
+                                                    <button type="button" class="fc-minify__sort" data-fc-minify-sort-key="<?php echo e((string) $column['key']); ?>" data-fc-minify-sort-first="<?php echo e((string) $column['first']); ?>" title="<?php echo e((string) $column['title']); ?>"><span><?php echo e((string) $column['label']); ?></span><i class="fa-solid fa-sort" aria-hidden="true" data-fc-minify-sort-icon></i></button>
+                                                </span>
+                                                <?php endforeach; ?>
+                                            </div>
+                                            <?php foreach ($group['files'] as $file) : ?>
+                                            <?php view('admin.partials.minify-row', ['fcMinifyRow' => $file]); ?>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </section>
+                                <?php endforeach; ?>
+                            </section>
+                            <?php endforeach; ?>
+                            <?php /* minify-tab.js clones this for a file that appeared on disk since the page loaded; it holds no row markup of its own. */ ?>
+                            <template data-fc-minify-row-template><?php view('admin.partials.minify-row', ['fcMinifyRow' => $tab['minify']['blank_row']]); ?></template>
+                        </div>
+
                         <?php if ($tab['site_health_enabled']) : ?>
-                        <div id="fc-settings-panel-site-health" class="<?php echo e((string) $tab['panel_class']['site_health']); ?>space-y-5">
-                            <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-health-overview-title">
+                        <div id="fc-settings-panel-site-health" role="tabpanel" aria-labelledby="fc-settings-tab-site-health" class="<?php echo e((string) $tab['panel_class']['site_health']); ?>space-y-5">
+                            <?php /* Pinned like the Minify tab's: site-health-tab.js fills its score and chips along with the card's. */ ?>
+                            <div class="fc-overview-pin" data-fc-overview-pin>
+                                <div class="fc-overview-pin__bar" role="region" aria-label="Site Health overview" inert>
+                                    <span class="fc-overview-pin__title">Site Health</span>
+                                    <div class="fc-seo-score" data-fc-health-score data-state="info">
+                                        <span class="fc-seo-score__text" data-fc-health-score-text>Running checks…</span>
+                                        <span class="fc-seo-score__bar" aria-hidden="true"><span class="fc-seo-score__fill" data-fc-health-score-fill></span></span>
+                                    </div>
+                                    <div class="fc-overview-pin__tiles">
+                                        <?php foreach ($tab['site_health_groups'] as $group) : ?>
+                                        <button type="button" class="fc-seo-chip fc-overview-pin__tile" data-fc-health-tile="<?php echo e($group['key']); ?>" data-state="info" title="<?php echo e($group['label']); ?>: Checking…"><?php echo e($group['label']); ?><span class="sr-only">: <span data-fc-health-tile-value>Checking…</span></span></button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-health-overview-title" data-fc-health-overview>
                                 <header class="fc-settings-card__head">
                                     <div class="fc-settings-card__heading">
                                         <h2 class="fc-settings-card__title" id="fc-health-overview-title">Site Health Overview</h2>
@@ -1562,6 +1776,7 @@ $tab = $fcSettingsPage;
                         <?php endif; ?>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>

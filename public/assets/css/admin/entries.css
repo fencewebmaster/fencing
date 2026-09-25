@@ -472,6 +472,325 @@
     pointer-events: none;
 }
 
+/* —— Settings shell: section rail, then the open section's header and panels —— */
+/* The page's own width picks rail or strip, so a collapsed sidebar makes room for the rail. */
+.fc-settings-page {
+    container: fc-settings / inline-size;
+}
+
+.fc-settings-shell {
+    --fc-settings-dirty-tone: #b45309;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.fc-settings-main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* The panels' two-card rows stack once the rail leaves them too narrow for two cards of fields. */
+.fc-settings-scroll {
+    container: fc-settings-panels / inline-size;
+}
+
+@container fc-settings-panels (max-width: 53rem) {
+    .fc-settings-scroll [role='tabpanel'] .lg\:grid-cols-2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Branding's live preview stays beside its form down to a narrower width. */
+@container fc-settings-panels (max-width: 45rem) {
+    .fc-settings-scroll > .lg\:grid-cols-2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Too narrow for a rail, the tabs are a strip that scrolls sideways above the header. */
+.fc-settings-nav {
+    flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface-muted, #f8fafc);
+    scrollbar-width: none;
+}
+
+.fc-settings-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.fc-settings-nav__list {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: max-content;
+    padding: 0.5rem 1rem;
+}
+
+/* In the strip a group label is only the divider before its tabs. */
+.fc-settings-nav__group {
+    align-self: stretch;
+    width: 1px;
+    margin: 0.4rem 0.35rem;
+    overflow: hidden;
+    background: var(--fc-admin-border, #e2e8f0);
+    color: transparent;
+    font-size: 0;
+}
+
+.fc-settings-nav__group:first-child {
+    display: none;
+}
+
+.fc-settings-nav__item {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--fc-admin-text, #1e293b);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.fc-settings-nav__item:hover {
+    background: var(--fc-admin-surface-subtle, #f1f5f9);
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-settings-nav__item:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange, #f67925);
+    outline-offset: -2px;
+}
+
+.fc-settings-nav__item.is-active {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 11%, var(--fc-admin-surface, #fff));
+    color: var(--fc-admin-text-heading, #0f172a);
+    font-weight: 600;
+}
+
+.fc-settings-nav__icon {
+    flex-shrink: 0;
+    width: 1rem;
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--fc-admin-text-subtle, #94a3b8);
+    transition: color 0.15s ease;
+}
+
+.fc-settings-nav__item:hover .fc-settings-nav__icon {
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-settings-nav__item.is-active .fc-settings-nav__icon {
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-settings-nav__label {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* A section with unsaved edits keeps its dot while another one is open. */
+.fc-settings-nav__dirty {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--fc-settings-dirty-tone);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc-settings-dirty-tone) 18%, transparent);
+}
+
+.fc-settings-nav__dirty[hidden] {
+    display: none;
+}
+
+/* Room for the rail and a panel column at least as wide as the old lg layout's. */
+@container fc-settings (min-width: 59rem) {
+    .fc-settings-shell {
+        flex-direction: row;
+    }
+
+    .fc-settings-nav {
+        width: 13rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        border-right: 1px solid var(--fc-admin-border, #e2e8f0);
+        border-bottom: 0;
+        scrollbar-width: thin;
+        scrollbar-color: var(--fc-admin-scrollbar-thumb, #cbd5e1) transparent;
+    }
+
+    .fc-settings-nav::-webkit-scrollbar {
+        display: block;
+        width: 6px;
+    }
+
+    .fc-settings-nav::-webkit-scrollbar-thumb {
+        border-radius: 9999px;
+        background: var(--fc-admin-scrollbar-thumb, #cbd5e1);
+    }
+
+    .fc-settings-nav__list {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.125rem;
+        width: auto;
+        padding: 1.25rem 0;
+    }
+
+    .fc-settings-nav__group,
+    .fc-settings-nav__group:first-child {
+        display: block;
+        align-self: auto;
+        width: auto;
+        margin: 1.25rem 0 0.375rem;
+        padding: 0 1.25rem;
+        background: none;
+        color: var(--fc-admin-text-muted, #64748b);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        line-height: 1rem;
+        text-transform: uppercase;
+    }
+
+    .fc-settings-nav__group:first-child {
+        margin-top: 0;
+    }
+
+    /* Rows run edge to edge, so hover and the open tab fill the rail's width. */
+    .fc-settings-nav__item {
+        padding: 0.5625rem 1.25rem;
+    }
+}
+
+.fc-settings-head {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface, #fff);
+}
+
+.fc-settings-head__text {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+.fc-settings-head__title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-settings-head__desc {
+    margin: 0.125rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-settings-head__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Same chip as the SEO tab's warn state. */
+.fc-settings-dirty:not(.hidden) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-right: 0.25rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--fc-settings-dirty-tone) 12%, transparent);
+    color: var(--fc-settings-dirty-tone);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.fc-settings-dirty::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+@media (max-width: 639px) {
+    .fc-settings-head__desc {
+        display: none;
+    }
+}
+
+@media (min-width: 640px) {
+    .fc-settings-head {
+        padding: 1rem 1.5rem;
+    }
+}
+
+html[data-fc-admin-theme='dark'] .fc-settings-shell {
+    --fc-settings-dirty-tone: #fbbf24;
+}
+
+html[data-fc-admin-theme='dark'] .fc-settings-nav {
+    background: color-mix(in srgb, var(--fc-admin-surface, #1e293b) 55%, var(--fc-admin-bg, #0f172a));
+}
+
+html[data-fc-admin-theme='dark'] .fc-settings-nav__item.is-active {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 16%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-settings-nav__item,
+    .fc-settings-nav__icon {
+        transition: none;
+    }
+}
+
+/* High Contrast drops the tint and the dot's fill; outline the open tab and paint the dot a system colour. */
+@media (forced-colors: active) {
+    .fc-settings-nav__item.is-active {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+
+    .fc-settings-nav__dirty {
+        background: Highlight;
+    }
+}
+
 /* —— Settings cards: the title on a grey band above the white fields; a card's switch, chip or buttons sit at the right —— */
 .fc-settings-card__head {
     display: flex;
@@ -645,6 +964,724 @@ html[data-fc-admin-theme='dark'] .fc-settings-card__head {
     .fc-webhook-option__field {
         margin-left: 0;
     }
+}
+
+/* —— Settings → Integration: the Sites table —— */
+.fc-sites {
+    --fc-sites-bg: var(--fc-admin-surface, #fff);
+    --fc-sites-hover: var(--fc-admin-surface-muted, #f8fafc);
+    overflow-x: auto;
+}
+
+/* One template for every row keeps the columns aligned; min-width = column minimums + gaps + padding,
+   small enough to fit a 1280px screen beside the Settings rail. The site column stops growing at 14rem. */
+.fc-sites__row {
+    display: grid;
+    grid-template-columns: minmax(9rem, 14rem) 4.25rem 4rem minmax(8.25rem, 1fr) minmax(7.5rem, 0.9fr) minmax(10rem, 1.8fr);
+    align-items: center;
+    column-gap: 0.375rem;
+    min-width: 45.875rem;
+    padding: 0.375rem 0.5rem;
+    border-top: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-sites-bg);
+    transition: background-color 0.12s ease;
+}
+
+.fc-sites__row:not(.fc-sites__row--head):hover,
+.fc-sites__row.is-open {
+    --fc-sites-bg: var(--fc-sites-hover);
+}
+
+.fc-sites__row--head {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-top: 0;
+    color: var(--fc-admin-text-muted, #64748b);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.fc-sites__cell {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+/* Header labels start where the text inside each field starts. */
+.fc-sites__row--head .fc-sites__cell:not(.fc-sites__cell--site) {
+    padding-left: 0.5625rem;
+}
+
+/* The site column stays in view when a narrow screen scrolls the rows sideways. */
+.fc-sites__cell--site {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    gap: 0.625rem;
+    align-self: stretch;
+    background: var(--fc-sites-bg);
+}
+
+/* Scrolled sideways, the pinned column casts an edge over the fields sliding under it. */
+.fc-sites.is-scrolled .fc-sites__cell--site {
+    box-shadow: 1px 0 0 var(--fc-admin-border, #e2e8f0), 0.5rem 0 0.5rem -0.5rem rgba(15, 23, 42, 0.25);
+}
+
+.fc-sites__name {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.fc-sites__label,
+.fc-sites__key {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-sites__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-sites__key {
+    font-size: 0.6875rem;
+    color: var(--fc-admin-text-subtle, #94a3b8);
+}
+
+.fc-sites__count {
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background: var(--fc-admin-surface-subtle, #f1f5f9);
+    color: var(--fc-admin-text-muted, #64748b);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.fc-sites .fc-settings-field {
+    height: 2rem;
+    padding: 0.25rem 0.5rem;
+    border-color: var(--fc-admin-border, #e2e8f0);
+    font-size: 0.8125rem;
+}
+
+.fc-sites__row:hover .fc-settings-field {
+    border-color: var(--fc-admin-text-faint, #cbd5e1);
+}
+
+.fc-sites__row .fc-settings-field:focus {
+    border-color: #2271b1;
+}
+
+/* "Not set" stays in sentence case inside the uppercase ID fields. */
+.fc-sites .fc-settings-field::placeholder {
+    text-transform: none;
+}
+
+/* The copy button sits inside the field's right end and only shows while the field is hovered. */
+.fc-sites__field {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fc-sites .fc-sites__copy {
+    position: absolute;
+    top: 50%;
+    right: 0.1875rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0;
+    background: var(--fc-admin-input-bg, #fff);
+    box-shadow: -0.375rem 0 0.375rem var(--fc-admin-input-bg, #fff);
+    font-size: 0.75rem;
+    opacity: 0;
+    transform: translateY(-50%);
+    transition: opacity 0.12s ease;
+}
+
+.fc-sites__field:hover .fc-sites__copy,
+.fc-sites .fc-sites__copy:focus-visible,
+.fc-sites .fc-sites__copy.is-copied {
+    opacity: 1;
+}
+
+.fc-sites .fc-sites__copy:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: -2px;
+}
+
+@media (hover: none) {
+    .fc-sites .fc-sites__copy {
+        opacity: 1;
+    }
+}
+
+.fc-sites .fc-sites__action {
+    width: 1.875rem;
+    height: 2rem;
+    border-color: var(--fc-admin-border, #e2e8f0);
+    font-size: 0.75rem;
+}
+
+/* Disabled until the row has a Zone ID and the API token is filled; a running check keeps its normal look. */
+.fc-sites .fc-sites__action:disabled:not(.is-verifying),
+.fc-sites .fc-sites__action:disabled:not(.is-verifying):hover {
+    border-color: var(--fc-admin-border, #e2e8f0);
+    background: transparent;
+    color: var(--fc-admin-text-faint, #cbd5e1);
+    cursor: not-allowed;
+}
+
+/* The thumbnail opens the logo drawer; a pencil shows on hover, an orange ring while it is open. */
+.fc-sites__logo {
+    position: relative;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0.375rem;
+    background: none;
+    cursor: pointer;
+}
+
+.fc-sites__logo .fc-settings-site-logo {
+    width: 2rem;
+    height: 2rem;
+}
+
+.fc-sites__logo-edit {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    background: rgba(15, 23, 42, 0.55);
+    color: #fff;
+    font-size: 0.6875rem;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.fc-sites__logo:hover .fc-sites__logo-edit,
+.fc-sites__logo:focus-visible .fc-sites__logo-edit {
+    opacity: 1;
+}
+
+.fc-sites__logo:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange, #f67925);
+    outline-offset: 2px;
+}
+
+.fc-sites__logo[aria-expanded='true'] .fc-settings-site-logo {
+    box-shadow: 0 0 0 2px var(--fc-princeton-orange, #f67925);
+}
+
+.fc-sites__drawer {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.625rem;
+    margin-top: 0.375rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 0.375rem;
+    background: var(--fc-admin-surface, #fff);
+}
+
+.fc-sites__drawer[hidden] {
+    display: none;
+}
+
+.fc-sites__drawer-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fc-admin-text, #1e293b);
+}
+
+.fc-sites__drawer .fc-settings-field {
+    flex: 1 1 16rem;
+    max-width: 30rem;
+}
+
+.fc-sites__drawer-hint {
+    flex-basis: 100%;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+html[data-fc-admin-theme='dark'] .fc-sites {
+    --fc-sites-hover: color-mix(in srgb, var(--fc-admin-surface-subtle, #334155) 45%, var(--fc-admin-surface, #1e293b));
+}
+
+html[data-fc-admin-theme='dark'] .fc-sites .fc-sites__copy {
+    background: var(--fc-admin-input-bg, #0f172a);
+    box-shadow: -0.375rem 0 0.375rem var(--fc-admin-input-bg, #0f172a);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-sites__row,
+    .fc-sites .fc-sites__copy,
+    .fc-sites__logo-edit,
+    .fc-minify__filter {
+        transition: none;
+    }
+}
+
+/* —— Settings → Minify CSS & JS —— */
+/* Frontend and Admin areas, each a heading over one card per file type: the switch and chip in the header band,
+   a status row, filter pills and the Sites grid. */
+.fc-minify__area {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Padding, not margin: the panel's space-y margins already sit between the areas. */
+.fc-minify__area + .fc-minify__area {
+    padding-top: 1rem;
+}
+
+.fc-minify__area-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+.fc-minify__area-text {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+.fc-minify__area-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-minify__area-desc {
+    margin: 0.125rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+/* The pinned overview (Minify, Site Health): a zero-height sticky slot at the top of the scroll area, its bar
+   drawn over the cards. */
+.fc-overview-pin {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: 0;
+}
+
+/* The slot is the panel's first child, so the card after it would take space-y's margin; the IDs outrank that rule. */
+#fc-settings-panel-minify > .fc-overview-pin + section,
+#fc-settings-panel-site-health > .fc-overview-pin + section,
+#fc-settings-panel-seo > .fc-overview-pin + section {
+    margin-top: 0;
+}
+
+/* Full width of the scroll area: it reaches over #fc-settings-layout's padding and pads the same back, so its
+   contents line up with the cards. That padding is 1.5rem at every width: Bootstrap's .p-4 is !important. */
+.fc-overview-pin__bar {
+    position: absolute;
+    top: 0;
+    right: -1.5rem;
+    left: -1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.5rem 1.5rem;
+    border: 0;
+    border-bottom: 1px solid var(--fc-admin-border, #e2e8f0);
+    background: var(--fc-admin-surface, #fff);
+    box-shadow: 0 8px 16px -10px rgba(15, 23, 42, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.375rem);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+
+.fc-overview-pin.is-visible .fc-overview-pin__bar {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+
+.fc-overview-pin__title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+/* One line beside the Settings rail: below 1440px the page header already names the tab, so the bar drops its title. */
+@media (max-width: 1439px) {
+    .fc-overview-pin__title {
+        display: none;
+    }
+}
+
+.fc-overview-pin__tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-left: auto;
+}
+
+/* The chips are buttons that jump to their card. */
+.fc-overview-pin__tile {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.fc-overview-pin__tile:hover {
+    background: color-mix(in srgb, var(--fc-seo-tone) 22%, transparent);
+}
+
+.fc-overview-pin__tile:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange, #f67925);
+    outline-offset: 1px;
+}
+
+/* A jump from a chip or tile lands the card below the pinned bar, not under it. */
+.fc-minify [data-fc-minify-card],
+[data-fc-health-group] {
+    scroll-margin-top: 4.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-overview-pin__bar {
+        transition: none;
+    }
+}
+
+/* Four group tiles: two by two, or one row of four once there is room; never Site Health's three plus one. */
+@media (min-width: 1280px) {
+    .fc-seo-checks.fc-minify__tiles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1440px) {
+    .fc-seo-checks.fc-minify__tiles {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.fc-minify__meta {
+    margin: 0.15rem 0 0;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-minify__controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-left: auto;
+}
+
+/* Where "Minify All" would be on a server that cannot build: a fact, not an error. */
+.fc-minify__unavailable {
+    align-self: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-minify__status {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Basis 0, or a narrow screen wraps the whole text block under the icon instead of shrinking it. */
+.fc-minify__status .fc-health-row__text {
+    flex-basis: 0;
+}
+
+.fc-minify__status-action {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+@media (max-width: 639px) {
+    .fc-minify__status-action {
+        flex-basis: 100%;
+        margin-left: 0;
+    }
+}
+
+.fc-minify__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+/* The Sites count pill as a button. */
+.fc-minify__filter {
+    padding: 0.125rem 0.5rem;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--fc-admin-surface-subtle, #f1f5f9);
+    color: var(--fc-admin-text-muted, #64748b);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.fc-minify__filter[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, transparent);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-minify__filter:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.fc-minify__filter:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange, #f67925);
+    outline-offset: 1px;
+}
+
+.fc-minify__table {
+    border-top: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+/* Status and Serving come first, so at 1280px beside the rail only "Smaller by" scrolls out of view.
+   min-width = the column minimums + gaps + padding, as the Sites table's is. */
+.fc-minify__table .fc-sites__row {
+    grid-template-columns: minmax(9rem, 1.3fr) 6.25rem 5rem minmax(9.5rem, 1fr) minmax(9.5rem, 1fr) 4.75rem;
+    min-width: 47.875rem;
+    padding: 0.375rem 1rem;
+}
+
+.fc-minify__table .fc-sites__row--head {
+    border-top: 0;
+}
+
+/* No fields to line up with here, unlike the Sites table. */
+.fc-minify__table .fc-sites__row--head .fc-sites__cell:not(.fc-sites__cell--site) {
+    padding-left: 0;
+}
+
+/* The whole header cell is its sort button: the row gives up its vertical padding to the buttons. */
+.fc-minify__table .fc-sites__row--head {
+    align-items: stretch;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* The File header gives its tone-edge padding to the button, so the cell's left strip clicks too. */
+.fc-minify__table .fc-sites__row--head .fc-sites__cell--site {
+    padding-left: 0;
+}
+
+.fc-minify__table .fc-sites__cell--site > .fc-minify__sort {
+    width: calc(100% + 0.1875rem);
+    margin-left: 0;
+    padding-left: 0.5rem;
+}
+
+/* Each button reaches halfway into the column gap on both sides, so no strip between headers is dead. */
+/* Label at the left, sort icon at the cell's right edge, like the Fence colors table. */
+.fc-minify__sort {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.3rem;
+    width: calc(100% + 0.375rem);
+    margin: 0 -0.1875rem;
+    padding: 0.5rem 0.1875rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.fc-minify__sort i {
+    font-size: 0.625rem;
+    color: var(--fc-admin-text-subtle, #94a3b8);
+}
+
+/* A divider between header cells, so each right-hand icon reads as its own column's, not the next label's;
+   the labels after it keep a little room from the line. */
+.fc-minify__table .fc-sites__cell:not(:last-child) > .fc-minify__sort {
+    border-right: 1px solid var(--fc-admin-border, #e2e8f0);
+}
+
+.fc-minify__table .fc-sites__cell:not(.fc-sites__cell--site) > .fc-minify__sort {
+    padding-left: 0.5rem;
+}
+
+.fc-minify__sort:hover,
+.fc-minify__sort.is-active {
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-minify__sort:hover {
+    background: var(--fc-admin-surface-muted, #f8fafc);
+}
+
+.fc-minify__sort.is-active i {
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-minify__sort:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange, #f67925);
+    outline-offset: -2px;
+}
+
+/* Room for the tone edge, so it never sits on the first letter of the file name. */
+.fc-minify__table .fc-sites__cell--site {
+    padding-left: 0.5rem;
+}
+
+/* The filter's hidden attribute must beat the row's display: grid. */
+.fc-minify__row[hidden] {
+    display: none;
+}
+
+.fc-minify__row {
+    --fc-minify-tone: transparent;
+}
+
+.fc-minify__row[data-state="stale"] {
+    --fc-minify-tone: #b45309;
+}
+
+.fc-minify__row[data-state="missing"],
+.fc-minify__row[data-state="failed"] {
+    --fc-minify-tone: #b91c1c;
+}
+
+/* A tone edge on the pinned cell, so it stays in view when the grid scrolls sideways. */
+.fc-minify__row:not([data-state="fresh"]) .fc-sites__cell--site::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--fc-minify-tone);
+}
+
+.fc-minify__stack {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Positioned so the sr-only note inside stays within the grid's scroller; a long date format wraps at its space. */
+.fc-minify__main {
+    position: relative;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+/* A stale row's original date is the fact that matters, so it takes the warn tone. */
+.fc-minify__main--newer {
+    color: #b45309;
+}
+
+.fc-minify__sub {
+    font-size: 0.6875rem;
+    color: var(--fc-admin-text-muted, #64748b);
+    white-space: nowrap;
+}
+
+.fc-minify__serving {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-minify__serving[data-served="0"] {
+    font-weight: 500;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-minify__error .fc-sites__drawer-hint {
+    color: #b91c1c;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.fc-minify__table[aria-busy="true"] .fc-minify__row {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Keeps the rows and pills lined up with the card title, whose header pads 1.25rem from here. */
+@media (min-width: 640px) {
+    .fc-minify__table .fc-sites__row,
+    .fc-minify__filters {
+        padding-right: 1.25rem;
+        padding-left: 1.25rem;
+    }
+
+    .fc-minify__table .fc-sites__row {
+        min-width: 48.375rem;
+    }
+}
+
+/* High Contrast drops the tint, so the pressed pill takes a system outline like the Settings rail's open tab. */
+@media (forced-colors: active) {
+    .fc-minify__filter[aria-pressed="true"] {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+}
+
+html[data-fc-admin-theme='dark'] .fc-minify__row[data-state="stale"] {
+    --fc-minify-tone: #fbbf24;
+}
+
+html[data-fc-admin-theme='dark'] .fc-minify__row[data-state="missing"],
+html[data-fc-admin-theme='dark'] .fc-minify__row[data-state="failed"] {
+    --fc-minify-tone: #f87171;
+}
+
+html[data-fc-admin-theme='dark'] .fc-minify__main--newer {
+    color: #fbbf24;
+}
+
+html[data-fc-admin-theme='dark'] .fc-minify__error .fc-sites__drawer-hint {
+    color: #f87171;
+}
+
+/* Dark maps surface and surface-muted to one colour, so the hover takes the Sites rows' lifted tint. */
+html[data-fc-admin-theme='dark'] .fc-minify__sort:hover {
+    background: color-mix(in srgb, var(--fc-admin-surface-subtle, #334155) 45%, var(--fc-admin-surface, #1e293b));
 }
 
 /* —— Settings → SEO —— */

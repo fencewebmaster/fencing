@@ -96,6 +96,7 @@
                     self.jumpTo(tile.getAttribute('data-fc-health-tile'));
                 });
             });
+            this.pinOverview(this.panel().querySelector('[data-fc-overview-pin]'), this.panel().querySelector('[data-fc-health-overview]'));
         }
 
         /** The first visit runs the checks; coming back keeps the results until Run Checks Again. */
@@ -226,7 +227,6 @@
             var failed = 0;
 
             this.groups().forEach(function (group) {
-                var tile = document.querySelector('[data-fc-health-tile="' + group + '"]');
                 var result = self.results[group];
                 var state = 'info';
                 var text = 'Checking…';
@@ -242,38 +242,38 @@
                     state = 'bad';
                     text = 'Not checked';
                 }
-                if (!tile) {
-                    return;
-                }
-                tile.setAttribute('data-state', state);
-                var icon = tile.querySelector('[data-fc-health-tile-icon]');
-                if (icon) {
-                    icon.className = 'fa-solid ' + (result ? STATE_ICONS[state] : 'fa-circle-notch fa-spin');
-                }
-                var value = tile.querySelector('[data-fc-health-tile-value]');
-                if (value) {
-                    value.textContent = text;
-                }
+                // The card's tile and the pinned bar's chip; the chip shows its label only, so the status is its tooltip.
+                document.querySelectorAll('[data-fc-health-tile="' + group + '"]').forEach(function (tile) {
+                    tile.setAttribute('data-state', state);
+                    var icon = tile.querySelector('[data-fc-health-tile-icon]');
+                    if (icon) {
+                        icon.className = 'fa-solid ' + (result ? STATE_ICONS[state] : 'fa-circle-notch fa-spin');
+                    }
+                    var value = tile.querySelector('[data-fc-health-tile-value]');
+                    if (value) {
+                        value.textContent = text;
+                    }
+                    if (tile.classList.contains('fc-overview-pin__tile')) {
+                        tile.title = tile.firstChild.nodeValue + ': ' + text;
+                    }
+                });
             });
 
             var running = this.pending > 0;
             var scored = totals.good + totals.warn + totals.bad;
-            var score = document.querySelector('[data-fc-health-score]');
-            var scoreText = document.querySelector('[data-fc-health-score-text]');
-            var fill = document.querySelector('[data-fc-health-score-fill]');
-            if (score) {
-                score.setAttribute('data-state', running ? 'info' : failed ? 'bad' : worst(totals));
-            }
-            if (scoreText) {
-                if (running) {
-                    scoreText.textContent = 'Running checks…';
-                } else {
-                    scoreText.textContent = scored ? totals.good + ' of ' + scored + ' checks passed' : 'The checks could not run';
-                }
-            }
-            if (fill) {
-                fill.style.width = running || !scored ? '0%' : Math.round((totals.good / scored) * 100) + '%';
-            }
+            var scoreState = running ? 'info' : failed ? 'bad' : worst(totals);
+            var scoreLabel = running ? 'Running checks…' : scored ? totals.good + ' of ' + scored + ' checks passed' : 'The checks could not run';
+            var fillWidth = running || !scored ? '0%' : Math.round((totals.good / scored) * 100) + '%';
+            // The overview card and the pinned bar carry the same slots.
+            document.querySelectorAll('[data-fc-health-score]').forEach(function (score) {
+                score.setAttribute('data-state', scoreState);
+            });
+            document.querySelectorAll('[data-fc-health-score-text]').forEach(function (scoreText) {
+                scoreText.textContent = scoreLabel;
+            });
+            document.querySelectorAll('[data-fc-health-score-fill]').forEach(function (fill) {
+                fill.style.width = fillWidth;
+            });
 
             var checked = document.querySelector('[data-fc-health-checked]');
             if (checked) {

@@ -20,6 +20,7 @@
         'project-plan',
         'seo',
         'console',
+        'minify',
         'site-health'
     ];
     var SETTINGS_DEFAULT_TAB = 'theme';
@@ -72,6 +73,11 @@
         consoleDefaults: { debugMode: false },
         consoleFormBound: false,
         consoleSaving: false,
+        minify: { css: true, js: true, adminCss: false, adminJs: false },
+        minifyDefaults: { css: true, js: true, adminCss: false, adminJs: false },
+        minifyTool: { available: false, path: '', reason: '' },
+        minifyBound: false,
+        minifyBusy: false,
         csrf: ''
     };
 
@@ -96,6 +102,9 @@
         }
         if (normalized === 'health' || normalized === 'sitehealth') {
             normalized = 'site-health';
+        }
+        if (normalized === 'minified' || normalized === 'minify-css-js') {
+            normalized = 'minify';
         }
         return SETTINGS_TABS.indexOf(normalized) !== -1 ? normalized : SETTINGS_DEFAULT_TAB;
     }
@@ -474,6 +483,7 @@
         var projectPlanActions = document.getElementById('fc-settings-header-actions-project-plan');
         var seoActions = document.getElementById('fc-settings-header-actions-seo');
         var consoleActions = document.getElementById('fc-settings-header-actions-console');
+        var minifyActions = document.getElementById('fc-settings-header-actions-minify');
         var siteHealthActions = document.getElementById('fc-settings-header-actions-site-health');
         var themeDirty = document.getElementById('fc-settings-theme-dirty');
         var brandingDirty = document.getElementById('fc-settings-branding-dirty');
@@ -527,6 +537,10 @@
         if (consoleActions) {
             consoleActions.classList.toggle('hidden', state.activeTab !== 'console');
             consoleActions.classList.toggle('flex', state.activeTab === 'console');
+        }
+        if (minifyActions) {
+            minifyActions.classList.toggle('hidden', state.activeTab !== 'minify');
+            minifyActions.classList.toggle('flex', state.activeTab === 'minify');
         }
         if (siteHealthActions) {
             siteHealthActions.classList.toggle('hidden', state.activeTab !== 'site-health');
@@ -589,9 +603,48 @@
         if (seoReset) {
             seoReset.disabled = !state.seoDirty;
         }
+
+        var dirtyTabs = {
+            theme: state.themeDirty,
+            branding: state.brandingDirty,
+            'fence-colors': state.fenceColorsDirty,
+            catalog: state.catalogDirty,
+            system: state.systemDirty,
+            integration: state.integrationDirty,
+            'project-plan': state.projectPlanItemsDirty,
+            seo: state.seoDirty
+        };
+        document.querySelectorAll('[data-fc-settings-tab-dirty]').forEach(function (dot) {
+            dot.hidden = !dirtyTabs[dot.getAttribute('data-fc-settings-tab-dirty')];
+        });
+    }
+
+    /** Puts the open tab's label and description in the section header. */
+    function paintSectionHeader(btn) {
+        var title = document.getElementById('fc-settings-section-title');
+        var desc = document.getElementById('fc-settings-section-desc');
+        var label = btn ? btn.querySelector('.fc-settings-nav__label') : null;
+        if (title && label) {
+            title.textContent = label.textContent;
+        }
+        if (desc && btn) {
+            desc.textContent = btn.getAttribute('data-fc-settings-tab-description') || '';
+        }
+    }
+
+    /** When the tabs are a sideways strip rather than the rail, centre the open one in it. */
+    function revealActiveTab(btn) {
+        var nav = btn ? btn.closest('.fc-settings-nav') : null;
+        if (!nav || nav.scrollWidth <= nav.clientWidth) {
+            return;
+        }
+        var navRect = nav.getBoundingClientRect();
+        var btnRect = btn.getBoundingClientRect();
+        nav.scrollLeft += btnRect.left + btnRect.width / 2 - (navRect.left + navRect.width / 2);
     }
 
     function switchTab(tabId) {
+        var changed = state.activeTab !== tabId;
         state.activeTab = tabId;
         var themePanel = document.getElementById('fc-settings-panel-theme');
         var brandingPanel = document.getElementById('fc-settings-panel-branding');
@@ -602,6 +655,7 @@
         var projectPlanPanel = document.getElementById('fc-settings-panel-project-plan');
         var seoPanel = document.getElementById('fc-settings-panel-seo');
         var consolePanel = document.getElementById('fc-settings-panel-console');
+        var minifyPanel = document.getElementById('fc-settings-panel-minify');
         var siteHealthPanel = document.getElementById('fc-settings-panel-site-health');
         var preview = document.getElementById('fc-settings-preview');
         var layout = document.getElementById('fc-settings-layout');
@@ -634,6 +688,9 @@
         if (consolePanel) {
             consolePanel.classList.toggle('hidden', tabId !== 'console');
         }
+        if (minifyPanel) {
+            minifyPanel.classList.toggle('hidden', tabId !== 'minify');
+        }
         if (siteHealthPanel) {
             siteHealthPanel.classList.toggle('hidden', tabId !== 'site-health');
         }
@@ -648,14 +705,24 @@
             }
         }
 
+        var activeBtn = null;
         document.querySelectorAll('[data-fc-settings-tab]').forEach(function (btn) {
             var active = btn.getAttribute('data-fc-settings-tab') === tabId;
             btn.setAttribute('aria-selected', active ? 'true' : 'false');
-            btn.classList.toggle('bg-white', active);
-            btn.classList.toggle('text-slate-900', active);
-            btn.classList.toggle('shadow-sm', active);
-            btn.classList.toggle('text-slate-600', !active);
+            btn.setAttribute('tabindex', active ? '0' : '-1');
+            btn.classList.toggle('is-active', active);
+            if (active) {
+                activeBtn = btn;
+            }
         });
+        paintSectionHeader(activeBtn);
+        revealActiveTab(activeBtn);
+
+        // A new section opens at its top, not wherever the last one was scrolled to.
+        var scroller = document.querySelector('[data-fc-settings-scroll]');
+        if (changed && scroller) {
+            scroller.scrollTop = 0;
+        }
 
         updateHeaderActions();
         syncSettingsTabUrl(tabId);
@@ -675,6 +742,10 @@
         if (tabId === 'site-health') {
             global.FC.Settings.tabs.siteHealth.ensureRun();
         }
+        if (tabId === 'minify' && changed) {
+            // The dates come from disk, and a CLI build may have run since the page loaded.
+            global.FC.Settings.tabs.minify.refresh();
+        }
     }
 
     function bindSettingsShell() {
@@ -683,6 +754,63 @@
                 switchTab(btn.getAttribute('data-fc-settings-tab'));
             });
         });
+
+        var list = document.querySelector('[data-fc-settings-tablist]');
+        if (!list || list.getAttribute('data-fc-settings-keys-bound') === '1') {
+            return;
+        }
+        list.setAttribute('data-fc-settings-keys-bound', '1');
+
+        // Arrows move focus only; Enter/Space opens the tab, so arrowing past Catalog or Site Health fetches nothing.
+        list.addEventListener('keydown', function (e) {
+            var current = e.target.closest('[data-fc-settings-tab]');
+            if (!current) {
+                return;
+            }
+            var tabs = Array.prototype.slice.call(list.querySelectorAll('[data-fc-settings-tab]'));
+            var index = tabs.indexOf(current);
+            var next = null;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                next = tabs[(index + 1) % tabs.length];
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                next = tabs[(index - 1 + tabs.length) % tabs.length];
+            } else if (e.key === 'Home') {
+                next = tabs[0];
+            } else if (e.key === 'End') {
+                next = tabs[tabs.length - 1];
+            }
+            if (next) {
+                e.preventDefault();
+                next.focus();
+            }
+        });
+
+        // The strip hides its scrollbar, so a mouse wheel scrolls it sideways; the rail keeps its own scrolling.
+        var nav = list.closest('.fc-settings-nav');
+        if (nav) {
+            nav.addEventListener(
+                'wheel',
+                function (e) {
+                    if (nav.scrollWidth <= nav.clientWidth || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
+                        return;
+                    }
+                    nav.scrollLeft += e.deltaY;
+                    e.preventDefault();
+                },
+                { passive: false }
+            );
+        }
+
+        // entries.css picks rail or strip from the page's width, which the sidebar's state changes too, so read the layout.
+        var syncLayout = function () {
+            var vertical = global.getComputedStyle(list).flexDirection === 'column';
+            list.setAttribute('aria-orientation', vertical ? 'vertical' : 'horizontal');
+            revealActiveTab(list.querySelector('[data-fc-settings-tab].is-active'));
+        };
+        syncLayout();
+        if (global.ResizeObserver) {
+            new global.ResizeObserver(syncLayout).observe(list);
+        }
     }
 
 
@@ -755,6 +883,9 @@
             { debugMode: false },
             data.consoleDefaults || {}
         );
+        state.minify = Object.assign({ css: true, js: true, adminCss: false, adminJs: false }, data.minify || {});
+        state.minifyDefaults = Object.assign({ css: true, js: true, adminCss: false, adminJs: false }, data.minifyDefaults || {});
+        state.minifyTool = Object.assign({ available: false, path: '', reason: '' }, data.minifyTool || {});
 
         state.themeDirty = false;
         state.brandingDirty = false;
@@ -773,6 +904,8 @@
         state.seoFormBound = false;
         state.consoleFormBound = false;
         state.consoleSaving = false;
+        state.minifyBound = false;
+        state.minifyBusy = false;
 
         state.activeTab = normalizeSettingsTab(data.activeTab || readSettingsTabFromUrl());
         syncSettingsTabUrl(state.activeTab);
@@ -802,6 +935,7 @@
         global.FC.Settings.tabs.projectPlan.bind();
         global.FC.Settings.tabs.seo.bind();
         global.FC.Settings.tabs.console.bind();
+        global.FC.Settings.tabs.minify.bind();
         global.FC.Settings.tabs.siteHealth.bind();
         global.FC.Settings.tabs.theme.updatePresetCards();
         global.FC.Settings.tabs.theme.applyLiveTheme();

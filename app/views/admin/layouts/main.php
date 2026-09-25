@@ -598,50 +598,9 @@ use Fc\Admin\Settings\ThemeSettings;
         }
         @media (min-width: 768px) {
             .fc-fs-gui-modals-layout {
-                grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+                grid-template-columns: minmax(0, 12.5rem) minmax(0, 1fr);
             }
         }
-        .fc-fs-gui-modals-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 0;
-            padding: 0.35rem;
-            background: #f8fafc;
-            position: sticky;
-            top: 0;
-            align-self: start;
-            max-height: 100vh;
-            overflow: auto;
-        }
-        .fc-fs-gui-modals-nav__item {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.1rem;
-            width: 100%;
-            text-align: left;
-            border: none;
-            background: transparent;
-            border-radius: 0;
-            padding: 0.55rem 0.65rem;
-            cursor: pointer;
-        }
-        .fc-fs-gui-modals-nav__item span {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: #0f172a;
-        }
-        .fc-fs-gui-modals-nav__item small {
-            font-size: 0.6875rem;
-            color: #64748b;
-        }
-        .fc-fs-gui-modals-nav__item.is-active {
-            background: #fff;
-            box-shadow: 0 0 0 1px #fdba74;
-        }
-
         .fc-fs-gui-fields-stack {
             display: flex;
             flex-direction: column;
@@ -1480,6 +1439,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/seo-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/console-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/minify-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/site-health-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminIsGallery) : ?>
@@ -1537,6 +1497,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/seo-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/console-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/minify-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/site-health-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php endif; ?>

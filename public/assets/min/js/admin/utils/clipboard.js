@@ -1,0 +1,2 @@
+(function(o){"use strict";var t=o.FC=o.FC||{};t.util=t.util||{};function n(i){return navigator.clipboard&&window.isSecureContext?navigator.clipboard.writeText(i):new Promise(function(a,r){var e=document.createElement("textarea");e.value=i,e.setAttribute("readonly",""),e.style.position="fixed",e.style.left="-9999px",document.body.appendChild(e),e.select();try{document.execCommand("copy")?a():r(new Error("Copy failed"))}catch(d){r(d)}finally{document.body.removeChild(e)}})}t.util.copyToClipboard=n})(window);
+//# sourceMappingURL=clipboard.js.map

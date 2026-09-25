@@ -1,13 +1,14 @@
 <?php
 /**
- * FC Admin — settings API (the settings groups, settings import/export, Cloudflare verify,
- * the dev console, and the Site Health checks).
+ * FC Admin — settings API (the settings groups, settings import/export, Cloudflare verify and
+ * purge, the dev console, and the Site Health checks).
  */
 
 declare(strict_types=1);
 
 namespace Fc\Admin\Controllers\Api;
 
+use Fc\Admin\Helpers\FormatHelper;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Settings\BrandingSettings;
 use Fc\Admin\Settings\CatalogSettings;
@@ -16,8 +17,11 @@ use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Services\DevConsoleService;
 use Fc\Admin\Settings\FenceColorSettings;
 use Fc\Admin\Settings\IntegrationsSettings;
+use Fc\Admin\Services\MinifyService;
+use Fc\Admin\Settings\MinifySettings;
 use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Settings\PlannerOptionSettings;
+use Fc\Admin\Presenters\SettingsPresenter;
 use Fc\Admin\Settings\SeoSettings;
 use Fc\Admin\Services\SiteHealthService;
 use Fc\Admin\Settings\SystemSettings;
@@ -77,6 +81,11 @@ final class SettingsController extends BaseApiController
             return;
         }
 
+        if ($action === 'cloudflare-purge') {
+            $this->handleCloudflarePurge($method);
+            return;
+        }
+
         if ($action === 'project-plan') {
             $this->handleProjectPlan($method);
             return;
@@ -104,6 +113,16 @@ final class SettingsController extends BaseApiController
 
         if ($action === 'dev-console') {
             $this->handleDevConsole($method);
+            return;
+        }
+
+        if ($action === 'minify') {
+            $this->handleMinify($method);
+            return;
+        }
+
+        if ($action === 'minify-build') {
+            $this->handleMinifyBuild($method);
             return;
         }
 
@@ -536,10 +555,80 @@ final class SettingsController extends BaseApiController
             return;
         }
 
+        $mismatch = CloudflareService::zoneMismatch($siteKey, (string) ($result['zoneName'] ?? ''));
+        if ($mismatch !== '') {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => $mismatch,
+                'zoneName' => (string) ($result['zoneName'] ?? ''),
+                'siteKey' => $siteKey,
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         echo json_encode([
             'ok' => true,
             'zoneName' => (string) ($result['zoneName'] ?? ''),
             'status' => (string) ($result['status'] ?? ''),
+            'siteKey' => $siteKey,
+        ], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * The Integration tab's per-site purge. Reads the Zone ID and token as typed, like
+     * cloudflare-verify; settings.cache is checked here because the module only asks for
+     * settings.settings, and the topbar's purge already needs settings.cache.
+     */
+    private function handleCloudflarePurge(string $method): void
+    {
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!PermissionService::can('settings.cache')) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'You do not have permission to purge caches.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (!self::csrfOk($payload)) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $token = trim((string) ($payload['cloudflareApiToken'] ?? ''));
+        if ($token === '') {
+            $saved = IntegrationsSettings::get();
+            $token = trim((string) ($saved['cloudflareApiToken'] ?? ''));
+        }
+
+        $zoneId = trim((string) ($payload['cloudflareZoneId'] ?? ''));
+        $siteKey = trim((string) ($payload['siteKey'] ?? ''));
+
+        $result = CloudflareService::purgeZone($token, $zoneId, $siteKey);
+        if (empty($result['ok'])) {
+            http_response_code(400);
+            echo json_encode([
+                'ok' => false,
+                'error' => (string) ($result['error'] ?? 'Cloudflare purge failed.'),
+                'siteKey' => $siteKey,
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode([
+            'ok' => true,
+            'message' => 'Purged the Cloudflare cache for ' . (string) ($result['zoneName'] ?? '') . '.',
+            'zoneName' => (string) ($result['zoneName'] ?? ''),
             'siteKey' => $siteKey,
         ], JSON_UNESCAPED_UNICODE);
     }
@@ -618,6 +707,7 @@ final class SettingsController extends BaseApiController
             'projectPlanStock' => PlannerOptionSettings::stock(),
             'seo'          => SeoSettings::get(),
             'console'      => ConsoleSettings::get(),
+            'minify'       => MinifySettings::get(),
         ];
 
         $json = json_encode([
@@ -701,7 +791,7 @@ final class SettingsController extends BaseApiController
         $appliedCount = 0;
         $failedSections = [];
 
-        foreach (['theme', 'branding', 'fenceColors', 'catalog', 'system', 'integrations', 'projectPlan', 'seo', 'console'] as $key) {
+        foreach (['theme', 'branding', 'fenceColors', 'catalog', 'system', 'integrations', 'projectPlan', 'seo', 'console', 'minify'] as $key) {
             if (!array_key_exists($key, $settings) || !is_array($settings[$key])) {
                 continue;
             }
@@ -717,6 +807,7 @@ final class SettingsController extends BaseApiController
                 'projectPlan' => PlannerOptionSettings::saveExtraItems($value),
                 'seo' => SeoSettings::save($value),
                 'console' => ConsoleSettings::save($value),
+                'minify' => MinifySettings::save($value),
                 default => ['ok' => false, 'error' => 'Unknown section.'],
             };
 
@@ -840,5 +931,160 @@ final class SettingsController extends BaseApiController
             http_response_code(!empty($result['forbidden']) ? 403 : 400);
         }
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * GET: the four switches, the build tool and every frontend and admin CSS/JS file's state. POST
+     * saves the switches. A switch only chooses what is served; rebuilding is minify-build's job, so
+     * the two never surprise each other.
+     */
+    private function handleMinify(string $method): void
+    {
+        if ($method === 'GET') {
+            echo json_encode(['ok' => true] + SettingsPresenter::minifyStatus(), JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if ($method === 'POST') {
+            $payload = $this->request->jsonBody();
+            if (!is_array($payload) || !isset($payload['minify']) || !is_array($payload['minify'])) {
+                http_response_code(400);
+                echo json_encode(['ok' => false, 'error' => 'Invalid JSON. Expected { "minify": { "css": true } }.'], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (!self::csrfOk($payload)) {
+                http_response_code(403);
+                echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            // Merge onto what is on disk so a client may post only the switch it flipped.
+            $before = MinifySettings::get();
+            $result = MinifySettings::save(array_merge($before, $payload['minify']));
+            if (!$result['ok']) {
+                http_response_code(400);
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                return;
+            }
+            $after = $result['minify'];
+
+            $status = SettingsPresenter::minifyStatus();
+            $messages = [];
+            foreach ($status['areas'] as $area) {
+                foreach ($area['groups'] as $group) {
+                    if ($before[$group['key']] !== $after[$group['key']]) {
+                        $messages[] = self::minifyToggleMessage($group);
+                    }
+                }
+            }
+
+            echo json_encode([
+                'ok' => true,
+                'message' => $messages === [] ? 'Minify settings saved.' : implode(' ', $messages),
+            ] + $status, JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        http_response_code(405);
+        echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    /** POST: rebuild the minified copies of the given groups (default all four); the response carries the new state. */
+    private function handleMinifyBuild(string $method): void
+    {
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (!self::csrfOk($payload)) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        // The view hides the build controls without this key; the API filter checks it too (keysForApi).
+        if (!PermissionService::can('settings.dev_console')) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Rebuilding needs the Console permission.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        // "types" names MinifyService::GROUPS keys ('css', 'js', 'adminCss', 'adminJs').
+        $groups = is_array($payload['types'] ?? null) ? array_map('strval', $payload['types']) : array_keys(MinifyService::GROUPS);
+        $groups = array_values(array_intersect(array_keys(MinifyService::GROUPS), $groups));
+
+        try {
+            $build = MinifyService::build($groups);
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'error' => 'The build could not run: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+            return;
+        }
+
+        if (!$build['ok']) {
+            http_response_code(!empty($build['locked']) ? 409 : 400);
+        }
+        $status = SettingsPresenter::minifyStatus();
+        $message = '';
+        if ($build['ok']) {
+            $built = [];
+            foreach ($status['areas'] as $area) {
+                foreach ($area['groups'] as $group) {
+                    if (in_array($group['key'], $groups, true)) {
+                        $built[] = $group;
+                    }
+                }
+            }
+            $what = count($built) === 1 ? (string) $built[0]['noun'] : 'files';
+            $bytes = $build['bytes'];
+            $message = 'Minified ' . $build['built'] . ' ' . ($build['built'] === 1 ? rtrim($what, 's') : $what) . ' in ' . $build['seconds'] . 's ('
+                . FormatHelper::bytes($bytes['source']) . ' → ' . FormatHelper::bytes($bytes['copy']) . ').';
+            $off = array_column(array_filter($built, static fn (array $group): bool => !$group['enabled']), 'full_label');
+            if ($off !== []) {
+                $message .= ' Turn on ' . implode(' and ', $off) . ' to serve them.';
+            }
+        }
+        echo json_encode([
+            'ok' => $build['ok'],
+            'error' => $build['ok'] ? null : (string) ($build['error'] ?? 'The build could not run.'),
+            'message' => $message,
+            'build' => $build,
+        ] + $status, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+    }
+
+    /**
+     * What a flipped switch means for what is served, with the counts the page can't know yet.
+     *
+     * @param array<string, mixed> $group one of SettingsPresenter::minifyStatus()['areas'][n]['groups']
+     */
+    private static function minifyToggleMessage(array $group): string
+    {
+        $label = (string) $group['full_label'];
+        $count = (int) $group['count'];
+        $served = (int) $group['served'];
+        if (!$group['enabled']) {
+            return $label . ' is off — the original ' . $group['noun'] . ' are served.';
+        }
+        if ($count === 0) {
+            return $label . ' is on, but there are no ' . $group['noun'] . ' to minify.';
+        }
+        if ($served === 0) {
+            return $label . ' is on, but no copy is up to date yet — the originals are served until they are rebuilt.';
+        }
+        if ($served === $count) {
+            return $label . ' is on — ' . ($count === 1 ? 'the 1 file is' : 'all ' . $count . ' files are') . ' served minified.';
+        }
+        $rest = $count - $served;
+
+        return $label . ' is on — ' . $served . ' of ' . $count . ' files are served minified; '
+            . ($rest === 1 ? '1 is served as the original until it is rebuilt.' : $rest . ' are served as originals until they are rebuilt.');
     }
 }

@@ -10,7 +10,7 @@ use Fc\Admin\Services\PermissionService;
 
 final class SettingsPageController extends BaseController
 {
-    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'project-plan', 'seo', 'console'];
+    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'project-plan', 'seo', 'console', 'minify'];
 
     // Legacy/alternate ?tab= spellings still linked from old bookmarks and JS.
     private const TAB_ALIASES = [
@@ -23,6 +23,8 @@ final class SettingsPageController extends BaseController
         'dev' => 'console',
         'health' => 'site-health',
         'sitehealth' => 'site-health',
+        'minified' => 'minify',
+        'minify-css-js' => 'minify',
     ];
 
     public function index(AdminContext $context): void
@@ -30,6 +32,8 @@ final class SettingsPageController extends BaseController
         // Site Health is the Super Admin's alone; anyone else asking for it lands on Theme.
         $siteHealth = PermissionService::isSuperAdmin();
         $initialTab = $this->resolveInitialTab($siteHealth);
+        // The Integration tab's per-site Cloudflare purge needs the topbar purge's permission too.
+        $cloudflarePurge = PermissionService::can('settings.cache');
 
         $context->pageTitle    = 'Settings';
         $context->route        = 'settings';
@@ -38,7 +42,8 @@ final class SettingsPageController extends BaseController
             $context->adminBase,
             $context->appBase,
             $initialTab,
-            $siteHealth
+            $siteHealth,
+            $cloudflarePurge
         );
     }
 

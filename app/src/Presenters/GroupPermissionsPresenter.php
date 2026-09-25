@@ -227,6 +227,11 @@ final class GroupPermissionsPresenter
                 'dev-console', 'git-pull' => ['settings.dev_console'],
                 // SettingsController narrows this one further, to the Super Admin alone.
                 'site-health' => ['settings.settings'],
+                // SettingsController also requires settings.cache, as the topbar purge does.
+                'cloudflare-purge' => ['settings.settings'],
+                // The switches are a settings choice; the build runs esbuild on the server, like the console's git.
+                'minify' => ['settings.settings'],
+                'minify-build' => ['settings.dev_console'],
                 default => ['settings.settings'],
             },
             'cache', 'cacheController' => ['settings.cache'],

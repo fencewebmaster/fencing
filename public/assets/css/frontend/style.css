@@ -14682,6 +14682,62 @@ img.fc-cart-product-thumb,
     object-position: top center;
 }
 
+/* Lazy thumbnails (shared/lazy-images.js): a shimmer in the image's own box until it loads, then a fade in. */
+.fc-lazy-thumb {
+    position: relative;
+    display: block;
+    width: max-content;
+    max-width: 100%;
+}
+
+.fc-lazy-thumb img {
+    transition: opacity 0.3s ease;
+}
+
+.fc-lazy-thumb.is-loading img {
+    opacity: 0;
+}
+
+.fc-lazy-thumb.is-loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    background: linear-gradient(100deg, #eef0f3 30%, #f8f9fa 50%, #eef0f3 70%);
+    background-size: 200% 100%;
+    animation: fc-lazy-thumb-shimmer 1.2s ease-in-out infinite;
+}
+
+/* A thumbnail that failed to load leaves a quiet grey box, not a broken-image icon. */
+.fc-lazy-thumb.is-broken {
+    border-radius: 4px;
+    background: #f1f3f5;
+}
+
+.fc-lazy-thumb.is-broken img {
+    visibility: hidden;
+}
+
+@keyframes fc-lazy-thumb-shimmer {
+    from {
+        background-position: 150% 0;
+    }
+
+    to {
+        background-position: -50% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-lazy-thumb img {
+        transition: none;
+    }
+
+    .fc-lazy-thumb.is-loading::after {
+        animation: none;
+    }
+}
+
 .fc-cart-gallery-trigger {
     cursor: pointer;
 }

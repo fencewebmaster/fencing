@@ -67,6 +67,29 @@
             FC.util.setSaving(document.getElementById(buttonId), false);
         }
 
+        /**
+         * Shows a panel's pinned overview bar ([data-fc-overview-pin]) once its overview card has scrolled up
+         * out of the settings scroll area, and hides it again when the card comes back.
+         * @param {Element|null} slot
+         * @param {Element|null} card
+         */
+        pinOverview(slot, card) {
+            var scroller = document.querySelector('[data-fc-settings-scroll]');
+            if (!slot || !card || !scroller || typeof global.IntersectionObserver !== 'function') {
+                return;
+            }
+            var bar = slot.querySelector('.fc-overview-pin__bar');
+            new global.IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    // Only above the top: a card that is below the fold, or on a hidden tab, keeps the bar away.
+                    var above = entry.boundingClientRect.height > 0 && entry.boundingClientRect.bottom <= (entry.rootBounds ? entry.rootBounds.top : 0) + 1;
+                    var show = !entry.isIntersecting && above;
+                    slot.classList.toggle('is-visible', show);
+                    bar.inert = !show;
+                });
+            }, { root: scroller, rootMargin: '-56px 0px 0px 0px' }).observe(card);
+        }
+
         /** Populates this tab's DOM fields from state. Override in subclasses. */
         paint() {}
 

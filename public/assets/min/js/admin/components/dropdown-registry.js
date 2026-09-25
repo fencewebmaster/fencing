@@ -1,0 +1,2 @@
+(function(r){"use strict";var e=r.FC=r.FC||{};e.components=e.components||{};var n=[];function c(o,i){var f=n.filter(function(t){return t.root!==o});n=n.filter(function(t){return t.root===o}),f.forEach(function(t){t.close()}),n.length||n.push({root:o,close:i})}function s(o){n=n.filter(function(i){return i.root!==o})}e.components.DropdownRegistry={openExclusive:c,notifyClosed:s}})(window);
+//# sourceMappingURL=dropdown-registry.js.map

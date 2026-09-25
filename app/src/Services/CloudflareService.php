@@ -108,13 +108,116 @@ final class CloudflareService
             ];
         }
 
-        $url = 'https://api.cloudflare.com/client/v4/zones/' . rawurlencode($creds['zoneId']) . '/purge_cache';
-        $body = json_encode(['purge_everything' => true], JSON_UNESCAPED_SLASHES);
-        if ($body === false) {
+        $result = self::purgeZone($creds['apiToken'], $creds['zoneId'], $creds['siteKey']);
+        if (empty($result['ok'])) {
+            $error = (string) ($result['error'] ?? 'Cloudflare purge failed.');
+            // A zoneName on a refusal means the zone belongs to another domain: say where to fix it.
+            if (!empty($result['zoneName'])) {
+                $error .= ' Correct it under Settings → Integration.';
+            }
+
             return [
                 'ok' => false,
                 'deleted' => 0,
                 'targets' => [],
+                'error' => $error,
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'deleted' => 1,
+            'targets' => ['cloudflare'],
+            'message' => 'Purged the Cloudflare cache for ' . $result['zoneName'] . '.',
+        ];
+    }
+
+    /**
+     * The site's own domain from the site registry, which its zone must cover. '' for localhost
+     * (a dev copy with no domain of its own) and for keys the registry does not know.
+     */
+    public static function siteDomain(string $siteKey): string
+    {
+        $key = trim($siteKey);
+        if ($key === '' || $key === 'localhost') {
+            return '';
+        }
+
+        $rows = SiteRegistryService::all();
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            $domain = is_array($row) ? strtolower(trim((string) ($row['domain'] ?? ''))) : '';
+            if ($domain !== '' && AdminSiteRegistry::mysqlKeyFromDomain($domain) === $key) {
+                return $domain;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * '' when the zone serves the site (its domain, or a subdomain such as staging.), else why not.
+     * A Zone ID copied from another site's row purges that other site, which is how it goes wrong.
+     */
+    public static function zoneMismatch(string $siteKey, string $zoneName): string
+    {
+        $domain = self::siteDomain($siteKey);
+        $zone = strtolower(trim($zoneName));
+        if ($domain === '' || $zone === '' || $domain === $zone || str_ends_with($domain, '.' . $zone)) {
+            return '';
+        }
+
+        return 'This Zone ID is for ' . $zone . ', not ' . $domain . '.';
+    }
+
+    /**
+     * Purge everything cached in one zone. The Integration tab's per-site button passes the Zone ID
+     * and token as typed, like verifyZone(), so an unsaved edit purges the zone the admin can see.
+     * With a site key, a zone that does not serve that site's domain is refused before any purge.
+     *
+     * @return array{ok:bool,zoneName?:string,error?:string}
+     */
+    public static function purgeZone(string $apiToken, string $zoneId, string $siteKey = ''): array
+    {
+        $token = trim($apiToken);
+        $zone = strtolower(trim($zoneId));
+
+        if ($token === '') {
+            return [
+                'ok' => false,
+                'error' => 'Cloudflare API token is not configured. Add it under Settings → Integration.',
+            ];
+        }
+
+        if (!preg_match('/^[a-f0-9]{32}$/', $zone)) {
+            return [
+                'ok' => false,
+                'error' => 'Cloudflare Zone ID must be a 32-character hex string.',
+            ];
+        }
+
+        // Read the zone first: the result names its domain, and another site's zone is refused unpurged.
+        $lookup = self::verifyZone($token, $zone);
+        if (empty($lookup['ok'])) {
+            return [
+                'ok' => false,
+                'error' => (string) ($lookup['error'] ?? 'Cloudflare zone check failed.'),
+            ];
+        }
+        $zoneName = (string) ($lookup['zoneName'] ?? $zone);
+        $mismatch = self::zoneMismatch($siteKey, $zoneName);
+        if ($mismatch !== '') {
+            return [
+                'ok' => false,
+                'error' => $mismatch,
+                'zoneName' => $zoneName,
+            ];
+        }
+
+        $url = 'https://api.cloudflare.com/client/v4/zones/' . rawurlencode($zone) . '/purge_cache';
+        $body = json_encode(['purge_everything' => true], JSON_UNESCAPED_SLASHES);
+        if ($body === false) {
+            return [
+                'ok' => false,
                 'error' => 'Unable to build Cloudflare purge request.',
             ];
         }
@@ -127,8 +230,6 @@ final class CloudflareService
             if ($ch === false) {
                 return [
                     'ok' => false,
-                    'deleted' => 0,
-                    'targets' => [],
                     'error' => 'Unable to start Cloudflare request.',
                 ];
             }
@@ -137,7 +238,7 @@ final class CloudflareService
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_HTTPHEADER => [
-                    'Authorization: Bearer ' . $creds['apiToken'],
+                    'Authorization: Bearer ' . $token,
                     'Content-Type: application/json',
                     'Accept: application/json',
                 ],
@@ -150,8 +251,6 @@ final class CloudflareService
             if ($raw === false) {
                 return [
                     'ok' => false,
-                    'deleted' => 0,
-                    'targets' => [],
                     'error' => 'Cloudflare request failed' . ($curlError !== '' ? ': ' . $curlError : '.'),
                 ];
             }
@@ -161,7 +260,7 @@ final class CloudflareService
                 'http' => [
                     'method' => 'POST',
                     'header' => implode("\r\n", [
-                        'Authorization: Bearer ' . $creds['apiToken'],
+                        'Authorization: Bearer ' . $token,
                         'Content-Type: application/json',
                         'Accept: application/json',
                     ]),
@@ -182,8 +281,6 @@ final class CloudflareService
             if ($raw === false) {
                 return [
                     'ok' => false,
-                    'deleted' => 0,
-                    'targets' => [],
                     'error' => 'Cloudflare request failed.',
                 ];
             }
@@ -204,18 +301,11 @@ final class CloudflareService
 
             return [
                 'ok' => false,
-                'deleted' => 0,
-                'targets' => [],
                 'error' => $message,
             ];
         }
 
-        return [
-            'ok' => true,
-            'deleted' => 1,
-            'targets' => ['cloudflare'],
-            'message' => 'Purged Cloudflare CDN cache' . ($creds['siteKey'] !== '' ? ' (' . $creds['siteKey'] . ').' : '.'),
-        ];
+        return ['ok' => true, 'zoneName' => $zoneName];
     }
 
     /**

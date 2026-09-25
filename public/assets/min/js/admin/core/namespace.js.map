@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../../../../js/admin/core/namespace.js"],
+  "mappings": "CAOC,SAAUA,EAAQ,CACf,aAEAA,EAAO,GAAKA,EAAO,IAAM,CAAC,EAC1BA,EAAO,GAAG,KAAOA,EAAO,GAAG,MAAQ,CAAC,CACxC,GAAG,MAAM",
+  "names": ["global"]
+}

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Helpers;
 
+use Fc\Admin\Services\MinifyService;
+use Fc\Admin\Settings\MinifySettings;
+
 /**
  * Cache-busted asset URLs + deferred stylesheet tags.
  */
@@ -17,20 +20,26 @@ final class AssetHelper
     }
 
     /**
-     * The public/assets/min/ copy of a frontend JS or CSS file (build/minify/build.php) when it is at
+     * The public/assets/min/ copy of a frontend or admin JS/CSS file (MinifyService) when it is at
      * least as new as its source, else the source itself: an edit that skipped the rebuild is served
-     * as written, never a stale copy. Takes and returns an app-relative 'public/assets/…' path.
+     * as written, never a stale copy. Takes either contract's path and keeps its shape: app-relative
+     * 'public/assets/…' (frontend) or public/-relative 'assets/…' (admin). Settings → Minify CSS & JS
+     * can switch each group's copies off, which serves the sources.
      */
     public static function minified(string $file): string
     {
-        if (!preg_match('#^public/assets/((?:js|css)/frontend/.+\.(?:js|css))$#', $file, $m) || preg_match('#\.min\.(?:js|css)$#', $file)) {
+        if (!preg_match('#^(public/)?assets/(.+)$#', $file, $m)) {
+            return $file;
+        }
+        $group = MinifyService::groupOf($m[2]);
+        if ($group === '' || !MinifySettings::enabled($group)) {
             return $file;
         }
 
-        $min = 'public/assets/min/' . $m[1];
-        $minTime = @filemtime(FC_ROOT . '/' . $min);
+        $assets = FC_ROOT . '/public/assets/';
+        $minTime = @filemtime($assets . 'min/' . $m[2]);
 
-        return $minTime !== false && $minTime >= (int) @filemtime(FC_ROOT . '/' . $file) ? $min : $file;
+        return $minTime !== false && $minTime >= (int) @filemtime($assets . $m[2]) ? $m[1] . 'assets/min/' . $m[2] : $file;
     }
 
     /**

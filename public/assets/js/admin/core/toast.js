@@ -9,6 +9,7 @@
     var DEFAULT_OFFSET = 16;
     var HEADER_GAP = 8;
     var STICKY_HEADER_SELECTOR = '[data-fc-admin-sticky-header], .fc-admin-sticky-header';
+    var SIDE_RAIL_SELECTOR = '[data-fc-admin-side-rail]';
     var FADE_OUT_MS = 200;
 
     var toastsById = {};
@@ -47,6 +48,24 @@
         return top;
     }
 
+    /** A page's side rail (Settings) keeps toasts off its tabs; laid out as a top strip it doesn't count. */
+    function measureSideRailOffset(host) {
+        if (!host) {
+            return DEFAULT_OFFSET;
+        }
+
+        var hostRect = host.getBoundingClientRect();
+        var left = DEFAULT_OFFSET;
+        host.querySelectorAll(SIDE_RAIL_SELECTOR).forEach(function (rail) {
+            var rect = rail.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > rect.width && rect.left <= hostRect.left + 2) {
+                left = Math.max(left, rect.right - hostRect.left + DEFAULT_OFFSET);
+            }
+        });
+
+        return left;
+    }
+
     function updateContainerPosition(container) {
         if (!container) {
             return;
@@ -56,7 +75,7 @@
         var top = measureStickyHeaderOffset(host);
 
         container.style.top = top + 'px';
-        container.style.left = DEFAULT_OFFSET + 'px';
+        container.style.left = measureSideRailOffset(host) + 'px';
         container.style.right = 'auto';
     }
 
