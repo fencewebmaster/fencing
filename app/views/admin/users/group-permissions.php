@@ -48,7 +48,7 @@ $bootstrap         = $page['bootstrap'];
                     id="fc-gp-download-toggle"
                 >
                     <span>Actions</span>
-                    <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                    <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
                 </button>
                 <div
                     class="fc-products-download-dropdown__panel fc-admin-menu__panel"

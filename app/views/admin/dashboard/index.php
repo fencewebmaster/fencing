@@ -111,7 +111,7 @@ $widgets     = $page['widgets_visible'];
                     </div>
                     <?php if ($entriesBase !== '') : ?>
                     <div class="fc-dashboard-card__head-aside">
-                        <a class="fc-dashboard-card__link fc-dashboard-card__link--btn" href="<?php echo e($entriesBase); ?>" data-nav-full="1" data-fc-dashboard-entries-all-link data-route="planner-entries">
+                        <a class="btn btn-sm btn-light" href="<?php echo e($entriesBase); ?>" data-nav-full="1" data-fc-dashboard-entries-all-link data-route="planner-entries">
                             View entries
                             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
@@ -283,7 +283,7 @@ $widgets     = $page['widgets_visible'];
                     </div>
                     <div class="fc-dashboard-card__head-aside">
                         <?php if ($entriesBase !== '') : ?>
-                        <a class="fc-dashboard-card__link fc-dashboard-card__link--btn" href="<?php echo e($entriesBase); ?>" data-nav-full="1" data-fc-dashboard-entries-all-link data-route="planner-entries">
+                        <a class="btn btn-sm btn-light" href="<?php echo e($entriesBase); ?>" data-nav-full="1" data-fc-dashboard-entries-all-link data-route="planner-entries">
                             All entries
                             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
@@ -312,7 +312,7 @@ $widgets     = $page['widgets_visible'];
                     </div>
                     <div class="fc-dashboard-card__head-aside">
                         <?php if ($entriesBase !== '') : ?>
-                        <a class="fc-dashboard-card__link fc-dashboard-card__link--btn" href="<?php echo e($entriesBase); ?>" data-nav-full="1" data-fc-dashboard-entries-all-link data-route="planner-entries">
+                        <a class="btn btn-sm btn-light" href="<?php echo e($entriesBase); ?>" data-nav-full="1" data-fc-dashboard-entries-all-link data-route="planner-entries">
                             All entries
                             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>

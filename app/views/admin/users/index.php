@@ -18,17 +18,19 @@ $activeRole = $page['active_role'];
     data-fc-users-list
     data-fc-users-presence-api="<?php echo e((string) ($page['presence_api_url'] ?? 'api.php?module=users&action=presence')); ?>"
 >
-    <nav class="fc-entries-page__tabs" aria-label="Users by role">
-        <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
-        <a
-            class="fc-entries-page__tab<?php echo !empty($tab['is_active']) ? ' is-active' : ''; ?>"
-            href="<?php echo e((string) ($tab['href'] ?? '#')); ?>"
-            <?php echo !empty($tab['is_active']) ? 'aria-current="page"' : ''; ?>
-        >
-            <span><?php echo e((string) ($tab['label'] ?? '')); ?></span>
-            <span class="fc-entries-page__tab-count"><?php echo number_format((int) ($tab['count'] ?? 0)); ?></span>
-        </a>
-        <?php endforeach; ?>
+    <nav class="fc-entries-page__tabs fc-entries-page__tabs--group" aria-label="Users by role">
+        <div class="btn-group">
+            <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
+            <a
+                class="btn btn-sm btn-light"
+                href="<?php echo e((string) ($tab['href'] ?? '#')); ?>"
+                <?php echo !empty($tab['is_active']) ? 'aria-current="page"' : ''; ?>
+            >
+                <span><?php echo e((string) ($tab['label'] ?? '')); ?></span>
+                <span class="fc-btn-count"><?php echo number_format((int) ($tab['count'] ?? 0)); ?></span>
+            </a>
+            <?php endforeach; ?>
+        </div>
     </nav>
 
     <div class="fc-entries-page__toolbar">
@@ -224,27 +226,7 @@ $activeRole = $page['active_role'];
                 </select>
             </form>
 
-            <?php if (!empty($page['pagination']['show'])) : ?>
-            <nav class="fc-entries-page__pagination" aria-label="Users pagination">
-                <?php if (($page['pagination']['prev_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $page['pagination']['prev_url']); ?>" aria-label="Previous page">&lsaquo;</a>
-                <?php endif; ?>
-
-                <?php foreach ($page['pagination_links'] as $paginationLink) : ?>
-                    <?php if (($paginationLink['type'] ?? '') === 'ellipsis') : ?>
-                <span class="fc-entries-pagination__ellipsis" aria-hidden="true">…</span>
-                    <?php elseif (($paginationLink['type'] ?? '') === 'current') : ?>
-                <span class="fc-entries-pagination__btn fc-entries-pagination__btn--active" aria-current="page"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></span>
-                    <?php else : ?>
-                <a class="fc-entries-pagination__btn" href="<?php echo e((string) ($paginationLink['url'] ?? '')); ?>"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-                <?php if (($page['pagination']['next_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $page['pagination']['next_url']); ?>" aria-label="Next page">&rsaquo;</a>
-                <?php endif; ?>
-            </nav>
-            <?php endif; ?>
+            <?php view('admin.partials.pagination', ['fcPagination' => $page['pagination'], 'fcPaginationLinks' => $page['pagination_links'], 'fcPaginationLabel' => 'Users pagination']); ?>
         </div>
     </footer>
 </div>

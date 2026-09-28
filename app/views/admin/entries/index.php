@@ -19,17 +19,20 @@ $req  = $page['request'];
     data-fc-entries-view="<?php echo e((string) ($page['view'] ?? 'all')); ?>"
     data-fc-entries-csrf="<?php echo e((string) ($page['csrf'] ?? '')); ?>"
 >
-    <nav class="fc-entries-page__tabs" aria-label="Planner entries views">
-        <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
-        <a
-            class="fc-entries-page__tab<?php echo !empty($tab['is_active']) ? ' is-active' : ''; ?>"
-            href="<?php echo e((string) ($tab['href'] ?? '#')); ?>"
-            <?php echo !empty($tab['is_active']) ? 'aria-current="page"' : ''; ?>
-        >
-            <span><?php echo e((string) ($tab['label'] ?? '')); ?></span>
-            <span class="fc-entries-page__tab-count"><?php echo number_format((int) ($tab['count'] ?? 0)); ?></span>
-        </a>
-        <?php endforeach; ?>
+    <nav class="fc-entries-page__tabs fc-entries-page__tabs--group" aria-label="Planner entries views">
+        <div class="btn-group">
+            <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
+            <a
+                class="btn btn-sm btn-light"
+                href="<?php echo e((string) ($tab['href'] ?? '#')); ?>"
+                <?php echo !empty($tab['is_active']) ? 'aria-current="page"' : ''; ?>
+            >
+                <i class="<?php echo e((string) ($tab['icon'] ?? '')); ?>" aria-hidden="true"></i>
+                <span><?php echo e((string) ($tab['label'] ?? '')); ?></span>
+                <span class="fc-btn-count"><?php echo number_format((int) ($tab['count'] ?? 0)); ?></span>
+            </a>
+            <?php endforeach; ?>
+        </div>
     </nav>
 
     <div class="fc-entries-page__notice" data-fc-entries-notice hidden role="status" aria-live="polite"></div>
@@ -54,46 +57,51 @@ $req  = $page['request'];
                             autocomplete="off"
                         >
                     </label>
-                    <?php if (!empty($page['has_active_filters'])) : ?>
-                    <a
-                        class="btn btn-sm btn-dark fw-semibold fc-entries-clear-filters"
-                        href="<?php echo e((string) ($page['clear_filters_url'] ?? '')); ?>"
-                        data-fc-entries-clear-filters
-                    >
-                        <span>Clear Filters</span>
-                    </a>
-                    <?php else : ?>
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-light fw-semibold fc-entries-clear-filters"
-                        data-fc-entries-clear-filters
-                        disabled
-                    >
-                        <span>Clear Filters</span>
-                    </button>
-                    <?php endif; ?>
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-orange fw-semibold fc-entries-advanced-search__trigger<?php echo !empty($page['has_active_filters']) ? ' is-active' : ''; ?>"
-                        data-fc-entries-advanced-open
-                        aria-haspopup="dialog"
-                        aria-controls="fc-entries-advanced-search"
-                        aria-expanded="false"
-                    >
-                        <span>Filters</span>
-                    </button>
+                    <div class="fc-entries-filter-actions btn-group" role="group" aria-label="Filters" data-fc-entries-filter-actions>
+                        <?php if (!empty($page['has_active_filters'])) : ?>
+                        <a
+                            class="btn btn-sm btn-light"
+                            href="<?php echo e((string) ($page['clear_filters_url'] ?? '')); ?>"
+                            data-fc-entries-clear-filters
+                        >
+                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            <span>Clear Filters</span>
+                        </a>
+                        <?php else : ?>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-light"
+                            data-fc-entries-clear-filters
+                            disabled
+                        >
+                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            <span>Clear Filters</span>
+                        </button>
+                        <?php endif; ?>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-light fc-entries-advanced-search__trigger<?php echo !empty($page['has_active_filters']) ? ' is-active' : ''; ?>"
+                            data-fc-entries-advanced-open
+                            aria-haspopup="dialog"
+                            aria-controls="fc-entries-advanced-search"
+                            aria-expanded="false"
+                        >
+                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                            <span>Filters</span>
+                        </button>
+                    </div>
                     <?php if (!empty($page['can_import']) || !empty($page['can_remove_duplicates'])) : ?>
                     <div class="fc-entries-toolbar-menu" data-fc-entries-toolbar-menu>
                         <button
                             type="button"
-                            class="btn btn-sm btn-dark fw-semibold fc-entries-toolbar-menu__toggle"
+                            class="btn btn-sm btn-dark fc-entries-toolbar-menu__toggle"
                             data-fc-entries-toolbar-menu-toggle
                             aria-haspopup="true"
                             aria-expanded="false"
                             title="Actions"
                         >
                             <span>Actions</span>
-                            <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                            <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
                         </button>
                         <div class="fc-entries-toolbar-menu__panel fc-admin-menu__panel" data-fc-entries-toolbar-menu-panel hidden>
                             <div class="fc-admin-menu__head">
@@ -253,7 +261,10 @@ $req  = $page['request'];
                                         <?php endforeach; ?>
                                             </div>
                                             <div class="fc-entries-fence-dropdown__footer">
-                                                <button type="button" class="fc-entries-fence-dropdown__clear" data-fc-entries-multi-clear>Clear selection</button>
+                                                <button type="button" class="btn btn-sm btn-light" data-fc-entries-multi-clear>
+                                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                                    Clear selection
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -302,7 +313,10 @@ $req  = $page['request'];
                                         <?php endforeach; ?>
                                             </div>
                                             <div class="fc-entries-fence-dropdown__footer">
-                                                <button type="button" class="fc-entries-fence-dropdown__clear" data-fc-entries-multi-clear>Clear selection</button>
+                                                <button type="button" class="btn btn-sm btn-light" data-fc-entries-multi-clear>
+                                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                                    Clear selection
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -310,32 +324,29 @@ $req  = $page['request'];
 
                                 <div class="fc-entries-advanced-search__field fc-entries-advanced-search__field--wide fc-entries-advanced-search__field--date">
                                     <span>Date</span>
-                                    <div class="fc-entries-date-filter-group">
-                    <select
-                        class="fc-entries-page__filter fc-entries-date-filter-group__field"
-                        name="date_field"
-                        aria-label="Date field"
-                        onchange="this.form.submit()"
-                    >
-                        <?php foreach (($page['date_field_options'] ?? ['created_at' => 'Created At', 'updated_at' => 'Updated At']) as $fieldKey => $fieldLabel) : ?>
-                        <option value="<?php echo e((string) $fieldKey); ?>"<?php echo ($page['date_field'] ?? 'updated_at') === $fieldKey ? ' selected' : ''; ?>>
-                            <?php echo e((string) $fieldLabel); ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
+                                    <div class="fc-entries-date-filter-group btn-group" role="group" aria-label="Date">
+                    <?php foreach (($page['date_field_options'] ?? ['created_at' => 'Created At', 'updated_at' => 'Updated At']) as $fieldKey => $fieldLabel) : ?>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-light"
+                        data-fc-entries-date-field-option="<?php echo e((string) $fieldKey); ?>"
+                        aria-pressed="<?php echo ($page['date_field'] ?? 'updated_at') === $fieldKey ? 'true' : 'false'; ?>"
+                    ><?php echo e((string) $fieldLabel); ?></button>
+                    <?php endforeach; ?>
 
                     <div
                         class="fc-entries-date-dropdown<?php echo ($page['date_period'] ?? '') !== '' ? ' is-active' : ''; ?><?php echo ($page['date_period'] ?? '') === 'custom' ? ' is-custom' : ''; ?>"
                         data-fc-entries-date-dropdown
                         data-fc-entries-date-default-label="<?php echo e((string) ($page['date_all_label'] ?? 'From All Entries')); ?>"
                     >
+                        <input type="hidden" name="date_field" value="<?php echo e((string) ($page['date_field'] ?? 'updated_at')); ?>" data-fc-entries-date-field>
                         <input type="hidden" name="date_period" value="<?php echo e((string) ($page['date_period'] ?? '')); ?>" data-fc-entries-date-period>
                         <input type="hidden" name="date_from" value="<?php echo e((string) ($page['date_from'] ?? '')); ?>" data-fc-entries-date-from>
                         <input type="hidden" name="date_to" value="<?php echo e((string) ($page['date_to'] ?? '')); ?>" data-fc-entries-date-to>
                         <input type="hidden" name="date_set" value="<?php echo e((string) ($page['date_set'] ?? '')); ?>" data-fc-entries-date-set>
                         <button
                             type="button"
-                            class="fc-entries-page__filter fc-entries-date-dropdown__toggle"
+                            class="btn btn-sm btn-light fc-entries-date-dropdown__toggle"
                             id="fc-entries-date-toggle"
                             aria-haspopup="listbox"
                             aria-expanded="false"
@@ -415,13 +426,14 @@ $req  = $page['request'];
                                             >
                                         </label>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-orange fw-semibold fc-entries-date-dropdown__apply-custom" data-fc-entries-date-apply-custom>
+                                    <button type="button" class="btn btn-sm btn-orange w-100" data-fc-entries-date-apply-custom>
                                         Apply range
                                     </button>
                                 </div>
                             </div>
                             <div class="fc-entries-date-dropdown__footer">
-                                <button type="button" class="fc-entries-date-dropdown__clear" data-fc-entries-date-clear>
+                                <button type="button" class="btn btn-sm btn-light" data-fc-entries-date-clear>
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                     Clear dates
                                 </button>
                             </div>
@@ -471,7 +483,8 @@ $req  = $page['request'];
                                                 <?php endforeach; ?>
                                             </div>
                                             <div class="fc-entries-fence-dropdown__footer">
-                                                <button type="button" class="fc-entries-fence-dropdown__clear" data-fc-entries-multi-clear>
+                                                <button type="button" class="btn btn-sm btn-light" data-fc-entries-multi-clear>
+                                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                                     Clear selection
                                                 </button>
                                             </div>
@@ -539,12 +552,15 @@ $req  = $page['request'];
                         <footer class="fc-entries-advanced-search__footer">
                             <div>
                                 <?php if (!empty($page['has_active_filters'])) : ?>
-                                <a class="btn btn-sm btn-light fw-semibold" href="<?php echo e((string) ($page['clear_filters_url'] ?? '')); ?>">Clear all filters</a>
+                                <a class="btn btn-sm btn-light" href="<?php echo e((string) ($page['clear_filters_url'] ?? '')); ?>">
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    Clear all filters
+                                </a>
                                 <?php endif; ?>
                             </div>
                             <div class="fc-entries-advanced-search__footer-actions">
-                                <button type="button" class="btn btn-sm btn-light fw-semibold" data-fc-entries-advanced-close>Cancel</button>
-                                <button type="submit" class="btn btn-sm btn-orange fw-semibold">
+                                <button type="button" class="btn btn-sm btn-light" data-fc-entries-advanced-close>Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-orange">
                                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                                     Apply filters
                                 </button>
@@ -737,7 +753,7 @@ $req  = $page['request'];
                     </option>
                     <?php endforeach; ?>
                 </select>
-                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-entries-bulk-apply disabled>Apply</button>
+                <button type="button" class="btn btn-sm btn-dark" data-fc-entries-bulk-apply disabled>Apply</button>
                 <span class="fc-entries-page__bulk-count" data-fc-entries-bulk-count hidden>0 selected</span>
             </div>
 
@@ -754,27 +770,7 @@ $req  = $page['request'];
                 </select>
             </form>
 
-            <?php if (!empty($page['pagination']['show'])) : ?>
-            <nav class="fc-entries-page__pagination" aria-label="Entries pagination">
-                <?php if (($page['pagination']['prev_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $page['pagination']['prev_url']); ?>" aria-label="Previous page">&lsaquo;</a>
-                <?php endif; ?>
-
-                <?php foreach ($page['pagination_links'] as $paginationLink) : ?>
-                    <?php if (($paginationLink['type'] ?? '') === 'ellipsis') : ?>
-                <span class="fc-entries-pagination__ellipsis" aria-hidden="true">…</span>
-                    <?php elseif (($paginationLink['type'] ?? '') === 'current') : ?>
-                <span class="fc-entries-pagination__btn fc-entries-pagination__btn--active" aria-current="page"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></span>
-                    <?php else : ?>
-                <a class="fc-entries-pagination__btn" href="<?php echo e((string) ($paginationLink['url'] ?? '')); ?>"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-                <?php if (($page['pagination']['next_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $page['pagination']['next_url']); ?>" aria-label="Next page">&rsaquo;</a>
-                <?php endif; ?>
-            </nav>
-            <?php endif; ?>
+            <?php view('admin.partials.pagination', ['fcPagination' => $page['pagination'], 'fcPaginationLinks' => $page['pagination_links'], 'fcPaginationLabel' => 'Entries pagination']); ?>
         </div>
     </footer>
 
@@ -838,13 +834,13 @@ $req  = $page['request'];
                 </div>
             </div>
             <footer class="fc-entries-dedupe-modal__footer">
-                <button type="button" class="btn btn-sm btn-light fw-semibold" data-fc-entries-dedupe-close>
+                <button type="button" class="btn btn-sm btn-light" data-fc-entries-dedupe-close>
                     Cancel
                 </button>
-                <button type="button" class="btn btn-sm btn-orange fw-semibold" data-fc-entries-dedupe-start hidden>
+                <button type="button" class="btn btn-sm btn-orange" data-fc-entries-dedupe-start hidden>
                     Start cleanup
                 </button>
-                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-entries-dedupe-done hidden>
+                <button type="button" class="btn btn-sm btn-dark" data-fc-entries-dedupe-done hidden>
                     View Duplicates
                 </button>
             </footer>

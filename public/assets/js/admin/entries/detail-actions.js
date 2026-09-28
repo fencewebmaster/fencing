@@ -1,5 +1,5 @@
 /**
- * FC Admin — Planner entry detail gear menu (Send Pre-Planner Submission).
+ * FC Admin — Planner entry detail Actions menu (Open planner, Send Pre-Planner Submission).
  */
 (function (global) {
     'use strict';
@@ -66,7 +66,7 @@
             copyBtn.setAttribute('data-fc-copy-text', sentAt);
         }
 
-        var allBtn = panel.querySelector('.fc-entries-detail-copy-btn--all');
+        var allBtn = panel.querySelector('[data-fc-copy-all]');
         if (!allBtn) {
             return;
         }
@@ -139,6 +139,7 @@
         var toggle = menu.querySelector('[data-fc-entries-detail-menu-toggle]');
         var panel = menu.querySelector('[data-fc-entries-detail-menu-panel]');
         var sendItem = menu.querySelector('[data-fc-entries-send-pre-planner]');
+        var plannerLink = menu.querySelector('[data-fc-entries-open-planner]');
         var registry = global.FC.components.DropdownRegistry;
         if (!toggle || !panel) {
             return;
@@ -170,6 +171,13 @@
             sendItem.addEventListener('click', function () {
                 close();
                 sendPrePlanner(menu, sendItem);
+            });
+        }
+
+        // The link opens its new tab by itself; only the menu has to go.
+        if (plannerLink) {
+            plannerLink.addEventListener('click', function () {
+                close();
             });
         }
 

@@ -1890,6 +1890,11 @@ html[data-fc-admin-theme='dark'] .fc-settings-site-logo i {
     color: var(--fc-admin-text-faint);
 }
 
+/* Settings → Project Plan rows hover like the other Settings rows. */
+[data-fc-project-plan-row]:hover {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, transparent);
+}
+
 .fc-project-plan-grip {
     display: inline-flex;
     align-items: center;
@@ -2157,6 +2162,11 @@ html[data-fc-admin-theme='dark'] .fc-fs-kv-block--fence-colors .fc-settings-fenc
 html[data-fc-admin-theme='dark'] .fc-fs-kv-block--table .fc-fs-kv-row--table:hover:not(.fc-fs-kv-row--dragging):not(.fc-fs-kv-row--drag-over) {
     background: var(--fc-admin-surface-muted);
     box-shadow: inset 3px 0 0 var(--fc-princeton-orange, #f67925);
+}
+
+/* Settings → Fence colors keeps the orange hover in the dark theme too, like the other Settings rows. */
+html[data-fc-admin-theme='dark'] .fc-fs-kv-block--fence-colors .fc-fs-kv-row--table:hover:not(.fc-fs-kv-row--dragging):not(.fc-fs-kv-row--drag-over) {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, transparent);
 }
 
 html[data-fc-admin-theme='dark'] .fc-fs-kv-block--table .fc-fs-kv-row__grip:hover {
@@ -2517,18 +2527,6 @@ html[data-fc-admin-theme='dark'] .fc-fs-kv-block--fence-colors .fc-settings-fenc
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     margin-left: -1px;
-    background-color: var(--bs-btn-active-bg);
-    border-color: var(--bs-btn-active-border-color, #dee2e6);
-    color: var(--bs-btn-active-color, #212529);
-}
-
-.fc-fs-image-field__edit:hover,
-.fc-fs-image-field__edit:focus,
-.fc-fs-image-field__edit:active,
-.fc-fs-image-field__edit:focus-visible {
-    background-color: var(--bs-btn-active-bg);
-    border-color: var(--bs-btn-active-border-color, #dee2e6);
-    color: var(--bs-btn-active-color, #212529);
 }
 
 .fc-fs-image-field--choice .fc-fs-image-field__input-wrap {

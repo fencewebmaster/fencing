@@ -1653,6 +1653,7 @@ final class PlannerEntryPresenter
             [
                 'key' => 'all',
                 'label' => 'All',
+                'icon' => 'fa-solid fa-inbox',
                 'count' => (int) ($viewCounts['all'] ?? 0),
                 'is_active' => $view === 'all',
                 'href' => self::url($adminBase, $request, ['view' => 'all', 'page' => 1]),
@@ -1660,6 +1661,7 @@ final class PlannerEntryPresenter
             [
                 'key' => 'trash',
                 'label' => 'Trash',
+                'icon' => 'fa-solid fa-trash-can',
                 'count' => (int) ($viewCounts['trash'] ?? 0),
                 'is_active' => $view === 'trash',
                 'href' => self::url($adminBase, $request, ['view' => 'trash', 'page' => 1]),
@@ -1667,6 +1669,7 @@ final class PlannerEntryPresenter
             [
                 'key' => 'duplicates',
                 'label' => 'Duplicates',
+                'icon' => 'fa-regular fa-clone',
                 'count' => (int) ($viewCounts['duplicates'] ?? 0),
                 'is_active' => $view === 'duplicates',
                 'href' => self::url($adminBase, $request, ['view' => 'duplicates', 'page' => 1]),

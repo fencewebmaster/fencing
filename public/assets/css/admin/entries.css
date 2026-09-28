@@ -91,39 +91,8 @@
     min-width: 0;
 }
 
-.fc-entries-advanced-search__trigger {
-    flex: 0 0 auto;
-    gap: 0.45rem;
-    border-color: var(--fc-princeton-orange, #f67925);
-    background: var(--fc-princeton-orange, #f67925);
-    color: #fff;
-    white-space: nowrap;
-}
-
-.fc-entries-advanced-search__trigger:hover,
-.fc-entries-advanced-search__trigger:focus-visible {
-    border-color: var(--fc-pumpkin, #ea580c);
-    background: var(--fc-pumpkin, #ea580c);
-    color: #fff;
-}
-
-.fc-entries-advanced-search__trigger.is-active {
-    box-shadow: 0 0 0 3px rgba(246, 121, 37, 0.2);
-}
-
 .fc-entries-clear-filters {
     flex: 0 0 auto;
-    gap: 0.4rem;
-    white-space: nowrap;
-    text-decoration: none;
-}
-
-.fc-admin-page .fc-entries-clear-filters:disabled {
-    border-color: #d1d5db !important;
-    background: #e5e7eb !important;
-    color: #94a3b8 !important;
-    cursor: not-allowed;
-    opacity: 1;
 }
 
 .fc-entries-advanced-search {
@@ -341,16 +310,25 @@
         order: 3;
     }
 
-    .fc-entries-page__search-group > .fc-entries-advanced-search__trigger {
-        order: 2;
+    .fc-entries-page__search-group > .fc-entries-date-filter-group .fc-entries-date-dropdown {
+        max-width: none;
     }
 
     .fc-entries-page__search-group > .fc-entries-clear-filters {
         order: 4;
     }
 
-    .fc-entries-advanced-search__trigger span {
-        display: none;
+    /* Planner Entries: search, then the date group, then the filter and Actions groups share a row. */
+    .fc-entries-page__search-group:has(> .fc-entries-filter-actions) > .fc-entries-page__search-wrap {
+        flex-basis: 100%;
+    }
+
+    .fc-entries-page__search-group > .fc-entries-filter-actions {
+        order: 4;
+    }
+
+    .fc-entries-page__search-group > .fc-entries-toolbar-menu {
+        order: 5;
     }
 
     .fc-entries-advanced-search {
@@ -384,17 +362,6 @@
 
     .fc-entries-advanced-search__footer-actions .btn {
         flex: 1 1 0;
-    }
-
-    .fc-entries-advanced-search__field .fc-entries-date-filter-group {
-        flex-direction: column;
-    }
-
-    .fc-entries-advanced-search__field .fc-entries-date-filter-group__field {
-        width: 100%;
-        max-width: none;
-        border-right: 0 !important;
-        border-bottom: 1px solid #c3c4c7 !important;
     }
 }
 
@@ -967,9 +934,11 @@ html[data-fc-admin-theme='dark'] .fc-settings-card__head {
 }
 
 /* —— Settings → Integration: the Sites table —— */
+/* The hover is the planner entries' 14% orange, mixed into the surface rather than over transparent:
+   the pinned cells take it too and must still hide the fields scrolling under them. */
 .fc-sites {
     --fc-sites-bg: var(--fc-admin-surface, #fff);
-    --fc-sites-hover: var(--fc-admin-surface-muted, #f8fafc);
+    --fc-sites-hover: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, var(--fc-admin-surface, #fff));
     overflow-x: auto;
 }
 
@@ -977,10 +946,10 @@ html[data-fc-admin-theme='dark'] .fc-settings-card__head {
    small enough to fit a 1280px screen beside the Settings rail. The site column stops growing at 14rem. */
 .fc-sites__row {
     display: grid;
-    grid-template-columns: minmax(9rem, 14rem) 4.25rem 4rem minmax(8.25rem, 1fr) minmax(7.5rem, 0.9fr) minmax(10rem, 1.8fr);
+    grid-template-columns: minmax(9rem, 14rem) 4.25rem 4rem minmax(8.25rem, 1fr) minmax(7.5rem, 0.9fr) minmax(6.25rem, 1.8fr) 3.75rem;
     align-items: center;
     column-gap: 0.375rem;
-    min-width: 45.875rem;
+    min-width: 46.25rem;
     padding: 0.375rem 0.5rem;
     border-top: 1px solid var(--fc-admin-border, #e2e8f0);
     background: var(--fc-sites-bg);
@@ -1013,7 +982,7 @@ html[data-fc-admin-theme='dark'] .fc-settings-card__head {
 }
 
 /* Header labels start where the text inside each field starts. */
-.fc-sites__row--head .fc-sites__cell:not(.fc-sites__cell--site) {
+.fc-sites__row--head .fc-sites__cell:not(.fc-sites__cell--site):not(.fc-sites__cell--actions) {
     padding-left: 0.5625rem;
 }
 
@@ -1030,6 +999,33 @@ html[data-fc-admin-theme='dark'] .fc-settings-card__head {
 /* Scrolled sideways, the pinned column casts an edge over the fields sliding under it. */
 .fc-sites.is-scrolled .fc-sites__cell--site {
     box-shadow: 1px 0 0 var(--fc-admin-border, #e2e8f0), 0.5rem 0 0.5rem -0.5rem rgba(15, 23, 42, 0.25);
+}
+
+/* The Actions gear (site, planner and backend links, Cloudflare Verify and Purge) stays in view on the right,
+   as the site column does on the left. */
+.fc-sites__cell--actions {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    align-self: stretch;
+    justify-content: flex-end;
+    padding-left: 0.5rem;
+    background: var(--fc-sites-bg);
+}
+
+/* Until the rows are scrolled to their end, fields sit under it, so it casts the same edge. */
+.fc-sites.has-more .fc-sites__cell--actions {
+    box-shadow: -1px 0 0 var(--fc-admin-border, #e2e8f0), -0.5rem 0 0.5rem -0.5rem rgba(15, 23, 42, 0.25);
+}
+
+/* The menu is fixed-position but paints inside its pinned cell, so an open one lifts the cell over
+   the pinned cells of the rows below. */
+.fc-sites__cell--actions:has(.is-open) {
+    z-index: 3;
+}
+
+.fc-sites__menu-link {
+    text-decoration: none;
 }
 
 .fc-sites__name {
@@ -1133,15 +1129,6 @@ html[data-fc-admin-theme='dark'] .fc-settings-card__head {
     font-size: 0.75rem;
 }
 
-/* Disabled until the row has a Zone ID and the API token is filled; a running check keeps its normal look. */
-.fc-sites .fc-sites__action:disabled:not(.is-verifying),
-.fc-sites .fc-sites__action:disabled:not(.is-verifying):hover {
-    border-color: var(--fc-admin-border, #e2e8f0);
-    background: transparent;
-    color: var(--fc-admin-text-faint, #cbd5e1);
-    cursor: not-allowed;
-}
-
 /* The thumbnail opens the logo drawer; a pencil shows on hover, an orange ring while it is open. */
 .fc-sites__logo {
     position: relative;
@@ -1220,10 +1207,6 @@ html[data-fc-admin-theme='dark'] .fc-settings-card__head {
     color: var(--fc-admin-text-muted, #64748b);
 }
 
-html[data-fc-admin-theme='dark'] .fc-sites {
-    --fc-sites-hover: color-mix(in srgb, var(--fc-admin-surface-subtle, #334155) 45%, var(--fc-admin-surface, #1e293b));
-}
-
 html[data-fc-admin-theme='dark'] .fc-sites .fc-sites__copy {
     background: var(--fc-admin-input-bg, #0f172a);
     box-shadow: -0.375rem 0 0.375rem var(--fc-admin-input-bg, #0f172a);
@@ -1233,7 +1216,8 @@ html[data-fc-admin-theme='dark'] .fc-sites .fc-sites__copy {
     .fc-sites__row,
     .fc-sites .fc-sites__copy,
     .fc-sites__logo-edit,
-    .fc-minify__filter {
+    .fc-minify__filter,
+    .fc-minify__expand i {
         transition: none;
     }
 }
@@ -1398,6 +1382,20 @@ html[data-fc-admin-theme='dark'] .fc-sites .fc-sites__copy {
     align-items: center;
     gap: 0.85rem;
     margin-left: auto;
+}
+
+/* The header toggle for the card's file list: the chevron points down while closed, up while open. */
+.fc-minify__expand i {
+    transition: transform 0.2s ease;
+}
+
+.fc-minify__expand[aria-expanded="true"] i {
+    transform: rotate(180deg);
+}
+
+/* A type with no files has nothing to open; the hidden attribute must beat the button's display. */
+.fc-minify__expand[hidden] {
+    display: none;
 }
 
 /* Where "Minify All" would be on a server that cannot build: a fact, not an error. */
@@ -2414,6 +2412,11 @@ html[data-fc-admin-theme='dark'] .fc-seo-card__title {
     border-top: 0;
 }
 
+/* Checked rows hover like the other Settings rows; the loading placeholder is not a result yet. */
+.fc-health-list .fc-health-row:not(.fc-health-row--loading):hover {
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, transparent);
+}
+
 /* Keeps the rows lined up with the card title, whose header pads 1.25rem from here. */
 @media (min-width: 640px) {
     .fc-health-row {
@@ -2557,7 +2560,7 @@ html[data-fc-admin-theme='dark'] .fc-health-row[data-state="bad"] {
 }
 
 .fc-catalog-check:hover {
-    background: #f6f7f7;
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, transparent);
     border-color: #e2e4e7;
 }
 
@@ -2691,7 +2694,7 @@ html[data-fc-admin-theme='dark'] .fc-catalog-check {
 }
 
 html[data-fc-admin-theme='dark'] .fc-catalog-check:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 14%, transparent);
     border-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -3142,36 +3145,6 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
     border-top: 1px solid #f0f0f1;
 }
 
-.fc-entries-fence-dropdown__clear {
-    border: 0;
-    background: transparent;
-    color: #2271b1;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 0.15rem 0.25rem;
-}
-
-.fc-entries-fence-dropdown__clear:hover {
-    color: #135e96;
-    text-decoration: underline;
-}
-
-.fc-entries-fence-dropdown__apply {
-    border: 0;
-    background: #2271b1;
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0.25rem 0.65rem;
-    border-radius: 0.25rem;
-}
-
-.fc-entries-fence-dropdown__apply:hover {
-    background: #135e96;
-}
-
 .fc-entries-toolbar-menu {
     position: relative;
     display: flex;
@@ -3181,8 +3154,6 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
 .fc-entries-toolbar-menu__toggle {
     align-self: stretch;
     height: auto;
-    padding: 0.35rem 0.75rem !important;
-    line-height: 1.35 !important;
 }
 
 .fc-entries-toolbar-menu__toggle i {
@@ -3244,6 +3215,10 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
     color: #646970;
 }
 
+a.fc-entries-toolbar-menu__item {
+    text-decoration: none;
+}
+
 .fc-entries-toolbar-menu__item:hover {
     background: #f0f0f1;
 }
@@ -3278,46 +3253,6 @@ html[data-fc-admin-theme='dark'] .fc-settings-branding-logo__clear:hover {
 .fc-store-products-color-dropdown .fc-entries-fence-dropdown__footer {
     justify-content: space-between;
     gap: 0.5rem;
-}
-
-.fc-system-products-tabs .fc-system-products-tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.fc-system-products-tab__count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.5rem;
-    padding: 0.15rem 0.45rem;
-    border-radius: 9999px;
-    background: #e2e8f0;
-    color: #475569;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.fc-system-products-tab__count[hidden] {
-    display: none;
-}
-
-.fc-system-products-tab.is-active .fc-system-products-tab__count {
-    background: rgba(246, 121, 37, 0.14);
-    color: #c2410c;
-}
-
-html[data-fc-admin-theme='dark'] .fc-system-products-tab__count {
-    background: var(--fc-admin-surface-muted);
-    color: var(--fc-admin-text-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-system-products-tab.is-active .fc-system-products-tab__count {
-    background: rgba(246, 121, 37, 0.18);
-    color: #fb923c;
 }
 
 #fc-system-products-table-wrap .fc-system-products-table--fixed {
@@ -3372,11 +3307,6 @@ html[data-fc-admin-theme='dark'] .fc-system-products-tab.is-active .fc-system-pr
 #fc-system-products-table-wrap tbody tr:hover .fc-sys-sku-view-link,
 #fc-system-products-table-wrap tbody tr:focus-within .fc-sys-sku-view-link {
     opacity: 1;
-}
-
-.fc-products-download-trigger {
-    gap: 0.45rem;
-    white-space: nowrap;
 }
 
 /* "SKU" switch: the Settings toggle look, with the shared filter field; min-height matches the fence dropdown beside it. */
@@ -3773,54 +3703,24 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
     }
 }
 
-/* Date field + date period grouped controls */
+/* Date field + date period: a .btn-group whose last part is the date dropdown's wrapper (a plain div, as its
+   panel follows the toggle), so that part joins the group itself. */
 .fc-entries-date-filter-group {
-    display: inline-flex;
-    align-items: stretch;
     flex: 0 1 auto;
     min-width: 0;
-    max-width: 100%;
-    border: 1px solid #8c8f94;
-    border-radius: 3px;
-    background: #fff;
-    overflow: visible;
-}
-
-.fc-entries-date-filter-group__field {
-    flex: 0 0 auto;
-    width: auto;
-    min-width: 7.5rem;
-    max-width: 9.5rem;
-    border: 0 !important;
-    border-right: 1px solid #c3c4c7 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: #f6f7f7;
 }
 
 .fc-entries-date-filter-group .fc-entries-date-dropdown {
+    display: flex;
     flex: 1 1 11rem;
     min-width: 9.5rem;
     max-width: 16rem;
+    margin-left: -1px;
 }
 
 .fc-entries-date-filter-group .fc-entries-date-dropdown__toggle {
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-}
-
-.fc-entries-date-filter-group:focus-within {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
-}
-
-.fc-entries-date-filter-group:has(.fc-entries-date-dropdown.is-active) {
-    border-color: #2271b1;
-}
-
-.fc-entries-date-filter-group .fc-entries-date-dropdown.is-active .fc-entries-date-dropdown__toggle {
-    border-color: transparent;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 /* Date filter dropdown */
@@ -3866,7 +3766,7 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
     transform: rotate(180deg);
 }
 
-.fc-entries-date-dropdown.is-active .fc-entries-date-dropdown__toggle {
+.fc-entries-date-dropdown.is-active .fc-entries-date-dropdown__toggle:not(.btn) {
     border-color: #2271b1;
 }
 
@@ -3993,31 +3893,12 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
     box-shadow: 0 0 0 2px rgba(246, 121, 37, 0.18);
 }
 
-.fc-entries-date-dropdown__apply-custom {
-    width: 100%;
-}
-
 .fc-entries-date-dropdown__footer {
     display: flex;
     justify-content: flex-end;
     padding: 0.4rem 0.625rem 0.55rem;
     border-top: 1px solid #f0f0f1;
     background: #fafafa;
-}
-
-.fc-entries-date-dropdown__clear {
-    border: 0;
-    background: transparent;
-    color: #2271b1;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 0.15rem 0.25rem;
-}
-
-.fc-entries-date-dropdown__clear:hover {
-    color: #135e96;
-    text-decoration: underline;
 }
 
 .fc-entries-page__count {
@@ -4063,48 +3944,17 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
     border-bottom: 1px solid #c3c4c7;
 }
 
-.fc-entries-page__tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    margin: 0;
-    padding: 0.75rem 1rem;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: #50575e;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    line-height: 1.2;
+/* Tab strips (Planner Entries, Users) hold one .btn-group. On a phone the group can outgrow the strip,
+   which then scrolls sideways instead of cutting a tab off. */
+.fc-entries-page__tabs--group {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    overflow-x: auto;
 }
 
-.fc-entries-page__tab:hover {
-    color: #1d2327;
-}
-
-.fc-entries-page__tab.is-active {
-    color: #1d2327;
-    border-bottom-color: var(--fc-princeton-orange, #f67925);
-}
-
-.fc-entries-page__tab-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.35rem;
-    padding: 0.1rem 0.35rem;
-    border-radius: 999px;
-    background: #f0f0f1;
-    color: #50575e;
-    font-size: 0.72rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-
-.fc-entries-page__tab.is-active .fc-entries-page__tab-count {
-    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 16%, #fff);
-    color: var(--fc-princeton-orange, #f67925);
+.fc-entries-page__tabs--group .btn-group {
+    flex-shrink: 0;
+    max-width: none;
 }
 
 .fc-entries-page__notice {
@@ -4240,53 +4090,6 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
     margin-left: auto;
 }
 
-.fc-entries-pagination__btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2rem;
-    height: 2rem;
-    padding: 0 0.5rem;
-    border: 1px solid #c3c4c7;
-    border-radius: 3px;
-    background: #fff;
-    color: #2c3338;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    line-height: 1;
-    cursor: pointer;
-    transition: none;
-}
-
-.fc-entries-pagination__btn:hover:not(:disabled):not(.fc-entries-pagination__btn--active) {
-    border-color: #8c8f94;
-    background: #f0f0f1;
-}
-
-.fc-entries-pagination__btn--active {
-    border-color: var(--fc-princeton-orange, #f67925);
-    background: var(--fc-princeton-orange, #f67925);
-    color: #fff;
-    cursor: default;
-}
-
-.fc-entries-pagination__btn--nav {
-    min-width: 2rem;
-    font-size: 1.125rem;
-    line-height: 1;
-}
-
-.fc-entries-pagination__ellipsis {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.5rem;
-    height: 2rem;
-    color: #646970;
-    font-size: 0.875rem;
-    user-select: none;
-}
-
 .fc-entries-table-wrap {
     overflow: auto;
     min-height: 12rem;
@@ -4362,7 +4165,6 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
 .fc-entries-table__row:hover {
     background: rgba(246, 121, 37, 0.14);
     background: color-mix(in srgb, var(--fc-princeton-orange) 14%, transparent);
-    box-shadow: inset 3px 0 0 var(--fc-princeton-orange, #f67925);
 }
 
 /* Stretch cell links so the full padded cell is a hit target */
@@ -4387,18 +4189,6 @@ html[data-fc-admin-theme='dark'] .fc-products-download-progress__details > div {
 .fc-entries-row-text {
     display: block;
     color: inherit;
-}
-
-.fc-entries-table__row--no-open:hover {
-    box-shadow: none;
-}
-
-a.fc-entries-pagination__btn {
-    text-decoration: none;
-}
-
-a.fc-entries-pagination__btn:hover {
-    text-decoration: none;
 }
 
 .fc-entries-table__mono {
@@ -4904,20 +4694,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-page__notice-dismiss:hover {
     background: rgba(255, 255, 255, 0.08);
 }
 
-html[data-fc-admin-theme='dark'] .fc-entries-page__tab {
-    color: var(--fc-admin-text-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-page__tab:hover,
-html[data-fc-admin-theme='dark'] .fc-entries-page__tab.is-active {
-    color: var(--fc-admin-text-heading);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-page__tab-count {
-    background: var(--fc-admin-surface-muted);
-    color: var(--fc-admin-text-muted);
-}
-
 html[data-fc-admin-theme='dark'] .fc-entries-page__bulk-select {
     background: var(--fc-admin-surface);
     border-color: var(--fc-admin-border);
@@ -4967,12 +4743,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-advanced-search__range input {
 html[data-fc-admin-theme='dark'] .fc-entries-advanced-search__footer {
     border-color: var(--fc-admin-border);
     background: var(--fc-admin-surface-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-admin-page .fc-entries-clear-filters:disabled {
-    border-color: var(--fc-admin-border) !important;
-    background: var(--fc-admin-surface-muted) !important;
-    color: var(--fc-admin-text-faint) !important;
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-table thead th {
@@ -5042,21 +4812,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-modal__value {
     color: var(--fc-admin-text-heading);
 }
 
-html[data-fc-admin-theme='dark'] .fc-entries-pagination__btn {
-    background: var(--fc-admin-surface);
-    border-color: var(--fc-admin-border);
-    color: var(--fc-admin-text-heading);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-pagination__btn:hover:not(:disabled):not(.fc-entries-pagination__btn--active) {
-    background: var(--fc-admin-surface-muted);
-    border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-pagination__ellipsis {
-    color: var(--fc-admin-text-muted);
-}
-
 html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__panel {
     background: var(--fc-admin-surface);
     border-color: var(--fc-admin-border);
@@ -5070,10 +4825,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__option:hover {
 
 html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__footer {
     border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown__clear {
-    color: var(--fc-admin-link);
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-fence-dropdown.is-active .fc-entries-fence-dropdown__toggle {
@@ -5145,29 +4896,8 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__input {
     color: var(--fc-admin-text-heading);
 }
 
-html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown__clear {
-    color: var(--fc-admin-link);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown.is-active .fc-entries-date-dropdown__toggle {
+html[data-fc-admin-theme='dark'] .fc-entries-date-dropdown.is-active .fc-entries-date-dropdown__toggle:not(.btn) {
     border-color: var(--fc-admin-link);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group {
-    border-color: var(--fc-admin-border);
-    background: var(--fc-admin-surface);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group__field {
-    background: var(--fc-admin-surface-muted);
-    border-right-color: var(--fc-admin-border) !important;
-    color: var(--fc-admin-text-heading);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:focus-within,
-html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-date-dropdown.is-active) {
-    border-color: var(--fc-admin-link);
-    box-shadow: 0 0 0 1px var(--fc-admin-link);
 }
 
 .fc-entries-detail-page {
@@ -5186,18 +4916,9 @@ html[data-fc-admin-theme='dark'] .fc-entries-date-filter-group:has(.fc-entries-d
     border-bottom: 1px solid #f0f0f1;
 }
 
+/* Back is a one-part button group (button-group.css); the heading column would otherwise stretch it. */
 .fc-entries-detail-page__back {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #2271b1;
-    text-decoration: none;
-}
-
-.fc-entries-detail-page__back:hover {
-    color: #135e96;
+    align-self: flex-start;
 }
 
 .fc-entries-detail-page__heading {
@@ -5404,12 +5125,11 @@ html[data-fc-admin-theme='dark'] .fc-entries-modal__value--empty {
     width: auto;
     margin-inline: -1.125rem;
     padding: 0.5rem 1.125rem;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    transition: background-color 0.15s ease;
 }
 
 .fc-entries-modal__meta--detail .fc-entries-modal__row:hover {
     background: var(--fc-sidebar-active-bg);
-    box-shadow: inset 3px 0 0 var(--fc-princeton-orange, #f67925);
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-modal__meta--detail .fc-entries-modal__row:hover {
@@ -5474,76 +5194,38 @@ html[data-fc-admin-theme='dark'] .fc-entries-device i {
     color: var(--fc-admin-text-muted, #94a3b8);
 }
 
-.fc-entries-detail-copy-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/* Copy buttons: small square .btn-light, shown while their row (or the panel head) is hovered. */
+.btn.fc-entries-detail-copy {
+    --bs-btn-padding-x: 0;
     flex-shrink: 0;
     width: 1.75rem;
-    height: 1.75rem;
-    margin-top: 0;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    background: transparent;
-    color: #646970;
-    font-size: 0.8125rem;
-    line-height: 1;
-    cursor: pointer;
+    min-height: 1.75rem;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.15s ease, visibility 0.15s ease, color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 
-.fc-entries-detail-copy-btn--all {
+.btn.fc-entries-detail-copy--all {
     align-self: center;
-    margin-top: 0;
     width: 2rem;
-    height: 2rem;
-    font-size: 0.875rem;
+    min-height: 2rem;
 }
 
-.fc-entries-detail-panel__head--copyable:hover .fc-entries-detail-copy-btn--all,
-.fc-entries-detail-copy-row:hover .fc-entries-detail-copy-btn,
-.fc-entries-detail-copy-btn:focus-visible {
+.fc-entries-detail-panel__head--copyable:hover .fc-entries-detail-copy--all,
+.fc-entries-detail-copy-row:hover .fc-entries-detail-copy,
+.fc-entries-detail-copy:focus-visible {
     opacity: 1;
     visibility: visible;
 }
 
-.fc-entries-detail-copy-btn:hover {
-    color: #2271b1;
-    background: #f0f6fc;
-    border-color: #c3d9ed;
-}
-
-.fc-entries-detail-copy-btn:focus-visible {
-    outline: none;
-    color: #2271b1;
-    background: #f0f6fc;
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
-}
-
-.fc-entries-detail-copy-btn.is-copied {
+.fc-entries-detail-copy.is-copied {
     color: #00a32a;
     background: #edfaef;
-    border-color: #b8e6bf;
 }
 
-html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn {
-    color: var(--fc-admin-text-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn:hover,
-html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn:focus-visible {
-    color: var(--fc-admin-link);
-    background: var(--fc-admin-surface-muted);
-    border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn.is-copied {
+html[data-fc-admin-theme='dark'] .fc-entries-detail-copy.is-copied {
     color: #4ade80;
     background: rgba(34, 197, 94, 0.12);
-    border-color: rgba(34, 197, 94, 0.35);
 }
 
 .fc-entries-detail-page__cart-empty {
@@ -5625,14 +5307,11 @@ html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn.is-copied {
     min-width: 10rem;
 }
 
+/* Clear is a one-part button group (button-group.css), as tall as the fence style dropdown beside it. */
 .fc-entries-cart-filters__clear {
     flex: 0 0 auto;
+    align-self: stretch;
     min-height: 2.125rem;
-}
-
-.fc-entries-cart-filters__clear:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
 }
 
 .fc-entries-cart-table__no-results {
@@ -5935,8 +5614,7 @@ html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn.is-copied {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    box-shadow: 0 2px 8px var(--fc-a-orange-22);
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
     z-index: 10;
 }
 
@@ -5966,7 +5644,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn.is-copied {
 .fc-entries-cart-gallery > .fencing-modal-close:hover {
     background: var(--fc-pumpkin);
     border-color: var(--fc-pumpkin);
-    box-shadow: 0 4px 14px var(--fc-a-orange-38);
     transform: scale(1.05);
 }
 
@@ -5985,7 +5662,6 @@ html[data-fc-admin-theme='dark'] .fc-entries-detail-copy-btn.is-copied {
 .fc-entries-cart-gallery > .fencing-modal-close:focus-visible {
     outline: 2px solid var(--fc-white);
     outline-offset: 3px;
-    box-shadow: 0 0 0 4px var(--fc-a-orange-25);
 }
 
 .fc-entries-cart-gallery__nav {
@@ -6179,10 +5855,6 @@ body.fc-entries-cart-gallery-open {
 
 html[data-fc-admin-theme='dark'] .fc-entries-detail-page__header {
     border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-entries-detail-page__back {
-    color: var(--fc-admin-link);
 }
 
 html[data-fc-admin-theme='dark'] .fc-entries-detail-page__title {
@@ -6461,9 +6133,7 @@ html[data-fc-admin-theme='dark'] .fc-users-permissions-notice {
 }
 
 .fc-entries-date-dropdown.fc-admin-cache-dropdown .fc-admin-cache-dropdown__toggle {
-    width: auto !important;
-    min-width: 2.25rem !important;
-    margin: 0 !important;
+    width: auto;
 }
 
 .fc-entries-date-dropdown.fc-admin-cache-dropdown .fc-entries-date-dropdown__panel {

@@ -456,9 +456,11 @@ final class SettingsPresenter
                 // Verify and Purge need the token and a 32-character zone, as the server does;
                 // integration-tab.js syncCloudflareButtons() applies the same rule live.
                 'cloudflare_ready' => $token !== '' && preg_match('/^[a-f0-9]{32}$/i', $zone) === 1,
+                'links' => self::siteLinks($key),
                 'ids' => [
                     'logo' => $idBase . '-logo',
                     'logo_panel' => $idBase . '-logo-panel',
+                    'menu' => $idBase . '-menu',
                     'supplier' => $idBase . '-supplier',
                     'pid' => $idBase . '-pidprefix',
                     'gtag' => $idBase . '-gtag',
@@ -469,6 +471,33 @@ final class SettingsPresenter
         }
 
         return $rows;
+    }
+
+    /**
+     * The Sites table's Actions menu: the store, its planner and its admin, each opening in a new tab.
+     * Empty for a key with no known address, e.g. localhost seen from a live admin.
+     *
+     * @return list<array{href:string, icon:string, label:string, meta:string}>
+     */
+    private static function siteLinks(string $key): array
+    {
+        $urls = SiteRegistryService::urlsForKey($key);
+        if ($urls === null) {
+            return [];
+        }
+
+        $links = [];
+        foreach (['site' => 'fa-globe', 'planner' => 'fa-compass-drafting', 'backend' => 'fa-gauge-high'] as $kind => $icon) {
+            $links[] = [
+                'href' => $urls[$kind],
+                'icon' => 'fa-solid ' . $icon,
+                'label' => 'Open ' . $kind,
+                // The address without its scheme, so each item shows where it goes.
+                'meta' => preg_replace('#^https?://#i', '', rtrim($urls[$kind], '/')) ?? $urls[$kind],
+            ];
+        }
+
+        return $links;
     }
 
     /**
@@ -732,6 +761,8 @@ final class SettingsPresenter
                 'label' => 'Minify ' . $type,
                 'full_label' => 'Minify ' . $meta['area'] . ' ' . $type,
                 'title_id' => 'fc-minify-title-' . $key,
+                // The pills and the file grid collapse under the card's header; its toggle controls this id.
+                'files_id' => 'fc-minify-files-' . $key,
                 'noun' => $meta['area'] . ' ' . ($meta['type'] === 'css' ? 'stylesheets' : 'scripts'),
                 'folder' => $meta['dir'] . '/',
                 'enabled' => $settings[$key],
@@ -1049,7 +1080,8 @@ final class SettingsPresenter
             'value_title' => $group['newest'] > 0 ? self::ago($group['newest'], $now) : '',
             'detail' => $status[3],
         ];
-        $group['build_label'] = $group['label'] . ' now';
+        // The card's title already names the type; the button's aria-label (full_label . ' now') still does.
+        $group['build_label'] = 'Minify';
         $group['filters'] = [
             ['key' => 'all', 'label' => 'All', 'count' => $count, 'disabled' => false, 'title' => ''],
             ['key' => 'fresh', 'label' => 'Up to date', 'count' => $fresh, 'disabled' => $fresh === 0, 'title' => $fresh === 0 ? 'No copies are up to date' : ''],

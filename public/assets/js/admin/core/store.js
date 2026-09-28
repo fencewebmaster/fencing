@@ -114,7 +114,13 @@
     var SCHEMA = {
         'ui.appearance':       { kind: 'enum', values: ['light', 'dark'], def: 'light' },
         'ui.sidebarCollapsed': { kind: 'bool', def: false },
-        'ui.galleryViewMode':  { kind: 'enum', values: ['grid', 'list'], def: 'grid' }
+        'ui.galleryViewMode':  { kind: 'enum', values: ['grid', 'list'], def: 'grid' },
+        // Settings → Minify cards left open, one per MinifySettings group key
+        // (a new group needs its line here).
+        'ui.minifyOpen.css':      { kind: 'bool', def: false },
+        'ui.minifyOpen.js':       { kind: 'bool', def: false },
+        'ui.minifyOpen.adminCss': { kind: 'bool', def: false },
+        'ui.minifyOpen.adminJs':  { kind: 'bool', def: false }
     };
 
     // This tab's validated-but-not-yet-flushed writes (path -> value). Null

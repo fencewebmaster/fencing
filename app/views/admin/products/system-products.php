@@ -19,30 +19,32 @@ $paginationLinks = $page['pagination_links'];
 
     <div class="fc-entries-page__notice" data-fc-system-products-notice hidden role="status" aria-live="polite"></div>
 
-    <nav class="fc-gallery-page__tabs fc-system-products-tabs" role="tablist" aria-label="Store product source">
-        <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
-        <a
-            role="tab"
-            href="<?php echo e((string) ($tab['href'] ?? '#')); ?>"
-            data-fc-sys-tab="<?php echo e((string) ($tab['id'] ?? '')); ?>"
-            aria-selected="<?php echo !empty($tab['is_active']) ? 'true' : 'false'; ?>"
-            class="fc-gallery-page__tab fc-system-products-tab<?php echo !empty($tab['is_active']) ? ' is-active' : ''; ?>"
-        >
-            <span><?php echo e((string) ($tab['label'] ?? '')); ?></span>
-            <?php if ((int) ($tab['count'] ?? 0) > 0) : ?>
-            <span
-                class="fc-system-products-tab__count"
-                data-fc-sys-tab-count="<?php echo e((string) ($tab['id'] ?? '')); ?>"
-            ><?php echo e((string) ($tab['count_label'] ?? '0')); ?></span>
-            <?php else : ?>
-            <span
-                class="fc-system-products-tab__count"
-                data-fc-sys-tab-count="<?php echo e((string) ($tab['id'] ?? '')); ?>"
-                hidden
-            >0</span>
-            <?php endif; ?>
-        </a>
-        <?php endforeach; ?>
+    <nav class="fc-gallery-page__tabs">
+        <div class="btn-group fc-system-products-tabs" role="tablist" aria-label="Store product source">
+            <?php foreach (($page['tabs'] ?? []) as $tab) : ?>
+            <a
+                role="tab"
+                href="<?php echo e((string) ($tab['href'] ?? '#')); ?>"
+                data-fc-sys-tab="<?php echo e((string) ($tab['id'] ?? '')); ?>"
+                aria-selected="<?php echo !empty($tab['is_active']) ? 'true' : 'false'; ?>"
+                class="btn btn-sm btn-light fc-system-products-tab<?php echo !empty($tab['is_active']) ? ' is-active' : ''; ?>"
+            >
+                <span><?php echo e((string) ($tab['label'] ?? '')); ?></span>
+                <?php if ((int) ($tab['count'] ?? 0) > 0) : ?>
+                <span
+                    class="fc-btn-count"
+                    data-fc-sys-tab-count="<?php echo e((string) ($tab['id'] ?? '')); ?>"
+                ><?php echo e((string) ($tab['count_label'] ?? '0')); ?></span>
+                <?php else : ?>
+                <span
+                    class="fc-btn-count"
+                    data-fc-sys-tab-count="<?php echo e((string) ($tab['id'] ?? '')); ?>"
+                    hidden
+                >0</span>
+                <?php endif; ?>
+            </a>
+            <?php endforeach; ?>
+        </div>
     </nav>
     <div class="fc-entries-page__toolbar fc-sp-toolbar fc-admin-sticky-header sticky top-0 z-20 shrink-0">
         <form class="fc-entries-page__toolbar-form" method="get" action="<?php echo e((string) ($page['form_action'] ?? '')); ?>">
@@ -76,7 +78,7 @@ $paginationLinks = $page['pagination_links'];
                         id="fc-products-download-toggle"
                     >
                         <span>Download</span>
-                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                        <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
                     </button>
                     <div
                         class="fc-products-download-dropdown__panel fc-admin-menu__panel"
@@ -266,27 +268,7 @@ $paginationLinks = $page['pagination_links'];
                 </select>
             </form>
 
-            <?php if (!empty($pagination['show'])) : ?>
-            <nav class="fc-entries-page__pagination" aria-label="Store products pagination">
-                <?php if (($pagination['prev_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $pagination['prev_url']); ?>" aria-label="Previous page">&lsaquo;</a>
-                <?php endif; ?>
-
-                <?php foreach ($paginationLinks as $paginationLink) : ?>
-                    <?php if (($paginationLink['type'] ?? '') === 'ellipsis') : ?>
-                <span class="fc-entries-pagination__ellipsis" aria-hidden="true">…</span>
-                    <?php elseif (($paginationLink['type'] ?? '') === 'current') : ?>
-                <span class="fc-entries-pagination__btn fc-entries-pagination__btn--active" aria-current="page"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></span>
-                    <?php else : ?>
-                <a class="fc-entries-pagination__btn" href="<?php echo e((string) ($paginationLink['url'] ?? '#')); ?>"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-                <?php if (($pagination['next_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $pagination['next_url']); ?>" aria-label="Next page">&rsaquo;</a>
-                <?php endif; ?>
-            </nav>
-            <?php endif; ?>
+            <?php view('admin.partials.pagination', ['fcPagination' => $pagination, 'fcPaginationLinks' => $paginationLinks, 'fcPaginationLabel' => 'Store products pagination']); ?>
         </div>
     </footer>
     <?php endif; ?>

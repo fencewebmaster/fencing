@@ -1,5 +1,5 @@
 /**
- * FC Admin — Planner entries filter UI (fence type dropdown).
+ * FC Admin — Planner entries filter UI (fence type dropdown, date field).
  */
 (function () {
     'use strict';
@@ -226,11 +226,12 @@
         var dateFilter = dateField
             ? dateField.querySelector('.fc-entries-date-filter-group')
             : null;
-        var clearFilters = searchGroup
-            ? searchGroup.querySelector('[data-fc-entries-clear-filters]')
+        // Clear Filters and Filters sit inside this frame, so neither is a child to insert before.
+        var filterActions = searchGroup
+            ? searchGroup.querySelector('[data-fc-entries-filter-actions]')
             : null;
         if (searchGroup && dateField && dateFilter) {
-            searchGroup.insertBefore(dateFilter, clearFilters || trigger);
+            searchGroup.insertBefore(dateFilter, filterActions);
             dateField.remove();
         }
 
@@ -332,7 +333,26 @@
         });
     }
 
+    // Created At / Updated At: a part writes the date_field the select used to, then reloads as it did.
+    function initDateField() {
+        document.querySelectorAll('[data-fc-entries-date-field-option]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var group = btn.closest('.fc-entries-date-filter-group');
+                var input = group ? group.querySelector('[data-fc-entries-date-field]') : null;
+                if (!input || !input.form || btn.getAttribute('aria-pressed') === 'true') {
+                    return;
+                }
+                group.querySelectorAll('[data-fc-entries-date-field-option]').forEach(function (option) {
+                    option.setAttribute('aria-pressed', option === btn ? 'true' : 'false');
+                });
+                input.value = btn.getAttribute('data-fc-entries-date-field-option');
+                input.form.submit();
+            });
+        });
+    }
+
     initAdvancedSearchModal();
+    initDateField();
     document.querySelectorAll(
         '[data-fc-entries-multi-dropdown], [data-fc-entries-fence-dropdown]'
     ).forEach(initDropdown);

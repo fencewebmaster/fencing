@@ -15,7 +15,7 @@ $item = $page['item'];
 <div class="fc-entries-detail-page">
     <header class="fc-entries-detail-page__header">
         <div class="fc-entries-detail-page__heading">
-            <a class="fc-entries-detail-page__back" href="<?php echo e((string) ($page['list_url'] ?? '')); ?>">
+            <a class="btn btn-sm btn-light fc-entries-detail-page__back" href="<?php echo e((string) ($page['list_url'] ?? '')); ?>">
                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                 Back to planner entries
             </a>
@@ -33,13 +33,6 @@ $item = $page['item'];
         </div>
         <?php if (is_array($item)) : ?>
         <div class="fc-entries-detail-page__actions">
-            <a
-                class="btn btn-sm btn-orange fw-semibold"
-                href="<?php echo e((string) ($page['planner_url'] ?? '#')); ?>"
-                target="_blank"
-                rel="noopener noreferrer"
-            >Open planner</a>
-            <?php if (!empty($page['can_send_pre_planner'])) : ?>
             <div
                 class="fc-entries-toolbar-menu"
                 data-fc-entries-detail-menu
@@ -49,7 +42,7 @@ $item = $page['item'];
             >
                 <button
                     type="button"
-                    class="btn btn-sm btn-dark fw-semibold fc-entries-toolbar-menu__toggle"
+                    class="btn btn-sm btn-dark fc-entries-toolbar-menu__toggle"
                     data-fc-entries-detail-menu-toggle
                     aria-haspopup="true"
                     aria-expanded="false"
@@ -57,14 +50,30 @@ $item = $page['item'];
                     title="Actions"
                 >
                     <span>Actions</span>
-                    <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                    <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
                 </button>
                 <div class="fc-entries-toolbar-menu__panel fc-admin-menu__panel" data-fc-entries-detail-menu-panel hidden>
                     <div class="fc-admin-menu__head">
                         <span class="fc-admin-menu__head-title">Entry actions</span>
+                        <?php if (!empty($page['can_send_pre_planner'])) : ?>
                         <span class="fc-admin-menu__head-hint">Sends to the <?php echo e((string) ($page['webhook_mode_label'] ?? 'Live')); ?> webhook — a real send either way</span>
+                        <?php endif; ?>
                     </div>
                     <div class="fc-admin-menu__group">
+                        <a
+                            class="fc-entries-toolbar-menu__item fc-admin-menu__option"
+                            href="<?php echo e((string) ($page['planner_url'] ?? '#')); ?>"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-fc-entries-open-planner
+                        >
+                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-compass-drafting"></i></span>
+                            <span class="fc-admin-menu__option-text">
+                                <span class="fc-admin-menu__option-label">Open planner</span>
+                                <span class="fc-admin-menu__option-meta">Loads this quote in a new tab</span>
+                            </span>
+                        </a>
+                        <?php if (!empty($page['can_send_pre_planner'])) : ?>
                         <button
                             type="button"
                             class="fc-entries-toolbar-menu__item fc-admin-menu__option"
@@ -84,10 +93,10 @@ $item = $page['item'];
                                 ?></span>
                             </span>
                         </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-            <?php endif; ?>
         </div>
         <?php endif; ?>
     </header>
@@ -108,8 +117,9 @@ $item = $page['item'];
                     </div>
                     <button
                         type="button"
-                        class="fc-entries-detail-copy-btn fc-entries-detail-copy-btn--all"
+                        class="btn btn-sm btn-light fc-entries-detail-copy fc-entries-detail-copy--all"
                         data-fc-copy-text="<?php echo e((string) ($page['copy_all_text'] ?? '')); ?>"
+                        data-fc-copy-all
                         aria-label="Copy all planner details"
                         title="Copy all details"
                     >
@@ -161,7 +171,7 @@ $item = $page['item'];
                             </div>
                             <button
                                 type="button"
-                                class="fc-entries-detail-copy-btn"
+                                class="btn btn-sm btn-light fc-entries-detail-copy"
                                 data-fc-copy-text="<?php echo e((string) ($detailRow['copy'] ?? '')); ?>"
                                 aria-label="<?php echo e('Copy ' . ($detailRow['label'] ?? '')); ?>"
                                 title="Copy"
@@ -249,7 +259,8 @@ $item = $page['item'];
                                 <?php endforeach; ?>
                             </div>
                             <div class="fc-entries-fence-dropdown__footer">
-                                <button type="button" class="fc-entries-fence-dropdown__clear" data-fc-entries-fence-clear>
+                                <button type="button" class="btn btn-sm btn-light" data-fc-entries-fence-clear>
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                     Clear selection
                                 </button>
                             </div>
@@ -258,10 +269,13 @@ $item = $page['item'];
                     <?php endif; ?>
                     <button
                         type="button"
-                        class="btn btn-sm btn-dark fw-semibold fc-entries-cart-filters__clear"
+                        class="btn btn-sm btn-light fc-entries-cart-filters__clear"
                         data-fc-cart-clear
                         disabled
-                    >Clear</button>
+                    >
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                        Clear
+                    </button>
                 </div>
                 <div class="fc-entries-cart-table-wrap">
                     <table class="fc-entries-cart-table">

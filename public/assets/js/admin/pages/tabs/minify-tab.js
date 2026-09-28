@@ -96,6 +96,17 @@
                     self.jumpTo(tile.getAttribute('data-fc-minify-tile'));
                 });
             });
+            // Each card opens and closes its file list from the header, and reopens as it was left.
+            document.querySelectorAll('[data-fc-minify-expand]').forEach(function (toggle) {
+                var card = toggle.closest('[data-fc-minify-card]');
+                var key = card.getAttribute('data-fc-minify-card');
+                toggle.addEventListener('click', function () {
+                    self.setExpanded(card, toggle.getAttribute('aria-expanded') !== 'true', true);
+                });
+                if (!toggle.hidden && global.FC.store && global.FC.store.get('ui.minifyOpen.' + key) === true) {
+                    self.setExpanded(card, true);
+                }
+            });
             this.paintChecked();
             this.pinOverview(panel.querySelector('[data-fc-overview-pin]'), panel.querySelector('[data-fc-minify-overview]'));
             document.querySelectorAll('[data-fc-minify-sort-key]').forEach(function (btn) {
@@ -191,6 +202,14 @@
                         el.hidden = empty;
                     }
                 });
+                // With nothing to list there is no toggle, and a list that was open closes.
+                var expand = card.querySelector('[data-fc-minify-expand]');
+                if (expand) {
+                    expand.hidden = empty;
+                    if (empty) {
+                        self.setExpanded(card, false);
+                    }
+                }
                 var chip = card.querySelector('[data-fc-minify-chip]');
                 if (chip) {
                     chip.setAttribute('data-state', group.chip_state);
@@ -301,6 +320,12 @@
             if (!card) {
                 return;
             }
+            // A card that needs attention opens its files, which is where the stale or failed copy is.
+            var status = card.querySelector('[data-fc-minify-status]');
+            var state = status ? status.getAttribute('data-state') : '';
+            if (state === 'warn' || state === 'bad') {
+                this.setExpanded(card, true, true);
+            }
             var reduceMotion = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
             card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
             card.classList.remove('fc-seo-flash');
@@ -309,6 +334,24 @@
             setTimeout(function () {
                 card.classList.remove('fc-seo-flash');
             }, 1600);
+        }
+
+        /**
+         * Opens or closes a card's pills and file grid. `remember` stores the choice for the next visit;
+         * paint()'s close of a card left with no files is not a choice, so it passes nothing.
+         */
+        setExpanded(card, open, remember) {
+            var toggle = card ? card.querySelector('[data-fc-minify-expand]') : null;
+            var files = card ? card.querySelector('[data-fc-minify-files]') : null;
+            if (!toggle || !files) {
+                return;
+            }
+            files.hidden = !open;
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            toggle.title = open ? 'Hide files' : 'Show files';
+            if (remember === true && global.FC.store) {
+                global.FC.store.set('ui.minifyOpen.' + card.getAttribute('data-fc-minify-card'), open);
+            }
         }
 
         paintStatusRow(card, status) {

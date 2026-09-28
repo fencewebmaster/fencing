@@ -24,7 +24,7 @@ $panelId = 'fc-dashboard-date-panel' . ($fcDashboardDateDropdownContext !== 'mai
     <input type="hidden" value="<?php echo e((string) ($page['date_to'] ?? '')); ?>" data-fc-entries-date-to>
     <button
         type="button"
-        class="fc-dashboard-toolbar-btn fc-entries-date-dropdown__toggle"
+        class="btn btn-sm btn-light fc-entries-date-dropdown__toggle"
         id="<?php echo e($toggleId); ?>"
         aria-haspopup="listbox"
         aria-expanded="false"
@@ -95,13 +95,14 @@ $panelId = 'fc-dashboard-date-panel' . ($fcDashboardDateDropdownContext !== 'mai
                         >
                     </label>
                 </div>
-                <button type="button" class="btn btn-sm btn-orange fw-semibold fc-entries-date-dropdown__apply-custom" data-fc-entries-date-apply-custom>
+                <button type="button" class="btn btn-sm btn-orange w-100" data-fc-entries-date-apply-custom>
                     Apply range
                 </button>
             </div>
         </div>
         <div class="fc-entries-date-dropdown__footer">
-            <button type="button" class="fc-entries-date-dropdown__clear" data-fc-entries-date-clear>
+            <button type="button" class="btn btn-sm btn-light" data-fc-entries-date-clear>
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 Clear dates
             </button>
         </div>

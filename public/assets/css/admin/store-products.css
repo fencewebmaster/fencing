@@ -327,10 +327,6 @@ html[data-fc-admin-theme='dark'] .fc-sys-toolbar-meta__file {
 #fc-system-products-table-wrap .fc-sp-table-layout {
     min-height: 0;
 }
-.fc-system-products-tab:focus-visible {
-    outline: 2px solid #6366f1;
-    outline-offset: 2px;
-}
 #fc-system-products-table-wrap col.fc-sys-images-col {
     width: 5.5rem;
 }

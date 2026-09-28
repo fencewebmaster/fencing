@@ -104,8 +104,7 @@ use Fc\Admin\Settings\ThemeSettings;
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
-            box-shadow: 0 2px 8px var(--fc-a-orange-22);
-            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
             z-index: 6;
         }
         .fencing-modal-close::before,
@@ -131,7 +130,6 @@ use Fc\Admin\Settings\ThemeSettings;
         .fencing-modal-close:hover {
             background: var(--fc-pumpkin);
             border-color: var(--fc-pumpkin);
-            box-shadow: 0 4px 14px var(--fc-a-orange-38);
             transform: scale(1.05);
         }
         .fencing-modal-close:hover::before {
@@ -144,9 +142,8 @@ use Fc\Admin\Settings\ThemeSettings;
             outline: none;
         }
         .fencing-modal-close:focus-visible {
-            outline: 2px solid var(--fc-white);
-            outline-offset: 3px;
-            box-shadow: 0 0 0 4px var(--fc-a-orange-25);
+            outline: 2px solid var(--fc-princeton-orange);
+            outline-offset: 2px;
         }
         /* Fence Styles — match planner Step 1 (.fencing-style-item) */
         .fc-admin-fence-styles__grid {
@@ -1147,7 +1144,7 @@ use Fc\Admin\Settings\ThemeSettings;
                 <button
                     type="button"
                     id="fc-admin-menu-toggle"
-                    class="fc-admin-topbar__menu-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 lg:hidden"
+                    class="btn btn-sm btn-light shrink-0 lg:!hidden"
                     aria-label="Open menu"
                     aria-expanded="false"
                     aria-controls="fc-admin-sidebar"
@@ -1168,10 +1165,10 @@ use Fc\Admin\Settings\ThemeSettings;
                     include view_path('admin.partials.dashboard-date-dropdown');
                     ?>
                     <?php endif; ?>
-                    <div class="fc-admin-theme-switcher shrink-0" role="group" aria-label="Appearance">
+                    <div class="btn-group shrink-0" role="group" aria-label="Appearance">
                         <button
                             type="button"
-                            class="fc-admin-theme-switcher__btn fc-admin-theme-switcher__btn--active"
+                            class="btn btn-sm btn-light"
                             data-fc-admin-theme-set="light"
                             aria-label="Light mode"
                             aria-pressed="true"
@@ -1181,7 +1178,7 @@ use Fc\Admin\Settings\ThemeSettings;
                         </button>
                         <button
                             type="button"
-                            class="fc-admin-theme-switcher__btn"
+                            class="btn btn-sm btn-light"
                             data-fc-admin-theme-set="dark"
                             aria-label="Dark mode"
                             aria-pressed="false"
@@ -1206,7 +1203,7 @@ use Fc\Admin\Settings\ThemeSettings;
                     >
                         <button
                             type="button"
-                            class="fc-admin-topbar__menu-btn fc-entries-date-dropdown__toggle fc-admin-cache-dropdown__toggle flex shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+                            class="btn btn-sm btn-light fc-entries-date-dropdown__toggle fc-admin-cache-dropdown__toggle shrink-0"
                             id="fc-admin-cache-toggle"
                             aria-haspopup="menu"
                             aria-expanded="false"

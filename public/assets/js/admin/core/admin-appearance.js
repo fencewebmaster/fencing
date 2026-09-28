@@ -25,7 +25,6 @@
         document.querySelectorAll('[data-fc-admin-theme-set]').forEach(function (btn) {
             var mode = btn.getAttribute('data-fc-admin-theme-set');
             var active = mode === theme;
-            btn.classList.toggle('fc-admin-theme-switcher__btn--active', active);
             btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
     }

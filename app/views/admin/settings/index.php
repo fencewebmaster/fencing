@@ -121,7 +121,7 @@ $tab = $fcSettingsPage;
                         id="fc-settings-io-toggle"
                     >
                         <span>Actions</span>
-                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                        <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
                     </button>
                     <div
                         class="fc-products-download-dropdown__panel fc-admin-menu__panel"
@@ -807,7 +807,8 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
 
-                            <?php /* Compact sites table: copy buttons show on hover, the logo path lives in a drawer the thumbnail opens. */ ?>
+                            <?php /* Compact sites table: copy buttons show on hover, the logo path lives in a drawer the thumbnail opens,
+                                 and each row's links and Cloudflare actions sit in its gear menu. */ ?>
                             <section class="fc-settings-card border border-slate-200 bg-white" aria-labelledby="fc-integration-sites-title">
                                 <header class="fc-settings-card__head">
                                     <div class="fc-settings-card__heading">
@@ -823,6 +824,7 @@ $tab = $fcSettingsPage;
                                         <span class="fc-sites__cell">Gtag ID</span>
                                         <span class="fc-sites__cell">GTM ID</span>
                                         <span class="fc-sites__cell">Cloudflare Zone ID</span>
+                                        <span class="fc-sites__cell fc-sites__cell--actions">Actions</span>
                                     </div>
                                     <?php foreach ($tab['integration_sites'] as $site) : ?>
                                     <div class="fc-sites__row" data-fc-integration-site-row="<?php echo e($site['key']); ?>">
@@ -871,10 +873,51 @@ $tab = $fcSettingsPage;
                                                 <input type="text" id="<?php echo e($site['ids']['zone']); ?>" data-fc-integration-site="<?php echo e($site['key']); ?>" data-fc-integration-site-field="cloudflareZoneId" value="<?php echo e($site['cloudflare_zone_id']); ?>" class="fc-settings-field font-mono" placeholder="Not set" title="The 32-character zone ID from Cloudflare" autocomplete="off" spellcheck="false" aria-label="<?php echo e($site['label']); ?> Cloudflare Zone ID" />
                                                 <button type="button" class="fc-settings-field-copy fc-sites__copy" data-fc-settings-copy-for="<?php echo e($site['ids']['zone']); ?>" aria-label="Copy <?php echo e($site['label']); ?> Cloudflare Zone ID" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
                                             </span>
-                                            <button type="button" class="fc-settings-field-copy fc-sites__action" data-fc-cloudflare-verify data-fc-cloudflare-site="<?php echo e($site['key']); ?>" data-fc-cloudflare-zone-for="<?php echo e($site['ids']['zone']); ?>" aria-label="Verify <?php echo e($site['label']); ?> Cloudflare Zone ID" title="Verify Cloudflare connection"<?php echo $site['cloudflare_ready'] ? '' : ' disabled'; ?>><i class="fa-solid fa-plug" aria-hidden="true"></i></button>
-                                            <?php if ($tab['cloudflare_purge_enabled']) : ?>
-                                            <button type="button" class="fc-settings-field-copy fc-sites__action" data-fc-cloudflare-purge data-fc-cloudflare-site="<?php echo e($site['key']); ?>" data-fc-cloudflare-site-label="<?php echo e($site['label']); ?>" data-fc-cloudflare-zone-for="<?php echo e($site['ids']['zone']); ?>" aria-label="Purge <?php echo e($site['label']); ?> Cloudflare cache" title="Purge Cloudflare cache"<?php echo $site['cloudflare_ready'] ? '' : ' disabled'; ?>><i class="fa-solid fa-broom" aria-hidden="true"></i></button>
-                                            <?php endif; ?>
+                                        </div>
+                                        <div class="fc-sites__cell fc-sites__cell--actions">
+                                            <div class="fc-products-download-dropdown" data-fc-integration-site-menu>
+                                                <button type="button" class="fc-settings-field-copy fc-sites__action fc-products-download-trigger" data-fc-integration-site-menu-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="<?php echo e($site['ids']['menu']); ?>" aria-label="<?php echo e($site['label']); ?> actions" title="Actions"><i class="fa-solid fa-gear" aria-hidden="true"></i></button>
+                                                <div class="fc-products-download-dropdown__panel fc-admin-menu__panel" id="<?php echo e($site['ids']['menu']); ?>" role="menu" aria-label="<?php echo e($site['label']); ?> actions" hidden>
+                                                    <div class="fc-admin-menu__head">
+                                                        <span class="fc-admin-menu__head-title"><?php echo e($site['label']); ?></span>
+                                                        <?php if ($site['links'] !== []) : ?>
+                                                        <span class="fc-admin-menu__head-hint">Links open in a new tab</span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <?php if ($site['links'] !== []) : ?>
+                                                    <div class="fc-admin-menu__group">
+                                                        <?php foreach ($site['links'] as $link) : ?>
+                                                        <a class="fc-products-download-dropdown__option fc-admin-menu__option fc-sites__menu-link" role="menuitem" href="<?php echo e($link['href']); ?>" target="_blank" rel="noopener noreferrer">
+                                                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="<?php echo e($link['icon']); ?>"></i></span>
+                                                            <span class="fc-admin-menu__option-text">
+                                                                <span class="fc-admin-menu__option-label"><?php echo e($link['label']); ?></span>
+                                                                <span class="fc-admin-menu__option-meta"><?php echo e($link['meta']); ?></span>
+                                                            </span>
+                                                        </a>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                    <div class="fc-admin-menu__divider" role="separator"></div>
+                                                    <?php endif; ?>
+                                                    <div class="fc-admin-menu__group">
+                                                        <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-cloudflare-verify data-fc-cloudflare-site="<?php echo e($site['key']); ?>" data-fc-cloudflare-zone-for="<?php echo e($site['ids']['zone']); ?>"<?php echo $site['cloudflare_ready'] ? '' : ' disabled'; ?>>
+                                                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-plug"></i></span>
+                                                            <span class="fc-admin-menu__option-text">
+                                                                <span class="fc-admin-menu__option-label">Verify Cloudflare connection</span>
+                                                                <span class="fc-admin-menu__option-meta" data-fc-cloudflare-meta="Checks the API token can reach this Zone ID">Checks the API token can reach this Zone ID</span>
+                                                            </span>
+                                                        </button>
+                                                        <?php if ($tab['cloudflare_purge_enabled']) : ?>
+                                                        <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-cloudflare-purge data-fc-cloudflare-site="<?php echo e($site['key']); ?>" data-fc-cloudflare-site-label="<?php echo e($site['label']); ?>" data-fc-cloudflare-zone-for="<?php echo e($site['ids']['zone']); ?>"<?php echo $site['cloudflare_ready'] ? '' : ' disabled'; ?>>
+                                                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-broom"></i></span>
+                                                            <span class="fc-admin-menu__option-text">
+                                                                <span class="fc-admin-menu__option-label">Purge Cloudflare cache</span>
+                                                                <span class="fc-admin-menu__option-meta" data-fc-cloudflare-meta="Clears everything Cloudflare has cached for this site">Clears everything Cloudflare has cached for this site</span>
+                                                            </span>
+                                                        </button>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="fc-sites__drawer" id="<?php echo e($site['ids']['logo_panel']); ?>" hidden>
                                             <label class="fc-sites__drawer-label" for="<?php echo e($site['ids']['logo']); ?>">Logo</label>
@@ -1618,6 +1661,15 @@ $tab = $fcSettingsPage;
                                                     class="fc-mode-switch__side"
                                                 >On</button>
                                             </div>
+                                            <button
+                                                type="button"
+                                                class="fc-settings-field-copy fc-minify__expand"
+                                                data-fc-minify-expand
+                                                aria-expanded="false"
+                                                aria-controls="<?php echo e((string) $group['files_id']); ?>"
+                                                aria-label="<?php echo e((string) $group['full_label']); ?> files"
+                                                title="Show files"<?php echo $group['count'] > 0 ? '' : ' hidden'; ?>
+                                            ><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
                                         </div>
                                     </header>
                                     <div class="fc-settings-card__body fc-health-body">
@@ -1634,6 +1686,8 @@ $tab = $fcSettingsPage;
                                             <button type="button" class="<?php echo e((string) $tab['btn_secondary']); ?> fc-minify__status-action" data-fc-minify-build="<?php echo e((string) $group['key']); ?>" aria-label="<?php echo e((string) $group['full_label']); ?> now"><span><?php echo e((string) $group['build_label']); ?></span></button>
                                             <?php endif; ?>
                                         </div>
+                                        <?php /* Closed until the header's toggle opens it, so each card reads as a summary first. */ ?>
+                                        <div class="fc-minify__files" id="<?php echo e((string) $group['files_id']); ?>" data-fc-minify-files hidden>
                                         <?php /* Rendered even for a type with no files (hidden): a file added later lists after Refresh Status. */ ?>
                                         <div class="fc-minify__filters" role="group" aria-label="Show files" data-fc-minify-filters<?php echo $group['count'] > 0 ? '' : ' hidden'; ?>>
                                             <?php foreach ($group['filters'] as $filter) : ?>
@@ -1651,6 +1705,7 @@ $tab = $fcSettingsPage;
                                             <?php foreach ($group['files'] as $file) : ?>
                                             <?php view('admin.partials.minify-row', ['fcMinifyRow' => $file]); ?>
                                             <?php endforeach; ?>
+                                        </div>
                                         </div>
                                     </div>
                                 </section>

@@ -1192,7 +1192,6 @@ html:not(.fc-admin-nav-ready) .fc-sidebar-nav__submenu {
         border-radius: 999px;
         background: var(--fc-sidebar-bg-elevated);
         color: var(--fc-sidebar-text);
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.24);
         cursor: pointer;
         transform: translateY(-50%);
         transition: color 0.15s ease, background-color 0.15s ease, transform 0.28s ease;

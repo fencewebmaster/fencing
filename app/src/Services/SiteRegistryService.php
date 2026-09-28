@@ -229,6 +229,36 @@ final class SiteRegistryService
     }
 
     /**
+     * A config site key's store home, planner and admin. FC sits at /fc under every store, as the
+     * WP plugin's fc_planner_app_url() assumes too. Localhost resolves only while this request is on
+     * localhost itself; a key with no row here returns null.
+     *
+     * @return array{site:string, planner:string, backend:string}|null
+     */
+    public static function urlsForKey(string $key): ?array
+    {
+        $rows = self::all();
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            $domain = (string) ($row['domain'] ?? '');
+            if ($domain === '' || AdminSiteRegistry::mysqlKeyFromDomain($domain) !== $key) {
+                continue;
+            }
+            $home = $domain === 'localhost' ? (string) self::wpSiteUrl() : 'https://' . $domain;
+            if ($home === '') {
+                return null;
+            }
+
+            return [
+                'site' => $home . '/',
+                'planner' => $home . '/fc/planner',
+                'backend' => $home . '/fc/backend',
+            ];
+        }
+
+        return null;
+    }
+
+    /**
      * @param mixed $key Site id (int|float), domain (string), or '' to list all rows.
      * @return array<int, array<string, mixed>>|array<string, mixed>|false
      */

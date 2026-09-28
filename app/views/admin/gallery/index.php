@@ -18,25 +18,27 @@ $page = $fcGalleryPage;
 >
     <script type="application/json" id="fc-gallery-bootstrap"><?php echo $page['bootstrap_json']; ?></script>
 
-    <div class="fc-gallery-page__tabs" role="tablist" aria-label="Gallery sections">
-        <?php foreach ($page['tabs'] as $tab) : ?>
-        <button
-            type="button"
-            role="tab"
-            data-fc-gallery-tab="<?php echo e((string) ($tab['id'] ?? '')); ?>"
-            aria-selected="<?php echo !empty($tab['is_active']) ? 'true' : 'false'; ?>"
-            class="fc-gallery-page__tab<?php echo !empty($tab['is_active']) ? ' is-active' : ''; ?>"
-        ><?php echo e((string) ($tab['label'] ?? '')); ?></button>
-        <?php endforeach; ?>
+    <div class="fc-gallery-page__tabs">
+        <div class="btn-group" role="tablist" aria-label="Gallery sections">
+            <?php foreach ($page['tabs'] as $tab) : ?>
+            <button
+                type="button"
+                role="tab"
+                data-fc-gallery-tab="<?php echo e((string) ($tab['id'] ?? '')); ?>"
+                aria-selected="<?php echo !empty($tab['is_active']) ? 'true' : 'false'; ?>"
+                class="btn btn-sm btn-light fc-gallery-page__tab<?php echo !empty($tab['is_active']) ? ' is-active' : ''; ?>"
+            ><?php echo e((string) ($tab['label'] ?? '')); ?></button>
+            <?php endforeach; ?>
+        </div>
     </div>
 
     <?php if (!empty($page['is_library_tab'])) : ?>
     <div class="fc-gallery-page__toolbar" data-fc-admin-sticky-header>
         <div class="fc-gallery-page__toolbar-row">
-            <div class="fc-gallery-view-toggle" role="group" aria-label="View mode">
+            <div class="fc-gallery-view-toggle btn-group" role="group" aria-label="View mode">
                 <button
                     type="button"
-                    class="fc-gallery-view-toggle__btn is-active"
+                    class="btn btn-sm btn-light fc-gallery-view-toggle__btn is-active"
                     data-fc-gallery-view="grid"
                     aria-pressed="true"
                     aria-label="Grid view"
@@ -46,7 +48,7 @@ $page = $fcGalleryPage;
                 </button>
                 <button
                     type="button"
-                    class="fc-gallery-view-toggle__btn"
+                    class="btn btn-sm btn-light fc-gallery-view-toggle__btn"
                     data-fc-gallery-view="list"
                     aria-pressed="false"
                     aria-label="List view"

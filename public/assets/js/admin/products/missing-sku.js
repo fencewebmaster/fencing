@@ -1347,9 +1347,10 @@
         row.classList.add('is-saving');
         if (btn) {
             btn.disabled = true;
+            btn.classList.add('is-saving');
         }
-        // No "Saving..." line: the button spins in place instead, so the feedback sits where the
-        // click landed. `is-saving` on the row is what drives it.
+        // No "Saving..." line: the button spins in place instead (buttons.css `.btn.is-saving`), so the
+        // feedback sits where the click landed.
         setRowStatus(row, '', '');
 
         return queueSave(function () {
@@ -1431,6 +1432,7 @@
                 row.classList.remove('is-saving');
                 if (btn) {
                     btn.disabled = false;
+                    btn.classList.remove('is-saving');
                 }
                 endBusy();
             });

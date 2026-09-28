@@ -21,42 +21,14 @@
     color: #646970;
 }
 
-/* —— Tabs —— */
+/* —— Tabs: a .btn-group in the strip (buttons.css) —— */
 .fc-gallery-page__tabs {
     flex-shrink: 0;
     display: flex;
     gap: 0;
-    padding: 0 1.25rem;
+    padding: 0.625rem 1.25rem;
     background: #fff;
     border-bottom: 1px solid #c3c4c7;
-}
-
-.fc-gallery-page__tab {
-    margin: 0;
-    padding: 0.75rem 1rem;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: #646970;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.12s ease, border-color 0.12s ease;
-}
-
-.fc-gallery-page__tab:hover {
-    color: #1d2327;
-}
-
-.fc-gallery-page__tab.is-active {
-    color: #1d2327;
-    font-weight: 600;
-    border-bottom-color: var(--fc-princeton-orange, #f67925);
-}
-
-.fc-gallery-page__tab:focus-visible {
-    outline: 2px solid var(--fc-princeton-orange, #f67925);
-    outline-offset: -2px;
 }
 
 .fc-gallery-page--upload {
@@ -86,49 +58,6 @@
     margin-left: auto;
 }
 
-.fc-gallery-view-toggle {
-    display: inline-flex;
-    align-items: stretch;
-    flex-shrink: 0;
-    height: 2.125rem;
-    min-height: 2.125rem;
-    padding: 0;
-    border: 1px solid #8c8f94;
-    border-radius: 3px;
-    background: #f6f7f7;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.fc-gallery-view-toggle__btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2.125rem;
-    height: 100%;
-    padding: 0 0.7rem;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    color: #50575e;
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-.fc-gallery-view-toggle__btn:hover {
-    color: #1d2327;
-    background: rgba(255, 255, 255, 0.7);
-}
-
-.fc-gallery-view-toggle__btn.is-active {
-    background: #fff;
-    color: #1d2327;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-}
-
 .fc-gallery-bulk-bar {
     display: flex;
     flex-wrap: wrap;
@@ -152,15 +81,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-}
-
-.fc-gallery-bulk-bar__delete {
-    color: #b32d2e !important;
-    border-color: #d63638 !important;
-}
-
-.fc-gallery-bulk-bar__delete:hover {
-    background: #fcf0f1 !important;
 }
 
 .fc-gallery-page__search-wrap {
@@ -1093,15 +1013,6 @@
     justify-content: center;
 }
 
-.fc-gallery-modal__delete {
-    color: #b32d2e !important;
-    border-color: #d63638 !important;
-}
-
-.fc-gallery-modal__delete:hover {
-    background: #fcf0f1 !important;
-}
-
 /* —— Dark mode —— */
 html[data-fc-admin-theme='dark'] .fc-gallery-page {
     background: var(--fc-admin-surface-muted, #1e293b);
@@ -1115,20 +1026,10 @@ html[data-fc-admin-theme='dark'] .fc-gallery-empty,
 html[data-fc-admin-theme='dark'] .fc-gallery-item,
 html[data-fc-admin-theme='dark'] .fc-gallery-list,
 html[data-fc-admin-theme='dark'] .fc-gallery-bulk-bar,
-html[data-fc-admin-theme='dark'] .fc-gallery-view-toggle,
 html[data-fc-admin-theme='dark'] .fc-gallery-modal__panel,
 html[data-fc-admin-theme='dark'] .fc-gallery-modal__head {
     background: var(--fc-admin-surface);
     border-color: var(--fc-admin-border);
-}
-
-html[data-fc-admin-theme='dark'] .fc-gallery-view-toggle {
-    background: var(--fc-admin-surface-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-gallery-view-toggle__btn.is-active {
-    background: var(--fc-admin-surface);
-    color: var(--fc-admin-text-heading);
 }
 
 html[data-fc-admin-theme='dark'] .fc-gallery-list__row:hover {
@@ -1198,15 +1099,6 @@ html[data-fc-admin-theme='dark'] .fc-gallery-modal__actions {
 html[data-fc-admin-theme='dark'] .fc-gallery-page__count,
 html[data-fc-admin-theme='dark'] .fc-gallery-modal__meta-row dt {
     color: var(--fc-admin-text-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-gallery-page__tab {
-    color: var(--fc-admin-text-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-gallery-page__tab:hover,
-html[data-fc-admin-theme='dark'] .fc-gallery-page__tab.is-active {
-    color: var(--fc-admin-text-heading);
 }
 
 html[data-fc-admin-theme='dark'] .fc-gallery-page__dropzone-title {

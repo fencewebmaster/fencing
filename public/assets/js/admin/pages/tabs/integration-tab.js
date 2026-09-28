@@ -97,7 +97,8 @@
             }
         }
 
-        // Verify and Purge need the API token and this row's 32-character Zone ID, as typed; the tooltip says what is missing.
+        // Verify and Purge need the API token and this row's 32-character Zone ID, as typed; the tooltip, and the
+        // menu item's second line, say what is missing.
         syncCloudflareButtons() {
             var token = String(this.state.integrations.cloudflareApiToken || '').trim();
             document.querySelectorAll('[data-fc-cloudflare-verify], [data-fc-cloudflare-purge]').forEach(function (btn) {
@@ -119,6 +120,10 @@
                 }
                 btn.disabled = reason !== '';
                 btn.title = reason || btn.getAttribute('data-fc-cloudflare-title');
+                var meta = btn.querySelector('[data-fc-cloudflare-meta]');
+                if (meta) {
+                    meta.textContent = reason || meta.getAttribute('data-fc-cloudflare-meta');
+                }
             });
         }
 
@@ -407,10 +412,95 @@
 
             var sitesTable = document.querySelector('[data-fc-integration-sites]');
             if (sitesTable) {
-                sitesTable.addEventListener('scroll', function () {
+                // Each pinned column shows its edge only while fields sit under it.
+                var syncSitesEdges = function () {
                     sitesTable.classList.toggle('is-scrolled', sitesTable.scrollLeft > 0);
-                }, { passive: true });
+                    sitesTable.classList.toggle('has-more', sitesTable.scrollLeft + sitesTable.clientWidth < sitesTable.scrollWidth - 1);
+                };
+                sitesTable.addEventListener('scroll', syncSitesEdges, { passive: true });
+                // A narrower window, or opening this tab, changes whether the rows run past the edge.
+                if (global.ResizeObserver) {
+                    new global.ResizeObserver(syncSitesEdges).observe(sitesTable);
+                }
             }
+
+            // Each site's Actions gear: its site, planner and backend links (new tabs), then Cloudflare's Verify and Purge.
+            // The rows scroll sideways and would clip the panel, so it is placed against the viewport.
+            var openSiteMenu = null;
+            var dropdowns = global.FC.components && global.FC.components.DropdownRegistry;
+            var positionSiteMenu = function () {
+                if (!openSiteMenu) {
+                    return;
+                }
+                var rect = openSiteMenu.querySelector('[data-fc-integration-site-menu-toggle]').getBoundingClientRect();
+                var panel = openSiteMenu.querySelector('[role="menu"]');
+                var gap = 6;
+                var height = panel.offsetHeight;
+                var below = rect.bottom + gap;
+                // The gear sits at the right end of its row, so the menu lines up with its right edge.
+                panel.style.left = Math.max(8, Math.round(rect.right - panel.offsetWidth)) + 'px';
+                panel.style.top = Math.round(below + height > global.innerHeight - 8 && rect.top - gap - height >= 8
+                    ? rect.top - gap - height
+                    : below) + 'px';
+            };
+            var closeSiteMenu = function (refocus) {
+                var menu = openSiteMenu;
+                if (!menu) {
+                    return;
+                }
+                var toggle = menu.querySelector('[data-fc-integration-site-menu-toggle]');
+                openSiteMenu = null;
+                menu.classList.remove('is-open');
+                menu.querySelector('[role="menu"]').hidden = true;
+                toggle.setAttribute('aria-expanded', 'false');
+                if (dropdowns) {
+                    dropdowns.notifyClosed(menu);
+                }
+                // Focus was on an item inside the panel that just closed; give it back to the gear.
+                if (refocus === true) {
+                    toggle.focus();
+                }
+            };
+            if (sitesTable) {
+                sitesTable.addEventListener('click', function (e) {
+                    var toggle = e.target.closest('[data-fc-integration-site-menu-toggle]');
+                    if (toggle) {
+                        var menu = toggle.closest('[data-fc-integration-site-menu]');
+                        var wasOpen = menu === openSiteMenu;
+                        closeSiteMenu();
+                        if (!wasOpen) {
+                            // One dropdown at a time across the admin, so the topbar's menus close as this opens.
+                            if (dropdowns) {
+                                dropdowns.openExclusive(menu, closeSiteMenu);
+                            }
+                            openSiteMenu = menu;
+                            menu.classList.add('is-open');
+                            menu.querySelector('[role="menu"]').hidden = false;
+                            toggle.setAttribute('aria-expanded', 'true');
+                            positionSiteMenu();
+                        }
+                        return;
+                    }
+                    // A link still opens its new tab, and Verify or Purge has already started; only the menu goes.
+                    if (e.target.closest('[data-fc-integration-site-menu] [role="menuitem"]')) {
+                        closeSiteMenu(true);
+                    }
+                });
+            }
+            document.addEventListener('click', function (e) {
+                if (openSiteMenu && !openSiteMenu.contains(e.target)) {
+                    closeSiteMenu();
+                }
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape' || e.defaultPrevented || !openSiteMenu) {
+                    return;
+                }
+                e.preventDefault();
+                closeSiteMenu(true);
+            });
+            global.addEventListener('resize', positionSiteMenu);
+            global.addEventListener('scroll', positionSiteMenu, true);
 
             document.querySelectorAll('[data-fc-integration-site-logo-default]').forEach(function (btn) {
                 btn.addEventListener('click', function () {

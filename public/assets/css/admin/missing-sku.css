@@ -81,18 +81,14 @@
     margin-left: auto;
 }
 
-/* Matches the System Products Actions button, but keeps this toolbar's 2.25rem control height so it
-   still lines up with the search box and the two filters beside it. */
-.fc-ms-actions__toggle {
-    gap: 0.45rem;
-    width: auto;
-    height: 2.25rem;
-    white-space: nowrap;
+/* Standard buttons (buttons.css), at this toolbar's 2.25rem control height so they line up with the
+   search box and the two filters beside them. */
+.btn.fc-ms-actions__toggle,
+.btn.fc-ms-save-all {
+    min-height: 2.25rem;
 }
 
 .fc-ms-actions__caret {
-    font-size: 0.7rem;
-    opacity: 0.9;
     transition: transform 0.15s ease;
 }
 
@@ -251,7 +247,6 @@
 
 .fc-ms-row:hover,
 .fc-ms-row:focus-within {
-    border-left-color: var(--fc-princeton-orange, #f67925);
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
 }
 
@@ -528,43 +523,6 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
     transition: opacity 0.12s ease;
 }
 
-/* Saving spins the button itself. Its contents go `visibility: hidden` rather than `display: none`
-   so the button keeps its width and nothing in the head shifts under the cursor. */
-.fc-ms-row.is-saving .fc-ms-save {
-    position: relative;
-    pointer-events: none;
-}
-
-.fc-ms-row.is-saving .fc-ms-save > * {
-    visibility: hidden;
-}
-
-.fc-ms-row.is-saving .fc-ms-save::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0.875rem;
-    height: 0.875rem;
-    margin: -0.4375rem 0 0 -0.4375rem;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: fc-ms-save-spin 0.6s linear infinite;
-}
-
-@keyframes fc-ms-save-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .fc-ms-row.is-saving .fc-ms-save::after {
-        animation: none;
-    }
-}
-
 .fc-ms-row:hover .fc-ms-save,
 .fc-ms-row:focus-within .fc-ms-save,
 .fc-ms-row.is-dirty .fc-ms-save,
@@ -577,8 +535,6 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
    group right; leaving it on more than one would split the free space and strand them apart. The
    select-all leads the group, so it holds the margin and Save gives it up. */
 .fc-ms-save-all {
-    min-height: 2.25rem;
-    white-space: nowrap;
     margin-left: auto;
 }
 
@@ -589,11 +545,6 @@ html[data-fc-admin-theme='dark'] .fc-ms-row__style-image {
 /* Only the row's own flex gap between the pair, so they read as one control group. */
 .fc-ms-save-all + .fc-ms-actions {
     margin-left: 0;
-}
-
-.fc-ms-save-all:disabled {
-    opacity: 0.45;
-    cursor: default;
 }
 
 /* ----- SKU fields (the edit modal's SKU section, re-scoped to this page) ----- */
@@ -1330,8 +1281,8 @@ html[data-fc-admin-theme='dark'] .fc-ms-chip--done {
     cursor: default;
 }
 
-/* Ticked rows get the orange edge the hover state uses, so the set Save will write is readable
-   by scrolling rather than by counting. */
+/* Ticked rows get an orange edge, so the set Save will write is readable by scrolling rather than
+   by counting. */
 .fc-ms-row.is-picked {
     border-left-color: var(--fc-princeton-orange, #f67925);
 }

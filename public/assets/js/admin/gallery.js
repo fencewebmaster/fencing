@@ -293,14 +293,14 @@
 
     function renderViewToggle() {
         return (
-            '<div class="fc-gallery-view-toggle" role="group" aria-label="View mode">' +
-            '<button type="button" class="fc-gallery-view-toggle__btn' +
+            '<div class="fc-gallery-view-toggle btn-group" role="group" aria-label="View mode">' +
+            '<button type="button" class="btn btn-sm btn-light fc-gallery-view-toggle__btn' +
             (state.viewMode === 'grid' ? ' is-active' : '') +
             '" data-fc-gallery-view="grid" aria-pressed="' +
             (state.viewMode === 'grid' ? 'true' : 'false') +
             '" aria-label="Grid view" title="Grid view">' +
             '<i class="fa-solid fa-grip" aria-hidden="true"></i></button>' +
-            '<button type="button" class="fc-gallery-view-toggle__btn' +
+            '<button type="button" class="btn btn-sm btn-light fc-gallery-view-toggle__btn' +
             (state.viewMode === 'list' ? ' is-active' : '') +
             '" data-fc-gallery-view="list" aria-pressed="' +
             (state.viewMode === 'list' ? 'true' : 'false') +
@@ -324,7 +324,7 @@
             items.length +
             ')</button>' +
             '<button type="button" class="btn btn-sm btn-outline-secondary fw-semibold" data-fc-gallery-clear-selection>Clear selection</button>' +
-            '<button type="button" class="btn btn-sm btn-outline-secondary fw-semibold fc-gallery-bulk-bar__delete" data-fc-gallery-bulk-delete>Delete selected</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger fw-semibold" data-fc-gallery-bulk-delete>Delete selected</button>' +
             '</div></div>'
         );
     }
@@ -425,7 +425,7 @@
             escapeHtml(fullUrl) +
             '" target="_blank" rel="noopener noreferrer">Open file</a>' +
             (state.canDelete
-                ? '<button type="button" class="btn btn-sm btn-outline-secondary fw-semibold fc-gallery-modal__delete fc-gallery-modal__action-btn" data-fc-gallery-delete>Delete</button>'
+                ? '<button type="button" class="btn btn-sm btn-outline-danger fw-semibold fc-gallery-modal__action-btn" data-fc-gallery-delete>Delete</button>'
                 : '') +
             '</div></aside>'
         );
@@ -584,7 +584,7 @@
         }
 
         return (
-            '<div class="fc-gallery-page__tabs" role="tablist" aria-label="Gallery sections">' +
+            '<div class="fc-gallery-page__tabs"><div class="btn-group" role="tablist" aria-label="Gallery sections">' +
             tabs
                 .map(function (tab) {
                     var active = state.activeTab === tab.id;
@@ -593,7 +593,7 @@
                         escapeHtml(tab.id) +
                         '" aria-selected="' +
                         (active ? 'true' : 'false') +
-                        '" class="fc-gallery-page__tab' +
+                        '" class="btn btn-sm btn-light fc-gallery-page__tab' +
                         (active ? ' is-active' : '') +
                         '">' +
                         escapeHtml(tab.label) +
@@ -601,7 +601,7 @@
                     );
                 })
                 .join('') +
-            '</div>'
+            '</div></div>'
         );
     }
 

@@ -40,16 +40,8 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-page {
 }
 
 .fc-admin-topbar__actions .fc-dashboard-date-dropdown .fc-entries-date-dropdown__toggle {
-    box-sizing: border-box;
     width: 100%;
     min-width: 10.5rem;
-    height: 2.25rem;
-    min-height: 2.25rem;
-    padding: 0 0.75rem;
-    border-radius: 0.625rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1;
 }
 
 .fc-dashboard-date-dropdown .fc-entries-date-dropdown__panel {
@@ -57,38 +49,9 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-page {
     right: 0;
 }
 
-.fc-dashboard-toolbar-btn {
-    appearance: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.85rem;
-    border: 1px solid var(--fc-admin-border);
-    border-radius: 0.625rem;
-    background: var(--fc-admin-surface-muted);
-    color: var(--fc-admin-text);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.fc-dashboard-toolbar-btn:hover {
-    background: var(--fc-admin-row-hover);
-    border-color: #c7d2fe;
-}
-
 .fc-dashboard-date-dropdown .fc-entries-date-dropdown__toggle {
     width: auto;
     min-width: 11rem;
-}
-
-.fc-dashboard-date-dropdown.is-active .fc-entries-date-dropdown__toggle {
-    border-color: #6366f1;
-}
-
-html[data-fc-admin-theme='dark'] .fc-dashboard-date-dropdown.is-active .fc-entries-date-dropdown__toggle {
-    border-color: #818cf8;
 }
 
 /* KPI cards */
@@ -376,45 +339,8 @@ html[data-fc-admin-theme='dark'] .fc-dashboard-kpi:hover {
     text-decoration: underline;
 }
 
-.fc-dashboard-card__link--btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.42rem 0.75rem;
-    border-radius: 0.65rem;
-    border: 1px solid color-mix(in srgb, var(--fc-princeton-orange, #f67925) 30%, var(--fc-admin-border));
-    background: var(--fc-admin-surface);
-    color: var(--fc-princeton-orange, #f67925);
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: none;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.fc-dashboard-card__link--btn:hover {
-    text-decoration: none;
-    border-color: var(--fc-princeton-orange, #f67925);
-    background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 10%, var(--fc-admin-surface));
-    box-shadow: none;
-}
-
-.fc-dashboard-card__link--btn i {
-    font-size: 0.65rem;
-    transition: transform 0.15s ease;
-}
-
-.fc-dashboard-card__link--btn:hover i {
-    transform: translateX(2px);
-}
-
 html[data-fc-admin-theme='dark'] .fc-dashboard-card__head--rich {
     background: var(--fc-admin-surface-muted);
-}
-
-html[data-fc-admin-theme='dark'] .fc-dashboard-card__link--btn {
-    background: rgba(15, 23, 42, 0.55);
-    color: var(--fc-princeton-orange, #f67925);
-    border-color: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 32%, transparent);
 }
 
 .fc-dashboard-card__body {

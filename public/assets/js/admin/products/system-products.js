@@ -378,7 +378,7 @@
 
         var shell =
             '<div class="flex h-full min-h-0 flex-col">' +
-            '<div class="fc-gallery-page__tabs fc-system-products-tabs" role="tablist" aria-label="Store product source">' +
+            '<div class="fc-gallery-page__tabs"><div class="btn-group fc-system-products-tabs" role="tablist" aria-label="Store product source">' +
             TABS.map(function (tab) {
                 var isActive = tab === activeTab;
                 var cached = tabCache[tab];
@@ -394,13 +394,13 @@
                     tab +
                     '" aria-selected="' +
                     (isActive ? 'true' : 'false') +
-                    '" class="fc-gallery-page__tab fc-system-products-tab' +
+                    '" class="btn btn-sm btn-light fc-system-products-tab' +
                     (isActive ? ' is-active' : '') +
                     '">' +
                     '<span>' +
                     tab +
                     '</span>' +
-                    '<span class="fc-system-products-tab__count" data-fc-sys-tab-count="' +
+                    '<span class="fc-btn-count" data-fc-sys-tab-count="' +
                     tab +
                     '"' +
                     (countHidden ? ' hidden' : '') +
@@ -409,7 +409,7 @@
                     '</span></button>'
                 );
             }).join('') +
-            '</div>' +
+            '</div></div>' +
             '<div class="fc-entries-page__toolbar fc-sp-toolbar fc-admin-sticky-header sticky top-0 z-20">' +
             '<div class="fc-entries-page__toolbar-row">' +
             '<label class="fc-entries-page__search-wrap">' +

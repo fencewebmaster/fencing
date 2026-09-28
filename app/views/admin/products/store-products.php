@@ -103,8 +103,9 @@ $fcStoreCsvName  = $page['csv_name'];
                             <?php endforeach; ?>
                         </div>
                         <div class="fc-entries-fence-dropdown__footer">
-                            <button type="submit" class="fc-entries-fence-dropdown__apply" data-fc-store-products-color-apply>Apply</button>
-                            <button type="button" class="fc-entries-fence-dropdown__clear" data-fc-store-products-color-clear>
+                            <button type="submit" class="btn btn-sm btn-orange" data-fc-store-products-color-apply>Apply</button>
+                            <button type="button" class="btn btn-sm btn-light" data-fc-store-products-color-clear>
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                 Clear selection
                             </button>
                         </div>
@@ -161,7 +162,7 @@ $fcStoreCsvName  = $page['csv_name'];
                         id="fc-store-products-download-toggle"
                     >
                         <span>Actions</span>
-                        <i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret" aria-hidden="true"></i>
+                        <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
                     </button>
                     <div
                         class="fc-products-download-dropdown__panel fc-admin-menu__panel"
@@ -285,27 +286,7 @@ $fcStoreCsvName  = $page['csv_name'];
                 </select>
             </form>
 
-            <?php if (!empty($pagination['show'])) : ?>
-            <nav class="fc-entries-page__pagination" aria-label="System products pagination">
-                <?php if (($pagination['prev_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $pagination['prev_url']); ?>" aria-label="Previous page">&lsaquo;</a>
-                <?php endif; ?>
-
-                <?php foreach ($paginationLinks as $paginationLink) : ?>
-                    <?php if (($paginationLink['type'] ?? '') === 'ellipsis') : ?>
-                <span class="fc-entries-pagination__ellipsis" aria-hidden="true">…</span>
-                    <?php elseif (($paginationLink['type'] ?? '') === 'current') : ?>
-                <span class="fc-entries-pagination__btn fc-entries-pagination__btn--active" aria-current="page"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></span>
-                    <?php else : ?>
-                <a class="fc-entries-pagination__btn" href="<?php echo e((string) ($paginationLink['url'] ?? '')); ?>"><?php echo e((string) ($paginationLink['label'] ?? '')); ?></a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-                <?php if (($pagination['next_url'] ?? '') !== '') : ?>
-                <a class="fc-entries-pagination__btn fc-entries-pagination__btn--nav" href="<?php echo e((string) $pagination['next_url']); ?>" aria-label="Next page">&rsaquo;</a>
-                <?php endif; ?>
-            </nav>
-            <?php endif; ?>
+            <?php view('admin.partials.pagination', ['fcPagination' => $pagination, 'fcPaginationLinks' => $paginationLinks, 'fcPaginationLabel' => 'System products pagination']); ?>
         </div>
     </footer>
     <?php endif; ?>

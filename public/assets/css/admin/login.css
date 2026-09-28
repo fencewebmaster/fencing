@@ -458,12 +458,10 @@ html[data-fc-admin-theme='dark'] .form-checkbox input[type='checkbox']:checked {
     font-weight: 600;
     border-radius: var(--fc-login-radius);
     border: none;
-    border-bottom: 2px solid var(--fc-login-primary-active);
     cursor: pointer;
     background: var(--fc-login-primary);
     color: var(--fc-white, #fff);
-    box-shadow: 0 1px 2px var(--fc-a-orange-22, rgba(246, 121, 37, 0.22)), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease;
 }
 
 .btn-primary.btn-lg {
@@ -475,20 +473,15 @@ html[data-fc-admin-theme='dark'] .form-checkbox input[type='checkbox']:checked {
 
 .btn-primary:hover {
     background: var(--fc-login-primary-hover);
-    box-shadow: 0 4px 12px var(--fc-a-orange-35, rgba(246, 121, 37, 0.35));
-    transform: translateY(-1px);
 }
 
 .btn-primary:active {
     background: var(--fc-login-primary-active);
-    transform: translateY(0);
 }
 
 .btn-primary:disabled {
     opacity: 0.55;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
 }
 
 .alert.alert-error {

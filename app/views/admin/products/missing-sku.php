@@ -95,7 +95,7 @@ $canEdit         = $page['can_edit'];
                 </label>
                 <button
                     type="button"
-                    class="btn btn-sm btn-orange fw-semibold fc-ms-save-all shrink-0"
+                    class="btn btn-sm btn-orange fc-ms-save-all shrink-0"
                     data-fc-ms-save-all
                     disabled
                     aria-disabled="true"
@@ -109,7 +109,7 @@ $canEdit         = $page['can_edit'];
                 <div class="fc-entries-date-dropdown fc-ms-actions shrink-0" data-fc-ms-actions>
                     <button
                         type="button"
-                        class="btn btn-sm btn-orange fw-semibold fc-ms-actions__toggle"
+                        class="btn btn-sm btn-dark fc-ms-actions__toggle"
                         id="fc-ms-actions-toggle"
                         aria-haspopup="menu"
                         aria-expanded="false"
@@ -119,7 +119,7 @@ $canEdit         = $page['can_edit'];
                         data-fc-ms-actions-toggle
                     >
                         <span>Actions</span>
-                        <i class="fa-solid fa-chevron-down fc-ms-actions__caret" aria-hidden="true"></i>
+                        <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-ms-actions__caret"></i></span>
                     </button>
                     <div
                         class="fc-entries-date-dropdown__panel fc-ms-actions__panel"
@@ -223,7 +223,7 @@ $canEdit         = $page['can_edit'];
                     </div>
                     <?php if ($canEdit) : ?>
                     <div class="fc-ms-row__actions">
-                        <button type="button" class="btn btn-sm btn-orange fw-semibold fc-ms-save" data-fc-ms-save>
+                        <button type="button" class="btn btn-sm btn-orange fc-ms-save" data-fc-ms-save>
                             <i class="fa-solid fa-check" aria-hidden="true"></i><span>Save</span>
                         </button>
                         <span class="fc-ms-row__status" data-fc-ms-status role="status" aria-live="polite"></span>
