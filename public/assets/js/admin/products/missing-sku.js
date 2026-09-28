@@ -1578,6 +1578,91 @@
             });
     }
 
+    /* ------------------------------------------------------------------------------ paste */
+
+    /* The number is the ident's ::before, so a click on it lands on the ident itself — as does one in
+       the empty space after the name, which is why only the part left of the style tile counts. */
+    function rowFromNumberClick(e) {
+        var ident = e.target;
+        if (!ident.classList || !ident.classList.contains('fc-ms-row__ident')) {
+            return null;
+        }
+        var tile = ident.querySelector('.fc-ms-row__view');
+        if (tile && e.clientX >= tile.getBoundingClientRect().left) {
+            return null;
+        }
+
+        return ident.closest('[data-fc-ms-row]');
+    }
+
+    /* Ctrl+click on a row's number: the copied SKU goes into every colour of that row, unsaved, the
+       same as typing it would. */
+    function pasteIntoRow(row) {
+        var T = global.FcAdminToast;
+        if (!navigator.clipboard || typeof navigator.clipboard.readText !== 'function') {
+            if (T) {
+                T.error('This browser cannot read the clipboard on this page.');
+            }
+            return;
+        }
+
+        navigator.clipboard.readText().then(
+            function (text) {
+                var value = SKU ? SKU.normalize(text) : String(text || '').trim();
+                if (value === '') {
+                    if (T) {
+                        T.show('Nothing to paste — copy a SKU first.');
+                    }
+                    return;
+                }
+                // A range copied from a sheet arrives as lines and tabs, which an input runs together.
+                if (/[\r\n\t]/.test(value)) {
+                    if (T) {
+                        T.error('The clipboard holds more than one value — copy a single SKU.');
+                    }
+                    return;
+                }
+                // Clipboard access can prompt first, and a save started meanwhile would mark this row
+                // saved without the paste.
+                if (busyCount > 0) {
+                    if (T) {
+                        T.show('Wait for the save to finish, then try again.');
+                    }
+                    return;
+                }
+
+                var changed = 0;
+                fieldsIn(row).forEach(function (field) {
+                    var input = inputIn(field);
+                    if (input && input.value !== value) {
+                        input.value = value;
+                        changed++;
+                    }
+                });
+                if (changed === 0) {
+                    if (T) {
+                        T.show('Every colour in this row already has ' + value + '.');
+                    }
+                    return;
+                }
+
+                row.classList.add('is-dirty');
+                row.classList.remove('is-saved');
+                setRowStatus(row, '', '');
+                paintRow(row);
+                refreshFilledCount();
+                if (T) {
+                    T.success('Pasted ' + value + ' into ' + changed + (changed === 1 ? ' colour' : ' colours') + ' — nothing saved yet.');
+                }
+            },
+            function () {
+                if (T) {
+                    T.error('Could not read the clipboard — allow clipboard access for this site.');
+                }
+            }
+        );
+    }
+
     /* ---------------------------------------------------------------------------- hydrate */
 
     function bindRoot(root) {
@@ -1665,6 +1750,15 @@
 
         root.addEventListener('click', function (e) {
             var target = e.target;
+
+            if (canEdit && (e.ctrlKey || e.metaKey)) {
+                var numberRow = rowFromNumberClick(e);
+                if (numberRow) {
+                    e.preventDefault();
+                    pasteIntoRow(numberRow);
+                    return;
+                }
+            }
 
             var thumbView = target.closest('[data-fc-ms-thumb-view]');
             if (thumbView) {
