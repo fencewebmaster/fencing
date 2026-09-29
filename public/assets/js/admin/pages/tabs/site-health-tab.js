@@ -7,6 +7,7 @@
 
     var API_SITE_HEALTH = global.fcApiUrl('settings', 'action=site-health');
     var API_SITE_HEALTH_FIX = global.fcApiUrl('settings', 'action=site-health-fix');
+    var API_SITE_HEALTH_LOG = global.fcApiUrl('settings', 'action=site-health-log');
 
     // Problems first, then warnings and passes; unscored notes last.
     var STATE_ORDER = { bad: 0, warn: 1, good: 2, info: 3 };
@@ -184,13 +185,31 @@
                 (check.value ? '<span class="fc-health-row__value">' + escapeHtml(check.value) + '</span>' : '') +
                 '</div>' +
                 (check.detail ? '<p class="fc-health-row__detail">' + escapeHtml(check.detail) + '</p>' : '') +
-                (check.fix && (state === 'warn' || state === 'bad')
-                    ? '<div class="fc-health-row__fix"><button type="button" class="' + global.FcAdminBtn.outline +
-                      '" data-fc-health-fix="' + escapeHtml(check.fix.id) + '"><span>' + escapeHtml(check.fix.label) + '</span></button></div>'
-                    : '') +
+                this.actionsHtml(check, state) +
                 '</div>' +
                 '</li>'
             );
+        }
+
+        /** A row's one-click fix (only while it warns) and its download links, e.g. the PHP error logs. */
+        actionsHtml(check, state) {
+            var escapeHtml = global.FC.util.escapeHtml;
+            var actions = [];
+            if (check.fix && (state === 'warn' || state === 'bad')) {
+                actions.push(
+                    '<button type="button" class="' + global.FcAdminBtn.outline + '" data-fc-health-fix="' + escapeHtml(check.fix.id) + '">' +
+                    '<span>' + escapeHtml(check.fix.label) + '</span></button>'
+                );
+            }
+            (Array.isArray(check.downloads) ? check.downloads : []).forEach(function (download) {
+                // A plain link: the browser streams the file to disk, and a refusal downloads rather than leaving the page.
+                actions.push(
+                    '<a class="btn btn-sm btn-light fw-semibold" href="' +
+                    escapeHtml(API_SITE_HEALTH_LOG + '&file=' + encodeURIComponent(download.id)) + '" download>' +
+                    '<i class="fa-solid fa-download" aria-hidden="true"></i><span>' + escapeHtml(download.label) + '</span></a>'
+                );
+            });
+            return actions.length ? '<div class="fc-health-row__actions">' + actions.join('') + '</div>' : '';
         }
 
         /** Runs a row's one-click fix, then runs the checks again so every card shows the result. */

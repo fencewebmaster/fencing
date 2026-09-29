@@ -81,6 +81,11 @@ final class SettingsController extends BaseApiController
             return;
         }
 
+        if ($action === 'site-health-log') {
+            $this->handleSiteHealthLog($method);
+            return;
+        }
+
         if ($action === 'cloudflare-verify') {
             $this->handleCloudflareVerify($method);
             return;
@@ -564,6 +569,49 @@ final class SettingsController extends BaseApiController
             $result['message'] = 'config.php is now ' . ($result['mode'] ?? '600') . '.';
         }
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Streams one PHP error log for the "PHP error log" row's download links (GET ?file=admin|planner|shared).
+     * Only a file SiteHealthService::errorLogFiles() names can be served, never a path from the request,
+     * and it is Super Admin only, like the report.
+     */
+    private function handleSiteHealthLog(string $method): void
+    {
+        if ($method !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!PermissionService::isSuperAdmin()) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Only the Super Admin can download the error log.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $key = (string) $this->request->query('file', '');
+        $path = SiteHealthService::errorLogFiles()[$key] ?? '';
+        $handle = $path !== '' && is_file($path) && is_readable($path) ? @fopen($path, 'rb') : false;
+        if ($handle === false) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'error' => 'That error log doesn\'t exist.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $host = trim((string) preg_replace('/[^a-z0-9.]+/i', '-', (string) ($_SERVER['HTTP_HOST'] ?? '')), '-');
+        $size = @filesize($path);
+        header('Content-Type: text/plain; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . ($host !== '' ? $host . '-' : '') . $key . '-error_log-' . date('Ymd-His') . '.txt"');
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: no-store');
+        if (is_int($size)) {
+            header('Content-Length: ' . $size);
+        }
+
+        fpassthru($handle);
+        fclose($handle);
+        exit;
     }
 
     private function handleCloudflareVerify(string $method): void

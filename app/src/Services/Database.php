@@ -11,6 +11,25 @@ class Database {
     /** @var string Last connection error for diagnostics */
     public $last_connect_error = '';
 
+    // Declared, not created in the constructor: PHP 8.2 deprecates dynamic properties (PHP 9 makes them errors).
+    /** @var string */
+    public $host = '';
+
+    /** @var string */
+    public $database = '';
+
+    /** @var string */
+    public $username = '';
+
+    /** @var string */
+    public $password = '';
+
+    /** @var string Table prefix; tableName() prepends it, and DebugbarServer reads it */
+    public $prefix = 'wp_';
+
+    /** @var string 'demo' on demo/staging URLs, where tableName() appends _demo; otherwise '' */
+    public $is_demo = '';
+
     /**
      * @param array{host?:string,database?:string,username?:string,password?:string,prefix?:string}|null $cfg
      */

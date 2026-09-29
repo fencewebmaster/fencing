@@ -2494,7 +2494,10 @@ html[data-fc-admin-theme='dark'] .fc-seo-card__title {
     overflow-wrap: anywhere;
 }
 
-.fc-health-row__fix {
+.fc-health-row__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     margin-top: 0.35rem;
 }
 

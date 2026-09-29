@@ -26,3 +26,6 @@ Fc\Admin\Core\Autoloader::register();
 // Global view() helper — a bare function is not autoloadable, and every entry
 // point's controllers may render views, so it loads with the autoloader.
 require_once FC_ADMIN_ROOT . '/src/Helpers/view_functions.php';
+
+// mb_* stand-ins for a PHP without mbstring, which took the admin down on its first mb_strlen().
+require_once FC_ADMIN_ROOT . '/src/Helpers/mbstring_fallbacks.php';

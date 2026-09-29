@@ -99,7 +99,7 @@ final class SiteHealthService
     private const PROBE_BODY_BYTES = 4096;
 
     /**
-     * @return list<array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string}}>
+     * @return list<array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string},downloads?:list<array{id:string,label:string}>}>
      */
     public static function run(string $group): array
     {
@@ -118,10 +118,11 @@ final class SiteHealthService
 
     /**
      * A check returns [state, value, detail] plus, optionally, a one-click fix {id, label} that
-     * SettingsController's site-health-fix action runs; the check itself never changes anything.
+     * SettingsController's site-health-fix action runs (null for none), and download links
+     * [{id, label}] its site-health-log action streams; the check itself never changes anything.
      *
      * @param callable(): ?array $check
-     * @return array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string}}|null
+     * @return array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string},downloads?:list<array{id:string,label:string}>}|null
      */
     private static function attempt(string $key, string $label, callable $check): ?array
     {
@@ -143,6 +144,11 @@ final class SiteHealthService
         ];
         if (isset($result[3]['id'], $result[3]['label'])) {
             $row['fix'] = ['id' => (string) $result[3]['id'], 'label' => (string) $result[3]['label']];
+        }
+        foreach (is_array($result[4] ?? null) ? $result[4] : [] as $download) {
+            if (isset($download['id'], $download['label'])) {
+                $row['downloads'][] = ['id' => (string) $download['id'], 'label' => (string) $download['label']];
+            }
         }
 
         return $row;
@@ -486,19 +492,10 @@ final class SiteHealthService
             return [$local ? 'info' : 'warn', 'Off', 'PHP isn\'t logging errors (log_errors is off), so problems leave no trace.'];
         }
 
-        $log = trim((string) ini_get('error_log'));
-        if ($log === '' || strcasecmp($log, 'syslog') === 0) {
+        $files = self::errorLogFiles();
+        if ($files === []) {
             return ['info', 'Web server log', 'PHP writes its errors to the web server\'s own log, which FC can\'t read.'];
         }
-
-        // A relative error_log (cPanel's default) is a file in each running script's folder: the admin
-        // runs from public/, the planner from FC's root, so each writes its own copy. Read both.
-        $files = self::isAbsolutePath($log)
-            ? ['' => $log]
-            : [
-                'admin' => FC_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $log,
-                'planner' => FC_ROOT . DIRECTORY_SEPARATOR . $log,
-            ];
         $existing = array_filter($files, 'is_file');
         if ($existing === []) {
             foreach ($files as $path) {
@@ -546,7 +543,7 @@ final class SiteHealthService
                 if ($at >= $latestAt) {
                     $latest = $message;
                     $latestAt = $at;
-                    $latestWhere = (string) $where;
+                    $latestWhere = $where === 'shared' ? '' : (string) $where;
                 }
             }
         }
@@ -554,8 +551,21 @@ final class SiteHealthService
         if ($read === 0) {
             return ['info', 'Unreadable', 'PHP\'s error log can\'t be read from here.'];
         }
+
+        // One link per non-empty file; SettingsController's site-health-log action streams it.
+        $downloads = [];
+        foreach ($existing as $where => $path) {
+            $size = (int) @filesize($path);
+            if ($size > 0) {
+                $downloads[] = [
+                    'id' => (string) $where,
+                    'label' => 'Download ' . ($where === 'shared' ? 'log' : $where . ' log') . ' (' . FormatHelper::bytes($size) . ')',
+                ];
+            }
+        }
+
         if ($latest === '') {
-            return ['good', 'None in 24 hours', ''];
+            return ['good', 'None in 24 hours', '', null, $downloads];
         }
 
         $parts = [];
@@ -575,7 +585,7 @@ final class SiteHealthService
         $names = [];
         foreach ($existing as $where => $path) {
             $names[] = str_ireplace($root . '/', '', str_replace('\\', '/', (string) (realpath($path) ?: $path)))
-                . ($where !== '' ? ' (' . $where . ')' : '');
+                . ($where !== 'shared' ? ' (' . $where . ')' : '');
         }
 
         return [
@@ -583,7 +593,32 @@ final class SiteHealthService
             implode(', ', $parts) . ' in 24 hours',
             'Latest, ' . $when . ($latestWhere !== '' ? ' in the ' . $latestWhere : '') . ': ' . $shown . '. '
                 . (count($names) === 1 ? 'Log file: ' : 'Log files: ') . implode(', ', $names) . '.',
+            null,
+            $downloads,
         ];
+    }
+
+    /**
+     * The PHP error log files FC can read, keyed by the id the download links use. A relative
+     * error_log (cPanel's default) is a file in each running script's folder: the admin runs from
+     * public/, the planner from FC's root, so each writes its own copy. An absolute one is a single
+     * file, shared with WordPress. Empty when PHP logs to syslog or the web server's own log.
+     *
+     * @return array<string, string> 'admin' and 'planner', or 'shared' => path
+     */
+    public static function errorLogFiles(): array
+    {
+        $log = trim((string) ini_get('error_log'));
+        if ($log === '' || strcasecmp($log, 'syslog') === 0) {
+            return [];
+        }
+
+        return self::isAbsolutePath($log)
+            ? ['shared' => $log]
+            : [
+                'admin' => FC_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $log,
+                'planner' => FC_ROOT . DIRECTORY_SEPARATOR . $log,
+            ];
     }
 
     private static function isAbsolutePath(string $path): bool
