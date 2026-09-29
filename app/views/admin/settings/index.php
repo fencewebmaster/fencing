@@ -94,13 +94,13 @@ $tab = $fcSettingsPage;
                 </div>
                 <div id="fc-settings-header-actions-console" class="<?php echo e((string) $tab['header_actions_class']['console']); ?> flex-wrap gap-2"></div>
                 <div id="fc-settings-header-actions-minify" class="<?php echo e((string) $tab['header_actions_class']['minify']); ?> flex-wrap gap-2">
-                    <button type="button" id="fc-minify-refresh" class="<?php echo e((string) $tab['btn_secondary']); ?>"><span>Refresh Status</span></button>
                     <?php if ($tab['minify']['can_build']) : ?>
                     <button type="button" id="fc-minify-build-all" class="<?php echo e((string) $tab['btn_primary']); ?>" data-fc-minify-build="all"><span>Minify All</span></button>
                     <?php else : ?>
                     <?php /* Never a disabled primary: production has no esbuild binary, and that is not an error. */ ?>
                     <span id="fc-minify-unavailable" class="fc-minify__unavailable" title="<?php echo e((string) $tab['minify']['build_unavailable_title']); ?>"><?php echo e((string) $tab['minify']['build_unavailable_text']); ?></span>
                     <?php endif; ?>
+                    <button type="button" id="fc-minify-refresh" class="<?php echo e((string) $tab['btn_secondary']); ?>"><span>Refresh Status</span></button>
                 </div>
                 <?php if ($tab['site_health_enabled']) : ?>
                 <div id="fc-settings-header-actions-site-health" class="<?php echo e((string) $tab['header_actions_class']['site_health']); ?> flex-wrap gap-2">
