@@ -490,48 +490,70 @@ final class SiteHealthService
         if ($log === '' || strcasecmp($log, 'syslog') === 0) {
             return ['info', 'Web server log', 'PHP writes its errors to the web server\'s own log, which FC can\'t read.'];
         }
-        if (!is_file($log)) {
-            if (!is_dir(dirname($log)) || !is_writable(dirname($log))) {
-                return ['warn', 'Not writable', 'PHP is set to log errors to ' . $log . ', but that folder is missing or read-only, so errors are lost.'];
+
+        // A relative error_log (cPanel's default) is a file in each running script's folder: the admin
+        // runs from public/, the planner from FC's root, so each writes its own copy. Read both.
+        $files = self::isAbsolutePath($log)
+            ? ['' => $log]
+            : [
+                'admin' => FC_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $log,
+                'planner' => FC_ROOT . DIRECTORY_SEPARATOR . $log,
+            ];
+        $existing = array_filter($files, 'is_file');
+        if ($existing === []) {
+            foreach ($files as $path) {
+                if (!is_dir(dirname($path)) || !is_writable(dirname($path))) {
+                    return ['warn', 'Not writable', 'PHP is set to log errors to ' . $path . ', but that folder is missing or read-only, so errors are lost.'];
+                }
             }
 
             return ['good', 'None logged', ''];
         }
 
-        $tail = self::fileTail($log, self::ERROR_LOG_TAIL_BYTES);
-        if ($tail === null) {
-            return ['info', 'Unreadable', 'PHP\'s error log can\'t be read from here.'];
-        }
-
-        // The log is shared with WordPress: count only lines from FC's own files or FC's own error_log() calls.
+        // An absolute log is shared with WordPress: count only lines from FC's own files or FC's own error_log() calls.
         $root = str_replace('\\', '/', (string) FC_ROOT);
         $since = time() - 86400;
         $counts = ['error' => 0, 'warning' => 0, 'notice' => 0];
         $latest = '';
         $latestAt = 0;
-        foreach (preg_split('/\R/', $tail) ?: [] as $line) {
-            if (!preg_match('/^\[([^\]]+)\]\s+(.+)$/', $line, $m)) {
+        $latestWhere = '';
+        $read = 0;
+        foreach ($existing as $where => $path) {
+            $tail = self::fileTail($path, self::ERROR_LOG_TAIL_BYTES);
+            if ($tail === null) {
                 continue;
             }
-            $message = str_replace('\\', '/', $m[2]);
-            if (!str_starts_with($message, 'FC ') && stripos($message, $root) === false) {
-                continue;
+            $read++;
+            foreach (preg_split('/\R/', $tail) ?: [] as $line) {
+                if (!preg_match('/^\[([^\]]+)\]\s+(.+)$/', $line, $m)) {
+                    continue;
+                }
+                $message = str_replace('\\', '/', $m[2]);
+                if (!str_starts_with($message, 'FC ') && stripos($message, $root) === false) {
+                    continue;
+                }
+                $at = strtotime($m[1]);
+                if ($at === false || $at < $since) {
+                    continue;
+                }
+                if (preg_match('/^PHP (Fatal|Parse|Recoverable fatal) error|Uncaught /i', $message)) {
+                    $counts['error']++;
+                } elseif (preg_match('/^PHP (Notice|Deprecated|Strict)/i', $message)) {
+                    $counts['notice']++;
+                } else {
+                    $counts['warning']++;
+                }
+                if ($at >= $latestAt) {
+                    $latest = $message;
+                    $latestAt = $at;
+                    $latestWhere = (string) $where;
+                }
             }
-            $at = strtotime($m[1]);
-            if ($at === false || $at < $since) {
-                continue;
-            }
-            if (preg_match('/^PHP (Fatal|Parse|Recoverable fatal) error|Uncaught /i', $message)) {
-                $counts['error']++;
-            } elseif (preg_match('/^PHP (Notice|Deprecated|Strict)/i', $message)) {
-                $counts['notice']++;
-            } else {
-                $counts['warning']++;
-            }
-            $latest = $message;
-            $latestAt = $at;
         }
 
+        if ($read === 0) {
+            return ['info', 'Unreadable', 'PHP\'s error log can\'t be read from here.'];
+        }
         if ($latest === '') {
             return ['good', 'None in 24 hours', ''];
         }
@@ -550,8 +572,23 @@ final class SiteHealthService
         $when = $hours > 0 ? $hours . ' hour' . ($hours === 1 ? '' : 's') . ' ago' : max(1, intdiv($age, 60)) . ' min ago';
 
         $shown = strlen($latest) > 240 ? substr($latest, 0, 237) . '…' : rtrim($latest, '.');
+        $names = [];
+        foreach ($existing as $where => $path) {
+            $names[] = str_ireplace($root . '/', '', str_replace('\\', '/', (string) (realpath($path) ?: $path)))
+                . ($where !== '' ? ' (' . $where . ')' : '');
+        }
 
-        return [$state, implode(', ', $parts) . ' in 24 hours', 'Latest, ' . $when . ': ' . $shown . '. Log file: ' . $log . '.'];
+        return [
+            $state,
+            implode(', ', $parts) . ' in 24 hours',
+            'Latest, ' . $when . ($latestWhere !== '' ? ' in the ' . $latestWhere : '') . ': ' . $shown . '. '
+                . (count($names) === 1 ? 'Log file: ' : 'Log files: ') . implode(', ', $names) . '.',
+        ];
+    }
+
+    private static function isAbsolutePath(string $path): bool
+    {
+        return str_starts_with($path, '/') || str_starts_with($path, '\\') || preg_match('#^[A-Za-z]:[\\\\/]#', $path) === 1;
     }
 
     /** The last $bytes of a file, starting at a whole line, or null when it can't be read. */
