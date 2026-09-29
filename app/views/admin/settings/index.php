@@ -107,6 +107,9 @@ $tab = $fcSettingsPage;
                     <button type="button" id="fc-health-copy" class="<?php echo e((string) $tab['btn_secondary']); ?>" disabled>Copy Report</button>
                     <button type="button" id="fc-health-run" class="<?php echo e((string) $tab['btn_primary']); ?>"><span>Run Checks Again</span></button>
                 </div>
+                <div id="fc-settings-header-actions-php-info" class="<?php echo e((string) $tab['header_actions_class']['php_info']); ?> flex-wrap gap-2">
+                    <a class="<?php echo e((string) $tab['btn_secondary']); ?>" href="<?php echo e((string) $tab['php_info_url']); ?>" target="_blank" rel="noopener"><span>Open in New Tab</span></a>
+                </div>
                 <?php endif; ?>
                 <div class="fc-products-download-dropdown" data-fc-settings-io-dropdown>
                     <button
@@ -1781,6 +1784,15 @@ $tab = $fcSettingsPage;
                                 </section>
                                 <?php endforeach; ?>
                             </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if ($tab['site_health_enabled']) : ?>
+                        <?php /* PHP's own report, framed so phpinfo()'s styles stay its own; site-health-tab.js loads it when the tab first opens
+                            (~100KB) and sizes the frame to it. The sandbox keeps scripts, forms and pop-ups off; allow-same-origin because some
+                            browsers block a frame with no origin, and so the frame can be measured. */ ?>
+                        <div id="fc-settings-panel-php-info" role="tabpanel" aria-labelledby="fc-settings-tab-php-info" class="<?php echo e((string) $tab['panel_class']['php_info']); ?>space-y-5">
+                            <iframe class="fc-phpinfo-frame" title="PHP info" sandbox="allow-same-origin" data-fc-phpinfo-frame data-src="<?php echo e((string) $tab['php_info_url']); ?>"></iframe>
                         </div>
                         <?php endif; ?>
                     </div>

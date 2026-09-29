@@ -39,6 +39,9 @@ final class SiteHealthService
         'security' => 'Security',
     ];
 
+    /** phpinfo() row names whose values stay hidden: cookies, credentials and keys. */
+    private const PHPINFO_SECRET_NAMES = '/^(?:HTTP_COOKIE|Cookie|Set-Cookie|Authorization|HTTP_AUTHORIZATION|REDIRECT_HTTP_AUTHORIZATION|PHP_AUTH_PW)$|(?:pass(?:word|wd)?|secret|token|_key|_pw)$/i';
+
     /** Last day of security fixes per PHP branch (php.net/supported-versions). */
     private const PHP_SUPPORT_ENDS = [
         '8.1' => '2025-12-31',
@@ -603,6 +606,32 @@ final class SiteHealthService
             null,
             $downloads,
         ];
+    }
+
+    /**
+     * phpinfo()'s General, Configuration and Modules sections for the "PHP info" card. Environment and
+     * Variables are left out (server secrets, the viewer's own session and remember-me cookies); under
+     * mod_php the Modules section still lists the request's environment and headers, so any row named
+     * like a cookie, credential or key shows its value as hidden.
+     */
+    public static function phpInfoHtml(): string
+    {
+        ob_start();
+        phpinfo(INFO_GENERAL | INFO_CONFIGURATION | INFO_MODULES);
+        $html = (string) ob_get_clean();
+        // Full width in the PHP Info tab and a new tab: phpinfo() fixes its tables and rules at 934px and its name
+        // column at 300px (which starves the values on a phone); unbroken values (mysqlnd's plugin list) wrap.
+        $html = str_replace('</head>', '<style>body{margin:0}table,hr{width:100%}.center table{margin:0 0 1em}.v{max-width:none;overflow-wrap:anywhere}@media (max-width:720px){.e{width:35%}}</style></head>', $html);
+
+        return (string) preg_replace_callback('#<tr><td class="e">(.*?)</td>(.*?)</tr>#s', static function (array $m): string {
+            $name = trim(html_entity_decode(strip_tags($m[1])));
+            if (preg_match(self::PHPINFO_SECRET_NAMES, $name) !== 1) {
+                return $m[0];
+            }
+
+            return '<tr><td class="e">' . $m[1] . '</td>'
+                . preg_replace('#<td class="v">.*?</td>#s', '<td class="v"><i>hidden</i></td>', $m[2]) . '</tr>';
+        }, $html);
     }
 
     /**

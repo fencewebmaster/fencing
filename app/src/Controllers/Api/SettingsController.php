@@ -91,6 +91,11 @@ final class SettingsController extends BaseApiController
             return;
         }
 
+        if ($action === 'phpinfo') {
+            $this->handlePhpInfo($method);
+            return;
+        }
+
         if ($action === 'cloudflare-verify') {
             $this->handleCloudflareVerify($method);
             return;
@@ -664,6 +669,33 @@ final class SettingsController extends BaseApiController
         }
 
         echo json_encode(['ok' => true, 'message' => 'The ' . $key . ' error log is cleared.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Site Health's "PHP info" card: PHP's own report, filtered by SiteHealthService::phpInfoHtml(). It maps
+     * the server in detail, so it is Super Admin only, like the report.
+     */
+    private function handlePhpInfo(string $method): void
+    {
+        if ($method !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!PermissionService::isSuperAdmin()) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Only the Super Admin can view PHP info.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $html = SiteHealthService::phpInfoHtml();
+        header('Content-Type: text/html; charset=utf-8');
+        header('Cache-Control: no-store');
+        // phpinfo()'s page is inline styles and a data: logo, no scripts: nothing else may load or run.
+        header("Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; img-src data:");
+        echo $html;
+        exit;
     }
 
     private function handleCloudflareVerify(string $method): void

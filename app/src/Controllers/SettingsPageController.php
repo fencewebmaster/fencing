@@ -23,13 +23,14 @@ final class SettingsPageController extends BaseController
         'dev' => 'console',
         'health' => 'site-health',
         'sitehealth' => 'site-health',
+        'phpinfo' => 'php-info',
         'minified' => 'minify',
         'minify-css-js' => 'minify',
     ];
 
     public function index(AdminContext $context): void
     {
-        // Site Health is the Super Admin's alone; anyone else asking for it lands on Theme.
+        // Site Health and PHP Info are the Super Admin's alone; anyone else asking for them lands on Theme.
         $siteHealth = PermissionService::isSuperAdmin();
         $initialTab = $this->resolveInitialTab($siteHealth);
         // The Integration tab's per-site Cloudflare purge needs the topbar purge's permission too.
@@ -49,7 +50,7 @@ final class SettingsPageController extends BaseController
 
     private function resolveInitialTab(bool $siteHealth): string
     {
-        $tabs = $siteHealth ? [...self::TABS, 'site-health'] : self::TABS;
+        $tabs = $siteHealth ? [...self::TABS, 'site-health', 'php-info'] : self::TABS;
 
         return $this->resolveTabParam($tabs, 'theme', self::TAB_ALIASES, true);
     }

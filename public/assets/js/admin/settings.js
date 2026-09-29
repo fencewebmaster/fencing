@@ -21,7 +21,8 @@
         'seo',
         'console',
         'minify',
-        'site-health'
+        'site-health',
+        'php-info'
     ];
     var SETTINGS_DEFAULT_TAB = 'theme';
     var SETTINGS_URL_TAB_KEY = 'tab';
@@ -102,6 +103,9 @@
         }
         if (normalized === 'health' || normalized === 'sitehealth') {
             normalized = 'site-health';
+        }
+        if (normalized === 'phpinfo') {
+            normalized = 'php-info';
         }
         if (normalized === 'minified' || normalized === 'minify-css-js') {
             normalized = 'minify';
@@ -485,6 +489,7 @@
         var consoleActions = document.getElementById('fc-settings-header-actions-console');
         var minifyActions = document.getElementById('fc-settings-header-actions-minify');
         var siteHealthActions = document.getElementById('fc-settings-header-actions-site-health');
+        var phpInfoActions = document.getElementById('fc-settings-header-actions-php-info');
         var themeDirty = document.getElementById('fc-settings-theme-dirty');
         var brandingDirty = document.getElementById('fc-settings-branding-dirty');
         var fenceColorsDirty = document.getElementById('fc-settings-fence-colors-dirty');
@@ -545,6 +550,10 @@
         if (siteHealthActions) {
             siteHealthActions.classList.toggle('hidden', state.activeTab !== 'site-health');
             siteHealthActions.classList.toggle('flex', state.activeTab === 'site-health');
+        }
+        if (phpInfoActions) {
+            phpInfoActions.classList.toggle('hidden', state.activeTab !== 'php-info');
+            phpInfoActions.classList.toggle('flex', state.activeTab === 'php-info');
         }
         if (themeDirty) {
             themeDirty.classList.toggle('hidden', state.activeTab !== 'theme' || !state.themeDirty);
@@ -657,6 +666,7 @@
         var consolePanel = document.getElementById('fc-settings-panel-console');
         var minifyPanel = document.getElementById('fc-settings-panel-minify');
         var siteHealthPanel = document.getElementById('fc-settings-panel-site-health');
+        var phpInfoPanel = document.getElementById('fc-settings-panel-php-info');
         var preview = document.getElementById('fc-settings-preview');
         var layout = document.getElementById('fc-settings-layout');
         var showPreview = tabId === 'branding';
@@ -693,6 +703,9 @@
         }
         if (siteHealthPanel) {
             siteHealthPanel.classList.toggle('hidden', tabId !== 'site-health');
+        }
+        if (phpInfoPanel) {
+            phpInfoPanel.classList.toggle('hidden', tabId !== 'php-info');
         }
         if (layout) {
             layout.classList.toggle('lg:grid-cols-2', showPreview);
@@ -741,6 +754,9 @@
         }
         if (tabId === 'site-health') {
             global.FC.Settings.tabs.siteHealth.ensureRun();
+        }
+        if (tabId === 'php-info') {
+            global.FC.Settings.tabs.siteHealth.ensurePhpInfo();
         }
         if (tabId === 'minify' && changed) {
             // The dates come from disk, and a CLI build may have run since the page loaded.
@@ -952,6 +968,9 @@
         }
         if (state.activeTab === 'site-health') {
             global.FC.Settings.tabs.siteHealth.ensureRun();
+        }
+        if (state.activeTab === 'php-info') {
+            global.FC.Settings.tabs.siteHealth.ensurePhpInfo();
         }
         container.removeAttribute('aria-busy');
         // Show flash notice if present (from previous save)

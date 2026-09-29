@@ -31,7 +31,7 @@ use Fc\Admin\Settings\ThemeSettings;
 final class SettingsPresenter
 {
     /**
-     * @param bool $siteHealth whether to show the Site Health tab (the Super Admin only)
+     * @param bool $siteHealth whether to show the Site Health and PHP Info tabs (the Super Admin only)
      * @param bool $cloudflarePurge whether the Integration tab offers each site's Cloudflare purge (settings.cache)
      * @return array<string, mixed>
      */
@@ -318,6 +318,8 @@ final class SettingsPresenter
             'minify' => $minifyStatus,
             'site_health_enabled' => $siteHealth,
             'site_health_groups' => self::siteHealthGroups(),
+            // <base href>-relative, like the admin's other API links; SettingsController::handlePhpInfo() serves it.
+            'php_info_url' => 'api.php?module=settings&action=phpinfo',
             'panel_class' => [
                 'theme' => $initialTab === 'theme' ? '' : 'hidden ',
                 'branding' => $initialTab === 'branding' ? '' : 'hidden ',
@@ -330,6 +332,7 @@ final class SettingsPresenter
                 'console' => $initialTab === 'console' ? '' : 'hidden ',
                 'minify' => $initialTab === 'minify' ? '' : 'hidden ',
                 'site_health' => $initialTab === 'site-health' ? '' : 'hidden ',
+                'php_info' => $initialTab === 'php-info' ? '' : 'hidden ',
             ],
             'header_actions_class' => [
                 'theme' => $initialTab === 'theme' ? 'flex' : 'hidden',
@@ -343,6 +346,7 @@ final class SettingsPresenter
                 'console' => $initialTab === 'console' ? 'flex' : 'hidden',
                 'minify' => $initialTab === 'minify' ? 'flex' : 'hidden',
                 'site_health' => $initialTab === 'site-health' ? 'flex' : 'hidden',
+                'php_info' => $initialTab === 'php-info' ? 'flex' : 'hidden',
             ],
             'bootstrap' => $bootstrap,
         ];
@@ -375,10 +379,11 @@ final class SettingsPresenter
                 'console'      => ['Console', 'fa-terminal', 'Debug mode and the admin command console.'],
                 'minify'       => ['Minify CSS & JS', 'fa-file-zipper', 'The minified copies of the frontend\'s and the admin\'s stylesheets and scripts, and whether they are served.'],
                 'site-health'  => ['Site Health', 'fa-heart-pulse', 'Server, database and security checks for this install.'],
+                'php-info'     => ['PHP Info', 'fa-circle-info', 'PHP\'s own report for this server: version, every setting and every loaded extension. Environment variables, cookies and anything named like a password, token or key are left out.'],
             ],
         ];
         if (!$siteHealth) {
-            unset($groups['Developer']['site-health']);
+            unset($groups['Developer']['site-health'], $groups['Developer']['php-info']);
         }
 
         $nav = [];

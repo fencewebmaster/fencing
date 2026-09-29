@@ -224,6 +224,52 @@
             return actions.length ? '<div class="fc-health-row__actions">' + actions.join('') + '</div>' : '';
         }
 
+        /** PHP Info tab: loads the report into its frame the first time the tab opens, then keeps the frame as tall as the report. */
+        ensurePhpInfo() {
+            var self = this;
+            var frame = document.querySelector('[data-fc-phpinfo-frame]');
+            if (!frame) {
+                return;
+            }
+            if (frame.getAttribute('src')) {
+                this.fitPhpInfo(frame);
+                return;
+            }
+            frame.addEventListener('load', function () {
+                self.fitPhpInfo(frame);
+            });
+            // The report reflows when the column narrows or widens (window, sidebar), so only a width change refits it.
+            var lastWidth = 0;
+            var refit = function () {
+                if (frame.clientWidth !== lastWidth) {
+                    lastWidth = frame.clientWidth;
+                    self.fitPhpInfo(frame);
+                }
+            };
+            if (typeof global.ResizeObserver === 'function') {
+                new global.ResizeObserver(refit).observe(frame);
+            } else {
+                global.addEventListener('resize', refit);
+            }
+            frame.setAttribute('src', frame.getAttribute('data-src') || '');
+        }
+
+        /** Sizes the frame to its report so the page scrolls, not the frame; skipped while the tab is hidden. */
+        fitPhpInfo(frame) {
+            var doc = null;
+            try {
+                doc = frame.contentDocument;
+            } catch (e) {
+                doc = null;
+            }
+            if (!doc || !doc.body || !frame.clientWidth) {
+                return;
+            }
+            // A frame the report's own height never scrolls, so its scrollbar would only steal width; height counts the border.
+            doc.documentElement.style.overflow = 'hidden';
+            frame.style.height = Math.ceil(doc.documentElement.getBoundingClientRect().height + frame.offsetHeight - frame.clientHeight) + 'px';
+        }
+
         /** Empties one of FC's own error logs after a confirm, then runs the checks again so the row reflects it. */
         clearLog(btn) {
             var self = this;
