@@ -9,6 +9,7 @@
     var API_REORDER = fcApiUrl('products', 'action=reorder-store-products');
     var API_UPDATE = fcApiUrl('products', 'action=update-store-product');
     var API_WC_SKU_INDEX = fcApiUrl('products', 'action=wc-sku-index');
+    var API_SKU_QUICK_VIEW = fcApiUrl('products', 'action=sku-quick-view');
 
     var DETAILS_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'STYLE'];
     var LIST_DISPLAY_COLUMNS = ['SLUG', 'PRODUCT', 'DESCRIPTION', 'SUPPLIER', 'SKUs', 'STYLE', 'Colors'];
@@ -32,7 +33,9 @@
     var SKU_SUGGEST_LIMIT = 24;
     var skuGalleryEl = null;
     var skuGalleryKeydownHandler = null;
-    var skuGalleryState = { slides: [], index: 0 };
+    var skuGalleryState = { slides: [], index: 0, images: [], imageIndex: 0, info: null };
+    var skuQvResults = Object.create(null);
+    var skuQvReturnFocus = null;
     var GALLERY_BODY_CLASS = 'fc-entries-cart-gallery-open';
 
     var TOAST_CSV_REORDER = 'fc-csv-reorder';
@@ -861,6 +864,8 @@
     function renderPage(data) {
         var columns = data.columns || [];
         var styleColorsMap = data.styleColors || {};
+        // STYLE key -> fence style name, for the SKU quick view.
+        var styleLabelsMap = data.styleLabels || {};
         // CSV header -> the colour's code inside a SKU, from Settings > Fence colours.
         var colorInitialsMap = data.colorInitials || {};
         // CSV header -> that colour's swatch background, for the SKU field labels.
@@ -1136,7 +1141,8 @@
             });
 
             document.addEventListener('keydown', function (e) {
-                if (e.key !== 'Escape') {
+                // The SKU quick view opens above this modal and takes its own Escape first.
+                if (e.key !== 'Escape' || skuGalleryEl) {
                     return;
                 }
                 if (closeSkuSuggestPreview()) {
@@ -1209,7 +1215,7 @@
                     e.preventDefault();
                     e.stopPropagation();
                     var thumbGallery = collectSkuGallerySlides(thumbViewEl);
-                    openSkuImageGallery(thumbGallery.slides, thumbGallery.startIndex);
+                    openSkuImageGallery(thumbGallery.slides, thumbGallery.startIndex, editProductInfo());
                     return;
                 }
 
@@ -1250,7 +1256,7 @@
                 }
                 e.preventDefault();
                 var thumbGallery = collectSkuGallerySlides(thumbViewEl);
-                openSkuImageGallery(thumbGallery.slides, thumbGallery.startIndex);
+                openSkuImageGallery(thumbGallery.slides, thumbGallery.startIndex, editProductInfo());
             });
 
             document.addEventListener('click', function (e) {
@@ -1324,6 +1330,20 @@
             });
 
             return result;
+        }
+
+        // The product's slug, supplier and fence style as the form holds them, for the SKU quick view.
+        function editProductInfo() {
+            function fieldValue(col) {
+                var el = editFormEl && editFormEl.querySelector('[name="' + col + '"]');
+                return el ? String(el.value || '').trim() : '';
+            }
+            var style = fieldValue('STYLE');
+            return {
+                slug: fieldValue('SLUG'),
+                supplier: fieldValue('SUPPLIER').toUpperCase(),
+                style: style ? styleLabelsMap[style] || formatHeader(style) : ''
+            };
         }
 
         function paintSkuThumb(field, value) {
@@ -3232,6 +3252,7 @@
                 columns: bootstrap.columns || [],
                 rows: bootstrap.rows || [],
                 styleColors: bootstrap.styleColors || {},
+                styleLabels: bootstrap.styleLabels || {},
                 colorInitials: bootstrap.colorInitials || {},
                 colorBackgrounds: bootstrap.colorBackgrounds || {},
                 filters: bootstrap.filters || {},
@@ -3311,97 +3332,257 @@
 
     /* Missing SKUs renders the same SKU fields on its own page; it borrows the catalogue index and
        the SKU semantics from here so "missing", "OFF" and the suggestions cannot drift between them. */
-    /* The SKU image gallery is shared: the edit modal and the Missing SKUs page both open it,
-       so it lives at module scope rather than inside renderPage. */
-    function scrollSkuGalleryThumbIntoView() {
-        if (!skuGalleryEl) {
-            return;
+    /* The SKU quick view is shared: the edit modal and the Product SKUs page both open it, so it lives
+       at module scope. Each slide is one colour's SKU; its store details come from the WC database. */
+    function fetchSkuQuickView(sku) {
+        if (skuQvResults[sku]) {
+            return Promise.resolve(skuQvResults[sku]);
         }
-        var thumbsEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-thumbs]');
-        if (!thumbsEl || thumbsEl.hidden) {
-            return;
-        }
-        var activeThumb = thumbsEl.querySelector('[data-fc-sku-gallery-thumb].is-active');
-        if (!activeThumb) {
-            return;
-        }
-        activeThumb.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        return fetch(API_SKU_QUICK_VIEW + '&sku=' + encodeURIComponent(sku), {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' }
+        })
+            .then(function (response) {
+                return response.json().then(function (body) {
+                    body = body && typeof body === 'object' ? body : { ok: false };
+                    // A 404 is an answer worth keeping; any other failure is retried on the next visit.
+                    if (response.ok || response.status === 404) {
+                        skuQvResults[sku] = body;
+                    }
+                    return body;
+                });
+            })
+            .catch(function () {
+                return { ok: false, error: 'Could not load store details.' };
+            });
     }
 
-    function renderSkuGalleryThumbs() {
-        if (!skuGalleryEl) {
+    /* price_html is server-built <del>/<ins> markup; rebuild it from text so nothing else gets through. */
+    function skuQvPriceHtml(raw) {
+        var doc = document.implementation.createHTMLDocument('');
+        doc.body.innerHTML = String(raw || '');
+        var del = doc.body.querySelector('del');
+        var ins = doc.body.querySelector('ins');
+        if (del && ins) {
+            return '<del>' + escapeHtml(del.textContent.trim()) + '</del> <ins>' + escapeHtml(ins.textContent.trim()) + '</ins>';
+        }
+        var text = doc.body.textContent.trim();
+        return text ? escapeHtml(text) : '<span class="fc-sku-qv__muted">—</span>';
+    }
+
+    function skuQvFactHtml(label, valueHtml) {
+        return '<tr><th scope="row">' + escapeHtml(label) + '</th><td>' + valueHtml + '</td></tr>';
+    }
+
+    function skuQvChipsHtml(names, modifier) {
+        if (!names || !names.length) {
+            return '<span class="fc-sku-qv__muted">—</span>';
+        }
+        return (
+            '<ul class="fc-sku-qv__chips' + (modifier ? ' fc-sku-qv__chips--' + modifier : '') + '">' +
+            names
+                .map(function (name) {
+                    return '<li>' + escapeHtml(formatProductName(name)) + '</li>';
+                })
+                .join('') +
+            '</ul>'
+        );
+    }
+
+    function skuQvGalleryHtml(images, alt) {
+        return (
+            '<div class="fc-sku-qv__gallery">' +
+            '<div class="fc-sku-qv__stage">' +
+            '<img class="fc-sku-qv__hero" data-fc-sku-qv-hero src="' + escapeHtml(images[0]) + '" alt="' + escapeHtml(alt) + '" decoding="async">' +
+            '</div>' +
+            (images.length > 1
+                ? '<div class="fc-sku-qv__thumbs">' +
+                  images
+                      .map(function (url, index) {
+                          return (
+                              '<button type="button" class="fc-sku-qv__thumb' + (index === 0 ? ' is-active' : '') +
+                              '" data-fc-sku-qv-image="' + index + '" aria-pressed="' + (index === 0 ? 'true' : 'false') +
+                              '" aria-label="Image ' + (index + 1) + ' of ' + images.length + '">' +
+                              '<img src="' + escapeHtml(url) + '" alt="" loading="lazy" decoding="async"></button>'
+                          );
+                      })
+                      .join('') +
+                  '</div>'
+                : '') +
+            '</div>'
+        );
+    }
+
+    /* The opener's own product (slug, supplier, fence style); each row shows only when it has a value. */
+    function skuQvInfoRowsHtml(info) {
+        if (!info) {
+            return '';
+        }
+        return (
+            (info.slug
+                ? skuQvFactHtml(
+                      'Product slug',
+                      '<span class="fc-sku-qv__value"><code id="fc-sku-qv-slug">' + escapeHtml(info.slug) + '</code>' +
+                      copyFieldButton.markup('fc-sku-qv-slug', 'Product slug', { compact: true }) + '</span>'
+                  )
+                : '') +
+            (info.supplier ? skuQvFactHtml('Supplier', escapeHtml(info.supplier)) : '') +
+            (info.style ? skuQvFactHtml('Fence style', escapeHtml(info.style)) : '')
+        );
+    }
+
+    /* state: 'image' (no SKU, e.g. a featured image), 'loading', 'ready' or 'error'. */
+    function skuQvBodyHtml(slide, result, state) {
+        var product = state === 'ready' ? result.product || {} : null;
+        var gallery = product && Array.isArray(product.gallery) ? product.gallery.filter(Boolean) : [];
+        var images = gallery.length ? gallery : [slide.url];
+        var title = product && product.name ? formatProductName(product.name) : slide.color || slide.sku || 'Product image';
+
+        skuGalleryState.images = images;
+        if (state === 'image') {
+            return '<div class="fc-sku-qv__grid fc-sku-qv__grid--image">' + skuQvGalleryHtml(images, title) + '</div>';
+        }
+
+        var rows =
+            (slide.color ? skuQvFactHtml('Colour', escapeHtml(slide.color)) : '') +
+            skuQvFactHtml(
+                'SKU',
+                '<span class="fc-sku-qv__value"><code id="fc-sku-qv-sku">' + escapeHtml(slide.sku) + '</code>' +
+                copyFieldButton.markup('fc-sku-qv-sku', 'SKU', { compact: true }) + '</span>'
+            );
+        if (product) {
+            var stock = String(product.stock_status || '');
+            rows +=
+                skuQvFactHtml('Price', skuQvPriceHtml(product.price_html)) +
+                skuQvFactHtml(
+                    'Stock',
+                    stock
+                        ? '<span class="fc-sku-qv__stock fc-sku-qv__stock--' + escapeHtml(stock) + '">' +
+                          '<span class="fc-sku-qv__stock-dot" aria-hidden="true"></span>' +
+                          escapeHtml(product.stock_label || stock) + '</span>'
+                        : '<span class="fc-sku-qv__muted">—</span>'
+                ) +
+                skuQvFactHtml('Categories', skuQvChipsHtml(product.categories)) +
+                skuQvFactHtml('Tags', skuQvChipsHtml(product.tags, 'muted'));
+        }
+        rows += skuQvInfoRowsHtml(skuGalleryState.info);
+
+        var notice = '';
+        if (state === 'loading') {
+            notice =
+                '<p class="fc-sku-qv__notice" role="status"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>' +
+                'Loading store details…</p>';
+        } else if (state === 'error') {
+            notice =
+                '<p class="fc-sku-qv__notice fc-sku-qv__notice--error" role="status"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>' +
+                escapeHtml(result && result.error ? result.error : 'Could not load store details.') + '</p>';
+        }
+
+        var description = '';
+        if (product) {
+            var body = sanitizeDescriptionHtml(product.description || '');
+            var hasBody = body.trim() !== '';
+            description =
+                '<section class="fc-sku-qv__description">' +
+                '<div class="fc-sku-qv__section-head">' +
+                '<h3 class="fc-sku-qv__section-title">Description</h3>' +
+                (hasBody ? copyFieldButton.markup('fc-sku-qv-description', 'Description', { compact: true }) : '') +
+                '</div>' +
+                '<div class="fc-sku-qv__description-body" id="fc-sku-qv-description">' +
+                (hasBody ? body : '<p class="fc-sku-qv__muted">No description</p>') +
+                '</div>' +
+                '</section>';
+        }
+
+        return (
+            '<div class="fc-sku-qv__grid">' +
+            skuQvGalleryHtml(images, title) +
+            '<div class="fc-sku-qv__info">' +
+            '<h2 class="fc-sku-qv__title">' + escapeHtml(title) + '</h2>' +
+            '<table class="fc-sku-qv-table"><tbody>' + rows + '</tbody></table>' +
+            notice +
+            description +
+            '</div>' +
+            '</div>'
+        );
+    }
+
+    function renderSkuQvBody(slide, result, state) {
+        var bodyEl = skuGalleryEl.querySelector('[data-fc-sku-qv-body]');
+        var linkEl = skuGalleryEl.querySelector('[data-fc-sku-qv-link]');
+        var product = state === 'ready' ? result.product || {} : null;
+
+        bodyEl.innerHTML = skuQvBodyHtml(slide, result, state);
+        var hero = bodyEl.querySelector('[data-fc-sku-qv-hero]');
+        if (hero && slide.url) {
+            // A store image missing on this server falls back to the catalogue image the slide came from.
+            hero.addEventListener('error', function () {
+                if (hero.getAttribute('src') !== slide.url) {
+                    hero.setAttribute('src', slide.url);
+                }
+            });
+        }
+        skuGalleryEl.setAttribute('aria-label', product && product.name ? formatProductName(product.name) : slide.color || 'Product image');
+        if (linkEl) {
+            linkEl.hidden = !(product && product.permalink);
+            linkEl.setAttribute('href', product && product.permalink ? product.permalink : '#');
+        }
+    }
+
+    function showSkuQvImage(index) {
+        var images = skuGalleryState.images;
+        if (!skuGalleryEl || !images.length) {
             return;
         }
-        var thumbsEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-thumbs]');
-        if (!thumbsEl) {
-            return;
+        index = (index + images.length) % images.length;
+        var hero = skuGalleryEl.querySelector('[data-fc-sku-qv-hero]');
+        if (hero) {
+            hero.src = images[index];
         }
-        if (skuGalleryState.slides.length <= 1) {
-            thumbsEl.hidden = true;
-            thumbsEl.innerHTML = '';
-            return;
-        }
-        thumbsEl.hidden = false;
-        thumbsEl.innerHTML = skuGalleryState.slides
-            .map(function (slide, index) {
-                return (
-                    '<button type="button" class="fc-entries-cart-gallery__thumb' +
-                    (index === skuGalleryState.index ? ' is-active' : '') +
-                    '" data-fc-sku-gallery-thumb="' +
-                    index +
-                    '" aria-label="View ' +
-                    escapeHtml(slide.color || 'image ' + (index + 1)) +
-                    '"><img src="' +
-                    escapeHtml(slide.url) +
-                    '" alt="" loading="lazy" decoding="async"></button>'
-                );
-            })
-            .join('');
-        requestAnimationFrame(scrollSkuGalleryThumbIntoView);
+        skuGalleryEl.querySelectorAll('[data-fc-sku-qv-image]').forEach(function (btn) {
+            var active = parseInt(btn.getAttribute('data-fc-sku-qv-image'), 10) === index;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        skuGalleryState.imageIndex = index;
     }
 
     function renderSkuGallerySlide() {
         if (!skuGalleryEl || !skuGalleryState.slides.length) {
             return;
         }
+        var index = skuGalleryState.index;
+        var slide = skuGalleryState.slides[index];
+        var counterEl = skuGalleryEl.querySelector('[data-fc-sku-qv-counter]');
 
-        var slide = skuGalleryState.slides[skuGalleryState.index];
-        var imageEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-image]');
-        var colorEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-color]');
-        var skuEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-sku]');
-        var counterEl = skuGalleryEl.querySelector('[data-fc-sku-gallery-counter]');
-        var prevBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-prev]');
-        var nextBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-next]');
-
-        if (imageEl) {
-            imageEl.src = slide.url;
-            imageEl.alt = slide.color || 'Product image';
-        }
-        if (colorEl) {
-            colorEl.textContent = slide.color ? 'Color: ' + slide.color : '';
-            colorEl.hidden = !slide.color;
-        }
-        if (skuEl) {
-            skuEl.textContent = slide.sku ? 'SKU: ' + slide.sku : '';
-            skuEl.hidden = !slide.sku;
-        }
-        if (counterEl) {
-            counterEl.textContent = skuGalleryState.index + 1 + ' / ' + skuGalleryState.slides.length;
-            counterEl.hidden = skuGalleryState.slides.length <= 1;
-        }
-        if (prevBtn) {
-            prevBtn.disabled = skuGalleryState.slides.length <= 1;
-        }
-        if (nextBtn) {
-            nextBtn.disabled = skuGalleryState.slides.length <= 1;
-        }
-
-        skuGalleryEl.querySelectorAll('[data-fc-sku-gallery-thumb]').forEach(function (btn) {
-            var thumbIndex = parseInt(btn.getAttribute('data-fc-sku-gallery-thumb') || '-1', 10);
-            btn.classList.toggle('is-active', thumbIndex === skuGalleryState.index);
+        skuGalleryEl.querySelectorAll('[data-fc-sku-qv-colour]').forEach(function (btn) {
+            var active = parseInt(btn.getAttribute('data-fc-sku-qv-colour'), 10) === index;
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            if (active) {
+                btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
         });
+        if (counterEl) {
+            counterEl.textContent = index + 1 + ' / ' + skuGalleryState.slides.length;
+        }
+        skuGalleryState.imageIndex = 0;
 
-        scrollSkuGalleryThumbIntoView();
+        if (!slide.sku) {
+            renderSkuQvBody(slide, null, 'image');
+            return;
+        }
+        var cached = skuQvResults[slide.sku];
+        if (cached) {
+            renderSkuQvBody(slide, cached, cached.ok ? 'ready' : 'error');
+            return;
+        }
+        renderSkuQvBody(slide, null, 'loading');
+        fetchSkuQuickView(slide.sku).then(function (result) {
+            if (skuGalleryEl && skuGalleryState.index === index && skuGalleryState.slides[index] === slide) {
+                renderSkuQvBody(slide, result, result.ok ? 'ready' : 'error');
+            }
+        });
     }
 
     function showSkuGallerySlide(index) {
@@ -3428,71 +3609,107 @@
         skuGalleryEl.remove();
         skuGalleryEl = null;
         skuGalleryState.slides = [];
+        skuGalleryState.images = [];
+        skuGalleryState.info = null;
         skuGalleryState.index = 0;
         document.body.classList.remove(GALLERY_BODY_CLASS);
+        if (skuQvReturnFocus && document.contains(skuQvReturnFocus)) {
+            skuQvReturnFocus.focus({ preventScroll: true });
+        }
+        skuQvReturnFocus = null;
     }
 
-    function openSkuImageGallery(slides, startIndex) {
+    function skuQvColoursHtml(slides) {
+        if (slides.length <= 1) {
+            return '';
+        }
+        return (
+            '<div class="fc-sku-qv__switch">' +
+            '<button type="button" class="btn btn-sm btn-light fc-sku-qv__step" data-fc-sku-qv-prev aria-label="Previous colour">' +
+            '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>' +
+            '<div class="fc-sku-qv__colours" role="group" aria-label="Colours">' +
+            slides
+                .map(function (slide, index) {
+                    return (
+                        '<button type="button" class="btn btn-sm btn-light fc-sku-qv__colour" data-fc-sku-qv-colour="' + index +
+                        '" aria-pressed="false" title="' + escapeHtml(slide.sku || slide.color || '') + '">' +
+                        '<img src="' + escapeHtml(slide.url) + '" alt="" loading="lazy" decoding="async">' +
+                        '<span>' + escapeHtml(slide.color || 'Image ' + (index + 1)) + '</span></button>'
+                    );
+                })
+                .join('') +
+            '</div>' +
+            '<button type="button" class="btn btn-sm btn-light fc-sku-qv__step" data-fc-sku-qv-next aria-label="Next colour">' +
+            '<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>' +
+            '<span class="fc-sku-qv__counter" data-fc-sku-qv-counter aria-hidden="true"></span>' +
+            '</div>'
+        );
+    }
+
+    function openSkuImageGallery(slides, startIndex, info) {
         if (!slides || !slides.length) {
             return;
         }
+        var returnFocus = skuQvReturnFocus || document.activeElement;
         closeSkuImageGallery();
+        skuQvReturnFocus = returnFocus;
 
         skuGalleryState.slides = slides;
+        skuGalleryState.info = info || null;
         skuGalleryState.index = Math.max(0, Math.min(startIndex || 0, slides.length - 1));
 
         skuGalleryEl = document.createElement('div');
-        skuGalleryEl.className = 'fc-entries-cart-gallery';
+        skuGalleryEl.className = 'fc-sku-qv';
         skuGalleryEl.setAttribute('role', 'dialog');
         skuGalleryEl.setAttribute('aria-modal', 'true');
-        skuGalleryEl.setAttribute('aria-label', 'Product images');
         skuGalleryEl.innerHTML =
-            '<div class="fc-entries-cart-gallery__backdrop" data-fc-sku-gallery-close aria-hidden="true"></div>' +
-            '<button type="button" class="fencing-modal-close" data-fc-sku-gallery-close aria-label="Close"></button>' +
-            '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--prev" data-fc-sku-gallery-prev aria-label="Previous image">' +
-            '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>' +
-            '<div class="fc-entries-cart-gallery__stage">' +
-            '<img class="fc-entries-cart-gallery__image" data-fc-sku-gallery-image src="" alt="">' +
-            '<p class="fc-entries-cart-gallery__caption" data-fc-sku-gallery-caption>' +
-            '<span class="fc-sp-gallery-caption__color" data-fc-sku-gallery-color></span>' +
-            '<span class="fc-sp-gallery-caption__sku" data-fc-sku-gallery-sku></span>' +
-            '</p>' +
-            '<span class="fc-entries-cart-gallery__counter" data-fc-sku-gallery-counter hidden></span>' +
-            '</div>' +
-            '<button type="button" class="fc-entries-cart-gallery__nav fc-entries-cart-gallery__nav--next" data-fc-sku-gallery-next aria-label="Next image">' +
-            '<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>' +
-            '<div class="fc-entries-cart-gallery__thumbs" data-fc-sku-gallery-thumbs hidden></div>';
+            '<div class="fc-sku-qv__backdrop" data-fc-sku-qv-close aria-hidden="true"></div>' +
+            '<div class="fc-sku-qv__panel" tabindex="-1">' +
+            '<header class="fc-sku-qv__bar">' +
+            '<a class="btn btn-sm btn-orange fc-sku-qv__link" data-fc-sku-qv-link href="#" target="_blank" rel="noopener noreferrer" hidden>' +
+            '<span>View product</span><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>' +
+            '<button type="button" class="fencing-modal-close" data-fc-sku-qv-close aria-label="Close"></button>' +
+            '</header>' +
+            '<div class="fc-sku-qv__body" data-fc-sku-qv-body></div>' +
+            (slides.length > 1 ? '<footer class="fc-sku-qv__foot">' + skuQvColoursHtml(slides) + '</footer>' : '') +
+            '</div>';
 
         document.body.appendChild(skuGalleryEl);
         document.body.classList.add(GALLERY_BODY_CLASS);
 
-        skuGalleryEl.querySelectorAll('[data-fc-sku-gallery-close]').forEach(function (btn) {
-            btn.addEventListener('click', closeSkuImageGallery);
-        });
-
-        var prevBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-prev]');
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function () {
-                showSkuGallerySlide(skuGalleryState.index - 1);
-            });
-        }
-
-        var nextBtn = skuGalleryEl.querySelector('[data-fc-sku-gallery-next]');
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function () {
-                showSkuGallerySlide(skuGalleryState.index + 1);
-            });
-        }
-
         skuGalleryEl.addEventListener('click', function (e) {
-            var thumbBtn = e.target.closest('[data-fc-sku-gallery-thumb]');
-            if (!thumbBtn) {
+            var target = e.target;
+            if (target.closest('[data-fc-sku-qv-close]')) {
+                e.preventDefault();
+                closeSkuImageGallery();
                 return;
             }
-            e.preventDefault();
-            showSkuGallerySlide(parseInt(thumbBtn.getAttribute('data-fc-sku-gallery-thumb') || '0', 10));
+            var copyBtn = target.closest('[data-fc-sp-copy-for]');
+            if (copyBtn) {
+                e.preventDefault();
+                copyFieldToClipboard(document.getElementById(copyBtn.getAttribute('data-fc-sp-copy-for')), copyBtn);
+                return;
+            }
+            var colourBtn = target.closest('[data-fc-sku-qv-colour]');
+            if (colourBtn) {
+                showSkuGallerySlide(parseInt(colourBtn.getAttribute('data-fc-sku-qv-colour'), 10) || 0);
+                return;
+            }
+            if (target.closest('[data-fc-sku-qv-prev]')) {
+                showSkuGallerySlide(skuGalleryState.index - 1);
+                return;
+            }
+            if (target.closest('[data-fc-sku-qv-next]')) {
+                showSkuGallerySlide(skuGalleryState.index + 1);
+                return;
+            }
+            var imageBtn = target.closest('[data-fc-sku-qv-image]');
+            if (imageBtn) {
+                showSkuQvImage(parseInt(imageBtn.getAttribute('data-fc-sku-qv-image'), 10) || 0);
+            }
         });
 
+        // Arrows step through colours; a single colour's arrows page its own images instead.
         skuGalleryKeydownHandler = function (e) {
             if (!skuGalleryEl) {
                 return;
@@ -3500,18 +3717,20 @@
             if (e.key === 'Escape') {
                 e.preventDefault();
                 closeSkuImageGallery();
-            } else if (e.key === 'ArrowLeft') {
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
-                showSkuGallerySlide(skuGalleryState.index - 1);
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                showSkuGallerySlide(skuGalleryState.index + 1);
+                var step = e.key === 'ArrowLeft' ? -1 : 1;
+                if (skuGalleryState.slides.length > 1) {
+                    showSkuGallerySlide(skuGalleryState.index + step);
+                } else {
+                    showSkuQvImage(skuGalleryState.imageIndex + step);
+                }
             }
         };
         document.addEventListener('keydown', skuGalleryKeydownHandler);
 
-        renderSkuGalleryThumbs();
         renderSkuGallerySlide();
+        skuGalleryEl.querySelector('.fc-sku-qv__panel').focus({ preventScroll: true });
     }
 
     /**

@@ -3,6 +3,13 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Same http:// -> https:// redirect as the root .htaccess: this file's rules replace the root's under public/.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https [NC]
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$ [NC]
+    RewriteCond %{HTTP_HOST} !\.(localhost|test)(:\d+)?$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
     # Old *Controller.php URLs are mapped to api.php.
     RewriteRule ^entriesController\.php$ api.php?module=entries [QSA,L]
     RewriteRule ^productsController\.php$ api.php?module=products [QSA,L]

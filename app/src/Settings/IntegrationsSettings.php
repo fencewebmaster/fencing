@@ -522,6 +522,7 @@ final class IntegrationsSettings
             if (file_put_contents($tmp, $php, LOCK_EX) === false) {
                 return ['ok' => false, 'error' => 'Unable to write the temporary config file.'];
             }
+            ConsoleSettings::keepPermissions($path, $tmp);
 
             $test = null;
             (static function (string $file, &$result): void {

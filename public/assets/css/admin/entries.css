@@ -1457,7 +1457,7 @@ html[data-fc-admin-theme='dark'] .fc-sites .fc-sites__copy {
 
 .fc-minify__filter:disabled {
     opacity: 0.5;
-    cursor: default;
+    cursor: not-allowed;
 }
 
 .fc-minify__filter:focus-visible {
@@ -2492,6 +2492,10 @@ html[data-fc-admin-theme='dark'] .fc-seo-card__title {
     line-height: 1.45;
     color: var(--fc-admin-text-muted, #64748b);
     overflow-wrap: anywhere;
+}
+
+.fc-health-row__fix {
+    margin-top: 0.35rem;
 }
 
 .fc-health-row--loading .fc-health-row__label {
@@ -6257,7 +6261,7 @@ html[data-fc-admin-theme='dark'] .fc-users-permissions-notice {
 .fc-admin-menu__option:disabled,
 .fc-admin-menu__option.is-disabled {
     opacity: 0.55;
-    cursor: default;
+    cursor: not-allowed;
 }
 
 /* Violet marks an action that only proposes — nothing is written until it is confirmed. */

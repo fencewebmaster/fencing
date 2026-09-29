@@ -13,6 +13,7 @@ use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\MissingSkuDeepScan;
 use Fc\Admin\Services\MissingSkuScanService;
+use Fc\Admin\Services\ProductLookupService;
 use Fc\Admin\Services\ProductSyncService;
 use Fc\Admin\Services\StoreProductMaintenanceService;
 use Fc\Admin\Services\WcProductSkuIndex;
@@ -270,6 +271,14 @@ final class ProductsController extends BaseApiController
                     WcProductSkuIndex::indexPayload(),
                     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
                 );
+                break;
+            case 'sku-quick-view':
+                $result = ProductLookupService::skuQuickView((string) $this->request->query('sku', ''));
+                if (empty($result['ok'])) {
+                    http_response_code((int) ($result['status'] ?? 404));
+                    unset($result['status']);
+                }
+                echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 break;
             default:
                 http_response_code(400);

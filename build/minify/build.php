@@ -16,6 +16,12 @@ declare(strict_types=1);
 
 use Fc\Admin\Services\MinifyService;
 
+// CLI only: a web request to this file would run the build for anyone (Site Health flagged build/ as public).
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
 $result = MinifyService::build(array_keys(MinifyService::GROUPS));

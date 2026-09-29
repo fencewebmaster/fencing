@@ -194,7 +194,7 @@
 
 .fc-ms-actions__option:disabled {
     opacity: 0.55;
-    cursor: default;
+    cursor: not-allowed;
 }
 
 /* Violet, not the orange of the actions that change data — Deep Scan only suggests. */

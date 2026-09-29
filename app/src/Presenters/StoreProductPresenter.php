@@ -935,6 +935,7 @@ final class StoreProductPresenter
                 'total'       => $total,
                 'file'        => (string) ($payload['file'] ?? 'products.csv'),
                 'styleColors' => $styleColors,
+                'styleLabels' => $styleLabels,
                 'colorInitials' => self::colorInitialsMap(),
                 'colorBackgrounds' => self::colorBackgroundsMap(),
                 'filters'     => array_merge($filters, [

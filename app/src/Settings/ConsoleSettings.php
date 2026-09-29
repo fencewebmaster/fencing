@@ -117,6 +117,7 @@ final class ConsoleSettings
             if (file_put_contents($tmp, $php, LOCK_EX) === false) {
                 return ['ok' => false, 'error' => 'Unable to write the temporary config file.'];
             }
+            self::keepPermissions($path, $tmp);
 
             $test = null;
             (static function (string $file, &$result): void {
@@ -153,6 +154,76 @@ final class ConsoleSettings
                 'ok' => true,
                 'console' => $next,
             ];
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    /**
+     * Gives a freshly written config.php copy the live file's permissions. Both writers save through a
+     * temp file, which PHP creates at the server default (644), so a 600 set by hand or by Site Health's
+     * fix fell back to 644 on the next Settings save. The owner (PHP, which wrote the copy) keeps read+write.
+     */
+    public static function keepPermissions(string $path, string $tmp): void
+    {
+        $mode = @fileperms($path);
+        if ($mode !== false) {
+            @chmod($tmp, ($mode & 0777) | 0600);
+        }
+    }
+
+    /**
+     * Site Health's one-click fix: config.php owner-only (600), so other accounts on the server can't
+     * read the database passwords in it. chmod() only succeeds for the file's owner, and PHP must still
+     * read and write the file afterwards, or the old mode goes back.
+     *
+     * @return array{ok:bool,mode?:string,error?:string}
+     */
+    public static function restrictPermissions(): array
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return ['ok' => false, 'error' => 'File permissions don\'t apply on a Windows server.'];
+        }
+
+        $path = self::configPath();
+        if (!is_file($path)) {
+            return ['ok' => false, 'error' => 'config.php not found.'];
+        }
+
+        // The writers' lock: a save swapping in its new copy mid-way would bring back the old mode.
+        $lock = @fopen($path . '.lock', 'c');
+        if ($lock === false || !flock($lock, LOCK_EX)) {
+            if (is_resource($lock)) {
+                fclose($lock);
+            }
+
+            return ['ok' => false, 'error' => 'Unable to lock config.php.'];
+        }
+
+        try {
+            clearstatcache(true, $path);
+            $before = @fileperms($path);
+            if ($before === false) {
+                return ['ok' => false, 'error' => 'Unable to read config.php\'s permissions.'];
+            }
+            $before &= 0777;
+            if ($before === 0600) {
+                return ['ok' => true, 'mode' => '600'];
+            }
+
+            if (!@chmod($path, 0600)) {
+                return ['ok' => false, 'error' => 'PHP doesn\'t own config.php, so it can\'t change its permissions. Ask your host to set it to 600.'];
+            }
+
+            clearstatcache(true, $path);
+            if (!is_readable($path) || !is_writable($path)) {
+                @chmod($path, $before);
+
+                return ['ok' => false, 'error' => 'PHP couldn\'t read and write config.php at 600, so it was put back to ' . sprintf('%o', $before) . '. Ask your host which user PHP runs as.'];
+            }
+
+            return ['ok' => true, 'mode' => '600'];
         } finally {
             flock($lock, LOCK_UN);
             fclose($lock);

@@ -58,6 +58,35 @@
     --bs-btn-hover-color: var(--fc-white);
     --bs-btn-hover-bg: var(--fc-princeton-orange);
     --bs-btn-hover-border-color: var(--fc-princeton-orange);
+    --bs-btn-disabled-color: var(--fc-princeton-orange);
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: var(--fc-princeton-orange);
+}
+
+/* Disabled: every variant goes muted grey and lighter (a saving button keeps its variant colours via the
+   --bs-btn-disabled-* vars); hoverable so the cursor and any title show, while children take no pointer events. */
+.fc-admin-page .btn:disabled:not(.is-saving) {
+    pointer-events: auto;
+    cursor: not-allowed;
+    opacity: 0.5;
+    color: var(--fc-admin-text-muted);
+    background-color: var(--fc-admin-surface-muted);
+    border-color: var(--fc-admin-control-line);
+    filter: grayscale(1);
+}
+
+.fc-admin-page button:disabled {
+    cursor: not-allowed;
+}
+
+.fc-admin-page button:disabled * {
+    pointer-events: none;
+}
+
+/* Every other disabled button (menu options, icon buttons) is muted too; a page rule's own opacity wins. */
+:where(.fc-admin-page) :where(button:disabled:not(.btn)) {
+    opacity: 0.5;
+    filter: grayscale(1);
 }
 
 /* Selected (a tab, a pressed option, the current page), in the admin's markers as well as Bootstrap's .active. */

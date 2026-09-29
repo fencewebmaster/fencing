@@ -130,105 +130,107 @@ $fcStoreCsvName  = $page['csv_name'];
                     <span class="fc-sp-incomplete-toggle__label">SKU</span>
                 </label>
                 <input type="hidden" name="per_page" value="<?php echo !empty($page['is_all']) ? 'all' : (int) ($page['per_page'] ?? 50); ?>">
-                <?php if (!empty($page['has_active_filters'])) : ?>
-                <a
-                    href="<?php echo e((string) ($page['clear_url'] ?? '')); ?>"
-                    id="fc-store-products-clear-filters"
-                    class="btn btn-sm btn-dark fw-semibold fc-entries-clear-filters"
-                >
-                    <span>Clear Filters</span>
-                </a>
-                <?php else : ?>
-                <button
-                    type="button"
-                    id="fc-store-products-clear-filters"
-                    class="btn btn-sm btn-light fw-semibold fc-entries-clear-filters"
-                    disabled
-                >
-                    <span>Clear Filters</span>
-                </button>
-                <?php endif; ?>
-                <?php if (!empty($page['can_edit'])) : ?>
-                <div class="fc-products-download-dropdown" data-fc-store-products-download-dropdown>
+                <div class="fc-sp-toolbar__actions">
+                    <?php if (!empty($page['has_active_filters'])) : ?>
+                    <a
+                        href="<?php echo e((string) ($page['clear_url'] ?? '')); ?>"
+                        id="fc-store-products-clear-filters"
+                        class="btn btn-sm btn-dark fw-semibold fc-entries-clear-filters"
+                    >
+                        <span>Clear Filters</span>
+                    </a>
+                    <?php else : ?>
                     <button
                         type="button"
-                        class="btn btn-sm btn-orange fw-semibold fc-products-download-trigger fc-entries-toolbar-menu__toggle"
-                        data-fc-store-products-download-toggle
-                        aria-haspopup="menu"
-                        aria-expanded="false"
-                        aria-controls="fc-store-products-download-menu"
-                        aria-label="Actions"
-                        title="Actions"
-                        id="fc-store-products-download-toggle"
+                        id="fc-store-products-clear-filters"
+                        class="btn btn-sm btn-light fw-semibold fc-entries-clear-filters"
+                        disabled
                     >
-                        <span>Actions</span>
-                        <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
+                        <span>Clear Filters</span>
                     </button>
-                    <div
-                        class="fc-products-download-dropdown__panel fc-admin-menu__panel"
-                        id="fc-store-products-download-menu"
-                        role="menu"
-                        aria-labelledby="fc-store-products-download-toggle"
-                        hidden
-                    >
-                        <div class="fc-admin-menu__head">
-                            <span class="fc-admin-menu__head-title">Product actions</span>
-                            <span class="fc-admin-menu__head-hint">Importing replaces <?php echo e((string) $page['file_label']); ?> straight away</span>
+                    <?php endif; ?>
+                    <?php if (!empty($page['can_edit'])) : ?>
+                    <div class="fc-products-download-dropdown" data-fc-store-products-download-dropdown>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-orange fw-semibold fc-products-download-trigger fc-entries-toolbar-menu__toggle"
+                            data-fc-store-products-download-toggle
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                            aria-controls="fc-store-products-download-menu"
+                            aria-label="Actions"
+                            title="Actions"
+                            id="fc-store-products-download-toggle"
+                        >
+                            <span>Actions</span>
+                            <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
+                        </button>
+                        <div
+                            class="fc-products-download-dropdown__panel fc-admin-menu__panel"
+                            id="fc-store-products-download-menu"
+                            role="menu"
+                            aria-labelledby="fc-store-products-download-toggle"
+                            hidden
+                        >
+                            <div class="fc-admin-menu__head">
+                                <span class="fc-admin-menu__head-title">Product actions</span>
+                                <span class="fc-admin-menu__head-hint">Importing replaces <?php echo e((string) $page['file_label']); ?> straight away</span>
+                            </div>
+                            <div class="fc-admin-menu__group">
+                                <button
+                                    type="button"
+                                    class="fc-products-download-dropdown__option fc-admin-menu__option<?php echo $fcStoreCsvReady ? '' : ' is-disabled'; ?>"
+                                    role="menuitem"
+                                    data-fc-store-products-download-csv
+                                    data-fc-store-products-csv-name="<?php echo e($fcStoreCsvName); ?>"
+                                    <?php echo $fcStoreCsvReady ? '' : ' disabled aria-disabled="true"'; ?>
+                                >
+                                    <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-download"></i></span>
+                                    <span class="fc-admin-menu__option-text">
+                                        <span class="fc-admin-menu__option-label">Export CSV</span>
+                                        <span class="fc-admin-menu__option-meta"><?php echo $fcStoreCsvReady ? 'Download ' . e($fcStoreCsvName) : 'Nothing to export yet'; ?></span>
+                                    </span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="fc-products-download-dropdown__option fc-admin-menu__option"
+                                    role="menuitem"
+                                    data-fc-store-products-import-csv
+                                >
+                                    <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-file-import"></i></span>
+                                    <span class="fc-admin-menu__option-text">
+                                        <span class="fc-admin-menu__option-label">Import CSV</span>
+                                        <span class="fc-admin-menu__option-meta">Replace every row from a .csv file</span>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="fc-admin-menu__divider" role="separator"></div>
+                            <div class="fc-admin-menu__group">
+                                <button
+                                    type="button"
+                                    class="fc-products-download-dropdown__option fc-admin-menu__option fc-admin-menu__option--accent"
+                                    role="menuitem"
+                                    data-fc-desc-update-open
+                                >
+                                    <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-pen-to-square"></i></span>
+                                    <span class="fc-admin-menu__option-text">
+                                        <span class="fc-admin-menu__option-label">Update Products</span>
+                                        <span class="fc-admin-menu__option-meta">Rebuild names and descriptions</span>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="fc-admin-menu__group">
-                            <button
-                                type="button"
-                                class="fc-products-download-dropdown__option fc-admin-menu__option<?php echo $fcStoreCsvReady ? '' : ' is-disabled'; ?>"
-                                role="menuitem"
-                                data-fc-store-products-download-csv
-                                data-fc-store-products-csv-name="<?php echo e($fcStoreCsvName); ?>"
-                                <?php echo $fcStoreCsvReady ? '' : ' disabled aria-disabled="true"'; ?>
-                            >
-                                <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-download"></i></span>
-                                <span class="fc-admin-menu__option-text">
-                                    <span class="fc-admin-menu__option-label">Export CSV</span>
-                                    <span class="fc-admin-menu__option-meta"><?php echo $fcStoreCsvReady ? 'Download ' . e($fcStoreCsvName) : 'Nothing to export yet'; ?></span>
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                class="fc-products-download-dropdown__option fc-admin-menu__option"
-                                role="menuitem"
-                                data-fc-store-products-import-csv
-                            >
-                                <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-file-import"></i></span>
-                                <span class="fc-admin-menu__option-text">
-                                    <span class="fc-admin-menu__option-label">Import CSV</span>
-                                    <span class="fc-admin-menu__option-meta">Replace every row from a .csv file</span>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="fc-admin-menu__divider" role="separator"></div>
-                        <div class="fc-admin-menu__group">
-                            <button
-                                type="button"
-                                class="fc-products-download-dropdown__option fc-admin-menu__option fc-admin-menu__option--accent"
-                                role="menuitem"
-                                data-fc-desc-update-open
-                            >
-                                <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-pen-to-square"></i></span>
-                                <span class="fc-admin-menu__option-text">
-                                    <span class="fc-admin-menu__option-label">Update Products</span>
-                                    <span class="fc-admin-menu__option-meta">Rebuild names and descriptions</span>
-                                </span>
-                            </button>
-                        </div>
+                        <input
+                            type="file"
+                            class="sr-only"
+                            accept=".csv,text/csv"
+                            data-fc-store-products-import-input
+                            tabindex="-1"
+                            aria-hidden="true"
+                        >
                     </div>
-                    <input
-                        type="file"
-                        class="sr-only"
-                        accept=".csv,text/csv"
-                        data-fc-store-products-import-input
-                        tabindex="-1"
-                        aria-hidden="true"
-                    >
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
                 <button type="submit" class="sr-only">Search</button>
             </div>
         </form>

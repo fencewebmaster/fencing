@@ -76,6 +76,11 @@ final class SettingsController extends BaseApiController
             return;
         }
 
+        if ($action === 'site-health-fix') {
+            $this->handleSiteHealthFix($method);
+            return;
+        }
+
         if ($action === 'cloudflare-verify') {
             $this->handleCloudflareVerify($method);
             return;
@@ -514,6 +519,51 @@ final class SettingsController extends BaseApiController
             'group' => $group,
             'checks' => $checks,
         ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+    }
+
+    /**
+     * A Site Health row's one-click fix ({fix: id}). The checks stay read-only; each fix is named
+     * here, and it is Super Admin only for the same reason as the report.
+     */
+    private function handleSiteHealthFix(string $method): void
+    {
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (!self::csrfOk($payload)) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!PermissionService::isSuperAdmin()) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Only the Super Admin can run Site Health fixes.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $fix = (string) ($payload['fix'] ?? '');
+        if ($fix !== 'config-permissions') {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Unknown fix.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $result = ConsoleSettings::restrictPermissions();
+        if (empty($result['ok'])) {
+            http_response_code(500);
+        } else {
+            $result['message'] = 'config.php is now ' . ($result['mode'] ?? '600') . '.';
+        }
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
     private function handleCloudflareVerify(string $method): void

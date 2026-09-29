@@ -6,6 +6,7 @@
     'use strict';
 
     var API_SITE_HEALTH = global.fcApiUrl('settings', 'action=site-health');
+    var API_SITE_HEALTH_FIX = global.fcApiUrl('settings', 'action=site-health-fix');
 
     // Problems first, then warnings and passes; unscored notes last.
     var STATE_ORDER = { bad: 0, warn: 1, good: 2, info: 3 };
@@ -96,6 +97,12 @@
                     self.jumpTo(tile.getAttribute('data-fc-health-tile'));
                 });
             });
+            this.panel().addEventListener('click', function (e) {
+                var fixBtn = e.target.closest('[data-fc-health-fix]');
+                if (fixBtn) {
+                    self.applyFix(fixBtn);
+                }
+            });
             this.pinOverview(this.panel().querySelector('[data-fc-overview-pin]'), this.panel().querySelector('[data-fc-health-overview]'));
         }
 
@@ -177,9 +184,48 @@
                 (check.value ? '<span class="fc-health-row__value">' + escapeHtml(check.value) + '</span>' : '') +
                 '</div>' +
                 (check.detail ? '<p class="fc-health-row__detail">' + escapeHtml(check.detail) + '</p>' : '') +
+                (check.fix && (state === 'warn' || state === 'bad')
+                    ? '<div class="fc-health-row__fix"><button type="button" class="' + global.FcAdminBtn.outline +
+                      '" data-fc-health-fix="' + escapeHtml(check.fix.id) + '"><span>' + escapeHtml(check.fix.label) + '</span></button></div>'
+                    : '') +
                 '</div>' +
                 '</li>'
             );
+        }
+
+        /** Runs a row's one-click fix, then runs the checks again so every card shows the result. */
+        applyFix(btn) {
+            var self = this;
+            if (this.pending > 0 || !global.FC.util.setSaving(btn, true)) {
+                return;
+            }
+            fetch(API_SITE_HEALTH_FIX, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ fix: btn.getAttribute('data-fc-health-fix'), csrf: this.state.csrf })
+            })
+                .then(function (res) {
+                    return res
+                        .json()
+                        .catch(function () {
+                            return {};
+                        })
+                        .then(function (data) {
+                            if (!res.ok || !data.ok) {
+                                throw new Error(data.error || 'The fix could not run (HTTP ' + res.status + ').');
+                            }
+                            return data;
+                        });
+                })
+                .then(function (data) {
+                    global.FC.util.toast('success', data.message || 'Fixed.');
+                    self.run();
+                })
+                .catch(function (err) {
+                    global.FC.util.setSaving(btn, false);
+                    global.FC.util.toast('error', (err && err.message) || 'The fix could not run.');
+                });
         }
 
         paintChip(chip, state, text) {

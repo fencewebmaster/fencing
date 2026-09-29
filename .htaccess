@@ -1,5 +1,13 @@
 RewriteEngine on
 
+# Redirect plain http:// to https:// at the origin: www. and the server's own requests skip Cloudflare's
+# redirect. X-Forwarded-Proto stops a loop behind a proxy; local dev hosts stay on http.
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https [NC]
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$ [NC]
+RewriteCond %{HTTP_HOST} !\.(localhost|test)(:\d+)?$ [NC]
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
 # Never show directory listings.
 Options -Indexes
 
@@ -13,6 +21,8 @@ RewriteRule "(^|/)\." index.php [L]
     Header always set X-Content-Type-Options "nosniff"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set X-Frame-Options "SAMEORIGIN"
+    # HSTS, 1 month to start. Browsers ignore it over plain http, so local dev is unaffected.
+    Header always set Strict-Transport-Security "max-age=2592000"
     Header unset X-Powered-By
 </IfModule>
 
@@ -28,6 +38,11 @@ RewriteRule ^(config\.json|config\.php|writable) index.php [L,NC]
 # Never serve app/ directly — a direct hit could print a stack trace with server
 # paths. Rewriting to index.php shows the 404 page.
 RewriteRule ^app(/|$) index.php [L,NC]
+
+# Never serve developer files: build/ holds build.php (a web hit would run the asset
+# build), tests/ holds local harnesses, and .md files are internal notes. 404 via index.php.
+RewriteRule ^(build|tests)(/|$) index.php [L,NC]
+RewriteRule \.md$ index.php [L,NC]
 
 # Front controller: all public URLs go to index.php (routed via app/routes/web.php).
 # Real files and the admin mounts are left alone; unknown paths get the 404 page.

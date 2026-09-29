@@ -727,6 +727,38 @@ final class ProductLookupQueryService
     }
 
     /**
+     * Resolve a published product ID from its SKU; a variation's SKU resolves to its parent product.
+     */
+    public static function productIdBySku(string $sku): int
+    {
+        $sku = trim($sku);
+        if ($sku === '') {
+            return 0;
+        }
+
+        $pdo = self::pdo();
+        $p = self::table('posts');
+        // postmeta.meta_value is unindexed (a 1.5s scan locally); the lookup table indexes sku.
+        $lookup = ProductLookupService::metaLookupTable();
+        $source = $lookup !== null
+            ? "`{$lookup}` l INNER JOIN `{$p}` p ON p.ID = l.product_id WHERE l.sku = ?"
+            : '`' . self::table('postmeta') . "` pm INNER JOIN `{$p}` p ON p.ID = pm.post_id WHERE pm.meta_key = '_sku' AND pm.meta_value = ?";
+        $stmt = $pdo->prepare(
+            "SELECT p.ID, p.post_type, p.post_parent FROM {$source}
+               AND p.post_type IN ('product', 'product_variation') AND p.post_status = 'publish'
+             ORDER BY p.post_type = 'product' DESC, p.ID DESC
+             LIMIT 1"
+        );
+        $stmt->execute([$sku]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!is_array($row)) {
+            return 0;
+        }
+
+        return $row['post_type'] === 'product_variation' ? (int) $row['post_parent'] : (int) $row['ID'];
+    }
+
+    /**
      * @param array<string, string> $meta
      */
     public static function priceHtml(array $meta): string

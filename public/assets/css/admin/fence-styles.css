@@ -1433,7 +1433,7 @@ body.fc-fs-preview-lightbox-open {
     border-color: var(--fc-princeton-orange, #f67925);
     background: rgba(246, 121, 37, 0.14);
     opacity: 0.72;
-    cursor: default;
+    cursor: not-allowed;
 }
 
 .fc-fs-color-picker-chip__swatch {
@@ -2699,4 +2699,38 @@ html[data-fc-admin-theme='dark'] .fc-fs-edit-body {
 
 html[data-fc-admin-theme='dark'] .fc-fs-gui-modals-nav__item.is-active {
     background: color-mix(in srgb, var(--fc-princeton-orange, #f67925) 16%, transparent);
+}
+
+/* —— Edit page: 3px corners throughout; true circles (toggles, colour dots, icon buttons) stay round —— */
+.fc-fs-edit .btn {
+    --bs-btn-border-radius: 3px;
+}
+
+.fc-fs-edit :is(
+    .fc-fs-edit-nav,
+    .fc-fs-edit-nav__back,
+    .fc-fs-edit-nav [data-gui-tab],
+    .fc-fs-json-editor--full,
+    .fc-fs-panel-group-tabs__list,
+    .fc-fs-panel-group-tabs__label,
+    .fc-fs-gui-marker,
+    .fc-fs-option-card__featured,
+    .fc-fs-option-card__thumb,
+    .fc-fs-color-selected-row__grip,
+    .fc-fs-color-selected-row__swatch,
+    .fc-fs-color-selected-row__remove,
+    .fc-fs-color-selected-row__badge,
+    .fc-fs-color-picker-chip,
+    .fc-fs-kv-row__grip,
+    .fc-fs-kv-row__remove,
+    .fc-fs-image-field__preview
+),
+.fc-fs-edit .tox .tox-edit-area::before,
+.fc-fs-preview-lightbox__image,
+.fc-fs-preview-lightbox__caption {
+    border-radius: 3px;
+}
+
+.fc-fs-edit .fc-fs-edit-toolbar::before {
+    border-radius: 0 3px 3px 0;
 }

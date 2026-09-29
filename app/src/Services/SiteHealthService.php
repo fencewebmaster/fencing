@@ -93,14 +93,13 @@ final class SiteHealthService
     private const CONTROL_PATHS = ['public/assets/css/fonts.css', 'public/assets/css/admin/theme.css'];
 
     private const SUPPORT_WARN_DAYS = 183;
-    private const INACTIVE_ADMIN_DAYS = 90;
     private const SESSION_FILES_WARN = 20000;
     private const CACHE_BYTES_WARN = 524288000;
     private const ERROR_LOG_TAIL_BYTES = 262144;
     private const PROBE_BODY_BYTES = 4096;
 
     /**
-     * @return list<array{key:string,label:string,state:string,value:string,detail:string}>
+     * @return list<array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string}}>
      */
     public static function run(string $group): array
     {
@@ -118,8 +117,11 @@ final class SiteHealthService
     }
 
     /**
+     * A check returns [state, value, detail] plus, optionally, a one-click fix {id, label} that
+     * SettingsController's site-health-fix action runs; the check itself never changes anything.
+     *
      * @param callable(): ?array $check
-     * @return array{key:string,label:string,state:string,value:string,detail:string}|null
+     * @return array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string}}|null
      */
     private static function attempt(string $key, string $label, callable $check): ?array
     {
@@ -132,13 +134,18 @@ final class SiteHealthService
             return null;
         }
 
-        return [
+        $row = [
             'key' => $key,
             'label' => $label,
             'state' => (string) $result[0],
             'value' => (string) $result[1],
             'detail' => (string) ($result[2] ?? ''),
         ];
+        if (isset($result[3]['id'], $result[3]['label'])) {
+            $row['fix'] = ['id' => (string) $result[3]['id'], 'label' => (string) $result[3]['label']];
+        }
+
+        return $row;
     }
 
     // —— Server & App ——
@@ -929,8 +936,6 @@ final class SiteHealthService
             self::attempt('dbLogin', 'Database login', static fn (): array => self::databaseLogin($local)),
             self::attempt('configCopies', 'Leftover config copies', static fn (): array => self::configCopies()),
             self::attempt('configPermissions', 'config.php permissions', static fn (): ?array => self::configPermissions()),
-            self::attempt('signIn', 'Sign-in protection', static fn (): array => self::signInProtection()),
-            self::attempt('admins', 'Admin accounts', static fn (): array => self::inactiveAdmins(self::adminAccounts())),
             self::attempt('passwords', 'Admin password storage', static fn (): ?array => self::passwordStorage(self::adminAccounts())),
             self::attempt('devConsole', 'Dev Console access', static fn (): array => self::devConsoleAccess(self::adminAccounts())),
         ];
@@ -1250,20 +1255,16 @@ final class SiteHealthService
 
         $mode &= 0777;
         $value = sprintf('%o', $mode);
+        // ConsoleSettings::restrictPermissions() runs it, and refuses unless PHP owns the file.
+        $fix = ['id' => 'config-permissions', 'label' => 'Set to 600'];
         if ($mode & 0002) {
-            return ['bad', $value, 'Any account on the server can change config.php. Set it to 640 or 600.'];
+            return ['bad', $value, 'Any account on the server can change config.php. Set it to 600, so only the account PHP runs as can open it.', $fix];
         }
         if ($mode & 0004) {
-            return ['warn', $value, 'Other accounts on this server can read config.php and the database passwords in it. Set it to 640 or 600.'];
+            return ['warn', $value, 'Other accounts on this server can read config.php and the database passwords in it. Set it to 600, so only the account PHP runs as can open it.', $fix];
         }
 
         return ['good', $value, ''];
-    }
-
-    private static function signInProtection(): array
-    {
-        // Known gaps (see CLAUDE.md): no lockout, and enforceSessionTtl() enforces nothing.
-        return ['warn', 'Not limited', 'Failed sign-ins aren\'t rate-limited, so a password can be guessed over and over, and a sign-in lasts until you sign out. Both need a code change.'];
     }
 
     /**
@@ -1300,34 +1301,6 @@ final class SiteHealthService
         }
 
         return $accounts = ['users' => $users, 'devConsole' => $devConsole];
-    }
-
-    /**
-     * @param array{users:array<int,string>,devConsole:list<string>} $accounts
-     */
-    private static function inactiveAdmins(array $accounts): array
-    {
-        $users = $accounts['users'];
-        if ($users === []) {
-            return ['info', 'None found', ''];
-        }
-
-        $lastLogin = PresenceService::lastLoginMap(array_keys($users));
-        $cutoff = time() - self::INACTIVE_ADMIN_DAYS * 86400;
-        $idle = [];
-        foreach ($users as $id => $name) {
-            $at = (int) ($lastLogin[$id] ?? 0);
-            if ($at < $cutoff) {
-                $idle[] = $name . ' (' . ($at > 0 ? 'last ' . date('j M Y', $at) : 'never') . ')';
-            }
-        }
-
-        $value = count($users) . ' with admin access';
-        if ($idle !== []) {
-            return ['warn', $value, 'No FC sign-in for ' . self::INACTIVE_ADMIN_DAYS . '+ days: ' . self::listSome($idle, 6) . '. Take admin access away from accounts that no longer need it.'];
-        }
-
-        return ['good', $value, 'Everyone has signed in within ' . self::INACTIVE_ADMIN_DAYS . ' days.'];
     }
 
     /**

@@ -571,6 +571,17 @@
         return { slides: slides, startIndex: startIndex };
     }
 
+    /* The row's slug, supplier and fence style, shown under the store details in the SKU quick view. */
+    function galleryInfoFor(row) {
+        var supplier = row.querySelector('[data-fc-ms-chip="supplier"]');
+        var style = row.querySelector('[data-fc-ms-chip="style"]');
+        return {
+            slug: row.getAttribute('data-slug') || '',
+            supplier: supplier ? supplier.textContent.trim() : '',
+            style: style ? style.textContent.trim() : row.getAttribute('data-style') || ''
+        };
+    }
+
     function openThumbGallery(thumb) {
         if (!SKU || typeof SKU.openGallery !== 'function') {
             return;
@@ -580,7 +591,7 @@
             return;
         }
         var picked = gallerySlidesFor(row, thumb.closest('[data-fc-ms-field]'));
-        SKU.openGallery(picked.slides, picked.startIndex);
+        SKU.openGallery(picked.slides, picked.startIndex, galleryInfoFor(row));
     }
 
     /* ---------------------------------------------------------------------- details modal */
@@ -758,7 +769,7 @@
             e.preventDefault();
             var field = fieldsIn(detailsRow)[parseInt(thumb.getAttribute('data-fc-ms-details-thumb'), 10)];
             var picked = gallerySlidesFor(detailsRow, field);
-            SKU.openGallery(picked.slides, picked.startIndex);
+            SKU.openGallery(picked.slides, picked.startIndex, galleryInfoFor(detailsRow));
             return;
         }
 
@@ -770,8 +781,8 @@
     }
 
     function onDetailsKeydown(e) {
-        // The image gallery opens above the modal and takes its own Escape first.
-        if (e.key !== 'Escape' || e.defaultPrevented || !detailsOpen() || document.querySelector('.fc-entries-cart-gallery')) {
+        // The SKU quick view opens above the modal and takes its own Escape first.
+        if (e.key !== 'Escape' || e.defaultPrevented || !detailsOpen() || document.querySelector('.fc-sku-qv')) {
             return;
         }
         e.preventDefault();

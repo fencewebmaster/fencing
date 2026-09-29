@@ -902,6 +902,45 @@ final class ProductLookupService
         ]);
     }
 
+    /**
+     * Admin SKU quick view: the store product a SKU belongs to, trimmed to what the modal shows.
+     *
+     * @return array{ok:bool,status?:int,error?:string,product?:array<string, mixed>}
+     */
+    public static function skuQuickView(string $sku): array
+    {
+        $sku = trim($sku);
+        if ($sku === '') {
+            return ['ok' => false, 'status' => 400, 'error' => 'Missing SKU.'];
+        }
+
+        $boot = self::bootstrap();
+        if (empty($boot['ok'])) {
+            return ['ok' => false, 'status' => 503, 'error' => (string) ($boot['error'] ?? 'Database unavailable.')];
+        }
+
+        $view = self::getQuickView(ProductLookupQueryService::productIdBySku($sku));
+        if ($view === null) {
+            return ['ok' => false, 'status' => 404, 'error' => 'Not found in the store.'];
+        }
+
+        return [
+            'ok' => true,
+            'product' => [
+                'name' => (string) ($view['name'] ?? ''),
+                'sku' => (string) ($view['sku'] ?? ''),
+                'permalink' => (string) ($view['permalink'] ?? ''),
+                'price_html' => (string) ($view['price_html'] ?? ''),
+                'stock_status' => (string) ($view['stock_status'] ?? ''),
+                'stock_label' => (string) ($view['stock_label'] ?? ''),
+                'categories' => array_values(array_column($view['categories'] ?? [], 'name')),
+                'tags' => array_values(array_column($view['tags'] ?? [], 'name')),
+                'gallery' => array_values($view['gallery'] ?? []),
+                'description' => (string) ($view['description'] ?? ''),
+            ],
+        ];
+    }
+
     public static function hasActiveFilters(array $request): bool
     {
         if (($request['q'] ?? '') !== '') {
