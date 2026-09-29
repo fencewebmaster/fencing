@@ -8,6 +8,7 @@
     var API_SITE_HEALTH = global.fcApiUrl('settings', 'action=site-health');
     var API_SITE_HEALTH_FIX = global.fcApiUrl('settings', 'action=site-health-fix');
     var API_SITE_HEALTH_LOG = global.fcApiUrl('settings', 'action=site-health-log');
+    var API_SITE_HEALTH_LOG_CLEAR = global.fcApiUrl('settings', 'action=site-health-log-clear');
 
     // Problems first, then warnings and passes; unscored notes last.
     var STATE_ORDER = { bad: 0, warn: 1, good: 2, info: 3 };
@@ -102,6 +103,11 @@
                 var fixBtn = e.target.closest('[data-fc-health-fix]');
                 if (fixBtn) {
                     self.applyFix(fixBtn);
+                    return;
+                }
+                var clearBtn = e.target.closest('[data-fc-health-clear]');
+                if (clearBtn) {
+                    self.clearLog(clearBtn);
                 }
             });
             this.pinOverview(this.panel().querySelector('[data-fc-overview-pin]'), this.panel().querySelector('[data-fc-health-overview]'));
@@ -208,8 +214,59 @@
                     escapeHtml(API_SITE_HEALTH_LOG + '&file=' + encodeURIComponent(download.id)) + '" download>' +
                     '<i class="fa-solid fa-download" aria-hidden="true"></i><span>' + escapeHtml(download.label) + '</span></a>'
                 );
+                if (download.clear) {
+                    actions.push(
+                        '<button type="button" class="btn btn-sm btn-outline-danger fw-semibold" data-fc-health-clear="' + escapeHtml(download.id) + '">' +
+                        '<i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>Clear ' + escapeHtml(download.id) + ' log</span></button>'
+                    );
+                }
             });
             return actions.length ? '<div class="fc-health-row__actions">' + actions.join('') + '</div>' : '';
+        }
+
+        /** Empties one of FC's own error logs after a confirm, then runs the checks again so the row reflects it. */
+        clearLog(btn) {
+            var self = this;
+            var file = btn.getAttribute('data-fc-health-clear') || '';
+            if (this.pending > 0 || btn.classList.contains('is-saving')) {
+                return;
+            }
+            var message = 'This empties the ' + file + ' error log on the server. Download it first if you still need it.';
+            var asked = global.FcAdminModal
+                ? global.FcAdminModal.confirm({ title: 'Clear the ' + file + ' log?', message: message, confirmLabel: 'Clear log' })
+                : Promise.resolve(global.confirm(message));
+            asked.then(function (confirmed) {
+                if (!confirmed || !global.FC.util.setSaving(btn, true)) {
+                    return;
+                }
+                fetch(API_SITE_HEALTH_LOG_CLEAR, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ file: file, csrf: self.state.csrf })
+                })
+                    .then(function (res) {
+                        return res
+                            .json()
+                            .catch(function () {
+                                return {};
+                            })
+                            .then(function (data) {
+                                if (!res.ok || !data.ok) {
+                                    throw new Error(data.error || 'The log could not be cleared (HTTP ' + res.status + ').');
+                                }
+                                return data;
+                            });
+                    })
+                    .then(function (data) {
+                        global.FC.util.toast('success', data.message || 'Log cleared.');
+                        self.run();
+                    })
+                    .catch(function (err) {
+                        global.FC.util.setSaving(btn, false);
+                        global.FC.util.toast('error', (err && err.message) || 'The log could not be cleared.');
+                    });
+            });
         }
 
         /** Runs a row's one-click fix, then runs the checks again so every card shows the result. */

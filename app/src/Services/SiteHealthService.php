@@ -99,7 +99,7 @@ final class SiteHealthService
     private const PROBE_BODY_BYTES = 4096;
 
     /**
-     * @return list<array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string},downloads?:list<array{id:string,label:string}>}>
+     * @return list<array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string},downloads?:list<array{id:string,label:string,clear:bool}>}>
      */
     public static function run(string $group): array
     {
@@ -119,10 +119,11 @@ final class SiteHealthService
     /**
      * A check returns [state, value, detail] plus, optionally, a one-click fix {id, label} that
      * SettingsController's site-health-fix action runs (null for none), and download links
-     * [{id, label}] its site-health-log action streams; the check itself never changes anything.
+     * [{id, label, clear}] its site-health-log action streams (site-health-log-clear empties those
+     * marked clear); the check itself never changes anything.
      *
      * @param callable(): ?array $check
-     * @return array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string},downloads?:list<array{id:string,label:string}>}|null
+     * @return array{key:string,label:string,state:string,value:string,detail:string,fix?:array{id:string,label:string},downloads?:list<array{id:string,label:string,clear:bool}>}|null
      */
     private static function attempt(string $key, string $label, callable $check): ?array
     {
@@ -147,7 +148,11 @@ final class SiteHealthService
         }
         foreach (is_array($result[4] ?? null) ? $result[4] : [] as $download) {
             if (isset($download['id'], $download['label'])) {
-                $row['downloads'][] = ['id' => (string) $download['id'], 'label' => (string) $download['label']];
+                $row['downloads'][] = [
+                    'id' => (string) $download['id'],
+                    'label' => (string) $download['label'],
+                    'clear' => !empty($download['clear']),
+                ];
             }
         }
 
@@ -552,7 +557,8 @@ final class SiteHealthService
             return ['info', 'Unreadable', 'PHP\'s error log can\'t be read from here.'];
         }
 
-        // One link per non-empty file; SettingsController's site-health-log action streams it.
+        // One link per non-empty file; SettingsController's site-health-log action streams it. Only FC's own
+        // per-folder logs can be cleared: a shared log holds WordPress's errors too.
         $downloads = [];
         foreach ($existing as $where => $path) {
             $size = (int) @filesize($path);
@@ -560,6 +566,7 @@ final class SiteHealthService
                 $downloads[] = [
                     'id' => (string) $where,
                     'label' => 'Download ' . ($where === 'shared' ? 'log' : $where . ' log') . ' (' . FormatHelper::bytes($size) . ')',
+                    'clear' => $where !== 'shared',
                 ];
             }
         }

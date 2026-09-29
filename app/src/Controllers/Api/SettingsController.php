@@ -86,6 +86,11 @@ final class SettingsController extends BaseApiController
             return;
         }
 
+        if ($action === 'site-health-log-clear') {
+            $this->handleSiteHealthLogClear($method);
+            return;
+        }
+
         if ($action === 'cloudflare-verify') {
             $this->handleCloudflareVerify($method);
             return;
@@ -612,6 +617,53 @@ final class SettingsController extends BaseApiController
         fpassthru($handle);
         fclose($handle);
         exit;
+    }
+
+    /**
+     * Empties one of FC's own PHP error logs ({file: admin|planner}) from the "PHP error log" row. The file
+     * is truncated rather than deleted, so its owner and permissions stay; a shared log holds WordPress's
+     * errors too, so it is never cleared from here. CSRF + Super Admin only, like the fixes.
+     */
+    private function handleSiteHealthLogClear(string $method): void
+    {
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $payload = $this->request->jsonBody();
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        if (!self::csrfOk($payload)) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!PermissionService::isSuperAdmin()) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Only the Super Admin can clear the error log.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $key = (string) ($payload['file'] ?? '');
+        $path = $key !== 'shared' ? (SiteHealthService::errorLogFiles()[$key] ?? '') : '';
+        if ($path === '' || !is_file($path)) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'error' => 'That error log doesn\'t exist.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (@file_put_contents($path, '', LOCK_EX) === false) {
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'error' => 'PHP can\'t write to the ' . $key . ' log, so it wasn\'t cleared.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode(['ok' => true, 'message' => 'The ' . $key . ' error log is cleared.'], JSON_UNESCAPED_UNICODE);
     }
 
     private function handleCloudflareVerify(string $method): void
