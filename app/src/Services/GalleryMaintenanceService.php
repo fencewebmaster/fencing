@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Services;
 
+use Fc\Admin\Helpers\FileHelper;
+use Fc\Admin\Helpers\FormatHelper;
 use Fc\Admin\Models\GalleryModel;
 
 /**
@@ -15,6 +17,54 @@ final class GalleryMaintenanceService
     // Public for Settings → Site Health, which warns when PHP's own upload limits sit below it.
     public const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
     private const MAX_FILE_COUNT = 2000;
+
+    /**
+     * The largest file that can actually be uploaded: the Media Library's cap, or PHP's when that is
+     * lower. The page and the media picker check it before uploading; the server's errors reuse it.
+     *
+     * @return array{bytes:int,label:string,message:string}
+     */
+    public static function uploadLimit(): array
+    {
+        $php = FileHelper::phpUploadCap();
+        if ($php > 0 && $php < self::MAX_UPLOAD_BYTES) {
+            return [
+                'bytes' => $php,
+                'label' => FormatHelper::bytes($php),
+                'message' => 'This file is over the server\'s ' . FormatHelper::bytes($php) . ' upload limit. Use a smaller file, or ask your host to raise PHP\'s upload limit.',
+            ];
+        }
+
+        return [
+            'bytes' => self::MAX_UPLOAD_BYTES,
+            'label' => FormatHelper::bytes(self::MAX_UPLOAD_BYTES),
+            'message' => 'This file is over the Media Library\'s ' . FormatHelper::bytes(self::MAX_UPLOAD_BYTES) . ' limit. Use a smaller file.',
+        ];
+    }
+
+    /**
+     * Over post_max_size PHP throws the whole request away, fields and files alike, so it arrives
+     * without its CSRF token either; the controller answers with the size error instead.
+     */
+    public static function requestTooLarge(): bool
+    {
+        $max = ini_parse_quantity((string) ini_get('post_max_size'));
+
+        return $max > 0 && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > $max;
+    }
+
+    private static function uploadErrorMessage(int $code): string
+    {
+        return match ($code) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => self::uploadLimit()['message'],
+            UPLOAD_ERR_PARTIAL => 'The upload was interrupted before it finished. Try again.',
+            UPLOAD_ERR_NO_FILE => 'No file uploaded.',
+            UPLOAD_ERR_NO_TMP_DIR => 'The server has no temporary folder for uploads. Ask your host to check PHP\'s upload_tmp_dir.',
+            UPLOAD_ERR_CANT_WRITE => 'The server couldn\'t save the upload; its disk may be full.',
+            UPLOAD_ERR_EXTENSION => 'A PHP extension on the server stopped the upload.',
+            default => 'Upload failed (code ' . $code . ').',
+        };
+    }
 
     /** @return array{ok:bool,item?:array<string,mixed>,message?:string,error?:string} */
     public static function upload(): array
@@ -28,8 +78,9 @@ final class GalleryMaintenanceService
         }
 
         $file = $_FILES['file'];
-        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            return ['ok' => false, 'error' => 'Upload failed (code ' . (int) ($file['error'] ?? 0) . ').'];
+        $code = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($code !== UPLOAD_ERR_OK) {
+            return ['ok' => false, 'error' => self::uploadErrorMessage($code)];
         }
 
         $tmp = (string) ($file['tmp_name'] ?? '');
@@ -38,8 +89,11 @@ final class GalleryMaintenanceService
         }
 
         $size = (int) ($file['size'] ?? 0);
-        if ($size <= 0 || $size > self::MAX_UPLOAD_BYTES) {
-            return ['ok' => false, 'error' => 'File must be between 1 byte and 10MB.'];
+        if ($size <= 0) {
+            return ['ok' => false, 'error' => 'This file is empty.'];
+        }
+        if ($size > self::MAX_UPLOAD_BYTES) {
+            return ['ok' => false, 'error' => self::uploadLimit()['message']];
         }
 
         if (GalleryModel::countUploadedFiles() >= self::MAX_FILE_COUNT) {

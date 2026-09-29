@@ -47,6 +47,8 @@
     function UploadQueue(options) {
         this.apiUrl = options.apiUrl;
         this.csrf = typeof options.csrf === 'string' ? options.csrf : '';
+        // {bytes, label, message} from GalleryMaintenanceService::uploadLimit(); null skips the pre-check.
+        this.limit = options.limit && typeof options.limit === 'object' ? options.limit : null;
         this.items = [];
         this.root = null;
         this.onChange = typeof options.onChange === 'function' ? options.onChange : function () {};
@@ -127,6 +129,10 @@
             .map(function (item) {
                 return item.itemPath;
             });
+    };
+
+    UploadQueue.prototype.tooBigMessage = function () {
+        return this.limit && this.limit.message ? this.limit.message : 'This file is too big for the server to accept.';
     };
 
     UploadQueue.prototype.statusLabel = function (item) {
@@ -346,13 +352,21 @@
             .map(function (item) {
                 return item.itemPath;
             });
+        // Each distinct failure reason, so a lone reason can go in the toast instead of "Upload failed."
+        var errors = [];
+        batchItems.forEach(function (item) {
+            if (item.status === 'error' && item.error && errors.indexOf(item.error) === -1) {
+                errors.push(item.error);
+            }
+        });
 
         this._finishBatch(batchId, {
             batchId: batchId,
             uploaded: uploaded,
             failed: failed,
             cancelled: cancelled,
-            paths: paths
+            paths: paths,
+            errors: errors
         });
     };
 
@@ -417,8 +431,11 @@
                     return;
                 }
 
+                // 413 is a size refusal (PHP, LiteSpeed or Cloudflare), whose page may not be JSON at all.
                 current.status = 'error';
-                current.error = (body && body.error) || 'Upload failed.';
+                current.error =
+                    (body && body.error) ||
+                    (xhr.status === 413 ? this.tooBigMessage() : 'Upload failed (HTTP ' + xhr.status + ').');
                 this._notifyProgress(current);
                 this._checkBatchSettled(current.batchId);
             }.bind(this)
@@ -487,18 +504,20 @@
                     previewUrl = null;
                 }
 
+                // Too big for the server: fail it here rather than upload it only to be refused.
+                var tooBig = !!(this.limit && this.limit.bytes > 0 && (file.size || 0) > this.limit.bytes);
                 this.items.push({
                     id: createId(),
                     batchId: batchId,
                     file: file,
                     name: file.name || 'file',
                     size: file.size || 0,
-                    status: 'queued',
+                    status: tooBig ? 'error' : 'queued',
                     progress: 0,
                     xhr: null,
                     previewUrl: previewUrl,
                     itemPath: null,
-                    error: null,
+                    error: tooBig ? this.tooBigMessage() : null,
                     _cancelRequested: false
                 });
             }.bind(this)
@@ -515,6 +534,8 @@
                     this._startUpload(item);
                 }.bind(this)
             );
+        // A batch the size check failed outright has no upload left to settle it.
+        this._checkBatchSettled(batchId);
     };
 
     global.FcGalleryUploadQueue = {

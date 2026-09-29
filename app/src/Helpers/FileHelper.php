@@ -99,4 +99,18 @@ final class FileHelper
 
         return is_array($data) ? $data : null;
     }
+
+    /**
+     * The largest upload PHP accepts, in bytes: the smaller of upload_max_filesize and
+     * post_max_size; 0 when neither limits it.
+     */
+    public static function phpUploadCap(): int
+    {
+        $caps = array_filter([
+            ini_parse_quantity((string) ini_get('upload_max_filesize')),
+            ini_parse_quantity((string) ini_get('post_max_size')),
+        ], static fn (int $bytes): bool => $bytes > 0);
+
+        return $caps === [] ? 0 : min($caps);
+    }
 }

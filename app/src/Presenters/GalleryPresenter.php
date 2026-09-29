@@ -6,6 +6,7 @@ namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Models\GalleryModel;
 use Fc\Admin\Services\AuthService;
+use Fc\Admin\Services\GalleryMaintenanceService;
 
 /**
  * Media library row shaping — pure formatting/view-model helpers plus the page-level
@@ -100,6 +101,8 @@ final class GalleryPresenter
             $activeTab = 'library';
         }
 
+        $uploadLimit = GalleryMaintenanceService::uploadLimit();
+
         $bootstrap = [
             'activeTab' => $activeTab,
             'items' => $items,
@@ -108,6 +111,7 @@ final class GalleryPresenter
             'canUpload' => $canUpload,
             'canDelete' => $canDelete,
             'csrf' => AuthService::csrfToken(),
+            'uploadLimit' => $uploadLimit,
         ];
 
         $pageClasses = ['fc-gallery-page', 'fc-gallery-page--grid'];
@@ -122,6 +126,7 @@ final class GalleryPresenter
             'has_items' => $itemRows !== [],
             'error' => $error,
             'accept_types' => 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml',
+            'upload_limit_label' => $uploadLimit['label'],
             'bootstrap_json' => json_encode($bootstrap, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
             'page_class' => implode(' ', $pageClasses),
             'is_library_tab' => $activeTab === 'library',

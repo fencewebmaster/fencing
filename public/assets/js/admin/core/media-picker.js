@@ -23,7 +23,8 @@
         activeTab: 'library',
         loadError: null,
         canList: true,
-        canUpload: true
+        canUpload: true,
+        uploadLimit: null
     };
 
     function readBodyFlag(name, fallback) {
@@ -58,6 +59,12 @@
         }
         if (typeof body.canUpload === 'boolean') {
             pickerState.canUpload = body.canUpload;
+        }
+        if (body.uploadLimit && typeof body.uploadLimit === 'object') {
+            pickerState.uploadLimit = body.uploadLimit;
+            if (pickerState.uploadQueue) {
+                pickerState.uploadQueue.limit = body.uploadLimit;
+            }
         }
     }
 
@@ -208,7 +215,9 @@
             escapeHtml(hintText) +
             '</p>' +
             (full && !compact
-                ? '<p class="fc-media-picker__dropzone-hint">JPG, PNG, GIF, WebP, or SVG · saved to <code>public/assets/uploads</code></p>'
+                ? '<p class="fc-media-picker__dropzone-hint">JPG, PNG, GIF, WebP, or SVG' +
+                  (pickerState.uploadLimit ? ' up to ' + escapeHtml(pickerState.uploadLimit.label || '') : '') +
+                  ' · saved to <code>public/assets/uploads</code></p>'
                 : '') +
             '<input type="file" class="fc-media-picker__file-input" accept="' +
             ACCEPT_TYPES +
@@ -224,6 +233,7 @@
             // reload), and a stale token here causes every upload to fail with
             // "Invalid security token" even though the page itself is fine.
             pickerState.uploadQueue.csrf = pickerState.csrf;
+            pickerState.uploadQueue.limit = pickerState.uploadLimit;
             return pickerState.uploadQueue;
         }
         if (!global.FcGalleryUploadQueue) {
@@ -233,6 +243,7 @@
         pickerState.uploadQueue = global.FcGalleryUploadQueue.create({
             apiUrl: API_UPLOAD,
             csrf: pickerState.csrf,
+            limit: pickerState.uploadLimit,
             onChange: function (event) {
                 if (!pickerState.modalEl || pickerState.activeTab !== 'upload') {
                     return;
@@ -280,7 +291,7 @@
                 }
 
                 if (summary.failed) {
-                    toast('error', 'Upload failed.', TOAST_PICKER);
+                    toast('error', summary.errors && summary.errors.length === 1 ? summary.errors[0] : 'Upload failed.', TOAST_PICKER);
                 }
 
                 if (!summary.uploaded) {

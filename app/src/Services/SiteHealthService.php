@@ -252,7 +252,7 @@ final class SiteHealthService
     private static function phpLimits(): array
     {
         $memory = ini_parse_quantity((string) ini_get('memory_limit'));
-        $upload = self::uploadCap();
+        $upload = FileHelper::phpUploadCap();
         $time = (int) ini_get('max_execution_time');
         $media = GalleryMaintenanceService::MAX_UPLOAD_BYTES;
 
@@ -272,17 +272,6 @@ final class SiteHealthService
             . ' · Time ' . ($time > 0 ? $time . 's' : 'unlimited');
 
         return $issues === [] ? ['good', $value, ''] : ['warn', $value, ucfirst(implode('. ', $issues)) . '.'];
-    }
-
-    /** The smaller of upload_max_filesize and post_max_size; 0 when neither limits an upload. */
-    private static function uploadCap(): int
-    {
-        $caps = array_filter([
-            ini_parse_quantity((string) ini_get('upload_max_filesize')),
-            ini_parse_quantity((string) ini_get('post_max_size')),
-        ], static fn (int $bytes): bool => $bytes > 0);
-
-        return $caps === [] ? 0 : min($caps);
     }
 
     private static function diskSpace(): array
@@ -519,6 +508,7 @@ final class SiteHealthService
         $since = time() - 86400;
         $counts = ['error' => 0, 'warning' => 0, 'notice' => 0];
         $latest = '';
+        $latestAt = 0;
         foreach (preg_split('/\R/', $tail) ?: [] as $line) {
             if (!preg_match('/^\[([^\]]+)\]\s+(.+)$/', $line, $m)) {
                 continue;
@@ -539,6 +529,7 @@ final class SiteHealthService
                 $counts['warning']++;
             }
             $latest = $message;
+            $latestAt = $at;
         }
 
         if ($latest === '') {
@@ -553,8 +544,14 @@ final class SiteHealthService
         }
         $state = $counts['error'] > 0 ? 'bad' : ($counts['warning'] > 0 ? 'warn' : 'good');
         $latest = str_ireplace($root . '/', '', $latest);
+        // The count keeps a fixed error for 24 hours; its age shows whether it is still happening.
+        $age = max(0, time() - $latestAt);
+        $hours = intdiv($age, 3600);
+        $when = $hours > 0 ? $hours . ' hour' . ($hours === 1 ? '' : 's') . ' ago' : max(1, intdiv($age, 60)) . ' min ago';
 
-        return [$state, implode(', ', $parts) . ' in 24 hours', 'Latest: ' . (strlen($latest) > 240 ? substr($latest, 0, 237) . '…' : $latest)];
+        $shown = strlen($latest) > 240 ? substr($latest, 0, 237) . '…' : rtrim($latest, '.');
+
+        return [$state, implode(', ', $parts) . ' in 24 hours', 'Latest, ' . $when . ': ' . $shown . '. Log file: ' . $log . '.'];
     }
 
     /** The last $bytes of a file, starting at a whole line, or null when it can't be read. */
@@ -936,8 +933,7 @@ final class SiteHealthService
             self::attempt('dbLogin', 'Database login', static fn (): array => self::databaseLogin($local)),
             self::attempt('configCopies', 'Leftover config copies', static fn (): array => self::configCopies()),
             self::attempt('configPermissions', 'config.php permissions', static fn (): ?array => self::configPermissions()),
-            self::attempt('passwords', 'Admin password storage', static fn (): ?array => self::passwordStorage(self::adminAccounts())),
-            self::attempt('devConsole', 'Dev Console access', static fn (): array => self::devConsoleAccess(self::adminAccounts())),
+            self::attempt('devConsole', 'Dev Console access', static fn (): array => self::devConsoleAccess()),
         ];
     }
 
@@ -1268,90 +1264,23 @@ final class SiteHealthService
     }
 
     /**
-     * Everyone who can open the admin: the Super Admin plus every user of a role with an FC grant.
-     *
-     * @return array{users:array<int,string>,devConsole:list<string>}
+     * Roles granted the Console, besides the Super Admin (who always has it).
      */
-    private static function adminAccounts(): array
+    private static function devConsoleAccess(): array
     {
-        static $accounts = null;
-        if ($accounts !== null) {
-            return $accounts;
-        }
-
-        $users = [];
-        $devConsole = [];
+        $roles = [];
         foreach (array_keys(UserModel::roleCounts()['roles']) as $role) {
             $role = (string) $role;
-            $matrix = GroupPermissionsModel::get($role);
-            if (!GroupPermissionsModel::matrixHasGrant($matrix)) {
-                continue;
-            }
-            if (GroupPermissionsModel::getPath($matrix, 'settings.dev_console')) {
-                $devConsole[] = ucwords(str_replace(['_', '-'], ' ', $role));
-            }
-            foreach (UserModel::list('', $role, 500)['items'] as $item) {
-                $users[(int) $item['id']] = $item['display_name'] !== '' ? (string) $item['display_name'] : (string) $item['user_login'];
+            if (GroupPermissionsModel::getPath(GroupPermissionsModel::get($role), 'settings.dev_console')) {
+                $roles[] = ucwords(str_replace(['_', '-'], ' ', $role));
             }
         }
 
-        $super = PermissionService::superAdminUser();
-        if ($super !== null) {
-            $users[$super['ID']] = $super['display_name'];
-        }
-
-        return $accounts = ['users' => $users, 'devConsole' => $devConsole];
-    }
-
-    /**
-     * Reads only each hash's format prefix; no hash leaves this method.
-     *
-     * @param array{users:array<int,string>,devConsole:list<string>} $accounts
-     */
-    private static function passwordStorage(array $accounts): ?array
-    {
-        $ids = array_map('intval', array_keys($accounts['users']));
-        $conn = $ids === [] ? null : UserModel::db();
-        if (!$conn instanceof \mysqli) {
-            return null;
-        }
-
-        $total = 0;
-        $old = 0;
-        try {
-            $result = $conn->query('SELECT user_pass FROM `' . self::ident(UserModel::usersTable()) . '` WHERE ID IN (' . implode(',', $ids) . ')');
-            while ($result instanceof \mysqli_result && ($row = $result->fetch_row())) {
-                $total++;
-                $hash = (string) $row[0];
-                // phpass ($P$/$H$) and bare MD5 predate WordPress 6.8's bcrypt.
-                if (str_starts_with($hash, '$P$') || str_starts_with($hash, '$H$') || preg_match('/^[a-f0-9]{32}$/i', $hash)) {
-                    $old++;
-                }
-            }
-        } finally {
-            $conn->close();
-        }
-
-        if ($total === 0) {
-            return null;
-        }
-        if ($old > 0) {
-            return ['warn', $old . ' of ' . $total . ' in the old format', 'These admin passwords are stored in WordPress\'s older format, which is far quicker to crack if the database ever leaks. WordPress 6.8 and later upgrades each one the next time that person signs in to WordPress.'];
-        }
-
-        return ['good', 'Modern hashing', 'Every admin password uses bcrypt or stronger.'];
-    }
-
-    /**
-     * @param array{users:array<int,string>,devConsole:list<string>} $accounts
-     */
-    private static function devConsoleAccess(array $accounts): array
-    {
-        if ($accounts['devConsole'] === []) {
+        if ($roles === []) {
             return ['good', 'Super Admin only', ''];
         }
 
-        return ['warn', implode(', ', $accounts['devConsole']), 'These roles can run git commands (pull, reset and more) from Settings → Console. Keep it to the people who deploy, in Group Permissions.'];
+        return ['warn', implode(', ', $roles), 'These roles can run git commands (pull, reset and more) from Settings → Console. Keep it to the people who deploy, in Group Permissions.'];
     }
 
     /**

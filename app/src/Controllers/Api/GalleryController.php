@@ -45,11 +45,22 @@ final class GalleryController extends BaseApiController
 
     private function listItems(): void
     {
-        echo json_encode(GalleryModel::listItems(), JSON_UNESCAPED_UNICODE);
+        // The media picker checks each file against this before it uploads.
+        echo json_encode(GalleryModel::listItems() + ['uploadLimit' => GalleryMaintenanceService::uploadLimit()], JSON_UNESCAPED_UNICODE);
     }
 
     private function upload(): void
     {
+        // A request over post_max_size arrives without its token, which used to read as "Invalid security token".
+        if (GalleryMaintenanceService::requestTooLarge()) {
+            http_response_code(413);
+            echo json_encode([
+                'ok' => false,
+                'error' => GalleryMaintenanceService::uploadLimit()['message'],
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         $csrfPosted = $this->request->post('csrf');
         $csrf = $csrfPosted !== null ? (string) $csrfPosted : null;
         if (!AuthService::verifyCsrf($csrf)) {

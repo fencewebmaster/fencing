@@ -136,7 +136,7 @@ $page = $fcGalleryPage;
             <i class="fa-solid fa-cloud-arrow-up fc-gallery-page__dropzone-icon" aria-hidden="true"></i>
             <p class="fc-gallery-page__dropzone-title">Drop files here to upload</p>
             <p class="fc-gallery-page__dropzone-text">or click anywhere in this area to browse your computer</p>
-            <p class="fc-gallery-page__dropzone-hint">JPG, PNG, GIF, WebP, or SVG · saved to <code>public/assets/uploads</code></p>
+            <p class="fc-gallery-page__dropzone-hint">JPG, PNG, GIF, WebP, or SVG up to <?php echo e((string) $page['upload_limit_label']); ?> · saved to <code>public/assets/uploads</code></p>
             <input
                 type="file"
                 class="fc-gallery-page__file-input"

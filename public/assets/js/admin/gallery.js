@@ -27,7 +27,8 @@
         activeTab: 'library',
         canUpload: true,
         canDelete: true,
-        csrf: ''
+        csrf: '',
+        uploadLimit: null
     };
 
     var escapeHtml = global.FC.util.escapeHtml;
@@ -612,6 +613,7 @@
             // reload), and a stale token here causes every upload to fail with
             // "Invalid security token" even though the page itself is fine.
             state.uploadQueue.csrf = state.csrf;
+            state.uploadQueue.limit = state.uploadLimit;
             return state.uploadQueue;
         }
         if (!global.FcGalleryUploadQueue) {
@@ -621,6 +623,7 @@
         state.uploadQueue = global.FcGalleryUploadQueue.create({
             apiUrl: API_UPLOAD,
             csrf: state.csrf,
+            limit: state.uploadLimit,
             onChange: function (event) {
                 if (!state.container || state.activeTab !== 'upload') {
                     return;
@@ -662,7 +665,7 @@
                 }
 
                 if (summary.failed) {
-                    toast('error', 'Upload failed.', TOAST_GALLERY);
+                    toast('error', summary.errors && summary.errors.length === 1 ? summary.errors[0] : 'Upload failed.', TOAST_GALLERY);
                 }
 
                 if (!summary.uploaded) {
@@ -720,7 +723,9 @@
             escapeHtml(hintText) +
             '</p>' +
             (full && !compact
-                ? '<p class="fc-gallery-page__dropzone-hint">JPG, PNG, GIF, WebP, or SVG · saved to <code>public/assets/uploads</code></p>'
+                ? '<p class="fc-gallery-page__dropzone-hint">JPG, PNG, GIF, WebP, or SVG' +
+                  (state.uploadLimit ? ' up to ' + escapeHtml(state.uploadLimit.label || '') : '') +
+                  ' · saved to <code>public/assets/uploads</code></p>'
                 : '') +
             '<input type="file" class="fc-gallery-page__file-input" accept="' +
             ACCEPT_TYPES +
@@ -1159,6 +1164,7 @@
         state.canUpload = data.canUpload !== false;
         state.canDelete = data.canDelete !== false;
         state.csrf = data.csrf || '';
+        state.uploadLimit = data.uploadLimit && typeof data.uploadLimit === 'object' ? data.uploadLimit : null;
         state.activeTab = normalizeGalleryTab(data.activeTab || readGalleryTabFromUrl());
         if (state.activeTab === 'upload' && !state.canUpload) {
             state.activeTab = 'library';
