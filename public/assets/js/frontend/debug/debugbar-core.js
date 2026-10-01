@@ -469,8 +469,8 @@
 
     var CART_RULES = ['apply_barr_corner_post_rules', 'apply_panel_options_bracket_qty', 'apply_post_options_opt1',
         'apply_barr_post_cover_rules', 'apply_post_options_opt2', 'apply_panel_post', 'cart_conditions',
-        'slat_fence_conditions', 'glass_pool_conditions', 'apply_barr_gate_panel_extra', 'apply_barr_bracket_rules',
-        'pair_chem_anchor_glue'];
+        'slat_fence_conditions', 'glass_pool_conditions', 'perforated_pool_conditions', 'apply_barr_gate_panel_extra',
+        'apply_barr_bracket_rules', 'pair_chem_anchor_glue'];
 
     function installCartCollectors() {
         try {

@@ -954,6 +954,8 @@ FENCES.cartItems = {
 
         newCartItems = FENCES.cartItems.glass_pool_conditions(newCartItems, context);
 
+        newCartItems = FENCES.cartItems.perforated_pool_conditions(newCartItems, context);
+
         newCartItems = FENCES.cartItems.apply_barr_gate_panel_extra(newCartItems, context);
 
         newCartItems = FENCES.cartItems.apply_barr_bracket_rules(newCartItems, context, processOpts);
@@ -1016,6 +1018,13 @@ FENCES.cartItems = {
     glass_pool_conditions: function(array, context) {
         if (typeof GlassPool !== 'undefined' && typeof GlassPool.applyCartConditions === 'function') {
             return GlassPool.applyCartConditions(array, context);
+        }
+        return array;
+    },
+
+    perforated_pool_conditions: function(array, context) {
+        if (typeof PerforatedPool !== 'undefined' && typeof PerforatedPool.applyCartConditions === 'function') {
+            return PerforatedPool.applyCartConditions(array, context);
         }
         return array;
     },

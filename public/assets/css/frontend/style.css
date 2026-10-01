@@ -9660,11 +9660,11 @@ body.fc-restoring-selection .fencing-tab-name {
     display: none !important;
 }
 
-/* Bullets — centered below slides */
+/* Bullets — centered below slides; 34px leaves equal space to the tiles and to the card border (-26px margin below). */
 .fc-planner-page .js-fencing-styles-slick .slick-dots {
     position: absolute;
     left: 50%;
-    bottom: 8px;
+    bottom: 34px;
     transform: translateX(-50%);
     width: auto;
     max-width: calc(100% - 120px);
@@ -9763,10 +9763,11 @@ body.fc-restoring-selection .fencing-tab-name {
         right: 2px;
     }
 
+    /* Equal space to the tiles above and to the Load Quote button below. */
     .fc-planner-page .js-fencing-styles-slick .slick-dots {
         max-width: calc(100% - 96px);
         gap: 12px;
-        bottom: 6px;
+        bottom: 23px;
     }
 
     .fc-planner-page .js-fencing-styles-slick .slick-dots li button {
@@ -12295,6 +12296,20 @@ body.fc-restoring-selection .fencing-tab-name {
     background-repeat: no-repeat, no-repeat, repeat;
 }
 
+/* Premium Perforated: a framed sheet (top, bottom and side rails) with a fine dot grid for the perforation. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:not(.fencing-raked-panel) {
+    background-color: transparent;
+    background-image:
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
+        radial-gradient(circle, var(--fc-tundora) 0 0.9px, transparent 1.3px);
+    background-size: 100% 3px, 100% 3px, 3px 100%, 3px 100%, 4px 4px;
+    background-position: 0 0, 0 100%, 0 0, 100% 0, 0 0;
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+}
+
 /* Slat + Slat Infill: the gaps between slats go transparent so the ground reads through them —
    the planner's drafting grid, the project plan's section background (solid white gaps made the
    panel read as one filled box on the grid). Slats stay the flat
@@ -12333,20 +12348,22 @@ body.fc-restoring-selection .fencing-tab-name {
     border-color: var(--fc-dark-charcoal);
 }
 
-/* Same post cap as Flat Top and Barr, but in the #333333 charcoal to match the softened post
-   outline above; the post itself keeps the base rule's flat nickel — no gradient, by request.
-   :before is free on slat posts (the core-drilled markers use :after; the Infill brick texture
-   is scoped to its own type). */
+/* Same flush top cap as Flat Top and Barr, in the post's own fill and outline. :before is free on slat posts
+   (the core-drilled markers use :after; the Infill brick texture is scoped to its own type). */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="panel_post"]:not(.panel-no-post)::before,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="raked_post"]:not(.panel-no-post)::before {
     content: "";
     position: absolute;
     top: -4px;
-    left: -3px;
-    right: -3px;
-    height: 4px;
-    border-radius: 1px;
-    background: #777777;
+    left: -1px;
+    right: -1px;
+    height: 3px;
+    box-sizing: border-box;
+    border: 1px solid;
+    border-color: inherit;
+    border-bottom: 0;
+    border-radius: 1px 1px 0 0;
+    background: inherit;
 }
 
 
@@ -12357,7 +12374,9 @@ body.fc-restoring-selection .fencing-tab-name {
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:before,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:after,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:before,
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:after {
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:after,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:after {
     content: none !important;
 }
 
@@ -12473,21 +12492,21 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* The post cannot stretch to the row any more (it is in .raked-panel's own flex line, which no
-   longer grows), so it is sized outright: the sheet plus the 11px cap and 13px foot it always had,
+   longer grows), so it is sized outright: from the sheet's 2px outline down to the 13px foot it always had,
    and a negative bottom margin keeps it from inflating that line in turn. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .raked-panel-post {
     align-self: flex-start;
-    height: calc(var(--fc-rake-h, 159px) + 24px) !important;
-    margin-top: calc(109px - var(--fc-rake-h, 159px)) !important;
-    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 24px)) !important;
+    height: calc(var(--fc-rake-h, 159px) + 15px) !important;
+    margin-top: calc(118px - var(--fc-rake-h, 159px)) !important;
+    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 15px)) !important;
 }
 
-/* Cement-in sinks a post 15px deeper (min-height 155px against the 140px the others stretch to).
+/* Cement-in sinks a post 15px deeper (min-height 148px against the 133px the others stretch to).
    This one is sized outright, so it has to take that depth itself or its footing line sits high
    of the centre posts'. The top is unchanged — only the foot goes further down. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .raked-panel-post:is(.opt-2, .opt-2-1) {
-    height: calc(var(--fc-rake-h, 159px) + 39px) !important;
-    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 39px)) !important;
+    height: calc(var(--fc-rake-h, 159px) + 30px) !important;
+    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 30px)) !important;
 }
 
 /* The raked outline band (slope, steps and the 2px lip along the flat tops) is the wrapper's own
@@ -12520,7 +12539,8 @@ body.fc-restoring-selection .fencing-tab-name {
    border still comes from the base .fencing-panel-item:hover rule. */
 @media (min-width: 1024px) {
     :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:not(.fencing-raked-panel):hover,
-    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel):hover {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel):hover,
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:not(.fencing-raked-panel):hover {
         background-color: var(--fc-lavender-blush);
     }
 }
@@ -12529,7 +12549,8 @@ body.fc-restoring-selection .fencing-tab-name {
    bars' #404040 (it was deep blue) so every bar in the drawing is one colour — the orange
    label is what marks the gate now. Inset shadow, not border — the ally border is the shared
    panel edge and stays. */
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-panel-gate {
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-panel-gate,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .fencing-panel-gate {
     box-shadow: inset 0 0 0 2px var(--fc-tundora);
 }
 
@@ -12539,29 +12560,59 @@ body.fc-restoring-selection .fencing-tab-name {
     box-shadow: inset 2px 0 0 0 var(--fc-tundora), inset -2px 0 0 0 var(--fc-tundora);
 }
 
-/* Post cap, as on every mockup post: a stub wider than the 8px post at its exposed top.
-   .panel-post is already position:relative with visible overflow for this type. */
 /* Flat Top and Barr posts: one solid #404040 instead of the group-b base's three-stop shading
-   (charcoal -> boulder -> black), matching the solid rails and pickets. The cap and the 1px
-   outline stay black. Covers the raked posts too, which carry .panel-post. */
+   (charcoal -> boulder -> black), matching the solid rails and pickets. The 1px outline stays
+   black. Covers the raked posts too, which carry .panel-post. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post,
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post {
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .panel-post {
     background: var(--fc-tundora);
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post::before,
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post::before {
+/* Post top cap: the flat, colour-matched aluminium plate real 50x50 posts take (e.g. XP-TP), flush with the post, its top
+   edge showing as the seam. No Post ends have no cap. .panel-post is position:relative with visible overflow here. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post:not(.panel-no-post)::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post:not(.panel-no-post)::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .panel-post:not(.panel-no-post)::before {
     content: "";
     position: absolute;
     top: -4px;
-    left: -3px;
-    right: -3px;
-    height: 4px;
-    border-radius: 1px;
-    background: var(--fc-black);
+    left: -1px;
+    right: -1px;
+    height: 3px;
+    box-sizing: border-box;
+    border: 1px solid;
+    border-color: inherit;
+    border-bottom: 0;
+    border-radius: 1px 1px 0 0;
+    background: inherit;
 }
 
-/* ===== Powder coat (Flat Top, Barr, Slat, Slat Infill) ===== */
+/* Barr posts stop level with the picket tops, only the cap standing proud: the shared -7px lift put them well above the panel.
+   fcApplyGroupBFenceDisplayHeights() trims their height to match, so the custom-height floor drops by the same 7px. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post {
+    margin-top: 0;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"].custom-height .panel-post {
+    min-height: 118px !important;
+}
+
+/* Flat Top and Premium Perforated posts stop level with the panel top the same way; CSS alone sizes them, so each floor
+   drops by the lift instead. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container:is([data-type="flat_top"], [data-type="perforated_pool"]) .panel-post {
+    margin-top: 0;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container:is([data-type="flat_top"], [data-type="perforated_pool"]) .panel-post:is(.opt-1, .opt-1-1) {
+    min-height: 133px;
+}
+
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container:is([data-type="flat_top"], [data-type="perforated_pool"]) .panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1) {
+    min-height: 148px;
+}
+
+/* ===== Powder coat (Flat Top, Barr, Slat, Slat Infill, Premium Perforated) ===== */
 
 /* fcApplyFenceCoat puts each style's Step 4 swatch colour and a darker edge on <html>; its container
    maps them onto --fc-coat*. Before a pick nothing here matches and the uncoloured drawings stand. */
@@ -12585,12 +12636,18 @@ body.fc-restoring-selection .fencing-tab-name {
     --fc-coat-edge: var(--fc-slat-infill-edge);
 }
 
+[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] {
+    --fc-coat: var(--fc-perforated-color);
+    --fc-coat-edge: var(--fc-perforated-edge);
+}
+
 /* Edge width, pickets, and a free-standing rail (Barr's sit clear of the panel edge, so both faces
    take the edge). */
 [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"],
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"],
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"],
-[data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] {
+[data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"],
+[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] {
     --fc-coat-line: 0.5px;
     --fc-coat-pickets: repeating-linear-gradient(90deg,
         var(--fc-coat-edge) 0 0.5px,
@@ -12620,7 +12677,8 @@ body.fc-restoring-selection .fencing-tab-name {
 [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally,
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally,
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .ally,
-[data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally {
+[data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally,
+[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally {
     border-color: var(--fc-coat-edge);
 }
 
@@ -12629,7 +12687,8 @@ body.fc-restoring-selection .fencing-tab-name {
     [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:hover,
     [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:hover,
     [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .ally:hover,
-    [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally:hover {
+    [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally:hover,
+    [data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:hover {
         border-color: var(--fc-princeton-orange);
     }
 }
@@ -12657,6 +12716,16 @@ body.fc-restoring-selection .fencing-tab-name {
 
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally.fencing-raked-panel {
     background-image: var(--fc-coat-rail), var(--fc-coat-pickets);
+}
+
+/* Perforated frame rails take the edge on their inner face only, like Flat Top's; the dots take the coat. */
+[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:not(.fencing-raked-panel) {
+    background-image:
+        linear-gradient(to bottom, var(--fc-coat) 0 2.5px, var(--fc-coat-edge) 2.5px 3px),
+        linear-gradient(to bottom, var(--fc-coat-edge) 0 0.5px, var(--fc-coat) 0.5px 3px),
+        linear-gradient(to right, var(--fc-coat) 0 2.5px, var(--fc-coat-edge) 2.5px 3px),
+        linear-gradient(to right, var(--fc-coat-edge) 0 0.5px, var(--fc-coat) 0.5px 3px),
+        radial-gradient(circle, var(--fc-coat) 0 0.9px, transparent 1.3px);
 }
 
 /* Slats on the section's own pitch, edged top and bottom so touching (0mm gap) slats still part.
@@ -12697,7 +12766,8 @@ body.fc-restoring-selection .fencing-tab-name {
     background: var(--fc-coat-edge);
 }
 
-[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-panel-gate {
+[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-panel-gate,
+[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .fencing-panel-gate {
     box-shadow: inset 0 0 0 2px var(--fc-coat);
 }
 
@@ -12721,7 +12791,8 @@ body.fc-restoring-selection .fencing-tab-name {
 /* Posts, their caps and the base-plate covers all come in the fence colour. `color` feeds the base
    post border's currentColor, so the orange hover border still wins. */
 [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post,
-[data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post {
+[data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post,
+[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .panel-post {
     background: var(--fc-coat);
     color: var(--fc-coat-edge);
 }
@@ -12735,16 +12806,9 @@ body.fc-restoring-selection .fencing-tab-name {
     color: var(--fc-coat-edge);
 }
 
-[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post::before,
-[data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post::before,
-[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="panel_post"]:not(.panel-no-post)::before,
-[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post[data-cart-key="raked_post"]:not(.panel-no-post)::before {
-    background: var(--fc-coat);
-    box-shadow: 0 0 0 1px var(--fc-coat-edge);
-}
-
 [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after,
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after,
+[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after,
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after {
     border-bottom-color: var(--fc-coat);
     box-shadow: 0 0 0 1px var(--fc-coat-edge);
@@ -16167,6 +16231,13 @@ input[type="number"] {
     z-index: 10070;
 }
 
+/* The open option drawer's close circle (top 10px, right 16px, 32px) sits in this corner: step left of it. */
+@media (min-width: 768px) {
+    body:has(#fc-control-modal.fc-modal-slid) .fc-toast-container {
+        right: calc(16px + 32px + 0.5rem);
+    }
+}
+
 .fc-toast {
     width: min(22rem, calc(100vw - 2rem));
     max-width: none;
@@ -19016,6 +19087,73 @@ div.fc-footer-app .app-version {
 .fc-gate-hw__leaf--right .fc-gate-hw__latch {
     left: 1px;
     transform: scaleX(-1);
+}
+
+/* Flat Top, Barr, Premium Perforated: the magnetic top-pull latch as D&D and PoolSafe fit it for AS 1926.1 - body on the latch
+   post, knob 1500mm up, striker on the gate under it. Single gates; a run whose latch stands over the fence gets 24px head-room. */
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child):not(:has(.fencing-panel-gate[data-cart-value="1800"])),
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child):not(:has(.fencing-panel-gate[data-cart-value="1800"])) {
+    padding-top: 42px;
+}
+
+/* The gap figures rise with it, keeping their place under the width line. */
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child):not(:has(.fencing-panel-gate[data-cart-value="1800"])) .fc-gate-spacing,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child):not(:has(.fencing-panel-gate[data-cart-value="1800"])) .fc-gate-spacing {
+    top: -54px;
+}
+
+/* Anchored from the gate foot: knob 1500mm, body to ~1020mm (its lower bracket), striker 1px under it. A short gate keeps
+   it on the post top (knob 28px over it) as a 1220mm fence without an extra-high post does; an 1800 one has it all below. */
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch {
+    top: max(-30px, calc(100% - 146px));
+    width: 13px;
+    height: 55px;
+    background:
+        linear-gradient(
+                to right,
+                var(--hw-shade) 0 1px,
+                var(--hw-lit) 1px 2px,
+                var(--hw-body) 2px 5px,
+                var(--hw-shade) 5px 6px
+            )
+            no-repeat 6px 8px / 6px 40px;
+}
+
+/* Barr's gate has no top or bottom border (its frame is the stiles), so the same heights are measured from its outer edge. */
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container[data-type="barr"]:has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container[data-type="barr"]:has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch {
+    top: max(-28px, calc(100% - 148px));
+}
+
+/* Centred on the latch post (8px, 1px off the gate); the box reaches 4px into the stile for the striker's mounting plate. */
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--left .fc-gate-hw__latch,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--left .fc-gate-hw__latch {
+    right: -11px;
+}
+
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--right .fc-gate-hw__latch,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--right .fc-gate-hw__latch {
+    left: -11px;
+}
+
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch::before,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch::before {
+    left: 6px;
+}
+
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch::after,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch::after {
+    left: 7px;
+}
+
+/* Striker (gate stop): on the gate stile, reaching across the gap to sit under the latch body. */
+.fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__keeper,
+.fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__keeper {
+    left: 0;
+    width: 12px;
+    height: 6px;
+    border-radius: 1px 2px 2px 1px;
 }
 
 /* ===== Slat gate latch and handle ===== */

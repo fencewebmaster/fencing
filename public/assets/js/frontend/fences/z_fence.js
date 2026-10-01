@@ -9,6 +9,7 @@ FENCE = {
             min_gate: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm",
             min_gate_custom: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b>",
             min_gate_only: "<b>GATE ONLY:</b> Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b>",
+            min_gate_only_no_custom: "<b>GATE ONLY:</b> Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm",
             min_gate_raked: "Minimum <b>Overall Length</b> for a <b>GATE & {{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_raked: "Minimum <b>Overall Length</b> for <b>{{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_gate_hinge: "Minimum <b>Overall Length</b> for a <b>GATE & HINGE PANEL</b> is <b>{{overall}}</b>mm",
@@ -57,6 +58,17 @@ FENCE = {
             gate_post_gaps: 25 + 20 + 20,
             gate_posts_gaps: 25 + 20 + 20 + 25,
         },
+        perforated_pool: {
+            gate: 975 + 50 + 20 + 20,
+            gate_space_left: 20,
+            gate_space_right: 20,
+            post: 50,
+            minOnGate: 975 + 50 + 20 + 20 + 50, // 1115
+            maxOnGate: 1165,
+            minPanelWidthOnGate: 86,
+            gate_post_gaps: 50 + 20 + 20,
+            gate_posts_gaps: 50 + 20 + 20 + 50,
+        },
     },
     
     //----------------------------------------------------------------------------------
@@ -85,6 +97,10 @@ FENCE = {
 
             case 'slat_fence_infill':
                 return SlatFenceInfill.init(func, a, b, c, d, e, f)
+                break;
+
+            case 'perforated_pool':
+                return PerforatedPool.init(func, a, b, c, d, e, f)
                 break;
 
             default:

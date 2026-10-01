@@ -832,6 +832,8 @@ class FenceCalculator {
      * Only ever narrows panels. Where the result would itself be unbuildable (below the minimum,
      * or still over stock) the plan is left exactly as it was rather than swapped for something no
      * better, and the even-panel option, which has none of these bands, remains available.
+     * An option with `size.stretch` (Premium Perforated: the frame is cut to fit) may widen each panel
+     * by up to that much instead, so a few millimetres no longer buy another panel and post.
      */
     _repairFullPanelPlan(input) {
         let {
@@ -855,6 +857,8 @@ class FenceCalculator {
         }
 
         const stock = Math.round(default_panel_width);
+        const stretch = Math.max(0, Math.round(Number(panel_options_data?.size?.stretch) || 0));
+        const cap = stock + stretch;
         const post = Math.round(post_panel);
         const minPanel = parseInt(FENCE.get('item', 'min_panel_width'), 10) || 86;
         if (!(stock > 0) || !(post > 0)) {
@@ -892,16 +896,19 @@ class FenceCalculator {
         // and dropped the difference, which is the same shortfall by another route.
         const planWidth = widths.reduce((a, b) => a + b, 0) + post * (widths.length - 1);
 
+        // Fewest bays that can hold it without any panel exceeding stock (plus any stretch) — never
+        // fewer than the plan already had, so a sliver is re-spread across the bays it is already using.
+        const minBays = Math.ceil((blockWidth + post) / (cap + post));
+        // With a stretch the fewest bays win outright, so a short end panel is folded into the others too.
+        const fewerBays = stretch > 0 && minBays < widths.length;
+
         const tooNarrow = widths.some(w => w < minPanel);
         const overStock = widths.some(w => w > stock);
-        if (blockWidth === planWidth && !tooNarrow && !overStock) {
+        if (blockWidth === planWidth && !tooNarrow && !overStock && !fewerBays) {
             return unchanged;
         }
 
-        // Fewest bays that can hold it without any panel exceeding stock — never fewer than the
-        // plan already had, so a sliver is re-spread across the bays it is already using.
-        const minBays = Math.ceil((blockWidth + post) / (stock + post));
-        const count = Math.max(widths.length, minBays);
+        const count = stretch > 0 ? minBays : Math.max(widths.length, minBays);
         const panelTotal = blockWidth - post * (count - 1);
         if (!(panelTotal > 0) || !(count >= 1) || !Number.isFinite(count)) {
             return unchanged;
@@ -909,11 +916,18 @@ class FenceCalculator {
 
         const base = Math.floor(panelTotal / count);
         const extra = panelTotal - base * count; // 0..count-1 spare mm, all onto one panel
-        if (base < minPanel || base > stock || base + extra > stock) {
+        // Where one panel would pass a stretch's cap they go one per panel instead.
+        const spread = stretch > 0 && base + extra > cap;
+        if (base < minPanel || base > cap || (!spread && base + extra > cap)) {
             return unchanged;
         }
 
-        if (extra > 0) {
+        if (spread && extra > 0) {
+            long_panel_count = count - extra;
+            long_panel_length = base;
+            short_panel_count = extra;
+            short_panel_length = base + 1;
+        } else if (extra > 0) {
             long_panel_count = count - 1;
             long_panel_length = base;
             short_panel_count = 1;

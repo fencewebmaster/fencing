@@ -1081,8 +1081,11 @@ function normalizeFenceStyleSlug(slug) {
     return slug === 'slat_fence' ? 'slat' : slug;
 }
 
-/** Human-readable fence style title for a planner / project-plan section (localStorage + fc_data). */
-function fcFenceSectionStyleTitle(tabIdx0) {
+/**
+ * Human-readable fence style title for a planner / project-plan section (localStorage + fc_data).
+ * forTab: the section tabs take a definition's shorter `tab_title` when it has one.
+ */
+function fcFenceSectionStyleTitle(tabIdx0, forTab) {
     var raw = localStorage.getItem('custom_fence-' + tabIdx0);
     if (!raw) {
         return '';
@@ -1101,10 +1104,10 @@ function fcFenceSectionStyleTitle(tabIdx0) {
                 ? normalizeFenceStyleSlug(String(slugRaw))
                 : String(slugRaw);
         if (typeof fc_data !== 'undefined' && fc_data[slug] && fc_data[slug].title) {
-            return fc_data[slug].title;
+            return (forTab && fc_data[slug].tab_title) || fc_data[slug].title;
         }
         if (typeof fc_data !== 'undefined' && fc_data[String(slugRaw)] && fc_data[String(slugRaw)].title) {
-            return fc_data[String(slugRaw)].title;
+            return (forTab && fc_data[String(slugRaw)].tab_title) || fc_data[String(slugRaw)].title;
         }
         return String(slugRaw).replace(/_/g, ' ');
     } catch (e) {
@@ -1292,7 +1295,7 @@ function fcSyncPlannerTabFenceStyle($tab, tabIdx0, titleOverride) {
         var title =
             titleOverride !== undefined && titleOverride !== null
                 ? String(titleOverride).trim()
-                : fcFenceSectionStyleTitle(tabIdx0);
+                : fcFenceSectionStyleTitle(tabIdx0, true);
 
         if (title) {
             $styleEl.text(title).prop('hidden', false).show();
@@ -1318,16 +1321,16 @@ function fcGetPanelLabelFenceHeightLineHtml(slug, calc, opts) {
             return slatLine;
         }
     }
-    if (['barr', 'flat_top', 'glass_pool'].indexOf(canon) === -1) {
+    if (['barr', 'flat_top', 'glass_pool', 'perforated_pool'].indexOf(canon) === -1) {
         return '';
     }
     var raw = calc && calc.fence_size ? calc.fence_size.height : '';
     var h = Math.round(Number(String(raw).replace(/,/g, '')));
     if (!Number.isFinite(h) || h <= 0) {
-        // Barr carries a Step 2 fence height, so a missing one means nothing to print. Flat top and
-        // glass pool have no height control at all — their panels are the stock sheet the step-ups
+        // Barr carries a Step 2 fence height, so a missing one means nothing to print. Flat top, glass
+        // pool and perforated have no height control at all — their panels are the stock sheet the step-ups
         // rake back down to, which is the height to show.
-        if (canon !== 'flat_top' && canon !== 'glass_pool') {
+        if (canon !== 'flat_top' && canon !== 'glass_pool' && canon !== 'perforated_pool') {
             return '';
         }
         h = FC_GLASS_PANEL_HEIGHT_MM;
@@ -1759,13 +1762,16 @@ function fcApplyGroupBFenceDisplayHeights(calc, $scope, opts) {
         .find('.fencing-panel-item:not(.fencing-raked-panel), .short-panel-item, .fencing-offcut .offcut-body')
         .css({ height: fenceHeightPx });
 
+    // Barr posts start level with the picket tops (style.css drops their -7px lift), so they end 7px shorter.
+    var trimTopPx = slug === 'barr' ? 7 : 0;
+
     $root.find('.panel-post.opt-1, .panel-post.opt-1-1').css({
-        height: fenceHeightPx + 25,
-        minHeight: fenceHeightPx + 25
+        height: fenceHeightPx + 25 - trimTopPx,
+        minHeight: fenceHeightPx + 25 - trimTopPx
     });
     $root.find('.panel-post.opt-2, .panel-post.opt-2-1').css({
-        height: fenceHeightPx + 35,
-        minHeight: fenceHeightPx + 35
+        height: fenceHeightPx + 35 - trimTopPx,
+        minHeight: fenceHeightPx + 35 - trimTopPx
     });
 }
 
@@ -7735,7 +7741,7 @@ function fcApplyFenceCoat(fenceSlug, key) {
 function fcApplyDiagramColors() {
     // A panel option can leave one colour standing while Step 4 is not on screen to say so.
     try {
-        ['flat_top', 'barr', 'slat', 'slat_fence_infill', 'glass_pool'].forEach(function(slug) {
+        ['flat_top', 'barr', 'slat', 'slat_fence_infill', 'glass_pool', 'perforated_pool'].forEach(function(slug) {
             fcAutoSelectSoleAllowedColor(slug);
         });
     } catch (e) {}
@@ -7747,6 +7753,7 @@ function fcApplyDiagramColors() {
     fcApplyFenceCoat('barr', 'barr');
     fcApplyFenceCoat('slat', 'slat');
     fcApplyFenceCoat('slat_fence_infill', 'slat-infill');
+    fcApplyFenceCoat('perforated_pool', 'perforated');
     fcApplyPostFinishCoat();
     fcSyncPlannerColorButton();
     fcSyncPlannerPostFinishButton();
@@ -9111,6 +9118,9 @@ function updateOverAllLength(data) {
 
     gateOnly = gate_data[0]?.settings?.gateOnly;
 
+    // A style without custom gates (Glass Pool, Premium Perforated) must not be told to switch to one.
+    var offersCustomGate = !!info?.settings?.gate?.custom;
+
 
     if (
         FENCE.isGateMinOalStyle(slug) ||
@@ -9235,7 +9245,7 @@ function updateOverAllLength(data) {
                     ? stdGateMinOverallMm
                     : gate_posts_gaps - minusPosts - adjustGap;
 
-            var msg = FENCE.settings.message.min_gate_only
+            var msg = (offersCustomGate ? FENCE.settings.message.min_gate_only : FENCE.settings.message.min_gate_only_no_custom)
                 .replace(/{{overall}}/gi, overall);
 
             if(overall != mbn && !isNaN(overall))
@@ -9314,9 +9324,9 @@ function updateOverAllLength(data) {
                 ? stdGateMinOverallMm
                 : gate_posts_gaps - minusPosts - adjustGap;
 
-        var msg = FENCE.settings.message.min_gate_custom
+        var msg = (offersCustomGate ? FENCE.settings.message.min_gate_custom : FENCE.settings.message.min_gate)
             .replace(/{{overall}}/gi, overall);
-            
+
         if(overall != mbn && !isNaN(overall))
             popupToast("Important", msg, 'STD+P');
 
