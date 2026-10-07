@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Fc\Admin\Debug;
 
 use Fc\Admin\Services\AppConfigService;
+use Fc\Admin\Services\AppVersionService;
 use Fc\Admin\Services\Database;
 use Fc\Admin\Services\SiteRegistryService;
-use Fc\Admin\Settings\BrandingSettings;
 use Fc\Admin\Settings\ConsoleSettings;
 
 /**
@@ -252,9 +252,9 @@ final class DebugbarServer
         } catch (\Throwable) {
         }
 
-        $brandingVersion = '';
+        $releaseVersion = '';
         try {
-            $brandingVersion = (string) (BrandingSettings::get()['version'] ?? '');
+            $releaseVersion = AppVersionService::label();
         } catch (\Throwable) {
         }
 
@@ -270,7 +270,7 @@ final class DebugbarServer
         return [
             'phpVersion' => PHP_VERSION,
             'appVersion' => $appVersion,
-            'brandingVersion' => $brandingVersion,
+            'releaseVersion' => $releaseVersion,
             'debugMode' => true,
             'appDebugLegacy' => $appDebugLegacy,
             'plannersTable' => $table,

@@ -3039,6 +3039,361 @@
             });
     }
 
+    /* ---- Add / Update Rows: one .csv, previewed and then applied from the same File object. ---- */
+
+    var mergeState = null;
+    var MERGE_LIST_CAP = 300;
+    var MERGE_CELL_CAP = 8;
+
+    function openMergeRows(csrf, file) {
+        var modal = document.querySelector('[data-fc-merge-modal]');
+        if (!modal) {
+            return;
+        }
+
+        var el = {
+            modal: modal,
+            file: modal.querySelector('[data-fc-merge-file]'),
+            summary: modal.querySelector('[data-fc-merge-summary]'),
+            status: modal.querySelector('[data-fc-merge-status]'),
+            add: modal.querySelector('[data-fc-merge-add]'),
+            update: modal.querySelector('[data-fc-merge-update]'),
+            unchanged: modal.querySelector('[data-fc-merge-unchanged]'),
+            changes: modal.querySelector('[data-fc-merge-changes]'),
+            changesLabel: modal.querySelector('[data-fc-merge-changes-label]'),
+            list: modal.querySelector('[data-fc-merge-list]'),
+            warnings: modal.querySelector('[data-fc-merge-warnings]'),
+            error: modal.querySelector('[data-fc-merge-error]'),
+            applyBtn: modal.querySelector('[data-fc-merge-apply]')
+        };
+
+        mergeState = { csrf: csrf, file: file, el: el, running: false, plan: null };
+        resetMergeModal(el);
+        if (el.file) {
+            el.file.textContent = String(file.name || 'upload.csv');
+        }
+        modal.hidden = false;
+        global.FcAdminModal.lockScroll();
+        var dialog = modal.querySelector('.fc-desc-update__dialog');
+        if (dialog) {
+            dialog.focus();
+        }
+
+        if (modal.dataset.fcBound !== '1') {
+            modal.dataset.fcBound = '1';
+            modal.querySelectorAll('[data-fc-merge-close]').forEach(function (btn) {
+                btn.addEventListener('click', closeMergeRows);
+            });
+            var backdrop = modal.querySelector('.fc-desc-update__backdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', closeMergeRows);
+            }
+            if (el.applyBtn) {
+                el.applyBtn.addEventListener('click', function () {
+                    runMergeApply();
+                });
+            }
+        }
+        // On the document, not the dialog: Tab can carry focus to the page behind the backdrop.
+        document.addEventListener('keydown', onMergeKeydown);
+
+        runMergePreview();
+    }
+
+    function onMergeKeydown(event) {
+        if (event.key === 'Escape') {
+            closeMergeRows();
+        }
+    }
+
+    function closeMergeRows() {
+        // The apply owns the file for another moment; let it finish rather than half-write.
+        if (mergeState && mergeState.running) {
+            return;
+        }
+        var modal = document.querySelector('[data-fc-merge-modal]');
+        if (modal) {
+            modal.hidden = true;
+        }
+        document.removeEventListener('keydown', onMergeKeydown);
+        global.FcAdminModal.unlockScroll();
+        mergeState = null;
+    }
+
+    function resetMergeModal(el) {
+        if (el.summary) {
+            el.summary.hidden = true;
+        }
+        if (el.status) {
+            el.status.textContent = 'Reading the file…';
+        }
+        ['add', 'update', 'unchanged'].forEach(function (key) {
+            if (el[key]) {
+                el[key].textContent = '0';
+            }
+        });
+        if (el.changes) {
+            el.changes.hidden = true;
+        }
+        if (el.list) {
+            el.list.innerHTML = '';
+        }
+        if (el.warnings) {
+            el.warnings.hidden = true;
+            el.warnings.innerHTML = '';
+        }
+        if (el.error) {
+            el.error.hidden = true;
+            el.error.innerHTML = '';
+        }
+        if (el.applyBtn) {
+            el.applyBtn.hidden = true;
+            el.applyBtn.disabled = false;
+        }
+    }
+
+    function mergeError(el, lines) {
+        if (!el.error) {
+            return;
+        }
+        el.error.innerHTML = lines
+            .map(function (line) {
+                return '<p>' + escapeHtml(String(line)) + '</p>';
+            })
+            .join('');
+        el.error.hidden = false;
+    }
+
+    function postMerge(mode) {
+        var formData = new FormData();
+        formData.append('csrf', mergeState.csrf);
+        formData.append('mode', mode);
+        formData.append('file', mergeState.file);
+
+        return fetch(fcApiUrl('products', 'action=merge-store-products-csv'), {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' },
+            body: formData
+        }).then(function (response) {
+            return response
+                .json()
+                .catch(function () {
+                    return { ok: false, error: 'Invalid server response.' };
+                })
+                .then(function (body) {
+                    if (!response.ok || !body || !body.ok) {
+                        var err = new Error((body && body.error) || 'Could not read the CSV.');
+                        err.body = body;
+                        throw err;
+                    }
+                    return body;
+                });
+        });
+    }
+
+    function runMergePreview() {
+        if (!mergeState || mergeState.running) {
+            return;
+        }
+        var el = mergeState.el;
+        mergeState.running = true;
+        if (el.summary) {
+            el.summary.hidden = false;
+        }
+
+        postMerge('preview')
+            .then(function (body) {
+                mergeState.running = false;
+                mergeState.plan = body;
+                renderMergePlan(body);
+            })
+            .catch(function (error) {
+                if (!mergeState) {
+                    return;
+                }
+                mergeState.running = false;
+                if (el.summary) {
+                    el.summary.hidden = true;
+                }
+                mergeError(el, [(error && error.message) || 'Could not read the CSV.']);
+            });
+    }
+
+    function mergeCellsHtml(item) {
+        var changes = item.changes || [];
+        var shown = changes.slice(0, MERGE_CELL_CAP);
+        var html = shown
+            .map(function (change) {
+                var cell = '<b>' + escapeHtml(String(change.column || '')) + '</b>';
+                if (item.action === 'add') {
+                    return '<li>' + cell + ': ' + escapeHtml(String(change.to || '')) + '</li>';
+                }
+                // Stacked like the Update Products list: a description change is paragraphs, not a word.
+                return (
+                    '<li>' +
+                    cell +
+                    '<div class="fc-desc-update__was">' +
+                    escapeHtml(String(change.from || '') || '(blank)') +
+                    '</div><div class="fc-desc-update__now">' +
+                    escapeHtml(String(change.to || '')) +
+                    '</div></li>'
+                );
+            })
+            .join('');
+        var more = changes.length - shown.length;
+        if (more > 0) {
+            html += '<li>… and ' + more + (more === 1 ? ' more cell' : ' more cells') + '</li>';
+        }
+        return html;
+    }
+
+    function renderMergePlan(body) {
+        var el = mergeState.el;
+        var items = body.items || [];
+        var problems = body.problems || [];
+        var warnings = body.warnings || [];
+        var pending = Number(body.add || 0) + Number(body.update || 0);
+
+        if (el.add) {
+            el.add.textContent = String(body.add || 0);
+        }
+        if (el.update) {
+            el.update.textContent = String(body.update || 0);
+        }
+        if (el.unchanged) {
+            el.unchanged.textContent = String(body.unchanged || 0);
+        }
+        if (el.status) {
+            el.status.textContent =
+                problems.length > 0
+                    ? problems.length + (problems.length === 1 ? ' row needs fixing' : ' rows need fixing')
+                    : pending === 0
+                      ? 'Nothing to change'
+                      : 'Preview ready';
+        }
+
+        // Problem rows and repeats are not planned, so this is the count to review, not the file's.
+        var total = Number(body.itemsTotal || items.length);
+        if (el.changesLabel) {
+            el.changesLabel.textContent =
+                total +
+                (total === 1 ? ' row to review' : ' rows to review') +
+                (total > items.length ? ' (first ' + items.length + ' shown)' : '');
+        }
+        if (el.list) {
+            el.list.innerHTML = items
+                .slice(0, MERGE_LIST_CAP)
+                .map(function (item) {
+                    var action = item.action === 'add' ? 'add' : item.action === 'update' ? 'update' : 'unchanged';
+                    var label =
+                        action === 'add'
+                            ? 'Add'
+                            : action === 'update'
+                              ? 'Update ' + (item.changes || []).length + (item.changes.length === 1 ? ' cell' : ' cells')
+                              : 'Unchanged';
+                    var badge =
+                        action === 'add'
+                            ? ' fc-desc-update__source--product'
+                            : action === 'unchanged'
+                              ? ' fc-desc-update__source--muted'
+                              : '';
+                    return (
+                        '<li class="fc-desc-update__item">' +
+                        '<div class="fc-desc-update__item-head">' +
+                        '<span><code>' +
+                        escapeHtml(String(item.slug || '')) +
+                        '</code><span class="fc-merge-rows__key">' +
+                        escapeHtml(String(item.supplier || '') + ' / ' + String(item.style || '')) +
+                        '</span></span>' +
+                        '<span class="fc-desc-update__source' +
+                        badge +
+                        '">' +
+                        label +
+                        '</span>' +
+                        '</div>' +
+                        (action === 'unchanged' ? '' : '<ul class="fc-merge-rows__cells">' + mergeCellsHtml(item) + '</ul>') +
+                        '</li>'
+                    );
+                })
+                .join('');
+        }
+        if (el.changes) {
+            el.changes.hidden = items.length === 0;
+        }
+
+        if (el.warnings) {
+            el.warnings.innerHTML = warnings
+                .map(function (line) {
+                    return '<p>' + escapeHtml(String(line)) + '</p>';
+                })
+                .join('');
+            el.warnings.hidden = warnings.length === 0;
+        }
+        if (problems.length > 0) {
+            mergeError(el, ['Fix these rows and choose the file again:'].concat(problems));
+        }
+        if (el.applyBtn) {
+            el.applyBtn.hidden = !(pending > 0 && problems.length === 0);
+        }
+    }
+
+    function runMergeApply() {
+        if (!mergeState || mergeState.running || !mergeState.plan) {
+            return;
+        }
+        var el = mergeState.el;
+        mergeState.running = true;
+        if (el.applyBtn) {
+            el.applyBtn.disabled = true;
+        }
+        if (el.status) {
+            el.status.textContent = 'Writing products.csv…';
+        }
+
+        postMerge('apply')
+            .then(function (body) {
+                mergeState.running = false;
+                var added = Number(body.add || 0);
+                var updated = Number(body.update || 0);
+                var filters = readFiltersFromUrl();
+                var filtered = !!(filters.supplier || filters.style || filters.q);
+                reloadWithNotice(
+                    'products.csv updated — ' +
+                        added +
+                        (added === 1 ? ' row added, ' : ' rows added, ') +
+                        updated +
+                        (updated === 1 ? ' row updated.' : ' rows updated.') +
+                        // Appended rows sit at the end of the file, outside a filtered view.
+                        (added > 0 && filtered ? ' Clear the filters to see the added rows.' : ''),
+                    'success'
+                );
+            })
+            .catch(function (error) {
+                if (!mergeState) {
+                    return;
+                }
+                mergeState.running = false;
+                if (el.applyBtn) {
+                    el.applyBtn.disabled = false;
+                }
+                if (el.status) {
+                    el.status.textContent = 'Not applied';
+                }
+                // products.csv changed since the preview: show the new plan, not a stale one.
+                if (error && error.body && error.body.items) {
+                    mergeState.plan = error.body;
+                    renderMergePlan(error.body);
+                }
+                // No response at all: the browser refuses to re-read a File edited since it was chosen.
+                var message =
+                    error && !error.body
+                        ? 'Could not read the file. If it changed since the preview, choose it again.'
+                        : (error && error.message) || 'Could not save products.csv.';
+                mergeError(el, [message]);
+            });
+    }
+
     function bindStoreProductsCsvActions(bootstrap) {
         var dropdown = document.querySelector('[data-fc-store-products-download-dropdown]');
         if (!dropdown || dropdown.dataset.fcBound === '1') {
@@ -3237,6 +3592,34 @@
             importInput.addEventListener('change', function () {
                 var file = importInput.files && importInput.files[0] ? importInput.files[0] : null;
                 importCsvFile(file);
+            });
+        }
+
+        var mergeTrigger = dropdown.querySelector('[data-fc-store-products-merge-csv]');
+        var mergeInput = dropdown.querySelector('[data-fc-store-products-merge-input]');
+        if (mergeTrigger && mergeInput) {
+            mergeTrigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                closeMenu();
+                mergeInput.click();
+            });
+            mergeInput.addEventListener('change', function () {
+                var file = mergeInput.files && mergeInput.files[0] ? mergeInput.files[0] : null;
+                // Cleared now so choosing the same file again fires change; the File object stays readable.
+                mergeInput.value = '';
+                if (!file) {
+                    return;
+                }
+                if (!String(file.name || '').toLowerCase().endsWith('.csv')) {
+                    toast('error', 'Only .csv files can be added.');
+                    return;
+                }
+                if (!csrf) {
+                    toast('error', 'Missing security token. Refresh and try again.');
+                    return;
+                }
+                openMergeRows(csrf, file);
             });
         }
     }

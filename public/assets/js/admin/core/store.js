@@ -105,7 +105,8 @@
         'fc-gp-save-flash',
         'fc-store-products-save-flash',
         'fc-system-products-download-flash',
-        'fc-settings-save-flash'
+        'fc-settings-save-flash',
+        'fc-versions-save-flash'
     ];
 
     // The closed allowlist. kind 'enum' validates against values; 'bool' against

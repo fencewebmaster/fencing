@@ -40,6 +40,7 @@
         brandingDefaults: {},
         brandingSchema: {},
         brandingDirty: false,
+        appVersion: '',
         fenceColors: [],
         fenceColorsDefaults: [],
         fenceColorsDirty: false,
@@ -854,6 +855,7 @@
         state.branding = Object.assign({}, data.branding || {});
         state.brandingDefaults = Object.assign({}, data.brandingDefaults || {});
         state.brandingSchema = data.brandingSchema || {};
+        state.appVersion = String(data.appVersion || '');
 
         state.fenceColors = global.FC.Settings.tabs.fenceColors.clone(data.fenceColors || []);
         state.fenceColorsDefaults = global.FC.Settings.tabs.fenceColors.clone(data.fenceColorsDefaults || []);

@@ -27,7 +27,8 @@
                     <?php /* The design-1 mockup's zoom bar (tests/mockup/design-1.html .toolbar): minus,
                          readout, plus, Reset. The controls keep the hooks events.js and HELPER.zooming
                          drive — .fc-zoom-fence[data-zoom], the one .js-fc-zoom-progress readout, and
-                         .js-fc-zoom-reset, which HELPER keeps disabled at 100%. */ ?>
+                         .js-fc-zoom-reset, which HELPER keeps disabled at 100%. Full screen comes last:
+                         shared/step3-fullscreen.js lays the step over the window, and F presses it. */ ?>
                     <div class="fc-zoom-bar" role="group" aria-label="Zoom the fence editor">
                         <button type="button" class="fc-zoom-bar__btn fc-zoom-fence" data-zoom="out" aria-label="Zoom out" title="Zoom out (&minus;)">
                             <svg class="fc-zoom-bar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14"/></svg>
@@ -37,6 +38,11 @@
                             <svg class="fc-zoom-bar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
                         </button>
                         <button type="button" class="fc-zoom-bar__btn js-fc-zoom-reset" title="Back to 100% (0)" disabled>Reset</button>
+                        <span class="fc-zoom-bar__sep" aria-hidden="true"></span>
+                        <button type="button" class="fc-zoom-bar__btn fc-zoom-bar__btn--fullscreen js-fc-step3-fullscreen" aria-pressed="false" aria-label="Full screen" title="Full screen (F)">
+                            <svg class="fc-zoom-bar__icon fc-zoom-bar__icon--enter" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+                            <svg class="fc-zoom-bar__icon fc-zoom-bar__icon--exit" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"/></svg>
+                        </button>
                     </div>
                 </div>
 

@@ -52,6 +52,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/fence-styles.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/store-products.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/missing-sku.css'); ?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/versions.css'); ?>">
     <?php
     $fcFavicon = BrandingSettings::faviconUrl($fcAppBase ?? '');
     if ($fcFavicon !== '') : ?>
@@ -977,7 +978,8 @@ use Fc\Admin\Settings\ThemeSettings;
                     $fcShowGroupPerms = !$fcSiteSwitched && $fcCan('users.group_permissions');
                     $fcShowUsersGroup = $fcShowUsersList || $fcShowGroupPerms;
                     $fcShowSettings = !$fcSiteSwitched && $fcCan('settings.settings');
-                    $fcShowSystemSection = $fcShowUsersGroup || $fcShowSettings;
+                    $fcShowVersionManager = !$fcSiteSwitched && $fcCan('version_manager.view_list');
+                    $fcShowSystemSection = $fcShowUsersGroup || $fcShowVersionManager || $fcShowSettings;
                     $fcUsersRouteActive = $fcAdminRoute === 'users' || str_starts_with((string) $fcAdminRoute, 'users/');
                     ?>
                     <?php if ($fcShowSystemSection) : ?>
@@ -1029,6 +1031,22 @@ use Fc\Admin\Settings\ThemeSettings;
                             </li>
                             <?php endif; ?>
                         </ul>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if ($fcShowVersionManager) : ?>
+                    <li>
+                        <a
+                            href="<?php echo e($fcAdminBase . '/releases'); ?>"
+                            data-nav
+                            data-nav-full="1"
+                            data-route="releases"
+                            data-title="Releases"
+                            class="fc-sidebar-nav__link<?php echo $fcAdminRoute === 'releases' ? ' is-active' : ''; ?>"
+                        >
+                            <span class="fc-sidebar-nav__icon" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
+                            <span class="fc-sidebar-nav__label">Releases</span>
+                        </a>
                     </li>
                     <?php endif; ?>
 
@@ -1133,7 +1151,9 @@ use Fc\Admin\Settings\ThemeSettings;
                 <?php endif; ?>
                 <div class="fc-sidebar-footer__meta">
                     <span>&copy; <?php echo date('Y'); ?></span>
-                    <span class="fc-sidebar-footer__version"><?php echo e($fcBranding['version']); ?></span>
+                    <?php if ($fcAppVersion !== '') : ?>
+                    <span class="fc-sidebar-footer__version"><?php echo e($fcAppVersion); ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
         </aside>
@@ -1320,6 +1340,9 @@ use Fc\Admin\Settings\ThemeSettings;
                     <?php elseif ($fcAdminIsGallery) : ?>
                     data-route="gallery"
                     data-fc-gallery-server="1"
+                    <?php elseif (!empty($fcAdminIsVersionManager)) : ?>
+                    data-route="releases"
+                    data-fc-version-manager-server="1"
                     <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
                     data-route="products/store-products"
                     data-fc-system-products-server="1"
@@ -1358,6 +1381,8 @@ use Fc\Admin\Settings\ThemeSettings;
                     <?php view('admin.settings.index', get_defined_vars()); ?>
                 <?php elseif ($fcAdminIsGallery && is_array($fcGalleryPage)) : ?>
                     <?php view('admin.gallery.index', get_defined_vars()); ?>
+                <?php elseif (!empty($fcAdminIsVersionManager) && is_array($fcVersionManagerPage)) : ?>
+                    <?php view('admin.versions.index', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/fence-styles' && is_array($fcFenceStylesPage)) : ?>
                     <?php view('admin.products.fence-styles', get_defined_vars()); ?>
                 <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
@@ -1443,6 +1468,12 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/gallery-upload-queue.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/gallery.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
+    <?php elseif (!empty($fcAdminIsVersionManager)) : ?>
+    <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>
+    <?php /* The release notes editor is the TinyMCE loader the fence-style fields use (its release-notes profile). */ ?>
+    <script src="<?php echo asset('assets/js/admin/fence-styles/wysiwyg.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/versions.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminRoute === 'products/store-products') : ?>
     <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>

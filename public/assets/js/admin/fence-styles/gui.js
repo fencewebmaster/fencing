@@ -186,6 +186,9 @@
         'dropdown_option_check'
     ];
 
+    // Field types the planner draws as a grid of cards, the only ones a Choices per row means anything for.
+    var CARD_FIELD_TYPES = { range_option: true, image_option: true, text_option: true };
+
     var escapeHtml = global.FC.util.escapeHtml;
 
     function isPlainObject(val) {
@@ -855,6 +858,24 @@
         });
     }
 
+    /** Sets color_columns after default_color (or color), so the saved fence file keeps the colour keys together. */
+    function setColorColumns(config, value) {
+        delete config.color_columns;
+        var keys = Object.keys(config);
+        var at = Math.max(keys.indexOf('default_color'), keys.indexOf('color'));
+        var moved = at === -1 ? [] : keys.slice(at + 1);
+        var values = moved.map(function (key) {
+            return config[key];
+        });
+        moved.forEach(function (key) {
+            delete config[key];
+        });
+        config.color_columns = value;
+        moved.forEach(function (key, i) {
+            config[key] = values[i];
+        });
+    }
+
     function renderColorPickerGridHtml(colors, catalog, appBase) {
         var selectedSet = Object.create(null);
         (Array.isArray(colors) ? colors : []).forEach(function (slug) {
@@ -1016,6 +1037,14 @@
                   renderColorDefaultOptionsHtml(colors, defaultSlug, catalog) +
                   '</select></label>'
                 : '') +
+            (opts.perRowPath
+                ? renderPerRowControl(
+                      'Swatches per row',
+                      opts.perRowPath,
+                      opts.perRow,
+                      'Tablets & desktops · default 3 · phones keep 3 a row'
+                  )
+                : '') +
             '</header>' +
             '<div class="fc-fs-color-picker-panel__body">' +
             '<div class="fc-fs-color-selected" data-gui-color-selected>' +
@@ -1025,7 +1054,62 @@
         );
     }
 
-    function renderOptionTable(path, options, appBase) {
+    /** Cards a row in the planner drawer from 768px: a 2 / 3 / 4 segmented choice with a column glyph each. They are
+        radios (Bootstrap's .btn-check), so arrow keys move the pick; unset reads as the planner's default, 3. */
+    function renderPerRowControl(label, path, value, hint) {
+        var current = value === 2 || value === 4 || value === '2' || value === '4' ? String(value) : '3';
+        var name = uid('fc-per-row');
+        var options = ['2', '3', '4']
+            .map(function (n) {
+                var id = name + '-' + n;
+                return (
+                    '<input type="radio" class="btn-check" name="' +
+                    name +
+                    '" id="' +
+                    id +
+                    '" value="' +
+                    n +
+                    '" data-gui-path="' +
+                    escapeHtml(path) +
+                    '" data-gui-default="3" autocomplete="off"' +
+                    (n === current ? ' checked' : '') +
+                    '><label class="btn btn-sm btn-light fc-fs-per-row__option" for="' +
+                    id +
+                    '" title="' +
+                    n +
+                    ' a row' +
+                    (n === '3' ? ' (default)' : '') +
+                    '"><span class="fc-fs-per-row__glyph" aria-hidden="true">' +
+                    new Array(Number(n) + 1).join('<span></span>') +
+                    '</span><span>' +
+                    n +
+                    '</span></label>'
+                );
+            })
+            .join('');
+        return (
+            '<div class="fc-fs-per-row">' +
+            '<span class="fc-fs-per-row__label" id="' +
+            name +
+            '-label">' +
+            escapeHtml(label) +
+            '</span>' +
+            '<div class="btn-group fc-fs-per-row__options" role="radiogroup" aria-labelledby="' +
+            name +
+            '-label" aria-describedby="' +
+            name +
+            '-hint">' +
+            options +
+            '</div>' +
+            '<span class="fc-fs-per-row__hint" id="' +
+            name +
+            '-hint">' +
+            escapeHtml(hint) +
+            '</span></div>'
+        );
+    }
+
+    function renderOptionTable(path, options, appBase, columns) {
         options = Array.isArray(options) ? options : [];
         var html =
             '<div class="fc-fs-options fc-fs-gui-field--span" data-gui-options="' +
@@ -1033,6 +1117,14 @@
             '">' +
             '<div class="fc-fs-options__head">' +
             '<span class="fc-fs-options__title">Choices</span>' +
+            (columns === null
+                ? ''
+                : renderPerRowControl(
+                      'Choices per row',
+                      path.replace(/\.options$/, '.columns'),
+                      columns,
+                      'Tablets & desktops · default 3 · phones keep their layout'
+                  )) +
             '<button type="button" class="btn btn-sm btn-dark fw-semibold fc-fs-options__add">' +
             '<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add choice</span></button></div>';
 
@@ -1420,7 +1512,7 @@
         }
 
         html +=
-            renderFieldGroup('Choices', renderOptionTable(base + '.options', field.options, appBase), {
+            renderFieldGroup('Choices', renderOptionTable(base + '.options', field.options, appBase, CARD_FIELD_TYPES[field.type] ? field.columns : null), {
                 nested: true
             }) +
             '</div></article>';
@@ -1561,7 +1653,9 @@
                     fenceColorCatalog: fenceColorCatalog,
                     appBase: appBase,
                     defaultPath: 'default_color',
-                    defaultColor: config.default_color
+                    defaultColor: config.default_color,
+                    perRowPath: 'color_columns',
+                    perRow: config.color_columns
                 }),
                 { bodyClass: 'fc-fs-field-group__body--flush' }
             ) +
@@ -1685,6 +1779,10 @@
     function coerceValue(path, el) {
         if (el.type === 'checkbox') {
             return el.checked;
+        }
+        // Choices / Swatches per row: a number in the fence file, as the planner reads it.
+        if (/(^|\.)(color_)?columns$/.test(path)) {
+            return Number(el.value) || 3;
         }
         if (el.type === 'number') {
             if (el.value === '') {
@@ -2096,7 +2194,9 @@
             return;
         }
         if (el.type === 'radio') {
-            el.checked = String(value != null ? value : '') === String(el.value);
+            // An unset Choices / Swatches per row shows the planner's default rather than no pick at all.
+            var picked = value != null && value !== '' ? value : el.getAttribute('data-gui-default');
+            el.checked = String(picked != null ? picked : '') === String(el.value);
             return;
         }
         if (el.tagName === 'SELECT') {
@@ -2330,6 +2430,8 @@
         function applyPath(path, value) {
             if (path === 'default_color') {
                 setDefaultColor(state.config, value);
+            } else if (path === 'color_columns') {
+                setColorColumns(state.config, value);
             } else {
                 helpers.setByPath(state.config, path, value);
             }

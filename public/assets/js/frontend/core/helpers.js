@@ -428,12 +428,17 @@ HELPER = {
         return $('.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result').first();
     },
 
+    /** Step 3 full screen (shared/step3-fullscreen.js) sizes the strip to the window, so the zoom lock is never taken there. */
+    isStep3Fullscreen: function() {
+        return document.documentElement.classList.contains('fc-step3-fullscreen');
+    },
+
     /** Capture natural height at 100% zoom (before zoom in/out). */
     captureStep3ResultBaseHeight: function() {
         if (!$('.fc-planner-page').length) {
             return;
         }
-        if (step !== 1) {
+        if (step !== 1 || HELPER.isStep3Fullscreen()) {
             return;
         }
         var $el = HELPER.getStep3DisplayResult$();
@@ -450,13 +455,69 @@ HELPER = {
         if (!$('.fc-planner-page').length) {
             return;
         }
+        if (HELPER.isStep3Fullscreen()) {
+            HELPER.getStep3DisplayResult$().css('min-height', '');
+            return;
+        }
         if (!fcStep3ResultBaseHeight) {
             HELPER.captureStep3ResultBaseHeight();
+        }
+        if (!fcStep3ResultBaseHeight && step !== 1) {
+            HELPER.measureStep3ResultBaseHeight();
         }
         if (!fcStep3ResultBaseHeight) {
             return;
         }
         HELPER.getStep3DisplayResult$().css('min-height', fcStep3ResultBaseHeight + 'px');
+    },
+
+    /** The strip's 100% height while zoomed: the 100% inline styles for one synchronous read, put back before paint. */
+    measureStep3ResultBaseHeight: function() {
+        var $el = HELPER.getStep3DisplayResult$();
+        if (!$el.length || $el.hasClass('fc-planner-step3-result--loading') || !$el[0].getClientRects().length) {
+            return;
+        }
+        var el = $el[0];
+        var $items = $el.find('.fencing-panel-items');
+        var $scrollers = $el.add($el.find('.fc-project-plan-hscroll'));
+        var itemStyles = $items.map(function() { return this.getAttribute('style'); }).get();
+        var resultStyle = el.getAttribute('style');
+        var scroll = $scrollers.map(function() { return { left: this.scrollLeft, top: this.scrollTop }; }).get();
+
+        $items.removeAttr('style');
+        el.style.minHeight = '';
+        el.style.overflowY = '';
+        var height = Math.ceil($el.outerHeight());
+
+        $items.each(function(i) {
+            if (itemStyles[i] === null) {
+                this.removeAttribute('style');
+            } else {
+                this.setAttribute('style', itemStyles[i]);
+            }
+        });
+        if (resultStyle === null) {
+            el.removeAttribute('style');
+        } else {
+            el.setAttribute('style', resultStyle);
+        }
+        $scrollers.each(function(i) {
+            this.scrollLeft = scroll[i].left;
+            this.scrollTop = scroll[i].top;
+        });
+
+        if (height > 0) {
+            fcStep3ResultBaseHeight = height;
+        }
+    },
+
+    /** Full screen came on or off: the lock was measured in the other layout (left over, it padded Step 3's bottom). */
+    refreshStep3ResultMinHeight: function() {
+        fcStep3ResultBaseHeight = null;
+        HELPER.getStep3DisplayResult$().css('min-height', '');
+        if (step !== 1) {
+            HELPER.applyStep3ResultMinHeight();
+        }
     },
 
     clearStep3ResultMinHeight: function() {
@@ -765,18 +826,15 @@ HELPER = {
 
         if (step >= 1) {
             $items.css({ 'padding-top': raked_panel_mt, 'zoom': step });
-            // raked_panel_mt, not 'auto': margin-top: auto resolves to 0 outside a flex or grid
-            // parent, so zooming in pulled the result panel flush against the section heading and
-            // its zoom controls. This is the same value the step == 1 branch below restores, so the
-            // gap now holds steady across zoom in, zoom out and Reset.
-            $result.css({ 'margin-top': raked_panel_mt, 'overflow-y': 'auto' });
+            // No margin-top: the stylesheet's 14px gap under the zoom bar holds at every zoom. Setting raked_panel_mt
+            // (20px, 30px raked) here and on Reset dropped the drawing 6px the first time either ran.
+            $result.css({ 'overflow-y': 'auto' });
         } else {
             $items.css({ 'zoom': step });
             $result.css({ 'overflow-y': 'auto' });
         }
 
         if (step == 1) {
-            $result.css({ 'margin-top': raked_panel_mt });
             $items.removeAttr('style');
             $result.css({ 'overflow-y': '' });
             HELPER.clearStep3ResultMinHeight();

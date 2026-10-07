@@ -427,6 +427,11 @@
             serverAttr: 'data-fc-settings-server',
             marker: '.fc-settings-page',
             viewport: 'fill'
+        },
+        releases: {
+            serverAttr: 'data-fc-version-manager-server',
+            marker: '[data-fc-version-manager]',
+            viewport: 'fill'
         }
     };
     ROUTE_CONFIG[DEFAULT_ROUTE] = {

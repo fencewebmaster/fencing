@@ -360,6 +360,13 @@
             lines.push('Post Type: ' + postTypeLabelFromSlug(sidePostSetting.val, sidePostOpt));
         }
 
+        // A 135° turn is a corner, not a post type, so No Post ends show it too.
+        var sideAngle = get_field_multi_option_value(custom_fence, info, sideKey, 'post_angle');
+        if (sideAngle && sideAngle.val === 'turn-135') {
+            var sideAngleOpt = get_field_options(custom_fence, info, sideKey, 'post_angle')[0];
+            lines.push('Corner: ' + (sideAngleOpt?.title || '135° Turn'));
+        }
+
         var rakedSlug = side === 'left' ? 'left_raked' : 'right_raked';
         var rakedOpt = resolveRakedOption(custom_fence, info, sideKey, rakedSlug);
         if (rakedOpt && rakedOpt.size && parseInt(rakedOpt.size.height, 10) > 0) {
@@ -501,7 +508,7 @@
         );
     }
 
-    /** Gate leaf/opening size for Fence Summary Panel Size — e.g. "1560H x 975W". */
+    /** Gate leaf/opening size for Fence Summary Panel Size — e.g. "1560H × 975W". */
     function gatePanelSizeLabel(calc, slug, custom_fence, tabRow) {
         var gateRow = (custom_fence || []).filter(function(item) {
             return item && item.control_key === 'gate';
@@ -539,7 +546,7 @@
         }
 
         if (Number.isFinite(h) && h > 0 && Number.isFinite(w) && w > 0) {
-            return Math.round(h) + 'H x ' + Math.round(w) + 'W';
+            return Math.round(h) + 'H \u00d7 ' + Math.round(w) + 'W';
         }
         if (Number.isFinite(w) && w > 0) {
             return Math.round(w) + 'W';
@@ -578,7 +585,7 @@
 
         var parts = [];
         if (Number.isFinite(h) && h > 0 && Number.isFinite(w) && w > 0) {
-            parts.push(Math.round(h) + 'H x ' + Math.round(w) + 'W');
+            parts.push(Math.round(h) + 'H \u00d7 ' + Math.round(w) + 'W');
         } else if (Number.isFinite(w) && w > 0) {
             parts.push(Math.round(w) + 'W');
         }
@@ -586,7 +593,7 @@
         if (parseInt(calc.short_panel?.count, 10) > 0 && parseInt(calc.short_panel?.length, 10) > 0) {
             var sw = Math.round(parseInt(calc.short_panel.length, 10));
             if (!parts.length || sw !== w) {
-                parts.push('Short: ' + (Number.isFinite(h) && h > 0 ? Math.round(h) + 'H x ' : '') + sw + 'W');
+                parts.push('Short: ' + (Number.isFinite(h) && h > 0 ? Math.round(h) + 'H \u00d7 ' : '') + sw + 'W');
             }
         }
 
@@ -621,9 +628,9 @@
         }
         var h = parseInt(String(calc.fence_size?.height || '').replace(/,/g, ''), 10);
         if (Number.isFinite(h) && h > 0) {
-            return count + ' x ' + Math.round(h) + 'H x ' + Math.round(length) + 'W';
+            return count + ' \u00d7 ' + Math.round(h) + 'H \u00d7 ' + Math.round(length) + 'W';
         }
-        return count + ' x ' + Math.round(length) + 'W';
+        return count + ' \u00d7 ' + Math.round(length) + 'W';
     }
 
     function fenceHeightSummaryValue(calc, info, slug) {
@@ -933,7 +940,7 @@
                 rows,
                 'Left Raked Panel',
                 Math.round(calc.left_raked.height) +
-                    'H x ' +
+                    'H \u00d7 ' +
                     Math.round(calc.left_raked.width) +
                     'W'
             );
@@ -948,7 +955,7 @@
                 rows,
                 'Right Raked Panel',
                 Math.round(calc.right_raked.height) +
-                    'H x ' +
+                    'H \u00d7 ' +
                     Math.round(calc.right_raked.width) +
                     'W'
             );

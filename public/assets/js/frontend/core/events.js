@@ -1529,6 +1529,19 @@ function fencingModalFcSelect() {
 
 //----------------------------------------------------------------------------------
 
+_doc.on('click', '.fc-modal-options--ruled > [class*="col-"], .fc-fence-color-cell', fcSelectGridCell);
+
+/** Ruled image grids and Fence Colour (style.css): a click anywhere in a cell, caption included, picks its tile. */
+function fcSelectGridCell(event) {
+    var tile = '.fc-select, .fc-fence-color-tile';
+    if ($(event.target).closest(tile).length) {
+        return;
+    }
+    $(this).children(tile).first().trigger('click');
+}
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.fc-select-2', fcSelect2);
 
 function fcSelect2() {
@@ -2064,20 +2077,88 @@ function jsBtnDeleteFence(e) {
 
 //----------------------------------------------------------------------------------
 
-/** Modal card grid: 4 columns on desktop when option count is 4 or 8. */
-function fcModalOptionColClass(optionCount, fieldType, isStepUpRaked) {
-    if (optionCount === 4 || optionCount === 8) {
-        return 'col-lg-3 col-6';
-    }
-    if (fieldType === 'text_option') {
-        return 'col-sm-6 col-12';
-    }
-    return 'col-sm-4 col-6';
+/** A drawer grid's cards a row from 768px (tablet and up): the field's Choices per row in the Fence Styles editor, 2, 3 or 4; 3 when unset. */
+function fcModalOptionsPerRow(columns) {
+    var perRow = parseInt(columns, 10);
+    return perRow === 2 || perRow === 4 ? perRow : 3;
 }
 
-function fcModalOptionsUseQuadColumns(optionCount) {
-    return optionCount === 4 || optionCount === 8;
+/** Modal card grid: the phone grid below 768px, then the field's own cards a row (fcModalOptionsPerRow). */
+function fcModalOptionColClass(optionCount, fieldType, isStepUpRaked, modalKey, columns) {
+    var perRow = fcModalOptionsPerRow(columns),
+        phone;
+
+    // Phones keep their old grid: Panel and Gate Options' wide drawings (and a field set to 2) two to a row, text tiles
+    // one unless there are two, the rest two (three from 576px); three across cut off the labels on a phone.
+    if (modalKey === 'panel_options' || modalKey === 'panel_options_custom' || modalKey === 'gate' || perRow === 2) {
+        phone = 'col-6';
+    } else {
+        phone = fieldType === 'text_option' && optionCount !== 2 ? 'col-sm-4 col-12' : 'col-sm-4 col-6';
+    }
+    return phone + ' col-md-' + 12 / perRow;
 }
+
+/** A drawer card's caption: its title, with what follows " - " or a <br> on a quieter second line ("1400H" over "200 Step-Up"). */
+function fcModalOptionCaption(opt) {
+    var parts = String(opt.title || '').split(/\s+-\s+|<br\s*\/?>/i),
+        html = parts[0] ? '<span class="fc-option-label__title">' + parts[0] + '</span>' : '';
+
+    if (parts.length > 1) {
+        html += '<span class="fc-option-label__meta">' + parts.slice(1).join(' ') + '</span>';
+    }
+    return html + (opt.desc ? '<strong class="d-block">' + opt.desc + '</strong>' : '');
+}
+
+/** Drawer card headers end with the pick in their tile field: its caption's title and detail line, never its desc. */
+function fcSyncModalHeaderValues() {
+    $('#fc-control-modal .fencing-modal-area').each(function() {
+        var $head = $(this).children('.fencing-modal-header'),
+            $value = $head.children('.fencing-modal-header__value'),
+            $tile = $(this).find('.fc-form-field .fc-select.fc-selected, .fc-fence-color-tile.fc-selected').first(),
+            label = '';
+
+        if ($tile.hasClass('fc-fence-color-tile')) {
+            label = $tile.attr('aria-label') || '';
+        } else if ($tile.length) {
+            var $name = ($tile.children('p').length ? $tile.children('p') : $tile.next('p')).first(),
+                title = $.trim($name.children('.fc-option-label__title').text()),
+                meta = $.trim($name.children('.fc-option-label__meta').text());
+            label = title && meta ? title + ' · ' + meta : title || meta;
+        }
+
+        if (!$head.length || !label) {
+            $value.remove();
+            return;
+        }
+        if (!$value.length) {
+            $value = $('<span class="fencing-modal-header__value"><i class="fa-solid fa-check" aria-hidden="true"></i><span></span></span>').appendTo($head);
+        }
+        // Only a real change is written, or the observer below would wake itself again.
+        if ($value.children('span').text() !== label) {
+            $value.children('span').text(label);
+        }
+    });
+}
+
+// Picks reach the drawer from a tap, a saved section restored on open and the colour rules alike, so the headers follow its DOM.
+$(function() {
+    var root = document.querySelector('#fc-control-modal .fc-modal-content'),
+        queued = false;
+
+    if (!root || typeof MutationObserver !== 'function') {
+        return;
+    }
+    new MutationObserver(function() {
+        if (queued) {
+            return;
+        }
+        queued = true;
+        setTimeout(function() {
+            queued = false;
+            fcSyncModalHeaderValues();
+        }, 0);
+    }).observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+});
 
 _doc.on('click', '.fencing-btn-modal', fencingBtnModal);
 
@@ -2190,7 +2271,8 @@ function fencingBtnModal(event) {
             let marker = '';
 
             if (v.marker !== undefined && v.marker !== "") {
-                marker = `<span class="fencing-modal-title__marker">${v.marker})</span> `;
+                // A bare letter: style.css draws it as the header's round badge.
+                marker = `<span class="fencing-modal-title__marker">${v.marker}</span>`;
             }
 
             var tpl = $('script[data-type="' + v.type + '"]').text()
@@ -2239,7 +2321,7 @@ function fencingBtnModal(event) {
             if (v.type == 'range_option') {
 
                 var rangeOptCount = (v.options || []).length;
-                var rangeColClass = fcModalOptionColClass(rangeOptCount, 'range_option', false);
+                var rangeColClass = fcModalOptionColClass(rangeOptCount, 'range_option', false, key, v.columns);
                 var rangeItem = function(opt) {
                     return (
                         '<div class="' +
@@ -2255,15 +2337,13 @@ function fencingBtnModal(event) {
                         '">' +
                         '</div>' +
                         '<p>' +
-                        (opt.title || '') +
+                        fcModalOptionCaption(opt) +
                         '</p>' +
                         '</div>'
                     );
                 };
-                var $rangeRow = $area.find('.row');
-                if (fcModalOptionsUseQuadColumns(rangeOptCount)) {
-                    $rangeRow.addClass('fc-modal-options--cols-4');
-                }
+                // Every image grid is ruled edge to edge (style.css).
+                var $rangeRow = $area.find('.row').addClass('fc-modal-options--ruled');
                 $rangeRow.html(v.options.map(rangeItem).join(''));
 
             }
@@ -2272,7 +2352,7 @@ function fencingBtnModal(event) {
 
                 var isStepUpRaked = v.slug === 'left_raked' || v.slug === 'right_raked';
                 var textOptCount = (v.options || []).length;
-                var textColClass = fcModalOptionColClass(textOptCount, 'text_option', isStepUpRaked);
+                var textColClass = fcModalOptionColClass(textOptCount, 'text_option', isStepUpRaked, key, v.columns);
                 var Item = function(opt) {
                     return (
                         '<div class="' +
@@ -2286,8 +2366,7 @@ function fencingBtnModal(event) {
                         opt.slug +
                         '">' +
                         '<p>' +
-                        opt.title +
-                        (opt.desc ? '<strong>' + opt.desc + '</strong>' : '') +
+                        fcModalOptionCaption(opt) +
                         '</p>' +
                         '</div>' +
                         '</div>'
@@ -2301,16 +2380,13 @@ function fencingBtnModal(event) {
                         $area.find('.fencing-modal-body').addClass('mb-4');
                     }
                 }
-                if (fcModalOptionsUseQuadColumns(textOptCount)) {
-                    $row.addClass('fc-modal-options--cols-4');
-                }
                 $row.html(v.options.map(Item).join(''));
             }
 
             if (v.type == 'image_option') {
 
                 var imageOptCount = (v.options || []).length;
-                var imageColClass = fcModalOptionColClass(imageOptCount, 'image_option', false);
+                var imageColClass = fcModalOptionColClass(imageOptCount, 'image_option', false, key, v.columns);
                 var imageItem = function(opt) {
                     return (
                         '<div class="' +
@@ -2326,7 +2402,7 @@ function fencingBtnModal(event) {
                         '" class="fc-fullwidth">' +
                         '</div>' +
                         '<p>' +
-                        (opt.title || '') +
+                        fcModalOptionCaption(opt) +
                         '</p>' +
                         '<p>' +
                         (opt.extra || '') +
@@ -2334,11 +2410,12 @@ function fencingBtnModal(event) {
                         '</div>'
                     );
                 };
-                var $imageRow = $area.find('.row');
-                if (fcModalOptionsUseQuadColumns(imageOptCount)) {
-                    $imageRow.addClass('fc-modal-options--cols-4');
-                }
+                var $imageRow = $area.find('.row').addClass('fc-modal-options--ruled');
                 $imageRow.html(v.options.map(imageItem).join(''));
+                // Glass Pool and Flat Top step-up cards are images (one per height); the note keeps the step-up layout.
+                if (v.slug === 'left_raked' || v.slug === 'right_raked') {
+                    $area.addClass('fencing-modal-area--step-up');
+                }
             }
 
             addNotesOrInfo($area.find('.fencing-modal-notes'), v);

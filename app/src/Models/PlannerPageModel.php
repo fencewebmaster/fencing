@@ -220,6 +220,45 @@ final class PlannerPageModel
     }
 
     /**
+     * The catalog for the planner's `fc_data`, with ?v=<mtime> on every local option image under `settings`:
+     * replacing a post option tile under the same filename (Oct 2026) kept showing the browser's cached copy
+     * for days. Top-level Step 1 images stay bare - styleImageSizes() and the Step 1 view read them as paths.
+     *
+     * @param array<string, array<string, mixed>> $fences
+     * @return array<string, array<string, mixed>>
+     */
+    public static function fencesForScript(array $fences): array
+    {
+        foreach ($fences as $slug => $fence) {
+            if (isset($fence['settings']) && is_array($fence['settings'])) {
+                $fences[$slug]['settings'] = self::versionOptionImages($fence['settings']);
+            }
+        }
+
+        return $fences;
+    }
+
+    /**
+     * @param array<mixed> $node
+     * @return array<mixed>
+     */
+    private static function versionOptionImages(array $node): array
+    {
+        foreach ($node as $key => $value) {
+            if (is_array($value)) {
+                $node[$key] = self::versionOptionImages($value);
+            } elseif ($key === 'image' && is_string($value) && str_starts_with($value, 'public/assets/') && !str_contains($value, '?')) {
+                $mtime = @filemtime(FC_ROOT . '/' . $value);
+                if ($mtime !== false) {
+                    $node[$key] = $value . '?v=' . $mtime;
+                }
+            }
+        }
+
+        return $node;
+    }
+
+    /**
      * <head> SEO fields, from Settings → SEO. Quote links (?qid=) and hosts that may not be indexed
      * get noindex and no canonical; every other variant (?fence=, ?section=, ?action=) canonicalises
      * to the bare /planner URL, or to the custom canonical URL when one is set.

@@ -5,19 +5,23 @@ use Fc\Admin\Services\AppConfigService;
 use Fc\Admin\Settings\BrandingSettings;
 use Fc\Admin\Settings\IntegrationsSettings;
 use Fc\Admin\Services\SiteRegistryService;
+use Fc\Admin\Services\AppVersionService;
 ?>
 <div class="container-lg">
     <div class="row align-items-center mb-5 pb-5">
         <div class="col">
             <?php
             $fcBranding = BrandingSettings::get();
+            $fcAppVersion = AppVersionService::label();
             $fcWebhookMode = (string) (IntegrationsSettings::get()['webhookMode'] ?? 'live');
             $fcWebhookIsLive = $fcWebhookMode !== 'test';
             ?>
             <div class="text-secondary small fc-footer-app">
                 <i class="fa-solid fa-circle fc-footer-webhook-dot <?php echo $fcWebhookIsLive ? 'fc-footer-webhook-dot--live' : 'fc-footer-webhook-dot--test'; ?>" aria-hidden="true" title="<?php echo $fcWebhookIsLive ? 'Live webhook URL' : 'Test webhook URL'; ?>"></i>
                 <?php echo e($fcBranding['appName']); ?>
-                <span class="app-version"><?php echo e($fcBranding['version']); ?></span>
+                <?php if ($fcAppVersion !== '') : ?>
+                <span class="app-version"><?php echo e($fcAppVersion); ?></span>
+                <?php endif; ?>
             </div>
         </div>
         <div class="col-auto">
@@ -97,6 +101,7 @@ use Fc\Admin\Services\SiteRegistryService;
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/overall-dimension.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/panel-dimensions.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/drawing-keys.js'); ?>"></script>
+<script defer src="<?php echo asset('public/assets/js/frontend/shared/step3-fullscreen.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/planner-shortcuts.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/data/post-finishes.js'); ?>"></script>
 <script defer src="<?php echo asset('public/assets/js/frontend/shared/post-finish-swatches.js'); ?>"></script>

@@ -6,6 +6,7 @@ namespace Fc\Admin\Presenters;
 
 use Fc\Admin\Helpers\ColorHelper;
 use Fc\Admin\Helpers\FormatHelper;
+use Fc\Admin\Services\AppVersionService;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\MinifyService;
 use Fc\Admin\Services\PermissionService;
@@ -113,6 +114,7 @@ final class SettingsPresenter
             'branding' => $branding,
             'brandingDefaults' => $brandingPayload['defaults'] ?? [],
             'brandingSchema' => $brandingSchema,
+            'appVersion' => AppVersionService::label(),
             'fenceColors' => $fenceColors,
             'fenceColorsDefaults' => $fenceDefaults,
             'catalog' => $catalog,
@@ -267,7 +269,7 @@ final class SettingsPresenter
             'branding_preview' => [
                 'app_name' => (string) ($branding['appName'] ?? 'Fencing Calculator'),
                 'tagline' => (string) ($branding['tagline'] ?? ''),
-                'version' => (string) ($branding['version'] ?? ''),
+                'version' => AppVersionService::label(),
                 'logo_url' => BrandingSettings::logoUrl($appBase, $branding),
                 'favicon_url' => BrandingSettings::faviconUrl($appBase, $branding),
             ],
@@ -363,7 +365,7 @@ final class SettingsPresenter
         $groups = [
             'Appearance' => [
                 'theme'        => ['Theme', 'fa-palette', 'Colour presets and the brand palette shared by the planner and admin.'],
-                'branding'     => ['Branding', 'fa-pen-nib', 'Logo, favicon, app name, tagline and version shown across the app.'],
+                'branding'     => ['Branding', 'fa-pen-nib', 'Logo, favicon, app name and tagline shown across the app.'],
                 'fence-colors' => ['Fence colors', 'fa-fill-drip', 'Finishes customers pick in the planner, with their SKU colour codes.'],
             ],
             'Storefront' => [
@@ -1235,7 +1237,7 @@ final class SettingsPresenter
      */
     private static function brandingFieldOrder(): array
     {
-        return ['logo', 'favicon', 'appName', 'tagline', 'version'];
+        return ['logo', 'favicon', 'appName', 'tagline'];
     }
 
     /**

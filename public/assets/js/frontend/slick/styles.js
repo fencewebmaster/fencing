@@ -1,7 +1,7 @@
 /**
  * Step 1 — fence style picker carousel (Slick).
  * mobileFirst: phones 2/row; width > 576 → 3 (large phones/portrait tablets);
- * width > 767 → 4 (tablet/iPad); width > 990 → 6 (desktop).
+ * width > 767 → 4 (tablet/iPad); width > 990 → 5 (desktop, Load Quote pinned beside it).
  */
 (function($) {
     'use strict';
@@ -209,8 +209,8 @@
                 {
                     breakpoint: 990,
                     settings: {
-                        slidesToShow: 6,
-                        slidesToScroll: 6,
+                        slidesToShow: 5,
+                        slidesToScroll: 5,
                         dots: true
                     }
                 }

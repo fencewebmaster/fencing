@@ -2504,6 +2504,13 @@ FENCE = {
             }
 
         }
+
+        // Runs here, not in a Slat override: the project plan has no selected style for FENCE.call to dispatch on.
+        if (typeof SlatFence !== 'undefined') {
+            try {
+                SlatFence.applySlatEndTurnTags($sectionRoot, custom_fence, info);
+            } catch (eTurn) {}
+        }
     },
 
     //----------------------------------------------------------------------------------

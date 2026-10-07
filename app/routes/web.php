@@ -13,6 +13,7 @@ use Fc\Admin\Controllers\Frontend\PlannerController;
 use Fc\Admin\Controllers\Frontend\ProjectPlanController;
 use Fc\Admin\Controllers\Frontend\ShareCartUrlController;
 use Fc\Admin\Controllers\Frontend\SubmitController;
+use Fc\Admin\Controllers\Frontend\VersionsController;
 use Fc\Admin\Controllers\GalleryPageController;
 use Fc\Admin\Controllers\GroupPermissionsPageController;
 use Fc\Admin\Controllers\LoginPageController;
@@ -20,6 +21,7 @@ use Fc\Admin\Controllers\LogoutController;
 use Fc\Admin\Controllers\ProductsPageController;
 use Fc\Admin\Controllers\SettingsPageController;
 use Fc\Admin\Controllers\UsersPageController;
+use Fc\Admin\Controllers\VersionManagerPageController;
 use Fc\Admin\Core\Request;
 use Fc\Admin\Core\Router;
 use Fc\Admin\Services\AdminContext;
@@ -121,6 +123,11 @@ return [
             (new GalleryPageController(new Request()))->index($context);
         });
 
+        // Releases (writable/versions.csv; was version-manager, which 301s here); its public face is the frontend 'versions' route.
+        $router->get('releases', static function (AdminContext $context): void {
+            (new VersionManagerPageController(new Request()))->index($context);
+        });
+
         // Products. The route paths here tell the truth; several of the class/view/JS
         // names they resolve to are deliberately cross-wired — see ProductsPageController
         // before "fixing" any single layer.
@@ -202,6 +209,11 @@ return [
                 $request->setQuery('view', rawurldecode((string) ($params['slug'] ?? '')));
                 (new LookupController($request))->index();
             });
+        });
+
+        // Public version history: published entries from the admin's Version Manager.
+        $router->any('versions', static function (Request $request): void {
+            (new VersionsController($request))->index();
         });
 
         // Errors.

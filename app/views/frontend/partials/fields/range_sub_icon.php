@@ -1,0 +1,30 @@
+<div class="fencing-modal-area">
+
+	<div class="fencing-modal-header">
+		<div class="fencing-modal-title fc-font-2">{{marker}}{{field_title}}</div>
+	</div>
+
+	<div class="fc-range-icon">
+		<img src="{{image}}" class="fc-range-icon__img" alt="">
+	</div>
+
+	<div class="fencing-form-group fencing-input-range">
+
+		<button type="button" class="fi-btn fir-minus" aria-label="Decrease"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
+
+		<div class="fir-input-group">
+			<div class="fir-info">
+				<span>{{default}}</span>{{unit}}
+			</div>
+
+			<input name="{{field_name}}" class="fc-form-field" type="range" min="{{min}}" value="{{default}}" step="{{step}}" max="{{max}}">
+
+			<div class="fir-info-sub">
+				<span>{{sub_default}}</span>{{sub_unit}}
+			</div>
+		</div>
+
+		<button type="button" class="fi-btn fir-plus" aria-label="Increase"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+
+	</div>
+</div>

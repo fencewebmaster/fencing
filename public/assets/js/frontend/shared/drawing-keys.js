@@ -1,5 +1,6 @@
 /**
- * Planner Step 3 keyboard shortcuts for the fence drawing: ← / → scroll it, + / − zoom it, 0 resets it.
+ * Planner Step 3 keyboard shortcuts for the fence drawing: ← / → scroll it, + / − zoom it, 0 resets it,
+ * F toggles full screen (by pressing the zoom bar's button, which step3-fullscreen.js owns).
  *
  * Arrow keys only scroll the scroller that has focus, and nothing on the planner ever focuses the
  * drawing strip (`.fc-project-plan-hscroll` — its panels are click targets, not focusable), so the
@@ -139,14 +140,26 @@
         /* "=" and "_" share a key with + and − on most layouts, where + itself needs Shift. */
         var way = e.key === '+' || e.key === '=' ? 'in' : (e.key === '-' || e.key === '_' ? 'out' : '');
         var reset = e.key === '0';
+        var full = e.key === 'f' || e.key === 'F';
 
         /* Ctrl/⌘ with +, − or 0 is the browser's page zoom and Alt+← is Back. Shift rules out only the
            arrows, since + and _ are typed with it. */
-        if ((!dir && !way && !reset) || (dir && e.shiftKey) || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.isComposing) {
+        if ((!dir && !way && !reset && !full) || (dir && e.shiftKey) || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.isComposing) {
             return;
         }
 
         if ((e.target && e.target.closest && e.target.closest(OWNS_KEYS)) || modalOpen() || !onScreen()) {
+            return;
+        }
+
+        /* A held F would flicker in and out of full screen. */
+        if (full) {
+            var fullButton = section.querySelector('.js-fc-step3-fullscreen');
+
+            e.preventDefault();
+            if (fullButton && !e.repeat) {
+                fullButton.click();
+            }
             return;
         }
 

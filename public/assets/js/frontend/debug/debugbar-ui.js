@@ -1117,7 +1117,7 @@
             var env = (state.server && state.server.environment) || {};
             var rows = [
                 ['App version (config)', env.appVersion || '—'],
-                ['App version (branding)', env.brandingVersion || '—'],
+                ['App version (Releases)', env.releaseVersion || '—'],
                 ['PHP', env.phpVersion || '(no server island)'],
                 ['Debug Mode', env.debugMode ? 'ON (Settings → Console)' : 'on (client)'],
                 ['Legacy app.debug flag', env.appDebugLegacy === undefined ? '—' : String(env.appDebugLegacy) + ' (false = error_reporting(0) on frontend pages)'],

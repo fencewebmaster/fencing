@@ -118,13 +118,69 @@ use Fc\Admin\Services\FenceCatalogService;
 			</div>
 
 			<div class="col-md">
-				<div class="fc-card">
+				<div class="fc-card fc-project-details-fence-card">
 
 					<div class="fc-card-header fc-bg-dark fc-border-top">
-						Colour Options
+						Fence Details
 					</div>
 
 					<div class="fc-edit-zone">
+
+					<?php /* When Needed / Other Items Needed lead the card, straight under its header; Fence Type went, each colour card names its style and count. */ ?>
+					<div class="fc-table-rounded-border project-details--edit fc-project-details-fence-rows fc-rounded-top-none">
+
+						<table class="fc-table">
+						<tr>
+							<td>When Needed</td>
+							<td><?php echo @$info['timeframe'] ? fc_timeframe(@$info['timeframe']) : '<span class="text-muted">&mdash;</span>'; ?></td>
+						</tr>
+						<tr>
+							<td>Other Items Needed</td>
+							<td>
+								<?php
+								$nothing_extra = isset( $info['nothing_extra'] ) ? (string) $info['nothing_extra'] : '';
+								$extra = is_array( @$info['extra'] ) ? $info['extra'] : CartBuilderService::convertInputs( @$info['extra'] );
+								if ( ! is_array( $extra ) ) {
+									if ( is_string( $extra ) && trim( $extra ) !== '' && trim( $extra ) !== 'nothing' ) {
+										$extra = array_filter( array_map( 'trim', explode( ',', $extra ) ) );
+									} else {
+										$extra = array();
+									}
+								}
+								if ( $nothing_extra === 'nothing' || ( empty( $extra ) && in_array( (string) @$info['extra'], array( 'nothing', '[]', '' ), true ) ) ) :
+								?>
+								Nothing Extra, Just Fencing
+								<?php elseif ( ! empty( $extra ) ) : ?>
+								<ul class="fc-project-details-value-list mb-0">
+									<?php echo ArrayHelper::mapCallable( 'fc_extra_needed', $extra, true ); ?>
+								</ul>
+								<?php else : ?>
+								Nothing Extra, Just Fencing
+								<?php endif; ?>
+							</td>
+						</tr>
+						<?php
+						// Step 3 Post Options (Slat Infill): a reference-only pick saved in project_plans, never a product.
+						$post_finish_lines = [];
+						$pp_post_raw       = isset( $info['project_plans'] ) ? $info['project_plans'] : '';
+						$pp_post           = is_array( $pp_post_raw ) ? $pp_post_raw : json_decode( (string) $pp_post_raw, true );
+						if ( is_array( $pp_post ) && ! empty( $pp_post['post_finish'] ) && is_array( $pp_post['post_finish'] ) ) {
+							foreach ( $pp_post['post_finish'] as $pf_row ) {
+								if ( is_array( $pf_row ) && ! empty( $pf_row['name'] ) ) {
+									$post_finish_lines[] = ( ! empty( $pf_row['category'] ) ? $pf_row['category'] . ' – ' : '' ) . $pf_row['name'];
+								}
+							}
+						}
+						if ( ! empty( $post_finish_lines ) ) :
+						?>
+						<tr>
+							<td>Post finish (reference only)</td>
+							<td><?php echo e( implode( ', ', $post_finish_lines ) ); ?></td>
+						</tr>
+						<?php endif; ?>
+						</table>
+
+					</div>
 
 					<div class="fc-table-rounded-border fc-rounded-top-none">
 					
@@ -168,8 +224,11 @@ use Fc\Admin\Services\FenceCatalogService;
 											</div>
 										</div>
 										<div class="fc-project-plan-color-slick js-fc-project-plan-color-slick">
-									<?php foreach( $colors as $cd_k => $color_data ):
-	
+									<?php /* One carousel slide per page of six, laid out as a 2-column grid (keys kept: they name the inputs). */ ?>
+									<?php foreach( array_chunk( $colors, 6, true ) as $color_page ): ?>
+											<div class="fc-project-plan-color__page">
+									<?php foreach( $color_page as $cd_k => $color_data ):
+
 										$color_fence = $color_data['fence'];
 										$color_value = $color_data['color'];
 
@@ -178,6 +237,9 @@ use Fc\Admin\Services\FenceCatalogService;
 										$_fence_title = ( $_fence_slug !== '' && isset( $fences[ $_fence_slug ]['title'] ) )
 											? $fences[ $_fence_slug ]['title']
 											: $_fence_slug;
+										$_fence_image = ( $_fence_slug !== '' && ! empty( $fences[ $_fence_slug ]['image'] ) )
+											? url() . $fences[ $_fence_slug ]['image']
+											: '';
 										$_fence_section_count = FenceCatalogService::plannerSectionCountForFenceSlug( $_fence_slug );
 									?>
 
@@ -186,20 +248,30 @@ use Fc\Admin\Services\FenceCatalogService;
 													<input type="hidden" class="input-fence" name="color[<?php echo e((string) $cd_k); ?>][fence]" value="<?php echo e($_fence_slug); ?>">
 													<input type="hidden" class="input-color" name="color[<?php echo e((string) $cd_k); ?>][color]" value="<?php echo e((string) $color_value); ?>">
 
-													<div style="background:<?php echo e((string) @$color['background_color']); ?>;color:<?php echo e((string) @$color['text_color']); ?>;border:	2px solid var(--fc-gray);max-width:250px;" class="fc-colour-item fc-border fc-p-1 js-color_options-color_code">
-														<div style="color: <?php echo e((string) @$color['text_color']); ?>">
-															<div><?php echo e((string) $_fence_title); ?></div>
-															<hr class="my-2">
-															<strong class="js-color_options-title"><?php echo e((string) @$color['title']); ?></strong><br />
-															<span class="js-color_options-subtitle"><?php echo e((string) @$color['sub_title']); ?></span>
-															<?php if ( $_fence_section_count > 0 ) : ?>
-															<div class="fc-project-plan-color-sections"><?php echo (int) $_fence_section_count; ?> section<?php echo $_fence_section_count === 1 ? '' : 's'; ?></div>
-															<?php endif; ?>
+													<?php /* Fence style image left (30%), labels and colour right (70%). */ ?>
+													<div class="fc-colour-item js-color_options-color_code">
+														<?php if ( $_fence_image !== '' ) : ?>
+														<span class="fc-project-plan-color__image" aria-hidden="true"><img src="<?php echo e($_fence_image); ?>" alt="" loading="lazy" decoding="async"></span>
+														<?php endif; ?>
+														<?php /* Labels on white at the top; the colour is the bottom half's own background, set in that colour's text colour. */ ?>
+														<div class="fc-project-plan-color__body">
+															<div class="fc-project-plan-color__head">
+																<div class="fc-project-plan-color__fence"><?php echo e((string) $_fence_title); ?></div>
+																<?php if ( $_fence_section_count > 0 ) : ?>
+																<span class="fc-project-plan-color-sections"><?php echo (int) $_fence_section_count; ?> section<?php echo $_fence_section_count === 1 ? '' : 's'; ?></span>
+																<?php endif; ?>
+															</div>
+															<div class="fc-project-plan-color__colour" style="background:<?php echo e((string) @$color['background_color']); ?>;color:<?php echo e((string) @$color['text_color']); ?>;">
+																<strong class="fc-project-plan-color__name js-color_options-title"><?php echo e((string) @$color['title']); ?></strong>
+																<span class="fc-project-plan-color__finish js-color_options-subtitle"><?php echo e((string) @$color['sub_title']); ?></span>
+															</div>
 														</div>
 													</div>
 												</div>
 											</div>
 
+									<?php endforeach; ?>
+											</div>
 									<?php endforeach; ?>
 										</div>
 									</div>
@@ -216,86 +288,6 @@ use Fc\Admin\Services\FenceCatalogService;
 					</div>
 					</div>
 
-				</div>
-
-				<div class="fc-edit-zone">
-					<div class="fc-card-header fc-bg-dark fc-border-top">
-						Fence Details
-					</div>
-
-				<div class="fc-table-rounded-border project-details--edit"> 
-
-					<p class="fc-project-details-edit-hint small fc-d-none" role="status">Click items below to edit</p>
-
-					<table class="fc-table">
-						<tr>
-							<td width="180">Fence Type</td>
-							<td>
-								<?php
-								$fence_types_rows = FenceCatalogService::fenceSectionTypesWithCounts( $fences );
-								if ( ! empty( $fence_types_rows ) ) :
-								?>
-								<ul class="fc-project-details-value-list mb-0 ps-3">
-									<?php foreach ( $fence_types_rows as $ft_row ) : ?>
-									<li><?php echo e((string) $ft_row['name']); ?> <b>x <?php echo (int) $ft_row['count']; ?></b></li>
-									<?php endforeach; ?>
-								</ul>
-								<?php else : ?>
-								<span class="text-muted">—</span>
-								<?php endif; ?>
-							</td>
-						</tr>
-						<tr>
-							<td>When Needed</td>
-							<td><?php echo @$info['timeframe'] ? fc_timeframe(@$info['timeframe']) : '<span class="text-muted">&mdash;</span>'; ?></td>
-						</tr>
-						<tr>
-							<td>Other Items Needed</td>
-							<td>
-								<?php
-								$nothing_extra = isset( $info['nothing_extra'] ) ? (string) $info['nothing_extra'] : '';
-								$extra = is_array( @$info['extra'] ) ? $info['extra'] : CartBuilderService::convertInputs( @$info['extra'] );
-								if ( ! is_array( $extra ) ) {
-									if ( is_string( $extra ) && trim( $extra ) !== '' && trim( $extra ) !== 'nothing' ) {
-										$extra = array_filter( array_map( 'trim', explode( ',', $extra ) ) );
-									} else {
-										$extra = array();
-									}
-								}
-								if ( $nothing_extra === 'nothing' || ( empty( $extra ) && in_array( (string) @$info['extra'], array( 'nothing', '[]', '' ), true ) ) ) :
-								?>
-								Nothing Extra, Just Fencing
-								<?php elseif ( ! empty( $extra ) ) : ?>
-								<ul class="fc-project-details-value-list mb-0 ps-3">
-									<?php echo ArrayHelper::mapCallable( 'fc_extra_needed', $extra, true ); ?>
-								</ul>
-								<?php else : ?>
-								Nothing Extra, Just Fencing
-								<?php endif; ?>
-							</td>
-						</tr>
-						<?php
-						// Step 3 Post Options (Slat Infill): a reference-only pick saved in project_plans, never a product.
-						$post_finish_lines = [];
-						$pp_post_raw       = isset( $info['project_plans'] ) ? $info['project_plans'] : '';
-						$pp_post           = is_array( $pp_post_raw ) ? $pp_post_raw : json_decode( (string) $pp_post_raw, true );
-						if ( is_array( $pp_post ) && ! empty( $pp_post['post_finish'] ) && is_array( $pp_post['post_finish'] ) ) {
-							foreach ( $pp_post['post_finish'] as $pf_row ) {
-								if ( is_array( $pf_row ) && ! empty( $pf_row['name'] ) ) {
-									$post_finish_lines[] = ( ! empty( $pf_row['category'] ) ? $pf_row['category'] . ' – ' : '' ) . $pf_row['name'];
-								}
-							}
-						}
-						if ( ! empty( $post_finish_lines ) ) :
-						?>
-						<tr>
-							<td>Post finish (reference only)</td>
-							<td><?php echo e( implode( ', ', $post_finish_lines ) ); ?></td>
-						</tr>
-						<?php endif; ?>
-					</table>
-
-				</div>
 				</div>
 
 			</div>

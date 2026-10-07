@@ -28,7 +28,8 @@ $fcAdminVars['fcAdminFillLayout'] = !empty($fcAdminVars['fcAdminIsEntries'])
     || !empty($fcAdminVars['fcAdminIsGroupPermissions'])
     || !empty($fcAdminVars['fcAdminIsSettings'])
     || !empty($fcAdminVars['fcAdminIsGallery'])
-    || !empty($fcAdminVars['fcAdminIsProductsPage']);
+    || !empty($fcAdminVars['fcAdminIsProductsPage'])
+    || !empty($fcAdminVars['fcAdminIsVersionManager']);
 
 $fcAdminVars['fcCan'] = static function (string $key): bool {
     return \Fc\Admin\Services\PermissionService::can($key);

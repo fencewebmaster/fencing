@@ -12,6 +12,7 @@ use Fc\Admin\Controllers\Api\GroupPermissionsController;
 use Fc\Admin\Controllers\Api\ProductsController;
 use Fc\Admin\Controllers\Api\SettingsController;
 use Fc\Admin\Controllers\Api\UsersApiController;
+use Fc\Admin\Controllers\Api\VersionsApiController;
 
 /**
  * API module registry for the unified admin JSON API
@@ -33,6 +34,7 @@ $fcApiModules = [
     'products'         => static function (): void { ProductsController::dispatch(); },
     'settings'         => static function (): void { SettingsController::dispatch(); },
     'users'            => static function (): void { UsersApiController::dispatch(); },
+    'versions'         => static function (): void { VersionsApiController::dispatch(); },
 ];
 
 /*
@@ -55,6 +57,7 @@ foreach ([
     'products',
     'settings',
     'users',
+    'versions',
 ] as $fcApiModule) {
     $fcApiModules[$fcApiModule . 'Controller'] = $fcApiModules[$fcApiModule];
 }

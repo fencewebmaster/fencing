@@ -1549,7 +1549,7 @@ function fcProjectDetailsCancelEdit() {
     $('.fc-btn-reset').trigger('click');
     $('.project-details--editable').toggleClass('project-details--edit project-details--editable');
     $('.fc-project-details .fc-form-group, .fc-btn-reset').hide();
-    $('.fc-project-details table span:not([class^="js-"])').show();
+    $('.fc-project-details .fc-card:not(.fc-project-details-fence-card) table span:not([class^="js-"])').show();
     $('.js-project-details-controls').addClass('fc-d-none');
     $(".fc-btn-edit[data-action='edit']").show();
     $('.form-control-clear').remove();
@@ -1574,7 +1574,8 @@ function fcBtnEdit(e) {
     if (_action == 'edit') {
         $('.project-details--edit').toggleClass('project-details--edit project-details--editable');
         $('.fc-project-details .fc-form-group, .fc-btn-reset').show();
-        $('.fc-project-details table span:not([class^="js-"])').hide();
+        // Fence Details has no fields to swap in, so it keeps its display; hiding its spans emptied the colour cards.
+        $('.fc-project-details .fc-card:not(.fc-project-details-fence-card) table span:not([class^="js-"])').hide();
 
         _this.hide();
         loadClearForm();

@@ -203,6 +203,18 @@ $fcStoreCsvName  = $page['csv_name'];
                                         <span class="fc-admin-menu__option-meta">Replace every row from a .csv file</span>
                                     </span>
                                 </button>
+                                <button
+                                    type="button"
+                                    class="fc-products-download-dropdown__option fc-admin-menu__option"
+                                    role="menuitem"
+                                    data-fc-store-products-merge-csv
+                                >
+                                    <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-table-list"></i></span>
+                                    <span class="fc-admin-menu__option-text">
+                                        <span class="fc-admin-menu__option-label">Add / Update Rows</span>
+                                        <span class="fc-admin-menu__option-meta">Preview, then append or update rows from a .csv file</span>
+                                    </span>
+                                </button>
                             </div>
                             <div class="fc-admin-menu__divider" role="separator"></div>
                             <div class="fc-admin-menu__group">
@@ -225,6 +237,14 @@ $fcStoreCsvName  = $page['csv_name'];
                             class="sr-only"
                             accept=".csv,text/csv"
                             data-fc-store-products-import-input
+                            tabindex="-1"
+                            aria-hidden="true"
+                        >
+                        <input
+                            type="file"
+                            class="sr-only"
+                            accept=".csv,text/csv"
+                            data-fc-store-products-merge-input
                             tabindex="-1"
                             aria-hidden="true"
                         >
@@ -361,6 +381,67 @@ $fcStoreCsvName  = $page['csv_name'];
                     <span>Preview changes</span>
                 </button>
                 <button type="button" class="btn btn-sm btn-orange fw-semibold" data-fc-desc-update-apply hidden>
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    <span>Apply to products.csv</span>
+                </button>
+            </footer>
+        </section>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($page['can_edit'])) : ?>
+    <?php /* Add / Update Rows: the Update Products dialog chrome (.fc-desc-update__*) with its own data-fc-merge-* hooks. */ ?>
+    <div class="fc-desc-update fc-merge-rows" data-fc-merge-modal hidden>
+        <div class="fc-desc-update__backdrop" aria-hidden="true"></div>
+        <section
+            class="fc-desc-update__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fc-merge-rows-title"
+            tabindex="-1"
+        >
+            <button type="button" class="fencing-modal-close" data-fc-merge-close aria-label="Close"></button>
+            <header class="fc-desc-update__header">
+                <span class="fc-desc-update__icon" aria-hidden="true"><i class="fa-solid fa-table-list"></i></span>
+                <div>
+                    <h2 id="fc-merge-rows-title">Add / Update Rows</h2>
+                    <p>Appends new rows and updates existing ones from a .csv file.</p>
+                </div>
+            </header>
+            <div class="fc-desc-update__body">
+                <p class="fc-desc-update__intro">
+                    Rows are matched on <strong>SLUG</strong>, <strong>SUPPLIER</strong> and <strong>STYLE</strong>:
+                    a match updates that row in place, anything else is added at the end. A blank cell keeps
+                    the current value, so write <strong>OFF</strong> to switch a colour off. Nothing is written
+                    to <strong>products.csv</strong> until you review the list and press Apply. Names and
+                    descriptions you add here are rebuilt from the store by a later Update Products run.
+                </p>
+                <p class="fc-merge-rows__file" data-fc-merge-file></p>
+
+                <div class="fc-desc-update__progress" data-fc-merge-summary hidden>
+                    <div class="fc-desc-update__status">
+                        <strong data-fc-merge-status>Reading the file…</strong>
+                    </div>
+                    <dl class="fc-desc-update__details">
+                        <div><dt>To add</dt><dd data-fc-merge-add>0</dd></div>
+                        <div><dt>To update</dt><dd data-fc-merge-update>0</dd></div>
+                        <div><dt>Unchanged</dt><dd data-fc-merge-unchanged>0</dd></div>
+                    </dl>
+                </div>
+
+                <div class="fc-desc-update__changes" data-fc-merge-changes hidden>
+                    <p class="fc-desc-update__changes-head">
+                        <span data-fc-merge-changes-label>Rows</span>
+                    </p>
+                    <ul class="fc-desc-update__list" data-fc-merge-list></ul>
+                </div>
+
+                <div class="fc-merge-rows__notes" data-fc-merge-warnings hidden role="status"></div>
+                <div class="fc-desc-update__error" data-fc-merge-error hidden role="alert"></div>
+            </div>
+            <footer class="fc-desc-update__footer">
+                <button type="button" class="btn btn-sm btn-light fw-semibold" data-fc-merge-close>Close</button>
+                <button type="button" class="btn btn-sm btn-orange fw-semibold" data-fc-merge-apply hidden>
                     <i class="fa-solid fa-check" aria-hidden="true"></i>
                     <span>Apply to products.csv</span>
                 </button>

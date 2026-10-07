@@ -148,6 +148,202 @@ SlatFence = {
         }
     },
 
+    //----------------------------------------------------------------------------------
+
+    /** Tag each section end set to the 135° turn; its post keeps the footing it is drawn with. */
+    applySlatEndTurnTags: function($sectionRoot, controls, info) {
+        if (!$sectionRoot || !$sectionRoot.length || !this.isMainSlatSlug(info?.slug)) {
+            return;
+        }
+        $sectionRoot.find('.fc-post-turn-tag').remove();
+        $sectionRoot.find('.panel-post.fc-post-turn').removeClass('fc-post-turn');
+        this.slatEndTurnSides(controls).forEach(function(side) {
+            $sectionRoot.find('.panel-post[data-key="' + side + '_side"]').first()
+                .addClass('fc-post-turn')
+                .append('<span class="fc-post-turn-tag" aria-hidden="true">135°</span>');
+        });
+    },
+
+    /**
+     * Older quotes saved "135 Degree Angle" as a post's footing. Under a definition with the Corner field that reads as
+     * the default footing plus a 135° turn at that end (a middle post cannot turn). Returns the segment, or null if unchanged.
+     */
+    migrateLegacyTurnSegment: function(segment) {
+        var def = typeof fc_data !== 'undefined' ? fc_data.slat : null;
+        var hasCorner = (def?.settings?.left_side?.fields || []).some(function(field) {
+            return field?.slug === 'post_angle';
+        });
+        var turnSlug = this.slatTurnSlug;
+        if (!hasCorner || !turnSlug || !Array.isArray(segment)) {
+            return null;
+        }
+        var footing = (def.settings.post_options?.fields?.[0]?.options || []).find(function(opt) {
+            return opt?.default;
+        })?.slug || 'opt-1';
+        var changed = false;
+        segment.forEach(function(row) {
+            var settings = Array.isArray(row?.settings) ? row.settings : [];
+            var post = settings.find(function(item) {
+                return item?.key === 'post_option' && item.val === 'opt-5';
+            });
+            if (!post || !['post_options', 'left_side', 'right_side'].includes(row.control_key)) {
+                return;
+            }
+            post.val = footing;
+            changed = true;
+            if (row.control_key === 'post_options') {
+                return;
+            }
+            var angle = settings.find(function(item) {
+                return item?.key === 'post_angle';
+            });
+            if (angle) {
+                angle.val = turnSlug;
+            } else {
+                settings.push({ key: 'post_angle', val: turnSlug, tag: 'div', type: 'image_option' });
+            }
+        });
+        return changed ? segment : null;
+    },
+
+    /** True when section `tab` is Slat and ends on its own post that turns 135°, so the next section starts from that post. */
+    slatSectionEndsOnTurnPost: function(tab) {
+        try {
+            var row0 = JSON.parse(localStorage.getItem('custom_fence-' + tab) || '[]')[0];
+            if (!row0 || !this.isMainSlatSlug(normalizeFenceStyleSlug(row0.fence || row0.style || ''))) {
+                return false;
+            }
+            var controls = readCustomFenceSegment(tab, 'slat');
+            var right = controls.find(function(row) {
+                return row?.control_key === 'right_side';
+            });
+            var hasPost = !(right?.settings || []).some(function(item) {
+                return item?.key === 'right_option' && String(item.val || '').includes('no-post');
+            });
+            return hasPost && this.slatEndTurnSides(controls).includes('right');
+        } catch (e) {
+            return false;
+        }
+    },
+
+    /** A new section that follows a Slat section's 135° turn post shares it, so it starts with No Post (as Perforated corners do). */
+    set_cutom_fence_data: function(opts) {
+        var healed = this.healSharedTurnPost();
+        // Read before the shared seed runs: it stamps this style's calculate value, which marks the section as not new.
+        var tab = this.sharedTurnPostTab();
+        FENCE.set_cutom_fence_data(opts);
+        if (tab !== null) {
+            this.seedSharedTurnPost(tab);
+        } else if (healed) {
+            this.afterSharedTurnHealed();
+        }
+    },
+
+    /** The selected section if it is new to Slat, follows a Slat section's turn post and has no left side picked; else null. */
+    sharedTurnPostTab: function() {
+        try {
+            var fd = getSelectedFenceData();
+            var tab = parseInt(fd.tab, 10);
+            if (!this.isMainSlatSlug(fd.slug) || !(tab > 0)) {
+                return null;
+            }
+            // Calculated as Slat already: a saved or reloaded section keeps the ends it was quoted with.
+            var calculated = fd.tabInfo?.[0]?.calculateValueByStyle?.slat;
+            if (calculated !== undefined && calculated !== null && calculated !== '') {
+                return null;
+            }
+            var picked = (fd.info || []).some(function(row) {
+                return row?.control_key === 'left_side';
+            });
+            return !picked && this.slatSectionEndsOnTurnPost(tab - 1) ? tab : null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    /** Store the row the Edit Left Side drawer writes for No Post, redraw, and tell the customer why. */
+    seedSharedTurnPost: function(tab) {
+        try {
+            var segment = readCustomFenceSegment(tab, 'slat');
+            var postRow = segment.find(function(row) {
+                return row?.control_key === 'post_options';
+            });
+            var postOpt = postRow?.settings?.find(function(item) {
+                return item?.key === 'post_option';
+            })?.val || 'opt-1';
+
+            // sharedTurn marks it as ours: the drawer rewrites the row without it, so a customer's own No Post is never undone.
+            segment.push({
+                id: 'slat',
+                control_key: 'left_side',
+                sharedTurn: true,
+                settings: [
+                    { key: 'left_option', val: 'no-post', tag: 'div', type: 'range_option' },
+                    { key: 'post_option', val: postOpt, tag: 'div', type: 'image_option' },
+                    { key: 'post_angle', val: 'straight', tag: 'div', type: 'image_option' }
+                ]
+            });
+            localStorage.setItem('custom_fence-' + tab + '-slat', JSON.stringify(segment));
+
+            FENCE.call('update_custom_fence_tab');
+
+            if (typeof popupToast === 'function') {
+                popupToast(
+                    '135° turn',
+                    '<b>Section ' + (tab + 1) + '</b> starts with <b>No Post</b>: it fixes to the 135° turn post at the end of Section ' +
+                        tab + '. If this run stands on its own, choose <b>Yes Post</b> under <b>Edit Left Side</b>.',
+                    'TURN'
+                );
+            }
+        } catch (e) {}
+    },
+
+    /** The section before no longer ends on a turn post: drop the seeded No Post, so this section has its post back. */
+    healSharedTurnPost: function() {
+        try {
+            var fd = getSelectedFenceData();
+            var tab = parseInt(fd.tab, 10);
+            if (!this.isMainSlatSlug(fd.slug) || !Number.isFinite(tab)) {
+                return false;
+            }
+            var segment = readCustomFenceSegment(tab, 'slat');
+            var seeded = segment.some(function(row) {
+                return row?.control_key === 'left_side' && row.sharedTurn === true;
+            });
+            if (!seeded || (tab > 0 && this.slatSectionEndsOnTurnPost(tab - 1))) {
+                return false;
+            }
+            localStorage.setItem('custom_fence-' + tab + '-slat', JSON.stringify(segment.filter(function(row) {
+                return row?.control_key !== 'left_side';
+            })));
+            return true;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    /** The steps fcSelectPost runs when a customer changes a post end, then say why the post came back. */
+    afterSharedTurnHealed: function() {
+        try {
+            var tab = parseInt(getSelectedFenceData().tab, 10);
+            FENCE.call('updateOverallPosts');
+            updateOverAllLength({ removePost: 1 });
+            var fd = getSelectedFenceData();
+            if (FENCE.isGateMinOalStyle(fd.slug)) {
+                FENCE.syncGateOverallOnPostChange(fd, { persist: true });
+            }
+            btnCalculate();
+
+            if (typeof popupToast === 'function') {
+                popupToast(
+                    '135° turn',
+                    '<b>Section ' + (tab + 1) + '</b> starts with a post again: the section before it no longer ends on a 135° turn post.',
+                    'TURN'
+                );
+            }
+        } catch (e) {}
+    },
+
     /** Centers label: `panelW` or `panelW + postW` depending on config. */
     formatPanelSizeCenterW: function(panelSizeMm, centerPointMm, slug) {
         var panel = parseInt(panelSizeMm, 10);
@@ -4733,7 +4929,7 @@ SlatFence = {
         // FSQ infill tab: matrix forces "No Post" — no S-120ROD, cement glue, or slat_post lines (slat-fence-app.html).
         var isSlatInfill = fenceKind === 'slat_fence_infill';
 
-        // slat_fixings+* are optional add-ons (like Barr's base_plate+dynabolts): listed with a
+        // Rods, glue and concrete are optional add-ons (like Barr's base_plate+dynabolts): listed with a
         // suggested qty but kept out of the cart total until the user clicks "Add to cart".
         var addOptional = function(slug, qty) {
             qty = parseInt(qty, 10);
@@ -4756,6 +4952,8 @@ SlatFence = {
         var baseFencePosts = byOpt[1] || 0;
         var wallFixFencePosts = byOpt[3] || 0;
         var cementPosts = byOpt[2] || 0;
+        var coreDrilledPosts = byOpt[4] || 0;
+        var turns = this.slatTurnCount(context?.fenceInfo, array);
         var threadRodPosts = baseFencePosts + wallFixFencePosts;
 
         if (!isSlatInfill) {
@@ -4779,12 +4977,30 @@ SlatFence = {
             if (cementPosts > 0) {
                 addOptional('slat_fixings+cement', cementPosts);
             }
+
+            // Billed, not suggested: a wall-fixed post's nut is tightened through a front access hole that needs a plug.
+            if (wallFixFencePosts > 0) {
+                addOrInc('slat_post+hole_plugs', wallFixFencePosts);
+            }
         }
 
         var fenceHm = this.resolveSlatFenceHeightMm(context, calc);
         if (!Number.isFinite(fenceHm) || fenceHm <= 0) {
             fenceHm = parseInt(String(calc?.fence_size?.height || ''), 10) || 1800;
         }
+
+        // Billed per job: core-drilled holes need grout, and each 135° turn the adapter the next panel fixes to.
+        if (!isSlatInfill && (coreDrilledPosts > 0 || turns > 0)) {
+            var postOptionLines = this.pooledSlatPostOptionLinesForSection(
+                context?.tabIndex,
+                coreDrilledPosts,
+                turns,
+                fenceHm
+            );
+            addOrInc('slat_fixings+grout', postOptionLines.grout);
+            addOrInc('slat_post+135_adapter', postOptionLines.adapters);
+        }
+
         var gateHm = this.isSlatLike(fenceKind) && this.isMainSlatSlug(fenceKind)
             ? this.resolveGateSlatHeightMm(context, calc)
             : fenceHm;

@@ -38,9 +38,91 @@
         return loadPromise;
     }
 
+    var RELEASE_NOTES_TEMPLATE =
+        '<h3>New Features</h3><ul><li>&nbsp;</li></ul>' +
+        '<h3>Improvements</h3><ul><li>&nbsp;</li></ul>' +
+        '<h3>Fixes</h3><ul><li>&nbsp;</li></ul>';
+
+    // data-fc-wysiwyg="<profile>" swaps in a fuller toolbar; "1" keeps the fence-style defaults below.
+    var PROFILES = {
+        // Version Manager release notes: valid_elements mirrors HtmlSanitizer, so the editor never shows what saving drops.
+        'release-notes': {
+            options: {
+                plugins: 'lists link code autoresize table codesample',
+                toolbar:
+                    'undo redo | blocks | bold italic | link | bullist numlist | ' +
+                    'blockquote fcinlinecode codesample | table | fcnotestemplate | removeformat code',
+                block_formats: 'Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4',
+                toolbar_mode: 'wrap',
+                valid_elements:
+                    'p,br,hr,h2,h3,h4,strong/b,em/i,u,s,sub,sup,a[href|title|target],ul,ol[start],li,' +
+                    'blockquote,code[class],pre[class],table,caption,thead,tbody,tfoot,tr,' +
+                    'th[colspan|rowspan|scope],td[colspan|rowspan]',
+                min_height: 280,
+                max_height: 560,
+                link_target_list: [
+                    { title: 'Same window', value: '' },
+                    { title: 'New window', value: '_blank' }
+                ],
+                link_assume_external_targets: 'https',
+                paste_data_images: false,
+                object_resizing: false,
+                table_sizing_mode: 'responsive',
+                table_resize_bars: false,
+                table_appearance_options: false,
+                table_advtab: false,
+                table_cell_advtab: false,
+                table_row_advtab: false,
+                table_default_attributes: {},
+                table_default_styles: {},
+                codesample_languages: [
+                    { text: 'Plain text', value: 'none' },
+                    { text: 'HTML', value: 'markup' },
+                    { text: 'CSS', value: 'css' },
+                    { text: 'JavaScript', value: 'javascript' },
+                    { text: 'PHP', value: 'php' },
+                    { text: 'SQL', value: 'sql' },
+                    { text: 'JSON', value: 'json' },
+                    { text: 'Shell', value: 'bash' }
+                ],
+                content_style:
+                    'body{font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.6}' +
+                    'code{padding:1px 4px;border-radius:3px;background:rgba(100,116,139,.15);font-size:.9em}' +
+                    'pre{padding:10px 12px;border-radius:3px;background:rgba(100,116,139,.12);overflow:auto}' +
+                    'pre code{padding:0;background:none}' +
+                    'blockquote{margin:0 0 1em;padding:2px 0 2px 12px;border-left:3px solid #f67925}' +
+                    'table{border-spacing:0;width:100%}th,td{padding:6px 8px;text-align:left;border-bottom:1px solid rgba(100,116,139,.35)}'
+            },
+            setup: function (editor) {
+                editor.ui.registry.addToggleButton('fcinlinecode', {
+                    icon: 'sourcecode',
+                    tooltip: 'Inline code',
+                    onAction: function () {
+                        editor.execCommand('mceToggleFormat', false, 'code');
+                    },
+                    onSetup: function (api) {
+                        var watch = editor.formatter.formatChanged('code', function (state) {
+                            api.setActive(state);
+                        });
+                        return function () {
+                            watch.unbind();
+                        };
+                    }
+                });
+                editor.ui.registry.addButton('fcnotestemplate', {
+                    text: 'Sections',
+                    tooltip: 'Insert New Features / Improvements / Fixes headings',
+                    onAction: function () {
+                        editor.insertContent(RELEASE_NOTES_TEMPLATE);
+                    }
+                });
+            }
+        }
+    };
+
     function getEditorConfig(textarea, onChange) {
         var dark = isDarkTheme();
-        return {
+        var config = {
             target: textarea,
             license_key: 'gpl',
             menubar: false,
@@ -66,6 +148,18 @@
                 });
             }
         };
+
+        var profile = PROFILES[textarea.getAttribute('data-fc-wysiwyg')];
+        if (profile) {
+            var baseSetup = config.setup;
+            Object.assign(config, profile.options);
+            config.setup = function (editor) {
+                baseSetup(editor);
+                profile.setup(editor);
+            };
+        }
+
+        return config;
     }
 
     function initInRoot(root, onChange) {

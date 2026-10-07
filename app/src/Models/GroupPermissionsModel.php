@@ -94,6 +94,16 @@ final class GroupPermissionsModel
                 ],
             ],
             [
+                'key' => 'version_manager',
+                'label' => 'Releases',
+                'children' => [
+                    ['key' => 'view_list', 'label' => 'Listing'],
+                    ['key' => 'edit', 'label' => 'Add/Edit'],
+                    ['key' => 'delete', 'label' => 'Delete'],
+                    ['key' => 'publish', 'label' => 'Publish/Unpublish'],
+                ],
+            ],
+            [
                 'key' => 'settings',
                 'label' => 'Settings',
                 'children' => [

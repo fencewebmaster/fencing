@@ -155,6 +155,10 @@ final class GroupPermissionsPresenter
         if ($route === 'settings') {
             return ['settings.settings'];
         }
+        // Releases keeps the version_manager keys it had as Version Manager, so saved grants still apply.
+        if ($route === 'releases') {
+            return ['version_manager.view_list'];
+        }
         if ($route === 'products/system-products' || str_starts_with($route, 'products/system-products/')) {
             return ['products.system_products.view'];
         }
@@ -197,7 +201,8 @@ final class GroupPermissionsPresenter
                 'preview-descriptions',
                 'apply-descriptions',
                 'download-store-products-csv',
-                'import-store-products-csv' => ['products.system_products.edit'],
+                'import-store-products-csv',
+                'merge-store-products-csv' => ['products.system_products.edit'],
                 'download-products-start',
                 'download-products-step',
                 'download-products-cancel',
@@ -237,6 +242,12 @@ final class GroupPermissionsPresenter
             'cache', 'cacheController' => ['settings.cache'],
             'groupPermissions', 'groupPermissionsController' => ['users.group_permissions'],
             'users', 'usersController' => ['users.view_list'],
+            'versions', 'versionsController' => match ($action) {
+                'create', 'update', 'next-version' => ['version_manager.edit'],
+                'delete' => ['version_manager.delete'],
+                'publish', 'unpublish' => ['version_manager.publish'],
+                default => ['version_manager.view_list'],
+            },
             default => [],
         };
     }

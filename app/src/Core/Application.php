@@ -185,6 +185,16 @@ final class Application
             Response::redirect($destination, 301);
         }
 
+        // Version Manager became Releases.
+        if ($tail === 'version-manager') {
+            $destination = $context->adminBase . '/releases';
+            $query = $_SERVER['QUERY_STRING'] ?? '';
+            if ($query !== '') {
+                $destination .= '?' . $query;
+            }
+            Response::redirect($destination, 301);
+        }
+
         return false;
     }
 }

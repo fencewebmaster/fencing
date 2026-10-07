@@ -145,6 +145,10 @@ use Fc\Admin\Services\AppConfigService;
                                 <span class="fc-shortcuts__keys"><kbd>0</kbd></span>
                                 <span>Reset the zoom to 100%</span>
                             </li>
+                            <li>
+                                <span class="fc-shortcuts__keys"><kbd>F</kbd></span>
+                                <span><b>F</b>ull screen on or off (Esc also leaves it)</span>
+                            </li>
                         </ul>
                     </div>
 

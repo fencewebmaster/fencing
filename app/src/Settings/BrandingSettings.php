@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Fc\Admin\Settings;
 
 /**
- * FC branding — app name, tagline, version (saved to writable/theme.json).
+ * FC branding — logo, favicon, app name, tagline (saved to writable/theme.json). The app version is
+ * not a setting: it is the newest published release in Releases (AppVersionService::label()).
  */
 final class BrandingSettings
 {
@@ -19,7 +20,6 @@ final class BrandingSettings
             'favicon' => '',
             'appName' => 'Fencing Calculator',
             'tagline' => 'Calculate your fence cost and the materials needed.',
-            'version' => 'v10.0.0 beta',
         ];
     }
 
@@ -52,12 +52,6 @@ final class BrandingSettings
                 'type' => 'text',
                 'placeholder' => 'Calculate your fence cost and the materials needed.',
                 'help' => 'Short description under the title on the planner header.',
-            ],
-            'version' => [
-                'label' => 'Version label',
-                'type' => 'text',
-                'placeholder' => 'v10.0.0 beta',
-                'help' => 'Shown next to the app name in the planner footer.',
             ],
         ];
     }
@@ -126,7 +120,6 @@ final class BrandingSettings
         $limits = [
             'appName' => 120,
             'tagline' => 500,
-            'version' => 50,
         ];
 
         $max = $limits[$key] ?? 500;

@@ -32,6 +32,9 @@ final class AdminContext
     /** @var array<string, mixed> */
     public array $branding = [];
 
+    /** Sidebar footer version: the newest published release in Releases ('' when none). */
+    public string $appVersion = '';
+
   /** @var array<string, mixed>|null */
     public ?array $entriesPage = null;
 
@@ -68,6 +71,9 @@ final class AdminContext
     /** @var array<string, mixed>|null */
     public ?array $groupPermissionsPage = null;
 
+    /** @var array<string, mixed>|null */
+    public ?array $versionManagerPage = null;
+
     public bool $isEntries = false;
 
     public bool $isDashboard = false;
@@ -81,6 +87,8 @@ final class AdminContext
     public bool $isUsers = false;
 
     public bool $isGroupPermissions = false;
+
+    public bool $isVersionManager = false;
 
     public bool $isLogin = false;
 
@@ -99,6 +107,7 @@ final class AdminContext
         $this->adminBase = UrlHelper::resolveAdminMountBase();
         $this->appBase   = rtrim(str_replace('\\', '/', dirname($this->adminBase)), '/');
         $this->branding  = BrandingSettings::get();
+        $this->appVersion = AppVersionService::label();
         $this->authUser  = AuthService::user();
         $this->authSwitchFrom = ImpersonationService::switchFrom();
         $this->fontsHref = $this->resolveFontsHref();
@@ -112,6 +121,7 @@ final class AdminContext
     {
         return [
             'fcBranding'                  => $this->branding,
+            'fcAppVersion'                => $this->appVersion,
             'pageTitle'                   => $this->pageTitle,
             'fcAdminBase'                 => $this->adminBase,
             'fcAdminRoute'                => $this->route,
@@ -133,6 +143,7 @@ final class AdminContext
             'fcDashboardPage'             => $this->dashboardPage,
             'fcUsersPage'                 => $this->usersPage,
             'fcGroupPermissionsPage'      => $this->groupPermissionsPage,
+            'fcVersionManagerPage'        => $this->versionManagerPage,
             'fcAdminIsEntries'            => $this->isEntries,
             'fcAdminIsDashboard'          => $this->isDashboard,
             'fcAdminIsSettings'           => $this->isSettings,
@@ -140,6 +151,7 @@ final class AdminContext
             'fcAdminIsProductsPage'       => $this->isProductsPage,
             'fcAdminIsUsers'              => $this->isUsers,
             'fcAdminIsGroupPermissions'   => $this->isGroupPermissions,
+            'fcAdminIsVersionManager'     => $this->isVersionManager,
             'fcAdminIsLogin'              => $this->isLogin,
             'fcAuthUser'                  => $this->authUser,
             'fcAuthSwitchFrom'            => $this->authSwitchFrom,

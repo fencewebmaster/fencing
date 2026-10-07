@@ -369,8 +369,9 @@ html:has(body.fc-planner-page) {
 }
 
 /* Planner: smaller Colour Options (Step 4, loaded into [data-load="color-options"]). */
+/* Step 4 colour card: one 15px inset, as the Project Notes card has (header text, tiles, dots); its header 43px like that one's. */
 .fc-planner-page [data-load="color-options"] .fc-card-header {
-    padding: 6px 10px;
+    padding: 7px 15px;
     font-size: 0.875rem;
 }
 
@@ -384,6 +385,15 @@ html:has(body.fc-planner-page) {
 
 .fc-planner-page .fc-color-options .fc-color-options__slide {
     margin-bottom: 0.45rem;
+}
+
+/* 15px round the tiles: 9px here plus each slide's 6px at the sides; the dots row adds its own space below. */
+.fc-planner-page .fc-step-4 .fc-color-options {
+    padding: 15px 9px;
+}
+
+.fc-planner-page .fc-step-4 .fc-color-options .fc-color-options__slide {
+    margin-bottom: 0;
 }
 
 .fc-planner-page .fc-color-options p {
@@ -403,8 +413,9 @@ html:has(body.fc-planner-page) {
     font-size: 0.6875rem;
 }
 
+/* The skeleton tile's 10px / 12px inset, ring included; the base .fc-select no longer pads, so the name sat on the top edge. */
 .fc-planner-page .fc-step-4 .fc-color-options .fc-select {
-    padding-left: 12px;
+    padding: 10px 12px;
     text-align: left;
 }
 
@@ -432,8 +443,8 @@ html:has(body.fc-planner-page) {
     height: 18px;
     width: 18px;
     top: auto;
-    bottom: 8px;
-    right: 8px;
+    bottom: 10px;
+    right: 12px;
     left: auto;
 }
 
@@ -501,8 +512,8 @@ html:has(body.fc-planner-page) {
 
 /* Step 4 — colour options skeleton (2 / 4 / 6 tiles; matches Slick columns) */
 .fc-planner-page .fc-color-options-skeleton__header {
-    padding: 6px 10px;
-    min-height: 38px;
+    padding: 7px 15px;
+    min-height: 43px;
     display: flex;
     align-items: center;
 }
@@ -529,7 +540,7 @@ html:has(body.fc-planner-page) {
     margin: 0 -6px;
     width: calc(100% + 12px);
     box-sizing: border-box;
-    padding: 6px 10px 10px;
+    padding: 15px 15px 30px;
 }
 
 .fc-planner-page .fc-color-options-skeleton__cell {
@@ -800,17 +811,11 @@ html:has(body.fc-planner-page) {
     margin-top: 4px;
 }
 
-/* Section count keeps its pill but takes the step subtitle's type; stays white for the dark header. */
+/* Section count leads the title as plain text ("1 × SLAT – Basalt"), set like the fence name it counts. */
 .fc-planner-page [data-load="color-options"] .fc-color-options-section-count {
-    margin-left: auto;
-    padding: 2px 10px;
-    border-radius: 999px;
-    background-color: rgba(255, 255, 255, 0.12);
-    font-size: 16px;
-    font-weight: normal;
-    letter-spacing: normal;
-    text-transform: none;
-    opacity: 1;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
 }
 
 .fc-planner-page .fc-step-4 .fc-color-options-planner-title-text {
@@ -971,7 +976,7 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     right: 10px;
 }
 
-/* Project plan — Color Options skeleton (2 mobile / 4 tablet+; matches Slick) */
+/* Project plan — Color Options skeleton (a page of six: 1 column on phones, 2 columns x 3 rows from 768px; matches Slick) */
 
 .fc-project-plan-page .fc-project-plan-color-skeleton {
     display: none;
@@ -989,9 +994,8 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 }
 
 .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__track {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
     margin: 0 -6px;
     width: calc(100% + 12px);
@@ -1002,21 +1006,22 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__cell {
     box-sizing: border-box;
     padding: 10px 6px;
-    flex: 0 0 50%;
-    max-width: 50%;
+    flex: 0 0 100%;
+    max-width: 100%;
 }
 
 .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__tile {
-    min-height: 118px;
+    min-height: 90px;
     border-radius: 10px;
-    border: 2px solid var(--fc-alto-4);
-    background: var(--fc-white-smoke);
-    padding: 12px 14px 12px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 0;
+    border: 1px solid var(--fc-alto-4);
+    background: var(--fc-white);
+    padding: 14px 12px 12px;
+    display: grid;
+    grid-template-columns: 30% 1fr;
+    grid-template-rows: auto auto 1fr;
+    align-content: start;
+    align-items: start;
+    column-gap: 12px;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
@@ -1024,14 +1029,18 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 
 /* Tile stays static — shine runs only on the bar pseudo-elements below */
 
+/* The divider stands in for the card's fence image: a block bled to the tile's left, top and bottom edges. */
 .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__divider {
     display: block;
-    width: 100%;
-    height: 0;
-    margin: 8px 0;
-    border: 0;
-    border-top: 1px solid var(--fc-alto-4);
-    flex-shrink: 0;
+    grid-column: 1;
+    grid-row: 1 / -1;
+    align-self: stretch;
+    margin: -14px 0 -12px -12px;
+    background: var(--fc-wild-sand);
+}
+
+.fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__line {
+    grid-column: 2;
 }
 
 .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__line {
@@ -1063,11 +1072,11 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     will-change: transform;
 }
 
-/* Row1 → divider → row2 / row3 (matches fence line / hr / colour title & subtitle) */
+/* Image → row1 / row2 / row3 (matches fence label / colour name / finish) */
 .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__line--row1 {
-    width: 78%;
-    height: 10px;
-    margin-bottom: 0;
+    width: 58%;
+    height: 8px;
+    margin-bottom: 9px;
 }
 
 .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__line--row1::after {
@@ -1094,20 +1103,9 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     animation-delay: 0.38s;
 }
 
-@media (max-width: 767.98px) {
-    .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__track .fc-color-options-skeleton__cell:nth-child(n + 3) {
-        display: none !important;
-    }
-}
-
 @media (min-width: 768px) {
-    .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__cell {
-        flex: 0 0 25%;
-        max-width: 25%;
-    }
-
-    .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__track .fc-color-options-skeleton__cell:nth-child(n + 5) {
-        display: none !important;
+    .fc-project-plan-page .fc-project-plan-color-skeleton .fc-color-options-skeleton__track {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -1156,7 +1154,7 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     transition: opacity 0.12s ease-out;
 }
 
-/* Project plan — Color Options slick (2 mobile / 4 tablet+; slick/project-plan-color.js) */
+/* Project plan — Color Options slick (one page of six per slide; slick/project-plan-color.js) */
 
 /* Tablet / iPad: stack Your Project Details (customer + fence summary vs Color Options) full width; two columns from lg */
 @media (max-width: 991.98px) {
@@ -1259,6 +1257,26 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     min-width: 0;
 }
 
+/* One carousel slide = a page of six colours: one column on phones, 2 columns from 768px, every row as tall as the tallest card.
+   The page is Slick's slide element, so the slider is in the selector to outrank its display: flex. */
+.fc-project-plan-page .js-fc-project-plan-color-slick .fc-project-plan-color__page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 1fr;
+    align-content: start;
+    /* Not stretched to the tallest page by the flex track, or 1fr would hand a short last page's rows the spare height. */
+    align-self: flex-start;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .fc-project-plan-page .js-fc-project-plan-color-slick .fc-project-plan-color__page {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 .fc-project-plan-page .fc-project-plan-color__slide .fc-color-options {
     display: flex;
     flex: 1 1 auto;
@@ -1271,26 +1289,105 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 .fc-project-plan-page .fc-project-plan-color__slide .fc-colour-item {
     flex: 1 1 auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
     max-width: 100%;
     min-height: 100%;
     box-sizing: border-box;
+    overflow: hidden;
+    border: 1px solid var(--fc-alto-4);
+    border-radius: 10px;
+    background: var(--fc-white);
+    color: var(--fc-cod-gray);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.fc-project-plan-page .fc-project-plan-color__slide .fc-colour-item > div {
+/* Fence style image, 30% of the card; the picture is fitted into the box, so it never sets the card's height. */
+.fc-project-plan-page .fc-project-plan-color__image {
+    position: relative;
+    flex: 0 0 30%;
+    min-height: 64px;
+    background: var(--fc-alabaster);
+    border-right: 1px solid var(--fc-alto-4);
+}
+
+.fc-project-plan-page .fc-project-plan-color__image img {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    object-fit: contain;
+}
+
+.fc-project-plan-page .fc-project-plan-color__slide .fc-colour-item > .fc-project-plan-color__body {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    min-width: 0;
+}
+
+/* Top half: fence style and section count on the card's white. */
+.fc-project-plan-page .fc-project-plan-color__head {
+    flex: 0 0 auto;
+    padding: 7px 10px 6px;
+}
+
+.fc-project-plan-page .fc-project-plan-color__fence {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fc-cod-gray);
 }
 
 .fc-project-plan-page .fc-project-plan-color-sections {
-    margin-top: 0.45rem;
-    font-size: 0.8125rem;
+    display: block;
+    font-size: 11px;
     font-weight: 600;
     line-height: 1.35;
-    opacity: 0.95;
+    color: var(--fc-dove-gray);
+}
+
+/* Bottom half: the colour itself as the background (inline, with its own text colour); the hairline parts a white colour from the white top. */
+.fc-project-plan-page .fc-project-plan-color__colour {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 7px 10px;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.fc-project-plan-page .fc-project-plan-color__name {
+    font-size: 13px;
+    line-height: 1.3;
+    color: inherit;
+}
+
+.fc-project-plan-page .fc-project-plan-color__finish {
+    font-size: 11.5px;
+    line-height: 1.35;
+    opacity: 0.85;
+}
+
+/* Edit mode: a click anywhere on the table opens the colour picker, so the cards answer the pointer. */
+.fc-project-plan-page .fc-table--colour.project-details--editable .fc-colour-item {
+    cursor: pointer;
+}
+
+.fc-project-plan-page .fc-table--colour.project-details--editable .fc-colour-item:hover {
+    border-color: var(--fc-princeton-orange);
+    box-shadow: 0 0 0 1px var(--fc-princeton-orange);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-project-plan-page .fc-project-plan-color__slide .fc-colour-item {
+        transition: none;
+    }
 }
 
 .fc-project-plan-page .js-fc-project-plan-color-slick .slick-prev:before,
@@ -1365,17 +1462,9 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
     right: -30px;
 }
 
-/* Edit mode — Colour Options carousel arrows hidden (table toggles project-details--edit → editable) */
-.fc-project-plan-page .fc-table--colour.project-details--editable .fc-project-plan-color-slick-area .fencing-styles-arrow {
-    display: none !important;
-}
-
-.fc-project-plan-page .fc-table--colour.project-details--editable .fc-project-plan-color-slick-area .js-fc-project-plan-color-slick.slick-slider {
-    padding-bottom: 40px;
-}
-
-.fc-project-plan-page .fc-table--colour.project-details--editable .js-fc-project-plan-color-slick .slick-dots {
-    max-width: 100%;
+/* Edit mode keeps the colours exactly as they read outside it (arrows, spacing, pager); only the "Click items below to edit" hint is added. */
+.fc-project-plan-page .fc-project-details-fence-card .project-details--editable:hover {
+    background: transparent;
 }
 
 /* Project plan Colour Options on phones: one slide, dots, no arrows; !important beats the inline max-width. */
@@ -1479,13 +1568,28 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 }
 
 
+/* Desktop, where Colour Options sits beside Customer Details: a 24px pager row and no trailing margin keep the two cards level. */
+@media (min-width: 992px) {
+    .fc-project-plan-page .js-fc-project-plan-color-slick.slick-slider {
+        padding-bottom: 32px;
+    }
+
+    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots {
+        bottom: 4px;
+    }
+
+    .fc-project-plan-page .js-fc-project-plan-color-slick .slick-dots li {
+        min-height: 24px;
+    }
+
+    .fc-project-plan-page .fc-project-plan-color-slick-area {
+        margin-bottom: 0;
+    }
+}
+
 @media (min-width: 768px) and (max-width: 991.98px) {
     .fc-project-plan-page .js-fc-project-plan-color-slick.slick-slider {
         padding-bottom: 48px;
-    }
-
-    .fc-project-plan-page .fc-table--colour.project-details--editable .fc-project-plan-color-slick-area .js-fc-project-plan-color-slick.slick-slider {
-        padding-bottom: 36px;
     }
 
     .fc-project-plan-page .fc-project-plan-color-slick-area.fc-project-plan-color-slick-single-page .js-fc-project-plan-color-slick.slick-slider,
@@ -1495,10 +1599,6 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 }
 
 @media (max-width: 991.98px) {
-
-    .fc-project-plan-page .fc-table--colour.project-details--editable .js-fc-project-plan-color-slick .slick-dots {
-        max-width: 100%;
-    }
 
     .fc-project-plan-page .fc-project-plan-color-slick-area .slick-prev.fencing-styles-arrow {
         left: -36px;
@@ -1519,18 +1619,12 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 @media (max-width: 767.98px) {
 
     /* Project plan Slick on phones: the bullet pager is the affordance now the arrows are gone. */
-    .fc-project-plan-page .js-fc-project-plan-color-slick.slick-slider,
-    .fc-project-plan-page .fc-table--colour.project-details--editable .fc-project-plan-color-slick-area .js-fc-project-plan-color-slick.slick-slider {
+    .fc-project-plan-page .js-fc-project-plan-color-slick.slick-slider {
         padding-bottom: 38px;
     }
 
     .fc-project-plan-page .fc-project-plan-color-slick-area.fc-project-plan-color-slick-single-page .js-fc-project-plan-color-slick.slick-slider {
         padding-bottom: 0;
-    }
-
-    /* !important is the only way past the inline max-width:250px from your-project-details.php. */
-    .fc-project-plan-page .fc-project-plan-color__slide .fc-colour-item {
-        max-width: 100% !important;
     }
 
     /* Card runs the full width of its cell — nothing sits beside it any more. */
@@ -1894,8 +1988,8 @@ a div {
        hairline reaches both corners, then the same values re-inset the title. */
     #fc-control-modal .fencing-modal-area > .fencing-modal-header {
         margin: -10px -10px 10px;
-        padding: 12px 24px;
-        background-color: var(--fc-cultured);
+        padding: 12px 16px;
+        background-color: var(--fc-drawer-head-bg);
         border-radius: 2px 2px 0 0;
     }
 
@@ -1970,6 +2064,163 @@ a div {
 @media (min-width: 768px) and (prefers-reduced-motion: reduce) {
     #fc-control-modal .fencing-modal-content {
         transition: none;
+    }
+}
+
+/* Drawer card headers */
+/* The card border and band colours, set once here for every card. */
+#fc-control-modal {
+    --fc-drawer-card-border: var(--fc-dark-charcoal);
+    --fc-drawer-head-bg: var(--fc-dark-charcoal);
+    --fc-drawer-head-text: var(--fc-white);
+    --fc-drawer-badge-bg: var(--fc-white);
+    --fc-drawer-badge-text: var(--fc-deep-blue);
+}
+
+/* Each band stays pinned while its card scrolls under it (the card body sits at z-index 2). */
+#fc-control-modal .fencing-modal-area > .fencing-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    flex-wrap: wrap;
+    column-gap: 12px;
+    row-gap: 4px;
+    border-bottom-color: var(--fc-drawer-head-bg);
+}
+
+#fc-control-modal .fencing-modal-area > .fencing-modal-header .fencing-modal-title {
+    color: var(--fc-drawer-head-text);
+}
+
+/* Keyboard focus scrolled in from above stops below a pinned band, not under it (phones scroll the modal itself). */
+#fc-control-modal,
+#fc-control-modal .fc-modal-content {
+    scroll-padding-top: 60px;
+}
+
+/* The letter is a badge in the band's left padding, so a pick that wraps under the title lines up with it. */
+#fc-control-modal .fencing-modal-area > .fencing-modal-header:has(.fencing-modal-title__marker) {
+    padding-left: 52px;
+}
+
+#fc-control-modal .fencing-modal-title__marker {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin-top: -13px;
+    border-radius: 50%;
+    background-color: var(--fc-drawer-badge-bg);
+    color: var(--fc-drawer-badge-text);
+    font-family: "Poppins", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+/* The field's pick as a chip at the band's end (fcSyncModalHeaderValues in events.js). */
+#fc-control-modal .fencing-modal-header__value {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+    padding: 3px 10px 3px 8px;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 999px;
+    background-color: var(--fc-white);
+    color: var(--fc-tundora);
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+#fc-control-modal .fencing-modal-header__value > i {
+    font-size: 11px;
+    color: var(--fc-princeton-orange);
+}
+
+#fc-control-modal .fencing-modal-header__value > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Phones: the md+ band, flush with the card's 15/16px padding (the bare header was a 30px title on a
+   hairline), in a full-screen panel with a sticky bar for the close button. */
+@media (max-width: 767.98px) {
+    #fc-control-modal .fencing-modal-area > .fencing-modal-header {
+        margin: -15px -16px 12px;
+        padding: 9px 16px;
+        background-color: var(--fc-drawer-head-bg);
+    }
+
+    #fc-control-modal .fencing-modal-area > .fencing-modal-header .fencing-modal-title {
+        font-size: 22px;
+        line-height: 1.2;
+        letter-spacing: 0.3px;
+    }
+
+    /* Full screen: no backdrop margin or rounded popup, the panel fills the viewport and the modal itself scrolls. */
+    #fc-control-modal .fc-modal-frame {
+        min-height: 100%;
+        padding: 0;
+        align-items: stretch;
+    }
+
+    #fc-control-modal .fencing-modal-content {
+        width: 100%;
+        max-width: none;
+        height: auto;
+        min-height: 100%;
+        padding-top: 0;
+        border-radius: 0;
+    }
+
+    /* A sticky 48px bar housing the close button, so the card bands pin below it rather than under the button. */
+    #fc-control-modal .fencing-modal-content::before {
+        content: "";
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: block;
+        height: 48px;
+        margin: 0 -16px 12px;
+        background-color: var(--fc-white-smoke);
+        border-bottom: 1px solid var(--fc-gainsboro);
+    }
+
+    #fc-control-modal .fencing-modal-area > .fencing-modal-header {
+        top: 48px;
+    }
+
+    #fc-control-modal {
+        scroll-padding-top: 124px;
+    }
+
+    /* Fixed, not absolute: the panel scrolls, the button stays in the bar. No ancestor transforms below 768px. */
+    #fc-control-modal .fencing-modal-close {
+        position: fixed;
+        top: 8px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    #fc-control-modal .fencing-modal-close::before,
+    #fc-control-modal .fencing-modal-close::after {
+        width: 13px;
+        height: 2px;
+        margin-top: -1px;
+        margin-left: -6.5px;
     }
 }
 
@@ -2664,6 +2915,34 @@ a.fc-tab-active {
     justify-content: space-between;
 }
 
+/* Max Panel Spacing's square picture (range_icon.php): a two-across option tile's size on the image grids' edge-to-edge band
+   and hairline, without the cell, radio or pointer, as there is nothing to pick. */
+#fc-control-modal .fc-range-icon {
+    margin: -10px -16px 20px;
+    padding: 12px;
+    border-bottom: 1px solid var(--fc-gainsboro);
+    border-radius: 0;
+}
+
+/* Half the band, less a cell's padding and a tile's 2px border, as for the grids' two-across images. */
+#fc-control-modal .fc-range-icon__img {
+    display: block;
+    width: calc(50% - 16px);
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    #fc-control-modal .fc-range-icon {
+        margin-right: -10px;
+        margin-left: -10px;
+        padding: 16px;
+    }
+
+    #fc-control-modal .fc-range-icon__img {
+        width: calc(50% - 20px);
+    }
+}
+
 .fencing-input-range input {
     width: 100%;
     margin: 0 20px;
@@ -3018,14 +3297,16 @@ a.fc-tab-active {
 .fc-hinges-top {
     top: 10px;
 }
+/* AS 1926.1: a latch under 1500mm sits on the pool side with its release 150mm+ below the gate top,
+   so the block starts 160mm down (15px inside the 1px border), not mid-gate. */
 .fc-hinges-left .fc-hinges-center {
     align-items: flex-end;
-    top: 45%;
+    top: 15px;
     right: -5px;
 }
 .fc-hinges-right .fc-hinges-center {
     left: -5px;
-    top: 45%;
+    top: 15px;
 }
 /* latch_glass_to_glass (MR-FLGG) is a two-part fitting like the hinges: a body clamped on the gate
    glass and its keeper on the next panel, meeting on the seam. Anchored to the gate's closing edge
@@ -3755,7 +4036,7 @@ a.fc-tab-active {
 }
 
 .fc-project-plan-page .fc-project-plan-skeleton__post {
-    width: 8px;
+    width: 7px;
     flex-shrink: 0;
     align-self: stretch;
     min-height: 56px;
@@ -3892,7 +4173,7 @@ a.fc-tab-active {
 }
 
 .fc-planner-page .fc-planner-step3-skeleton__post {
-    width: 8px;
+    width: 7px;
     flex-shrink: 0;
     align-self: stretch;
     min-height: 56px;
@@ -5417,9 +5698,10 @@ thead.fc-border th:last-child {
     }
 }
 
+/* Drawer cards: the border colour is set with the header band's ("Drawer card headers"); orange is left to the picked tile. */
 .fencing-modal--v2 .has-multiple-areas .fencing-modal-area {
     padding: 15px 24px 24px;
-    border: 1px solid var(--fc-princeton-orange);
+    border: 1px solid var(--fc-drawer-card-border);
 }
 
 @media (max-width: 768px) {
@@ -5659,7 +5941,30 @@ thead.fc-border th:last-child {
     left: 8px;
 }
 
-.fencing-modal--v2 [name=panel_option] .fc-select:after {
+/* Check tiles, ring on the left (Gate ONLY, STD / CUSTOM width): the height of the fields beside them, text and ring centred.
+   The shared .fc-select-2 padding is gone, which left Step 2's and Glass Pool's Gate ONLY 23-26px tall with the ring hanging out. */
+.fc-select-2.fc-select-left {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding-top: 6px;
+    padding-right: 12px;
+    padding-bottom: 6px;
+}
+
+.fc-select-2.fc-select-left::after {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+@media (max-width: 767.98px) {
+    .fc-select-2.fc-select-left {
+        min-height: 44px;
+    }
+}
+
+/* Text cards only: Flat Top's panel options are image cards, whose radio sits top right like every image card's. */
+.fencing-modal--v2 [name=panel_option][type=text_option] .fc-select:after {
     top: 50%;
     transform: translateY(-50%);
     right: auto;
@@ -5670,8 +5975,7 @@ thead.fc-border th:last-child {
 
     .fencing-modal--v2 [type=range_option],
     .fencing-modal--v2 [type=image_option],
-    .fencing-modal--v2 .fencing-modal-area--step-up [type=text_option],
-    .fencing-modal--v2 .fc-modal-options--cols-4 {
+    .fencing-modal--v2 .fencing-modal-area--step-up [type=text_option] {
         display: flex;
         flex-wrap: wrap;
     }
@@ -5756,18 +6060,351 @@ thead.fc-border th:last-child {
     margin-bottom: 8px;
 }
 
-/* Modal card grid — 4 columns on desktop when option count is 4 or 8 */
-@media (min-width: 992px) {
-    .fencing-modal--v2 .fc-modal-options--cols-4 > [class*="col-"] > p {
-        font-size: 12px;
-        line-height: 1.35;
+/* ===== Drawer option grids with border lines ===== */
+/* Every image / range option grid (.fc-modal-options--ruled, events.js) and every Fence Colour grid: the body bleeds over the card's
+   side padding (16px, 10px from 768px) and the header's 10px gap - the body, as it clips overflow - so the lines meet the card's edges. */
+#fc-control-modal .fencing-modal-area > .fencing-modal-body:has(.fc-modal-options--ruled, .fc-fence-color-grid) {
+    width: auto;
+    border-radius: 0;
+    margin-top: -10px !important;
+    margin-right: -16px;
+    margin-left: -16px;
+}
+
+/* A hairline closes the grid above a note; with no note the grid runs on to the card's bottom border (24px, 10px from 768px). */
+#fc-control-modal .fc-form-field.fc-modal-options--ruled,
+#fc-control-modal .fencing-form-group > .fc-fence-color-grid {
+    margin: 0;
+    padding: 0 !important;
+    border-bottom: 1px solid var(--fc-gainsboro);
+    border-radius: 0;
+}
+
+#fc-control-modal .fencing-modal-area:has(> .fencing-modal-notes:empty) > .fencing-modal-body:has(.fc-modal-options--ruled, .fc-fence-color-grid) {
+    margin-bottom: -24px !important;
+}
+
+#fc-control-modal .fencing-modal-area:has(> .fencing-modal-notes:empty) .fc-modal-options--ruled {
+    border-bottom: 0;
+}
+
+#fc-control-modal .fc-form-field.fc-modal-options--ruled:last-child:has(> [class*="col-"].mb-2),
+#fc-control-modal .fencing-form-group > .fc-fence-color-grid {
+    row-gap: 0;
+}
+
+/* Square cells (the drawer's 3px sweep would round them), one padding all round (!important against px-1/mb-2). */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"],
+#fc-control-modal .fc-fence-color-grid > .fc-fence-color-cell {
+    position: relative;
+    margin-bottom: 0 !important;
+    padding: 12px !important;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    #fc-control-modal .fencing-modal-area > .fencing-modal-body:has(.fc-modal-options--ruled, .fc-fence-color-grid) {
+        margin-right: -10px;
+        margin-left: -10px;
     }
 
-    .fencing-modal--v2 .fc-modal-options--cols-4[type="range_option"] .fc-select img,
-    .fencing-modal--v2 .fc-modal-options--cols-4[type="image_option"] .fc-select img {
-        width: 100%;
-        height: auto;
+    #fc-control-modal .fencing-modal-area:has(> .fencing-modal-notes:empty) > .fencing-modal-body:has(.fc-modal-options--ruled, .fc-fence-color-grid) {
+        margin-bottom: -10px !important;
     }
+
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"],
+    #fc-control-modal .fc-fence-color-grid > .fc-fence-color-cell {
+        padding: 16px !important;
+    }
+}
+
+/* Columns ruled full height, so a short last row still reads as even cells, and a line under every row but the last.
+   Below 768px 2 across (3 from 576px for col-sm-4 cells) and Fence Colour 3; from 768px each grid's col-md-* (2, 3 or 4). */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"]::after,
+#fc-control-modal .fc-fence-color-grid > .fc-fence-color-cell::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background: var(--fc-gainsboro);
+}
+
+@media (max-width: 767.98px) {
+    #fc-control-modal .fc-modal-options--ruled {
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 50% 0 / 1px 100%;
+    }
+
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid {
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 33.333% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 66.667% 0 / 1px 100%;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled:not(:has(> .col-sm-4)) > [class*="col-"]:nth-child(2n + 1):nth-last-child(-n + 2)::after,
+    #fc-control-modal .fc-modal-options--ruled:not(:has(> .col-sm-4)) > [class*="col-"]:nth-child(2n + 1):nth-last-child(-n + 2) ~ [class*="col-"]::after {
+        content: none;
+    }
+
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid > .fc-fence-color-cell:nth-child(3n + 1):nth-last-child(-n + 3)::after,
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid > .fc-fence-color-cell:nth-child(3n + 1):nth-last-child(-n + 3) ~ .fc-fence-color-cell::after {
+        content: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-sm-4) > [class*="col-"]:nth-child(2n + 1):nth-last-child(-n + 2)::after,
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-sm-4) > [class*="col-"]:nth-child(2n + 1):nth-last-child(-n + 2) ~ [class*="col-"]::after {
+        content: none;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-sm-4) {
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 33.333% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 66.667% 0 / 1px 100%;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-sm-4) > [class*="col-"]:nth-child(3n + 1):nth-last-child(-n + 3)::after,
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-sm-4) > [class*="col-"]:nth-child(3n + 1):nth-last-child(-n + 3) ~ [class*="col-"]::after {
+        content: none;
+    }
+}
+
+/* From 768px, a set of lines per Choices / Swatches per row (fcModalOptionColClass in events.js). */
+@media (min-width: 768px) {
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-6),
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-6) {
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 50% 0 / 1px 100%;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-4),
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-4) {
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 33.333% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 66.667% 0 / 1px 100%;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-3),
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-3) {
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 25% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 50% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 75% 0 / 1px 100%;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-6) > [class*="col-"]:nth-child(2n + 1):nth-last-child(-n + 2)::after,
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-6) > [class*="col-"]:nth-child(2n + 1):nth-last-child(-n + 2) ~ [class*="col-"]::after,
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-6) > .fc-fence-color-cell:nth-child(2n + 1):nth-last-child(-n + 2)::after,
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-6) > .fc-fence-color-cell:nth-child(2n + 1):nth-last-child(-n + 2) ~ .fc-fence-color-cell::after {
+        content: none;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-4) > [class*="col-"]:nth-child(3n + 1):nth-last-child(-n + 3)::after,
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-4) > [class*="col-"]:nth-child(3n + 1):nth-last-child(-n + 3) ~ [class*="col-"]::after,
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-4) > .fc-fence-color-cell:nth-child(3n + 1):nth-last-child(-n + 3)::after,
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-4) > .fc-fence-color-cell:nth-child(3n + 1):nth-last-child(-n + 3) ~ .fc-fence-color-cell::after {
+        content: none;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-3) > [class*="col-"]:nth-child(4n + 1):nth-last-child(-n + 4)::after,
+    #fc-control-modal .fc-modal-options--ruled:has(> .col-md-3) > [class*="col-"]:nth-child(4n + 1):nth-last-child(-n + 4) ~ [class*="col-"]::after,
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-3) > .fc-fence-color-cell:nth-child(4n + 1):nth-last-child(-n + 4)::after,
+    #fc-control-modal .fencing-form-group > .fc-fence-color-grid:has(> .col-md-3) > .fc-fence-color-cell:nth-child(4n + 1):nth-last-child(-n + 4) ~ .fc-fence-color-cell::after {
+        content: none;
+    }
+}
+
+/* ===== Drawer option states ===== */
+/* Hover previews a pick (light frame, lift, orange ring and caption); it used to draw the pick's own frame. */
+#fc-control-modal {
+    --fc-drawer-option-accent: var(--fc-princeton-orange);
+    --fc-drawer-option-hover-line: var(--fc-a-orange-35);
+    --fc-drawer-option-hover-bg: var(--fc-a-orange-3);
+    --fc-drawer-option-picked-bg: var(--fc-a-orange-3);
+    --fc-drawer-option-radio-line: var(--fc-silver-chalice);
+    --fc-drawer-option-lift: 0 6px 16px var(--fc-a-black-8), 0 1px 3px var(--fc-a-black-6);
+}
+
+/* Tints that follow a theme's own accent where color-mix is supported; the fixed-orange tokens above are the fallback. */
+@supports (color: color-mix(in srgb, red 50%, transparent)) {
+    #fc-control-modal {
+        --fc-drawer-option-hover-line: color-mix(in srgb, var(--fc-princeton-orange) 45%, transparent);
+        --fc-drawer-option-hover-bg: color-mix(in srgb, var(--fc-princeton-orange) 4%, transparent);
+        --fc-drawer-option-picked-bg: color-mix(in srgb, var(--fc-princeton-orange) 7%, transparent);
+    }
+}
+
+/* The lines part the options, so at rest only the pick keeps a tile frame. */
+#fc-control-modal .fc-modal-options--ruled .fc-select:not(.fc-selected) {
+    border-color: transparent;
+}
+
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"],
+#fc-control-modal .fc-fence-color-grid > .fc-fence-color-cell {
+    transition: background-color 0.18s ease;
+}
+
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > .fc-select {
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+/* A white disc, so the ring shows on every drawing; on the light ones it was a faint line. */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > .fc-select::after {
+    border: 1.5px solid var(--fc-drawer-option-radio-line);
+    background-color: var(--fc-white);
+    box-shadow: 0 1px 3px var(--fc-a-black-8);
+    transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+/* Captions: a medium charcoal title over a quieter detail line (fcModalOptionCaption); balanced, so a two-line title splits evenly. */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > p:first-of-type {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--fc-dark-charcoal);
+    text-wrap: balance;
+    transition: color 0.18s ease;
+}
+
+#fc-control-modal .fc-option-label__title,
+#fc-control-modal .fc-option-label__meta {
+    display: block;
+}
+
+#fc-control-modal .fc-option-label__meta,
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > p:first-of-type > strong {
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--fc-dove-gray);
+}
+
+/* A desc is a condition ("ONLY Available In BLACK"), so it keeps more weight than a detail line. */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > p:first-of-type > strong {
+    font-weight: 600;
+    color: var(--fc-tundora);
+}
+
+@media (hover: hover) {
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"]:hover,
+    #fc-control-modal .fc-fence-color-grid > .fc-fence-color-cell:not(:has(> .fc-fence-color-tile--unavailable)):hover {
+        background-color: var(--fc-drawer-option-hover-bg);
+    }
+
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"]:hover > .fc-select:not(.fc-selected) {
+        border-color: var(--fc-drawer-option-hover-line);
+        transform: translateY(-2px);
+        box-shadow: var(--fc-drawer-option-lift);
+    }
+
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"]:hover > .fc-select:not(.fc-selected)::after {
+        border-color: var(--fc-drawer-option-accent);
+        transform: scale(1.08);
+    }
+
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"]:hover > .fc-select:not(.fc-selected) + p {
+        color: var(--fc-drawer-option-accent);
+    }
+}
+
+/* The pick: solid frame, filled ring, bold caption and a tinted cell, no glow (after the hover rules, so it holds under the pointer). */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"]:has(> .fc-select.fc-selected),
+#fc-control-modal .fc-fence-color-grid > .fc-fence-color-cell:has(> .fc-fence-color-tile.fc-selected) {
+    background-color: var(--fc-drawer-option-picked-bg);
+}
+
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > .fc-select.fc-selected {
+    border-color: var(--fc-dark-charcoal);
+}
+
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > .fc-select.fc-selected::after {
+    border-color: var(--fc-drawer-option-accent);
+    background-color: var(--fc-drawer-option-accent);
+    box-shadow: inset 0 0 0 3px var(--fc-white);
+}
+
+#fc-control-modal .fc-modal-options--ruled .fc-select.fc-selected + p {
+    color: var(--fc-drawer-option-accent);
+    font-weight: 600;
+}
+
+/* Press: the tile sinks back, as Fence Colour's swatches do. */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"]:active > .fc-select {
+    transform: scale(0.97);
+    box-shadow: none;
+    transition-duration: 0.1s;
+}
+
+/* Text cards and the gate's Gate ONLY / STD / CUSTOM tiles take the same states; the gate's pick kept a grey (!important) frame. */
+#fc-control-modal .fc-select-2,
+#fc-control-modal [type=text_option] .fc-select {
+    transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.1s ease;
+}
+
+#fc-control-modal .fc-select-2::after {
+    background-color: var(--fc-white);
+}
+
+@media (hover: hover) {
+    #fc-control-modal .fc-select-2:not(.fc-selected):hover,
+    #fc-control-modal [type=text_option] .fc-select:not(.fc-selected):hover {
+        border-color: var(--fc-drawer-option-hover-line) !important;
+        background-color: var(--fc-drawer-option-hover-bg);
+    }
+
+    #fc-control-modal .fc-select-2:not(.fc-selected):hover::after,
+    #fc-control-modal [type=text_option] .fc-select:not(.fc-selected):hover::after {
+        border-color: var(--fc-drawer-option-accent);
+    }
+}
+
+#fc-control-modal .fc-select-2.fc-selected,
+#fc-control-modal [type=text_option] .fc-select.fc-selected {
+    border-color: var(--fc-drawer-option-accent) !important;
+    background-color: var(--fc-drawer-option-picked-bg);
+}
+
+#fc-control-modal .fc-select-2.fc-selected::after {
+    border-color: var(--fc-drawer-option-accent);
+    background-color: var(--fc-drawer-option-accent);
+    box-shadow: inset 0 0 0 3px var(--fc-white);
+}
+
+#fc-control-modal .fc-select-2:active,
+#fc-control-modal [type=text_option] .fc-select:active {
+    transform: scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"] > .fc-select,
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"] > .fc-select::after,
+    #fc-control-modal .fc-select-2,
+    #fc-control-modal [type=text_option] .fc-select {
+        transition: none;
+    }
+
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"]:hover > .fc-select:not(.fc-selected),
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"]:hover > .fc-select:not(.fc-selected)::after,
+    #fc-control-modal .fc-modal-options--ruled > [class*="col-"]:active > .fc-select,
+    #fc-control-modal .fc-select-2:active,
+    #fc-control-modal [type=text_option] .fc-select:active {
+        transform: none;
+    }
+}
+
+#fc-control-modal .fc-fence-color-grid > .fc-fence-color-cell:has(> .fc-fence-color-tile--unavailable) {
+    cursor: not-allowed;
+}
+
+#fc-control-modal .fc-fence-color-tile.fc-selected + .fc-fence-color-name {
+    color: var(--fc-princeton-orange);
 }
 
 .fencing-modal--v2 .fencing-modal-notes {
@@ -5893,6 +6530,14 @@ thead.fc-border th:last-child {
     padding-left: 40px !important;
     display: flex;
     align-items: center;
+}
+
+/* Three to a row (1 to 3 options, from 576px) a label can wrap past 55px, so the cards grow to the row's tallest instead of clipping. */
+@media (min-width: 576px) {
+    .fencing-modal--v2 [type=text_option] > .col-sm-4 > .fc-select {
+        height: 100%;
+        min-height: 55px;
+    }
 }
 
 .fencing-modal--v2 [type=text_option] .fc-col-4 {
@@ -9180,7 +9825,7 @@ thead.fc-border th:last-child {
     letter-spacing: 3px;
 }
 
-/* Mobile-only Load Quote button (below slick dots; desktop uses carousel tile) */
+/* Mobile-only Load Quote button (below slick dots; desktop pins the Load Quote tile beside the carousel) */
 
 .fc-planner-page .fc-load-quote-mobile-only {
     display: none !important;
@@ -9207,7 +9852,7 @@ thead.fc-border th:last-child {
     }
 }
 
-/* Fallback grid before / without Slick (2 / 4 / 6 per slick/styles.js) */
+/* Fallback grid before / without Slick (2 / 4 / 5 per slick/styles.js) */
 .fc-planner-page .js-fencing-styles-slick:not(.slick-initialized) .fencing-styles-slide {
     float: left;
     width: 50%;
@@ -9219,7 +9864,56 @@ thead.fc-border th:last-child {
 }
 @media (min-width: 992px) {
     .fc-planner-page .js-fencing-styles-slick:not(.slick-initialized) .fencing-styles-slide {
-        width: calc(100% / 6);
+        width: calc(100% / 5);
+    }
+}
+
+/* Load Quote: a fixed tile right of the carousel on desktop; below 992px the button under the dots stands in. */
+.fc-planner-page .fencing-styles-load-quote {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .fc-planner-page .fencing-styles__row {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    /* Relative so the pending (absolute) slider is measured at the carousel's width, not the row's. */
+    .fc-planner-page .fencing-styles__carousel {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    /* One sixth of the row plus the carousel's pulled-out gutter, so the tile matches a slide; padding = slick-list top + the slide gap. */
+    /* Stretched to the carousel; padding-bottom 84px = slider 58 + slick-list 14 + slide margin 12, so it ends level with the cards. */
+    .fc-planner-page .fencing-styles-load-quote {
+        display: flex;
+        flex-direction: column;
+        align-self: stretch;
+        float: none;
+        flex: 0 0 calc((100% + 16px) / 6);
+        padding: 10px 0 84px 16px;
+        box-sizing: border-box;
+        /* .load-quote's transition: all would ease the reveal below; its hover effects live on its children. */
+        transition: none;
+        /* Slick rounds slide widths up, so the last card runs ~3px into this padding: no paint or clicks over it. */
+        background: transparent;
+        pointer-events: none;
+    }
+
+    .fc-planner-page .fencing-styles-load-quote > div {
+        flex: 1 0 auto;
+        pointer-events: auto;
+    }
+
+    /* Hidden under the skeleton but still holding its width, so Slick's first measure is the final one. */
+    .fc-planner-page .fencing-styles__area.fencing-styles-slick-pending:not(.fencing-styles-slick-ready) .fencing-styles-load-quote {
+        visibility: hidden;
+        height: 0;
+        padding: 0;
+        overflow: hidden;
     }
 }
 
@@ -9557,15 +10251,41 @@ body.fc-restoring-selection .fencing-tab-name {
 
 }
 
-/* Step 1 — Slick carousel (2 / 4 / 6 per viewport; see slick/styles.js) */
+/* Step 1 — Slick carousel (2 / 4 / 5 per viewport; see slick/styles.js) */
 .fc-planner-page .js-fencing-styles-slick.slick-initialized .slick-slide > div {
     height: 100%;
+}
+
+/* Equal card heights: a two-line title ("Premium Perforated") stretches every slide, and each title fills its card. */
+.fc-planner-page .js-fencing-styles-slick.slick-initialized .slick-track {
+    display: flex;
+}
+
+.fc-planner-page .js-fencing-styles-slick.slick-initialized .slick-slide {
+    float: none;
+    height: auto;
+}
+
+.fc-planner-page .js-fencing-styles-slick.slick-initialized .slick-slide > div,
+.fc-planner-page .fencing-styles-load-quote > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.fc-planner-page .js-fencing-styles-slick.slick-initialized .fencing-style-title,
+.fc-planner-page .fencing-styles-load-quote .fencing-style-title {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Floating prev/next — Font Awesome chevrons (custom arrows in slick/styles.js) */
 .fc-planner-page .js-fencing-styles-slick.slick-slider {
     position: relative;
     padding-bottom: 58px;
+    /* Keeps the arrows' z-index inside the slider, so they pass behind the sticky section tabs. */
+    isolation: isolate;
 }
 
 .fc-planner-page .js-fencing-styles-slick .slick-prev:before,
@@ -9660,11 +10380,11 @@ body.fc-restoring-selection .fencing-tab-name {
     display: none !important;
 }
 
-/* Bullets — centered below slides; 34px leaves equal space to the tiles and to the card border (-26px margin below). */
+/* Bullets — centered below slides; 32px (24px row) leaves equal space to the tiles and to the card border (-26px margin below). */
 .fc-planner-page .js-fencing-styles-slick .slick-dots {
     position: absolute;
     left: 50%;
-    bottom: 34px;
+    bottom: 32px;
     transform: translateX(-50%);
     width: auto;
     max-width: calc(100% - 120px);
@@ -9675,7 +10395,7 @@ body.fc-restoring-selection .fencing-tab-name {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 14px;
+    gap: 2px;
 }
 
 .fc-planner-page .js-fencing-styles-slick .slick-dots li {
@@ -9688,29 +10408,52 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 .fc-planner-page .js-fencing-styles-slick .slick-dots li button {
-    width: 22px;
-    height: 22px;
-    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: 24px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
     font-size: 0;
     line-height: 0;
+    cursor: pointer;
 }
 
+/* A drawn dot instead of slick's font glyph; the current page widens to a pill so position reads without colour. */
 .fc-planner-page .js-fencing-styles-slick .slick-dots li button:before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-    line-height: 18px;
-    opacity: 0.45;
-    color: var(--fc-black);
+    content: '';
+    position: static;
+    transform: none;
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--fc-boulder);
+    opacity: 1;
+    transition: width 0.25s ease, background-color 0.2s ease;
+}
+
+.fc-planner-page .js-fencing-styles-slick .slick-dots li button:hover:before {
+    background: var(--fc-princeton-orange);
 }
 
 .fc-planner-page .js-fencing-styles-slick .slick-dots li.slick-active button:before {
-    opacity: 1;
-    color: var(--fc-princeton-orange);
+    width: 28px;
+    background: var(--fc-princeton-orange);
+}
+
+.fc-planner-page .js-fencing-styles-slick .slick-dots li button:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-planner-page .js-fencing-styles-slick .slick-dots li button:before {
+        transition: none;
+    }
 }
 
 @media (max-width: 767.98px) {
@@ -9726,9 +10469,12 @@ body.fc-restoring-selection .fencing-tab-name {
 
 
     .fc-planner-page .fencing-styles__area.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
-    .fc-planner-page .fencing-styles.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
-    .fc-planner-page .fc-color-options-slick-area.fc-color-options-slick-single-page .js-fc-color-options-slick.slick-slider {
+    .fc-planner-page .fencing-styles.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider {
         padding-bottom: 0;
+    }
+
+    .fc-planner-page .fc-color-options-slick-area.fc-color-options-slick-single-page .js-fc-color-options-slick.slick-slider {
+        padding-bottom: 15px;
     }
 }
 
@@ -9763,28 +10509,10 @@ body.fc-restoring-selection .fencing-tab-name {
         right: 2px;
     }
 
-    /* Equal space to the tiles above and to the Load Quote button below. */
+    /* Equal space to the tiles above and to the Load Quote button below (24px row). */
     .fc-planner-page .js-fencing-styles-slick .slick-dots {
         max-width: calc(100% - 96px);
-        gap: 12px;
-        bottom: 23px;
-    }
-
-    .fc-planner-page .js-fencing-styles-slick .slick-dots li button {
-        width: 20px;
-        height: 20px;
-    }
-
-    .fc-planner-page .js-fencing-styles-slick .slick-dots li button:before {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-        line-height: 16px;
-    }
-
-    .fc-planner-page .js-fencing-styles-slick .slick-dots li.slick-active button:before {
-        opacity: 1;
-        color: var(--fc-princeton-orange);
+        bottom: 21px;
     }
 }
 
@@ -9971,7 +10699,7 @@ body.fc-restoring-selection .fencing-tab-name {
 
 .fc-planner-page .fc-color-options-slick-area.fc-color-options-slick-single-page .js-fc-color-options-slick.slick-slider,
 .fc-planner-page .js-fc-color-options-slick.slick-slider:has(.slick-dots li:only-child) {
-    padding-bottom: 0;
+    padding-bottom: 15px;
 }
 
 .fc-planner-page .fc-color-options-slick-area.fc-color-options-slick-single-page .slick-dots,
@@ -9983,6 +10711,16 @@ body.fc-restoring-selection .fencing-tab-name {
     margin-bottom: 0 !important;
 }
 
+/* The 40px dot row on the bottom edge, and the track 40px above it at every width: the 9px dot centres 15px from the
+   tiles and 15px from the card's edge. */
+.fc-planner-page .fc-step-4 .js-fc-color-options-slick.slick-slider {
+    padding-bottom: 40px;
+}
+
+.fc-planner-page .fc-step-4 .js-fc-color-options-slick .slick-dots {
+    bottom: 0;
+}
+
 @media (min-width: 768px) and (max-width: 991.98px) {
 
     .fc-planner-page .js-fc-color-options-slick.slick-slider {
@@ -9991,7 +10729,7 @@ body.fc-restoring-selection .fencing-tab-name {
 
     .fc-planner-page .fc-color-options-slick-area.fc-color-options-slick-single-page .js-fc-color-options-slick.slick-slider,
     .fc-planner-page .js-fc-color-options-slick.slick-slider:has(.slick-dots li:only-child) {
-        padding-bottom: 26px;
+        padding-bottom: 15px;
     }
 }
 
@@ -10135,9 +10873,8 @@ body.fc-restoring-selection .fencing-tab-name {
         width: 100%;
     }
 
-    /* Multi-value rows (fence types, extras) keep their bullets but sit tight to the label. */
+    /* Multi-value rows (fence types, extras) sit tight to the label. */
     .fc-project-plan-page .fc-project-details-value-list {
-        padding-left: 1.1rem;
         margin-top: 1px;
     }
 }
@@ -10498,6 +11235,63 @@ body.fc-restoring-selection .fencing-tab-name {
     vertical-align: top;
 }
 
+/* Fence Details' When Needed / Other Items Needed: two columns, label over value, no row lines. The id outranks the row rules at every width. */
+.fc-project-details #update_details-section .fc-project-details-fence-rows > table.fc-table {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+    row-gap: 12px;
+    width: 100%;
+    padding: 12px 15px;
+    border: 0;
+}
+
+.fc-project-details #update_details-section .fc-project-details-fence-rows > table.fc-table > tbody {
+    display: contents;
+}
+
+.fc-project-details #update_details-section .fc-project-details-fence-rows > table.fc-table tr {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+}
+
+.fc-project-details #update_details-section .fc-project-details-fence-rows > table.fc-table td {
+    display: block;
+    width: auto;
+    max-width: none;
+    padding: 0;
+    border: 0;
+}
+
+.fc-project-details #update_details-section .fc-project-details-fence-rows > table.fc-table td:first-child:not(:last-child) {
+    margin: 0;
+    color: var(--fc-boulder);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    text-transform: uppercase;
+}
+
+.fc-project-details #update_details-section .fc-project-details-fence-rows > table.fc-table td + td {
+    color: var(--fc-cod-gray);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+}
+
+/* Project Notes reads as a notes box, not a one-line row: at least three lines tall even when it only says "No notes added." */
+.fc-project-details .fc-card-body td > span:first-child {
+    display: block;
+    min-height: 4.5em;
+    line-height: 1.5;
+}
+
 .fc-project-details .fc-card-body .fc-form-group textarea.form-control {
     border: 0 !important;
     border-radius: 0;
@@ -10559,9 +11353,11 @@ body.fc-restoring-selection .fencing-tab-name {
     color: var(--fc-granite-gray);
 }
 
+/* No bullets: each line reads as a count and a name ("2 × FLAT TOP"), flush with the single-value rows. */
 .fc-project-plan-page .fc-project-details .fc-project-details-value-list {
     margin: 0;
-    padding-left: 1.25rem;
+    padding-left: 0;
+    list-style: none;
 }
 
 .fc-project-plan-page .fc-project-details .fc-project-details-value-list li {
@@ -10570,12 +11366,6 @@ body.fc-restoring-selection .fencing-tab-name {
 
 .fc-project-plan-page .fc-project-details .fc-project-details-value-list li:last-child {
     margin-bottom: 0;
-}
-
-/* A one-item list is not a list: marker and indent come off so a lone value lines up with the other rows. */
-.fc-project-plan-page .fc-project-details .fc-project-details-value-list:has(li:only-child) {
-    list-style: none;
-    padding-left: 0 !important;
 }
 
 .fc-project-details .fc-table--colour strong {
@@ -12118,9 +12908,8 @@ body.fc-restoring-selection .fencing-tab-name {
         padding-right: 40px;
     }
 
-    /* That 40px each side is arrow housing, so it comes off in the two cases that produce no arrows. */
-    .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area:not(:has(.fencing-styles-arrow)),
-    .fc-project-plan-page #project-details-section .project-details--editable .fc-project-plan-color-slick-area {
+    /* That 40px each side is arrow housing, so it comes off when no arrows are rendered. */
+    .fc-project-plan-page #project-details-section .fc-project-plan-color-slick-area:not(:has(.fencing-styles-arrow)) {
         padding-left: 0;
         padding-right: 0;
     }
@@ -12168,6 +12957,16 @@ body.fc-restoring-selection .fencing-tab-name {
         flex-direction: column;
     }
 
+    /* Fence Details (colours + timing/extras) is the right column's only card, so it spans both rows beside Customer Details and Project Notes. */
+    .fc-project-details #update_details-section > .row > .col-md > .fc-project-details-fence-card {
+        grid-row: span 2;
+    }
+
+    /* The colours take the card's spare height; the When Needed / Other Items rows above them keep their own. */
+    .fc-project-details #update_details-section > .row > .col-md > .fc-project-details-fence-card > .fc-edit-zone > .fc-table-rounded-border.fc-project-details-fence-rows {
+        flex: 0 0 auto;
+    }
+
     /* With the columns flush, the 20px card gaps became notches in the seam; !important because fc-mb-* are !important utilities. */
     .fc-project-details #update_details-section > .row > .col-md > .fc-mb-1,
     .fc-project-details #update_details-section > .row > .col-md > .fc-mb-2,
@@ -12202,11 +13001,12 @@ body.fc-restoring-selection .fencing-tab-name {
 
 /* Below 768 these rows stack label-over-value, which has its own block further down; this is the side-by-side treatment. */
 @media (min-width: 768px) {
-    /* One label column for both tables; max-width has to come with it, or the base rule's 100px clamps whatever is set here. */
+    /* One label column for both tables; max-width has to come with it, or the base rule's 100px clamps whatever is set here.
+       110px: the 15px inset plus POST CODE (75px) and a 20px gap, so values sit close to their labels in view and edit mode alike. */
     .fc-project-details .fc-table.fc-table-customer tbody tr td:first-child:not(:last-child),
     .fc-project-details .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td:first-child:not(:last-child) {
-        width: 170px;
-        max-width: 170px;
+        width: 110px;
+        max-width: 110px;
         vertical-align: top;
         color: var(--fc-boulder);
         font-size: 12px;
@@ -12249,38 +13049,46 @@ body.fc-restoring-selection .fencing-tab-name {
    rules were written against. Both pages build the same template markup with data-type on
    .fencing-panel-container (project-plan/p2.js sets it the way z_fence.js does).
 
-   Flat Top only: draw the panel the way the design-2 mockup does — flat top
-   rail, bottom rail and bold pickets, all one solid #404040 — instead of the faint ally-thin tile above, which
-   reads as an empty box from a normal viewing distance. Pure background layers on the elements
-   the engine already renders: no new DOM, so the data-cart-* scrape and every click target stay
-   exactly as they were. Raked panels keep the tile — their slanted boxes would shear these
-   axis-aligned rails. Layers: identical 2px rails flush with the top and bottom edges — a shade
-   under the true 38 mm ≈ 3px, by request; 7px read as post-thick, and a lifted bottom rail read
-   as a stray extra bar above the border — then pickets (~10px pitch ≈ the real 112 mm centres
-   at panel scale). */
+   Flat Top only: rails and pickets drawn to the real panel at the planner's 1:10, instead of the faint ally-thin
+   tile above. Pure background layers on the elements the engine already renders: no new DOM, so the data-cart-*
+   scrape and every click target stay exactly as they were. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] {
+    /* The AU 2450 x 1200 flat-top pool panel (PoolSafe's included): 16mm pickets on 88.1mm centres (72.1mm gaps), 38 x 25 rails. */
+    --fc-ft-pickets: linear-gradient(90deg, transparent 0 3.605px, var(--fc-tundora) 3.605px 5.205px, transparent 5.205px);
+}
+
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:not(.fencing-raked-panel) {
-    /* Transparent ground, no sky layer: the Step 3 drafting grid reads through between the
-       pickets, the way the mockup's SVG fence sits straight on its canvas. Pickets are 2.5px
-       on the 10px pitch — 3.5px read too heavy beside the posts. */
+    /* Transparent ground: the drafting grid reads through the gaps. Rails are 4px bars over the 2px border (38mm); the
+       picket tile is centred, so a full 2450 panel lands its 27 pickets where the real one has them. */
     background-color: transparent;
     background-image:
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
-        repeating-linear-gradient(90deg,
-            var(--fc-tundora) 0 2.5px,
-            transparent 2.5px 10px);
-    background-size: 100% 2px, 100% 2px, auto;
-    background-position: 0 0, 0 100%, 0 0;
-    background-repeat: no-repeat, no-repeat, repeat;
+        var(--fc-ft-pickets);
+    background-size: 100% 4px, 100% 4px, 8.81px 100%;
+    background-position: 0 0, 0 100%, 50% 0;
+    background-origin: border-box, border-box, border-box;
+    background-repeat: no-repeat, no-repeat, repeat-x;
 }
 
-/* Barr: same drawing, one difference — both rails sit 7px in from the edges and the pickets run
-   edge to edge, standing proud of BOTH rails, which is the style's signature (see barr.webp on
-   the Step 1 card). A flush Flat-Top-style bottom rail hid the lower overhang and read wrong.
-   No top/bottom box border either: past free-standing tips it read as a second pair of rails.
-   The sides keep theirs (tucked against the posts), and the gate's blue stiles are an inset
-   shadow, so they survive. Hover keeps the blush wash; the orange border cue is sides-only here.
-   Pickets 2.5px on the 10px pitch, matching Flat Top. */
+/* No side stile on a flat-top panel: the rails run on into the post brackets and the first picket stands a gap in.
+   The rails draw the panel's top and bottom edges themselves, so the border only shows as the hover cue. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:not(.fencing-raked-panel):not(.fencing-panel-gate) {
+    border-color: transparent;
+}
+
+@media (min-width: 1024px) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:not(.fencing-raked-panel):not(.fencing-panel-gate):hover {
+        border-color: var(--fc-princeton-orange);
+    }
+}
+
+/* Barr: the BARR 50 x 25 panel FC sells - 50 x 25 bars on their 25mm edge with 93mm gaps (118mm centres), two 25 x 25 rails
+   through punched holes, the bars standing proud of both (the style's signature). No top/bottom box border. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] {
+    --fc-barr-pickets: linear-gradient(90deg, transparent 0 4.65px, var(--fc-tundora) 4.65px 7.15px, transparent 7.15px);
+}
+
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel) {
     border-top: 0;
     border-bottom: 0;
@@ -12288,15 +13096,32 @@ body.fc-restoring-selection .fencing-tab-name {
     background-image:
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
-        repeating-linear-gradient(90deg,
-            var(--fc-tundora) 0 2.5px,
-            transparent 2.5px 10px);
-    background-size: 100% 4px, 100% 4px, auto;
-    background-position: 0 7px, 0 calc(100% - 7px), 0 0;
-    background-repeat: no-repeat, no-repeat, repeat;
+        var(--fc-barr-pickets);
+    /* Rail centres ~72mm under the bar tops and ~50mm over their feet (FC's BARR photos). The tile is centred on a gap, so
+       2205 / 1733 / 1969 panels show their 18 / 14 / 16 bars, the end ones ~100mm in from the rail ends. */
+    background-size: 100% 2.5px, 100% 2.5px, 11.8px 100%;
+    background-position: 0 6px, 0 calc(100% - 3.75px), calc(50% + 5.9px) 0;
+    background-origin: border-box, border-box, border-box;
+    background-repeat: no-repeat, no-repeat, repeat-x;
 }
 
-/* Premium Perforated: a framed sheet (top, bottom and side rails) with a fine dot grid for the perforation. */
+/* No side stile on a panel: the rails run on into the post brackets; the border only shows as the hover cue. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel):not(.fencing-panel-gate) {
+    border-color: transparent;
+}
+
+@media (min-width: 1024px) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel):not(.fencing-panel-gate):hover {
+        border-color: var(--fc-princeton-orange);
+    }
+}
+
+/* The 975 gate is 9 bars, the outer two at its edges: an odd count, centred on a bar. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally.fencing-panel-gate {
+    background-position: 0 6px, 0 calc(100% - 3.75px), 50% 0;
+}
+
+/* Premium Perforated: a framed dark sheet (top, bottom and side rails) with a grid of see-through dots for the perforation. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:not(.fencing-raked-panel) {
     background-color: transparent;
     background-image:
@@ -12304,7 +13129,7 @@ body.fc-restoring-selection .fencing-tab-name {
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
-        radial-gradient(circle, var(--fc-tundora) 0 0.9px, transparent 1.3px);
+        radial-gradient(circle, transparent 0 0.9px, var(--fc-tundora) 1.3px);
     background-size: 100% 3px, 100% 3px, 3px 100%, 3px 100%, 4px 4px;
     background-position: 0 0, 0 100%, 0 0, 100% 0, 0 0;
     background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
@@ -12380,99 +13205,102 @@ body.fc-restoring-selection .fencing-tab-name {
     content: none !important;
 }
 
-/* Raked panels: the same pickets as the straight panels (they kept the old thin webp tile, so
-   their bars looked skinnier and denser). Safe because the rake is a clip-path on a rectangle,
-   not a skew — vertical bars stay vertical and the slope just clips them. Ground stays WHITE,
-   not transparent: the .fencing-*-panel-o-b wrapper behind the clip is the black outline/hover
-   layer, and transparent gaps would show it, not the grid. ONE top-rail run, the regular panel's
-   2px bar at y=0, which the clip crops to the tall side's flat top; the slope then runs
-   unbroken into the post, so the rail that used to cover a lower flat run has no run left to
-   sit on and would poke out past the slope. The slope itself keeps the wrapper's outline (a
-   horizontal bar cannot follow it). */
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally.fencing-raked-panel {
-    background-color: var(--fc-white);
-    background-image:
-        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
-        linear-gradient(var(--fc-tundora), var(--fc-tundora)),
-        repeating-linear-gradient(90deg,
-            var(--fc-tundora) 0 2.5px,
-            transparent 2.5px 10px);
-    background-size: 100% 2px, 100% 2px, auto;
-    background-position: 0 0, 0 100%, 0 0;
-    background-repeat: no-repeat, no-repeat, repeat;
+/* Raked (step-up) panels drawn as the PoolSafe 1200W raked panel: top rail flat 54%, a rake to 91%, a short flat into the
+   low post; the mid rail flat 38.75% at the step-up, then 40deg into the bottom rail. The grid shows through, as on the straight panels. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .ally.fencing-raked-panel {
+    --fc-rake-edge: var(--fc-coat-line, 0px);
+    --fc-rake-lip: var(--fc-rake-edge);
+    --fc-rake-slide: calc(4px * var(--fc-rake-mitre, 0.384));
+    background-color: transparent;
+    background-image: var(--fc-coat-rail, linear-gradient(var(--fc-tundora), var(--fc-tundora))), var(--fc-ft-pickets);
+    background-size: 100% 4px, 8.81px 100%;
+    background-position: 0 100%, 50% 0;
+    background-origin: border-box;
+    background-repeat: no-repeat, repeat-x;
+    border-color: transparent;
+    -webkit-clip-path: polygon(0 0, 54% 0, 91% var(--fc-rake-drop, 40px), 100% var(--fc-rake-drop, 40px), 100% 100%, 0 100%);
+    clip-path: polygon(0 0, 54% 0, 91% var(--fc-rake-drop, 40px), 100% var(--fc-rake-drop, 40px), 100% 100%, 0 100%);
 }
 
-/* The raked outline (the black band along the slope and steps) is the wrapper showing between
-   TWO different clip polygons — the inner panel's slope sat ~1% of the panel width off the
-   wrapper's, so the band grew with panel width and read far bolder than the 2px rails (the
-   left panel's -webkit- and standard values didn't even agree). The inner clip now copies the
-   wrapper's polygon, EXCEPT the slope run, whose two vertices sit a fixed 4px lower: with the
-   wrapper's 2px padding that makes a ~6px vertical band along the slope — reading as the same
-   weight as the flat runs' outline+rail stack — and, being a px offset, it stays constant at
-   every panel width. The extra 37%/36.5% vertex drops into the slope band so the tall flat run
-   keeps its exact geometry.
-   The slope runs to 100%, not 70%: it has to land on the post the way the glass step-up does,
-   so there is no lower flat run before the neighbouring panel. Both the wrapper silhouette
-   below and the barr/slat base polygon keep their own shapes. */
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-b {
-    -webkit-clip-path: polygon(37% 0, 37% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-    clip-path: polygon(37% 0, 37% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+/* Top rail: its edge, then the coat inset by the edge line; the lower corners slide back by --fc-rake-mitre (functions.js).
+   !important and the sizes undo the wholesale .ally pseudo suppression and the custom-height strips above. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .fencing-raked-panel::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .fencing-raked-panel::after {
+    content: "" !important;
+    position: absolute;
+    top: 0;
+    right: -2px;
+    bottom: -2px;
+    left: -2px;
+    width: auto;
+    height: auto;
+    pointer-events: none;
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-b {
-    -webkit-clip-path: polygon(36.5% 0, 36.5% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-    clip-path: polygon(36.5% 0, 36.5% 2px, 100% calc(var(--fc-rake-drop, 25%) + 4px), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .fencing-raked-panel::before {
+    background: var(--fc-coat-edge, var(--fc-tundora));
+    -webkit-clip-path: polygon(0 0, 54% 0, 91% var(--fc-rake-drop, 40px), 100% var(--fc-rake-drop, 40px), 100% calc(var(--fc-rake-drop, 40px) + 4px), calc(91% - var(--fc-rake-slide)) calc(var(--fc-rake-drop, 40px) + 4px), calc(54% - var(--fc-rake-slide)) 4px, 0 4px);
+    clip-path: polygon(0 0, 54% 0, 91% var(--fc-rake-drop, 40px), 100% var(--fc-rake-drop, 40px), 100% calc(var(--fc-rake-drop, 40px) + 4px), calc(91% - var(--fc-rake-slide)) calc(var(--fc-rake-drop, 40px) + 4px), calc(54% - var(--fc-rake-slide)) 4px, 0 4px);
 }
 
-/* The wrapper is the outline the inner clip shows through, so its silhouette has to lose the
-   lower flat run too. Scoped to flat_top: the shared base polygon still serves barr and slat. */
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b {
-    -webkit-clip-path: polygon(37% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-    clip-path: polygon(37% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .fencing-raked-panel::after {
+    background: var(--fc-coat, var(--fc-tundora));
+    -webkit-clip-path: polygon(0 var(--fc-rake-lip), 54% var(--fc-rake-lip), 91% calc(var(--fc-rake-drop, 40px) + var(--fc-rake-lip)), 100% calc(var(--fc-rake-drop, 40px) + var(--fc-rake-lip)), 100% calc(var(--fc-rake-drop, 40px) + 4px - var(--fc-rake-edge)), calc(91% - var(--fc-rake-slide)) calc(var(--fc-rake-drop, 40px) + 4px - var(--fc-rake-edge)), calc(54% - var(--fc-rake-slide)) calc(4px - var(--fc-rake-edge)), 0 calc(4px - var(--fc-rake-edge)));
+    clip-path: polygon(0 var(--fc-rake-lip), 54% var(--fc-rake-lip), 91% calc(var(--fc-rake-drop, 40px) + var(--fc-rake-lip)), 100% calc(var(--fc-rake-drop, 40px) + var(--fc-rake-lip)), 100% calc(var(--fc-rake-drop, 40px) + 4px - var(--fc-rake-edge)), calc(91% - var(--fc-rake-slide)) calc(var(--fc-rake-drop, 40px) + 4px - var(--fc-rake-edge)), calc(54% - var(--fc-rake-slide)) calc(4px - var(--fc-rake-edge)), 0 calc(4px - var(--fc-rake-edge)));
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b {
-    -webkit-clip-path: polygon(36.5% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-    clip-path: polygon(36.5% 0, 100% var(--fc-rake-drop, 25%), 100% 100%, 68% 100%, 32% 100%, 0 100%, 0% 43%, 0 0);
-}
-
-/* The slope's rail is the wrapper showing past the sheet's clip, and a background is one flat
-   fill — so on a light colour the rake read as solid edge-grey while every other rail is coat
-   between two edge lines. This lays a coat-coloured strip down the slope, inset 1.5px from each
-   side of that band, so the wrapper reads as the rail's two edges and the rake closes like a bar.
-   A strip, not a fill to the bottom: everywhere else the wrapper must keep showing as it always
-   did, and only the slope changes. */
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b,
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b {
+/* The wrapper no longer draws an outline band; it carries the mid rail, which has to pass in front of the pickets.
+   Isolated so the posts still paint over it, and unclipped so its rail can reach the panel's full width. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] :is(.fencing-left-panel-o-b, .fencing-right-panel-o-b) {
     position: relative;
+    isolation: isolate;
+    background: none;
+    -webkit-clip-path: none;
+    clip-path: none;
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b::before {
+/* Mid rail on the panel's own box (the wrapper is 1px narrower each side and 2px taller). Its 40deg rake runs 1.19175 x its
+   fall; 1.4559px and 6.2229px are a 4px rail's mitre slide and horizontal width at that angle. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] :is(.fencing-left-panel-o-b, .fencing-right-panel-o-b)::before,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] :is(.fencing-left-panel-o-b, .fencing-right-panel-o-b)::after {
     content: "";
     position: absolute;
-    inset: 0;
-    background: var(--fc-coat, var(--fc-tundora));
-    -webkit-clip-path: polygon(37% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 37% 2.5px);
-    clip-path: polygon(37% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 37% 2.5px);
+    top: 2px;
+    right: -1px;
+    bottom: 0;
+    left: -1px;
+    z-index: 1;
     pointer-events: none;
 }
 
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--fc-coat, var(--fc-tundora));
-    -webkit-clip-path: polygon(36.5% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 36.5% 2.5px);
-    clip-path: polygon(36.5% 1.5px, 100% calc(var(--fc-rake-drop, 25%) + 1.5px), 100% calc(var(--fc-rake-drop, 25%) + 4.5px), 36.5% 2.5px);
-    pointer-events: none;
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] :is(.fencing-left-panel-o-b, .fencing-right-panel-o-b)::before {
+    background: var(--fc-coat-edge, var(--fc-tundora));
+    -webkit-clip-path: polygon(0 calc(100% - var(--fc-rake-drop, 40px) - 4px), calc(38.75% + 1.4559px) calc(100% - var(--fc-rake-drop, 40px) - 4px), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px) * 1.19175 + 6.2229px) calc(100% - 4px), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px) * 1.19175) calc(100% - 4px), 38.75% calc(100% - var(--fc-rake-drop, 40px)), 0 calc(100% - var(--fc-rake-drop, 40px)));
+    clip-path: polygon(0 calc(100% - var(--fc-rake-drop, 40px) - 4px), calc(38.75% + 1.4559px) calc(100% - var(--fc-rake-drop, 40px) - 4px), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px) * 1.19175 + 6.2229px) calc(100% - 4px), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px) * 1.19175) calc(100% - 4px), 38.75% calc(100% - var(--fc-rake-drop, 40px)), 0 calc(100% - var(--fc-rake-drop, 40px)));
 }
 
-/* The wrapper's hover fill is the band; the overlay has to take it too or only the 1.5px edge
-   would light up. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] :is(.fencing-left-panel-o-b, .fencing-right-panel-o-b)::after {
+    --fc-rake-edge: var(--fc-coat-line, 0px);
+    background: var(--fc-coat, var(--fc-tundora));
+    -webkit-clip-path: polygon(0 calc(100% - var(--fc-rake-drop, 40px) - 4px + var(--fc-rake-edge)), calc(38.75% + 1.4559px) calc(100% - var(--fc-rake-drop, 40px) - 4px + var(--fc-rake-edge)), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px - var(--fc-rake-edge)) * 1.19175 + 6.2229px) calc(100% - 4px), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px + var(--fc-rake-edge)) * 1.19175) calc(100% - 4px), 38.75% calc(100% - var(--fc-rake-drop, 40px) - var(--fc-rake-edge)), 0 calc(100% - var(--fc-rake-drop, 40px) - var(--fc-rake-edge)));
+    clip-path: polygon(0 calc(100% - var(--fc-rake-drop, 40px) - 4px + var(--fc-rake-edge)), calc(38.75% + 1.4559px) calc(100% - var(--fc-rake-drop, 40px) - 4px + var(--fc-rake-edge)), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px - var(--fc-rake-edge)) * 1.19175 + 6.2229px) calc(100% - 4px), calc(38.75% + (var(--fc-rake-drop, 40px) - 4px + var(--fc-rake-edge)) * 1.19175) calc(100% - 4px), 38.75% calc(100% - var(--fc-rake-drop, 40px) - var(--fc-rake-edge)), 0 calc(100% - var(--fc-rake-drop, 40px) - var(--fc-rake-edge)));
+}
+
+/* Hover as on the straight panels: blush ground, orange border, and the top rail's outer 2px in orange. The base wrapper hover
+   fill carries an id, so it is cleared on the same footing. */
 @media (min-width: 1024px) {
-    #fc-planning-form .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b:hover::before,
-    #fc-planning-form .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b:hover::before {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .ally.fencing-raked-panel:hover {
+        --fc-rake-lip: 2px;
+        border-color: var(--fc-princeton-orange);
+        background-color: var(--fc-lavender-blush);
+    }
+
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .fencing-raked-panel:hover::before {
         background: var(--fc-princeton-orange);
+    }
+
+    #fc-planning-form .fencing-panel-container[data-type="flat_top"] :is(.fencing-left-panel-o-b, .fencing-right-panel-o-b):hover {
+        background: none;
     }
 }
 
@@ -12492,29 +13320,27 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* The post cannot stretch to the row any more (it is in .raked-panel's own flex line, which no
-   longer grows), so it is sized outright: from the sheet's 2px outline down to the 13px foot it always had,
+   longer grows), so it is sized outright: from the sheet's 2px outline down to the 9px foot the straight posts have,
    and a negative bottom margin keeps it from inflating that line in turn. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .raked-panel-post {
     align-self: flex-start;
-    height: calc(var(--fc-rake-h, 159px) + 15px) !important;
+    height: calc(var(--fc-rake-h, 159px) + 11px) !important;
     margin-top: calc(118px - var(--fc-rake-h, 159px)) !important;
-    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 15px)) !important;
+    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 11px)) !important;
 }
 
-/* Cement-in sinks a post 15px deeper (min-height 148px against the 133px the others stretch to).
+/* Cement-in sinks a post 15px deeper (min-height 144px against the 129px the others stretch to).
    This one is sized outright, so it has to take that depth itself or its footing line sits high
    of the centre posts'. The top is unchanged — only the foot goes further down. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .raked-panel .raked-panel-post:is(.opt-2, .opt-2-1) {
-    height: calc(var(--fc-rake-h, 159px) + 30px) !important;
-    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 30px)) !important;
+    height: calc(var(--fc-rake-h, 159px) + 26px) !important;
+    margin-bottom: calc(-1 * (var(--fc-rake-h, 159px) + 26px)) !important;
 }
 
 /* The raked outline band (slope, steps and the 2px lip along the flat tops) is the wrapper's own
    fill showing around the inner clip. It was black; it takes the bars' #404040 so the raked
    panel's bars match the rails, pickets and posts. The orange hover survives: the base
    #fc-planning-form ...-o-b:hover rule carries an id and out-ranks this one. */
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b,
-:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-left-panel-o-b,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-right-panel-o-b {
     background: var(--fc-tundora);
@@ -12526,12 +13352,10 @@ body.fc-restoring-selection .fencing-tab-name {
     background-color: var(--fc-white);
     background-image:
         linear-gradient(var(--fc-tundora), var(--fc-tundora)),
-        repeating-linear-gradient(90deg,
-            var(--fc-tundora) 0 2.5px,
-            transparent 2.5px 10px);
-    background-size: 100% 3px, auto;
-    background-position: 0 calc(100% - 7px), 0 0;
-    background-repeat: no-repeat, repeat;
+        var(--fc-barr-pickets);
+    background-size: 100% 2.5px, 11.8px 100%;
+    background-position: 0 calc(100% - 3.75px), calc(50% + 5.9px) 0;
+    background-repeat: no-repeat, repeat-x;
 }
 
 /* The base :hover blush wash loses to the transparent background-color above on specificity,
@@ -12554,10 +13378,9 @@ body.fc-restoring-selection .fencing-tab-name {
     box-shadow: inset 0 0 0 2px var(--fc-tundora);
 }
 
-/* Barr gate: frame the stiles only. With tips standing free past both rails, the full frame's
-   horizontal edges read as yet another pair of bars — the same complaint the panel border drew. */
+/* Barr gate: no drawn frame - its 2px side borders and the bar pattern's edge bars are the real gate's outer bars. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-panel-gate {
-    box-shadow: inset 2px 0 0 0 var(--fc-tundora), inset -2px 0 0 0 var(--fc-tundora);
+    box-shadow: none;
 }
 
 /* Flat Top and Barr posts: one solid #404040 instead of the group-b base's three-stop shading
@@ -12589,7 +13412,7 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* Barr posts stop level with the picket tops, only the cap standing proud: the shared -7px lift put them well above the panel.
-   fcApplyGroupBFenceDisplayHeights() trims their height to match, so the custom-height floor drops by the same 7px. */
+   fcApplyGroupBFenceDisplayHeights() trims their height to match, plus 9px so the panel stands 100mm off the ground. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post {
     margin-top: 0;
 }
@@ -12599,17 +13422,17 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* Flat Top and Premium Perforated posts stop level with the panel top the same way; CSS alone sizes them, so each floor
-   drops by the lift instead. */
+   drops by the lift instead. 129px leaves the panel 100mm (10px) off the ground, AS 1926.1's maximum and a 1300L post. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container:is([data-type="flat_top"], [data-type="perforated_pool"]) .panel-post {
     margin-top: 0;
 }
 
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container:is([data-type="flat_top"], [data-type="perforated_pool"]) .panel-post:is(.opt-1, .opt-1-1) {
-    min-height: 133px;
+    min-height: 129px;
 }
 
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container:is([data-type="flat_top"], [data-type="perforated_pool"]) .panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1) {
-    min-height: 148px;
+    min-height: 144px;
 }
 
 /* ===== Powder coat (Flat Top, Barr, Slat, Slat Infill, Premium Perforated) ===== */
@@ -12662,6 +13485,24 @@ body.fc-restoring-selection .fencing-tab-name {
 
 /* Half-pixel edges lose a light coat on the white ground at 1x, so its edges go a full pixel and
    its pickets 3px. */
+[data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] {
+    --fc-barr-pickets: linear-gradient(90deg, transparent 0 4.65px, var(--fc-coat-edge) 4.65px 5.15px, var(--fc-coat) 5.15px 6.65px, var(--fc-coat-edge) 6.65px 7.15px, transparent 7.15px);
+}
+
+/* A light coat's edges go to 0.75px on Barr's 25mm bars and rails, or the white fill disappears into its outline. */
+[data-fc-barr-tone="light"][data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] {
+    --fc-coat-line: 0.75px;
+    --fc-barr-pickets: linear-gradient(90deg, transparent 0 4.65px, var(--fc-coat-edge) 4.65px 5.4px, var(--fc-coat) 5.4px 6.4px, var(--fc-coat-edge) 6.4px 7.15px, transparent 7.15px);
+}
+
+[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] {
+    --fc-ft-pickets: linear-gradient(90deg, transparent 0 3.605px, var(--fc-coat-edge) 3.605px 4.005px, var(--fc-coat) 4.005px 4.805px, var(--fc-coat-edge) 4.805px 5.205px, transparent 5.205px);
+}
+
+[data-fc-flat-top-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] {
+    --fc-ft-pickets: linear-gradient(90deg, transparent 0 3.405px, var(--fc-coat-edge) 3.405px 3.905px, var(--fc-coat) 3.905px 4.905px, var(--fc-coat-edge) 4.905px 5.405px, transparent 5.405px);
+}
+
 [data-fc-flat-top-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"],
 [data-fc-barr-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"],
 [data-fc-slat-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"],
@@ -12693,39 +13534,27 @@ body.fc-restoring-selection .fencing-tab-name {
     }
 }
 
-/* Flat Top's rails lie on the panel edge, so only their inner face takes the edge. Layers as in the
-   uncoloured rules above. */
+/* Flat Top's 4px rails cover the panel edge, so both faces take the edge. Layers as in the uncoloured rules above. */
 [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally:not(.fencing-raked-panel) {
-    background-image:
-        linear-gradient(to bottom, var(--fc-coat) 0 1.5px, var(--fc-coat-edge) 1.5px 2px),
-        linear-gradient(to bottom, var(--fc-coat-edge) 0 0.5px, var(--fc-coat) 0.5px 2px),
-        var(--fc-coat-pickets);
-}
-
-/* Layer count tracks the uncoated rule above — the lower flat run's rail went with the slope. */
-[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally.fencing-raked-panel {
-    background-image:
-        linear-gradient(to bottom, var(--fc-coat) 0 1.5px, var(--fc-coat-edge) 1.5px 2px),
-        linear-gradient(to bottom, var(--fc-coat-edge) 0 0.5px, var(--fc-coat) 0.5px 2px),
-        var(--fc-coat-pickets);
+    background-image: var(--fc-coat-rail), var(--fc-coat-rail), var(--fc-ft-pickets);
 }
 
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally:not(.fencing-raked-panel) {
-    background-image: var(--fc-coat-rail), var(--fc-coat-rail), var(--fc-coat-pickets);
+    background-image: var(--fc-coat-rail), var(--fc-coat-rail), var(--fc-barr-pickets);
 }
 
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally.fencing-raked-panel {
-    background-image: var(--fc-coat-rail), var(--fc-coat-pickets);
+    background-image: var(--fc-coat-rail), var(--fc-barr-pickets);
 }
 
-/* Perforated frame rails take the edge on their inner face only, like Flat Top's; the dots take the coat. */
+/* Perforated frame rails take the edge on their inner face only, like Flat Top's; the sheet takes the coat, the dots stay see-through. */
 [data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally:not(.fencing-raked-panel) {
     background-image:
         linear-gradient(to bottom, var(--fc-coat) 0 2.5px, var(--fc-coat-edge) 2.5px 3px),
         linear-gradient(to bottom, var(--fc-coat-edge) 0 0.5px, var(--fc-coat) 0.5px 3px),
         linear-gradient(to right, var(--fc-coat) 0 2.5px, var(--fc-coat-edge) 2.5px 3px),
         linear-gradient(to right, var(--fc-coat-edge) 0 0.5px, var(--fc-coat) 0.5px 3px),
-        radial-gradient(circle, var(--fc-coat) 0 0.9px, transparent 1.3px);
+        radial-gradient(circle, transparent 0 0.9px, var(--fc-coat) 1.3px);
 }
 
 /* Slats on the section's own pitch, edged top and bottom so touching (0mm gap) slats still part.
@@ -12752,15 +13581,11 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* The raked band is the rail along the slope; a light coat takes the edge there or the slope vanishes. */
-[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b,
-[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b,
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-left-panel-o-b,
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-right-panel-o-b {
     background: var(--fc-coat);
 }
 
-[data-fc-flat-top-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-left-panel-o-b,
-[data-fc-flat-top-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-right-panel-o-b,
 [data-fc-barr-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-left-panel-o-b,
 [data-fc-barr-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-right-panel-o-b {
     background: var(--fc-coat-edge);
@@ -12773,19 +13598,6 @@ body.fc-restoring-selection .fencing-tab-name {
 
 [data-fc-flat-top-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .fencing-panel-gate {
     box-shadow: inset 0 0 0 2px var(--fc-coat), inset 0 0 0 3px var(--fc-coat-edge);
-}
-
-/* Barr frames the stiles only, as in its uncoloured rule. */
-[data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-panel-gate {
-    box-shadow: inset 2px 0 0 0 var(--fc-coat), inset -2px 0 0 0 var(--fc-coat);
-}
-
-[data-fc-barr-tone="light"] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .fencing-panel-gate {
-    box-shadow:
-        inset 2px 0 0 0 var(--fc-coat),
-        inset -2px 0 0 0 var(--fc-coat),
-        inset 3px 0 0 0 var(--fc-coat-edge),
-        inset -3px 0 0 0 var(--fc-coat-edge);
 }
 
 /* Posts, their caps and the base-plate covers all come in the fence colour. `color` feeds the base
@@ -12804,14 +13616,6 @@ body.fc-restoring-selection .fencing-tab-name {
     background: var(--fc-coat) !important;
     border-color: var(--fc-coat-edge);
     color: var(--fc-coat-edge);
-}
-
-[data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after,
-[data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after,
-[data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after,
-[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after {
-    border-bottom-color: var(--fc-coat);
-    box-shadow: 0 0 0 1px var(--fc-coat-edge);
 }
 
 /* The D&D TruClose hinges and MagnaLatch come white only for a White fence (HIN-HD-ASC-W,
@@ -12984,10 +13788,17 @@ body.fc-restoring-selection .fencing-tab-name {
     margin-right: -4px;
 }
 
+/* Panels tuck 1px under each 7px post, so a bay still draws exactly panel + the 50mm (5px) post. */
+[data-group="b"]:not([data-type="slat_fence_infill"]) .fencing-panel-item:not(.fencing-panel-gate) {
+    margin-left: -1px;
+    margin-right: -1px;
+}
+
+/* 7px: the 50mm post is 5px at the planner's 1:10, drawn 2px wider so it is easy to click. */
 [data-group="b"] .panel-post {
     background: var(--fc-charcoal-37);
     background: linear-gradient(90deg, var(--fc-charcoal-37) 0%, var(--fc-boulder-78) 48%, var(--fc-black) 100%);
-    min-width: 8px;
+    min-width: 7px;
     margin-top: -7px;
     margin-bottom: 30px;
     border: 1px solid;
@@ -13014,8 +13825,8 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* Wall post width (the project plan's Centers bridge grows with it) and how far it stands above
-   the panels. */
-.fencing-panel-container[data-type="slat_fence_infill"] {
+   the panels; Slat's Wall Fix wall is drawn to the same size. */
+.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) {
     --fc-slat-infill-post-w: 30px;
     /* The end piers stand tallest; the runs between rise less, so the wall reads as framed by its ends. */
     --fc-slat-infill-post-rise: 16px;
@@ -13067,6 +13878,11 @@ body.fc-restoring-selection .fencing-tab-name {
     --fc-wall-edge: var(--fc-a-black-28);
 }
 
+[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] {
+    --fc-wall: var(--fc-limestone);
+    --fc-wall-edge: var(--fc-a-black-28);
+}
+
 /* A Step 3 Post Options pick (reference only) paints the piers in that finish instead of the stone
    courses; fcApplyPostFinishCoat's #fc-post-finish-coat rule supplies the image and its 1:1 height,
    bottom-anchored so every pier shows the pattern at the same scale whatever the fence height. */
@@ -13107,12 +13923,10 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* Stacked stone: courses of varied height, two stones each with the split moving from course to
-   course, dry dark joints and a few lighter or darker stones, repeating every 80px. */
-.fencing-panel-container[data-type="slat_fence_infill"] .panel-post::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
+   course, dry dark joints and a few lighter or darker stones, repeating every 80px. Slat Infill's
+   piers wear it, and so does the wall a Slat Wall Fix end post is fixed to. */
+.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) {
+    --fc-stone-wall:
         linear-gradient(to bottom, var(--fc-a-white-12), var(--fc-a-black-8)),
         linear-gradient(to bottom,
             var(--fc-a-black-28) 0 1px,
@@ -13163,6 +13977,13 @@ body.fc-restoring-selection .fencing-tab-name {
         linear-gradient(to bottom, transparent 0 67px, var(--fc-a-white-14) 67px 72px, transparent 72px) 18px 0 / calc(100% - 18px) 80px repeat-y,
         linear-gradient(to bottom, transparent 0 72px, var(--fc-a-black-28) 72px 80px) 9px 0 / 1px 80px repeat-y,
         linear-gradient(to bottom, transparent 0 72px, var(--fc-a-black-8) 72px 80px) 0 0 / 9px 80px repeat-y;
+}
+
+.fencing-panel-container[data-type="slat_fence_infill"] .panel-post::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--fc-stone-wall);
     pointer-events: none;
 }
 
@@ -13202,39 +14023,279 @@ body.fc-restoring-selection .fencing-tab-name {
     }
 }
 
-[data-group="b"] .panel-post:not(.panel-no-post).opt-1:after,
-[data-group="b"] .panel-post:not(.panel-no-post).opt-1-1:after {
-    content: "";
-    display: inline-block;
-    width: 25px;
-    border-bottom: 3px solid;
-    position: absolute;
-    bottom: -2px;
-    left: -9px;
+/* ===== Post footings (Flat Top, Barr, Slat, Premium Perforated) ===== */
+
+/* Each post option draws its own footing on ::after, hung off the ground line: --fc-foot-ground is that
+   line's height above the post's foot, --fc-foot-depth how far the footing runs below the foot. */
+[data-group="b"] .panel-post {
+    --fc-foot-ground: -1px;
+    --fc-foot-metal: var(--fc-coat, var(--fc-tundora));
+    --fc-foot-edge: var(--fc-coat-edge, var(--fc-black));
 }
 
-[data-group="b"] .panel-post:not(.panel-no-post).opt-2:after,
-[data-group="b"] .panel-post:not(.panel-no-post).opt-2-1:after {
-    content: "";
-    display: inline-block;
-    width: 25px;
-    border-bottom: 3px solid var(--fc-light-gray);
-    position: absolute;
-    bottom: 30px;
-    left: -9px;
+.fencing-panel-container[data-type="slat"] .panel-post {
+    --fc-foot-metal: var(--fc-coat, var(--fc-nickel));
+    --fc-foot-edge: var(--fc-coat-edge, var(--fc-dark-charcoal));
 }
 
-[data-type="slat"] .panel-post:not(.panel-no-post).opt-4:after,
-[data-type="slat"] .panel-post:not(.panel-no-post).opt-4-1:after,
-[data-type="slat_fence_infill"] .panel-post:not(.panel-no-post).opt-4:after,
-[data-type="slat_fence_infill"] .panel-post:not(.panel-no-post).opt-4-1:after {
+[data-group="b"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1, .opt-2, .opt-2-1)::after,
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-3, .opt-3-1, .opt-4, .opt-4-1)::after {
     content: "";
-    display: inline-block;
-    width: 25px;
-    border-bottom: 3px solid var(--fc-light-gray);
     position: absolute;
-    bottom: 30px;
-    left: -9px;
+    box-sizing: border-box;
+}
+
+/* A post keeps its own length: stretched to the row, a base-plated post beside a cemented one grew
+   down into the room kept for that footing. */
+[data-group="b"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1, .opt-2, .opt-2-1) {
+    align-self: flex-start;
+}
+
+/* The post-width figure sits under the footing, so the row makes room for it. */
+[data-group="b"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1),
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-4, .opt-4-1) {
+    margin-bottom: calc(var(--fc-foot-depth) + 24px);
+}
+
+/* A No Post end is a marker, not a post: it stops at the ground, clear of the room kept for footings. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container:is([data-type="flat_top"], [data-type="perforated_pool"]) .panel-post.panel-no-post {
+    align-self: flex-start;
+    min-height: 129px;
+}
+
+/* Base Plated: the 100mm plate on the slab, its front two M10 anchors showing as nut, washer and rod end and
+   running hidden into the concrete - the option tile's fixing, cover left off. */
+[data-group="b"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1) {
+    --fc-foot-depth: 13px;
+}
+
+[data-group="b"] .panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)::after {
+    left: calc(50% - 17.5px);
+    bottom: calc(var(--fc-foot-ground) - 12px);
+    width: 34px;
+    height: 19px;
+    background:
+        linear-gradient(var(--fc-silver-chalice), var(--fc-silver-chalice)) no-repeat 9px 0 / 2px 1px,
+        linear-gradient(var(--fc-silver-chalice), var(--fc-silver-chalice)) no-repeat 23px 0 / 2px 1px,
+        linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 8px 1px / 4px 1px,
+        linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 22px 1px / 4px 1px,
+        linear-gradient(var(--fc-nobel), var(--fc-nobel)) no-repeat 8px 2px / 4px 1px,
+        linear-gradient(var(--fc-nobel), var(--fc-nobel)) no-repeat 22px 2px / 4px 1px,
+        linear-gradient(var(--fc-spanish-gray), var(--fc-spanish-gray)) no-repeat 7px 3px / 6px 1px,
+        linear-gradient(var(--fc-spanish-gray), var(--fc-spanish-gray)) no-repeat 21px 3px / 6px 1px,
+        linear-gradient(var(--fc-a-white-22), var(--fc-a-white-22)) no-repeat 8px 5px / 18px 1px,
+        linear-gradient(var(--fc-foot-metal), var(--fc-foot-metal)) no-repeat 8px 5px / 18px 1px,
+        linear-gradient(var(--fc-foot-edge), var(--fc-foot-edge)) no-repeat 7px 4px / 20px 3px,
+        repeating-linear-gradient(to bottom, var(--fc-dove-gray) 0 2px, transparent 2px 3px) no-repeat 10px 8px / 1px 8px,
+        repeating-linear-gradient(to bottom, var(--fc-dove-gray) 0 2px, transparent 2px 3px) no-repeat 24px 8px / 1px 8px,
+        linear-gradient(to right, transparent, var(--fc-spanish-gray) 5px, var(--fc-spanish-gray) calc(100% - 5px), transparent) no-repeat 0 7px / 100% 1px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 15px 10px / 2px 2px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 18px 14px / 2px 2px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 4px 12px / 2px 2px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 28px 11px / 2px 2px,
+        linear-gradient(to right, transparent, var(--fc-silver-chalice) 6px, var(--fc-silver-chalice) calc(100% - 6px), transparent) no-repeat 0 18px / 100% 1px,
+        linear-gradient(to right, transparent, var(--fc-gainsboro) 6px, var(--fc-gainsboro) calc(100% - 6px), transparent) no-repeat 0 8px / 100% 10px;
+}
+
+/* Cement In: a 200 x 300 footing of concrete (20 x 30px at the planner's 1:10; the real hole is ~600mm, halved by request
+   to keep the row compact), crowned just above the ground, with the buried post drawn hidden. */
+[data-group="b"] .panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1) {
+    --fc-foot-ground: 14px;
+    --fc-foot-depth: calc(30px - var(--fc-foot-ground));
+}
+
+/* A height-set post (Barr) only goes 10px deeper for cement, not 15. */
+[data-group="b"].custom-height .panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1) {
+    --fc-foot-ground: 9px;
+}
+
+/* Slat keeps every post the same length, so its ground line is at the foot. */
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1) {
+    --fc-foot-ground: -1px;
+}
+
+/* The Barr cement-in post ends in a welded 100mm anchor plate. */
+.fencing-panel-container[data-type="barr"] .panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1) {
+    --fc-foot-cap-x: 15px;
+    --fc-foot-cap-w: 10px;
+}
+
+[data-group="b"] .panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1)::after {
+    left: calc(50% - 20.5px);
+    bottom: calc(var(--fc-foot-ground) - 30px);
+    width: 40px;
+    height: 32px;
+    padding: 5px 12px 7px;
+    background:
+        repeating-linear-gradient(to bottom, var(--fc-dove-gray) 0 3px, transparent 3px 5px) no-repeat 17px 3px / 1px 19px,
+        repeating-linear-gradient(to bottom, var(--fc-dove-gray) 0 3px, transparent 3px 5px) no-repeat 23px 3px / 1px 19px,
+        linear-gradient(var(--fc-dove-gray), var(--fc-dove-gray)) no-repeat var(--fc-foot-cap-x, 17px) 22px / var(--fc-foot-cap-w, 7px) 1px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 13px 0 / 14px 1px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 12px 1px / 1px 1px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 27px 1px / 1px 1px,
+        linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 13px 1px / 14px 1px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 10px 2px / 3px 1px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 27px 2px / 3px 1px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 10px 2px / 1px 24px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 29px 2px / 1px 24px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 15px 31px / 10px 1px,
+        radial-gradient(circle at 100% 0, var(--fc-gainsboro) 0 5px, var(--fc-nickel) 5px 6px, transparent 6.4px) no-repeat 10px 26px / 6px 6px,
+        radial-gradient(circle at 0 0, var(--fc-gainsboro) 0 5px, var(--fc-nickel) 5px 6px, transparent 6.4px) no-repeat 24px 26px / 6px 6px,
+        radial-gradient(circle at 2px 3px, var(--fc-nobel) 0 0.6px, transparent 1px) 0 0 / 9px 11px content-box,
+        radial-gradient(circle at 6px 2px, var(--fc-silver-chalice) 0 0.8px, transparent 1.2px) 0 0 / 13px 7px content-box,
+        radial-gradient(circle at 4px 9px, var(--fc-nobel) 0 0.5px, transparent 0.9px) 0 0 / 7px 17px content-box,
+        linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 10px 2px / 20px 24px,
+        linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 15px 26px / 10px 5px,
+        linear-gradient(to right, transparent, var(--fc-boulder) 5px) no-repeat 0 2px / 10px 1px,
+        linear-gradient(to left, transparent, var(--fc-boulder) 5px) no-repeat 30px 2px / 10px 1px,
+        repeating-linear-gradient(135deg, var(--fc-boulder) 0 0.7px, transparent 0.7px 2.5px) no-repeat 4px 3px / 6px 4px,
+        repeating-linear-gradient(135deg, var(--fc-boulder) 0 0.7px, transparent 0.7px 2.5px) no-repeat 30px 3px / 6px 4px;
+}
+
+/* Core Drilled (Slat): the post set about 100mm into a hole cored through the slab and filled with non-shrink
+   grout, finished with a slight crown - the option tile's section. */
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-4, .opt-4-1) {
+    --fc-foot-depth: 13px;
+}
+
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-4, .opt-4-1)::after {
+    left: calc(50% - 18.5px);
+    bottom: calc(var(--fc-foot-ground) - 12px);
+    width: 36px;
+    height: 14px;
+    background:
+        linear-gradient(var(--fc-wild-sand), var(--fc-wild-sand)) no-repeat 13px 1px / 10px 1px,
+        repeating-linear-gradient(to bottom, var(--fc-dove-gray) 0 2px, transparent 2px 3px) no-repeat 15px 3px / 1px 7px,
+        repeating-linear-gradient(to bottom, var(--fc-dove-gray) 0 2px, transparent 2px 3px) no-repeat 21px 3px / 1px 7px,
+        linear-gradient(var(--fc-dove-gray), var(--fc-dove-gray)) no-repeat 15px 10px / 7px 1px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 12px 2px / 1px 10px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 23px 2px / 1px 10px,
+        linear-gradient(var(--fc-nickel), var(--fc-nickel)) no-repeat 12px 11px / 12px 1px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 17px 6px / 2px 2px,
+        linear-gradient(var(--fc-silver-chalice), var(--fc-silver-chalice)) no-repeat 13px 2px / 10px 9px,
+        linear-gradient(to right, transparent, var(--fc-spanish-gray) 5px, var(--fc-spanish-gray) calc(100% - 5px), transparent) no-repeat 0 2px / 100% 1px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 4px 6px / 2px 2px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 29px 5px / 2px 2px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 7px 10px / 2px 2px,
+        radial-gradient(circle, var(--fc-nobel) 0 0.5px, transparent 0.9px) no-repeat 26px 9px / 2px 2px,
+        linear-gradient(to right, transparent, var(--fc-silver-chalice) 6px, var(--fc-silver-chalice) calc(100% - 6px), transparent) no-repeat 0 13px / 100% 1px,
+        linear-gradient(to right, transparent, var(--fc-gainsboro) 6px, var(--fc-gainsboro) calc(100% - 6px), transparent) no-repeat 0 3px / 100% 10px;
+}
+
+/* Wall Fix (Slat): a run fixed along a wall face shows the 32mm hole plugs over each post's four M10 fixings. */
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-3, .opt-3-1)::after {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background:
+        radial-gradient(circle at 40% 40%, var(--fc-dove-gray) 0 0.5px, var(--fc-black) 0.9px 1.5px, transparent 1.9px) no-repeat 50% 12% / 4px 4px,
+        radial-gradient(circle at 40% 40%, var(--fc-dove-gray) 0 0.5px, var(--fc-black) 0.9px 1.5px, transparent 1.9px) no-repeat 50% 37% / 4px 4px,
+        radial-gradient(circle at 40% 40%, var(--fc-dove-gray) 0 0.5px, var(--fc-black) 0.9px 1.5px, transparent 1.9px) no-repeat 50% 63% / 4px 4px,
+        radial-gradient(circle at 40% 40%, var(--fc-dove-gray) 0 0.5px, var(--fc-black) 0.9px 1.5px, transparent 1.9px) no-repeat 50% 88% / 4px 4px;
+}
+
+/* An end post meets the wall it is fixed to: Slat Infill's default stone wall beside it, standing as tall as
+   that style's end piers, with the post's four M10 rods hidden in it. */
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.post-left, .post-right):is(.opt-3, .opt-3-1)::after {
+    top: calc(-1 * var(--fc-slat-infill-post-rise));
+    bottom: -1px;
+    width: var(--fc-slat-infill-post-w);
+    border: 1px solid var(--fc-wall-edge, var(--fc-brown-rust));
+    box-shadow: inset 0 0 0 1px var(--fc-a-white-14);
+    background:
+        repeating-linear-gradient(var(--fc-wall-in), var(--fc-tundora) 0 2px, transparent 2px 3px) no-repeat var(--fc-wall-x) 18% / 16px 1px,
+        repeating-linear-gradient(var(--fc-wall-in), var(--fc-tundora) 0 2px, transparent 2px 3px) no-repeat var(--fc-wall-x) 40% / 16px 1px,
+        repeating-linear-gradient(var(--fc-wall-in), var(--fc-tundora) 0 2px, transparent 2px 3px) no-repeat var(--fc-wall-x) 62% / 16px 1px,
+        repeating-linear-gradient(var(--fc-wall-in), var(--fc-tundora) 0 2px, transparent 2px 3px) no-repeat var(--fc-wall-x) 83% / 16px 1px,
+        linear-gradient(var(--fc-wall-in), var(--fc-a-black-28), transparent 3px),
+        var(--fc-stone-wall),
+        linear-gradient(var(--fc-wall, var(--fc-antique-brass)), var(--fc-wall, var(--fc-antique-brass)));
+}
+
+.fencing-panel-container[data-type="slat"] .panel-post.post-left:not(.panel-no-post):is(.opt-3, .opt-3-1)::after {
+    --fc-wall-in: to left;
+    --fc-wall-x: 100%;
+    right: calc(100% + 1px);
+    left: auto;
+}
+
+.fencing-panel-container[data-type="slat"] .panel-post.post-right:not(.panel-no-post):is(.opt-3, .opt-3-1)::after {
+    --fc-wall-in: to right;
+    --fc-wall-x: 0;
+    right: auto;
+    left: calc(100% + 1px);
+}
+
+/* The wall hangs outside the run: a long run's strip scrolls from its first post, so a left wall needs the room. */
+.fencing-panel-container[data-type="slat"]:has(> .panel-post.post-left:not(.panel-no-post):is(.opt-3, .opt-3-1)) {
+    padding-left: calc(var(--fc-slat-infill-post-w) + 1px);
+}
+
+/* The project plan's strip clips above the run, so it makes room for the wall's rise as Slat Infill's does. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll .fencing-panel-container[data-type="slat"]:has(> .panel-post:is(.post-left, .post-right):not(.panel-no-post):is(.opt-3, .opt-3-1)) {
+    padding-top: var(--fc-slat-infill-post-rise);
+}
+
+/* 135° Turn (Slat): this end meets another section or a wall at 135°. A tag of its own, so the post keeps its footing. */
+.fencing-panel-container[data-type="slat"] .panel-post .fc-post-turn-tag {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
+    padding: 0 3px;
+    border: 1px solid var(--fc-princeton-orange);
+    border-radius: 3px;
+    background: var(--fc-white);
+    color: var(--fc-deep-blue);
+    font: 600 9px/11px "Poppins", sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 135 Degree Angle (Slat): the run turns 45 degrees at this post, which a straight elevation cannot show. */
+.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post):is(.opt-5, .opt-5-1)::after {
+    content: "135\00B0";
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0 3px;
+    border: 1px solid var(--fc-princeton-orange);
+    border-radius: 3px;
+    background: var(--fc-white);
+    color: var(--fc-deep-blue);
+    font: 600 9px/11px "Poppins", sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* The project plan draws its Centers line under the post figures, so the line drops by the extra room
+   the deepest footing in the run takes; the rules run shallowest to deepest. */
+[data-group="b"]:has(.panel-post:not(.panel-no-post):is(.opt-1, .opt-1-1)),
+.fencing-panel-container[data-type="slat"]:has(.panel-post:not(.panel-no-post):is(.opt-4, .opt-4-1)) {
+    --fc-foot-room: 7px;
+}
+
+[data-group="b"]:has(.panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1)) {
+    --fc-foot-room: 10px;
+}
+
+[data-group="b"].custom-height:has(.panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1)) {
+    --fc-foot-room: 15px;
+}
+
+.fencing-panel-container[data-type="slat"]:has(.panel-post:not(.panel-no-post):is(.opt-2, .opt-2-1)) {
+    --fc-foot-room: 25px;
+}
+
+[data-group="b"] .fc-center-point {
+    bottom: calc(-82px - var(--fc-foot-room, 0px));
+}
+
+[data-group="b"] .raked-panel-container .fc-center-point {
+    bottom: calc(-78px - var(--fc-foot-room, 0px));
 }
 
 [data-group="b"] .panel-post:not(.panel-no-post).opt-2,
@@ -13262,30 +14323,6 @@ body.fc-restoring-selection .fencing-tab-name {
 
 [data-group="a"] .fencing-panel-spacing-number span {
     bottom: 0;
-}
-
-[data-group="b"] .panel-post:not(.panel-no-post).opt-2:after,
-[data-group="b"] .panel-post:not(.panel-no-post).opt-2-1:after {
-    bottom: 14px;
-}
-
-[data-type="slat"] .panel-post:not(.panel-no-post).opt-4:after,
-[data-type="slat"] .panel-post:not(.panel-no-post).opt-4-1:after,
-[data-type="slat_fence_infill"] .panel-post:not(.panel-no-post).opt-4:after,
-[data-type="slat_fence_infill"] .panel-post:not(.panel-no-post).opt-4-1:after {
-    bottom: 14px;
-}
-
-[data-group="b"].custom-height .panel-post:not(.panel-no-post).opt-2:after,
-[data-group="b"].custom-height .panel-post:not(.panel-no-post).opt-2-1:after {
-    bottom: 10px;
-}
-
-[data-type="slat"].custom-height .panel-post:not(.panel-no-post).opt-4:after,
-[data-type="slat"].custom-height .panel-post:not(.panel-no-post).opt-4-1:after,
-[data-type="slat_fence_infill"].custom-height .panel-post:not(.panel-no-post).opt-4:after,
-[data-type="slat_fence_infill"].custom-height .panel-post:not(.panel-no-post).opt-4-1:after {
-    bottom: 10px;
 }
 
 /* Panel-to-panel clamp: one stainless block centred on the gap, bolted through the middle. Pinned
@@ -14235,7 +15272,6 @@ body.fc-restoring-selection .fencing-tab-name {
     border: 1px solid var(--fc-gray);
     cursor: pointer;
     position: relative;
-    padding: 6px 10px;
     border-radius: 8px;
     transition: all 0.2s ease;
 }
@@ -16587,7 +17623,7 @@ input[type="number"] {
 #fc-control-modal .fc-fence-color-grid {
     row-gap: 12px;
     /* The drawer body clips at its edge, and the first row sits on it: room for the
-       hover lift (2px) plus the selected glow (3px), top and bottom alike. */
+       hover lift (2px), top and bottom alike. */
     padding-top: 5px;
     padding-bottom: 5px;
 }
@@ -16624,7 +17660,6 @@ input[type="number"] {
 
 #fc-control-modal .fc-fence-color-tile.fc-selected {
     border-color: var(--fc-princeton-orange);
-    box-shadow: 0 0 0 3px var(--fc-a-orange-22);
 }
 
 #fc-control-modal .fc-fence-color-tile.fc-selected::after {
@@ -16633,9 +17668,9 @@ input[type="number"] {
     box-shadow: inset 0 0 0 3px var(--fc-white);
 }
 
-/* Hover: the tile lifts and its ring pre-tints orange, previewing the pick. */
+/* Hover anywhere in the cell: the tile lifts and its ring pre-tints orange, previewing the pick. */
 @media (hover: hover) {
-    #fc-control-modal .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable):hover {
+    #fc-control-modal .fc-fence-color-cell:hover > .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable) {
         border-color: var(--fc-princeton-orange);
         transform: translateY(-2px);
         box-shadow:
@@ -16643,12 +17678,12 @@ input[type="number"] {
             0 2px 6px var(--fc-a-black-8);
     }
 
-    #fc-control-modal .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable):hover::after {
+    #fc-control-modal .fc-fence-color-cell:hover > .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable)::after {
         border-color: var(--fc-princeton-orange);
         transform: scale(1.1);
     }
 
-    #fc-control-modal .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable):hover + .fc-fence-color-name {
+    #fc-control-modal .fc-fence-color-cell:hover > .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable) + .fc-fence-color-name {
         color: var(--fc-princeton-orange);
     }
 }
@@ -16671,7 +17706,7 @@ input[type="number"] {
         transition: none;
     }
 
-    #fc-control-modal .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable):hover {
+    #fc-control-modal .fc-fence-color-cell:hover > .fc-fence-color-tile:not(.fc-fence-color-tile--unavailable) {
         transform: none;
     }
 }
@@ -16818,7 +17853,7 @@ input[type="number"] {
 
 #fc-control-modal .fc-post-finish-color.fc-selected {
     border-color: var(--fc-princeton-orange);
-    box-shadow: inset 0 0 0 1px var(--fc-white), 0 0 0 2px var(--fc-a-orange-22);
+    box-shadow: inset 0 0 0 1px var(--fc-white);
 }
 
 @media (hover: hover) {
@@ -16908,20 +17943,8 @@ input[type="number"] {
     background: var(--fc-white);
 }
 
-/* The "Post Finish" band stays at the top while the drawer scrolls. */
-#fc-control-modal .fencing-modal-area--post-finish > .fencing-modal-header {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background-color: var(--fc-white);
-}
-
-/* Search and tabs stay in reach under the header band; its height is measured when the drawer opens. */
+/* Search and tabs stay in reach under the pinned header band ("Drawer card headers"); its height is measured when the drawer opens. */
 @media (min-width: 768px) {
-    #fc-control-modal .fencing-modal-area--post-finish > .fencing-modal-header {
-        background-color: var(--fc-cultured);
-    }
-
     #fc-control-modal .fc-post-finish-toolbar {
         position: sticky;
         top: var(--fc-post-finish-head-h, 49px);
@@ -17106,7 +18129,6 @@ input[type="number"] {
     border-color: var(--fc-princeton-orange);
     background: var(--fc-princeton-orange);
     color: var(--fc-white);
-    box-shadow: 0 0 0 3px var(--fc-a-orange-22);
 }
 
 #fc-control-modal .fc-post-finish-tab--active .fc-post-finish-tab__label {
@@ -17115,7 +18137,7 @@ input[type="number"] {
 
 /* On the orange card a white ring keeps the sample clear of it. */
 #fc-control-modal .fc-post-finish-tab--active .fc-post-finish-tab__thumb {
-    box-shadow: 0 0 0 2px var(--fc-white), 0 2px 6px var(--fc-a-black-28);
+    box-shadow: 0 0 0 2px var(--fc-white);
     opacity: 1;
     transform: none;
 }
@@ -17165,29 +18187,84 @@ input[type="number"] {
     color: var(--fc-dim-gray);
 }
 
-/* About 3 across on phones and 5-6 in the drawer; the padding leaves room for the hover lift and the glow. */
+/* About 3 across on phones and 5-6 in the drawer, ruled like Fence Colour's grid: it bleeds over the card's side padding (16px,
+   10px from 768px) so the lines meet its edges, columns ruled full height so a short last row still reads as even cells. */
 #fc-control-modal .fc-post-finish-grid {
+    --fc-post-finish-cell: 12px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px 10px;
-    padding: 5px 3px;
+    gap: 0;
+    margin: 0 -16px;
+    padding: 0;
+    border-top: 1px solid var(--fc-gainsboro);
+    border-bottom: 1px solid var(--fc-gainsboro);
+    background:
+        linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 33.333% 0 / 1px 100%,
+        linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 66.667% 0 / 1px 100%;
 }
 
 @media (min-width: 480px) {
     #fc-control-modal .fc-post-finish-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 25% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 50% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 75% 0 / 1px 100%;
     }
 }
 
 @media (min-width: 768px) {
     #fc-control-modal .fc-post-finish-grid {
+        --fc-post-finish-cell: 10px;
         grid-template-columns: repeat(5, minmax(0, 1fr));
+        margin: 0 -10px;
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 20% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 40% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 60% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 80% 0 / 1px 100%;
     }
 }
 
 @media (min-width: 993px) {
     #fc-control-modal .fc-post-finish-grid {
         grid-template-columns: repeat(6, minmax(0, 1fr));
+        background:
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 16.667% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 33.333% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 50% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 66.667% 0 / 1px 100%,
+            linear-gradient(var(--fc-gainsboro), var(--fc-gainsboro)) no-repeat 83.333% 0 / 1px 100%;
+    }
+}
+
+/* A line under every row but the last, which the grid's own bottom border closes: the last row starts at the item that is
+   1 mod N among the final N, so each column count gets its own pair. */
+@media (max-width: 479.98px) {
+    #fc-control-modal .fc-post-finish-tile:nth-child(3n + 1):nth-last-child(-n + 3),
+    #fc-control-modal .fc-post-finish-tile:nth-child(3n + 1):nth-last-child(-n + 3) ~ .fc-post-finish-tile {
+        border-bottom-color: transparent;
+    }
+}
+
+@media (min-width: 480px) and (max-width: 767.98px) {
+    #fc-control-modal .fc-post-finish-tile:nth-child(4n + 1):nth-last-child(-n + 4),
+    #fc-control-modal .fc-post-finish-tile:nth-child(4n + 1):nth-last-child(-n + 4) ~ .fc-post-finish-tile {
+        border-bottom-color: transparent;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 992.98px) {
+    #fc-control-modal .fc-post-finish-tile:nth-child(5n + 1):nth-last-child(-n + 5),
+    #fc-control-modal .fc-post-finish-tile:nth-child(5n + 1):nth-last-child(-n + 5) ~ .fc-post-finish-tile {
+        border-bottom-color: transparent;
+    }
+}
+
+@media (min-width: 993px) {
+    #fc-control-modal .fc-post-finish-tile:nth-child(6n + 1):nth-last-child(-n + 6),
+    #fc-control-modal .fc-post-finish-tile:nth-child(6n + 1):nth-last-child(-n + 6) ~ .fc-post-finish-tile {
+        border-bottom-color: transparent;
     }
 }
 
@@ -17197,8 +18274,10 @@ input[type="number"] {
     flex-direction: column;
     gap: 5px;
     width: 100%;
-    padding: 0;
+    padding: var(--fc-post-finish-cell);
     border: 0;
+    border-bottom: 1px solid var(--fc-gainsboro);
+    border-radius: 0;
     background: none;
     color: var(--fc-dark-charcoal);
     text-align: center;
@@ -17236,8 +18315,8 @@ input[type="number"] {
 #fc-control-modal .fc-post-finish-tile::after {
     content: "";
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: calc(var(--fc-post-finish-cell) + 6px);
+    right: calc(var(--fc-post-finish-cell) + 6px);
     width: 20px;
     height: 20px;
     box-sizing: border-box;
@@ -17257,7 +18336,6 @@ input[type="number"] {
 
 #fc-control-modal .fc-post-finish-tile.fc-selected .fc-post-finish-tile__swatch {
     border-color: var(--fc-princeton-orange);
-    box-shadow: 0 0 0 3px var(--fc-a-orange-22);
 }
 
 @media (hover: hover) {
@@ -17310,7 +18388,6 @@ input[type="number"] {
 
 #fc-control-modal .fc-post-finish-none.fc-selected {
     border: 1px solid var(--fc-princeton-orange);
-    box-shadow: 0 0 0 3px var(--fc-a-orange-22);
     color: var(--fc-princeton-orange);
 }
 
@@ -17768,6 +18845,32 @@ div.fc-footer-app .app-version {
     outline-offset: 1px;
 }
 
+/* Full screen after Reset, set apart by a rule; its expand and collapse icons swap with aria-pressed. */
+.fc-planner-page .fc-zoom-bar__sep {
+    align-self: stretch;
+    width: 1px;
+    margin: 4px 2px;
+    background: var(--fc-gainsboro);
+}
+
+.fc-planner-page .fc-zoom-bar__btn--fullscreen {
+    width: 28px;
+    padding: 0;
+}
+
+.fc-planner-page .fc-zoom-bar__btn--fullscreen .fc-zoom-bar__icon {
+    stroke-linejoin: round;
+}
+
+.fc-planner-page .fc-zoom-bar__btn--fullscreen .fc-zoom-bar__icon--exit,
+.fc-planner-page .fc-zoom-bar__btn--fullscreen[aria-pressed="true"] .fc-zoom-bar__icon--enter {
+    display: none;
+}
+
+.fc-planner-page .fc-zoom-bar__btn--fullscreen[aria-pressed="true"] .fc-zoom-bar__icon--exit {
+    display: block;
+}
+
 /* Touch: the mockup's 36px phone targets. */
 @media (pointer: coarse) {
     .fc-planner-page .fc-zoom-bar__btn,
@@ -17779,7 +18882,8 @@ div.fc-footer-app .app-version {
         min-width: 40px;
     }
 
-    .fc-planner-page .fc-zoom-bar__btn.fc-zoom-fence {
+    .fc-planner-page .fc-zoom-bar__btn.fc-zoom-fence,
+    .fc-planner-page .fc-zoom-bar__btn--fullscreen {
         width: 40px;
     }
 }
@@ -17822,7 +18926,8 @@ div.fc-footer-app .app-version {
         padding: 0 6px;
     }
 
-    .fc-planner-page .fc-zoom-bar__btn.fc-zoom-fence {
+    .fc-planner-page .fc-zoom-bar__btn.fc-zoom-fence,
+    .fc-planner-page .fc-zoom-bar__btn--fullscreen {
         width: 28px;
         padding: 0;
     }
@@ -17836,6 +18941,52 @@ div.fc-footer-app .app-version {
         width: 14px;
         height: 14px;
     }
+
+    .fc-planner-page .fc-zoom-bar__sep {
+        margin: 4px 1px;
+    }
+}
+
+/* Step 3 full screen (shared/step3-fullscreen.js): the step fills the window at 1044, over the page and chat launcher
+   (1043) but under the option drawer (1045), Bootstrap modals and toasts, so all it opens still shows. */
+html.fc-step3-fullscreen,
+html.fc-step3-fullscreen body {
+    overflow: hidden;
+}
+
+/* Outranks the planner's reserved scrollbar gutter (html:has(body.fc-planner-page)), which left a strip of page beside the step. */
+html.fc-step3-fullscreen:has(body.fc-planner-page) {
+    overflow: hidden;
+    scrollbar-gutter: auto;
+}
+
+html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] {
+    position: fixed;
+    inset: 0;
+    z-index: 1044;
+    display: flex !important; /* beats fadeIn's inline display:block; the script leaves full screen when the step hides */
+    flex-direction: column;
+    margin: 0;
+    border-width: 0;
+    border-radius: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] > .fencing-section__top {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+}
+
+/* The drawing takes the spare height, centred between the title row and the option buttons. stretch replaces the base
+   rule's align-items: center, which sized the scroll strip to the whole run instead of the screen. */
+html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
 }
 
 /* Section context bar stays one line on mobile: nowrap, with overflow-x so a long fence name scrolls rather than wrapping. */
@@ -18054,23 +19205,6 @@ div.fc-footer-app .app-version {
     .fc-planner-page [data-section="2"] .fc-step2-notes__body,
     .fc-planner-page [data-section="2"] .fc-step2-notes__header {
         display: none;
-    }
-}
-
-
-/* Gate ONLY row on mobile: flex centring replaces the asymmetric padding, and the radio marker drops its fixed top: 8px. */
-@media (max-width: 767.98px) {
-    .fc-planner-page [data-section="2"] .fc-step2-gate-only .fc-select-2 {
-        display: flex;
-        align-items: center;
-        min-height: 44px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    .fc-planner-page [data-section="2"] .fc-step2-gate-only .fc-select-2::after {
-        top: 50%;
-        transform: translateY(-50%);
     }
 }
 
@@ -19126,15 +20260,15 @@ div.fc-footer-app .app-version {
     top: max(-28px, calc(100% - 148px));
 }
 
-/* Centred on the latch post (8px, 1px off the gate); the box reaches 4px into the stile for the striker's mounting plate. */
+/* Centred on the latch post (7px, 3px off the gate); the box reaches 4px into the stile for the striker's mounting plate. */
 .fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--left .fc-gate-hw__latch,
 .fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--left .fc-gate-hw__latch {
-    right: -11px;
+    right: -10px;
 }
 
 .fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--right .fc-gate-hw__latch,
 .fc-project-plan-page #fc-fence-list .fc-result > .fc-pdim:not(.fc-pdim--off) + .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__leaf--right .fc-gate-hw__latch {
-    left: -11px;
+    left: -10px;
 }
 
 .fc-planner-page .fencing-display-result .fc-project-plan-hscroll .fencing-panel-container:is([data-type="flat_top"], [data-type="barr"], [data-type="perforated_pool"]):has(.fc-gate-hw__leaf:only-child) .fc-gate-hw__latch::before,
@@ -19158,70 +20292,81 @@ div.fc-footer-app .app-version {
 
 /* ===== Slat gate latch and handle ===== */
 
-/* Slat is not a pool gate, and its catalogue says so: slat_gate+latch_deluxe is a D&D LokkLatch
-   Deluxe - a hand-height two-part lockable latch, body on the stile and striker through the post -
-   with slat_gate+handle as a separate pull. The MagnaLatch rod the other group-b styles carry does
-   not apply here, so the shared parts are re-cut rather than reused. */
+/* slat_gate+latch_deluxe is a D&D LokkLatch Deluxe: per D&D's instructions the latch body goes on the latch post (push rod
+   through it), the striker on the gate stile, slat_gate+handle (LL3GH) inboard of it. Drawn for a leaf--left gate; leaf--right mirrors it. */
 .fencing-panel-container[data-type="slat"] .fc-gate-hw__latch,
 .fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__latch {
-    top: calc(46% - 8px);
-    width: 7px;
-    height: 16px;
-    border-radius: 1px;
-    background: linear-gradient(
-        to right,
-        var(--hw-shade) 0 1px,
-        var(--hw-lit) 1px 2px,
-        var(--hw-body) 2px 100%
-    );
-    box-shadow: 0 0 0 1px var(--hw-edge), 1px 1px 1px rgba(0, 0, 0, 0.35);
+    /* Hand height, not a share of the gate: centre ~1050mm above the ground, 16px under the leaf foot. */
+    top: max(4px, calc(100% - 98px));
+    width: 20px;
+    height: 17px;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
 }
 
-/* Key cylinder over the thumb lever - it locks from both faces. */
+.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) .fc-gate-hw__leaf--left .fc-gate-hw__latch {
+    right: -9px;
+}
+
+.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) .fc-gate-hw__leaf--right .fc-gate-hw__latch {
+    left: -9px;
+}
+
+/* Latch body on the post face, its catch arm reaching over the gap at the top and the key cylinder low on the body. */
 .fencing-panel-container[data-type="slat"] .fc-gate-hw__latch::before,
 .fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__latch::before {
     content: "";
     position: absolute;
-    top: 3px;
-    left: 2px;
-    right: 1px;
-    /* left+right+width is over-constrained so `right` is inert; pinned because the narrower
-       base head would otherwise drag the slat cylinder down to 6px. */
-    width: 7px;
-    height: 10px;
-    border-radius: 0;
-    box-shadow: none;
+    top: 1px;
+    left: 14px;
+    right: auto;
+    width: 6px;
+    height: 14px;
+    border-radius: 1px;
     background:
-        radial-gradient(circle at 50% 50%, var(--hw-pin) 0 1.1px, transparent 1.3px)
-            no-repeat 50% 2px / 3px 3px,
-        linear-gradient(to bottom, transparent 0 6px, var(--hw-lit) 6px 9px, transparent 9px);
+        radial-gradient(circle at 50% 50%, var(--hw-pin) 0 1.1px, transparent 1.3px) no-repeat 1.5px 9px / 3px 3px,
+        linear-gradient(to right, var(--hw-shade) 0 1px, var(--hw-lit) 1px 2px, var(--hw-body) 2px 100%);
+    box-shadow: 0 0 0 1px var(--hw-edge), 1px 1px 1px rgba(0, 0, 0, 0.35);
 }
 
-/* slat_gate+handle: the pull, standing off the leaf inboard of the latch. */
+/* LL3GH pull handle: a D-grip standing off the leaf on two feet. */
 .fencing-panel-container[data-type="slat"] .fc-gate-hw__latch::after,
 .fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__latch::after {
     content: "";
     position: absolute;
-    top: 1px;
-    left: 9px;
-    width: 4px;
-    height: 14px;
+    top: 0;
+    left: 1px;
+    width: 3px;
+    height: 17px;
     border-radius: 1px 2px 2px 1px;
     background:
-        linear-gradient(to right, transparent 0 1px, var(--hw-body) 1px 100%) no-repeat 0 3px / 100% 8px,
+        linear-gradient(to bottom, var(--hw-lit) 0 2px, transparent 2px calc(100% - 2px), var(--hw-lit) calc(100% - 2px)),
         linear-gradient(to right, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%);
     box-shadow: 0 0 0 1px var(--hw-edge);
 }
 
-/* Striker body, bolted through the post opposite the latch. */
+/* Striker on the gate stile, level with the catch arm, which the body's top reaches across the gap to. */
 .fencing-panel-container[data-type="slat"] .fc-gate-hw__keeper,
 .fencing-panel-container[data-type="slat_fence_infill"] .fc-gate-hw__keeper {
-    top: 2px;
+    top: 1px;
     bottom: auto;
-    left: 13px;
-    width: 7px;
-    height: 12px;
+    left: 8px;
+    width: 5px;
+    height: 7px;
     border-radius: 1px;
-    background: linear-gradient(to right, var(--hw-shade) 0 1px, var(--hw-lit) 1px 2px, var(--hw-body) 2px 100%);
-    box-shadow: 0 0 0 1px var(--hw-edge);
+    background:
+        linear-gradient(var(--hw-body), var(--hw-body)) no-repeat 3px 1px / 2px 4px,
+        linear-gradient(to right, var(--hw-lit) 0 1px, var(--hw-body) 1px 100%) no-repeat 0 0 / 3px 100%;
+    box-shadow: none;
+}
+
+/* A double gate has one latch where the leaves meet: the body on one leaf's stile, the striker on the other's. */
+.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) .fc-gate-hw__leaf--left + .fc-gate-hw__leaf--right .fc-gate-hw__latch {
+    display: none;
+}
+
+/* That latch is on the centre line at hand height, where the centred gate label sat; the label drops to the foot. */
+.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) .fencing-panel-gate:has(> .double-gate) > .fencing-panel-item-size {
+    align-self: flex-end;
 }

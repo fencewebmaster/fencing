@@ -53,6 +53,8 @@
                 </div>
             </div>
 
+            <div class="fencing-styles__row">
+            <div class="fencing-styles__carousel">
             <div class="js-fencing-styles-slick">
 
             <?php foreach( $fences as $fence ): ?>
@@ -107,10 +109,13 @@
 
                 </div>
             </div>
-            <?php endforeach; ?>    
+            <?php endforeach; ?>
 
+            </div>
+            </div>
 
-            <div class="load-quote fencing-styles-slide" data-bs-toggle="modal" data-bs-target="#load-quote">
+            <?php /* Outside the carousel so it stays put on the right while the styles slide; phones use the button below. */ ?>
+            <div class="load-quote fencing-styles-load-quote" data-bs-toggle="modal" data-bs-target="#load-quote">
                 <div>
 
                     <div class="fencing-style-img">

@@ -8,7 +8,7 @@
 
     var API_BRANDING = global.fcApiUrl('settings', 'action=branding');
     var TOAST_BRANDING = 'fc-branding-save';
-    var BRANDING_FIELD_ORDER = ['logo', 'appName', 'tagline', 'version'];
+    var BRANDING_FIELD_ORDER = ['logo', 'appName', 'tagline'];
 
     class BrandingTabController extends global.FC.Settings.TabController {
         setDirty(isDirty) {
@@ -85,7 +85,8 @@
 
             var appName = state.branding.appName || 'Fencing Calculator';
             var tagline = state.branding.tagline || '';
-            var version = state.branding.version || '';
+            // Not a branding field: the newest published release in Releases.
+            var version = state.appVersion || '';
 
             if (titleEl) {
                 titleEl.textContent = appName;
@@ -136,7 +137,7 @@
                 '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Footer</p>' +
                 '<p id="fc-branding-preview-footer" class="truncate text-xs text-slate-500">' +
                 '<span id="fc-branding-preview-footer-name">Fencing Calculator</span> ' +
-                '<span id="fc-branding-preview-version">v10.0.0 beta</span>' +
+                '<span id="fc-branding-preview-version"></span>' +
                 '</p></div>' +
                 '<p class="text-xs text-slate-500">Saved branding applies on the <a class="font-medium text-indigo-600 hover:text-indigo-700" href="../planner" target="_blank" rel="noopener">planner</a> after save (refresh if already open).</p>' +
                 '</div>' +

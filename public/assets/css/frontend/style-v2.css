@@ -347,29 +347,18 @@
     bottom: -5px;
 }
 
+/* Room under the foot for the footing style.css draws there (--fc-foot-depth) and the figure below it. */
 [data-group="b"] .panel-post:not(.panel-no-post).opt-2 {
-    margin-bottom: 25px;
+    margin-bottom: calc(var(--fc-foot-depth) + 19px);
 }
 
-/* Slat: Cement In (opt-2) and Core Drilled (opt-4) draw the post sitting on the surface, the same
-   way Base Plated (opt-1) does - the surface line sits at the foot of the post and the spacing
-   number goes back to opt-1's position. Only the line's colour still tells them apart: it keeps the
-   light gray it already had, where opt-1's runs in currentColor. Post height is not set here - for
-   Slat that comes from --fc-slat-post-height-px (an !important rule in style.css), so the matching
-   trim is applied beside it in slat_fence.js. Slat only, so the other tubular styles keep the
-   buried post the rules in style.css draw for them. */
+/* Slat: Cement In (opt-2) and Core Drilled (opt-4) keep Base Plated's post length (slat_fence.js trims
+   them to match), so their ground line is at the foot and the spacing number sits where opt-1's does. */
 .fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2,
 .fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2-1,
 .fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4,
 .fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4-1 {
-    margin-bottom: 30px;
-}
-
-.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2:after,
-.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-2-1:after,
-.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4:after,
-.fencing-panel-container[data-type="slat"] .panel-post:not(.panel-no-post).opt-4-1:after {
-    bottom: -2px;
+    margin-bottom: calc(var(--fc-foot-depth) + 24px);
 }
 
 .fencing-panel-container[data-type="slat"] .fencing-panel-spacing-number.opt-2 span,

@@ -315,6 +315,119 @@ SlatFenceCalc = {
         return null;
     },
 
+    // One 20kg bag of grout fills about 11 core-drilled holes (100mm cores, 15% waste).
+    postsPerGroutBag: 11,
+
+    // 135° adapters are sold in 6000mm lengths and cut into one side-frame-height piece per 135° turn.
+    adapterStockLengthMm: 6000,
+
+    // Corner value of a section end that meets another section or a wall at 135° (4-SLAT.php post_angle).
+    slatTurnSlug: 'turn-135',
+
+    /** Section ends ('left' / 'right') whose Corner is the 135° turn. */
+    slatEndTurnSides: function(controls) {
+        var turnSlug = this.slatTurnSlug;
+        return ['left', 'right'].filter(function(side) {
+            var row = (controls || []).find(function(item) {
+                return item && item.control_key === side + '_side';
+            });
+            var angle = (Array.isArray(row?.settings) ? row.settings : []).find(function(item) {
+                return item && item.key === 'post_angle';
+            });
+            return !!angle && angle.val === turnSlug;
+        });
+    },
+
+    /** 135° turns in a section: ends set to the turn, plus "135 Degree Angle" posts from older fence files and quotes. */
+    slatTurnCount: function(controls, cart) {
+        return this.slatEndTurnSides(controls).length + (this.aggregatePostOptQtyFromCart(cart, null).byOpt[5] || 0);
+    },
+
+    /** Adapter pieces one stock length gives at a fence height (mm). */
+    slat135AdapterPiecesPerLength: function(heightMm) {
+        var h = parseInt(heightMm, 10);
+        if (!Number.isFinite(h) || h <= 0) {
+            h = 1800;
+        }
+        return Math.max(1, Math.floor(this.adapterStockLengthMm / h));
+    },
+
+    /** A section's saved style and Fence Height from `custom_fence-{i}`, never the DOM. */
+    slatSectionStyleAndHeightFromStorage: function(sectionIndex) {
+        var out = { style: '', heightMm: NaN };
+        var row = null;
+        try {
+            var raw = localStorage.getItem('custom_fence-' + sectionIndex);
+            var parsed = raw ? JSON.parse(raw) : null;
+            row = parsed && parsed[0] ? parsed[0] : null;
+        } catch (e) {}
+        if (!row) return out;
+        var rawStyle = row.fence || row.style || '';
+        out.style =
+            typeof normalizeFenceStyleSlug === 'function' ? normalizeFenceStyleSlug(rawStyle) : String(rawStyle);
+        if (typeof fcReadTabRowStep2Field === 'function') {
+            out.heightMm = parseInt(
+                String(fcReadTabRowStep2Field(row, out.style, 'max_fence_height') || '').replace(/,/g, ''),
+                10
+            );
+        }
+        return out;
+    },
+
+    /**
+     * Core-drilled posts and 135° turns (by adapter pieces per length) in the earlier Slat sections' saved carts and
+     * Corner settings, or null while one of those carts is missing.
+     */
+    earlierSlatPostOptionTotals: function(sectionIndex) {
+        var totals = { coreDrilled: 0, turnsByPieces: {} };
+        for (var i = 0; i < sectionIndex; i++) {
+            var s = this.slatSectionStyleAndHeightFromStorage(i);
+            if (s.style !== 'slat') continue;
+            var cart = null;
+            try {
+                cart = JSON.parse(localStorage.getItem('cart_items-' + i + '-slat'));
+            } catch (e) {}
+            if (!Array.isArray(cart)) return null;
+            var controls = typeof readCustomFenceSegment === 'function' ? readCustomFenceSegment(i, 'slat') : [];
+            totals.coreDrilled += this.aggregatePostOptQtyFromCart(cart, null).byOpt[4];
+            var turns = this.slatTurnCount(controls, cart);
+            if (turns > 0) {
+                var pieces = this.slat135AdapterPiecesPerLength(s.heightMm);
+                totals.turnsByPieces[pieces] = (totals.turnsByPieces[pieces] || 0) + turns;
+            }
+        }
+        return totals;
+    },
+
+    /**
+     * This section's grout bags and 135° adapter lengths: its rise in the job's running totals, so the sections sum to
+     * one rounding per job. Adapters pool only with sections whose height cuts the same number of pieces per length.
+     */
+    pooledSlatPostOptionLinesForSection: function(sectionIndex, coreDrilledPosts, turns, fallbackHeightMm) {
+        // Carts rebuild in section order before submit; until then a missing earlier cart counts this section alone.
+        var before = Number.isFinite(sectionIndex) ? this.earlierSlatPostOptionTotals(sectionIndex) : null;
+        if (!before) {
+            before = { coreDrilled: 0, turnsByPieces: {} };
+        }
+        var heightMm = Number.isFinite(sectionIndex)
+            ? this.slatSectionStyleAndHeightFromStorage(sectionIndex).heightMm
+            : NaN;
+        if (!Number.isFinite(heightMm) || heightMm <= 0) {
+            heightMm = fallbackHeightMm;
+        }
+        var perBag = this.postsPerGroutBag;
+        var pieces = this.slat135AdapterPiecesPerLength(heightMm);
+        var beforeTurns = before.turnsByPieces[pieces] || 0;
+        return {
+            grout: coreDrilledPosts > 0
+                ? Math.ceil((before.coreDrilled + coreDrilledPosts) / perBag) - Math.ceil(before.coreDrilled / perBag)
+                : 0,
+            adapters: turns > 0
+                ? Math.ceil((beforeTurns + turns) / pieces) - Math.ceil(beforeTurns / pieces)
+                : 0
+        };
+    },
+
     /** Panel / bottom-gap math (Slat Planner V6): 3 mm top + 3 mm bottom in panel height. */
     getSlatPanelEndAllowanceMm: function(fenceSlug) {
         return this.getSlatConfigNumber(fenceSlug, 'panel_end_allowance_mm', 6);

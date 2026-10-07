@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fc\Admin\Presenters;
 
+use Fc\Admin\Services\AppVersionService;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Settings\BrandingSettings;
 
@@ -37,7 +38,7 @@ final class AuthPresenter
             'app_base' => $appBase,
             'app_name' => $appName,
             'tagline' => $tagline,
-            'version' => (string) ($branding['version'] ?? ''),
+            'version' => AppVersionService::label(),
             'logo_url' => BrandingSettings::logoUrl($appBase, $branding),
             'csrf' => AuthService::csrfToken(),
             'redirect' => $redirect,

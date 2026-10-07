@@ -11,10 +11,17 @@ writable/.wc-products-*-job.json
 writable/.wc-products-*.lock
 writable/wc-products-*
 writable/products*
-writable/missing-products*.csv
+writable/missing-products*
 writable/groups-permissions/*.json
 writable/theme.json
 writable/fences/*.php
+# Writers stage a temp file beside the target and rename it in; an interrupted save or CSV import leaves it behind.
+writable/theme.json.tmp.*
+writable/groups-permissions/*.json.tmp.*
+writable/.products-import-*.csv
+writable/.wc-products-*-import-*.csv
+# Version Manager data is per site, like theme.json: a tracked copy would block the Dev Console's git pull.
+writable/versions.csv*
 tests/*
 
 # Generated storage (keep directory placeholders)

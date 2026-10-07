@@ -1,0 +1,492 @@
+/* ===== Public version history (/versions) — frontend/versions/index.php ===== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body.fc-vh {
+    margin: 0;
+    background: #f6f7f9;
+    color: var(--fc-dark-charcoal, #333333);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+.fc-vh-shell {
+    width: min(60rem, calc(100% - 2rem));
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* ----- Header ----- */
+.fc-vh-header {
+    border-bottom: 1px solid #e5e7eb;
+    background: var(--fc-white, #ffffff);
+}
+
+.fc-vh-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 4rem;
+}
+
+.fc-vh-brand {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    color: var(--fc-deep-blue, #143052);
+    text-decoration: none;
+}
+
+.fc-vh-brand__logo {
+    display: block;
+    max-width: 11rem;
+    max-height: 2.5rem;
+}
+
+.fc-vh-brand__name {
+    font-family: Poppins, Inter, system-ui, sans-serif;
+    font-size: 1.0625rem;
+    font-weight: 700;
+}
+
+.fc-vh-header__link {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    color: var(--fc-deep-blue, #143052);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.fc-vh-header__link:hover,
+.fc-vh-header__link:focus-visible {
+    border-color: var(--fc-princeton-orange, #f67925);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+/* ----- Intro and filters ----- */
+.fc-vh-main {
+    padding: 2.75rem 0 3.5rem;
+}
+
+.fc-vh-intro__eyebrow {
+    margin: 0 0 0.35rem;
+    color: var(--fc-princeton-orange, #f67925);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.fc-vh-intro__title {
+    margin: 0;
+    color: var(--fc-deep-blue, #143052);
+    font-family: Poppins, Inter, system-ui, sans-serif;
+    font-size: clamp(1.75rem, 4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.fc-vh-intro__text {
+    margin: 0.5rem 0 0;
+    color: #6b7280;
+}
+
+.fc-vh-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.75rem;
+}
+
+.fc-vh-filters__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    background: var(--fc-white, #ffffff);
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.fc-vh-filters__item:hover {
+    border-color: #9ca3af;
+}
+
+.fc-vh-filters__item[aria-current="page"] {
+    border-color: var(--fc-princeton-orange, #f67925);
+    background: rgba(246, 121, 37, 0.08);
+    color: #9a3412;
+    font-weight: 600;
+}
+
+.fc-vh-filters__count {
+    min-width: 1.4rem;
+    padding: 0 0.35rem;
+    border-radius: 3px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+/* ----- Timeline ----- */
+.fc-vh-timeline {
+    margin: 2.25rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fc-vh-release {
+    position: relative;
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 0 2.25rem;
+    padding-bottom: 1.75rem;
+    scroll-margin-top: 1.5rem;
+}
+
+/* The line runs down the gap between the date and the card; the last release ends it. */
+.fc-vh-release::before {
+    content: "";
+    position: absolute;
+    top: 0.6rem;
+    bottom: -0.6rem;
+    left: calc(9rem + 1.125rem - 1px);
+    width: 2px;
+    background: #e3e6ea;
+}
+
+.fc-vh-release:last-child::before {
+    display: none;
+}
+
+.fc-vh-release::after {
+    content: "";
+    position: absolute;
+    top: 0.35rem;
+    left: calc(9rem + 1.125rem - 7px);
+    width: 14px;
+    height: 14px;
+    border: 3px solid var(--fc-princeton-orange, #f67925);
+    border-radius: 50%;
+    background: var(--fc-white, #ffffff);
+}
+
+.fc-vh-release__when {
+    padding-top: 0.15rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.fc-vh-release__card {
+    min-width: 0;
+    padding: 1.25rem 1.5rem 1.35rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 3px;
+    background: var(--fc-white, #ffffff);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.fc-vh-release:target .fc-vh-release__card {
+    border-color: var(--fc-princeton-orange, #f67925);
+    box-shadow: 0 0 0 3px rgba(246, 121, 37, 0.15);
+}
+
+.fc-vh-release__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+}
+
+.fc-vh-release__version {
+    margin: 0;
+    color: var(--fc-deep-blue, #143052);
+    font-family: Poppins, Inter, system-ui, sans-serif;
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.fc-vh-release__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.fc-vh-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.fc-vh-tag--full {
+    border-color: rgba(20, 48, 82, 0.2);
+    background: rgba(20, 48, 82, 0.07);
+    color: var(--fc-deep-blue, #143052);
+}
+
+.fc-vh-tag--frontend {
+    border-color: rgba(246, 121, 37, 0.3);
+    background: rgba(246, 121, 37, 0.09);
+    color: #9a3412;
+}
+
+.fc-vh-tag--backend {
+    border-color: rgba(13, 148, 136, 0.3);
+    background: rgba(13, 148, 136, 0.09);
+    color: #0f766e;
+}
+
+.fc-vh-tag--level {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.fc-vh-tag--latest {
+    background: var(--fc-princeton-orange, #f67925);
+    color: var(--fc-white, #ffffff);
+}
+
+/* ----- Release notes (sanitized HTML); the admin's View dialog styles its copy in admin/versions.css ----- */
+.fc-vh-notes {
+    margin-top: 0.85rem;
+    color: #374151;
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+}
+
+.fc-vh-notes > :first-child {
+    margin-top: 0;
+}
+
+.fc-vh-notes > :last-child {
+    margin-bottom: 0;
+}
+
+.fc-vh-notes h2,
+.fc-vh-notes h3,
+.fc-vh-notes h4 {
+    margin: 1.25em 0 0.45em;
+    color: var(--fc-deep-blue, #143052);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.fc-vh-notes h2 {
+    font-size: 1.125rem;
+}
+
+.fc-vh-notes h3 {
+    font-size: 1rem;
+}
+
+.fc-vh-notes h4 {
+    font-size: 0.9375rem;
+}
+
+.fc-vh-notes p,
+.fc-vh-notes ul,
+.fc-vh-notes ol,
+.fc-vh-notes blockquote,
+.fc-vh-notes pre,
+.fc-vh-notes table {
+    margin: 0 0 0.9em;
+}
+
+.fc-vh-notes ul,
+.fc-vh-notes ol {
+    padding-left: 1.35rem;
+}
+
+.fc-vh-notes li + li {
+    margin-top: 0.25em;
+}
+
+/* A list inside a bullet is that bullet's detail: it sits close under it, not a paragraph away. */
+.fc-vh-notes li > ul,
+.fc-vh-notes li > ol {
+    margin: 0.25em 0 0.4em;
+}
+
+.fc-vh-notes li::marker {
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-vh-notes a {
+    color: var(--fc-allports, #0a6593);
+    text-underline-offset: 2px;
+}
+
+.fc-vh-notes code {
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    background: #f3f4f6;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em;
+}
+
+.fc-vh-notes pre {
+    max-width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 3px;
+    background: #f8fafc;
+    overflow-x: auto;
+}
+
+.fc-vh-notes pre code {
+    padding: 0;
+    background: none;
+    font-size: 0.8125rem;
+}
+
+.fc-vh-notes blockquote {
+    padding: 0.1rem 0 0.1rem 0.9rem;
+    border-left: 3px solid var(--fc-princeton-orange, #f67925);
+    color: #6b7280;
+}
+
+/* Block so a wide table scrolls inside the card instead of widening the page. */
+.fc-vh-notes table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-spacing: 0;
+    font-size: 0.875rem;
+}
+
+.fc-vh-notes th,
+.fc-vh-notes td {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    vertical-align: top;
+}
+
+.fc-vh-notes th {
+    color: var(--fc-deep-blue, #143052);
+    font-weight: 600;
+}
+
+.fc-vh-notes hr {
+    margin: 1.25em 0;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ----- Show older, empty state, footer ----- */
+.fc-vh-more {
+    margin: 0.5rem 0 0;
+    padding-left: calc(9rem + 2.25rem);
+}
+
+.fc-vh-more__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    background: var(--fc-white, #ffffff);
+    color: var(--fc-deep-blue, #143052);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.fc-vh-more__link:hover,
+.fc-vh-more__link:focus-visible {
+    border-color: var(--fc-princeton-orange, #f67925);
+    color: var(--fc-princeton-orange, #f67925);
+}
+
+.fc-vh-empty {
+    margin-top: 2.25rem;
+    padding: 2.5rem 1.5rem;
+    border: 1px dashed #d1d5db;
+    border-radius: 3px;
+    background: var(--fc-white, #ffffff);
+    text-align: center;
+}
+
+.fc-vh-empty__title {
+    margin: 0;
+    color: var(--fc-deep-blue, #143052);
+    font-weight: 700;
+}
+
+.fc-vh-empty__text {
+    margin: 0.35rem 0 0;
+    color: #6b7280;
+    font-size: 0.9375rem;
+}
+
+.fc-vh-footer {
+    padding: 1.5rem 0 2rem;
+    border-top: 1px solid #e5e7eb;
+    color: #9ca3af;
+    font-size: 0.8125rem;
+}
+
+a:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange, #f67925);
+    outline-offset: 2px;
+}
+
+/* ----- Phones: the date sits above each card and the line moves to the left edge ----- */
+@media (max-width: 640px) {
+    .fc-vh-main {
+        padding-top: 2rem;
+    }
+
+    .fc-vh-release {
+        grid-template-columns: minmax(0, 1fr);
+        padding-left: 1.5rem;
+    }
+
+    .fc-vh-release::before {
+        left: 6px;
+    }
+
+    .fc-vh-release::after {
+        left: 0;
+    }
+
+    .fc-vh-release__when {
+        margin-bottom: 0.4rem;
+        text-align: left;
+    }
+
+    .fc-vh-release__card {
+        padding: 1rem 1.1rem 1.1rem;
+    }
+
+    .fc-vh-more {
+        padding-left: 1.5rem;
+    }
+}

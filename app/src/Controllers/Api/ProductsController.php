@@ -37,6 +37,10 @@ final class ProductsController extends BaseApiController
                 $this->importStoreProductsCsv();
                 return;
             }
+            if ($action === 'merge-store-products-csv') {
+                $this->mergeStoreProductsCsv();
+                return;
+            }
 
             $payload = $this->request->jsonBody();
 
@@ -519,6 +523,64 @@ final class ProductsController extends BaseApiController
             'file' => $filename,
             'total' => $rowCount,
         ], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * System Products "Add / Update Rows": the same upload runs twice, once as `mode=preview` for
+     * the dialog's counts and list, then as `mode=apply` from the same File object — so nothing
+     * is parked on the server between the two, and the apply plans against the file as it is then.
+     */
+    private function mergeStoreProductsCsv(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Past post_max_size PHP drops $_POST and $_FILES, so the request would fail the CSRF check
+        // and the user would be told to refresh instead of being told the file is too big.
+        $postMax = ini_parse_quantity((string) ini_get('post_max_size'));
+        if ($postMax > 0 && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > $postMax) {
+            http_response_code(413);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'The file is larger than this server accepts (' . round($postMax / 1048576) . ' MB).',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $csrf = (string) $this->request->post('csrf', '');
+        if (!AuthService::verifyCsrf($csrf)) {
+            http_response_code(403);
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Invalid security token. Refresh and try again.',
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $file = is_array($_FILES['file'] ?? null) ? $_FILES['file'] : [];
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        $size = (int) ($file['size'] ?? 0);
+        $extension = strtolower((string) pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+        $error = match (true) {
+            $file === [] => 'Choose a CSV file to add or update rows from.',
+            (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK => 'Upload failed. Please try again.',
+            $tmp === '' || !is_uploaded_file($tmp) || !is_readable($tmp) => 'Uploaded file is not readable.',
+            $size <= 0 || $size > 50 * 1024 * 1024 => 'CSV must be between 1 byte and 50MB.',
+            $extension !== 'csv' => 'Only .csv files can be added.',
+            default => '',
+        };
+        if ($error !== '') {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => $error], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $apply = (string) $this->request->post('mode', 'preview') === 'apply';
+        $result = StoreProductMaintenanceService::mergeCsv($tmp, $apply);
+        if (!$result['ok']) {
+            // A bad sheet is the caller's to fix; an unreadable or unwritable products.csv is the server's.
+            http_response_code(!empty($result['serverError']) ? 500 : 400);
+        }
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
     private static function downloadProductsCsv(string $source): void

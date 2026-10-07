@@ -72,6 +72,7 @@ final class PlannerController extends BaseFrontendController
 
         view('frontend.planner.index', [
             'fences'                   => $fences,
+            'fences_script'            => PlannerPageModel::fencesForScript($fences),
             'info'                     => $info,
             'res'                      => $res,
             'site_info'                => $site_info,

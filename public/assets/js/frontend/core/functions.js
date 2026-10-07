@@ -1762,8 +1762,9 @@ function fcApplyGroupBFenceDisplayHeights(calc, $scope, opts) {
         .find('.fencing-panel-item:not(.fencing-raked-panel), .short-panel-item, .fencing-offcut .offcut-body')
         .css({ height: fenceHeightPx });
 
-    // Barr posts start level with the picket tops (style.css drops their -7px lift), so they end 7px shorter.
-    var trimTopPx = slug === 'barr' ? 7 : 0;
+    // Barr posts start level with the picket tops (style.css drops their -7px lift), so they end 7px shorter;
+    // 9px more leaves the panel 100mm (10px) off the ground, AS 1926.1's maximum.
+    var trimTopPx = slug === 'barr' ? 16 : 0;
 
     $root.find('.panel-post.opt-1, .panel-post.opt-1-1').css({
         height: fenceHeightPx + 25 - trimTopPx,
@@ -3662,7 +3663,15 @@ function readCustomFenceSegment(tab, styleSlug) {
         if (seen[key]) continue;
         seen[key] = true;
         var raw = localStorage.getItem('custom_fence-' + tab + '-' + key);
-        if (raw) return JSON.parse(raw);
+        if (!raw) continue;
+        var segment = JSON.parse(raw);
+        // Older Slat quotes saved "135 Degree Angle" as a post footing; the Corner field holds the turn now.
+        var migrated = canon === 'slat' && typeof SlatFence !== 'undefined' ? SlatFence.migrateLegacyTurnSegment(segment) : null;
+        if (migrated) {
+            localStorage.setItem('custom_fence-' + tab + '-' + key, JSON.stringify(migrated));
+            return migrated;
+        }
+        return segment;
     }
     return [];
 }
@@ -4387,6 +4396,10 @@ function fcSizeGlassRakedPanel($rakedWrap, widthMm, heightMm) {
     el.style.setProperty('--fc-rake-w', (w * scale) + 'px');
     el.style.setProperty('--fc-rake-h', (h * scale) + 'px');
     el.style.setProperty('--fc-rake-drop', dropPx + 'px');
+    // Flat top's top rail rakes over 37% of the panel (PoolSafe 1200W: 648 flat, 444 rake, 108 flat), so the
+    // rail's lower corners slide back along the rake by this many rail depths; CSS has no sqrt to work it out.
+    var slope = dropPx / (w * scale * 0.37);
+    el.style.setProperty('--fc-rake-mitre', ((Math.hypot(1, slope) - 1) / slope).toFixed(4));
     return dropPx;
 }
 
@@ -5323,8 +5336,10 @@ function fcScrollPlannerStep3ToLeftPost(slug) {
         if ($anchor.length) {
             var pad = 12;
             var anchorLeft = $anchor[0].offsetLeft;
+            // Slat Wall Fix draws its wall left of the end post, in room the run keeps as left padding: keep it in view too.
+            var lead = parseFloat(window.getComputedStyle($anchor[0].parentElement).paddingLeft) || 0;
             if (Number.isFinite(anchorLeft)) {
-                scrollEl.scrollLeft = Math.max(0, anchorLeft - pad);
+                scrollEl.scrollLeft = Math.max(0, anchorLeft - lead - pad);
             }
         }
     });
@@ -7041,7 +7056,7 @@ function loadColorOptions() {
                     typeof fcPlannerSectionCountForFenceStyle === 'function'
                         ? fcPlannerSectionCountForFenceStyle(slug, v)
                         : 0;
-                var sectionCountLabel = numSections > 0 ? 'x ' + numSections : '';
+                var sectionCountLabel = numSections > 0 ? numSections + ' \u00d7' : '';
 
                 var tpl = $('script[data-type="color_options"]').text()
                     .replace(/{{slug}}/gi, slug)
@@ -7858,7 +7873,8 @@ function fcOpenFenceColorDrawer($btn) {
             // Same wording as the greyed-out Step 4 swatch.
             $tile.attr({ 'aria-disabled': 'true', title: 'Not available with the panel option selected for this fence' });
         }
-        $('<div>', { class: 'col-4 px-1 fc-fence-color-cell' })
+        // Three a row on phones; from 768px the style's Swatches per row (Fence Styles editor), like the option grids.
+        $('<div>', { class: 'col-4 col-md-' + 12 / (typeof fcModalOptionsPerRow === 'function' ? fcModalOptionsPerRow(info.color_columns) : 3) + ' px-1 fc-fence-color-cell' })
             .append(
                 $tile,
                 $('<p>', { class: 'fc-fence-color-name' }).text(swatch.title),
