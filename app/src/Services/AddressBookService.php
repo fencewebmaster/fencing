@@ -340,11 +340,11 @@ final class AddressBookService
         return AddressLookupService::dataPath() . '.tmp.' . $uploadId;
     }
 
-    /** Drops staged uploads a day old, left by an import that was abandoned part way. */
+    /** Drops staged uploads idle for 15 minutes: a cancelled or abandoned import leaves its pieces behind. */
     private static function sweepStale(): void
     {
         foreach (glob(AddressLookupService::dataPath() . '.tmp.*') ?: [] as $file) {
-            if (is_file($file) && (int) @filemtime($file) < time() - 86400) {
+            if (is_file($file) && (int) @filemtime($file) < time() - 900) {
                 @unlink($file);
             }
         }

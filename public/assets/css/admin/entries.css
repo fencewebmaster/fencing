@@ -6322,13 +6322,189 @@ html[data-fc-admin-theme='dark'] .fc-admin-menu__option--danger .fc-admin-menu__
 }
 
 
-/* —— System → Address Book: the SEO tiles as read-only figures, and the per-state table —— */
-.fc-address-book .fc-seo-check {
-    cursor: default;
+/* —— System → Address Book: status chip, headline figures, coverage table and the import drop zone —— */
+.fc-address-book {
+    --fc-ab-good: #15803d;
+    --fc-ab-warn: #b45309;
+    --fc-ab-bad: #b91c1c;
+    --fc-ab-accent: var(--fc-princeton-orange, #f67925);
 }
 
-.fc-address-book .fc-seo-check:hover {
-    border-color: var(--fc-admin-border, #e2e8f0);
+.fc-address-book__lead {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__btn-hint {
+    margin-left: 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    opacity: 0.65;
+}
+
+.fc-address-book__chip {
+    --fc-ab-tone: var(--fc-admin-text-muted, #64748b);
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.4rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--fc-ab-tone) 13%, transparent);
+    color: var(--fc-ab-tone);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
+
+.fc-address-book__chip[data-tone="good"] { --fc-ab-tone: var(--fc-ab-good); }
+.fc-address-book__chip[data-tone="warn"] { --fc-ab-tone: var(--fc-ab-warn); }
+.fc-address-book__chip[data-tone="bad"] { --fc-ab-tone: var(--fc-ab-bad); }
+.fc-address-book__chip[data-tone="info"] { --fc-ab-tone: var(--fc-ab-accent); margin-left: 0.3rem; }
+
+/* Loading: four figure-shaped bars, so the card keeps roughly its size when the details arrive. */
+.fc-address-book__skeleton {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.fc-address-book__skeleton span {
+    height: 4.5rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(90deg, var(--fc-admin-surface-subtle, #f1f5f9) 25%, var(--fc-admin-surface-muted, #f8fafc) 50%, var(--fc-admin-surface-subtle, #f1f5f9) 75%);
+    background-size: 200% 100%;
+    animation: fc-ab-shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes fc-ab-shimmer {
+    from { background-position: 100% 0; }
+    to { background-position: -100% 0; }
+}
+
+@media (min-width: 900px) {
+    .fc-address-book__skeleton {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.fc-address-book__figures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+@media (min-width: 900px) {
+    .fc-address-book__figures {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.fc-address-book__figure {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 0.5rem;
+    background: var(--fc-admin-surface, #fff);
+}
+
+.fc-address-book__figure-icon {
+    grid-row: span 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--fc-ab-accent) 12%, transparent);
+    color: var(--fc-ab-accent);
+}
+
+.fc-address-book__figure-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--fc-admin-text-heading, #0f172a);
+    font-variant-numeric: tabular-nums;
+}
+
+.fc-address-book__figure-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+/* Two figures a row on a phone: 16,071,824 at full size ran out of its box. */
+@media (max-width: 639.98px) {
+    .fc-address-book__figure {
+        column-gap: 0.55rem;
+        padding: 0.7rem;
+    }
+
+    .fc-address-book__figure-icon {
+        width: 1.85rem;
+        height: 1.85rem;
+        font-size: 0.8rem;
+    }
+
+    .fc-address-book__figure-value {
+        font-size: 1rem;
+    }
+}
+
+.fc-address-book__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.5rem 1.5rem;
+    margin: 1rem 0 0;
+}
+
+.fc-address-book__facts dt {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__facts dd {
+    margin: 0.1rem 0 0;
+    overflow: hidden;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.fc-address-book__section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.fc-address-book__section-head h4 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-address-book__section-head span,
+.fc-address-book__muted {
+    font-size: 0.78rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__muted {
+    margin: 0.6rem 0 0;
 }
 
 .fc-address-book__states {
@@ -6338,9 +6514,315 @@ html[data-fc-admin-theme='dark'] .fc-admin-menu__option--danger .fc-admin-menu__
 /* The Entries table's 56rem floor and sticky header are for its own page; here it fits the card. */
 .fc-address-book__states .fc-entries-table {
     width: 100%;
-    min-width: 0;
+    min-width: 34rem;
 }
 
 .fc-address-book__states .fc-entries-table thead th {
     position: static;
+}
+
+.fc-address-book__states tr.is-here td {
+    background: color-mix(in srgb, var(--fc-ab-accent) 6%, transparent);
+}
+
+.fc-address-book__states td {
+    font-variant-numeric: tabular-nums;
+}
+
+.fc-address-book__share {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 9rem;
+}
+
+.fc-address-book__share-bar {
+    flex: 1 1 auto;
+    height: 0.4rem;
+    border-radius: 9999px;
+    background: var(--fc-admin-surface-subtle, #f1f5f9);
+    overflow: hidden;
+}
+
+.fc-address-book__share-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--fc-ab-accent);
+}
+
+.fc-address-book__share-pct {
+    flex: 0 0 2.75rem;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__empty {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--fc-ab-warn) 35%, var(--fc-admin-border, #e2e8f0));
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--fc-ab-warn) 6%, var(--fc-admin-surface, #fff));
+}
+
+.fc-address-book__empty-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--fc-ab-warn) 14%, transparent);
+    color: var(--fc-ab-warn);
+    font-size: 1.05rem;
+}
+
+.fc-address-book__empty-title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-address-book__empty-text {
+    margin: 0.2rem 0 0;
+    font-size: 0.8rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__note {
+    --fc-ab-tone: var(--fc-ab-accent);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--fc-ab-tone) 35%, var(--fc-admin-border, #e2e8f0));
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--fc-ab-tone) 7%, var(--fc-admin-surface, #fff));
+    font-size: 0.8rem;
+    color: var(--fc-admin-text, #334155);
+}
+
+.fc-address-book__note:first-child {
+    margin-top: 0;
+}
+
+.fc-address-book__note > i {
+    color: var(--fc-ab-tone);
+}
+
+.fc-address-book__note > span {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+.fc-address-book__note[data-tone="good"] { --fc-ab-tone: var(--fc-ab-good); }
+.fc-address-book__note[data-tone="bad"] { --fc-ab-tone: var(--fc-ab-bad); }
+
+.fc-address-book__drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 1.5rem 1rem;
+    border: 2px dashed var(--fc-admin-border, #cbd5e1);
+    border-radius: 0.6rem;
+    background: var(--fc-admin-surface-muted, #f8fafc);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.fc-address-book__drop:hover,
+.fc-address-book__drop.is-dragover {
+    border-color: var(--fc-ab-accent);
+    background: color-mix(in srgb, var(--fc-ab-accent) 6%, var(--fc-admin-surface, #fff));
+}
+
+.fc-address-book__drop:focus-visible {
+    outline: 2px solid var(--fc-ab-accent);
+    outline-offset: 2px;
+}
+
+.fc-address-book__drop-icon {
+    font-size: 1.6rem;
+    color: var(--fc-ab-accent);
+}
+
+.fc-address-book__drop.is-dragover .fc-address-book__drop-icon {
+    transform: translateY(-2px);
+}
+
+.fc-address-book__drop-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-address-book__drop-title u {
+    color: var(--fc-ab-accent);
+    text-underline-offset: 2px;
+}
+
+.fc-address-book__drop-hint {
+    max-width: 34rem;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__panel {
+    padding: 1rem;
+    border: 1px solid var(--fc-admin-border, #e2e8f0);
+    border-radius: 0.6rem;
+    background: var(--fc-admin-surface-muted, #f8fafc);
+}
+
+.fc-address-book__file {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.fc-address-book__file-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.45rem;
+    background: color-mix(in srgb, var(--fc-ab-accent) 12%, transparent);
+    color: var(--fc-ab-accent);
+}
+
+.fc-address-book__file-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.fc-address-book__file-name {
+    overflow: hidden;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading, #0f172a);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.fc-address-book__file-meta {
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+}
+
+.fc-address-book__steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin: 0.9rem 0 0.7rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-muted, #64748b);
+}
+
+.fc-address-book__steps li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.fc-address-book__steps li > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid var(--fc-admin-border, #cbd5e1);
+    border-radius: 50%;
+    font-size: 0.65rem;
+}
+
+.fc-address-book__steps li[data-state="active"] {
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-address-book__steps li[data-state="active"] > span {
+    border-color: var(--fc-ab-accent);
+    color: var(--fc-ab-accent);
+}
+
+.fc-address-book__steps li[data-state="done"] > span {
+    border-color: var(--fc-ab-good);
+    background: var(--fc-ab-good);
+    color: #fff;
+}
+
+.fc-address-book__progress {
+    position: relative;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--fc-admin-surface-subtle, #e2e8f0);
+    overflow: hidden;
+}
+
+.fc-address-book__progress > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--fc-ab-accent);
+    transition: width 0.2s ease;
+}
+
+/* The check runs on the server with no progress to report: a moving band says it is still working. */
+.fc-address-book__progress.is-indeterminate > span {
+    width: 35% !important;
+    animation: fc-ab-indeterminate 1.1s ease-in-out infinite;
+}
+
+@keyframes fc-ab-indeterminate {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(290%); }
+}
+
+.fc-address-book__progress-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted, #64748b);
+    font-variant-numeric: tabular-nums;
+}
+
+.fc-address-book__progress-meta strong {
+    color: var(--fc-admin-text-heading, #0f172a);
+}
+
+.fc-address-book__licence {
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: var(--fc-admin-text-faint, #94a3b8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-address-book__skeleton span,
+    .fc-address-book__progress.is-indeterminate > span {
+        animation: none;
+    }
 }

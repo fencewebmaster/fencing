@@ -664,17 +664,15 @@ $tab = $fcSettingsPage;
                             <section class="fc-settings-card fc-address-book flex h-full flex-col border border-slate-200 bg-white lg:col-span-2" data-fc-address-book>
                                 <header class="fc-settings-card__head">
                                     <div class="fc-settings-card__heading">
-                                        <h3 class="fc-settings-card__title">Address Book</h3>
-                                        <p class="mt-1 text-xs text-slate-500">The street list behind the planner's Address suggestions. Export it to copy it to another site.</p>
+                                        <h3 class="fc-settings-card__title">Address Book <span class="fc-address-book__chip" data-fc-address-book-chip hidden></span></h3>
+                                        <p class="fc-address-book__lead">The street list behind the planner's Address suggestions. Export it here, then import it on another site.</p>
                                     </div>
                                     <div class="fc-settings-card__aside flex flex-wrap gap-2 shrink-0">
-                                        <a class="btn btn-sm btn-light" href="#" data-fc-address-book-export hidden download><i class="fa-solid fa-download me-1" aria-hidden="true"></i>Export</a>
-                                        <button type="button" class="btn btn-sm btn-light" data-fc-address-book-import hidden><i class="fa-solid fa-upload me-1" aria-hidden="true"></i>Import</button>
-                                        <input type="file" accept=".gz,.jsonl,application/gzip" class="hidden" data-fc-address-book-file>
+                                        <a class="btn btn-sm btn-light" href="#" data-fc-address-book-export hidden download><i class="fa-solid fa-download me-1" aria-hidden="true"></i>Export <span class="fc-address-book__btn-hint">.jsonl.gz</span></a>
                                     </div>
                                 </header>
-                                <div class="fc-settings-card__body fc-settings-card__body--sections" data-fc-address-book-body>
-                                    <p class="text-sm text-slate-500">Loading…</p>
+                                <div class="fc-settings-card__body fc-settings-card__body--sections" data-fc-address-book-body aria-busy="true">
+                                    <div class="fc-address-book__skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
                                 </div>
                             </section>
                             </div>
