@@ -6670,12 +6670,6 @@ html[data-fc-admin-theme='dark'] .fc-admin-menu__option--danger .fc-admin-menu__
     text-underline-offset: 2px;
 }
 
-.fc-address-book__drop-hint {
-    max-width: 34rem;
-    font-size: 0.75rem;
-    color: var(--fc-admin-text-muted, #64748b);
-}
-
 .fc-address-book__panel {
     padding: 1rem;
     border: 1px solid var(--fc-admin-border, #e2e8f0);

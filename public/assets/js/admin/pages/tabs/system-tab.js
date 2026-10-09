@@ -356,7 +356,6 @@
             return head + '<div class="fc-address-book__drop" data-fc-ab-drop data-fc-ab-action="choose" role="button" tabindex="0" aria-label="Choose an address book file to import">' +
                 '<span class="fc-address-book__drop-icon" aria-hidden="true"><i class="fa-solid fa-cloud-arrow-up"></i></span>' +
                 '<span class="fc-address-book__drop-title">Drop an exported <code>.jsonl.gz</code> here, or <u>choose a file</u></span>' +
-                '<span class="fc-address-book__drop-hint">From Export on another site, or a .jsonl built with build/address/build.php. Large files are fine; they upload in small pieces.</span>' +
                 '<input type="file" accept=".gz,.jsonl,application/gzip" class="hidden" data-fc-ab-file></div>' +
                 (up.notice ? '<p class="fc-address-book__muted">' + esc(up.notice) + '</p>' : '');
         }
