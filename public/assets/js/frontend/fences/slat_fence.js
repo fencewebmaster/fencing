@@ -24,6 +24,8 @@ SlatFence = {
             minPanelWidthOnGate: 86,
             gate_post_gaps: 50 + 20 + 20,
             gate_posts_gaps: 50 + 20 + 20 + 50,
+            // A double gate's latch gap moves to where its two leaves meet.
+            gate_meeting_gap: 20,
         }
     },
 
@@ -660,7 +662,9 @@ SlatFence = {
             return item && item.control_key === 'gate';
         });
         var isDouble = gate_data.length && this.isSlatDoubleGate(gate_data);
-        var leaf = isDouble ? Math.round(totalOpening / 2) : Math.round(totalOpening);
+        var leaf = isDouble
+            ? Math.round((totalOpening - this.getDoubleGateMeetingGapMm(fd.slug, gate_data)) / 2)
+            : Math.round(totalOpening);
         return leaf > 0 ? leaf : null;
     },
 
@@ -683,7 +687,8 @@ SlatFence = {
             opts.isDouble != null
                 ? !!opts.isDouble
                 : gate_data.length && this.isSlatDoubleGate(gate_data);
-        var totalOpening = isDouble ? leaf * 2 : leaf;
+        var meetingGap = parseInt(this.getSetting(fd.slug, 'gate_meeting_gap'), 10) || 0;
+        var totalOpening = isDouble ? leaf * 2 + meetingGap : leaf;
         var fence_gate_posts_gaps = parseInt(FENCE.get(fd.slug, 'gate_posts_gaps'), 10);
         if (!Number.isFinite(fence_gate_posts_gaps)) {
             fence_gate_posts_gaps = 0;
@@ -3744,21 +3749,6 @@ SlatFence = {
 
     //----------------------------------------------------------------------------------
 
-    adjustCalcGateSize: function(slug, gateSize, gate_data, post_panel) {
-        if (!this.isMainSlatSlug(slug)) return gateSize;
-
-        var gateWdfRaw = gate_data?.[0]?.settings?.fields?.find(function(item) {
-            return item?.key === 'width_dimension_from';
-        })?.val;
-        var gateWdf = parseInt(gateWdfRaw, 10);
-
-        if (Number.isFinite(gateSize) && Number.isFinite(gateWdf) && (gateWdf === -1 || gateWdf === -2)) {
-            return Math.max(0, gateSize + (gateWdf * post_panel));
-        }
-
-        return gateSize;
-    },
-
     isSlatDoubleGate: function(gate_data) {
         return (
             gate_data?.[0]?.settings?.fields?.find(function(item) {
@@ -3792,13 +3782,22 @@ SlatFence = {
             return 0;
         }
         if (this.isMainSlatSlug(slug) && this.isSlatDoubleGate(gate_data)) {
-            return Math.round(fb / 2);
+            return Math.round((fb - this.getDoubleGateMeetingGapMm(slug, gate_data)) / 2);
         }
         return fb;
     },
 
+    /** Gap (mm) between a double gate's two leaves, where the latch is; 0 for a single gate. */
+    getDoubleGateMeetingGapMm: function(slug, gate_data) {
+        if (!this.isMainSlatSlug(slug) || !this.isSlatDoubleGate(gate_data)) {
+            return 0;
+        }
+        var gap = parseInt(this.getSetting(slug, 'gate_meeting_gap'), 10);
+        return Number.isFinite(gap) && gap >= 0 ? gap : 20;
+    },
+
     /**
-     * Total gate opening width: single = leaf width; double = 2× leaf (e.g. 2000 + 2000 = 4000 mm).
+     * Total gate opening width: single = leaf width; double = both leaves and the gap where they meet (975 + 20 + 975).
      */
     getGateOpeningWidthMm: function(slug, gate_data, calc) {
         var leaf = this.getGateLeafWidthMm(slug, gate_data, calc);
@@ -3806,7 +3805,7 @@ SlatFence = {
             return 0;
         }
         if (this.isMainSlatSlug(slug) && this.isSlatDoubleGate(gate_data)) {
-            return leaf * 2;
+            return leaf * 2 + this.getDoubleGateMeetingGapMm(slug, gate_data);
         }
         return leaf;
     },
@@ -3819,14 +3818,18 @@ SlatFence = {
     },
 
     /**
-     * Gate span used in calc.js (after width-dimension-from); doubles for Slat double gates.
+     * Gate span for calc.js: the leaf as entered, or a double's opening. Width Dimension From is display only:
+     * taking posts off here shrank a STD 975 gate to 875 once the drawer saved, adding a panel and post to the run.
      */
     getCalcGateSpanMm: function(slug, leafWidthMm, gate_data, post_panel) {
-        var span = this.adjustCalcGateSize(slug, leafWidthMm, gate_data, post_panel);
-        if (this.isMainSlatSlug(slug) && this.isSlatDoubleGate(gate_data)) {
-            span = span * 2;
+        var leaf = parseInt(leafWidthMm, 10);
+        if (!this.isMainSlatSlug(slug) || !Number.isFinite(leaf)) {
+            return leafWidthMm;
         }
-        return span;
+        if (this.isSlatDoubleGate(gate_data)) {
+            return leaf * 2 + this.getDoubleGateMeetingGapMm(slug, gate_data);
+        }
+        return leaf;
     },
 
     /** calc.js C8 — gate opening span plus hinge/latch gaps (not end posts). */
@@ -4491,8 +4494,10 @@ SlatFence = {
 
     //----------------------------------------------------------------------------------
 
-    applyGateLabel: function(slug, gate_data, calc, panel_unit, panel_name) {
+    /** `$gate` is the planner's gate unless given (the project plan passes its section's). */
+    applyGateLabel: function(slug, gate_data, calc, panel_unit, panel_name, $gate) {
         if (!this.isMainSlatSlug(slug)) return;
+        $gate = $gate && $gate.length ? $gate : $(FENCES.el.fencingPanelGate);
 
         var gateTypeSlug = gate_data?.[0]?.settings?.fields?.find(function(item) {
             return item.key === 'gate_type';
@@ -4510,14 +4515,84 @@ SlatFence = {
                 ? String(Math.round(gateHeightMm)) + 'H<br>'
                 : '';
 
-        $(FENCES.el.fencingPanelGate)
-            .find('.fencing-panel-item-size')
-            .html(gateTypeLabel + '<br>' + gateHeightLine + '<span class="fc-gate-width">' + displayGateWidthMm + panel_unit + '<br></span> ' + panel_name);
+        // The opening stays first: panel-dimensions.js reads the first "…mm" for the width line over the gate.
+        // A double's label sits at its foot under the latch, so its type and height share a line.
+        var leafMm = this.getGateLeafWidthMm(slug, gate_data, calc);
+        var isDouble = gateTypeSlug === 'double';
+        var leavesLine = isDouble && leafMm > 0 ? '2 × ' + leafMm + panel_unit + '<br>' : '';
+        var hdLine = this.isSlatHeavyDutyRailGate(gate_data) ? '<br>HD RAILS' : '';
 
-        $(FENCES.el.fencingPanelGate).find('.double-gate').remove();
+        $gate
+            .find('.fencing-panel-item-size')
+            .html(gateTypeLabel + (isDouble && gateHeightLine ? ' ' : '<br>') + gateHeightLine + '<span class="fc-gate-width">' + displayGateWidthMm + panel_unit + '<br></span> ' + leavesLine + panel_name + hdLine);
+
+        $gate.find('.double-gate').remove();
         if (gateTypeSlug === 'double') {
-            $(FENCES.el.fencingPanelGate).append('<div class="double-gate"></div>');
+            $gate.append('<div class="double-gate"></div>');
         }
+
+        this.renderGateLeaves($gate, slug, gate_data, calc);
+    },
+
+    isSlatHeavyDutyRailGate: function(gate_data) {
+        return (gate_data?.[0]?.settings?.fields || []).some(function(item) {
+            return item && item.key === 'heavy_duty_rails' && item.val === 'yes';
+        });
+    },
+
+    /**
+     * Gate drawn to scale as the XPRESS gate is built: slats between the side frames of each leaf, a double's leaves
+     * the latch gap apart, and the 65 x 45 Heavy Duty Rails as the top and bottom members when picked.
+     */
+    renderGateLeaves: function($gate, slug, gate_data, calc) {
+        $gate = $($gate);
+        $gate.children('.fc-slat-gate').remove();
+        $gate.removeClass('fc-slat-gate-drawn fc-slat-gate--double fc-slat-gate--hd fc-slat-gate--centre-line');
+        if (!$gate.length || !this.isMainSlatSlug(slug)) {
+            return;
+        }
+
+        var spanMm = this.getGateOpeningWidthMm(slug, gate_data, calc);
+        if (!Number.isFinite(spanMm) || spanMm <= 0) {
+            return;
+        }
+        var isDouble = this.isSlatDoubleGate(gate_data);
+        var hd = this.isSlatHeavyDutyRailGate(gate_data);
+        var scale = parseFloat(FENCE.get('item', 'base_margin')) || 0.1;
+        var meetPx = this.getDoubleGateMeetingGapMm(slug, gate_data) * scale;
+        var rails = hd
+            ? '<span class="fc-slat-gate__rail fc-slat-gate__rail--top"></span><span class="fc-slat-gate__rail fc-slat-gate__rail--bot"></span>'
+            : '';
+        var leaf = '<span class="fc-slat-gate__leaf">' + rails + '</span>';
+
+        // Width Dimension From, as the drawer card draws it: the opening measured over the gate posts' outer faces or centres.
+        var wdf = parseInt((gate_data?.[0]?.settings?.fields || []).find(function(item) {
+            return item && item.key === 'width_dimension_from';
+        })?.val, 10);
+        var centreLine = wdf === -1;
+        var postMm = parseInt(FENCE.get(slug, 'post'), 10) || 50;
+        var reachMm = centreLine ? postMm / 2 : postMm;
+        var gapLeftMm = parseInt(FENCE.get(slug, 'gate_space_left'), 10) || 0;
+        var gapRightMm = parseInt(FENCE.get(slug, 'gate_space_right'), 10) || 0;
+        var measureMm = Math.round(spanMm + gapLeftMm + gapRightMm + 2 * reachMm);
+        var measure =
+            '<span class="fc-slat-gate-measure" style="left: ' + -(gapLeftMm + reachMm) * scale + 'px; right: ' + -(gapRightMm + reachMm) * scale + 'px">' +
+                '<span class="fc-slat-gate-measure__figure">' + measureMm.toLocaleString('en-AU') + '</span>' +
+                '<span class="fc-slat-gate-measure__ref">' + (centreLine ? 'Post Centres' : 'Outside Of Posts') + '</span>' +
+            '</span>';
+
+        // First child, so the label and the hinge/latch overlay paint over the leaves.
+        $gate
+            .css({ width: spanMm * scale + 'px', maxWidth: spanMm * scale + 'px' })
+            .addClass('fc-slat-gate-drawn')
+            .toggleClass('fc-slat-gate--double', isDouble)
+            .toggleClass('fc-slat-gate--hd', hd)
+            .toggleClass('fc-slat-gate--centre-line', centreLine)
+            .prepend(
+                '<span class="fc-slat-gate" aria-hidden="true" style="--fc-slat-gate-meet-px: ' + meetPx + 'px">' +
+                    leaf + (isDouble ? leaf : '') + measure +
+                '</span>'
+            );
     },
 
     //----------------------------------------------------------------------------------

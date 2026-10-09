@@ -3222,10 +3222,13 @@ function fcRunWithPlannerStep3Skeleton(renderFn) {
         return;
     }
     if (!fcShouldShowPlannerStep3Skeleton()) {
+        // Still synchronous: the cart is scraped from this DOM straight after; only the paint is held.
+        fcHoldPlannerStep3Box();
         try {
             renderFn();
         } finally {
             fcReapplyPlannerStep3DisplayHeights();
+            fcSettlePlannerStep3BoxSoon();
         }
         return;
     }
@@ -3240,6 +3243,108 @@ function fcRunWithPlannerStep3Skeleton(renderFn) {
             }
         });
     });
+}
+
+/* Planner Step 3 rebuilds: the box keeps its height under a skeleton until the run settles, so the page never bounces. */
+var _fcStep3Box = null;
+var FC_STEP3_SKELETON_MIN = 250;
+
+function fcPlannerStep3Box() {
+    return $('.fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result').first()[0] || null;
+}
+
+/** Before a rebuild: pin the box (each pick empties and redraws the run twice, dropping its gate headroom in between). */
+function fcHoldPlannerStep3Box() {
+    var box = fcPlannerStep3Box();
+    if (!box) {
+        return;
+    }
+    if (_fcStep3Box) {
+        clearTimeout(_fcStep3Box.settleTimer);
+        return;
+    }
+    if (box.classList.contains('fc-planner-step3-result--sizing')) {
+        box.classList.remove('fc-planner-step3-result--sizing');
+        box.style.height = '';
+    }
+    // Nothing drawn yet (first Calculate) is only the box's padding: pinning that would hold it 230px short.
+    var drawn = box.getClientRects().length && box.querySelector('.fencing-panel-container > *');
+    var height = drawn ? box.offsetHeight : 0;
+    _fcStep3Box = { box: box, height: height, minHeight: box.style.minHeight, shownAt: Date.now(), settleTimer: null };
+    if (height > 0) {
+        // Fixed while covered, so neither a dip mid-rebuild nor the new run's size moves the page until it is revealed.
+        box.style.height = height + 'px';
+    }
+    // Covered, not hidden: hidden, the run lays out short (88px for 319) and grows on reveal.
+    $(box).addClass('fc-planner-step3-result--holding fc-planner-step3-result--skeleton').attr('aria-busy', 'true')
+        .find('.js-fc-planner-step3-skeleton').removeClass('fc-d-none');
+}
+
+/** After each rebuild: release once no rebuild has run for a moment and the drawing's follow-up frames are done. */
+function fcSettlePlannerStep3BoxSoon() {
+    var hold = _fcStep3Box;
+    if (!hold) {
+        return;
+    }
+    clearTimeout(hold.settleTimer);
+    hold.settleTimer = setTimeout(function() {
+        var done = false;
+        var finish = function() {
+            if (!done) {
+                done = true;
+                fcReleasePlannerStep3Box(hold);
+            }
+        };
+        requestAnimationFrame(function() {
+            requestAnimationFrame(finish);
+        });
+        setTimeout(finish, 200);
+    }, 80);
+}
+
+function fcReleasePlannerStep3Box(hold) {
+    if (hold !== _fcStep3Box) {
+        return;
+    }
+    var wait = hold.shownAt + FC_STEP3_SKELETON_MIN - Date.now();
+    if (wait > 0) {
+        hold.settleTimer = setTimeout(function() {
+            fcReleasePlannerStep3Box(hold);
+        }, wait);
+        return;
+    }
+    _fcStep3Box = null;
+
+    var box = hold.box;
+    var $box = $(box);
+    var shown = box.offsetHeight;
+    box.style.height = '';
+    box.style.minHeight = hold.minHeight;
+    $box.removeClass('fc-planner-step3-result--holding fc-planner-step3-result--skeleton').removeAttr('aria-busy')
+        .find('.js-fc-planner-step3-skeleton').addClass('fc-d-none');
+    $box.addClass('fc-planner-step3-result--reveal');
+    setTimeout(function() {
+        $box.removeClass('fc-planner-step3-result--reveal');
+    }, 260);
+
+    var natural = box.offsetHeight;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (shown > 0 && natural > 0 && Math.abs(natural - shown) > 1 && !reduce) {
+        // The run really did change height: ease to it rather than jump.
+        box.style.height = shown + 'px';
+        $box.addClass('fc-planner-step3-result--sizing');
+        void box.offsetHeight;
+        box.style.height = natural + 'px';
+        setTimeout(function() {
+            if (!_fcStep3Box || _fcStep3Box.box !== box) {
+                box.style.height = '';
+            }
+            $box.removeClass('fc-planner-step3-result--sizing');
+        }, 240);
+    }
+    if (typeof step !== 'undefined' && step === 1 && typeof HELPER !== 'undefined' && typeof HELPER.captureStep3ResultBaseHeight === 'function') {
+        HELPER.captureStep3ResultBaseHeight();
+    }
 }
 
 /** Baseline for Step 3 UPDATE visibility — captured after planner finishes loading saved fence styles. */
@@ -10297,190 +10402,485 @@ $.fn.scrollCenter = function(elem, speed) {
 
 //----------------------------------------------------------------------------------
 
-// Google map integration
-let autocomplete;
-let address1Field;
+// Address suggestions: FC's own street list (address-lookup, built from the national G-NAF file) in place of Google Places.
+var FC_ADDRESS_MIN_CHARS = 3;
+// A unit, lot or house number typed before the street ("3/12", "unit 4, 12", "lot 9"): kept as typed in the filled address.
+var FC_ADDRESS_NUMBER_PREFIX = /^\s*((?:(?:unit|u|apt|apartment|flat|shop|suite|lot|level|lvl)\.?\s*)?\d+[a-z]?(?:\s*[\/-]\s*\d+[a-z]?)*(?:\s*,?\s+\d+[a-z]?(?:\s*-\s*\d+[a-z]?)?)?)[\s,]+(?=\D)/i;
+// Short forms that bold a whole word in the list ("tce" lights up Terrace): G-NAF spells street types out.
+var FC_ADDRESS_ABBR = {
+    av: 'avenue', ave: 'avenue', bvd: 'boulevard', blvd: 'boulevard', cct: 'circuit', cl: 'close', cr: 'crescent',
+    cres: 'crescent', ct: 'court', dr: 'drive', esp: 'esplanade', gr: 'grove', hwy: 'highway', mt: 'mount',
+    pde: 'parade', pl: 'place', pt: 'point', rd: 'road', st: 'street', tce: 'terrace'
+};
+var fcAddressCache = {};
+var fcAddressCount = 0;
+var fcAddressOpen = null;
+var fcAddressStatusEl = null;
 
-function initAutocompleteAddress() {
-    autocomplete = document.querySelector("#address");
-    // Create the autocomplete object, restricting the search predictions to
-    // addresses in the US and Canada.
-    autocomplete = new google.maps.places.Autocomplete(autocomplete, {
-        componentRestrictions: {
-            country: ["au"]
-        },
-        fields: ["address_components", "geometry"],
-        types: ["address"],
-    });
-    // When the user selects an address from the drop-down, populate the
-    // address fields in the form.
-    autocomplete.addListener("place_changed", fillInAddress);
+function fcIsAddressInput(el) {
+    return !!(el && el.tagName === 'INPUT' && el.name === 'address' && el.closest('.fc-planner-page, .fc-project-plan-page'));
 }
 
-// Maps is fetched on demand (footer.php holds the URL); its callback is initAutocompleteAddress above.
-function fcLoadGoogleMaps() {
-    if (fcLoadGoogleMaps.requested || !window.fcGoogleMapsSrc) {
-        return;
+/** The nearest block holding this field's Post Code and State (the plans modal or Edit Details). */
+function fcAddressScope(input) {
+    var el = input.parentElement;
+    while (el && !el.querySelector('[name="postcode"]')) {
+        el = el.parentElement;
     }
-
-    fcLoadGoogleMaps.requested = true;
-
-    var script = document.createElement('script');
-    script.src = window.fcGoogleMapsSrc;
-    script.async = true;
-    document.head.appendChild(script);
+    return el || document;
 }
 
-// Fetch it when #address takes focus, or as soon as it nears the viewport (the plans modal opening),
-// so the suggestions are usually ready by the time the visitor starts typing.
-document.addEventListener('focusin', function (e) {
-    if (e.target && e.target.id === 'address') {
-        fcLoadGoogleMaps();
-    }
-});
+function fcAddressNumberPrefix(value) {
+    var m = String(value).match(FC_ADDRESS_NUMBER_PREFIX);
+    return m ? m[1].replace(/[\s,]+$/, '') : '';
+}
 
-if (typeof IntersectionObserver === 'function' && document.querySelector('#address')) {
-    var fcAddressObserver = new IntersectionObserver(function (entries) {
-        if (entries.some(function (entry) { return entry.isIntersecting; })) {
-            fcAddressObserver.disconnect();
-            fcLoadGoogleMaps();
+function fcAddressStreetPart(value) {
+    var m = String(value).match(FC_ADDRESS_NUMBER_PREFIX);
+    return (m ? String(value).slice(m[0].length) : String(value)).trim();
+}
+
+function fcAddressTokens(text) {
+    return String(text).toLowerCase().replace(/['’`]/g, '').split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+/** Tell screen readers what the list now holds; cleared first so the same words are read again. */
+function fcAddressAnnounce(text) {
+    if (!fcAddressStatusEl) {
+        fcAddressStatusEl = document.createElement('div');
+        fcAddressStatusEl.className = 'fc-address-status';
+        fcAddressStatusEl.setAttribute('role', 'status');
+        fcAddressStatusEl.setAttribute('aria-live', 'polite');
+        document.body.appendChild(fcAddressStatusEl);
+    }
+    fcAddressStatusEl.textContent = '';
+    setTimeout(function() {
+        fcAddressStatusEl.textContent = text;
+    }, 60);
+}
+
+/** The field's list and state, made on first use. On <body>: inside the plans modal's scrolling body the list was cut off. */
+function fcAddressSetup(input) {
+    if (input.__fcAddress) {
+        return input.__fcAddress;
+    }
+    var list = document.createElement('ul');
+    list.className = 'fc-address-suggest';
+    list.id = 'fc-address-suggest-' + (++fcAddressCount);
+    list.setAttribute('role', 'listbox');
+    list.setAttribute('aria-label', 'Address suggestions');
+    list.hidden = true;
+    document.body.appendChild(list);
+
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-controls', list.id);
+    input.setAttribute('aria-expanded', 'false');
+
+    var state = { input: input, list: list, items: [], active: -1, timer: null, loadingTimer: null, controller: null };
+    // mousedown, not click: the field keeps focus, so blur cannot close the list before the pick lands.
+    list.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        var item = e.target.closest('[data-index]');
+        if (item) {
+            fcAddressPick(state, parseInt(item.getAttribute('data-index'), 10));
         }
-    }, { rootMargin: '300px' });
-
-    document.querySelectorAll('#address').forEach(function (field) {
-        fcAddressObserver.observe(field);
     });
-}
-
-//----------------------------------------------------------------------------------
-
-/**
- * Keep the Google suggestion list pinned to the address field while the pane it sits in scrolls.
- *
- * Google positions .pac-container once, in document coordinates on <body>, and only re-positions
- * it on window scroll/resize - it knows nothing about a scrolling ancestor. The Download Your
- * Project Plans modal body is exactly that (.fencing-modal-body--scroll), so scrolling it left the
- * suggestions parked at the field's old position: adrift below the footer, or off-screen entirely
- * on a phone, where the keyboard shrinks the viewport enough to make the body scroll in the first
- * place. Same pin Google itself computes - the list hangs from the field's bottom-left edge, and
- * it stays below the field even when the field is past the fold, so there is no flip to preserve.
- *
- * Scroll is listened for in the capture phase because it does not bubble out of the pane, and on
- * focus for the same reason. Out of view the list is hidden with visibility rather than display,
- * so this never fights Google for the property it toggles as predictions come and go.
- */
-function fcPinAddressAutocomplete() {
-    var pac = document.querySelector('.pac-container');
-
-    if (!pac) {
-        return;
-    }
-
-    // Google opens the list by clearing that inline display and closes it by setting it back, so
-    // there is nothing to place in between - but a hide from an earlier scroll has to be lifted
-    // here, or the list comes back invisible the next time Google opens it. Skipping the measuring
-    // below also keeps this off the layout path for every other scroller on the page.
-    if (pac.style.display === 'none') {
-        pac.style.visibility = '';
-        return;
-    }
-
-    var field = document.querySelector('#address');
-
-    if (!field) {
-        return;
-    }
-
-    var rect = field.getBoundingClientRect();
-
-    pac.style.top = (rect.bottom + window.pageYOffset) + 'px';
-    pac.style.left = (rect.left + window.pageXOffset) + 'px';
-
-    // Pinned to a field scrolled up behind the sticky header, the list would hang over the header
-    // itself. Nothing to hide against on the pages where the field is not inside a pane.
-    var pane = field.closest('.fencing-modal-body--scroll');
-    var paneRect = pane ? pane.getBoundingClientRect() : null;
-
-    pac.style.visibility = paneRect && (rect.bottom <= paneRect.top || rect.bottom >= paneRect.bottom)
-        ? 'hidden'
-        : '';
-}
-
-document.addEventListener('scroll', fcPinAddressAutocomplete, { capture: true, passive: true });
-
-/* Typing is what makes Google re-open the list, and focus is what makes the browser scroll the
-   field back into the pane. Both have to re-run the pin: a scroll alone can leave the list hidden
-   from the last time the field was out of view. */
-document.addEventListener('input', fcPinAddressAutocomplete);
-document.addEventListener('focus', fcPinAddressAutocomplete, true);
-
-//----------------------------------------------------------------------------------
-
-function fillInAddress() {
-    // Get the place details from the autocomplete object.
-    const place = autocomplete.getPlace();
-    let address1 = [];
-    for (const component of place.address_components) {
-        // @ts-ignore remove once typings fixed
-        const componentType = component.types[0];
-        switch (componentType) {
-            case "street_number": 
-                address1.push(component.long_name);
-                break;
-            case "route":
-                address1.push(component.long_name);
-                break;
-            case "postal_code":
-                document.querySelector("#postcode").value = component.long_name;
-                break;
-            case "postal_code_suffix":
-                postcode = component.long_name;
-                break;
-            case "locality":
-                 address1.push(component.long_name);
-                break;
-            case "administrative_area_level_1":
-                document.querySelector("#state").value = component.short_name;
-                break;
-            case "country":
-                component.long_name;
-                break;
+    // One highlight for mouse and keys, so Enter always takes the row that looks chosen.
+    list.addEventListener('mousemove', function(e) {
+        var item = e.target.closest('[data-index]');
+        if (item) {
+            fcAddressSetActive(state, parseInt(item.getAttribute('data-index'), 10), false);
         }
-    }
-    document.querySelector("#address").value = address1.join(', ');
+    });
+    input.__fcAddress = state;
+    return state;
+}
 
-    /* Google writes these three straight to .value, which fires nothing - so the modal's own change
-       listener never runs and a picked address is gone on the next reload, while every typed field
-       around it survives. Announcing the write puts them back on the same path as a typed edit:
-       saveFormData persists them, and a field still showing an error pill from an earlier Enter is
-       re-checked so the pill clears. Only fields already flagged are re-checked, so this never raises
-       a new error on a field the customer has not reached yet. */
-    var addressValidator = null;
+function fcAddressLookup(state) {
+    var street = fcAddressStreetPart(state.input.value);
+    if (street.replace(/[^a-z0-9]/gi, '').length < FC_ADDRESS_MIN_CHARS) {
+        fcAddressClose(state);
+        return;
+    }
+    var stateField = fcAddressScope(state.input).querySelector('[name="state"]');
+    var hint = stateField && stateField.value ? stateField.value : '';
+    var key = street.toLowerCase().replace(/\s+/g, ' ') + '|' + hint;
+    if (fcAddressCache[key]) {
+        fcAddressRender(state, fcAddressCache[key]);
+        return;
+    }
+
+    if (state.controller) {
+        state.controller.abort();
+    }
+    clearTimeout(state.loadingTimer);
+    var controller = typeof AbortController === 'function' ? new AbortController() : {};
+    state.controller = controller;
+    // A slow answer (a busy live server) shows it is coming: a bar over the old list, or a Searching row.
+    state.loadingTimer = setTimeout(function() {
+        if (state.controller === controller) {
+            fcAddressLoading(state, true);
+        }
+    }, 250);
+
+    var settle = function() {
+        clearTimeout(state.loadingTimer);
+        state.controller = null;
+        fcAddressLoading(state, false);
+    };
+    fetch('address-lookup?q=' + encodeURIComponent(street) + '&state=' + encodeURIComponent(hint), controller.signal ? { signal: controller.signal } : {})
+        .then(function(response) {
+            return response.ok ? response.json() : { results: [] };
+        })
+        .then(function(data) {
+            if (state.controller !== controller) {
+                return;
+            }
+            settle();
+            var payload = {
+                results: data && Array.isArray(data.results) ? data.results : [],
+                available: !(data && data.available === false)
+            };
+            fcAddressCache[key] = payload;
+            if (document.activeElement === state.input) {
+                fcAddressRender(state, payload);
+            }
+        })
+        .catch(function() {
+            if (state.controller === controller) {
+                settle();
+                fcAddressClose(state);
+            }
+        });
+}
+
+function fcAddressLoading(state, on) {
+    state.list.classList.toggle('is-loading', on);
+    state.input.setAttribute('aria-busy', on ? 'true' : 'false');
+    if (on && state.list.hidden) {
+        fcAddressMessage(state, 'Searching…', true);
+    }
+}
+
+/** A row that is not a street (searching, no match) in place of the list. */
+function fcAddressMessage(state, text, busy) {
+    var list = state.list;
+    state.items = [];
+    state.active = -1;
+    list.textContent = '';
+    var item = document.createElement('li');
+    item.className = 'fc-address-suggest__message' + (busy ? ' is-busy' : '');
+    item.setAttribute('role', 'presentation');
+    item.textContent = text;
+    list.appendChild(item);
+    fcAddressShow(state);
+}
+
+/** Bold the start of each word a typed word begins (or abbreviates), as Google's list did. */
+function fcAddressHighlight(el, text, tokens) {
+    var at = 0;
+    text = String(text);
+    text.replace(/[A-Za-z0-9']+/g, function(word, offset) {
+        var plain = word.toLowerCase().replace(/'/g, '');
+        var length = 0;
+        tokens.forEach(function(token) {
+            if (FC_ADDRESS_ABBR[token] === plain) {
+                length = word.length;
+            } else if (plain.indexOf(token) === 0 && token.length > length) {
+                length = Math.min(token.length, word.length);
+            }
+        });
+        if (length) {
+            el.appendChild(document.createTextNode(text.slice(at, offset)));
+            var strong = document.createElement('strong');
+            strong.textContent = word.slice(0, length);
+            el.appendChild(strong);
+            at = offset + length;
+        }
+        return word;
+    });
+    el.appendChild(document.createTextNode(text.slice(at)));
+}
+
+function fcAddressRender(state, payload) {
+    if (!payload.available) {
+        fcAddressClose(state);
+        return;
+    }
+    var results = payload.results;
+    if (!results.length) {
+        fcAddressMessage(state, 'No street matches that. Check the spelling, or type your full address.', false);
+        fcAddressAnnounce('No matching streets.');
+        return;
+    }
+
+    var list = state.list;
+    var prefix = fcAddressNumberPrefix(state.input.value);
+    var tokens = fcAddressTokens(fcAddressStreetPart(state.input.value));
+    state.items = results;
+    state.active = -1;
+    list.textContent = '';
+
+    results.forEach(function(result, index) {
+        var item = document.createElement('li');
+        item.id = list.id + '-' + index;
+        item.className = 'fc-address-suggest__item';
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', 'false');
+        item.setAttribute('data-index', String(index));
+
+        var pin = document.createElement('span');
+        pin.className = 'fc-address-suggest__pin';
+        pin.setAttribute('aria-hidden', 'true');
+        var icon = document.createElement('i');
+        icon.className = 'fa-solid fa-location-dot';
+        pin.appendChild(icon);
+
+        var text = document.createElement('span');
+        text.className = 'fc-address-suggest__text';
+        var street = document.createElement('span');
+        street.className = 'fc-address-suggest__street';
+        // The number the customer typed leads the row, so it reads as the address that will be filled.
+        if (prefix) {
+            var number = document.createElement('strong');
+            number.textContent = prefix + ' ';
+            street.appendChild(number);
+        }
+        fcAddressHighlight(street, result.street, tokens);
+        var place = document.createElement('span');
+        place.className = 'fc-address-suggest__place';
+        fcAddressHighlight(place, [result.locality, result.state, result.postcode].filter(Boolean).join(' '), tokens);
+
+        text.appendChild(street);
+        text.appendChild(place);
+        item.appendChild(pin);
+        item.appendChild(text);
+        list.appendChild(item);
+    });
+
+    // The G-NAF licence asks for attribution, as Google's list carried its own.
+    var credit = document.createElement('li');
+    credit.className = 'fc-address-suggest__credit';
+    credit.setAttribute('aria-hidden', 'true');
+    credit.textContent = 'Address data © Geoscape Australia (G-NAF)';
+    list.appendChild(credit);
+
+    fcAddressShow(state);
+    fcAddressAnnounce(results.length + (results.length === 1 ? ' street' : ' streets') + ' found. Use the up and down arrows to choose.');
+}
+
+function fcAddressShow(state) {
+    state.list.scrollTop = 0;
+    state.list.hidden = false;
+    fcAddressOpen = state;
+    fcAddressPlace(state);
+    state.input.setAttribute('aria-expanded', 'true');
+    state.input.removeAttribute('aria-activedescendant');
+}
+
+/** Hang the list from the field (above it when the room is there and not below), hidden while the field is scrolled out of its pane. */
+function fcAddressPlace(state) {
+    var list = state.list;
+    var rect = state.input.getBoundingClientRect();
+    var pane = state.input.closest('.fencing-modal-body--scroll');
+    var paneRect = pane ? pane.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+    // The visual viewport, not the window: a phone keyboard covers the bottom of the page without resizing it on iOS.
+    var view = window.visualViewport;
+    var viewTop = view ? view.offsetTop : 0;
+    var viewBottom = view ? view.offsetTop + view.height : window.innerHeight;
+    var below = viewBottom - rect.bottom - 12;
+    var above = rect.top - viewTop - 12;
+    var up = below < 180 && above > below;
+
+    list.style.left = rect.left + 'px';
+    list.style.width = rect.width + 'px';
+    list.style.top = up ? 'auto' : (rect.bottom + 4) + 'px';
+    list.style.bottom = up ? (window.innerHeight - rect.top + 4) + 'px' : 'auto';
+    list.style.maxHeight = Math.max(120, Math.min(380, up ? above : below)) + 'px';
+    list.style.visibility = rect.bottom <= paneRect.top || rect.top >= paneRect.bottom || !rect.width ? 'hidden' : '';
+}
+
+function fcAddressClose(state) {
+    if (fcAddressOpen === state) {
+        fcAddressOpen = null;
+    }
+    if (state.controller) {
+        if (state.controller.abort) {
+            state.controller.abort();
+        }
+        state.controller = null;
+    }
+    clearTimeout(state.loadingTimer);
+    state.list.classList.remove('is-loading');
+    state.input.removeAttribute('aria-busy');
+    state.list.hidden = true;
+    state.items = [];
+    state.active = -1;
+    state.input.setAttribute('aria-expanded', 'false');
+    state.input.removeAttribute('aria-activedescendant');
+}
+
+function fcAddressSetActive(state, index, scroll) {
+    var list = state.list;
+    state.active = index;
+    list.querySelectorAll('[role="option"]').forEach(function(item, i) {
+        var on = i === index;
+        item.classList.toggle('is-active', on);
+        item.setAttribute('aria-selected', on ? 'true' : 'false');
+        // The list's own scroll only: scrollIntoView would also move the modal and the page.
+        if (on && scroll && item.offsetTop < list.scrollTop) {
+            list.scrollTop = item.offsetTop;
+        } else if (on && scroll && item.offsetTop + item.offsetHeight > list.scrollTop + list.clientHeight) {
+            list.scrollTop = item.offsetTop + item.offsetHeight - list.clientHeight;
+        }
+    });
+    state.input.setAttribute('aria-activedescendant', list.id + '-' + index);
+}
+
+function fcAddressMove(state, step) {
+    var count = state.items.length;
+    if (count) {
+        fcAddressSetActive(state, state.active < 0 ? (step > 0 ? 0 : count - 1) : (state.active + step + count) % count, true);
+    }
+}
+
+/** Fill Address (the typed number kept), Post Code and State, then announce them as a typed edit would. */
+function fcAddressPick(state, index) {
+    var result = state.items[index];
+    if (!result) {
+        return;
+    }
+    var input = state.input;
+    var prefix = fcAddressNumberPrefix(input.value);
+    input.value = (prefix ? prefix + ' ' : '') + result.street + (result.locality ? ', ' + result.locality : '');
+
+    var scope = fcAddressScope(input);
+    var postcode = scope.querySelector('[name="postcode"]');
+    var stateField = scope.querySelector('[name="state"]');
+    var filled = [];
+    if (postcode && result.postcode) {
+        postcode.value = result.postcode;
+        filled.push(postcode);
+    }
+    if (stateField && result.state && stateField.querySelector('option[value="' + result.state + '"]')) {
+        stateField.value = result.state;
+        filled.push(stateField);
+    }
+    fcAddressClose(state);
+
+    // A bare street still needs its number: the cursor waits at the front, where it goes.
+    if (!prefix && input.setSelectionRange) {
+        input.setSelectionRange(0, 0);
+    }
+    // The fields filled for the customer flash once, so the change below the list is seen.
+    filled.forEach(function(el) {
+        el.classList.remove('fc-address-filled');
+        void el.offsetWidth;
+        el.classList.add('fc-address-filled');
+        // Dropped once played: a field re-shown with the class (the modal's steps) would replay the flash.
+        el.addEventListener('animationend', function() {
+            el.classList.remove('fc-address-filled');
+        }, { once: true });
+    });
+    fcAddressAnnounce('Address filled' + (filled.length ? ', with the post code and state' : '') + '.');
+
+    // change only, never input: input is what asks for suggestions, and would reopen the list just closed.
+    var validator = null;
     try {
-        addressValidator = $('#address').closest('form').data('validator');
+        validator = $(input).closest('form').data('validator');
     } catch (eVd) {}
-
-    ['address', 'postcode', 'state'].forEach(function(fieldId) {
-        var el = document.getElementById(fieldId);
+    [input, postcode, stateField].forEach(function(el) {
         if (!el) {
             return;
         }
-        // change only, never input: input is what Google Places listens to for predictions, so
-        // announcing the fill that way made it re-query and reopen the list it had just closed.
         el.dispatchEvent(new Event('change', { bubbles: true }));
-        if (addressValidator && $(el).hasClass('error')) {
-            addressValidator.element(el);
+        // Only a field already flagged is re-checked, so a pick never raises an error the customer has not reached.
+        if (validator && $(el).hasClass('error')) {
+            validator.element(el);
         }
     });
 
     if (typeof saveFormData === 'function') {
         saveFormData();
     }
-
     if (typeof fcSyncDownloadPlansFloatingLabels === 'function') {
         fcSyncDownloadPlansFloatingLabels();
     }
 }
+
+document.addEventListener('input', function(e) {
+    if (!fcIsAddressInput(e.target)) {
+        return;
+    }
+    var state = fcAddressSetup(e.target);
+    clearTimeout(state.timer);
+    state.timer = setTimeout(function() {
+        fcAddressLookup(state);
+    }, 180);
+});
+
+// Capture phase: the list owns these keys while it is open, ahead of the plans modal's Enter-to-next and Escape.
+document.addEventListener('keydown', function(e) {
+    var state = fcIsAddressInput(e.target) ? e.target.__fcAddress : null;
+    if (!state || state.list.hidden) {
+        return;
+    }
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && state.items.length) {
+        e.preventDefault();
+        fcAddressMove(state, e.key === 'ArrowDown' ? 1 : -1);
+    } else if (e.key === 'Enter' && state.active >= 0) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        fcAddressPick(state, state.active);
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        fcAddressClose(state);
+    } else if (e.key === 'Tab') {
+        fcAddressClose(state);
+    }
+}, true);
+
+// Scrolls do not bubble out of the modal's pane, hence capture; the phone keyboard opening is a resize.
+function fcAddressReplace() {
+    if (fcAddressOpen) {
+        fcAddressPlace(fcAddressOpen);
+    }
+}
+document.addEventListener('scroll', fcAddressReplace, { capture: true, passive: true });
+window.addEventListener('resize', fcAddressReplace);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fcAddressReplace);
+    window.visualViewport.addEventListener('scroll', fcAddressReplace);
+}
+
+// The fields' clear buttons empty them with a keyup, not an input event.
+document.addEventListener('keyup', function(e) {
+    if (fcIsAddressInput(e.target) && e.target.__fcAddress && !e.target.value.trim()) {
+        fcAddressClose(e.target.__fcAddress);
+    }
+});
+
+// Set up on focus, so the field is announced as a combobox before the first word is typed.
+document.addEventListener('focusin', function(e) {
+    if (fcIsAddressInput(e.target)) {
+        fcAddressSetup(e.target);
+    }
+});
+
+document.addEventListener('focusout', function(e) {
+    var state = fcIsAddressInput(e.target) ? e.target.__fcAddress : null;
+    if (!state) {
+        return;
+    }
+    setTimeout(function() {
+        if (document.activeElement !== state.input) {
+            fcAddressClose(state);
+        }
+    }, 150);
+});
 
 //----------------------------------------------------------------------------------
 

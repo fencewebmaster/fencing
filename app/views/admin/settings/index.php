@@ -672,14 +672,6 @@ $tab = $fcSettingsPage;
                                     </div>
                                 </header>
                                 <div class="fc-settings-card__body fc-settings-card__body--sections">
-                                    <label class="flex min-w-0 flex-col gap-1" for="fc-integration-googleMapsApiKey">
-                                        <span class="text-sm font-medium text-slate-700">Google Maps API key</span>
-                                        <span class="fc-settings-field-input-wrap">
-                                            <input type="password" id="fc-integration-googleMapsApiKey" data-fc-integration-field="googleMapsApiKey" value="<?php echo e((string) ($integrations['googleMapsApiKey'] ?? '')); ?>" class="fc-settings-field font-mono" autocomplete="off" spellcheck="false" />
-                                            <button type="button" class="fc-settings-field-copy" data-fc-integration-reveal="fc-integration-googleMapsApiKey" aria-label="Show Google Maps API key" title="Show or hide"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
-                                            <button type="button" class="fc-settings-field-copy" data-fc-settings-copy-for="fc-integration-googleMapsApiKey" aria-label="Copy Google Maps API key" title="Copy to clipboard"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
-                                        </span>
-                                    </label>
                                     <label class="flex min-w-0 flex-col gap-1" for="fc-integration-chatraId">
                                         <span class="text-sm font-medium text-slate-700">Chatra ID</span>
                                         <span class="fc-settings-field-input-wrap">

@@ -442,7 +442,7 @@ HELPER = {
             return;
         }
         var $el = HELPER.getStep3DisplayResult$();
-        if (!$el.length || $el.hasClass('fc-planner-step3-result--loading')) {
+        if (!$el.length || $el.hasClass('fc-planner-step3-result--loading') || $el.hasClass('fc-planner-step3-result--holding')) {
             return;
         }
         var height = Math.ceil($el.outerHeight());

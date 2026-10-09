@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Fc\Admin\Controllers\DashboardController;
 use Fc\Admin\Controllers\EntriesPageController;
+use Fc\Admin\Controllers\Frontend\AddressLookupController;
 use Fc\Admin\Controllers\Frontend\AjaxController;
+use Fc\Admin\Controllers\Frontend\CaptureImageController;
 use Fc\Admin\Controllers\Frontend\CheckoutController;
 use Fc\Admin\Controllers\Frontend\HomeController;
 use Fc\Admin\Controllers\Frontend\LookupController;
@@ -195,6 +197,16 @@ return [
 
         $router->any('ajax', static function (Request $request): void {
             (new AjaxController($request))->index();
+        });
+
+        // Street suggestions for the Address fields, from FC's own copy of the national address file (writable/au.jsonl).
+        $router->get('address-lookup', static function (Request $request): void {
+            (new AddressLookupController($request))->index();
+        });
+
+        // Same-origin copies of catalogue product images for the project plan's PNG/PDF capture (the store sends no CORS header).
+        $router->get('capture-image', static function (Request $request): void {
+            (new CaptureImageController($request))->index();
         });
 
         // Product lookup.

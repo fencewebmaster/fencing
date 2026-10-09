@@ -184,7 +184,7 @@ final class SiteHealthService
             self::attempt('storage', 'Cache and sessions', static fn (): array => self::storage()),
             self::attempt('errors', 'PHP error log', static fn (): array => self::errorLog($local)),
             self::attempt('webhook', 'CRM webhook', static fn (): array => self::webhook($local)),
-            self::attempt('maps', 'Google Maps key', static fn (): array => self::mapsKey()),
+            self::attempt('address', 'Address suggestions', static fn (): array => self::addressData()),
         ];
     }
 
@@ -707,13 +707,15 @@ final class SiteHealthService
         return ['good', ($test ? 'Test' : 'Live') . ' · ' . $host, ''];
     }
 
-    private static function mapsKey(): array
+    /** The street list behind the Address fields' suggestions: per site and gitignored, so a new site has none until it is copied. */
+    private static function addressData(): array
     {
-        if (trim((string) IntegrationsSettings::get()['googleMapsApiKey']) === '') {
-            return ['warn', 'Not set', 'The planner\'s address search needs a Google Maps key (Settings → Integration).'];
+        $meta = AddressLookupService::meta();
+        if ($meta === null) {
+            return ['warn', 'No data file', 'Address fields show no suggestions until writable/au.jsonl is built or copied in (build/address/README.md).'];
         }
 
-        return ['good', 'Set', ''];
+        return ['good', trim((string) ($meta['source'] ?? '')) . ' · ' . number_format((int) ($meta['streets'] ?? 0)) . ' streets', ''];
     }
 
     // —— Database ——

@@ -3242,6 +3242,9 @@ FENCE = {
 
         var leaf = this.resolveStdGateLeafWidthNominalMm(slug, gate_data);
         var totalOpening = this.isDoubleGate(gate_data) && Number.isFinite(leaf) ? leaf * 2 : leaf;
+        if (typeof SlatFence !== 'undefined' && Number.isFinite(totalOpening)) {
+            totalOpening += SlatFence.getDoubleGateMeetingGapMm(slug, gate_data);
+        }
 
         var post = parseInt(this.get(slug, 'post'), 10);
         if (!Number.isFinite(post) || post <= 0) {
@@ -3273,6 +3276,9 @@ FENCE = {
             return null;
         }
         var totalOpening = isDouble ? leaf * 2 : leaf;
+        if (isDouble && typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(slug)) {
+            totalOpening += parseInt(SlatFence.getSetting(slug, 'gate_meeting_gap'), 10) || 0;
+        }
         var fence_gate_posts_gaps = parseInt(this.get(slug, 'gate_posts_gaps'), 10);
         if (!Number.isFinite(fence_gate_posts_gaps)) {
             fence_gate_posts_gaps = 0;

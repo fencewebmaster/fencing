@@ -20,7 +20,7 @@
  * The keyboard button beside Summary lists these in #fc-shortcuts-modal (planner/modals.php);
  * keep the two in step.
  *
- * Shared file beside hscroll-proxy.js; it no-ops on pages without the planner's Step 3 strip.
+ * Shared file beside hscroll-fade.js; it no-ops on pages without the planner's Step 3 strip.
  */
 (function fcDrawingKeys() {
     var section = document.querySelector('.js-fc-form-step[data-section="3"]');

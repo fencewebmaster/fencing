@@ -1801,9 +1801,189 @@ a div {
     padding-bottom: 30px;
 }
 
-/* Google's .pac-container sits at z-index 1000; 1046 clears the modal but stays under the backdrop. */
-.pac-container {
+/* Address suggestions (functions.js fcAddress*): fixed on <body> and placed under the field by fcAddressPlace(). */
+/* 1046 clears the plans modal (1045) and the project plan's pinned bands, as Google's list did. */
+.fc-address-suggest {
+    position: fixed;
     z-index: 1046;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    max-height: 380px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--fc-white);
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+/* A slow answer: a thin bar runs along the top of the list it is about to replace, over it so no row moves. */
+.fc-address-suggest.is-loading::before {
+    content: "";
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: block;
+    height: 2px;
+    margin-bottom: -2px;
+    background: linear-gradient(90deg, transparent, var(--fc-princeton-orange), transparent) no-repeat;
+    background-size: 40% 100%;
+    animation: fc-address-loading 1s linear infinite;
+}
+
+@keyframes fc-address-loading {
+    from { background-position: -70% 0; }
+    to { background-position: 170% 0; }
+}
+
+/* Rows run edge to edge with a rule under each; the credit band below takes the last one as its top edge. */
+.fc-address-suggest__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 58px;
+    padding: 10px 16px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--fc-gray);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.fc-address-suggest__item.is-active {
+    background: var(--fc-fair-pink);
+}
+
+.fc-address-suggest__pin {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--fc-cultured);
+    color: var(--fc-dove-gray);
+    font-size: 13px;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.fc-address-suggest__item.is-active .fc-address-suggest__pin {
+    background: var(--fc-white);
+    color: var(--fc-princeton-orange);
+}
+
+.fc-address-suggest__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.fc-address-suggest__street {
+    color: var(--fc-cod-gray);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+.fc-address-suggest__place {
+    color: var(--fc-boulder);
+    font-size: 12.5px;
+    line-height: 1.35;
+}
+
+.fc-address-suggest__street strong,
+.fc-address-suggest__place strong {
+    font-weight: 600;
+}
+
+.fc-address-suggest__place strong {
+    color: var(--fc-dark-charcoal);
+}
+
+.fc-address-suggest__message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    color: var(--fc-boulder);
+    font-size: 13px;
+    line-height: 1.4;
+    cursor: default;
+}
+
+.fc-address-suggest__message.is-busy::before {
+    content: "";
+    flex: none;
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    border: 2px solid var(--fc-gainsboro);
+    border-top-color: var(--fc-princeton-orange);
+    border-radius: 50%;
+    animation: fc-address-spin 0.8s linear infinite;
+}
+
+@keyframes fc-address-spin {
+    to { transform: rotate(360deg); }
+}
+
+.fc-address-suggest__credit {
+    padding: 7px 16px;
+    background: var(--fc-alabaster);
+    color: var(--fc-boulder);
+    font-size: 10.5px;
+    text-align: right;
+    cursor: default;
+}
+
+/* Post Code and State filled by a pick flash once, so the change below the list is seen. */
+.fc-address-filled {
+    animation: fc-address-filled 1.4s ease-out;
+}
+
+@keyframes fc-address-filled {
+    from { background-color: var(--fc-fair-pink); }
+}
+
+/* What the list now holds, for screen readers only. */
+.fc-address-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 575.98px) {
+    .fc-address-suggest__street {
+        font-size: 15px;
+    }
+
+    .fc-address-suggest__place {
+        font-size: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-address-suggest.is-loading::before,
+    .fc-address-suggest__message.is-busy::before,
+    .fc-address-filled {
+        animation: none;
+    }
+
+    .fc-address-suggest__item,
+    .fc-address-suggest__pin {
+        transition: none;
+    }
 }
 
 /* Modal Content/Box */
@@ -4146,124 +4326,156 @@ a.fc-tab-active {
     pointer-events: none;
 }
 
+/* Drawn like the run it stands in for (width marks, posts and panels, Overall line), on Step 3's own grid. */
 .fc-planner-page .fc-planner-step3-skeleton {
     position: absolute;
     inset: 0;
     z-index: 2;
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: center;
-    padding: 12px 8px 16px;
+    gap: 18px;
+    padding: 16px;
     min-height: 200px;
     box-sizing: border-box;
-    background: var(--fc-white);
+    background: transparent;
 }
 
 .fc-planner-page .fc-planner-step3-skeleton.fc-d-none {
     display: none !important;
 }
 
+.fc-planner-page .fc-planner-step3-skeleton__dims,
 .fc-planner-page .fc-planner-step3-skeleton__run {
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 2px;
-    min-height: 72px;
-    padding: 0 4px;
+    width: 100%;
+    max-width: 860px;
+}
+
+.fc-planner-page .fc-planner-step3-skeleton__dims {
+    gap: 7px;
+    padding: 0 7px;
+    box-sizing: border-box;
+}
+
+.fc-planner-page .fc-planner-step3-skeleton__dim {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--fc-alabaster) 0%, #e2e2e2 50%, var(--fc-alabaster) 100%);
+    background-size: 200% 100%;
+    animation: fc-fencing-skeleton-shimmer 1.05s ease-in-out infinite;
+}
+
+.fc-planner-page .fc-planner-step3-skeleton__run {
+    align-items: stretch;
+    height: 132px;
 }
 
 .fc-planner-page .fc-planner-step3-skeleton__post {
     width: 7px;
     flex-shrink: 0;
-    align-self: stretch;
-    min-height: 56px;
     border-radius: 2px;
-    background: var(--fc-wild-sand);
+    background: var(--fc-alto-4);
     position: relative;
     overflow: hidden;
 }
 
-.fc-planner-page .fc-planner-step3-skeleton__post::after {
+.fc-planner-page .fc-planner-step3-skeleton__post::after,
+.fc-planner-page .fc-planner-step3-skeleton__panel-fill::after {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.5) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 100%);
     animation: fc-fencing-skeleton-img-sweep 1.35s ease-in-out infinite;
     will-change: transform;
 }
 
 .fc-planner-page .fc-planner-step3-skeleton__panel {
     flex: 1;
-    min-width: 24px;
-    max-width: 45%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    min-width: 0;
+    padding-top: 6px;
 }
 
 .fc-planner-page .fc-planner-step3-skeleton__panel-fill {
-    height: 52px;
-    border-radius: 4px;
+    height: 112px;
     background: var(--fc-wild-sand);
+    border-top: 4px solid var(--fc-alto-4);
+    border-bottom: 4px solid var(--fc-alto-4);
+    box-sizing: border-box;
     position: relative;
     overflow: hidden;
-    border: 1px solid var(--fc-alto-4);
 }
 
 .fc-planner-page .fc-planner-step3-skeleton__panel-fill::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 55%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.55) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    animation: fc-fencing-skeleton-img-sweep 1.35s ease-in-out infinite;
     animation-delay: 0.12s;
-    will-change: transform;
 }
 
 .fc-planner-page .fc-planner-step3-skeleton__meta {
-    margin-top: 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
     align-items: center;
+    width: 100%;
+    max-width: 860px;
+    position: relative;
+}
+
+/* The Overall line: a rule across the run with its figure in the middle. */
+.fc-planner-page .fc-planner-step3-skeleton__meta::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px solid var(--fc-alto-4);
 }
 
 .fc-planner-page .fc-planner-step3-skeleton__line {
     display: block;
-    height: 10px;
-    width: 55%;
-    max-width: 280px;
-    border-radius: 4px;
-    background: linear-gradient(
-        90deg,
-        var(--fc-alabaster) 0%,
-        #e2e2e2 50%,
-        var(--fc-alabaster) 100%
-    );
+    position: relative;
+    height: 18px;
+    width: 120px;
+    border-radius: 9px;
+    background: linear-gradient(90deg, var(--fc-alabaster) 0%, #e2e2e2 50%, var(--fc-alabaster) 100%);
     background-size: 200% 100%;
     animation: fc-fencing-skeleton-shimmer 1.05s ease-in-out infinite;
 }
 
-.fc-planner-page .fc-planner-step3-skeleton__line--narrow {
-    width: 38%;
-    max-width: 180px;
-    animation-delay: 0.1s;
+@media (max-width: 575px) {
+    .fc-planner-page .fc-planner-step3-skeleton__run {
+        height: 104px;
+    }
+
+    .fc-planner-page .fc-planner-step3-skeleton__panel-fill {
+        height: 86px;
+    }
+}
+
+/* A rebuild hides the run under the skeleton (still laid out at full size); a run that changed height then eases to it. */
+.fc-planner-page .fencing-display-result.fc-planner-step3-result--skeleton {
+    overflow: hidden;
+}
+
+.fc-planner-page .fencing-display-result.fc-planner-step3-result--skeleton .fc-project-plan-hscroll {
+    visibility: hidden;
+}
+
+.fc-planner-page .fencing-display-result.fc-planner-step3-result--sizing {
+    overflow: hidden;
+    transition: height 0.2s ease;
+}
+
+.fc-planner-page .fencing-display-result.fc-planner-step3-result--reveal .fc-project-plan-hscroll {
+    animation: fc-planner-step3-reveal 0.2s ease-out;
+}
+
+@keyframes fc-planner-step3-reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4272,7 +4484,12 @@ a.fc-tab-active {
         animation: none;
     }
 
-    .fc-planner-page .fc-planner-step3-skeleton__line {
+    .fc-planner-page .fc-planner-step3-skeleton__line,
+    .fc-planner-page .fc-planner-step3-skeleton__dim {
+        animation: none;
+    }
+
+    .fc-planner-page .fencing-display-result.fc-planner-step3-result--reveal .fc-project-plan-hscroll {
         animation: none;
     }
 }
@@ -8085,52 +8302,12 @@ thead.fc-border th:last-child {
     background: transparent;
 }
 
-/* Planner Step 3: the drawing strip's scrollbar moves under the control buttons. The strip's own
-   bar is hidden here and .fc-hscroll-proxy (kept in sync by shared/hscroll-proxy.js) renders it
-   at the bottom of the section instead of between the drawing and the Overall line. */
+/* Planner Step 3 shows no scrollbar for the drawing: it scrolls by drag, swipe, trackpad and arrow keys. */
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result .fc-project-plan-hscroll {
     scrollbar-width: none;
 }
 
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result .fc-project-plan-hscroll::-webkit-scrollbar {
-    display: none;
-}
-
-/* Same 5px bar the other custom scroll strips draw (see .fencing-tab-container::-webkit-scrollbar);
-   scrollbar-width/-color is the Firefox half of the same look. */
-.fc-hscroll-proxy {
-    overflow-x: auto;
-    overflow-y: hidden;
-    margin-top: 12px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--fc-dark-charcoal) var(--fc-concrete);
-}
-
-.fc-hscroll-proxy__inner {
-    height: 1px;
-}
-
-.fc-hscroll-proxy::-webkit-scrollbar {
-    height: 5px;
-}
-
-.fc-hscroll-proxy::-webkit-scrollbar-track {
-    background: var(--fc-concrete);
-}
-
-.fc-hscroll-proxy::-webkit-scrollbar-thumb {
-    background: var(--fc-dark-charcoal);
-}
-
-@media (min-width: 1024px) {
-    .fc-hscroll-proxy::-webkit-scrollbar-thumb:hover {
-        background: var(--fc-emperor-555);
-    }
-}
-
-/* Own off-state class, not the .fc-d-none utility: that utility sits early in this sheet, and a
-   same-specificity display rule below it would win (the .fencing-tabs-container trap). */
-.fc-hscroll-proxy--off {
     display: none;
 }
 
@@ -9475,7 +9652,8 @@ thead.fc-border th:last-child {
     position: relative;
 }
 
-.fencing-section__cmp:last-child {
+/* The Step 3 control row ends its section but keeps its own spacing; :where() holds this rule's weight where it was. */
+.fencing-section__cmp:last-child:not(:where(.fencing-panel-controls)) {
     margin-bottom: 0;
     padding-bottom: 0;
 }
@@ -9887,14 +10065,14 @@ thead.fc-border th:last-child {
     }
 
     /* One sixth of the row plus the carousel's pulled-out gutter, so the tile matches a slide; padding = slick-list top + the slide gap. */
-    /* Stretched to the carousel; padding-bottom 84px = slider 58 + slick-list 14 + slide margin 12, so it ends level with the cards. */
+    /* Stretched to the carousel; padding-bottom 26px = slick-list 14 + slide margin 12, so it ends level with the cards. */
     .fc-planner-page .fencing-styles-load-quote {
         display: flex;
         flex-direction: column;
         align-self: stretch;
         float: none;
         flex: 0 0 calc((100% + 16px) / 6);
-        padding: 10px 0 84px 16px;
+        padding: 10px 0 26px 16px;
         box-sizing: border-box;
         /* .load-quote's transition: all would ease the reveal below; its hover effects live on its children. */
         transition: none;
@@ -10283,7 +10461,7 @@ body.fc-restoring-selection .fencing-tab-name {
 /* Floating prev/next — Font Awesome chevrons (custom arrows in slick/styles.js) */
 .fc-planner-page .js-fencing-styles-slick.slick-slider {
     position: relative;
-    padding-bottom: 58px;
+    padding-bottom: 0;
     /* Keeps the arrows' z-index inside the slider, so they pass behind the sticky section tabs. */
     isolation: isolate;
 }
@@ -10369,36 +10547,57 @@ body.fc-restoring-selection .fencing-tab-name {
 
 /* Hide pager when only one page (0–1 dot); tighten bottom padding without dot row */
 .fc-planner-page .fencing-styles__area.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
-.fc-planner-page .fencing-styles.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
-.fc-planner-page .js-fencing-styles-slick.slick-slider:has(.slick-dots li:only-child) {
+.fc-planner-page .fencing-styles.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider {
     padding-bottom: 0;
 }
 
-.fc-planner-page .fencing-styles__area.fencing-styles-slick-single-page .slick-dots,
-.fc-planner-page .fencing-styles.fencing-styles-slick-single-page .slick-dots,
-.fc-planner-page .js-fencing-styles-slick .slick-dots:has(li:only-child) {
+.fc-planner-page .fencing-styles__area.fencing-styles-slick-single-page .fencing-styles__dots,
+.fc-planner-page .fencing-styles__dots:has(.slick-dots li:only-child) {
     display: none !important;
 }
 
-/* Bullets — centered below slides; 32px (24px row) leaves equal space to the tiles and to the card border (-26px margin below). */
-.fc-planner-page .js-fencing-styles-slick .slick-dots {
-    position: absolute;
-    left: 50%;
-    bottom: 32px;
-    transform: translateX(-50%);
+/* Pager row top left above the cards (slick/styles.js appendDots): 10px under the rule, 24px tall, so a dot sits 18px from the rule and the tiles.
+   Held from the first paint so the cards never shift; -8px lets the first dot, not its button padding, line up with the cards' left edge. */
+.fc-planner-page .fencing-styles__dots {
+    display: flex;
+    justify-content: flex-start;
+    height: 24px;
+    margin-left: -8px;
+}
+
+/* Phones: the same row centred under the cards, above the Load Quote button (the area stacks as a column to reorder it);
+   -8px / 12px put the dot itself 20px from the tiles and from the button. */
+@media (max-width: 767.98px) {
+    .fc-planner-page .fencing-styles__area {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .fc-planner-page .fencing-styles__dots {
+        order: 1;
+        justify-content: center;
+        margin: -8px 0 12px;
+    }
+
+    .fc-planner-page .fencing-styles-load-quote-mobile {
+        order: 2;
+    }
+}
+
+.fc-planner-page .fencing-styles__dots .slick-dots {
+    position: static;
     width: auto;
-    max-width: calc(100% - 120px);
     margin: 0;
     padding: 0;
     list-style: none;
     display: flex !important;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 2px;
 }
 
-.fc-planner-page .js-fencing-styles-slick .slick-dots li {
+.fc-planner-page .fencing-styles__dots .slick-dots li {
     position: relative;
     display: inline-flex;
     margin: 0;
@@ -10407,7 +10606,7 @@ body.fc-restoring-selection .fencing-tab-name {
     padding: 0;
 }
 
-.fc-planner-page .js-fencing-styles-slick .slick-dots li button {
+.fc-planner-page .fencing-styles__dots .slick-dots li button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10423,7 +10622,7 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 /* A drawn dot instead of slick's font glyph; the current page widens to a pill so position reads without colour. */
-.fc-planner-page .js-fencing-styles-slick .slick-dots li button:before {
+.fc-planner-page .fencing-styles__dots .slick-dots li button:before {
     content: '';
     position: static;
     transform: none;
@@ -10436,35 +10635,30 @@ body.fc-restoring-selection .fencing-tab-name {
     transition: width 0.25s ease, background-color 0.2s ease;
 }
 
-.fc-planner-page .js-fencing-styles-slick .slick-dots li button:hover:before {
+.fc-planner-page .fencing-styles__dots .slick-dots li button:hover:before {
     background: var(--fc-princeton-orange);
 }
 
-.fc-planner-page .js-fencing-styles-slick .slick-dots li.slick-active button:before {
+.fc-planner-page .fencing-styles__dots .slick-dots li.slick-active button:before {
     width: 28px;
     background: var(--fc-princeton-orange);
 }
 
-.fc-planner-page .js-fencing-styles-slick .slick-dots li button:focus-visible {
+.fc-planner-page .fencing-styles__dots .slick-dots li button:focus-visible {
     outline: 2px solid var(--fc-princeton-orange);
     outline-offset: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .fc-planner-page .js-fencing-styles-slick .slick-dots li button:before {
+    .fc-planner-page .fencing-styles__dots .slick-dots li button:before {
         transition: none;
     }
 }
 
 @media (max-width: 767.98px) {
 
-    /* Step 1 keeps its pager hidden; step 4 no longer navigates by arrows, so its pager needs room below. */
-    .fc-planner-page .js-fencing-styles-slick .slick-dots {
-        display: none !important;
-    }
-
     .fc-planner-page .js-fencing-styles-slick.slick-slider {
-        padding-bottom: 26px;
+        padding-bottom: 0;
     }
 
 
@@ -10478,16 +10672,13 @@ body.fc-restoring-selection .fencing-tab-name {
     }
 }
 
+/* The dots sit above the cards now, so the Load Quote button follows the tiles as it does on phones. */
 @media (min-width: 768px) and (max-width: 991.98px) {
 
-    .fc-planner-page .js-fencing-styles-slick.slick-slider {
-        padding-bottom: 54px;
-    }
-
+    .fc-planner-page .js-fencing-styles-slick.slick-slider,
     .fc-planner-page .fencing-styles__area.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
-    .fc-planner-page .fencing-styles.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider,
-    .fc-planner-page .js-fencing-styles-slick.slick-slider:has(.slick-dots li:only-child) {
-        padding-bottom: 26px;
+    .fc-planner-page .fencing-styles.fencing-styles-slick-single-page .js-fencing-styles-slick.slick-slider {
+        padding-bottom: 0;
     }
 }
 
@@ -10507,12 +10698,6 @@ body.fc-restoring-selection .fencing-tab-name {
 
     .fc-planner-page .js-fencing-styles-slick .slick-next.fencing-styles-arrow {
         right: 2px;
-    }
-
-    /* Equal space to the tiles above and to the Load Quote button below (24px row). */
-    .fc-planner-page .js-fencing-styles-slick .slick-dots {
-        max-width: calc(100% - 96px);
-        bottom: 21px;
     }
 }
 
@@ -10873,6 +11058,22 @@ body.fc-restoring-selection .fencing-tab-name {
         width: 100%;
     }
 
+    /* Each value takes its edit field's box (40px, text centred on the same line): rows keep their height on Edit Details. */
+    .fc-project-plan-page .fc-project-details .fc-table.fc-table-customer tbody tr td + td > span:first-child {
+        display: block;
+        min-height: 40px;
+        padding: 8px 0;
+        box-sizing: border-box;
+        line-height: 24px;
+    }
+
+    /* The field reaches 10px into the row's side padding, so its own 10px inset puts its text under the label, as read. */
+    .fc-project-plan-page .fc-project-details .fc-table.fc-table-customer tbody tr td + td > .fc-form-group {
+        width: calc(100% + 20px);
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+
     /* Multi-value rows (fence types, extras) sit tight to the label. */
     .fc-project-plan-page .fc-project-details-value-list {
         margin-top: 1px;
@@ -11062,15 +11263,67 @@ body.fc-restoring-selection .fencing-tab-name {
     line-height: 1.4;
 }
 
-.fc-project-plan-page .fc-edit-zone:has(.project-details--editable) .fc-project-details-edit-hint {
+.fc-project-plan-page .fc-project-details-fence-card:has(.project-details--editable) .fc-project-details-edit-hint {
     display: block !important;
 }
 
-/* The hint sits in the card body now, so it takes the cells' 10px. Keyed off the wrapper, not project-details--edit. */
-.fc-project-details .fc-table-rounded-border > .fc-project-details-edit-hint {
-    margin: 0;
-    /* 8px below matches the mb-2 the Color Options copy carries, so both clear their content by the same amount. */
-    padding: 10px 10px 8px;
+/* Project notes: shown as typed (line breaks, spacing), cut at five lines until Read more opens them. Outranks the notes box's display:block. */
+.fc-project-plan-page .fc-project-details .fc-card-body td > .fc-project-notes__text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.fc-project-plan-page .fc-project-details .fc-card-body td > .fc-project-notes__text.is-expanded {
+    display: block;
+    -webkit-line-clamp: none;
+    line-clamp: none;
+}
+
+.fc-project-plan-page .fc-project-notes__more {
+    margin-top: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--fc-princeton-orange);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.fc-project-plan-page .fc-project-notes__more:hover {
+    text-decoration: underline;
+}
+
+.fc-project-plan-page .fc-project-notes__more:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+/* Edit mode hides the notes span with an inline display:none (checkout.js fcBtnEdit); its toggle goes with it. */
+.fc-project-plan-page .fc-project-notes__text[style*="none"] + .fc-project-notes__more {
+    display: none;
+}
+
+/* Fence Details header: title left, the edit hint on its right; the hint keeps its own case, not the label's caps. */
+.fc-project-details .fc-project-details-fence-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+}
+
+.fc-project-details .fc-project-details-fence-head .fc-project-details-edit-hint {
+    margin: 0 0 0 auto;
+    color: var(--fc-white);
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
 }
 
 /* Notes field fills its card: height is handed down the whole chain, since each link resolves against the one above. */
@@ -12314,8 +12567,8 @@ body.fc-restoring-selection .fencing-tab-name {
     padding-top: 10px;
 }
 
-/* Below md a Load Quote button follows the carousel and already closes the card evenly on its own. */
-@media (min-width: 768px) {
+/* Below lg a Load Quote button follows the carousel and already closes the card evenly on its own. */
+@media (min-width: 992px) {
     .fc-planner-page [data-section="1"] .fencing-section__cmp.fencing-styles {
         margin-bottom: -26px;
     }
@@ -13007,7 +13260,8 @@ body.fc-restoring-selection .fencing-tab-name {
     .fc-project-details .fc-table-rounded-border[class*="project-details--edit"] > table.fc-table tr td:first-child:not(:last-child) {
         width: 110px;
         max-width: 110px;
-        vertical-align: top;
+        /* Middle, as edit mode has it: top-aligned, every label dropped a pixel when Edit Details swapped text for fields. */
+        vertical-align: middle;
         color: var(--fc-boulder);
         font-size: 12px;
         font-weight: 600;
@@ -13144,6 +13398,7 @@ body.fc-restoring-selection .fencing-tab-name {
    !important to meet the base rule's own. */
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .ally,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .offcut-body,
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally,
 :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .offcut-body {
     background-color: transparent;
@@ -13518,6 +13773,7 @@ body.fc-restoring-selection .fencing-tab-name {
 [data-fc-flat-top-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="flat_top"] .ally,
 [data-fc-barr-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="barr"] .ally,
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .ally,
+[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf,
 [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally,
 [data-fc-perforated-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="perforated_pool"] .ally {
     border-color: var(--fc-coat-edge);
@@ -13560,6 +13816,7 @@ body.fc-restoring-selection .fencing-tab-name {
 /* Slats on the section's own pitch, edged top and bottom so touching (0mm gap) slats still part.
    !important to meet the uncoloured slat rules'. */
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .ally,
+[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf,
 [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .ally {
     background-image: repeating-linear-gradient(
         to bottom,
@@ -13574,6 +13831,8 @@ body.fc-restoring-selection .fencing-tab-name {
    so no post rule below lists them. */
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fencing-panel-item:not(.fencing-panel-gate)::before,
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fencing-panel-item:not(.fencing-panel-gate)::after,
+[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf::before,
+[data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf::after,
 [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .fencing-panel-item:not(.fencing-panel-gate)::before,
 [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] .fencing-panel-item:not(.fencing-panel-gate)::after {
     background: var(--fc-coat);
@@ -13640,6 +13899,7 @@ body.fc-restoring-selection .fencing-tab-name {
 
 /* Slat Fence: Ally border color */
 .fencing-panel-container[data-type="slat"] .ally,
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf,
 .fencing-panel-container[data-type="slat_fence_infill"] .ally {
     border-color: var(--fc-seashell);
 }
@@ -13654,6 +13914,7 @@ body.fc-restoring-selection .fencing-tab-name {
 
 .fencing-panel-container[data-type="slat"] .ally,
 .fencing-panel-container[data-type="slat"] .offcut-body,
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf,
 .fencing-panel-container[data-type="slat_fence_infill"] .ally,
 .fencing-panel-container[data-type="slat_fence_infill"] .offcut-body {
     background-image: repeating-linear-gradient(
@@ -13708,7 +13969,8 @@ body.fc-restoring-selection .fencing-tab-name {
 
 /* Slat + Slat Infill: vertical side rails on panel items (planner + project plan) */
 .fencing-panel-container[data-type="slat_fence_infill"] .fencing-panel-item:not(.fencing-panel-gate):before,
-.fencing-panel-container[data-type="slat"] .fencing-panel-item:not(.fencing-panel-gate):before {
+.fencing-panel-container[data-type="slat"] .fencing-panel-item:not(.fencing-panel-gate):before,
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf::before {
     content: "" !important;
     display: block !important;
     position: absolute;
@@ -13724,7 +13986,8 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 .fencing-panel-container[data-type="slat_fence_infill"] .fencing-panel-item:not(.fencing-panel-gate):after,
-.fencing-panel-container[data-type="slat"] .fencing-panel-item:not(.fencing-panel-gate):after {
+.fencing-panel-container[data-type="slat"] .fencing-panel-item:not(.fencing-panel-gate):after,
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf::after {
     content: "" !important;
     display: block !important;
     position: absolute;
@@ -18444,40 +18707,52 @@ input[type="number"] {
     }
 }
 
-/* Mobile: a strict three-column grid, so labels wrap rather than ellipsize and a min-height keeps one-line buttons matched. */
+/* Mobile: one row of tiles that swipes sideways, like an app's tool row. It runs out to the card's edges, as the drawing
+   above does, and fades there; each fade is only as wide as its padding, so a tile at either end of the row is never faded. */
 @media (max-width: 768px) {
     .fencing-panel-controls {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: nowrap;
         gap: 8px;
-        /* The base rule centres its flex row, which leaves a one-line control short of its two-line neighbours. */
+        /* The base rule centres its flex row, which leaves a one-line control short of a taller neighbour. */
         align-items: stretch;
+        /* The 4px keeps the focus ring inside the scroll box; the margins hold the tiles where the grid had them. */
+        margin: -4px -16px 12px;
+        /* 8px on the left, not 16, so more of the cut-off tile on the right shows. */
+        padding: 4px 16px 4px 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        scroll-padding-inline: 8px 16px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 16px), transparent 100%);
+                mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 16px), transparent 100%);
     }
 
+    .fencing-panel-controls::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Grow to fill a short row, never shrink: a long row scrolls instead. */
     .fencing-panel-controls .btn-fc {
-        width: 100%;
+        flex: 1 0 auto;
+        width: auto;
+        min-width: 92px;
         min-height: 52px;
+        white-space: nowrap;
+        scroll-snap-align: start;
     }
 
-    /* The horizontal padding comes down for a two-word label, and .fc-planner-page .btn sets its padding !important. */
+    /* .fc-planner-page .btn-fc sets its padding !important. */
     .fc-planner-page .fencing-panel-controls .btn-fc {
-        padding: 8px !important;
+        padding: 8px 10px !important;
     }
 
-    /* Summary fills the free cells beside the last control rather than always claiming a row of its own. */
+    /* Summary is the row's last tile, not pushed off to the far end. */
     .fencing-panel-controls .fc-planner-summary-btn {
-        grid-column: auto;
         margin-left: 0 !important;
-    }
-
-    /* The control count varies, so Summary spans to the end of its row; :nth-child(of) skips Glass
-       Pool's hidden twin, and the keyboard-shortcuts control, which phones do not show. */
-    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 1 of .btn-fc:not(.d-none):not(.fc-planner-shortcuts-btn)) {
-        grid-column: 1 / -1;
-    }
-
-    .fencing-panel-controls .fc-planner-summary-btn:nth-child(3n + 2 of .btn-fc:not(.d-none):not(.fc-planner-shortcuts-btn)) {
-        grid-column: span 2;
     }
 
     /* No keyboard on a phone to take the shortcuts. */
@@ -18485,9 +18760,17 @@ input[type="number"] {
         display: none;
     }
 
-    /* The hidden helper <div>s the renderer inserts must not occupy grid cells. */
+    /* The hidden helper <div>s the renderer inserts must not take a place in the row. */
     .fencing-panel-controls div {
         display: none;
+    }
+}
+
+/* A narrow desktop window: no hover lift for the scroll box to clip; the shared button lift's own selector, plus the row. */
+@media (max-width: 768px) and (hover: hover) and (pointer: fine) {
+    .fc-planner-page .fencing-panel-controls .btn-fc:not([disabled]):not(.disabled):hover:not(:active) {
+        transform: none;
+        box-shadow: none;
     }
 }
 
@@ -19064,8 +19347,9 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 }
 
 
-/* Step 1 mobile rhythm: three stacked spacings made 40px above the button, trimmed back to the section's own 20px. */
-@media (max-width: 767.98px) {
+/* Step 1 mobile rhythm: three stacked spacings made 40px above the button, trimmed back to the section's own 20px.
+   Tablets too, now their dots sit above the cards. */
+@media (max-width: 991.98px) {
     .fc-planner-page [data-section="1"] .slick-list {
         padding-bottom: 8px;
     }
@@ -19444,15 +19728,6 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 }
 
 
-/* "Click items below to edit": sides only, since the cell supplies the space above and the copy's own mb-2 the space below. */
-@media (max-width: 767.98px) {
-    .fc-project-details .fc-table--colour__slick-cell > .fc-project-details-edit-hint {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-}
-
-
 /* The four section bands hold the top on mobile; each needs an opaque ground, and the stacked offsets are literals. */
 @media (max-width: 767.98px) {
     .fc-project-plan-page #project-details-section > .fencing-section__step-label,
@@ -19600,10 +19875,6 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
     /* Stacked, the row carries the inset, or the cell's own padding steps the label 15px right of the value under it. */
     .fc-project-plan-page .fc-project-details .fc-table-rounded-border > table > tbody > tr > td:first-child {
         padding-left: 0;
-    }
-
-    .fc-project-plan-page .fc-project-details .fc-table--colour__slick-cell > .fc-project-details-edit-hint {
-        padding-left: 15px;
     }
 }
 
@@ -19769,23 +20040,24 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 }
 
 
-/* Fade the edge there is more to scroll towards. A mask, not an overlay, so it moves with the box; classes from hscroll-fade.js. */
+/* Fade the edge there is more to scroll towards. A mask, not an overlay, so it moves with the box; classes from hscroll-fade.js.
+   16px wide: 44px washed out most of a bay at each end. */
 .fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-end,
 .fc-planner-page .fc-project-plan-hscroll.fc-hscroll-fade-end {
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent 100%);
-            mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
+            mask-image: linear-gradient(to right, #000 calc(100% - 16px), transparent 100%);
 }
 
 .fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-start,
 .fc-planner-page .fc-project-plan-hscroll.fc-hscroll-fade-start {
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 44px);
-            mask-image: linear-gradient(to right, transparent 0, #000 44px);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px);
+            mask-image: linear-gradient(to right, transparent 0, #000 16px);
 }
 
 .fc-project-plan-page .fc-project-plan-hscroll.fc-hscroll-fade-start.fc-hscroll-fade-end,
 .fc-planner-page .fc-project-plan-hscroll.fc-hscroll-fade-start.fc-hscroll-fade-end {
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);
-            mask-image: linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
 }
 
 
@@ -19844,6 +20116,8 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 @media (max-width: 768px) {
     .fc-planner-page .fencing-panel-controls .btn-fc {
         text-align: center;
+        /* 12px keeps the swipe row's tiles compact; !important beats the planner's 13px .btn-fc rule. */
+        font-size: 0.75rem !important;
     }
 
     .fc-planner-page .fencing-panel-controls .btn-fc::before,
@@ -20369,4 +20643,111 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 /* That latch is on the centre line at hand height, where the centred gate label sat; the label drops to the foot. */
 .fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) .fencing-panel-gate:has(> .double-gate) > .fencing-panel-item-size {
     align-self: flex-end;
+}
+
+/* ===== Slat gate leaves ===== */
+
+/* SlatFence.renderGateLeaves draws the gate to scale and its leaves carry the slats and frames, so the gate box goes bare. */
+:is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fencing-panel-gate.fc-slat-gate-drawn.ally {
+    background-image: none !important;
+    border-width: 0;
+}
+
+.fencing-panel-gate.fc-slat-gate-drawn > .double-gate {
+    display: none;
+}
+
+/* A double's leaves stand the latch gap apart; the ground shows through it as it does between the slats. */
+.fc-slat-gate {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: var(--fc-slat-gate-meet-px, 2px);
+    pointer-events: none;
+}
+
+/* One XPRESS leaf: slats between its two 45 x 40 side frames (the panels' ::before/::after rails), edged like a panel. */
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__leaf {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    border-style: solid;
+    border-width: 2px 0;
+}
+
+@media (min-width: 1024px) {
+    :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fencing-panel-gate.fc-slat-gate-drawn:hover .fc-slat-gate__leaf {
+        border-color: var(--fc-princeton-orange);
+    }
+}
+
+/* Heavy Duty Rails: the 65 x 45 rail takes the top and bottom slat's place as one solid member, no gap to the frame line;
+   45 deep against a slat's 16.5, the top one shades the slat under it. Under the side frames, which it screws between. */
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: calc(var(--fc-slat-gap-px, 1px) + var(--fc-slat-size-px, 7px));
+    background: var(--fc-coat, var(--fc-nickel));
+}
+
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__rail--top {
+    top: 0;
+    box-shadow: inset 0 -1px 0 var(--fc-coat-edge, var(--fc-dim-gray)), 0 1px 0 rgba(0, 0, 0, 0.18), 0 2px 1px rgba(0, 0, 0, 0.12);
+}
+
+.fencing-panel-container[data-type="slat"] .fc-slat-gate__rail--bot {
+    bottom: 0;
+    box-shadow: inset 0 1px 0 var(--fc-coat-edge, var(--fc-dim-gray));
+}
+
+/* Width Dimension From: the gate opening over its posts' outer faces or centre lines, under the labels, drawn like the width
+   line over the run. The project plan's Centers row carries the same figure, so it shows on the planner only. */
+.fc-slat-gate-measure {
+    position: absolute;
+    top: calc(100% + 54px + var(--fc-foot-room, 0px));
+    height: 1px;
+    background: currentColor;
+    color: var(--fc-tundora);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.fc-project-plan-page .fc-slat-gate-measure {
+    display: none;
+}
+
+.fc-slat-gate-measure::before,
+.fc-slat-gate-measure::after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    width: 1px;
+    height: 9px;
+    background: currentColor;
+}
+
+.fc-slat-gate-measure::before {
+    left: 0;
+}
+
+.fc-slat-gate-measure::after {
+    right: 0;
+}
+
+.fc-slat-gate-measure__figure {
+    display: block;
+    padding-top: 3px;
+    font-size: 12px;
+    line-height: 15px;
+    letter-spacing: 0.02em;
+}
+
+.fc-slat-gate-measure__ref {
+    display: block;
+    font-size: 9px;
+    line-height: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }

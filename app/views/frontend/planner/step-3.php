@@ -51,7 +51,17 @@
             <div class="fencing-section__cmp fencing-display-result fc-position-relative">
 
                 <div class="js-fc-planner-step3-skeleton fc-planner-step3-skeleton fc-d-none" aria-hidden="true">
+                    <div class="fc-planner-step3-skeleton__dims">
+                        <span class="fc-planner-step3-skeleton__dim"></span>
+                        <span class="fc-planner-step3-skeleton__dim"></span>
+                        <span class="fc-planner-step3-skeleton__dim"></span>
+                        <span class="fc-planner-step3-skeleton__dim"></span>
+                    </div>
                     <div class="fc-planner-step3-skeleton__run">
+                        <div class="fc-planner-step3-skeleton__post"></div>
+                        <div class="fc-planner-step3-skeleton__panel"><div class="fc-planner-step3-skeleton__panel-fill"></div></div>
+                        <div class="fc-planner-step3-skeleton__post"></div>
+                        <div class="fc-planner-step3-skeleton__panel"><div class="fc-planner-step3-skeleton__panel-fill"></div></div>
                         <div class="fc-planner-step3-skeleton__post"></div>
                         <div class="fc-planner-step3-skeleton__panel"><div class="fc-planner-step3-skeleton__panel-fill"></div></div>
                         <div class="fc-planner-step3-skeleton__post"></div>
@@ -60,7 +70,6 @@
                     </div>
                     <div class="fc-planner-step3-skeleton__meta">
                         <span class="fc-planner-step3-skeleton__line"></span>
-                        <span class="fc-planner-step3-skeleton__line fc-planner-step3-skeleton__line--narrow"></span>
                     </div>
                 </div>
                 
@@ -104,16 +113,6 @@
 
             <?php /* [START] PANEL CONTROLS */ ?>   
             <span class="fencing-section__cmp fencing-panel-controls"></span>
-
-            <?php /* Detached scrollbar for the drawing strip above. The strip's own bar is hidden
-                 (planner Step 3 only) and shared/hscroll-proxy.js mirrors it here, so the
-                 scrollbar sits under the control buttons instead of splitting the drawing from
-                 the Overall line. Ships hidden: the module un-hides it only while the drawing
-                 actually overflows. aria-hidden — it duplicates scrolling the strip itself
-                 still offers by drag and keyboard. */ ?>
-            <div class="fc-hscroll-proxy js-fc-hscroll-proxy fc-hscroll-proxy--off" aria-hidden="true">
-                <div class="fc-hscroll-proxy__inner"></div>
-            </div>
 
 
             <?php /* [END] PANEL CONTROLS */ ?>

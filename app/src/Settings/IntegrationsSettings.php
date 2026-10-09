@@ -227,7 +227,6 @@ final class IntegrationsSettings
         }
 
         return [
-            'googleMapsApiKey' => (string) ($api['google_map'] ?? ''),
             'chatraId' => (string) ($api['chatra'] ?? ''),
             'cloudflareApiToken' => (string) ($api['cloudflare_api_token'] ?? ''),
             'webhookUrl' => (string) ($webhooks['zap'] ?? ''),
@@ -320,7 +319,6 @@ final class IntegrationsSettings
      */
     public static function normalize(array $input): array
     {
-        $google = self::cleanValue($input['googleMapsApiKey'] ?? '', 200);
         $cfToken = self::cleanValue($input['cloudflareApiToken'] ?? '', 200);
         // Chatra public IDs are short alphanumeric strings, e.g. zyiAwfgBp6aaDnXK2.
         $chatra = self::cleanValue($input['chatraId'] ?? '', 64);
@@ -329,9 +327,6 @@ final class IntegrationsSettings
         $headerCode = self::cleanCode($input['headerCode'] ?? '');
         $footerCode = self::cleanCode($input['footerCode'] ?? '');
 
-        if ($google === null || ($google !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $google))) {
-            return ['ok' => false, 'error' => 'Google Maps API key contains invalid characters.'];
-        }
         if ($cfToken === null || ($cfToken !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $cfToken))) {
             return ['ok' => false, 'error' => 'Cloudflare API token contains invalid characters.'];
         }
@@ -427,7 +422,6 @@ final class IntegrationsSettings
         return [
             'ok' => true,
             'integrations' => [
-                'googleMapsApiKey' => $google,
                 'chatraId' => $chatra,
                 'cloudflareApiToken' => (string) $cfToken,
                 'webhookUrl' => $webhook,
@@ -482,15 +476,16 @@ final class IntegrationsSettings
             $config['webhook_url'] = is_array($config['webhook_url'] ?? null) ? $config['webhook_url'] : [];
             $config['sites'] = is_array($config['sites'] ?? null) ? $config['sites'] : [];
 
-            $config['apikey']['google_map'] = (string) $next['googleMapsApiKey'];
             $config['apikey']['cloudflare_api_token'] = (string) $next['cloudflareApiToken'];
             $config['apikey']['chatra'] = (string) $next['chatraId'];
             // Zone IDs are per-site, so the legacy global string under apikey is dropped.
             // apikey.chatra is written again: the widget has its own ID field, and the loader
             // is emitted from partials/footer.php rather than pasted into Custom code.
+            // google_map went with Google Places: address suggestions are FC's own (AddressLookupService).
             unset(
                 $config['apikey']['cloudflare_zone_id'],
-                $config['apikey']['cloudflare_account_id']
+                $config['apikey']['cloudflare_account_id'],
+                $config['apikey']['google_map']
             );
             $config['webhook_url']['zap'] = (string) $next['webhookUrl'];
             $config['webhook_url']['test_zap'] = (string) $next['webhookTestUrl'];

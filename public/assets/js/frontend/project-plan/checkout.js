@@ -1,7 +1,46 @@
 var _doc = $(document);
 
+/** Project notes: Read more only for notes the five-line cut actually shortens (measured collapsed, so an open one stays openable). */
+function fcSyncProjectNotesMore() {
+    $('.js-fc-project-notes').each(function() {
+        var text = this;
+        var $more = $(text).nextAll('.js-fc-project-notes-more').first();
+        if (!$more.length || !text.getClientRects().length) {
+            return;
+        }
+        var open = text.classList.contains('is-expanded');
+        text.classList.remove('is-expanded');
+        var cut = text.scrollHeight > text.clientHeight + 1;
+        text.classList.toggle('is-expanded', open && cut);
+        $more.prop('hidden', !cut)
+            .attr('aria-expanded', open && cut ? 'true' : 'false')
+            .text(open && cut ? 'Read less' : 'Read more');
+    });
+}
+
+_doc.on('click', '.js-fc-project-notes-more', function(e) {
+    e.preventDefault();
+    var $text = $(this).prevAll('.js-fc-project-notes').first();
+    var open = !$text.hasClass('is-expanded');
+    $text.toggleClass('is-expanded', open);
+    $(this).attr('aria-expanded', open ? 'true' : 'false').text(open ? 'Read less' : 'Read more');
+});
+
+$(function() {
+    fcSyncProjectNotesMore();
+    var notesResizeTimer = null;
+    $(window).on('resize', function() {
+        clearTimeout(notesResizeTimer);
+        notesResizeTimer = setTimeout(fcSyncProjectNotesMore, 150);
+    });
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(fcSyncProjectNotesMore);
+    }
+});
+
 /** After AJAX replaces `.your-project-details`, Slick must bind to the new DOM (slick/project-plan-color.js). */
 function fcAfterProjectDetailsSectionReloaded() {
+    fcSyncProjectNotesMore();
     if (typeof window.fcRefreshProjectPlanColorSlick !== 'function') {
         return;
     }
@@ -253,6 +292,7 @@ function fcPrepareProjectPlanSectionScreenshotClone(cloned, size) {
         /* Copied at the on-screen section's width; its band has to span the whole run. */
         head.style.width = 'auto';
         head.classList.remove('fc-project-plan-section-head--stuck', 'fc-project-plan-section-head--dropdown-open');
+        fcReleaseProjectPlanHeadTitle(head);
     }
 
     var hscroll = cloned.querySelector('.fc-project-plan-hscroll');
@@ -283,6 +323,73 @@ function fcPrepareProjectPlanSectionScreenshotClone(cloned, size) {
     }
 }
 
+/**
+ * modern-screenshot fetchFn: the store's product images are cross-origin with no CORS header, so the capture
+ * could not read them and the PDF printed empty frames. They come through FC's same-origin capture-image route.
+ */
+function fcProjectPlanCaptureFetch(url) {
+    var parsed;
+    try {
+        parsed = new URL(url, window.location.href);
+    } catch (e) {
+        return Promise.resolve(false);
+    }
+    if (!/^https?:$/.test(parsed.protocol) || parsed.origin === window.location.origin || !/\.(png|jpe?g|gif|webp)$/i.test(parsed.pathname)) {
+        return Promise.resolve(false);
+    }
+
+    return fetch('capture-image?src=' + encodeURIComponent(parsed.href), { credentials: 'omit' })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('capture-image ' + response.status);
+            }
+            return response.blob();
+        })
+        .then(function(blob) {
+            return new Promise(function(resolve) {
+                var reader = new FileReader();
+                reader.onload = function() {
+                    resolve(reader.result);
+                };
+                reader.onerror = function() {
+                    resolve(false);
+                };
+                reader.readAsDataURL(blob);
+            });
+        })
+        .catch(function() {
+            return false;
+        });
+}
+
+/**
+ * A captured section head keeps each node's on-screen box, but its copy can set in a fallback face: "SECTION 2"
+ * wrapped, the style line was clipped and "6,969 OVERALL" split in two. Free those boxes and hold each line to one row.
+ */
+function fcReleaseProjectPlanHeadTitle(head) {
+    var row = head ? head.querySelector(':scope > .row') : null;
+    if (!row) {
+        return;
+    }
+    row.style.flexWrap = 'nowrap';
+    row.style.height = 'auto';
+    row.style.blockSize = 'auto';
+    var title = row.querySelector(':scope > .col-auto.fw-bold');
+    var lines = title ? [title].concat(Array.prototype.slice.call(title.querySelectorAll('*'))) : [];
+    var overall = row.querySelector(':scope > .fc-project-plan-section-head__overall');
+    if (overall) {
+        lines = lines.concat(Array.prototype.slice.call(overall.querySelectorAll('*')));
+    }
+    lines.forEach(function(el) {
+        el.style.width = 'auto';
+        el.style.inlineSize = 'auto';
+        el.style.height = 'auto';
+        el.style.blockSize = 'auto';
+        el.style.maxWidth = 'none';
+        el.style.whiteSpace = 'nowrap';
+    });
+}
+
 function fcProjectPlanSectionScreenshotOptions(sectionEl, captureOpts) {
     captureOpts = captureOpts || {};
     var size = fcMeasureProjectPlanSectionCapture(sectionEl);
@@ -292,6 +399,7 @@ function fcProjectPlanSectionScreenshotOptions(sectionEl, captureOpts) {
         scale: 2,
         backgroundColor: '#ffffff',
         width: size.width,
+        fetchFn: fcProjectPlanCaptureFetch,
         /* Headless (wrapped-PDF) captures shrink the canvas too, or the removed band would
            come back as white space under the run. */
         height: captureOpts.excludeHead ? size.height - size.headHeight : size.height,
@@ -347,6 +455,7 @@ function fcCaptureProjectPlanSectionHead(sectionEl) {
             scale: 2,
             backgroundColor: '#ffffff',
             width: captureW,
+            fetchFn: fcProjectPlanCaptureFetch,
             timeout: 60000,
             filter: function(node) {
                 if (!node || node.nodeType !== 1) {
@@ -359,7 +468,12 @@ function fcCaptureProjectPlanSectionHead(sectionEl) {
                     cloned.style.position = 'relative';
                     cloned.style.boxShadow = 'none';
                     cloned.style.width = captureW + 'px';
+                    /* Phones pin the head at top: 41px; made relative, that pushed the band 41px down out of the capture. */
+                    cloned.style.top = 'auto';
+                    cloned.style.height = 'auto';
+                    cloned.style.blockSize = 'auto';
                     cloned.classList.remove('fc-project-plan-section-head--stuck', 'fc-project-plan-section-head--dropdown-open');
+                    fcReleaseProjectPlanHeadTitle(cloned);
                     /* Pin the overall to the band's right edge. Absolutely, not text-align: the
                        clone keeps the on-screen row widths, which overflow the fixed captureW. */
                     var overall = cloned.querySelector('.fc-project-plan-section-head__overall');
@@ -1088,6 +1202,7 @@ function fcProjectPlanCartScreenshotOptions() {
         scale: 2,
         backgroundColor: '#ffffff',
         width: fcProjectPlanCartCaptureWidthPx(),
+        fetchFn: fcProjectPlanCaptureFetch,
         timeout: 60000,
         features: {
             restoreScrollPosition: true,
@@ -1557,6 +1672,8 @@ function fcProjectDetailsCancelEdit() {
     fcProjectDetailsSnapshot = null;
     fcSyncProjectDetailsActions();
     fcRefreshColourSlickAfterEditToggle();
+    // The notes were hidden (unmeasurable) while editing; a resize meanwhile would have left Read more stale.
+    fcSyncProjectNotesMore();
 }
 
 _doc.on('click', '.fc-btn-cancel-project-details', function(e) {

@@ -101,7 +101,10 @@ use Fc\Admin\Services\FenceCatalogService;
 								<tr>
 									<td>
 										
-										<span><?php echo trim((string) @$info['notes']) !== '' ? e((string) $info['notes']) : '<span class="text-muted">No notes added.</span>'; ?></span>
+										<?php /* Kept as typed (line breaks, spacing) and cut at five lines; checkout.js shows Read more only when it is cut. The toggle sits outside
+										     the span on purpose: Reset copies the first span's text back into the textarea. */ ?>
+										<span class="fc-project-notes__text js-fc-project-notes"><?php echo trim((string) @$info['notes']) !== '' ? e((string) $info['notes']) : '<span class="text-muted">No notes added.</span>'; ?></span>
+										<button type="button" class="fc-project-notes__more js-fc-project-notes-more" aria-expanded="false" hidden>Read more</button>
 										<div class="fc-form-group has-clear">
 												<textarea name="notes" placeholder="Write your notes here" class="form-control" rows="5"><?php echo e((string) @$info['notes']); ?></textarea>
 										</div>
@@ -120,8 +123,9 @@ use Fc\Admin\Services\FenceCatalogService;
 			<div class="col-md">
 				<div class="fc-card fc-project-details-fence-card">
 
-					<div class="fc-card-header fc-bg-dark fc-border-top">
-						Fence Details
+					<div class="fc-card-header fc-bg-dark fc-border-top fc-project-details-fence-head">
+						<span>Fence Details</span>
+						<span class="fc-project-details-edit-hint fc-d-none" role="status">Click items below to edit</span>
 					</div>
 
 					<div class="fc-edit-zone">
@@ -188,8 +192,6 @@ use Fc\Admin\Services\FenceCatalogService;
 							<tbody>
 								<tr>
 									<td class="fc-table--colour__slick-cell">
-
-									<p class="fc-project-details-edit-hint small mb-2 fc-d-none" role="status">Click items below to edit</p>
 
 									<?php
 									$colors = [];

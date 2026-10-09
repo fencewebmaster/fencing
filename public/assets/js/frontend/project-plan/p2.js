@@ -1059,11 +1059,9 @@ let ProjectPlan = {
         var panel_size_center = (gate_size + 20 + 20 + center_point)  + 'W';
 
 
-        // Slat Fence: Gate Options "Width Dimension From" affects the gate panel centers display.
+        // Slat Fence: Gate Options "Width Dimension From" affects the gate panel centers display (planner's rule).
         if (i === 'slat' || i === 'slat_fence') {
-            const gateWdf = parseInt(gate_data?.[0]?.settings?.fields?.find(it => it.key === 'width_dimension_from')?.val, 10);
-            const mult = (Number.isFinite(gateWdf) && (gateWdf === -1 || gateWdf === -2)) ? Math.abs(gateWdf) : 1;
-            panel_size_center = (gate_size + 20 + 20 + (mult * center_point)) + 'W';
+            panel_size_center = SlatFence.getGatePanelSizeCenter(i, gate_size, center_point, gate_data);
         }
 
         // Update spacing for glass fence
@@ -1176,24 +1174,9 @@ let ProjectPlan = {
                 .append('<span class="fc-gate-spacing fc-gate-right-spacing">20</span>') ;       
         }
 
-        // Slat Fence: gate label shows type + total opening width (double = 2× leaf width).
+        // Slat Fence: the planner's gate label and to-scale leaves (type, height, opening, HD rails), on this section's gate.
         if (i === 'slat' || i === 'slat_fence') {
-            const gateTypeSlug = gate_data?.[0]?.settings?.fields?.find(item => item.key === 'gate_type')?.val || 'single';
-            const gateTypeLabel = (gateTypeSlug === 'double') ? 'Double' : 'Single';
-            const displayGateWidthMm =
-                typeof SlatFence !== 'undefined' && typeof SlatFence.getGateOpeningWidthMm === 'function'
-                    ? SlatFence.getGateOpeningWidthMm(i, gate_data, calc)
-                    : parseInt(gate_size, 10);
-            const gateWidthLabel = Number.isFinite(displayGateWidthMm) && displayGateWidthMm > 0 ? displayGateWidthMm : 0;
-            $('#pp-' + tab + ' .fencing-panel-gate')
-                .find('.fencing-panel-item-size')
-                .html(`${gateTypeLabel}<br>${gateWidthLabel}${panel_unit}<br> ${panel_name}`);
-
-            // Double gate: add a center divider line.
-            $('#pp-' + tab + ' .fencing-panel-gate').find('.double-gate').remove();
-            if (gateTypeSlug === 'double') {
-                $('#pp-' + tab + ' .fencing-panel-gate').append('<div class="double-gate"></div>');
-            }
+            SlatFence.applyGateLabel(i, gate_data, calc, panel_unit, panel_name, $('#pp-' + tab + ' .fencing-panel-gate'));
         }
 
         // Remove hinge type class

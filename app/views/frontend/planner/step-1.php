@@ -36,6 +36,9 @@
     <div class="fencing-section__cmp fencing-styles">
         <div class="fencing-styles__area fencing-styles-slick-pending">
 
+            <?php /* The page dots (slick/styles.js appendDots): top left above the cards, centred below them on phones. */ ?>
+            <div class="fencing-styles__dots js-fencing-styles-dots"></div>
+
             <div class="fc-fencing-styles-skeleton" aria-hidden="true">
                 <div class="fc-fencing-styles-skeleton__track">
                     <?php for ($sk = 0; $sk < 6; $sk++) : ?>

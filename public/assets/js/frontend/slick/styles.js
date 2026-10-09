@@ -100,7 +100,7 @@
         if (!$slider.hasClass('slick-initialized')) {
             return;
         }
-        var dotCount = $slider.find('.slick-dots li').length;
+        var dotCount = $wrap.find('.slick-dots li').length;
         if (dotCount <= 1) {
             $wrap.addClass('fencing-styles-slick-single-page');
         } else {
@@ -174,12 +174,16 @@
             });
         });
 
+        // Dots go top left above the cards, in the row step-1.php holds for them.
+        var $dots = $wrap.find('.js-fencing-styles-dots');
+
         $el.slick({
             mobileFirst: true,
             infinite: true,
             slidesToShow: 2,
             slidesToScroll: 2,
-            dots: false,
+            dots: true,
+            appendDots: $dots.length ? $dots : $el,
             arrows: true,
             prevArrow: arrowPrev,
             nextArrow: arrowNext,
@@ -195,7 +199,7 @@
                     settings: {
                         slidesToShow: 3,
                         slidesToScroll: 3,
-                        dots: false
+                        dots: true
                     }
                 },
                 {

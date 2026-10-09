@@ -17,7 +17,7 @@
  * The figure sits at the centre of the part of the line that is on screen: the whole line when
  * it fits (its true centre), the visible stretch when a long run is scrolled.
  *
- * Shared file beside hscroll-proxy.js; it no-ops on pages without the markup.
+ * Shared file beside hscroll-fade.js; it no-ops on pages without the markup.
  */
 (function fcOverallDimension() {
     var dim = document.querySelector('.js-fc-dim');

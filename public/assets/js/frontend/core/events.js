@@ -1298,11 +1298,14 @@ function fcSelectPostItem() {
             }
         }
 
-        // Width Dimension From (in Gate Options): should ONLY affect gate panel display,
-        // not the overall fence (overall-length offset) calculation.
-        // It DOES affect gate width, so we need to recalculate layout.
+        // Width Dimension From (in Gate Options): only where the gate is dimensioned from, never the leaf width.
         if (getFormField.attr('name') === 'width_dimension_from') {
             try { widthDimensionFrom_change?.(); } catch (err) {}
+        }
+
+        // Slat Heavy Duty Rails are drawn on the gate, so redraw the run like Type Of Gate does.
+        if (getFormField.attr('name') === 'heavy_duty_rails') {
+            try { btnCalculate(); } catch (errHd) {}
         }
     }
 
@@ -4582,8 +4585,8 @@ function fcDownloadPlansEnterNavigate(e) {
         return;
     }
 
-    // Google's address suggestions own the Enter key while their list is up.
-    if ($('.pac-container:visible').length) {
+    // The address suggestions own the Enter key while their list is up.
+    if (document.querySelector('.fc-address-suggest:not([hidden])')) {
         return;
     }
 

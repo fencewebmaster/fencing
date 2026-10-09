@@ -24,7 +24,8 @@ $fc_pp_phone = trim((string) ($fc_pp_stock['phone'] ?? ''));
 					    <?php /* [START] Label */ ?>
 				        <div class="row align-items-center">
 				        	<div class="col-sm col">
-				        		<div class="step-label">Item List & <span>Cart</span></div>
+				        		<?php /* "Cart" alone on phones; text-reset keeps the lead out of .step-label span's accent colour. */ ?>
+				        		<div class="step-label"><span class="d-none d-md-inline text-reset">Item List & </span><span>Cart</span></div>
 
 				        	</div>
 
