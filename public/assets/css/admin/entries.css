@@ -6320,3 +6320,27 @@ html[data-fc-admin-theme='dark'] .fc-admin-menu__option--danger .fc-admin-menu__
     background: #3f1d1d;
     color: #fca5a5;
 }
+
+
+/* —— System → Address Book: the SEO tiles as read-only figures, and the per-state table —— */
+.fc-address-book .fc-seo-check {
+    cursor: default;
+}
+
+.fc-address-book .fc-seo-check:hover {
+    border-color: var(--fc-admin-border, #e2e8f0);
+}
+
+.fc-address-book__states {
+    overflow-x: auto;
+}
+
+/* The Entries table's 56rem floor and sticky header are for its own page; here it fits the card. */
+.fc-address-book__states .fc-entries-table {
+    width: 100%;
+    min-width: 0;
+}
+
+.fc-address-book__states .fc-entries-table thead th {
+    position: static;
+}

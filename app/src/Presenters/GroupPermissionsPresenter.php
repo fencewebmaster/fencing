@@ -232,6 +232,8 @@ final class GroupPermissionsPresenter
                 'dev-console', 'git-pull' => ['settings.dev_console'],
                 // SettingsController narrows these further, to the Super Admin alone.
                 'site-health', 'site-health-fix', 'site-health-log', 'site-health-log-clear', 'phpinfo' => ['settings.settings'],
+                // SettingsController narrows the import to the Super Admin as well.
+                'address-book', 'address-book-export', 'address-book-import' => ['settings.settings'],
                 // SettingsController also requires settings.cache, as the topbar purge does.
                 'cloudflare-purge' => ['settings.settings'],
                 // The switches are a settings choice; the build runs esbuild on the server, like the console's git.

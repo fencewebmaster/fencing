@@ -748,6 +748,7 @@
         }
         if (tabId === 'system') {
             global.FC.Settings.tabs.system.paint();
+            global.FC.Settings.tabs.system.ensureAddressBook();
         }
         if (tabId === 'project-plan') {
             // The Low Stock editor could not size itself while this panel was hidden.
@@ -970,6 +971,9 @@
         }
         if (state.activeTab === 'site-health') {
             global.FC.Settings.tabs.siteHealth.ensureRun();
+        }
+        if (state.activeTab === 'system') {
+            global.FC.Settings.tabs.system.ensureAddressBook();
         }
         if (state.activeTab === 'php-info') {
             global.FC.Settings.tabs.siteHealth.ensurePhpInfo();

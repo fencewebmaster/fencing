@@ -28,6 +28,8 @@ tests/*
 writable/storage/cache/**/*.json
 writable/storage/cache/*.lock
 writable/storage/cache/capture-images/
+writable/au.jsonl
+writable/au.jsonl.tmp.*
 writable/storage/sessions/sess_*
 writable/storage/presence/*.json
 !writable/storage/**/.gitkeep

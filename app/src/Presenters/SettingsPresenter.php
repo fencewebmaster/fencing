@@ -373,7 +373,7 @@ final class SettingsPresenter
                 'project-plan' => ['Project Plan', 'fa-list-check', 'Extra items and the Stock & Delivery panel on each project plan.'],
             ],
             'Site' => [
-                'system'       => ['System', 'fa-gear', 'Admin defaults for dates, the dashboard, entries and online presence.'],
+                'system'       => ['System', 'fa-gear', 'Admin defaults for dates, the dashboard, entries and online presence, and the address book.'],
                 'integration'  => ['Integration', 'fa-plug', 'API keys, the planner webhook, custom code and per-site tracking IDs.'],
                 'seo'          => ['SEO', 'fa-magnifying-glass-chart', 'How the planner appears in search results and when shared.'],
             ],

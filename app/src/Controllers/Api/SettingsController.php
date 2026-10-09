@@ -1,6 +1,6 @@
 <?php
 /**
- * FC Admin — settings API (the settings groups, settings import/export, Cloudflare verify and
+ * FC Admin — settings API (the settings groups, settings import/export, the address book, Cloudflare verify and
  * purge, the dev console, and the Site Health checks).
  */
 
@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Helpers\FormatHelper;
+use Fc\Admin\Services\AddressBookService;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Settings\BrandingSettings;
 use Fc\Admin\Settings\CatalogSettings;
@@ -58,6 +59,21 @@ final class SettingsController extends BaseApiController
 
         if ($action === 'system') {
             $this->handleSystem($method);
+            return;
+        }
+
+        if ($action === 'address-book') {
+            $this->handleAddressBook($method);
+            return;
+        }
+
+        if ($action === 'address-book-export') {
+            $this->handleAddressBookExport($method);
+            return;
+        }
+
+        if ($action === 'address-book-import') {
+            $this->handleAddressBookImport($method);
             return;
         }
 
@@ -408,6 +424,83 @@ final class SettingsController extends BaseApiController
 
         http_response_code(405);
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    /** System → Address Book card: the address file's name, size, dates, release and counts. */
+    private function handleAddressBook(string $method): void
+    {
+        if ($method !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode(['ok' => true, 'addressBook' => AddressBookService::details()], JSON_UNESCAPED_UNICODE);
+    }
+
+    /** Downloads the address file as .jsonl.gz, for importing into another site. */
+    private function handleAddressBookExport(string $method): void
+    {
+        if ($method !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!AddressBookService::sendExport()) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'error' => 'This site has no address book to export.'], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * One chunk of an address book import (multipart: csrf, upload, index, total, offset, size, chunk). Super
+     * Admin only: the file feeds every customer's Address suggestions, so it is replaced as rarely as the code.
+     */
+    private function handleAddressBookImport(string $method): void
+    {
+        if ($method !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Method not allowed.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!AuthService::verifyCsrf((string) $this->request->post('csrf', ''))) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid security token. Refresh and try again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!PermissionService::isSuperAdmin()) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Only the Super Admin can import the address book.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $chunk = $_FILES['chunk'] ?? null;
+        $tmp = is_array($chunk) ? (string) ($chunk['tmp_name'] ?? '') : '';
+        if (!is_array($chunk) || (int) ($chunk['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || $tmp === '' || !is_uploaded_file($tmp)) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'A chunk of the upload didn\'t arrive. Try the import again.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $result = AddressBookService::importChunk(
+            (string) $this->request->post('upload', ''),
+            (int) $this->request->post('index', -1),
+            (int) $this->request->post('total', 0),
+            (int) $this->request->post('offset', -1),
+            (int) $this->request->post('size', 0),
+            $tmp
+        );
+        if (empty($result['ok'])) {
+            http_response_code((int) ($result['status'] ?? 400));
+        }
+        unset($result['status']);
+        if (!empty($result['done'])) {
+            $result['message'] = 'Address book imported.';
+        }
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
     private function handleIntegrations(string $method): void
