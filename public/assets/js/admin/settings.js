@@ -17,6 +17,7 @@
         'catalog',
         'system',
         'integration',
+        'addresses',
         'project-plan',
         'seo',
         'console',
@@ -107,6 +108,9 @@
         }
         if (normalized === 'phpinfo') {
             normalized = 'php-info';
+        }
+        if (normalized === 'address-book' || normalized === 'addressbook' || normalized === 'address') {
+            normalized = 'addresses';
         }
         if (normalized === 'minified' || normalized === 'minify-css-js') {
             normalized = 'minify';
@@ -485,6 +489,7 @@
         var catalogActions = document.getElementById('fc-settings-header-actions-catalog');
         var systemActions = document.getElementById('fc-settings-header-actions-system');
         var integrationActions = document.getElementById('fc-settings-header-actions-integration');
+        var addressesActions = document.getElementById('fc-settings-header-actions-addresses');
         var projectPlanActions = document.getElementById('fc-settings-header-actions-project-plan');
         var seoActions = document.getElementById('fc-settings-header-actions-seo');
         var consoleActions = document.getElementById('fc-settings-header-actions-console');
@@ -547,6 +552,10 @@
         if (minifyActions) {
             minifyActions.classList.toggle('hidden', state.activeTab !== 'minify');
             minifyActions.classList.toggle('flex', state.activeTab === 'minify');
+        }
+        if (addressesActions) {
+            addressesActions.classList.toggle('hidden', state.activeTab !== 'addresses');
+            addressesActions.classList.toggle('flex', state.activeTab === 'addresses');
         }
         if (siteHealthActions) {
             siteHealthActions.classList.toggle('hidden', state.activeTab !== 'site-health');
@@ -662,6 +671,7 @@
         var catalogPanel = document.getElementById('fc-settings-panel-catalog');
         var systemPanel = document.getElementById('fc-settings-panel-system');
         var integrationPanel = document.getElementById('fc-settings-panel-integration');
+        var addressesPanel = document.getElementById('fc-settings-panel-addresses');
         var projectPlanPanel = document.getElementById('fc-settings-panel-project-plan');
         var seoPanel = document.getElementById('fc-settings-panel-seo');
         var consolePanel = document.getElementById('fc-settings-panel-console');
@@ -689,6 +699,9 @@
         }
         if (integrationPanel) {
             integrationPanel.classList.toggle('hidden', tabId !== 'integration');
+        }
+        if (addressesPanel) {
+            addressesPanel.classList.toggle('hidden', tabId !== 'addresses');
         }
         if (projectPlanPanel) {
             projectPlanPanel.classList.toggle('hidden', tabId !== 'project-plan');
@@ -748,7 +761,9 @@
         }
         if (tabId === 'system') {
             global.FC.Settings.tabs.system.paint();
-            global.FC.Settings.tabs.system.ensureAddressBook();
+        }
+        if (tabId === 'addresses') {
+            global.FC.Settings.tabs.addresses.ensureAddressBook();
         }
         if (tabId === 'project-plan') {
             // The Low Stock editor could not size itself while this panel was hidden.
@@ -950,6 +965,7 @@
         global.FC.Settings.tabs.fenceColors.bind();
         global.FC.Settings.tabs.catalog.bind();
         global.FC.Settings.tabs.system.bind();
+        global.FC.Settings.tabs.addresses.bind();
         global.FC.Settings.tabs.integration.bind();
         global.FC.Settings.tabs.projectPlan.bind();
         global.FC.Settings.tabs.seo.bind();
@@ -972,8 +988,8 @@
         if (state.activeTab === 'site-health') {
             global.FC.Settings.tabs.siteHealth.ensureRun();
         }
-        if (state.activeTab === 'system') {
-            global.FC.Settings.tabs.system.ensureAddressBook();
+        if (state.activeTab === 'addresses') {
+            global.FC.Settings.tabs.addresses.ensureAddressBook();
         }
         if (state.activeTab === 'php-info') {
             global.FC.Settings.tabs.siteHealth.ensurePhpInfo();

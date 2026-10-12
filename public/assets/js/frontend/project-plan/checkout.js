@@ -262,12 +262,15 @@ function fcMeasureProjectPlanSectionCapture(sectionEl) {
     var strip = sectionEl.querySelector('.fc-project-plan-hscroll');
     var hidden = strip ? Math.max(0, strip.scrollWidth - strip.clientWidth) : 0;
     var scrollbar = strip ? Math.max(0, strip.offsetHeight - strip.clientHeight) : 0;
+    /* The arrow-key note is filtered out of the capture, so its line would come back as white space. */
+    var hint = sectionEl.querySelector('.fc-drawing-keys-hint');
+    var hintHeight = hint && hint.offsetHeight ? hint.offsetHeight + (parseFloat(window.getComputedStyle(hint).marginTop) || 0) : 0;
 
     var head = sectionEl.querySelector('.fc-project-plan-section-head');
 
     return {
         width: Math.ceil(sectionEl.offsetWidth + hidden),
-        height: Math.ceil(sectionEl.offsetHeight - scrollbar),
+        height: Math.ceil(sectionEl.offsetHeight - scrollbar - hintHeight),
         stripWidth: strip ? Math.ceil(strip.scrollWidth) : 0,
         headHeight: head ? Math.ceil(head.offsetHeight) : 0
     };
@@ -417,7 +420,7 @@ function fcProjectPlanSectionScreenshotOptions(sectionEl, captureOpts) {
             if (el.classList.contains('fc-project-plan-section-actions')) {
                 return false;
             }
-            if (el.classList.contains('fc-project-plan-skeleton')) {
+            if (el.classList.contains('fc-project-plan-skeleton') || el.classList.contains('fc-drawing-keys-hint') || el.classList.contains('fc-plan-view-bar')) {
                 return false;
             }
             if (captureOpts.excludeHead && el.classList.contains('fc-project-plan-section-head')) {
@@ -515,6 +518,12 @@ function fcCloseProjectPlanSectionDropdown(sectionEl) {
 }
 
 function fcCaptureProjectPlanSection(sectionIndex, captureOpts) {
+    /* A full-screen section is laid over the window; it is measured and captured in the page's own layout. */
+    var fullscreenButton = document.querySelector('.fc-project-plan-section--fullscreen .js-fc-plan-fullscreen');
+    if (fullscreenButton) {
+        fullscreenButton.click();
+    }
+
     return new Promise(function(resolve, reject) {
         function startCapture() {
             requestAnimationFrame(function() {

@@ -84,6 +84,9 @@ $tab = $fcSettingsPage;
                     <button type="button" id="fc-integration-reset" class="<?php echo e((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
                     <button type="button" id="fc-integration-save" class="<?php echo e((string) $tab['btn_primary']); ?>"><span>Save Changes</span></button>
                 </div>
+                <div id="fc-settings-header-actions-addresses" class="<?php echo e((string) $tab['header_actions_class']['addresses']); ?> flex-wrap gap-2">
+                    <a class="<?php echo e((string) $tab['btn_secondary']); ?>" href="#" data-fc-address-book-export hidden download><i class="fa-solid fa-download me-1" aria-hidden="true"></i>Export <span class="fc-address-book__btn-hint">.jsonl.gz</span></a>
+                </div>
                 <div id="fc-settings-header-actions-project-plan" class="<?php echo e((string) $tab['header_actions_class']['project_plan']); ?> flex-wrap gap-2">
                     <button type="button" id="fc-project-plan-reset" class="<?php echo e((string) $tab['btn_secondary']); ?> fc-entries-clear-filters" disabled>Discard Changes</button>
                     <button type="button" id="fc-project-plan-save" class="<?php echo e((string) $tab['btn_primary']); ?>"><span>Save Changes</span></button>
@@ -660,21 +663,6 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
 
-                            <?php /* Filled by system-tab.js from GET settings&action=address-book when the tab opens. */ ?>
-                            <section class="fc-settings-card fc-address-book flex h-full flex-col border border-slate-200 bg-white lg:col-span-2" data-fc-address-book>
-                                <header class="fc-settings-card__head">
-                                    <div class="fc-settings-card__heading">
-                                        <h3 class="fc-settings-card__title">Address Book <span class="fc-address-book__chip" data-fc-address-book-chip hidden></span></h3>
-                                        <p class="fc-address-book__lead">The street list behind the planner's Address suggestions. Export it here, then import it on another site.</p>
-                                    </div>
-                                    <div class="fc-settings-card__aside flex flex-wrap gap-2 shrink-0">
-                                        <a class="btn btn-sm btn-light" href="#" data-fc-address-book-export hidden download><i class="fa-solid fa-download me-1" aria-hidden="true"></i>Export <span class="fc-address-book__btn-hint">.jsonl.gz</span></a>
-                                    </div>
-                                </header>
-                                <div class="fc-settings-card__body fc-settings-card__body--sections" data-fc-address-book-body aria-busy="true">
-                                    <div class="fc-address-book__skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-                                </div>
-                            </section>
                             </div>
                         </div>
 
@@ -942,6 +930,21 @@ $tab = $fcSettingsPage;
                                 </div>
                             </section>
 
+                        </div>
+
+                        <div id="fc-settings-panel-addresses" role="tabpanel" aria-labelledby="fc-settings-tab-addresses" class="<?php echo e((string) $tab['panel_class']['addresses']); ?>space-y-5">
+                            <?php /* Filled by addresses-tab.js from GET settings&action=address-book when the tab opens. */ ?>
+                            <section class="fc-settings-card fc-address-book flex flex-col border border-slate-200 bg-white" data-fc-address-book>
+                                <header class="fc-settings-card__head">
+                                    <div class="fc-settings-card__heading">
+                                        <h3 class="fc-settings-card__title">Address Book <span class="fc-address-book__chip" data-fc-address-book-chip hidden></span></h3>
+                                        <p class="fc-address-book__lead">The street list behind the planner's Address suggestions. Export it here, then import it on another site.</p>
+                                    </div>
+                                </header>
+                                <div class="fc-settings-card__body fc-settings-card__body--sections" data-fc-address-book-body aria-busy="true">
+                                    <div class="fc-address-book__skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                                </div>
+                            </section>
                         </div>
 
                         <div id="fc-settings-panel-project-plan" role="tabpanel" aria-labelledby="fc-settings-tab-project-plan" class="<?php echo e((string) $tab['panel_class']['project_plan']); ?>space-y-5">

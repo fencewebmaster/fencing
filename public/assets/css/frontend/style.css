@@ -3673,6 +3673,20 @@ a.fc-tab-active {
     min-width: 0;
 }
 
+/* No scrollbar under the drawing, as on planner Step 3: it scrolls by drag, swipe, trackpad and arrow keys. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll {
+    scrollbar-width: none;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* Dragged sideways (events.js) while the run is wider than the strip; .grabbing takes over mid-drag. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll:is(.fc-hscroll-fade-start, .fc-hscroll-fade-end) {
+    cursor: grab;
+}
+
 @supports not (overflow: clip) {
     .fc-project-plan-page #fc-fence-list .fc-project-plan-hscroll {
         overflow-y: hidden;
@@ -3902,6 +3916,576 @@ a.fc-tab-active {
 
 .fc-project-plan-section.fc-project-plan-capturing .fc-project-plan-skeleton {
     display: none !important;
+}
+
+/* Project plan: each section's view bar, top right under the head: the full-screen button, and in full screen the zoom
+   before it, drawn as planner Step 3's zoom bar. 8px under the head (top pays back its 10px margin), in line with Actions. */
+.fc-project-plan-page #fc-fence-list .plan-item {
+    position: relative;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-plan-view-bar {
+    position: absolute;
+    top: -2px;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fc-plan-view-bar__zoom {
+    display: none;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-plan-fullscreen-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 3px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 2px var(--fc-a-black-6);
+    color: var(--fc-cod-gray);
+}
+
+/* Full screen: the bar takes the zoom bar's frame, and the full-screen button inside it drops its own. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section--fullscreen .fc-plan-view-bar {
+    padding: 3px;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 3px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 2px var(--fc-a-black-6);
+}
+
+.fc-project-plan-section--fullscreen .fc-plan-view-bar__zoom {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section--fullscreen .fc-plan-fullscreen-btn {
+    border-color: transparent;
+    border-radius: 2px;
+    box-shadow: none;
+}
+
+.fc-plan-view-bar__btn,
+.fc-plan-view-bar__value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    min-width: 28px;
+    margin: 0;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--fc-cod-gray);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.fc-plan-view-bar__btn--icon {
+    width: 28px;
+    padding: 0;
+}
+
+/* Tabular figures stop the bar resizing as the readout steps 90 -> 100 -> 110. */
+.fc-plan-view-bar__value {
+    min-width: 48px;
+    padding: 0 4px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.fc-plan-view-bar__sep {
+    align-self: stretch;
+    width: 1px;
+    margin: 4px 2px;
+    background: var(--fc-gainsboro);
+}
+
+.fc-plan-view-bar__icon {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.fc-plan-view-bar__icon--exit,
+.fc-plan-fullscreen-btn[aria-pressed="true"] .fc-plan-view-bar__icon--enter {
+    display: none;
+}
+
+.fc-plan-fullscreen-btn[aria-pressed="true"] .fc-plan-view-bar__icon--exit {
+    display: block;
+}
+
+@media (hover: hover) {
+    .fc-plan-view-bar__btn:hover:not(:disabled),
+    .fc-project-plan-page #fc-fence-list .fc-plan-fullscreen-btn:hover {
+        background: var(--fc-cultured);
+    }
+}
+
+/* Zoom-out at its 10% floor, Reset at 100%. */
+.fc-plan-view-bar__btn:disabled {
+    color: var(--fc-gray-chateau);
+    cursor: not-allowed;
+}
+
+.fc-plan-view-bar__btn:focus-visible,
+.fc-project-plan-page #fc-fence-list .fc-plan-fullscreen-btn:focus-visible {
+    outline: 2px solid var(--fc-deep-blue);
+    outline-offset: 1px;
+}
+
+/* Phones give the head a 14px margin and 14px right padding (0.875rem), against the card's 16px. */
+@media (max-width: 575.98px) {
+    .fc-project-plan-page #fc-fence-list .fc-plan-view-bar {
+        top: -6px;
+        right: -2px;
+    }
+}
+
+/* Section full screen (shared/step3-fullscreen.js): planner Step 3's 1044, over the page but under modals and toasts. */
+html.fc-plan-fullscreen,
+html.fc-plan-fullscreen body {
+    overflow: hidden;
+}
+
+/* !important beats Bootstrap's border and mb-4 utilities on the section card. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section.fc-project-plan-section--fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1044;
+    display: flex;
+    flex-direction: column;
+    margin: 0 !important;
+    border-width: 0 !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--fc-white);
+}
+
+/* Not sticky here: the section scrolls itself, which offset the head by its padding (and by the phone's 41px band) over the button. */
+.fc-project-plan-page #fc-fence-list .border.p-3.fc-project-plan-section--fullscreen > .fc-project-plan-section-head {
+    position: relative;
+    top: auto;
+}
+
+/* The drawing takes the spare height, centred under the head; it fades in on entry and on each move between sections. */
+.fc-project-plan-page #fc-fence-list .fc-project-plan-section--fullscreen > .plan-item {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 0;
+    animation: fc-plan-fullscreen-in 0.2s ease-out;
+}
+
+@keyframes fc-plan-fullscreen-in {
+    from {
+        opacity: 0;
+    }
+}
+
+/* Section filmstrip (project-plan/plan-filmstrip.js): a band along the foot of full screen, over the section (1044), under the card (1046). */
+/* The image box keeps Step 1's 157 x 222 style images whole; the text column beside it takes the number, style and length. */
+.fc-plan-filmstrip {
+    --fc-film-img-w: 41px;
+    --fc-film-img-h: 58px;
+    --fc-film-text-w: 104px;
+    display: none;
+}
+
+html.fc-plan-fullscreen.fc-plan-filmstrip-on .fc-plan-filmstrip {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1045;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--fc-gainsboro);
+    background: var(--fc-cultured);
+    box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.05);
+}
+
+/* The band's height (10 + 4 + a 68px thumbnail + 4 + 10) plus the section's own 16px, so the drawing centres above the band. */
+html.fc-plan-filmstrip-on .fc-project-plan-page #fc-fence-list .fc-project-plan-section.fc-project-plan-section--fullscreen {
+    padding-bottom: 112px !important;
+}
+
+.fc-plan-filmstrip__track {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    gap: 10px;
+    min-width: 0;
+    padding: 4px 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+}
+
+.fc-plan-filmstrip__track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Centred while they fit; from the left edge, scrollable, once they do not. */
+.fc-plan-filmstrip__track > :first-child {
+    margin-left: auto;
+}
+
+.fc-plan-filmstrip__track > :last-child {
+    margin-right: auto;
+}
+
+.fc-plan-filmstrip__step {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 3px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 2px var(--fc-a-black-6);
+    color: var(--fc-cod-gray);
+}
+
+.fc-plan-filmstrip__step--next .fc-plan-filmstrip__icon {
+    transform: scaleX(-1);
+}
+
+.fc-plan-filmstrip__step:disabled {
+    box-shadow: none;
+    color: var(--fc-gray-chateau);
+    cursor: not-allowed;
+}
+
+.fc-plan-filmstrip__icon {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* A small card: the style's image, then number and style over the length. */
+.fc-plan-filmstrip__thumb {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 4px;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 5px;
+    background: var(--fc-white);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+@media (hover: hover) {
+    .fc-plan-filmstrip__step:hover:not(:disabled) {
+        background: var(--fc-cultured);
+    }
+
+    .fc-plan-filmstrip__thumb:hover {
+        border-color: var(--fc-silver-chalice);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+    }
+}
+
+/* The section on screen: an orange ring, as a selected tile has elsewhere on the planner. */
+.fc-plan-filmstrip__thumb.is-active,
+.fc-plan-filmstrip__thumb.is-active:hover {
+    border-color: var(--fc-princeton-orange);
+    box-shadow: 0 0 0 1px var(--fc-princeton-orange);
+    transform: none;
+}
+
+.fc-plan-filmstrip__thumb:focus-visible,
+.fc-plan-filmstrip__step:focus-visible {
+    outline: 2px solid var(--fc-deep-blue);
+    outline-offset: 2px;
+}
+
+.fc-plan-filmstrip__frame {
+    position: relative;
+    flex: none;
+    width: var(--fc-film-img-w);
+    height: var(--fc-film-img-h);
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--fc-white);
+}
+
+.fc-plan-filmstrip__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Loading: the project plan skeleton's sweep. No image (none in the catalogue, or it failed): the bare grey box. */
+.fc-plan-filmstrip__frame.is-loading,
+.fc-plan-filmstrip__frame.is-empty {
+    background: var(--fc-wild-sand);
+}
+
+.fc-plan-filmstrip__frame.is-loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 100%);
+    animation: fc-fencing-skeleton-img-sweep 1.35s ease-in-out infinite;
+}
+
+.fc-plan-filmstrip__text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: var(--fc-film-text-w);
+    min-width: 0;
+    text-align: left;
+}
+
+.fc-plan-filmstrip__cap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    height: 18px;
+}
+
+.fc-plan-filmstrip__num {
+    flex: none;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--fc-dark-charcoal);
+    color: var(--fc-white);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+}
+
+.fc-plan-filmstrip__thumb.is-active .fc-plan-filmstrip__num {
+    background: var(--fc-princeton-orange);
+}
+
+.fc-plan-filmstrip__style,
+.fc-plan-filmstrip__len {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-plan-filmstrip__style {
+    color: var(--fc-cod-gray);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 18px;
+    text-transform: uppercase;
+}
+
+.fc-plan-filmstrip__len {
+    color: var(--fc-dove-gray);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The details card, placed over the hovered thumbnail by the script; the arrow follows the thumbnail when the card meets an edge. */
+.fc-plan-filmstrip__tip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1046;
+    min-width: 180px;
+    max-width: 260px;
+    padding: 10px 12px;
+    border: 1px solid var(--fc-gainsboro);
+    border-radius: 6px;
+    background: var(--fc-white);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+    color: var(--fc-cod-gray);
+    font-size: 12px;
+    line-height: 1.35;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+}
+
+.fc-plan-filmstrip__tip.is-on {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+}
+
+.fc-plan-filmstrip__tip::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: var(--fc-film-arrow, 50%);
+    width: 10px;
+    height: 10px;
+    border-right: 1px solid var(--fc-gainsboro);
+    border-bottom: 1px solid var(--fc-gainsboro);
+    background: var(--fc-white);
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.fc-plan-filmstrip__tip-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* SECTION n, as the section's own head sets it. */
+.fc-plan-filmstrip__tip-title {
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.fc-plan-filmstrip__tip-num {
+    color: #c41e3a;
+}
+
+.fc-plan-filmstrip__tip-now {
+    display: none;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--fc-princeton-orange) 12%, var(--fc-white));
+    color: var(--fc-princeton-orange);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.fc-plan-filmstrip__tip.is-current .fc-plan-filmstrip__tip-now {
+    display: inline-block;
+}
+
+.fc-plan-filmstrip__tip-rows {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    margin: 8px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--fc-bright-gray);
+}
+
+.fc-plan-filmstrip__tip-rows > div {
+    display: contents;
+}
+
+.fc-plan-filmstrip__tip-rows > div[hidden] {
+    display: none;
+}
+
+.fc-plan-filmstrip__tip-rows dt {
+    color: var(--fc-dove-gray);
+    font-weight: 500;
+}
+
+.fc-plan-filmstrip__tip-rows dd {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.fc-plan-filmstrip__swatch {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 50%;
+    background-position: center;
+    background-size: cover;
+}
+
+.fc-plan-filmstrip__swatch[hidden] {
+    display: none;
+}
+
+/* Phones: smaller frames and controls, and a band to match. */
+@media (max-width: 575.98px) {
+    .fc-plan-filmstrip {
+        --fc-film-img-w: 37px;
+        --fc-film-img-h: 52px;
+        --fc-film-text-w: 84px;
+    }
+
+    html.fc-plan-fullscreen.fc-plan-filmstrip-on .fc-plan-filmstrip {
+        gap: 6px;
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .fc-plan-filmstrip__track {
+        gap: 8px;
+    }
+
+    .fc-plan-filmstrip__step {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* 8 + 4 + a 62px thumbnail + 4 + 8, plus 16. */
+    html.fc-plan-filmstrip-on .fc-project-plan-page #fc-fence-list .fc-project-plan-section.fc-project-plan-section--fullscreen {
+        padding-bottom: 102px !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-project-plan-page #fc-fence-list .fc-project-plan-section--fullscreen > .plan-item,
+    .fc-plan-filmstrip__frame.is-loading::after {
+        animation: none;
+    }
+
+    .fc-plan-filmstrip__thumb,
+    .fc-plan-filmstrip__tip {
+        transition: none;
+    }
+
+    .fc-plan-filmstrip__tip {
+        transform: none;
+    }
 }
 
 /* Project plan PDF — item cart list capture (last A4 page) */
@@ -8309,6 +8893,62 @@ thead.fc-border th:last-child {
 
 .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result .fc-project-plan-hscroll::-webkit-scrollbar {
     display: none;
+}
+
+/* The arrow-key note under a drawing (Step 3, each project plan section): only while the run is wider than its strip, and only with a pointer. */
+.fc-drawing-keys-hint {
+    display: none;
+}
+
+@media (hover: hover) {
+    .fc-planner-page .js-fc-form-step[data-section="3"] .fencing-display-result:has(> .fc-hscroll-fade-start, > .fc-hscroll-fade-end) .fc-drawing-keys-hint,
+    .fc-project-plan-page #fc-fence-list .plan-item:has(> .fc-hscroll-fade-start, > .fc-hscroll-fade-end) .fc-drawing-keys-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        margin: 6px 0 0;
+        color: var(--fc-dove-gray);
+        font-size: 12px;
+        line-height: 18px;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    /* Project plan: every wide run keeps the line, so nothing jumps on scroll; drawing-keys.js marks the one strip the keys move. */
+    .fc-project-plan-page #fc-fence-list .plan-item:not(:has(> .fc-drawing-keys-target)) .fc-drawing-keys-hint {
+        visibility: hidden;
+        opacity: 0;
+    }
+}
+
+/* Same keycaps as the shortcuts modal's, with a drawn arrow in place of a letter. */
+.fc-drawing-keys-hint kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 17px;
+    margin-bottom: 1px;
+    padding: 0 4px;
+    border: 1px solid var(--fc-silver-chalice);
+    border-radius: 5px;
+    background: var(--fc-white);
+    box-shadow: 0 1px 0 var(--fc-silver-chalice);
+    color: var(--fc-cod-gray);
+}
+
+.fc-drawing-keys-hint kbd svg {
+    width: 11px;
+    height: 11px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.fc-drawing-keys-hint kbd + span {
+    margin-left: 4px;
 }
 
 @media (max-width: 992px) {

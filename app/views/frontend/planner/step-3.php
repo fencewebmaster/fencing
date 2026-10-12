@@ -104,6 +104,14 @@
                     </div>
                 </div>
 
+                <?php /* The strip shows no scrollbar, so this says the arrow keys (shared/drawing-keys.js) move it.
+                     style.css shows it only while the run is wider than the strip, off hscroll-fade.js's classes. */ ?>
+                <p class="fc-drawing-keys-hint">
+                    <kbd><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span class="visually-hidden">Left arrow</span></kbd>
+                    <kbd><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="visually-hidden">Right arrow</span></kbd>
+                    <span>Use your arrow keys to scroll left and right</span>
+                </p>
+
             </div>
             <div class="err-message fencing-panel-solution-msg text-center text-danger px-2 py-2" role="alert"></div>
             <?php /* Glass pool panel-to-panel clamp status (size × qty, or why none are added); written by

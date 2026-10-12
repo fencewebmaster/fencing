@@ -20,13 +20,17 @@
  * The keyboard button beside Summary lists these in #fc-shortcuts-modal (planner/modals.php);
  * keep the two in step.
  *
- * Shared file beside hscroll-fade.js; it no-ops on pages without the planner's Step 3 strip.
+ * Shared file beside hscroll-fade.js. The project plan gets ← / → on the section drawing nearest
+ * mid-screen, and + / − / 0 only while a section is full screen, on that section's own zoom buttons
+ * (step3-fullscreen.js); it has no F. Any other page has neither strip and is left alone.
  */
 (function fcDrawingKeys() {
     var section = document.querySelector('.js-fc-form-step[data-section="3"]');
-    var strip = section ? section.querySelector('.fencing-display-result .fc-project-plan-hscroll') : null;
+    var plannerStrip = section ? section.querySelector('.fencing-display-result .fc-project-plan-hscroll') : null;
+    var planList = document.getElementById('fc-fence-list');
+    var strip = plannerStrip;
 
-    if (!strip) {
+    if (!plannerStrip && !planList) {
         return;
     }
 
@@ -52,16 +56,40 @@
     var pos = 0;
     var last = 0;
 
+    /* The project plan's image gallery takes ← / → for its own slides. */
     function modalOpen() {
-        return Array.prototype.some.call(document.querySelectorAll('.fencing-modal, .modal.show'), function(el) {
+        return Array.prototype.some.call(document.querySelectorAll('.fencing-modal, .modal.show, .fc-cart-image-modal.is-open'), function(el) {
             return el.getClientRects().length > 0;
         });
     }
 
+    /* The project plan draws its sections' strips after load, so the one to scroll is found per key press. */
+    function nearestPlanStrip() {
+        var best = planList.querySelector('.fc-project-plan-section--fullscreen .fc-project-plan-hscroll');
+        var bestGap = Infinity;
+
+        /* A full-screen section covers the rest, which keep their page positions behind it. */
+        if (best) {
+            return best;
+        }
+
+        planList.querySelectorAll('.fc-project-plan-hscroll').forEach(function(el) {
+            var box = el.getBoundingClientRect();
+            var gap = Math.abs((box.top + box.bottom) / 2 - window.innerHeight / 2);
+
+            if (box.width > 0 && gap < bestGap) {
+                best = el;
+                bestGap = gap;
+            }
+        });
+
+        return best;
+    }
+
     /* Half the strip in view or more: the keys act on the drawing being looked at, not one scrolled
        nearly out of sight. Also false while Step 3 is hidden before the first Calculate. */
-    function onScreen() {
-        var box = strip.getBoundingClientRect();
+    function onScreen(el) {
+        var box = el.getBoundingClientRect();
         var middle = (box.top + box.bottom) / 2;
 
         return box.width > 0 && middle > 0 && middle < window.innerHeight;
@@ -119,9 +147,17 @@
         strip.scrollTo({ left: tapTarget, behavior: reduce ? 'auto' : 'smooth' });
     }
 
+    /* way is 'in', 'out' or 'reset'. */
+    function zoomButton(way) {
+        if (!section) {
+            return planList.querySelector('.fc-project-plan-section--fullscreen .js-fc-plan-zoom[data-zoom="' + way + '"]');
+        }
+        return section.querySelector(way === 'reset' ? '.js-fc-zoom-reset' : '.fc-zoom-fence[data-zoom="' + way + '"]');
+    }
+
     function zoomStep(way, repeat) {
         var now = Date.now();
-        var button = section.querySelector('.fc-zoom-fence[data-zoom="' + way + '"]');
+        var button = zoomButton(way);
 
         if (repeat && now - zoomAt < ZOOM_REPEAT_MS) {
             return;
@@ -142,13 +178,32 @@
         var reset = e.key === '0';
         var full = e.key === 'f' || e.key === 'F';
 
+        if (!section) {
+            full = false;
+            if (!planList.querySelector('.fc-project-plan-section--fullscreen')) {
+                way = '';
+                reset = false;
+            }
+        }
+
         /* Ctrl/⌘ with +, − or 0 is the browser's page zoom and Alt+← is Back. Shift rules out only the
            arrows, since + and _ are typed with it. */
         if ((!dir && !way && !reset && !full) || (dir && e.shiftKey) || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.isComposing) {
             return;
         }
 
-        if ((e.target && e.target.closest && e.target.closest(OWNS_KEYS)) || modalOpen() || !onScreen()) {
+        /* A held key stays on the strip it started on; a tap on another strip does not chain on the last one's. */
+        if (!plannerStrip && (!e.repeat || !strip)) {
+            var next = nearestPlanStrip();
+
+            if (next !== strip) {
+                stop();
+                tapAt = 0;
+            }
+            strip = next;
+        }
+
+        if ((e.target && e.target.closest && e.target.closest(OWNS_KEYS)) || modalOpen() || !strip || !onScreen(strip)) {
             return;
         }
 
@@ -164,7 +219,7 @@
         }
 
         if (reset) {
-            var resetButton = section.querySelector('.js-fc-zoom-reset');
+            var resetButton = zoomButton('reset');
 
             e.preventDefault();
             if (resetButton) {
@@ -195,4 +250,35 @@
 
     /* The key-up never arrives if the window loses focus mid-hold. */
     window.addEventListener('blur', stop);
+
+    /* Project plan: style.css shows the arrow-key note only under the strip the keys would move now. */
+    if (!plannerStrip) {
+        var marking = 0;
+
+        var markTarget = function() {
+            var target = nearestPlanStrip();
+
+            marking = 0;
+            if (target && !onScreen(target)) {
+                target = null;
+            }
+            planList.querySelectorAll('.fc-project-plan-hscroll').forEach(function(el) {
+                el.classList.toggle('fc-drawing-keys-target', el === target);
+            });
+        };
+
+        var queueMark = function() {
+            if (!marking) {
+                marking = window.requestAnimationFrame(markTarget);
+            }
+        };
+
+        /* Capture, so a scroll inside any container counts; sections and their drawings arrive after load. */
+        document.addEventListener('scroll', queueMark, { capture: true, passive: true });
+        window.addEventListener('resize', queueMark);
+        if (typeof MutationObserver === 'function') {
+            new MutationObserver(queueMark).observe(planList, { childList: true, subtree: true });
+        }
+        queueMark();
+    }
 })();

@@ -1457,6 +1457,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/pages/tabs/fence-colors-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/catalog-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/system-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/addresses-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/integration-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/seo-tab.js'); ?>"></script>
@@ -1521,6 +1522,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/pages/tabs/fence-colors-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/catalog-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/system-tab.js'); ?>"></script>
+    <script src="<?php echo asset('assets/js/admin/pages/tabs/addresses-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/integration-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/project-plan-tab.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/pages/tabs/seo-tab.js'); ?>"></script>

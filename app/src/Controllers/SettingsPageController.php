@@ -10,7 +10,7 @@ use Fc\Admin\Services\PermissionService;
 
 final class SettingsPageController extends BaseController
 {
-    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'project-plan', 'seo', 'console', 'minify'];
+    private const TABS = ['theme', 'branding', 'fence-colors', 'catalog', 'system', 'integration', 'addresses', 'project-plan', 'seo', 'console', 'minify'];
 
     // Legacy/alternate ?tab= spellings still linked from old bookmarks and JS.
     private const TAB_ALIASES = [
@@ -24,6 +24,9 @@ final class SettingsPageController extends BaseController
         'health' => 'site-health',
         'sitehealth' => 'site-health',
         'phpinfo' => 'php-info',
+        'address-book' => 'addresses',
+        'addressbook' => 'addresses',
+        'address' => 'addresses',
         'minified' => 'minify',
         'minify-css-js' => 'minify',
     ];

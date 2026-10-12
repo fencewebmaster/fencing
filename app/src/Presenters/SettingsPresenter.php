@@ -329,6 +329,7 @@ final class SettingsPresenter
                 'catalog' => $initialTab === 'catalog' ? '' : 'hidden ',
                 'system' => $initialTab === 'system' ? '' : 'hidden ',
                 'integration' => $initialTab === 'integration' ? '' : 'hidden ',
+                'addresses' => $initialTab === 'addresses' ? '' : 'hidden ',
                 'project_plan' => $initialTab === 'project-plan' ? '' : 'hidden ',
                 'seo' => $initialTab === 'seo' ? '' : 'hidden ',
                 'console' => $initialTab === 'console' ? '' : 'hidden ',
@@ -343,6 +344,7 @@ final class SettingsPresenter
                 'catalog' => $initialTab === 'catalog' ? 'flex' : 'hidden',
                 'system' => $initialTab === 'system' ? 'flex' : 'hidden',
                 'integration' => $initialTab === 'integration' ? 'flex' : 'hidden',
+                'addresses' => $initialTab === 'addresses' ? 'flex' : 'hidden',
                 'project_plan' => $initialTab === 'project-plan' ? 'flex' : 'hidden',
                 'seo' => $initialTab === 'seo' ? 'flex' : 'hidden',
                 'console' => $initialTab === 'console' ? 'flex' : 'hidden',
@@ -373,8 +375,9 @@ final class SettingsPresenter
                 'project-plan' => ['Project Plan', 'fa-list-check', 'Extra items and the Stock & Delivery panel on each project plan.'],
             ],
             'Site' => [
-                'system'       => ['System', 'fa-gear', 'Admin defaults for dates, the dashboard, entries and online presence, and the address book.'],
+                'system'       => ['System', 'fa-gear', 'Admin defaults for dates, the dashboard, entries and online presence.'],
                 'integration'  => ['Integration', 'fa-plug', 'API keys, the planner webhook, custom code and per-site tracking IDs.'],
+                'addresses'    => ['Addresses', 'fa-map-location-dot', 'The address book behind the planner\'s Address suggestions: what it holds, and export or import it.'],
                 'seo'          => ['SEO', 'fa-magnifying-glass-chart', 'How the planner appears in search results and when shared.'],
             ],
             'Developer' => [

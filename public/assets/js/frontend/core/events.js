@@ -5447,13 +5447,14 @@ function fcFenceDiagramDragEnd() {
     _fcFenceDiagramScroll$ = null;
 }
 
-$('.fc-project-plan-hscroll, .fencing-display-result').mousedown(function(e) {
+// Delegated: the project plan draws its sections' strips after this file has run, so a direct bind never reached them.
+_doc.on('mousedown', '.fc-project-plan-hscroll, .fencing-display-result', function(e) {
     var $scroll = $(this);
     if ($scroll.hasClass('fencing-display-result') && $scroll.children('.fc-project-plan-hscroll').length) {
         return;
     }
     fcFenceDiagramDragStart($scroll, e);
-}).mouseup(fcFenceDiagramDragEnd).mouseleave(fcFenceDiagramDragEnd);
+}).on('mouseup mouseleave', '.fc-project-plan-hscroll, .fencing-display-result', fcFenceDiagramDragEnd);
 
 $(document).on('mousemove', function(e) {
     if (!cursordown || !_fcFenceDiagramScroll$ || !_fcFenceDiagramScroll$.length) {
@@ -5486,6 +5487,17 @@ function mu_fencingDisplayResult(e) {
     }, 200);
 
 }
+
+// A drag that left its strip is released outside it, out of reach of the handler above, which kept the grabbing cursor
+// until the next press. 200ms: after md_fencingDisplayResult's own timer.
+_doc.on('mouseup', function(e) {
+    if ($(e.target).closest('.fc-project-plan-hscroll, .fencing-display-result').length) {
+        return;
+    }
+    setTimeout(function() {
+        $('.fc-project-plan-hscroll, .fencing-display-result').removeClass('grabbing is-grabbing');
+    }, 200);
+});
 
 //----------------------------------------------------------------------------------
 

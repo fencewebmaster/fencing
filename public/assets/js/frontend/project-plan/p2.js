@@ -203,6 +203,26 @@ let ProjectPlan = {
                     </div>
                 </div>
                 <div class="plan-item">
+                    <!-- Full screen for this section, with zoom beside it while full screen (shared/step3-fullscreen.js),
+                         drawn as planner Step 3's zoom bar; the two full-screen icons swap with aria-pressed. Left out
+                         of the PNG/PDF by the capture's filter in checkout.js. -->
+                    <div class="fc-plan-view-bar">
+                        <div class="fc-plan-view-bar__zoom" role="group" aria-label="Zoom the drawing">
+                            <button type="button" class="fc-plan-view-bar__btn fc-plan-view-bar__btn--icon js-fc-plan-zoom" data-zoom="out" aria-label="Zoom out" title="Zoom out (&minus;)">
+                                <svg class="fc-plan-view-bar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14"/></svg>
+                            </button>
+                            <span class="fc-plan-view-bar__value js-fc-plan-zoom-value" aria-live="polite">100%</span>
+                            <button type="button" class="fc-plan-view-bar__btn fc-plan-view-bar__btn--icon js-fc-plan-zoom" data-zoom="in" aria-label="Zoom in" title="Zoom in (+)">
+                                <svg class="fc-plan-view-bar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
+                            </button>
+                            <button type="button" class="fc-plan-view-bar__btn js-fc-plan-zoom" data-zoom="reset" title="Back to 100% (0)" disabled>Reset</button>
+                            <span class="fc-plan-view-bar__sep" aria-hidden="true"></span>
+                        </div>
+                        <button type="button" class="fc-plan-fullscreen-btn js-fc-plan-fullscreen" aria-pressed="false" aria-label="Full screen" title="Full screen">
+                            <svg class="fc-plan-view-bar__icon fc-plan-view-bar__icon--enter" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+                            <svg class="fc-plan-view-bar__icon fc-plan-view-bar__icon--exit" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"/></svg>
+                        </button>
+                    </div>
                     <div class="fc-project-plan-hscroll">
                         <div id="pp-${i}" class="dl-row">
                             <div class="fc-result">
@@ -230,6 +250,13 @@ let ProjectPlan = {
                             </div>
                         </div>
                     </div>
+                    <!-- As under planner Step 3: style.css shows it only while this run is wider than the
+                         strip; kept out of the PNG/PDF by the capture's filter in checkout.js. -->
+                    <p class="fc-drawing-keys-hint">
+                        <kbd><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span class="visually-hidden">Left arrow</span></kbd>
+                        <kbd><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="visually-hidden">Right arrow</span></kbd>
+                        <span>Use your arrow keys to scroll left and right</span>
+                    </p>
                 </div>
             </div> `;
 
