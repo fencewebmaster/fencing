@@ -1013,7 +1013,7 @@ class FenceCalculator {
             let C17 = C16;
             let C18 = Math.floor(C14 / C5);
 
-            // Main Slat: panel count from effective infill span; skip panels inside gate footprint.
+            // Main Slat: panel count from the length as typed, widths from the effective infill span; skip panels inside gate footprint.
             if (
                 typeof SlatFence !== 'undefined' &&
                 SlatFence.isMainSlatSlug(i) &&
@@ -1044,13 +1044,10 @@ class FenceCalculator {
                     C14 = 0;
                 } else if (Number.isFinite(slatSpan) && slatSpan > 0) {
                     const slatMaxSpan = SlatFence.getMaxPanelSpanMmFromInfo(info);
-                    const slatPanelQty = SlatFence.countEvenPanelsFromOverallSpan(
-                        slatSpan,
-                        slatMaxSpan,
-                        post_panel,
-                        info,
-                        slatRemovedPosts
-                    );
+                    // Count before the Width Dimension From offset, as the old planner does: after it, 2,500mm got 1 panel, not 2.
+                    const slatTypedSpan =
+                        slatSpan - SlatFence.getCalcWidthDimensionOffset(i, custom_fence, custom_fence_tab);
+                    const slatPanelQty = SlatFence.countEvenPanelsFromOverallSpan(slatTypedSpan, slatMaxSpan, info);
                     C16 = slatPanelQty;
                     C17 = slatPanelQty;
                     C18 = slatPanelQty;

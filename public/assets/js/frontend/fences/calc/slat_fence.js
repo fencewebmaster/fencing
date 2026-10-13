@@ -515,41 +515,23 @@ SlatFenceCalc = {
     },
 
     /**
-     * Panel qty from overall span: midPosts = floor(span / maxSpan), panels = midPosts + 1 (Slat Planner V6 F82 + 1).
-     * `maxPanelSpanMm` from `getMaxPanelSpanMmFromInfo()` / `4-SLAT.php` `max_panel_span_mm`.
+     * Panel qty from the run length as typed: midPosts = floor(length / maxSpan), panels = midPosts + 1 (Slat Planner V6 F82 + 1).
+     * No width cap, as in the old planner: the `max_panel_width_mm` loop split 29,600 into 13 panels where it lays 12.
      */
-    countEvenPanelsFromOverallSpan: function(spanMm, maxPanelSpanMm, postWidthMm, info, removedPostsMm) {
-        var span = parseInt(spanMm, 10);
+    countEvenPanelsFromOverallSpan: function(lengthMm, maxPanelSpanMm, info) {
+        var length = parseInt(lengthMm, 10);
         var maxSpan = parseInt(maxPanelSpanMm, 10);
         if (!Number.isFinite(maxSpan) || maxSpan <= 0) {
             maxSpan = this.getMaxPanelSpanMmFromInfo(info);
         }
-        if (!Number.isFinite(span) || span <= 0) {
+        if (!Number.isFinite(length) || length <= 0) {
             return 1;
         }
         if (!Number.isFinite(maxSpan) || maxSpan <= 0) {
             return 1;
         }
-        var midPosts = Math.floor(span / maxSpan);
-        var count = Math.max(1, midPosts + 1);
-
-        // A bay can still land over `max_panel_width_mm` once interior posts are removed
-        // from the span — add posts until every even panel fits the widest stock panel.
-        var maxWidth = this.getMaxPanelWidthMmFromInfo(info);
-        var postW = parseInt(postWidthMm, 10);
-        if (!Number.isFinite(postW) || postW <= 0) {
-            postW = 50;
-        }
-        if (Number.isFinite(maxWidth) && maxWidth > 0) {
-            while (
-                count < 500 &&
-                this.computeSlatEvenPanelWidthMm(span, count, postW, removedPostsMm) > maxWidth
-            ) {
-                count += 1;
-            }
-        }
-
-        return count;
+        var midPosts = Math.floor(length / maxSpan);
+        return Math.max(1, midPosts + 1);
     },
 
     /**

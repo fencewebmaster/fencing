@@ -4890,26 +4890,6 @@ SlatFence = {
         return (Number.isFinite(v) && v > 0) ? v : NaN;
     },
 
-    /**
-     * Max physical panel width (mm) from `4-SLAT.php` → `max_panel_width_mm`.
-     */
-    getMaxPanelWidthMmFromInfo: function(info, panelOptionsData, calcC5) {
-        var cfg = this.resolveSlatCatalogInfo(info);
-        var fromInfo = parseInt(cfg.max_panel_width_mm, 10);
-        if (Number.isFinite(fromInfo) && fromInfo > 0) {
-            return fromInfo;
-        }
-        var def = parseInt(panelOptionsData?.size?.default, 10);
-        if (Number.isFinite(def) && def > 0) {
-            return def;
-        }
-        var w = parseInt(calcC5, 10);
-        if (Number.isFinite(w) && w > 0) {
-            return Math.max(1, w - 25);
-        }
-        return NaN;
-    },
-
 
     /**
      * Raw Step 2 overall (measurement box) before width-dimension offset — used for Slat panel layout.
