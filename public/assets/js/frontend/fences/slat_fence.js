@@ -2789,6 +2789,11 @@ SlatFence = {
      */
     resolveGateSlatHeightMm: function(context, calc) {
         context = context || {};
+        // Capped at the Gate Height max: in a taller fence the gate was drawn and counted at the fence height (2700H).
+        var maxMm = this.getGateModalFenceHeightBoundsMm().max;
+        var cap = function(mm) {
+            return Number.isFinite(mm) && mm > maxMm ? maxMm : mm;
+        };
 
         var fd = {
             slug: context.tabInfo?.[0]?.fence || context.tabInfo?.[0]?.style || '',
@@ -2804,7 +2809,7 @@ SlatFence = {
                 if (fieldsGo[ggi]?.key === 'gate_max_fence_height') {
                     var ggv = parseInt(String(fieldsGo[ggi].val || '').replace(/,/g, ''), 10);
                     if (Number.isFinite(ggv) && ggv > 0) {
-                        return ggv;
+                        return cap(ggv);
                     }
                 }
             }
@@ -2813,7 +2818,7 @@ SlatFence = {
                 10
             );
             if (Number.isFinite(savedStep2) && savedStep2 > 0) {
-                return savedStep2;
+                return cap(savedStep2);
             }
         }
 
@@ -2825,12 +2830,12 @@ SlatFence = {
             if (fields[gi]?.key === 'gate_max_fence_height') {
                 var gv = parseInt(String(fields[gi].val || '').replace(/,/g, ''), 10);
                 if (Number.isFinite(gv) && gv > 0) {
-                    return gv;
+                    return cap(gv);
                 }
             }
         }
 
-        return this.resolveSlatFenceHeightMm(context, calc);
+        return cap(this.resolveSlatFenceHeightMm(context, calc));
     },
 
     persistGateMaxFenceHeightToGateFields: function(tab, slug, rawVal) {
