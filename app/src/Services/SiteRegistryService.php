@@ -373,6 +373,8 @@ final class SiteRegistryService
                 'url'    => UrlHelper::toUrl('fencingsuppliers.au'),
                 'logo'   => 'public/assets/img/logo/fencesperth.webp',
                 'name'   => 'Fencing Suppliers',
+                'gtagID' => $cfg->sites->fencingsuppliers->gtag_id,
+                'gtmID'  => $cfg->sites->fencingsuppliers->gtm_id,
             ],
         ];
 

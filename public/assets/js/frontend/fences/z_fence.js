@@ -14,6 +14,10 @@ FENCE = {
             min_raked: "Minimum <b>Overall Length</b> for <b>{{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_gate_hinge: "Minimum <b>Overall Length</b> for a <b>GATE & HINGE PANEL</b> is <b>{{overall}}</b>mm",
             gate_width_capped: "Your <b>CUSTOM GATE</b> was reduced from <b>{{from}}</b>mm to <b class='text-underline'>{{to}}</b>mm — the widest leaf that can be cut from the panel option you just selected.",
+            no_post_fit: "With <b>No Post</b> ends the panels can't be wider than <b>{{stock}}</b>W, so this run covers <b class='text-underline'>{{overall}}</b>mm. <b>Overall Length</b> was changed from {{from}}mm to <b class='text-underline'>{{overall}}</b>mm.",
+            gate_band: "No room beside the <b>GATE</b> for a panel: the next size up is <b class='text-underline'>{{next}}</b>mm (a post and the smallest panel). <b>Overall Length</b> was set back to <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b> for an exact fit",
+            gate_band_no_custom: "No room beside the <b>GATE</b> for a panel: the next size up is <b class='text-underline'>{{next}}</b>mm (a post and the smallest panel). <b>Overall Length</b> was set back to <b class='text-underline'>{{overall}}</b>mm",
+            gate_band_custom: "No room beside the <b>GATE</b> for a panel: the next size up is <b class='text-underline'>{{next}}</b>mm (a post and the smallest panel). <b>Overall Length</b> was set back to <b class='text-underline'>{{overall}}</b>mm <b>or</b> adjust the custom gate width in <b>Gate Options</b> for an exact fit",
         },
         item: {
             raked: 50 + 1200 + 50,
@@ -585,6 +589,12 @@ FENCE = {
                 fcApplyCalcSolutionMessage(calc);
             } else {
                 $('.err-message').html((calc.selected_values && calc.selected_values.message) || '');
+            }
+            // No Post ends that leave Even panels over stock: Overall Length drops to what the
+            // panels cover and the run re-renders, as the glass auto-fit above snaps to a
+            // buildable length. Post-persist like it, so the stored length is the one judged.
+            if (typeof fcApplyNoPostFitLength === 'function') {
+                fcApplyNoPostFitLength(calc);
             }
             // Glass panel-to-panel clamp status + gap prompt. This is the post-persist render
             // (update_custom_fence and btnCalculate both land here), the only place the stored
@@ -3367,6 +3377,11 @@ FENCE = {
         }
 
         var disp = this.getStdGateMinOverallPhysicalMm(fd);
+        // Slat: on the typed line (Outside as is, Centre-line one post less), so a Centre-line box
+        // is not set 50mm over the gate run it stands for.
+        if (typeof SlatFence !== 'undefined' && SlatFence.isSlatLike(fd.slug)) {
+            disp = SlatFence.outsideToTypedLineMm(fd, disp);
+        }
         return this._writeMeasurementOverall(disp, opts);
     },
 

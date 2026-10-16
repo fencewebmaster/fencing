@@ -1,5 +1,5 @@
-/* Project plan full screen: a card per section along the foot (the style's Step 1 image, number, style, length), to move between sections
-   without leaving full screen. A pick clicks that section's own full-screen button, which step3-fullscreen.js turns into a move. */
+/* Project plan full screen: a card per section along the foot (the style's Step 1 image, number, style, colour, length), to move between
+   sections without leaving full screen. A pick clicks that section's own full-screen button, which step3-fullscreen.js turns into a move. */
 (function fcPlanFilmstrip() {
     var list = document.getElementById('fc-fence-list');
 
@@ -12,7 +12,6 @@
 
     var bar = null;
     var track = null;
-    var tip = null;
     var prev = null;
     var next = null;
     var sections = [];
@@ -118,50 +117,12 @@
         });
     }
 
-    /* ---- Details card ---- */
-
-    function showTip(thumb) {
-        var d = details(thumb.fcSection);
-        var rows = tip.querySelectorAll('[data-k]');
-
-        tip.querySelector('.fc-plan-filmstrip__tip-num').textContent = String(d.n);
-        tip.classList.toggle('is-current', thumb.fcSection === current);
-        Array.prototype.forEach.call(rows, function(dd) {
-            var key = dd.getAttribute('data-k');
-
-            dd.parentNode.hidden = !d[key];
-            dd.querySelector('.fc-plan-filmstrip__tip-value').textContent = d[key];
-        });
-
-        var dot = tip.querySelector('.fc-plan-filmstrip__swatch');
-
-        dot.hidden = !d.swatch;
-        dot.style.background = d.swatch;
-
-        var box = thumb.getBoundingClientRect();
-        var width = tip.offsetWidth;
-        var centre = box.left + box.width / 2;
-        var left = Math.min(Math.max(8, centre - width / 2), window.innerWidth - width - 8);
-
-        tip.style.left = Math.round(left) + 'px';
-        tip.style.top = Math.round(box.top - tip.offsetHeight - 10) + 'px';
-        tip.style.setProperty('--fc-film-arrow', Math.round(centre - left) + 'px');
-        tip.classList.add('is-on');
-    }
-
-    function hideTip() {
-        if (tip) {
-            tip.classList.remove('is-on');
-        }
-    }
-
     /* ---- Moving ---- */
 
     function go(section) {
         var button = section ? section.querySelector('.js-fc-plan-fullscreen') : null;
 
         if (button && section !== current) {
-            hideTip();
             button.click();
         }
     }
@@ -232,19 +193,10 @@
             bar.innerHTML =
                 '<button type="button" class="fc-plan-filmstrip__step" data-step="-1" aria-label="Previous section" title="Previous section (Page Up)">' + CHEVRON + '</button>' +
                 '<div class="fc-plan-filmstrip__track"></div>' +
-                '<button type="button" class="fc-plan-filmstrip__step fc-plan-filmstrip__step--next" data-step="1" aria-label="Next section" title="Next section (Page Down)">' + CHEVRON + '</button>' +
-                '<div class="fc-plan-filmstrip__tip" aria-hidden="true">' +
-                    '<div class="fc-plan-filmstrip__tip-head"><span class="fc-plan-filmstrip__tip-title">Section <span class="fc-plan-filmstrip__tip-num"></span></span><span class="fc-plan-filmstrip__tip-now">Viewing</span></div>' +
-                    '<dl class="fc-plan-filmstrip__tip-rows">' +
-                        '<div><dt>Style</dt><dd data-k="style"><span class="fc-plan-filmstrip__tip-value"></span></dd></div>' +
-                        '<div><dt>Colour</dt><dd data-k="colour"><span class="fc-plan-filmstrip__swatch"></span><span class="fc-plan-filmstrip__tip-value"></span></dd></div>' +
-                        '<div><dt>Overall</dt><dd data-k="overall"><span class="fc-plan-filmstrip__tip-value"></span></dd></div>' +
-                    '</dl>' +
-                '</div>';
+                '<button type="button" class="fc-plan-filmstrip__step fc-plan-filmstrip__step--next" data-step="1" aria-label="Next section" title="Next section (Page Down)">' + CHEVRON + '</button>';
             document.body.appendChild(bar);
 
             track = bar.querySelector('.fc-plan-filmstrip__track');
-            tip = bar.querySelector('.fc-plan-filmstrip__tip');
             prev = bar.querySelector('[data-step="-1"]');
             next = bar.querySelector('[data-step="1"]');
 
@@ -261,20 +213,6 @@
                     go(thumb.fcSection);
                 }
             });
-            /* Keyboard focus shows the card; a tap's focus does not, or a phone would flash it on every pick. */
-            track.addEventListener('focusin', function(e) {
-                var thumb = e.target.closest('.fc-plan-filmstrip__thumb');
-                var keyboard = false;
-
-                try {
-                    keyboard = thumb && thumb.matches(':focus-visible');
-                } catch (err) {}
-                if (keyboard) {
-                    showTip(thumb);
-                }
-            });
-            track.addEventListener('focusout', hideTip);
-            track.addEventListener('scroll', hideTip, { passive: true });
         }
 
         track.innerHTML = '';
@@ -286,20 +224,24 @@
             thumb.className = 'fc-plan-filmstrip__thumb';
             thumb.setAttribute('aria-label', label(d));
             thumb.innerHTML =
-                '<span class="fc-plan-filmstrip__frame is-loading"></span>' +
+                '<span class="fc-plan-filmstrip__media"><span class="fc-plan-filmstrip__frame is-loading"></span><span class="fc-plan-filmstrip__num"></span></span>' +
                 '<span class="fc-plan-filmstrip__text">' +
-                    '<span class="fc-plan-filmstrip__cap"><span class="fc-plan-filmstrip__num"></span><span class="fc-plan-filmstrip__style"></span></span>' +
+                    '<span class="fc-plan-filmstrip__style"></span>' +
+                    '<span class="fc-plan-filmstrip__colour"><span class="fc-plan-filmstrip__swatch"></span><span class="fc-plan-filmstrip__colour-name"></span></span>' +
                     '<span class="fc-plan-filmstrip__len"></span>' +
                 '</span>';
             thumb.querySelector('.fc-plan-filmstrip__num').textContent = String(d.n);
             thumb.querySelector('.fc-plan-filmstrip__style').textContent = d.style;
+            thumb.querySelector('.fc-plan-filmstrip__colour').hidden = !d.colour;
+            thumb.querySelector('.fc-plan-filmstrip__colour-name').textContent = d.colour;
+
+            var dot = thumb.querySelector('.fc-plan-filmstrip__swatch');
+
+            dot.hidden = !d.swatch;
+            dot.style.background = d.swatch;
             thumb.querySelector('.fc-plan-filmstrip__len').textContent = d.overall;
             addImage(thumb.querySelector('.fc-plan-filmstrip__frame'), d.image);
             thumb.fcSection = section;
-            thumb.addEventListener('mouseenter', function() {
-                showTip(thumb);
-            });
-            thumb.addEventListener('mouseleave', hideTip);
             track.appendChild(thumb);
         });
     }
@@ -310,7 +252,6 @@
         var first = !shown();
 
         current = section;
-        hideTip();
 
         /* One section has nowhere to move to. */
         if (!section || now.length < 2) {
@@ -329,7 +270,6 @@
         if (!shown()) {
             return;
         }
-        hideTip();
         markActive(false);
     });
 

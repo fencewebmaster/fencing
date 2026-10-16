@@ -966,6 +966,10 @@ SlatFence = {
         }
 
         var gateOnly = this.isStep2GateOnlyCustomGate(fd);
+        if (!gateOnly) {
+            // On the typed line: a Centre-line box took the outside figure and read 50mm over the run.
+            disp = this.outsideToTypedLineMm(fd, disp);
+        }
         var curDisplay = parseInt(String($box.val() || '').replace(/,/g, ''), 10);
         if (!gateOnly) {
             if (opts.postChange) {
@@ -1269,6 +1273,21 @@ SlatFence = {
             );
         }
         return false;
+    },
+
+    /** Gate-flanking post with no fence panel on its other side: it carries the gate alone (gate at the end of a run). */
+    isSlatGateOnlyPost: function(postEl, containerEl) {
+        if (!this.isSlatGateAdjacentPost(postEl, containerEl)) {
+            return false;
+        }
+        var holdsPanel = function(node, step) {
+            while (node && !node.classList.contains('fencing-panel-item') && !node.classList.contains('panel-post')) {
+                node = node[step];
+            }
+            return !!node && node.classList.contains('fencing-panel-item') && !node.classList.contains('fencing-panel-gate');
+        };
+        return !holdsPanel(postEl.previousElementSibling, 'previousElementSibling') &&
+            !holdsPanel(postEl.nextElementSibling, 'nextElementSibling');
     },
 
     //----------------------------------------------------------------------------------
@@ -3386,6 +3405,25 @@ SlatFence = {
         return offset;
     },
 
+    /**
+     * An outside-to-outside length on the line the customer types to: Outside Width (the default)
+     * as is, Centre-line Width one post less. The gate minimums (getStdGateMinOverallPhysicalMm,
+     * computeDisplayOverallFromGateLeafMm) are outside to outside, and written straight into a
+     * Centre-line box they read 50mm longer than the gate run they stand for.
+     */
+    outsideToTypedLineMm: function(fd, outsideMm) {
+        var mm = parseInt(outsideMm, 10);
+        if (!Number.isFinite(mm) || !fd || !this.isSlatLike(fd.slug)) {
+            return outsideMm;
+        }
+        var postW = parseInt(FENCE.get(fd.slug, 'post'), 10);
+        var offset = this.getWidthDimensionOffset(fd);
+        if (!Number.isFinite(postW) || !Number.isFinite(offset)) {
+            return outsideMm;
+        }
+        return mm - (2 * postW + offset);
+    },
+
     //----------------------------------------------------------------------------------
 
     getDisplayOverallLength: function(slug, calculatedOverall, widthDimensionOffset) {
@@ -4231,6 +4269,14 @@ SlatFence = {
                 Number.isFinite(gateHeightMm) &&
                 Number.isFinite(fenceHeightMm) &&
                 gateHeightMm > fenceHeightMm;
+            var gateShorterThanFence =
+                !gateOnlyPlanner &&
+                self.isMainSlatSlug(info?.slug) &&
+                gateHeightMm !== null &&
+                fenceHeightMm !== null &&
+                Number.isFinite(gateHeightMm) &&
+                Number.isFinite(fenceHeightMm) &&
+                gateHeightMm < fenceHeightMm;
             var syncFenceMm = gateOnlyPlanner ? defaultPostHeightMm : fenceHeightMm;
             var syncGateMm = gateHeightMm;
 
@@ -4240,12 +4286,18 @@ SlatFence = {
                 });
                 el.querySelectorAll('.panel-post').forEach(function(postEl) {
                     var postMm = defaultPostHeightMm;
+                    var dropPx = 0;
                     if (gateTallerThanFence) {
                         postMm = self.isSlatGateAdjacentPost(postEl, el)
                             ? gatePanelHeightMm
                             : fencePanelHeightMm;
+                    } else if (gateShorterThanFence && self.isSlatGateOnlyPost(postEl, el)) {
+                        // Holds the gate alone, so it stops at Gate Height on the same ground line (beside a 2,240 gate it stood 5,000 tall).
+                        postMm = gateHeightMm;
+                        dropPx = Math.max(0, self.mmToPx(defaultPostHeightMm) - self.mmToPx(gateHeightMm));
                     }
                     applyHeightVars(postEl, postMm);
+                    postEl.style.marginTop = dropPx > 0 ? dropPx + 'px' : '';
                 });
                 el.querySelectorAll('.fencing-panel-item.fencing-panel-gate').forEach(function(gateEl) {
                     applyHeightVars(gateEl, gatePanelHeightMm);

@@ -9102,6 +9102,87 @@ function fcApplyCalcSolutionMessage(calc) {
     }, 0);
 }
 
+/** No Post fit state: the same shape and job as fcGlassOalAutoFit above. */
+var fcNoPostFit = { pending: false, setTo: null, attempts: 0 };
+
+/**
+ * No Post ends with Even panels: a panel can't be wider than its option, so once the freed post
+ * width no longer fits (selected_values.no_post_shortfall) the panels cover less than the length
+ * entered - a 2,500 wall-to-wall run of 2400W panels is 2,400. The panels are right as drawn; it
+ * is the Overall Length that follows them, as it already does for the gate and step-up minimums
+ * and the glass auto-fit above: lowered to what the panels cover, re-run through the normal
+ * Calculate flow, and announced in the top-right toast. One attempt per entered value, so a
+ * shortfall the retry somehow keeps can never loop.
+ */
+function fcApplyNoPostFitLength(calc) {
+    var shortfall = parseInt(calc && calc.selected_values && calc.selected_values.no_post_shortfall, 10) || 0;
+
+    if (!shortfall) {
+        fcNoPostFit.setTo = null;
+        fcNoPostFit.attempts = 0;
+        return false;
+    }
+
+    if (fcNoPostFit.pending) {
+        return true;
+    }
+
+    var $box = $('.measurement-box-number').first();
+    if (!$box.length) {
+        return false;
+    }
+    var entered = parseInt(String($box.val() || '').replace(/,/g, ''), 10);
+
+    // Manual edit since our last fix - the guard belongs to the old value.
+    if (fcNoPostFit.setTo !== null && entered !== fcNoPostFit.setTo) {
+        fcNoPostFit.setTo = null;
+        fcNoPostFit.attempts = 0;
+    }
+
+    var target = entered - shortfall;
+    var min = parseInt($box.attr('data-min') || '', 10);
+    if (
+        !Number.isFinite(entered) ||
+        !(target > 0) ||
+        (Number.isFinite(min) && target < min) ||
+        fcNoPostFit.attempts >= 1
+    ) {
+        return false;
+    }
+
+    var stock = parseInt(calc.long_panel && calc.long_panel.length, 10) || 0;
+
+    fcNoPostFit.pending = true;
+    fcNoPostFit.setTo = target;
+    fcNoPostFit.attempts += 1;
+
+    // Deferred so the render that found the shortfall finishes before the corrected one starts.
+    setTimeout(function() {
+        fcNoPostFit.pending = false;
+
+        $('.measurement-box-number').val(target).attr('data-last', String(target));
+
+        if (typeof popupToast === 'function') {
+            popupToast(
+                FENCE.settings.message.oal_changed,
+                FENCE.settings.message.no_post_fit
+                    .replace(/{{stock}}/gi, fcFormatMm(stock))
+                    .replace(/{{from}}/gi, fcFormatMm(entered))
+                    .replace(/{{overall}}/gi, fcFormatMm(target)),
+                'NP'
+            );
+        }
+
+        if (typeof btnCalculate === 'function') {
+            btnCalculate();
+        } else {
+            $('.btn-fc-calculate').first().trigger('click');
+        }
+    }, 0);
+
+    return true;
+}
+
 /**
  * Glass pool: the panel-to-panel clamp status line under the diagram, the dimmed-bars diagram
  * state and (planner) the gap-adjustment prompt - GlassPool.applyClampMessage does the work.
@@ -9167,6 +9248,31 @@ function fcFormatMm(mm) {
 
 //----------------------------------------------------------------------------------
 
+/**
+ * Gate / step-up counts from the saved plan while nothing is drawn. A rejected Calculate (empty box, over the
+ * maximum) wipes the drawing but keeps the plan, and counting the drawing then let 300 through on a 1,110 gate run.
+ */
+function fcSavedPartsWhenNothingDrawn(calc) {
+    var $drawing = $(typeof FENCES !== 'undefined' && FENCES.el ? FENCES.el.fencingPanelContainer : '.fencing-panel-container');
+    if (!$drawing.length || $drawing.children().length) {
+        return null;
+    }
+    if (!calc) {
+        try {
+            calc = calculate_fences();
+        } catch (eCalc) {
+            return null;
+        }
+    }
+    if (!calc || !calc.gate) {
+        return null;
+    }
+    return {
+        gate: calc.gate.count > 0 ? 1 : 0,
+        raked: (calc.left_raked?.width > 0 ? 1 : 0) + (calc.right_raked?.width > 0 ? 1 : 0)
+    };
+}
+
 function updateOverAllLength(data) {
     var _mbn = $('.measurement-box-number'),
         mbn = parseInt(_mbn.val()),
@@ -9195,9 +9301,11 @@ function updateOverAllLength(data) {
 
     var calc = calculate_fences();
 
+    // Nothing drawn: the saved plan says what is on the run (fcSavedPartsWhenNothingDrawn).
+    var savedParts = fcSavedPartsWhenNothingDrawn(calc);
 
-    var hasGate = data?.gate ? data.gate : $('.fencing-panel-gate').length,
-        hasRaked = data?.raked ? data.raked : $('.raked-panel-container').length,
+    var hasGate = data?.gate ? data.gate : savedParts ? savedParts.gate : $('.fencing-panel-gate').length,
+        hasRaked = data?.raked ? data.raked : savedParts ? savedParts.raked : $('.raked-panel-container').length,
         panel_item = $('.panel-item:not(.fencing-panel-gate,.fencing-raked-panel)').length;
 
     var raked = gate = overall = adjustGap = left_side_width_post = right_side_width_post = 0;
@@ -9427,6 +9535,59 @@ function updateOverAllLength(data) {
 
 
 
+    // GATE BAND: from just above the gate minimum to the first length with room for a post and the
+    // narrowest panel there is no layout. The run drew the gate alone with the rest unaccounted for,
+    // or a 1-85mm sliver billed as a full panel and a post (1,200 on Flat Top: a 40mm panel). The
+    // Overall Length goes back to the gate run instead - the owner's rule for No Post ends, what the
+    // parts cover - and the toast names the next size up and the custom gate for an exact fit.
+    // Glass has its own gate model (hinge panel, flexible gaps) and is left out.
+    //
+    // The gate span with ONE post, the post it shares with the next part: a standard gate's
+    // FENCE.get(slug, 'gate') is that already, but a custom gate's `gate` above carries
+    // gate_posts_gaps (two posts) while the step-up span holds the post between them, so raked + gate
+    // counted it twice (2,240 for a 1300H step-up and an 800 custom gate whose run is 2,190). The
+    // RAKED + GATE minimum below uses the same figure, so the two rules can never fight over a length.
+    var gateOnePostMm = isCustomGate
+        ? (slatGateOpeningMm > 0 ? slatGateOpeningMm : parseInt(gate_data[0]?.settings?.size, 10)) +
+            (parseInt(FENCE.get(slug, 'gate_post_gaps'), 10) || 0)
+        : gate;
+    var rakedGateMinMm = (raked + gateOnePostMm) - minusPosts;
+    var isSlatBand = typeof SlatFence !== 'undefined' && SlatFence.isSlatLike(slug);
+    var gateBandMin = null;
+    var gateBandNext = null;
+    if (hasGate && !gateOnly && info?.panel_group == 'b') {
+        gateBandMin = hasRaked
+            ? rakedGateMinMm
+            : isCustomGate
+                ? (customGateMinOverallMm != null ? customGateMinOverallMm : gate_posts_gaps - minusPosts)
+                : (stdGateMinOverallMm != null ? stdGateMinOverallMm : gate_posts_gaps - minusPosts);
+        var minPanelOnGate = parseInt(FENCE.get(slug, 'minPanelWidthOnGate'), 10) || 86;
+        gateBandNext = gateBandMin + post_panel + minPanelOnGate;
+        // Slat types its length to a reference line (Outside: outside of posts, the default;
+        // Centre-line: post centres, one post less), while both minimums above are outside to
+        // outside (computeDisplayOverallFromGateLeafMm says so despite its name): move the minimum
+        // onto the typed line. Its first length with a panel is its own gate-only test
+        // (SlatFence.isWithinGateOnlyOverallRange: typed + offset - gate span >= 86), which gives a
+        // No Post end no credit: quote that rather than promise a panel it will not lay.
+        if (isSlatBand && Number.isFinite(width_dimension_offset)) {
+            gateBandMin = SlatFence.outsideToTypedLineMm(fd, gateBandMin);
+            gateBandNext = SlatFence.getSlatGateCalcC8Mm(slug, gate_data, post_panel) + minPanelOnGate - width_dimension_offset;
+        }
+    }
+    var inGateBand =
+        gateBandMin != null && Number.isFinite(gateBandMin) && gateBandMin > 0 &&
+        Number.isFinite(gateBandNext) && mbnRawDisplay > gateBandMin && mbnRawDisplay < gateBandNext;
+    var gateBandMsg = function() {
+        var text = !offersCustomGate
+            ? FENCE.settings.message.gate_band_no_custom
+            : isCustomGate
+                ? FENCE.settings.message.gate_band_custom
+                : FENCE.settings.message.gate_band;
+        return text
+            .replace(/{{next}}/gi, fcFormatMm(gateBandNext))
+            .replace(/{{overall}}/gi, fcFormatMm(gateBandMin));
+    };
+
     // STD GATE + PANEL ITEM | ON POST CHANGED
     var stdGateMinCompare =
         stdGateMinOverallMm != null
@@ -9440,16 +9601,24 @@ function updateOverAllLength(data) {
             (panel_item == 0 && data?.removePost))
     ) {
 
-        var overall =
-            stdGateMinOverallMm != null
+        // Slat: the minimum on its typed line (gateBandMin), not the outside-to-outside figure, which
+        // a Centre-line entry would read as 50mm more than the run.
+        var overall = gateBandMin != null && isSlatBand
+            ? gateBandMin
+            : stdGateMinOverallMm != null
                 ? stdGateMinOverallMm
                 : gate_posts_gaps - minusPosts - adjustGap;
 
-        var msg = (offersCustomGate ? FENCE.settings.message.min_gate_custom : FENCE.settings.message.min_gate)
-            .replace(/{{overall}}/gi, overall);
+        // Slat arrives here from above its physical minimum: that is the gate band, not a short run.
+        var msg = inGateBand
+            ? gateBandMsg()
+            : (offersCustomGate ? FENCE.settings.message.min_gate_custom : FENCE.settings.message.min_gate)
+                .replace(/{{overall}}/gi, overall);
 
-        if(overall != mbn && !isNaN(overall))
-            popupToast("Important", msg, 'STD+P');
+        // Not when the box already shows the minimum: Slat's offset makes mbn read under it even
+        // then, and the repeat toast overwrote the band wording from the pass that moved the length.
+        if(overall != mbn && overall != mbnRawDisplay && !isNaN(overall))
+            popupToast(inGateBand ? FENCE.settings.message.oal_changed : "Important", msg, 'STD+P');
 
     } 
 
@@ -9466,19 +9635,30 @@ function updateOverAllLength(data) {
             (panel_item == 0 && data?.removePost))
     ) {
 
-        var overall =
-            customGateMinOverallMm != null
+        // Slat: on its typed line and with the band wording, as the standard-gate block above.
+        var overall = gateBandMin != null && isSlatBand
+            ? gateBandMin
+            : customGateMinOverallMm != null
                 ? customGateMinOverallMm
                 : gate_posts_gaps - minusPosts;
 
-        var msg = FENCE.settings.message.min_gate_custom
-            .replace(/{{overall}}/gi, overall);
+        var msg = inGateBand
+            ? gateBandMsg()
+            : FENCE.settings.message.min_gate_custom
+                .replace(/{{overall}}/gi, overall);
 
-        if(overall != mbn && !isNaN(overall))
-            popupToast("Important", msg, 'CG+P');
+        if(overall != mbn && overall != mbnRawDisplay && !isNaN(overall))
+            popupToast(inGateBand ? FENCE.settings.message.oal_changed : "Important", msg, 'CG+P');
 
     } 
 
+
+    // GATE BAND (see gateBandMin above): nothing else moved the length, so the gate run it is.
+    if (inGateBand && !overall) {
+        var overall = gateBandMin;
+
+        popupToast(FENCE.settings.message.oal_changed, gateBandMsg(), 'GB');
+    }
 
     // RAKED + PANEL ITEM
     if(hasRaked && panel_item > 0 && mbn < (raked - minusPosts) || 
@@ -9496,12 +9676,12 @@ function updateOverAllLength(data) {
 
     } 
 
-    // RAKED + GATE
-    if(hasGate && hasRaked && panel_item > 0 && mbn < (raked + gate - minusPosts) ||
-        hasGate && hasRaked && panel_item == 0 && mbn < (raked + gate - minusPosts) || 
+    // RAKED + GATE (rakedGateMinMm: the gate counted with one post, see GATE BAND above)
+    if(hasGate && hasRaked && panel_item > 0 && mbn < rakedGateMinMm ||
+        hasGate && hasRaked && panel_item == 0 && mbn < rakedGateMinMm ||
         data?.removePost && hasRaked && gateOnly ) {
-        
-        var overall = (raked + gate) - minusPosts;
+
+        var overall = rakedGateMinMm;
 
         var msg = FENCE.settings.message.min_gate_raked
             .replace(/{{overall}}/gi, overall)
@@ -9571,7 +9751,9 @@ function updateOverAllLength(data) {
         gateOnly &&
         isCustomGate;
 
-    if (overall && !isNaN(overall) && overall != mbn && !slatGoCustomSkipOalRewrite) {
+    // The band compares the typed figure, so a Slat entry exactly one width offset above its minimum
+    // (1,215 Outside) has mbn == overall yet still has to be written back.
+    if (overall && !isNaN(overall) && (overall != mbn || (inGateBand && overall != mbnRawDisplay)) && !slatGoCustomSkipOalRewrite) {
        if (typeof SlatFence !== 'undefined' && SlatFence.isSlatLike(slug)) {
             var dispOv = overall;
             if (!hasGate) {

@@ -984,6 +984,8 @@ function btnGate() {
     }
 
     data.gate = 1;
+    var $oalBox = $(FENCES.el.measurementBoxNumber).first();
+    var oalBefore = $oalBox.val();
     updateOverAllLength(data);
 
     FENCE.call('update_gate', 'add');
@@ -996,6 +998,15 @@ function btnGate() {
             updateOverAllLength();
         }
     } catch (eGateOal) {}
+
+    // The length checks above only rewrite the box (gate minimum, gate band): the drawing behind the
+    // drawer still showed the old length until the next Calculate. Commit and redraw as the drawers'
+    // own controls do (fcSelectPost), so the gate-only run the box now names is what is drawn.
+    if ($oalBox.val() !== oalBefore) {
+        try {
+            btnCalculate();
+        } catch (eGateCalc) {}
+    }
 }
 
 //----------------------------------------------------------------------------------
@@ -3137,11 +3148,15 @@ function btnCalculate() {
         fdPreCalc &&
         typeof SlatFence !== 'undefined' &&
         SlatFence.isStep2GateOnlyCustomGate(fdPreCalc);
+    // A wiped drawing (rejected Calculate) still has its gate / step-up in the saved plan.
+    var savedParts = typeof fcSavedPartsWhenNothingDrawn === 'function' ? fcSavedPartsWhenNothingDrawn() : null;
+    var savedGateOrRaked = !!(savedParts && (savedParts.gate || savedParts.raked));
     if (
         !skipEarlyOalForSlatGoCustom &&
         ($('.fencing-panel-gate:visible').length ||
             $('.raked-panel-container:visible').length ||
-            isGlassPoolFence)
+            isGlassPoolFence ||
+            savedGateOrRaked)
     ) {
         updateOverAllLength();
         if (fdPreCalc && typeof fcSyncGateMinOverallLength === 'function') {
@@ -3182,7 +3197,8 @@ function btnCalculate() {
         if (
             $('.fencing-panel-gate:visible').length ||
             $('.raked-panel-container:visible').length ||
-            isGlassPoolFence
+            isGlassPoolFence ||
+            savedGateOrRaked
         ) {
             try {
                 updateOverAllLength();

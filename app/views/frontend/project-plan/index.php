@@ -101,7 +101,6 @@ include view_path('frontend.partials.fields.index');
 		<?php include view_path('frontend.partials.footer'); ?>
 
 		<script defer src="<?php echo asset('public/assets/js/vendor/modern-screenshot.js'); ?>"></script>
-		<script defer src="<?php echo asset('public/assets/js/vendor/html2canvas.min.js'); ?>"></script>
 		<script defer src="<?php echo asset('public/assets/js/vendor/jspdf.umd.min.js'); ?>"></script>
 		<script defer src="<?php echo asset('public/assets/js/frontend/shared/lazy-images.js'); ?>"></script>
 		<script defer src="<?php echo asset('public/assets/js/frontend/project-plan/checkout.js'); ?>"></script>

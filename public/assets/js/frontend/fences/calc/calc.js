@@ -294,14 +294,16 @@ class FenceCalculator {
 
         // Post removal (Barr-style; Slat main uses fixed post layout from overall width).
         const removed_posts_mm = FENCE.minus_posts(custom_fence);
+        let no_post_capped_mm = 0;
         ({
-            full_panel_length, even_panel_length, long_panel_length,
-            short_panel_length, offcut_panel_length, short_panel_count
+            full_panel_length, even_panel_length, long_panel_length, long_panel_length_exact,
+            short_panel_length, offcut_panel_length, short_panel_count,
+            capped_mm: no_post_capped_mm
         } = this._applyPostRemovalAdjustment({
             removedPostsMm: removed_posts_mm,
             skip: style.isMainSlat,
             default_panel_width: max_panel_width_mm,
-            long_panel_count, short_panel_count,
+            long_panel_count, short_panel_count, long_panel_length_exact,
             full_panel_length, even_panel_length, long_panel_length,
             short_panel_length, offcut_panel_length,
             _short_panel_length, _offcut_panel_length
@@ -419,11 +421,29 @@ class FenceCalculator {
         if( style.isGlass ) {
              offcut_panel_count = 0;
         }
+        // A panel the drawing will not show (zero or negative width: a gate run with no room beside
+        // it) leaves no off-cut either - a "PANEL OFF-CUT 1x2410W" tile stood beside a bare gate run.
+        if (long_panel_count > 0 && !(long_panel_length > 0)) {
+            long_panel_count = 0;
+            offcut_panel_count = 0;
+            offcut_panel_length = 0;
+        }
+        // A zero-width off-cut is no off-cut: the tile already needed both, but the Fence Summary printed the
+        // bare count ("Offcut Panels: 1") for an uncut stock panel - a 2,500 Even run, or where the No Post fit lands.
+        if (offcut_panel_count > 0 && !(offcut_panel_length > 0)) {
+            offcut_panel_count = 0;
+        }
 
         // --------------------------------------------------
         // 8. Result object construction and return
         // --------------------------------------------------
         const fence_height_visual = style.isSlatLike ? max_fence_height : fence_height;
+        // Even only: Full panels re-lay a capped run in _repairFullPanelPlan, so nothing is lost there.
+        const no_post_shortfall =
+            style.isPanelGroupB && !style.isMainSlat && !style.isInfill &&
+            (panel_options_data?.slug?.includes('even') || panel_options_data?.slug === undefined)
+                ? HELPER.isNaNtoZero(no_post_capped_mm)
+                : 0;
         const dataObj = {
             'fence_size': {
                 'width': '',
@@ -493,6 +513,11 @@ class FenceCalculator {
                 // Same inert object for every non-glass style and for gate-only glass, so
                 // consumers never have to null-check the key.
                 'clamp': clamp || { selected: false, enforce: false, status: 'none', size: null, slug: '', gapMm: 0 },
+                // Millimetres the run falls short of the entered length once No Post ends hand
+                // their width to Even panels already at stock: a 2,500 wall-to-wall run of 2400W
+                // panels covers 2,400. The panels are right as laid; the planner lowers Overall
+                // Length by this instead (fcApplyNoPostFitLength). 0 for every other case.
+                'no_post_shortfall': no_post_shortfall,
                 ...(style.isSlatLike ? { fence_height_key: fence_height } : {}),
             }
         };
@@ -770,7 +795,7 @@ class FenceCalculator {
     _applyPostRemovalAdjustment(input) {
         let {
             removedPostsMm, skip, default_panel_width,
-            long_panel_count, short_panel_count,
+            long_panel_count, short_panel_count, long_panel_length_exact,
             full_panel_length, even_panel_length, long_panel_length,
             short_panel_length, offcut_panel_length,
             _short_panel_length, _offcut_panel_length
@@ -778,19 +803,52 @@ class FenceCalculator {
         const _post = removedPostsMm;
         // Width the stock-width cap below could not keep. The freed end-post width is shared over
         // the panels, and capping a panel back to stock silently drops its share — the run then
-        // measures short of the entered length. _repairFullPanelPlan puts it back by re-laying the
-        // bays; reported rather than fixed here so this stays the verbatim redistribution it was.
+        // measures short of the entered length. Reported as capped_mm rather than fixed here, so
+        // this stays the verbatim redistribution it was: _repairFullPanelPlan puts it back for Full
+        // panels by re-laying the bays, and for Even panels the planner lowers Overall Length by it
+        // instead (selected_values.no_post_shortfall).
+        let capped_mm = 0;
         if( _post && !skip ) {
             const divided_post = _post/(long_panel_count + short_panel_count);
+            // An Even run has no short panel to absorb the share, so its off-cut is what the drawn panel leaves of
+            // the stock width (the two added up before the share): rounding the off-cut's own share landed it 1mm
+            // over the stock whenever the share ended in .5 (8,000 left No Post: 4x1951W beside 4x450W).
+            const even_stock_width = offcut_panel_length + long_panel_length;
+            // The share goes onto the unrounded Even width, and that width is what the renderer spreads
+            // (long_panel_length_exact): rounded twice (the pitch, then the share) every panel printed up to
+            // 1mm out with nothing to absorb it - 9,000 left No Post drew 4 x 2,201 = 9,004 - and the
+            // spread, still holding the pre-share width, either stood down (its 1mm test failed) or, on
+            // runs whose share was under 1mm, laid the panels as if the end post were there and lost the
+            // freed width altogether (200,000 drew 199,950).
+            const has_exact = Number.isFinite(long_panel_length_exact) && long_panel_length_exact > 0;
+            const long_exact = (has_exact ? long_panel_length_exact : long_panel_length) + divided_post;
             full_panel_length = HELPER.isNaNtoZero(Math.round(full_panel_length + divided_post));
             even_panel_length = HELPER.isNaNtoZero(Math.round(even_panel_length + divided_post));
-            long_panel_length = HELPER.isNaNtoZero(Math.round(long_panel_length + divided_post));    
-            short_panel_length = HELPER.isNaNtoZero(Math.round(short_panel_length + divided_post));                  
-            offcut_panel_length = HELPER.isNaNtoZero(Math.round(offcut_panel_length - divided_post));
+            long_panel_length = HELPER.isNaNtoZero(Math.round(long_exact));
+            if (has_exact) {
+                long_panel_length_exact = long_exact;
+            }
+            // Only a run with a short panel (Full Size) gives it a share: on an Even run the share made a
+            // 25mm short panel out of nothing, and the branch below then took the whole freed width off
+            // every off-cut (2,501 with a No Post end: 2x1174W for 2x1199W; 12,000 both ends: no tile).
+            if (short_panel_count > 0) {
+                short_panel_length = HELPER.isNaNtoZero(Math.round(short_panel_length + divided_post));
+                offcut_panel_length = HELPER.isNaNtoZero(Math.round(offcut_panel_length - divided_post));
+            } else {
+                offcut_panel_length = HELPER.isNaNtoZero(even_stock_width - long_panel_length);
+            }
             // Recalculate if any post is removed
-            if(long_panel_length > default_panel_width) {
-                long_panel_length = Math.round(default_panel_width);    
-            } 
+            // The cap and its shortfall are measured from the unrounded width: rounded, an exact fit (9,800
+            // left No Post: 4 x 2,400) read 1mm over and was lowered to 9,796, while 7,302 both ends read as
+            // stock and stayed 2mm longer than the panels cover.
+            const over_stock_mm = Math.max(0, Math.round((long_exact - default_panel_width) * long_panel_count));
+            if(long_panel_length > default_panel_width || over_stock_mm > 0) {
+                capped_mm = over_stock_mm;
+                long_panel_length = Math.round(default_panel_width);
+                if (has_exact) {
+                    long_panel_length_exact = long_panel_length;
+                }
+            }
             if(short_panel_length > default_panel_width) {
                 short_panel_length = HELPER.isNaNtoZero(Math.round(default_panel_width));                  
             } else {
@@ -805,8 +863,9 @@ class FenceCalculator {
             }
         }
         return {
-            full_panel_length, even_panel_length, long_panel_length,
-            short_panel_length, offcut_panel_length, short_panel_count
+            full_panel_length, even_panel_length, long_panel_length, long_panel_length_exact,
+            short_panel_length, offcut_panel_length, short_panel_count,
+            capped_mm
         };
     }
 
