@@ -376,6 +376,16 @@ final class SiteRegistryService
                 'gtagID' => $cfg->sites->fencingsuppliers->gtag_id,
                 'gtmID'  => $cfg->sites->fencingsuppliers->gtm_id,
             ],
+            [
+                'id'     => 10,
+                'domain' => 'yardu.optimisedesign.com.au',
+                'url'    => UrlHelper::toUrl('yardu.optimisedesign.com.au'),
+                'logo'   => 'public/assets/img/logo/fencesperth.webp',
+                'name'   => 'Yardu',
+                // ?? '': every site's own config.php gets this key only once it is deployed there.
+                'gtagID' => $cfg->sites->{'yardu.optimisedesign.com'}->gtag_id ?? '',
+                'gtmID'  => $cfg->sites->{'yardu.optimisedesign.com'}->gtm_id ?? '',
+            ],
         ];
 
         foreach ($data as &$row) {

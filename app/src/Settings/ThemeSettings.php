@@ -77,6 +77,20 @@ final class ThemeSettings
                     '--fc-fiery-orange' => '#8f0e26',
                 ]),
             ],
+            // Yardu: sage replaces orange, deep green replaces red; the shades step like Brand red's.
+            'yardu' => [
+                'id' => 'yardu',
+                'label' => 'Yardu',
+                'description' => 'A calm, natural theme in sage green, with deep green as the brand colour.',
+                'swatch' => '#5b715c',
+                'colors' => array_merge($neutral, [
+                    '--fc-brand-primary' => '#2f4a35',
+                    '--fc-princeton-orange' => '#5b715c',
+                    '--fc-pumpkin' => '#425343',
+                    '--fc-jaffa' => '#6e886f',
+                    '--fc-fiery-orange' => '#2f4a35',
+                ]),
+            ],
         ];
     }
 
