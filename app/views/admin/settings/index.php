@@ -285,6 +285,30 @@ $tab = $fcSettingsPage;
                                     <?php endforeach; ?>
                                 </div>
                             </section>
+                            <section class="fc-settings-card flex flex-col border border-slate-200 bg-white" aria-labelledby="fc-branding-fonts-heading">
+                                <header class="fc-settings-card__head">
+                                    <div class="fc-settings-card__heading">
+                                        <h3 class="fc-settings-card__title" id="fc-branding-fonts-heading">Fonts</h3>
+                                    </div>
+                                </header>
+                                <div class="fc-settings-card__body fc-settings-card__body--sections">
+                                    <?php foreach ($tab['branding_fonts'] as $field) : ?>
+                                    <label class="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3" for="<?php echo e((string) $field['field_id']); ?>">
+                                        <span class="w-full shrink-0 text-sm font-medium text-slate-700 sm:w-28 sm:pt-2"><?php echo e((string) $field['label']); ?></span>
+                                        <span class="min-w-0 flex-1">
+                                            <select id="<?php echo e((string) $field['field_id']); ?>" data-fc-branding-field="<?php echo e((string) $field['key']); ?>" class="fc-settings-field">
+                                                <?php foreach ($field['options'] as $option) : ?>
+                                                <option value="<?php echo e((string) $option['value']); ?>"<?php echo $option['selected'] ? ' selected' : ''; ?>><?php echo e((string) $option['label']); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <?php if ($field['help'] !== '') : ?>
+                                            <span class="mt-1 block text-xs text-slate-500"><?php echo e((string) $field['help']); ?></span>
+                                            <?php endif; ?>
+                                        </span>
+                                    </label>
+                                    <?php endforeach; ?>
+                                </div>
+                            </section>
                         </div>
 
                         <div id="fc-settings-panel-fence-colors" role="tabpanel" aria-labelledby="fc-settings-tab-fence-colors" class="<?php echo e((string) $tab['panel_class']['fence_colors']); ?>fc-settings-fence-colors">
@@ -1847,6 +1871,18 @@ $tab = $fcSettingsPage;
                                         <span id="fc-branding-preview-footer-name"><?php echo e((string) $tab['branding_preview']['app_name']); ?></span>
                                         <span id="fc-branding-preview-version"><?php echo e((string) $tab['branding_preview']['version']); ?></span>
                                     </p>
+                                </div>
+                                <div>
+                                    <p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Frontend font</p>
+                                    <p id="fc-branding-preview-font-frontend" class="leading-snug text-slate-900">Choose your fencing style · Overall length 12,400 mm</p>
+                                </div>
+                                <div>
+                                    <p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Heading font</p>
+                                    <p id="fc-branding-preview-font-heading" class="text-2xl uppercase leading-tight text-slate-900">Step 01 · Customer details</p>
+                                </div>
+                                <div>
+                                    <p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Admin font</p>
+                                    <p id="fc-branding-preview-font-admin" class="leading-snug text-slate-900">Planner entries · Store products · Save changes</p>
                                 </div>
                                 <p class="text-xs text-slate-500">Saved branding applies on the <a class="font-medium text-indigo-600 hover:text-indigo-700" href="../planner" target="_blank" rel="noopener">planner</a> after save (refresh if already open).</p>
                             </div>

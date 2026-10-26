@@ -222,6 +222,31 @@ final class SettingsPresenter
             ];
         }
 
+        // The Fonts card: one dropdown per side, its default option marked as such.
+        $brandingDefaults = is_array($brandingPayload['defaults'] ?? null) ? $brandingPayload['defaults'] : [];
+        $brandingFonts = [];
+        foreach (['fontFrontend', 'fontHeading', 'fontAdmin'] as $key) {
+            $field = is_array($brandingSchema[$key] ?? null) ? $brandingSchema[$key] : [];
+            $value = (string) ($branding[$key] ?? '');
+            $default = (string) ($brandingDefaults[$key] ?? '');
+            $options = [];
+            foreach ((array) ($field['choices'] ?? []) as $slug => $choice) {
+                $slug = (string) $slug;
+                $options[] = [
+                    'value' => $slug,
+                    'label' => (string) ($choice['label'] ?? $slug) . ($slug === $default ? ' (default)' : ''),
+                    'selected' => $slug === $value,
+                ];
+            }
+            $brandingFonts[] = [
+                'key' => $key,
+                'field_id' => 'fc-branding-' . $key,
+                'label' => (string) ($field['label'] ?? $key),
+                'help' => (string) ($field['help'] ?? ''),
+                'options' => $options,
+            ];
+        }
+
         $fenceRows = [];
         foreach ($fenceColors as $index => $row) {
             if (!is_array($row)) {
@@ -266,6 +291,7 @@ final class SettingsPresenter
             'presets' => $presets,
             'theme_groups' => $themeGroups,
             'branding_fields' => $brandingFields,
+            'branding_fonts' => $brandingFonts,
             'branding_preview' => [
                 'app_name' => (string) ($branding['appName'] ?? 'Fencing Calculator'),
                 'tagline' => (string) ($branding['tagline'] ?? ''),

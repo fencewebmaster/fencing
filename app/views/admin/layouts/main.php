@@ -40,7 +40,7 @@ use Fc\Admin\Settings\ThemeSettings;
     <?php endif; ?>
     <?php echo ThemeSettings::cssBlock(); ?>
     <link href="<?php echo asset('assets/css/vendor/bootstrap/bootstrap.min.css'); ?>" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="<?php echo e($fcFontsHref); ?>">
+    <?php view('admin.layouts.partials.fonts', ['fcFonts' => $fcAdminFonts]); ?>
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/buttons.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/theme.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/sidebar.css'); ?>">

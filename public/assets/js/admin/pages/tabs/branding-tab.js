@@ -8,7 +8,12 @@
 
     var API_BRANDING = global.fcApiUrl('settings', 'action=branding');
     var TOAST_BRANDING = 'fc-branding-save';
-    var BRANDING_FIELD_ORDER = ['logo', 'appName', 'tagline'];
+    var BRANDING_FIELD_ORDER = ['logo', 'appName', 'tagline', 'fontFrontend', 'fontHeading', 'fontAdmin'];
+    var FONT_PREVIEWS = {
+        fontFrontend: 'fc-branding-preview-font-frontend',
+        fontHeading: 'fc-branding-preview-font-heading',
+        fontAdmin: 'fc-branding-preview-font-admin'
+    };
 
     class BrandingTabController extends global.FC.Settings.TabController {
         setDirty(isDirty) {
@@ -101,6 +106,29 @@
                 versionEl.textContent = version;
             }
             this.updateLogoPreview();
+            this.updateFontPreview();
+        }
+
+        /** Sample text in each picked font; a family's Google Fonts stylesheet is linked on its first pick. */
+        updateFontPreview() {
+            var state = this.state;
+            Object.keys(FONT_PREVIEWS).forEach(function (key) {
+                var el = document.getElementById(FONT_PREVIEWS[key]);
+                var field = state.brandingSchema[key];
+                var slug = state.branding[key];
+                var choice = field && field.choices ? field.choices[slug] : null;
+                if (!el || !choice) {
+                    return;
+                }
+                if (choice.href && !document.querySelector('link[data-fc-branding-font="' + slug + '"]')) {
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = choice.href;
+                    link.setAttribute('data-fc-branding-font', slug);
+                    document.head.appendChild(link);
+                }
+                el.style.fontFamily = choice.stack;
+            });
         }
 
         /** Static sidebar preview markup, built when the Branding tab becomes active. Same markup as the view's server copy: edit in pairs. */
@@ -139,6 +167,18 @@
                 '<span id="fc-branding-preview-footer-name">Fencing Calculator</span> ' +
                 '<span id="fc-branding-preview-version"></span>' +
                 '</p></div>' +
+                '<div>' +
+                '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Frontend font</p>' +
+                '<p id="fc-branding-preview-font-frontend" class="leading-snug text-slate-900">Choose your fencing style · Overall length 12,400 mm</p>' +
+                '</div>' +
+                '<div>' +
+                '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Heading font</p>' +
+                '<p id="fc-branding-preview-font-heading" class="text-2xl uppercase leading-tight text-slate-900">Step 01 · Customer details</p>' +
+                '</div>' +
+                '<div>' +
+                '<p class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Admin font</p>' +
+                '<p id="fc-branding-preview-font-admin" class="leading-snug text-slate-900">Planner entries · Store products · Save changes</p>' +
+                '</div>' +
                 '<p class="text-xs text-slate-500">Saved branding applies on the <a class="font-medium text-indigo-600 hover:text-indigo-700" href="../planner" target="_blank" rel="noopener">planner</a> after save (refresh if already open).</p>' +
                 '</div>' +
                 '</section>'

@@ -3407,9 +3407,9 @@ SlatFence = {
 
     /**
      * An outside-to-outside length on the line the customer types to: Outside Width (the default)
-     * as is, Centre-line Width one post less. The gate minimums (getStdGateMinOverallPhysicalMm,
-     * computeDisplayOverallFromGateLeafMm) are outside to outside, and written straight into a
-     * Centre-line box they read 50mm longer than the gate run they stand for.
+     * as is, Centre-line Width half a post less at each end that has a post. The gate minimums
+     * (getStdGateMinOverallPhysicalMm, computeDisplayOverallFromGateLeafMm) are outside to outside,
+     * and written straight into a Centre-line box they read 50mm longer than the gate run they stand for.
      */
     outsideToTypedLineMm: function(fd, outsideMm) {
         var mm = parseInt(outsideMm, 10);
@@ -3421,7 +3421,9 @@ SlatFence = {
         if (!Number.isFinite(postW) || !Number.isFinite(offset)) {
             return outsideMm;
         }
-        return mm - (2 * postW + offset);
+        // A No Post end has no centre to measure to: two No Post ends set a 1,015 gate run to 965.
+        var postEnds = 2 - Math.round((parseInt(FENCE.minus_posts(fd.info || []), 10) || 0) / postW);
+        return mm - ((2 * postW + offset) * Math.max(0, postEnds)) / 2;
     },
 
     //----------------------------------------------------------------------------------
@@ -5239,12 +5241,14 @@ SlatFence = {
             }
             addWidePanels(openingW, panelN);
         } else {
-            if ((parseInt(calc?.even_panel?.count, 10) || 0) > 0) {
+            // Main Slat publishes even_panel on both options, so Full billed rails off a layout it never
+            // drew; and in the else full_panel IS long_panel (calc.js), so it counted those bays twice.
+            var panelOption = String(calc?.selected_values?.panel_option || '');
+            if ((parseInt(calc?.even_panel?.count, 10) || 0) > 0 && panelOption.indexOf('full') === -1) {
                 addWidePanels(calc?.even_panel?.length, calc?.even_panel?.count);
             } else {
                 addWidePanels(calc?.long_panel?.length, calc?.long_panel?.count);
                 addWidePanels(calc?.short_panel?.length, calc?.short_panel?.count);
-                addWidePanels(calc?.full_panel?.length, calc?.full_panel?.count);
             }
             if ((parseInt(calc?.left_raked?.width, 10) || 0) >= panelMinMm) {
                 qty += 1;

@@ -65,7 +65,8 @@
             tooltipBorder: dark ? 'rgba(51, 65, 85, 0.9)' : 'rgba(226, 232, 240, 0.95)',
             tooltipText: dark ? '#e2e8f0' : '#0f172a',
             font: {
-                family: "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+                // The admin font (Settings → Branding), so chart labels match the page around them.
+                family: window.getComputedStyle(document.body).fontFamily,
                 size: 11,
             },
             palette: ['#6366f1', '#06b6d4', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#14b8a6', '#f97316'],

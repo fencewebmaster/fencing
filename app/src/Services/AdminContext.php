@@ -98,7 +98,12 @@ final class AdminContext
     /** @var array{id:int,login:string,email:string,display_name:string}|null */
     public ?array $authSwitchFrom = null;
 
-    public string $fontsHref = '';
+    /**
+     * Settings → Branding → Admin font: links and CSS for the layout head, both empty at the default.
+     *
+     * @var array{links:list<string>,css:string}
+     */
+    public array $adminFonts = ['links' => [], 'css' => ''];
 
     public string $dateFormat = 'M. j, Y h:i A';
 
@@ -110,7 +115,7 @@ final class AdminContext
         $this->appVersion = AppVersionService::label();
         $this->authUser  = AuthService::user();
         $this->authSwitchFrom = ImpersonationService::switchFrom();
-        $this->fontsHref = $this->resolveFontsHref();
+        $this->adminFonts = BrandingSettings::webFonts('admin', $this->branding);
         $this->dateFormat = SystemSettings::dateFormatPhp();
     }
 
@@ -155,19 +160,7 @@ final class AdminContext
             'fcAdminIsLogin'              => $this->isLogin,
             'fcAuthUser'                  => $this->authUser,
             'fcAuthSwitchFrom'            => $this->authSwitchFrom,
-            'fcFontsHref'                 => $this->fontsHref,
+            'fcAdminFonts'                => $this->adminFonts,
         ];
-    }
-
-    private function resolveFontsHref(): string
-    {
-        $fontsFile = FC_ROOT . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR . 'fonts.css';
-        $href      = $this->appBase . '/public/assets/css/fonts.css';
-
-        if (is_readable($fontsFile)) {
-            $href .= '?v=' . filemtime($fontsFile);
-        }
-
-        return $href;
     }
 }

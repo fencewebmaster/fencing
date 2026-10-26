@@ -1149,7 +1149,19 @@ let ProjectPlan = {
 
             } else if (find_gate.length && placement >= 0) {
 
-                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-l"]').text()
+                // Glass, placement past the run: after the last panel (or the hinge panel, with none) as update_gate
+                // draws it; the plan drew no gate at all.
+                var $ppGateAt = $('#pp-' + tab + ' #panel-item-' + placement);
+                var ppGateSide = 'l';
+                if (!$ppGateAt.length && info.panel_group == 'a' && $('#pp-' + tab + ' .extra-panel-item').length) {
+                    $ppGateAt = $('#pp-' + tab + ' .panel-item:not(.fencing-raked-panel,.fencing-panel-gate,.extra-panel-item)').last();
+                    if (!$ppGateAt.length) {
+                        $ppGateAt = $('#pp-' + tab + ' #panel-item-0, #pp-' + tab + ' #panel-item-x').first();
+                        ppGateSide = 'r';
+                    }
+                }
+
+                var tpl = $('script[data-type="panel_gate-' + info.panel_group + '-' + ppGateSide + '"]').text()
                     .replace(/{{center_point}}/gi, center_point)
                     .replace(/{{panel_size}}/gi, gate_label_width)
                     .replace(/{{panel_size_center}}/gi, panel_size_center)
@@ -1157,7 +1169,7 @@ let ProjectPlan = {
                     .replace(/{{panel_name}}/gi, panel_name)
                     .replace(/{{panel_unit}}/gi, panel_unit);
 
-                $('#pp-' + tab + ' #panel-item-' + placement).after(tpl);
+                $ppGateAt.after(tpl);
 
 
             } else if (action == 'add' && placement == 0) {

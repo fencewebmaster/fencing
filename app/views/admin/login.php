@@ -32,6 +32,7 @@ $version = $page['version'];
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/vendor/tailwind.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/theme.css'); ?>">
     <link rel="stylesheet" type="text/css" href="<?php echo asset('assets/css/admin/login.css'); ?>">
+    <?php view('admin.layouts.partials.fonts', ['fcFonts' => $page['fonts']]); ?>
 </head>
 <body class="h-full fc-login-body">
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2"></div>

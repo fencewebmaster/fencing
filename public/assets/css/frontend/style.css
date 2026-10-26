@@ -128,6 +128,11 @@
 
     /* Action-button hover shadow, shared so the pages cannot drift apart. */
     --fc-btn-hover-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+
+    /* Fonts: text, UI (buttons, measurements) and headings. Settings → Branding overrides them from partials/webfonts.php. */
+    --fc-font-text: "Poppins", sans-serif;
+    --fc-font-ui: "Inter", sans-serif;
+    --fc-font-heading: "League Gothic", sans-serif;
 }
 
 html {
@@ -177,15 +182,15 @@ html {
 /* Basic typography for copy text. */
 .fencing-container {
     color: var(--fc-black);
-    font-family: "Poppins", sans-serif !important;
+    font-family: var(--fc-font-text) !important;
 }
 
 .fencing-container .fc-font-1 {
-    font-family: "Poppins", sans-serif !important;
+    font-family: var(--fc-font-text) !important;
 }
 
 .fencing-container .fc-font-2 {
-    font-family: "League Gothic", sans-serif !important;
+    font-family: var(--fc-font-heading) !important;
 }
 
 .fencing-container h1,
@@ -198,7 +203,7 @@ html {
 .fencing-container select,
 .fencing-container label {
     margin: 0;
-    font-family: "Poppins", sans-serif !important;
+    font-family: var(--fc-font-text) !important;
 }
 
 /* Planner: reserve scrollbar space so the layout does not shift when the document scrollbar appears. */
@@ -1654,7 +1659,7 @@ html:not([data-fc-debug="1"]) .fc-project-plan-page .fc-cart-item-slug {
 
 body {
     background: var(--fc-smoke-white);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
 }
 
 /* Basic styles for links. */
@@ -1670,7 +1675,7 @@ img {
 }
 
 p {
-    font-family: "Poppins", sans-serif !important;
+    font-family: var(--fc-font-text) !important;
 }
 
 a div {
@@ -1722,7 +1727,7 @@ a div {
 }
 
 .step-label {
-    font-family: "League Gothic", sans-serif;
+    font-family: var(--fc-font-heading);
     font-size: 40px;
     text-transform: uppercase;
     font-weight: 400;
@@ -1767,7 +1772,7 @@ a div {
 }
 
 .ftm-measurement {
-    font-family: "Inter", sans-serif;
+    font-family: var(--fc-font-ui);
     font-size: 14px;
     font-weight: 500;
 }
@@ -2139,7 +2144,7 @@ a div {
     #fc-control-modal .fencing-modal-notes .fc-alert-gray.field-note > p,
     #fc-control-modal .fencing-modal-area--gate .alert-gray > p,
     #fc-control-modal .fc-selection-details p {
-        font-family: "Poppins", sans-serif;
+        font-family: var(--fc-font-text);
         font-size: 13px;
         line-height: 1.55;
         color: var(--fc-dove-gray) !important;
@@ -2296,7 +2301,7 @@ a div {
     border-radius: 50%;
     background-color: var(--fc-drawer-badge-bg);
     color: var(--fc-drawer-badge-text);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 18px;
     font-weight: 600;
     line-height: 1;
@@ -2315,7 +2320,7 @@ a div {
     border-radius: 999px;
     background-color: var(--fc-white);
     color: var(--fc-tundora);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 13px;
     font-weight: 500;
     line-height: 1.3;
@@ -2608,7 +2613,7 @@ label.error {
     border-radius: 5px;
     background: var(--fc-alizarin);
     color: var(--fc-white);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 12px;
     font-weight: 400;
     line-height: 1.4;
@@ -2626,7 +2631,7 @@ label.error {
 }
 
 h1.fc-header-title {
-    font-family: "League Gothic", sans-serif !important;
+    font-family: var(--fc-font-heading) !important;
     font-size: 48px;
     font-style: normal;
     font-weight: 400;
@@ -3013,7 +3018,7 @@ a.fc-tab-active {
 }
 
 #submit-modal .fencing-modal-title h4 {
-    font-family: "League Gothic", sans-serif !important;
+    font-family: var(--fc-font-heading) !important;
     font-size: 40px;
     text-transform: uppercase;
     font-weight: 400;
@@ -3066,7 +3071,7 @@ a.fc-tab-active {
 }
 
 .fencing-modal-notes {
-    font-family: "Inter", sans-serif;
+    font-family: var(--fc-font-ui);
     padding: 20px 20px 0;
 }
 
@@ -5006,7 +5011,7 @@ html.fc-plan-filmstrip-on .fc-project-plan-page #fc-fence-list .fc-project-plan-
 
 /* Shared base for every loader status line, the single one and the checklist alike. */
 .fc-loader ul li {
-    font-family: "League Gothic", sans-serif !important;
+    font-family: var(--fc-font-heading) !important;
     list-style: none;
     letter-spacing: 2px;
     font-size: 2em;
@@ -5673,7 +5678,7 @@ thead.fc-border th:last-child {
 }
 
 .fc-progress-container {
-    font-family: "Inter", sans-serif;
+    font-family: var(--fc-font-ui);
     display: flex;
     align-items: center;
     font-size: 14px;
@@ -7971,7 +7976,7 @@ thead.fc-border th:last-child {
 /* Buttons */
 .btn-fc {
     display: inline-block;
-    font-family: "Inter", sans-serif;
+    font-family: var(--fc-font-ui);
     transition: all 0.3s ease-in-out 0s;
     -webkit-transition: all 0.3s ease-in-out 0s;
     -moz-transition: all 0.3s ease-in-out 0s;
@@ -8424,7 +8429,7 @@ thead.fc-border th:last-child {
 /* Planner section tabs: "SECTION N", then fence style, then overall length. */
 .fc-planner-page .fencing-tab-name .ftm-fence-style {
     display: block;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 12px;
     font-weight: 600;
     line-height: 1.25;
@@ -8582,7 +8587,7 @@ thead.fc-border th:last-child {
     text-transform: uppercase;
     background: var(--fc-bright-gray);
     justify-content: center;
-    font-family: "Inter", sans-serif;
+    font-family: var(--fc-font-ui);
     font-size: 12px;
     font-weight: 700;
     box-sizing: border-box;
@@ -10558,7 +10563,7 @@ thead.fc-border th:last-child {
 }
 #load-quote [name="qid"] {
     font-weight: 700;
-    font-family: 'League Gothic';
+    font-family: var(--fc-font-heading);
     font-size: 3em !important;
     letter-spacing: 3px;
 }
@@ -15105,7 +15110,7 @@ body.fc-restoring-selection .fencing-tab-name {
     border-radius: 3px;
     background: var(--fc-white);
     color: var(--fc-deep-blue);
-    font: 600 9px/11px "Poppins", sans-serif;
+    font: 600 9px/11px var(--fc-font-text);
     white-space: nowrap;
     pointer-events: none;
 }
@@ -15122,7 +15127,7 @@ body.fc-restoring-selection .fencing-tab-name {
     border-radius: 3px;
     background: var(--fc-white);
     color: var(--fc-deep-blue);
-    font: 600 9px/11px "Poppins", sans-serif;
+    font: 600 9px/11px var(--fc-font-text);
     white-space: nowrap;
     pointer-events: none;
 }
@@ -15983,7 +15988,7 @@ body.fc-restoring-selection .fencing-tab-name {
 @media (max-width: 992px) {
     .fc-step-2-alert h3 {
         font-size: 16px;
-        font-family: "Poppins", sans-serif !important;
+        font-family: var(--fc-font-text) !important;
     }
 }
 
@@ -16494,7 +16499,7 @@ body.fc-restoring-selection .fencing-tab-name {
 }
 
 .fc-planner-page .sticky-roll .fencing-tab-name {
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 16px;
     line-height: 1.25;
 }
@@ -16513,14 +16518,14 @@ body.fc-restoring-selection .fencing-tab-name {
 
 /* !important only because the unstuck tab title is itself !important at 20px. */
 .fc-planner-page .sticky-roll .fencing-tab-number {
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 16px !important;
     font-weight: 700 !important;
 }
 
 .fc-planner-page .sticky-roll .ftm-fence-style {
     display: inline;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 12px;
     font-weight: 600;
     line-height: 1.25;
@@ -16536,7 +16541,7 @@ body.fc-restoring-selection .fencing-tab-name {
 
 .fc-planner-page .sticky-roll .ftm-measurement {
     display: block;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 13px;
     line-height: 1.3;
     margin-top: 2px;
@@ -17055,7 +17060,7 @@ input[type="number"] {
 
 /* fc-modal: shared shell for the planner's dialogs. Compound selectors, because bootstrap.min.css loads after this file. */
 .fc-modal {
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
 }
 
 .fc-modal .fc-modal__dialog {
@@ -17515,7 +17520,7 @@ input[type="number"] {
 /* .fencing-modal-title uppercases the whole block for the League Gothic h4. */
 .fencing-modal--download-plans .fc-download-subtitle {
     margin: 0.15rem 0 0;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 0.8125rem;
     line-height: 1.35;
     text-transform: none;
@@ -17537,7 +17542,7 @@ input[type="number"] {
     gap: 0.5rem;
     flex: 0 1 auto;
     min-width: 0;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.01em;
@@ -17624,7 +17629,7 @@ input[type="number"] {
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 12px;
     background: var(--fc-alabaster);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
 }
 
 .fencing-modal--download-plans .fc-download-intro__icon {
@@ -17656,7 +17661,7 @@ input[type="number"] {
 
 .fencing-modal--download-plans .fc-download-step-hint {
     margin: 0 0 0.9rem;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 0.8125rem;
     line-height: 1.45;
     color: var(--fc-dove-gray);
@@ -17685,7 +17690,7 @@ input[type="number"] {
     border: 1px solid rgba(15, 23, 42, 0.12);
     border-radius: 12px;
     background: var(--fc-white);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 0.9375rem;
     font-weight: 500;
     color: var(--fc-cod-gray);
@@ -17778,7 +17783,7 @@ input[type="number"] {
 
 #submit-modal.fencing-modal--project-plans .fencing-modal-title h4 {
     margin: 0;
-    font-family: "League Gothic", sans-serif !important;
+    font-family: var(--fc-font-heading) !important;
     font-size: 30px;
     font-weight: 400;
     line-height: 1.1;
@@ -17789,7 +17794,7 @@ input[type="number"] {
 /* .fencing-modal-title uppercases the whole block for the League Gothic h4. */
 #submit-modal.fencing-modal--project-plans .fc-pp-modal-subtitle {
     margin: 0.15rem 0 0;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 0.8125rem;
     line-height: 1.35;
     text-transform: none;
@@ -17806,7 +17811,7 @@ input[type="number"] {
 /* Section rhythm — replaces the <hr class="my-2"> rules between the three panes. */
 #submit-modal.fencing-modal--project-plans .fc-pp-modal-section__title {
     margin: 0 0 0.75rem;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -17997,7 +18002,7 @@ input[type="number"] {
     border-radius: 14px;
     background: var(--fc-white);
     box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     opacity: 0;
     visibility: hidden;
     transform: translateX(-12px);
@@ -18144,7 +18149,7 @@ input[type="number"] {
     border-radius: 14px;
     background: var(--fc-white);
     box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     overflow: hidden;
 }
 
@@ -19517,7 +19522,7 @@ input[type="number"] {
 
 /* Footer app name and version: Poppins at the label role, version stepped back; !important because Bootstrap ties and loads later. */
 div.fc-footer-app {
-    font-family: "Poppins", sans-serif;
+    font-family: var(--fc-font-text);
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.48px;

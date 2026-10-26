@@ -273,7 +273,64 @@ function popupToast(title, message, code) {
         $code.empty().addClass('d-none');
     }
 
+    // Shown while the last toast fades out, Bootstrap's pending hide finished after it and the new toast never appeared.
+    if (fcToastFading) {
+        _lt.one('hidden.bs.toast', function() {
+            toastBootstrap.show();
+        });
+        return;
+    }
     toastBootstrap.show();
+}
+
+// One hide timer for #liveToast (its data-bs-config turns Bootstrap's autohide off): Bootstrap armed one per show() and the next
+// show() cancelled only the newest, so a click that raised several toasts hid the next toast early (a Yes Post toast lasted 0.3s).
+var fcToastHideTimer = null;
+var fcToastFading = false;
+var fcToastHeld = { mouse: false, focus: false };
+
+_doc.on('show.bs.toast', '#liveToast', fcToastShowStarted);
+_doc.on('shown.bs.toast', '#liveToast', fcArmToastHide);
+_doc.on('hide.bs.toast', '#liveToast', fcToastHideStarted);
+_doc.on('hidden.bs.toast', '#liveToast', fcToastHidden);
+_doc.on('mouseenter mouseleave focusin focusout', '#liveToast', fcToastHold);
+
+// The last toast's hide fired during the next one's fade-in, before 'shown' re-armed it (a toast 8s after another lasted 0.3s).
+function fcToastShowStarted() {
+    clearTimeout(fcToastHideTimer);
+}
+
+function fcArmToastHide() {
+    clearTimeout(fcToastHideTimer);
+
+    var $lt = $('#liveToast');
+    // Paused while hovered or focused, as Bootstrap's own autohide was.
+    if (!$lt.hasClass('show') || fcToastHeld.mouse || fcToastHeld.focus) {
+        return;
+    }
+
+    var delay = parseInt(($lt.data('bsConfig') || {}).delay, 10) || 8000;
+    fcToastHideTimer = setTimeout(function() {
+        bootstrap.Toast.getOrCreateInstance($lt[0]).hide();
+    }, delay);
+}
+
+function fcToastHideStarted() {
+    fcToastFading = true;
+    clearTimeout(fcToastHideTimer);
+}
+
+function fcToastHidden() {
+    fcToastFading = false;
+}
+
+function fcToastHold(e) {
+    if (e.type === 'focusout' && this.contains(e.relatedTarget)) {
+        return;
+    }
+
+    fcToastHeld[e.type.indexOf('focus') === 0 ? 'focus' : 'mouse'] = e.type === 'mouseenter' || e.type === 'focusin';
+    fcArmToastHide();
 }
 
 //----------------------------------------------------------------------------------

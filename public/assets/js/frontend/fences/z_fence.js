@@ -18,6 +18,7 @@ FENCE = {
             gate_band: "No room beside the <b>GATE</b> for a panel: the next size up is <b class='text-underline'>{{next}}</b>mm (a post and the smallest panel). <b>Overall Length</b> was set back to <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b> for an exact fit",
             gate_band_no_custom: "No room beside the <b>GATE</b> for a panel: the next size up is <b class='text-underline'>{{next}}</b>mm (a post and the smallest panel). <b>Overall Length</b> was set back to <b class='text-underline'>{{overall}}</b>mm",
             gate_band_custom: "No room beside the <b>GATE</b> for a panel: the next size up is <b class='text-underline'>{{next}}</b>mm (a post and the smallest panel). <b>Overall Length</b> was set back to <b class='text-underline'>{{overall}}</b>mm <b>or</b> adjust the custom gate width in <b>Gate Options</b> for an exact fit",
+            step_up_band: "No room beside the <b>STEP-UP</b> for a panel: the next size up is <b class='text-underline'>{{next}}</b>mm (a post and the smallest panel). <b>Overall Length</b> was set back to <b class='text-underline'>{{overall}}</b>mm",
         },
         item: {
             raked: 50 + 1200 + 50,
@@ -1448,8 +1449,14 @@ FENCE = {
 
             } else if(find_gate.length && placement >= 0) {
 
+                // Glass: a placement past the last panel (the run got shorter) stays after the last panel, as the move
+                // buttons treat it; drawn first, a right-hand gate's latch met the far end instead (N4).
+                var $glassLastPanel = info.panel_group == 'a' && hasHingePanel && $('#panel-item-' + placement).length == 0
+                    ? $('.panel-item:not(.fencing-raked-panel,.fencing-panel-gate,.extra-panel-item)').last()
+                    : $();
+
                 // if panel placement doesn't exist
-                if($('#panel-item-' + placement).length == 0) {
+                if($('#panel-item-' + placement).length == 0 && !$glassLastPanel.length) {
 
                     panel_gate_side = (panel_count <= 1) ? 'r' : 'l';
             
@@ -1473,7 +1480,7 @@ FENCE = {
                         .replace(/{{panel_name}}/gi, panel_name)
                         .replace(/{{panel_unit}}/gi, panel_unit);
 
-                    $('#panel-item-' + placement).after(tpl);
+                    ($glassLastPanel.length ? $glassLastPanel : $('#panel-item-' + placement)).after(tpl);
 
                 }
 
@@ -1931,6 +1938,14 @@ FENCE = {
             ) {
                 return;
             }
+            // Off a fixed end the run can take one more panel (N4): place the gate after the count it now solves to.
+            try {
+                var calcLast = calculate_fences();
+                var nLast = (parseInt(calcLast?.long_panel?.count, 10) || 0) + (parseInt(calcLast?.short_panel?.count, 10) || 0);
+                if (nLast > panel_count) {
+                    fcPersistGlassPoolGatePlacement(fdMoveGate, nLast, nLast);
+                }
+            } catch (eLastCount) {}
         } else if(move == 'left') {
 
             if(panel_count == 1) {
@@ -3377,8 +3392,8 @@ FENCE = {
         }
 
         var disp = this.getStdGateMinOverallPhysicalMm(fd);
-        // Slat: on the typed line (Outside as is, Centre-line one post less), so a Centre-line box
-        // is not set 50mm over the gate run it stands for.
+        // Slat: on the typed line (Outside as is, Centre-line half a post less per end post), so a
+        // Centre-line box is not set 50mm over the gate run it stands for.
         if (typeof SlatFence !== 'undefined' && SlatFence.isSlatLike(fd.slug)) {
             disp = SlatFence.outsideToTypedLineMm(fd, disp);
         }

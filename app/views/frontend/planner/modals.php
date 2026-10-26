@@ -514,9 +514,9 @@ use Fc\Admin\Services\AppConfigService;
 </div>
 
 <?php /* Planner notice toast ("Overall Length changed", …). The rule code is only rendered in
-     debug mode — see popupToast() in core/events.js. */ ?>
+     debug mode — see popupToast() in core/events.js, which also hides it after "delay" on one timer (autohide off). */ ?>
 <div class="toast-container fc-toast-container position-fixed">
-    <div id="liveToast" class="toast fc-toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-bs-config='{"delay":8000}'>
+    <div id="liveToast" class="toast fc-toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-bs-config='{"delay":8000,"autohide":false}'>
         <div class="toast-header fc-toast__header">
             <span class="fc-toast__icon" aria-hidden="true">
                 <i class="fa-solid fa-triangle-exclamation"></i>

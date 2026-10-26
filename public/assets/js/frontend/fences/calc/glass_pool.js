@@ -33,6 +33,14 @@ GlassPoolCalc = {
         var hingePanelActive = !!gate_hinge_panel_count;
         if (input.gateOnly) hingePanelActive = false;
 
+        // Hand and placement as update_gate draws them, so the solver knows which end the leaf's latch meets.
+        var gateRow = (input.gateData || [])[0];
+        var swingVal = (gateRow?.settings?.fields || []).find(function(f) { return f && f.key === 'gate_hinge_position'; })?.val
+            || (input.info?.settings?.gate?.fields || []).find(function(f) { return f && f.slug === 'gate_hinge_position'; })
+                ?.options?.find(function(o) { return o && o.default; })?.slug;
+        var placementRaw = gateRow?.settings?.placement;
+        var gatePlacement = parseInt(String(placementRaw == null ? '' : placementRaw).replace(/,/g, ''), 10);
+
         var gate_hinge_panel_width = input.gateHingePanelWidthMm;
         if (
             hingePanelActive &&
@@ -49,7 +57,9 @@ GlassPoolCalc = {
                 gateSize: input.gateWidthMm,
                 hingePanelSize: gate_hinge_panel_width,
                 hingePanelActive: hingePanelActive,
-                hingeType: { left: glassGaps.hinge, right: glassGaps.latch }
+                hingeType: { left: glassGaps.hinge, right: glassGaps.latch },
+                hand: swingVal ? (String(swingVal).indexOf('right') !== -1 ? 'right' : 'left') : undefined,
+                placement: Number.isFinite(gatePlacement) ? gatePlacement : -1
             },
             leftRakedPanel: { active: input.leftRakedWidthMm > 0 ? true : false, size: input.leftRakedWidthMm },
             rightRakedPanel: { active: input.rightRakedWidthMm > 0 ? true : false, size: input.rightRakedWidthMm },
@@ -528,7 +538,31 @@ function findAllPossiblePanelLayouts({
  * @param {object} config - The configuration object for the fencing project.
  * @returns {object} The calculated fencing plan.
  */
+// A gate with a hand decides once which run end its latch meets, from the count the run takes without that decision.
+// Decided per candidate count, a placement moved the count and the count moved the gate (Move right reached the far end).
 function calculateGlassFencing(config) {
+    const gate = config?.gate;
+    if (!gate?.active || !gate.hand || gate.latchEnd !== undefined) return _fcCalculateGlassFencingOnce(config);
+    const loose = JSON.parse(JSON.stringify(config));
+    loose.gate.latchEnd = '';
+    const plan = _fcCalculateGlassFencingOnce(loose);
+    const count = plan?.results ? plan.results.longPanels.count + plan.results.shortPanel.count : 0;
+    // A right-hand gate placed first meets the left end at any count, so a failed loose solve does not settle it.
+    const firstRight = !plan?.results && gate.hand === 'right' && !(Number(gate.placement) >= 1);
+    if (count < 1 && !firstRight) return plan;
+    const end = firstRight ? 'left' : _fcGlassGateLatchEnd(gate, count);
+    const fixedEnd = (end === 'left' && config.leftEndAttachment?.size !== '' && !config.leftRakedPanel?.active)
+        || (end === 'right' && config.rightEndAttachment?.size !== '' && !config.rightRakedPanel?.active);
+    if (!fixedEnd) return plan;
+    const tight = JSON.parse(JSON.stringify(config));
+    tight.gate.latchEnd = end;
+    const paid = _fcCalculateGlassFencingOnce(tight);
+    // More panels than a left-hand gate's placement would draw it mid-run (the clamp minimum can add one): keep the old count.
+    const paidCount = paid?.results ? paid.results.longPanels.count + paid.results.shortPanel.count : 0;
+    return end === 'right' && paidCount > Number(gate.placement) ? plan : paid;
+}
+
+function _fcCalculateGlassFencingOnce(config) {
     // Helper to resolve end gap value (number or '' for dynamic)
     function resolveEndGap(val, fallback) {
         if (val === '' || val === undefined || val === null) return fallback;
@@ -570,7 +604,7 @@ function calculateGlassFencing(config) {
         // room for the end gaps, so short runs generate one full-width panel whose gap is 0 and
         // die in the filter. Both surface as "No initial panel solutions" on perfectly buildable
         // lengths (e.g. gate + 1200 hinge panel errored for every overall in 2021-2218mm). The
-        // rescue below fills the slack with the dynamic end gaps themselves - zero or one panel -
+        // rescue below fills the slack with the dynamic end gaps themselves - zero or more panels -
         // and only ever runs where the solver has already failed, so working outputs are untouched.
         if (!secondPass.results) {
             const rescue = _fcGlassDynamicEndRescue(config, leftDynamic, rightDynamic);
@@ -804,9 +838,8 @@ function _calculateGlassFencingInternal(config, leftEndGap, rightEndGap, leftDyn
             // filter above, which has always counted dynamic ends only.
             if (leftDynamic) totalGapsCount++;
             if (rightDynamic) totalGapsCount++;
-            // If gate and hinge are active, reduce 2 gaps (gate has its own left/right gaps)
-            if (gate?.active && gate.hingePanelActive) totalGapsCount -= 2;
-            else if (gate?.active) totalGapsCount -= 2;
+            // The gate's hinge/latch gaps stand in for the joints beside the leaf (only one when the latch meets a fixed end)
+            if (gate?.active) totalGapsCount -= _fcGlassGateGapsReplaced(config, numRegularPanels, leftDynamic, rightDynamic);
 
             // Calculate the total length available for gaps
             let totalLengthForGaps = overallLength - finalTotalPanelLength;
@@ -1014,16 +1047,35 @@ function _calculateGlassFencingInternal(config, leftEndGap, rightEndGap, leftDyn
     };
 }
 
+// The run end the gate leaf's latch meets with regularCount panels ('' when it meets glass), as update_gate draws it:
+// placement 1..n after that panel and past n after the last, anything else first; left-hand = hinge panel on the left.
+function _fcGlassGateLatchEnd(gate, regularCount) {
+    if (!gate?.active || !gate.hingePanelActive || !(gate.hingePanelSize > 0) || !gate.hand) return '';
+    const first = !(Number(gate.placement) >= 1);
+    if (gate.hand === 'right') return first ? 'left' : '';
+    return !first && Number(gate.placement) >= regularCount ? 'right' : '';
+}
+
+// Joints the gate's hinge and latch gaps replace. A latch against a fixed end replaces none, so the joint beside the
+// hinge panel went unpaid and the run drew one gap over (3,333 drew 3,397). Zero-panel layouts count their own way.
+function _fcGlassGateGapsReplaced(config, regularCount, leftDynamic, rightDynamic) {
+    if (!(regularCount >= 1)) return 2;
+    const end = config.gate?.latchEnd || '';
+    const fixedEnd = (end === 'left' && !leftDynamic && !config.leftRakedPanel?.active)
+        || (end === 'right' && !rightDynamic && !config.rightRakedPanel?.active);
+    return fixedEnd ? 1 : 2;
+}
+
 /**
- * Zero/one-panel layouts for runs whose slack the main solver cannot place, using the dynamic
- * end gaps as the flexible space they really are. Gap accounting mirrors the main loop for one
- * panel (element junctions minus the gate's built-in hinge/latch gaps) and the physical count
+ * Zero-or-more-panel layouts for runs whose slack the main solver cannot place, using the dynamic
+ * end gaps as the flexible space they really are. Gap accounting mirrors the main loop for panels
+ * (element junctions plus each dynamic end, minus the gate's built-in hinge/latch gaps) and the physical count
  * for zero panels (each dynamic end plus the junctions between fixed elements). Gaps are capped
  * at maxPanelSpacing - the documented ceiling - not the preferred panelGap, because this path
  * only runs when the preferred spacing has already failed to produce any layout.
  * Returns {ok:true, result} on success, {ok:false, shortenTo, extendTo} when the length falls in
  * the genuine dead zone between "gaps can stretch no further" and "smallest panel fits", or
- * null when no dynamic end exists (fixed-end behaviour is unchanged).
+ * null when no dynamic end exists (fixed-end behaviour is unchanged) or no dead zone brackets the length.
  */
 function _fcGlassDynamicEndRescue(config, leftDynamic, rightDynamic) {
     const dyn = (leftDynamic ? 1 : 0) + (rightDynamic ? 1 : 0);
@@ -1093,24 +1145,41 @@ function _fcGlassDynamicEndRescue(config, leftDynamic, rightDynamic) {
         if (g0 > 0 && g0 <= cap && (numFixed < 2 || minPanelGap === 0 || Math.round(g0) >= minPanelGap)) return buildResult(0, 0, g0, gapsZero);
     }
 
-    // One panel, largest increment-multiple first so the panel takes the space and gaps stay small.
-    const totalElementsOne = 1 + numFixed + hingeAsPanel;
-    let gapsOne = totalElementsOne - 1;
-    if (leftDynamic || leftFixedGap > 0) gapsOne++;
-    if (rightDynamic || rightFixedGap > 0) gapsOne++;
-    if (gate?.active) gapsOne -= 2;
-    if (gapsOne > 0) {
-        const sizeCap = Math.min(ps.maxPanelSize, ps.defaultPanelSize || ps.maxPanelSize);
-        let sMax = Math.floor(slack / ps.panelSizeIncrement) * ps.panelSizeIncrement;
+    // Only a dynamic end shares the slack: a fixed end's width is already out of it, and counting
+    // it as a gap too drew the run one share short (300mm with a PTW end drew 288).
+    const gapsFor = function (count) {
+        let gaps = count + numFixed + hingeAsPanel - 1 + dyn;
+        if (gate?.active) gaps -= _fcGlassGateGapsReplaced(config, count, leftDynamic, rightDynamic);
+        return gaps;
+    };
+    const gapsOne = gapsFor(1);
+
+    // Fewest panels first. One panel keeps its largest-first rule so it takes the space; more panels (runs
+    // past the panel size cap) keep the gap within Max Panel Spacing, as the main solver does unless clamps widen it.
+    const sizeCap = Math.min(ps.maxPanelSize, ps.defaultPanelSize || ps.maxPanelSize);
+    const multiCap = minPanelGap > 0 ? cap : Math.min(cap, ps.panelGap);
+    const mostPanels = Math.min(60, Math.floor(slack / ps.minPanelSize));
+    for (let count = 1; count <= mostPanels; count++) {
+        const gaps = gapsFor(count);
+        if (gaps <= 0) continue;
+        let sMax = Math.floor(slack / count / ps.panelSizeIncrement) * ps.panelSizeIncrement;
         if (sMax > sizeCap) sMax = sizeCap;
+        let best = null;
         for (let sizeMm = sMax; sizeMm >= ps.minPanelSize; sizeMm -= ps.panelSizeIncrement) {
-            const g1 = (slack - sizeMm) / gapsOne;
-            if (g1 > 0 && g1 <= cap && (numFixed < 1 || minPanelGap === 0 || Math.round(g1) >= minPanelGap)) return buildResult(1, sizeMm, g1, gapsOne);
+            const g = (slack - count * sizeMm) / gaps;
+            if (g > (count === 1 ? cap : multiCap)) break;
+            if (g <= 0 || (minPanelGap > 0 && (count > 1 || numFixed > 0) && Math.round(g) < minPanelGap)) continue;
+            if (count === 1) return buildResult(1, sizeMm, g, gaps);
+            const rank = g <= ps.panelGap ? ps.panelGap - g : 1e6 + g;
+            if (!best || rank < best.rank) best = { sizeMm: sizeMm, g: g, rank: rank };
         }
+        if (best) return buildResult(count, best.sizeMm, best.g, gaps);
     }
 
     // Dead zone: report the nearest lengths that DO work so the customer can adjust.
     const shortenTo = (numFixed > 0 && gapsZero > 0) ? Math.floor(overall - (slack - gapsZero * cap)) : 0;
     const extendTo = gapsOne > 0 ? Math.ceil(overall + (ps.minPanelSize + gapsOne - slack)) : 0;
+    // Edges that do not bracket the length are no dead zone: a long run got 1,315 / 1,437 for 2,416.
+    if (!(extendTo > overall) || (shortenTo > 0 && !(shortenTo < overall))) return null;
     return { ok: false, shortenTo: shortenTo, extendTo: extendTo };
 }

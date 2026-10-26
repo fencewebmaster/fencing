@@ -189,7 +189,8 @@ GlassPool = {
         var junctions = 0;
         for (var n = 1; n < nodes.length - 1; n++) {
             var classes = nodes[n].classList;
-            if (classes.contains('near-gate') || classes.contains('PTP90') || classes.contains('PTPA') || classes.contains('PTW')) {
+            // fc-glass-gate-joint: a zero-panel run's step-up joint beside the latch, glass to a gate leaf (N4).
+            if (classes.contains('near-gate') || classes.contains('PTP90') || classes.contains('PTPA') || classes.contains('PTW') || classes.contains('fc-glass-gate-joint')) {
                 continue;
             }
             junctions++;
@@ -706,7 +707,8 @@ GlassPool = {
             var billable = i > 0 && i < strips.length - 1 &&
                 !strip.classList.contains('PTP90') &&
                 !strip.classList.contains('PTPA') &&
-                !strip.classList.contains('PTW');
+                !strip.classList.contains('PTW') &&
+                !strip.classList.contains('fc-glass-gate-joint');
             if (!billable) {
                 if (bar) {
                     bar.remove();

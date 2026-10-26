@@ -40,6 +40,7 @@ final class AuthPresenter
             'tagline' => $tagline,
             'version' => AppVersionService::label(),
             'logo_url' => BrandingSettings::logoUrl($appBase, $branding),
+            'fonts' => BrandingSettings::webFonts('admin', $branding),
             'csrf' => AuthService::csrfToken(),
             'redirect' => $redirect,
             'login_api' => rtrim($adminBase, '/') . '/api.php?module=auth&action=login',

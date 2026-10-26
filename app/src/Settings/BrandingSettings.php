@@ -5,11 +5,61 @@ declare(strict_types=1);
 namespace Fc\Admin\Settings;
 
 /**
- * FC branding — logo, favicon, app name, tagline (saved to writable/theme.json). The app version is
- * not a setting: it is the newest published release in Releases (AppVersionService::label()).
+ * FC branding — logo, favicon, app name, tagline and the frontend and admin fonts (saved to
+ * writable/theme.json). The app version is not a setting: it is the newest published release in
+ * Releases (AppVersionService::label()).
  */
 final class BrandingSettings
 {
+    /** Bootstrap's own system stack: the admin's font before any choice, and the System UI choice. */
+    private const SYSTEM_STACK = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
+
+    /**
+     * Both font dropdowns offer these. 'family' is the Google Fonts name ('' = the device's own font,
+     * nothing to load) and 'weights' only those the family has: Google drops a missing weight from a
+     * list, but answers 400 when none of them exist.
+     *
+     * @var array<string, array{label:string,family:string,weights:string}>
+     */
+    private const FONTS = [
+        'system' => ['label' => 'System UI', 'family' => '', 'weights' => ''],
+        'poppins' => ['label' => 'Poppins', 'family' => 'Poppins', 'weights' => '400;500;600;700;800'],
+        'inter' => ['label' => 'Inter', 'family' => 'Inter', 'weights' => '400;500;600;700;800'],
+        'roboto' => ['label' => 'Roboto', 'family' => 'Roboto', 'weights' => '400;500;600;700;800'],
+        'open-sans' => ['label' => 'Open Sans', 'family' => 'Open Sans', 'weights' => '400;500;600;700;800'],
+        'lato' => ['label' => 'Lato', 'family' => 'Lato', 'weights' => '400;700'],
+        'montserrat' => ['label' => 'Montserrat', 'family' => 'Montserrat', 'weights' => '400;500;600;700;800'],
+        'nunito-sans' => ['label' => 'Nunito Sans', 'family' => 'Nunito Sans', 'weights' => '400;500;600;700;800'],
+        'source-sans-3' => ['label' => 'Source Sans 3', 'family' => 'Source Sans 3', 'weights' => '400;500;600;700;800'],
+        'dm-sans' => ['label' => 'DM Sans', 'family' => 'DM Sans', 'weights' => '400;500;600;700;800'],
+        'manrope' => ['label' => 'Manrope', 'family' => 'Manrope', 'weights' => '400;500;600;700;800'],
+        'figtree' => ['label' => 'Figtree', 'family' => 'Figtree', 'weights' => '400;500;600;700;800'],
+        'barlow' => ['label' => 'Barlow', 'family' => 'Barlow', 'weights' => '400;500;600;700;800'],
+    ];
+
+    /** The planner's own pairing while Frontend font stays at its default: Inter for UI, Poppins for text. */
+    private const FRONTEND_PAIRING = [['Inter', '400;500;600;700'], ['Poppins', '400;500;600;700;800']];
+
+    /**
+     * The Heading font dropdown: condensed display faces only, because the frontend's headings sit in boxes
+     * sized for League Gothic (Oswald, the widest here, runs about 140% of its width). 'import' loads the
+     * family through an inline @import, which Cloudflare Fonts leaves alone: its rewrite of League Gothic's
+     * link points that width-axis font at a /wght/ file that returns 502.
+     *
+     * @var array<string, array{label:string,family:string,weights:string,import?:bool}>
+     */
+    private const HEADING_FONTS = [
+        'league-gothic' => ['label' => 'League Gothic', 'family' => 'League Gothic', 'weights' => '', 'import' => true],
+        'bebas-neue' => ['label' => 'Bebas Neue', 'family' => 'Bebas Neue', 'weights' => '400'],
+        'oswald' => ['label' => 'Oswald', 'family' => 'Oswald', 'weights' => '400;700'],
+        'anton' => ['label' => 'Anton', 'family' => 'Anton', 'weights' => '400'],
+        'barlow-condensed' => ['label' => 'Barlow Condensed', 'family' => 'Barlow Condensed', 'weights' => '400;700'],
+        'pathway-gothic-one' => ['label' => 'Pathway Gothic One', 'family' => 'Pathway Gothic One', 'weights' => '400'],
+        'big-shoulders-display' => ['label' => 'Big Shoulders Display', 'family' => 'Big Shoulders Display', 'weights' => '400;700'],
+        'fjalla-one' => ['label' => 'Fjalla One', 'family' => 'Fjalla One', 'weights' => '400'],
+        'antonio' => ['label' => 'Antonio', 'family' => 'Antonio', 'weights' => '400;700'],
+    ];
+
     /**
      * @return array<string, string>
      */
@@ -20,11 +70,14 @@ final class BrandingSettings
             'favicon' => '',
             'appName' => 'Fencing Calculator',
             'tagline' => 'Calculate your fence cost and the materials needed.',
+            'fontFrontend' => 'poppins',
+            'fontHeading' => 'league-gothic',
+            'fontAdmin' => 'system',
         ];
     }
 
     /**
-     * @return array<string, array{label:string,type:string,placeholder?:string,help?:string}>
+     * @return array<string, array{label:string,type:string,placeholder?:string,help?:string,choices?:array<string,array{label:string,stack:string,href:string}>}>
      */
     public static function schema(): array
     {
@@ -52,6 +105,24 @@ final class BrandingSettings
                 'type' => 'text',
                 'placeholder' => 'Calculate your fence cost and the materials needed.',
                 'help' => 'Short description under the title on the planner header.',
+            ],
+            'fontFrontend' => [
+                'label' => 'Frontend font',
+                'type' => 'font',
+                'help' => 'Text, buttons and measurements on the planner, project plan, Product Lookup and Releases pages. The default keeps Inter on buttons and measurements; headings have their own font below.',
+                'choices' => self::fontChoices(),
+            ],
+            'fontHeading' => [
+                'label' => 'Heading font',
+                'type' => 'font',
+                'help' => 'Step titles, section tabs, popup titles and the loading screen on the planner and project plan. Only condensed faces are offered, because these headings are sized for League Gothic.',
+                'choices' => self::fontChoices('heading'),
+            ],
+            'fontAdmin' => [
+                'label' => 'Admin font',
+                'type' => 'font',
+                'help' => 'Every admin page and the sign-in page. System UI is the device\'s own font, with nothing to download.',
+                'choices' => self::fontChoices(),
             ],
         ];
     }
@@ -111,6 +182,13 @@ final class BrandingSettings
             }
 
             return str_replace('\\', '/', $value);
+        }
+
+        if ($key === 'fontFrontend' || $key === 'fontAdmin') {
+            return isset(self::FONTS[$value]) ? $value : null;
+        }
+        if ($key === 'fontHeading') {
+            return isset(self::HEADING_FONTS[$value]) ? $value : null;
         }
 
         if ($value === '') {
@@ -205,6 +283,125 @@ final class BrandingSettings
     }
 
     /**
+     * A font dropdown's options ('text' for the frontend and admin fonts, 'heading' for the heading font):
+     * label, CSS font stack, and the Google Fonts stylesheet ('' for System UI).
+     *
+     * @return array<string, array{label:string,stack:string,href:string}>
+     */
+    public static function fontChoices(string $set = 'text'): array
+    {
+        $heading = $set === 'heading';
+        $choices = [];
+        foreach ($heading ? self::HEADING_FONTS : self::FONTS as $slug => $font) {
+            $choices[$slug] = [
+                'label' => $font['label'],
+                'stack' => self::fontStack($font['family'], $heading),
+                'href' => $font['family'] === '' ? '' : self::googleFontsUrl($font['family'], $font['weights']),
+            ];
+        }
+
+        return $choices;
+    }
+
+    /**
+     * What a page head prints for one side's fonts ('frontend' or 'admin'): Google Fonts links, one family
+     * each (Cloudflare Fonts keeps only a link's first family), the frontend's @imports for a family that
+     * must stay out of Cloudflare's reach, and the CSS that points the page at the chosen faces. At the
+     * defaults the frontend keeps its Inter and Poppins links and League Gothic import, and neither side prints CSS.
+     *
+     * @param array<string, string>|null $branding
+     * @return array{links:list<string>,imports?:list<string>,css:string}
+     */
+    public static function webFonts(string $side, ?array $branding = null): array
+    {
+        if ($branding === null) {
+            $branding = self::get();
+        }
+        $defaults = self::defaults();
+
+        if ($side === 'admin') {
+            $slug = self::fontSlug(self::FONTS, $branding, 'fontAdmin');
+            if ($slug === $defaults['fontAdmin']) {
+                return ['links' => [], 'css' => ''];
+            }
+            $font = self::FONTS[$slug];
+            $stack = self::fontStack($font['family'], false);
+
+            // Bootstrap's stack, which the admin's body, controls and tooltips all read.
+            return [
+                'links' => $font['family'] === '' ? [] : [self::googleFontsUrl($font['family'], $font['weights'])],
+                'css' => '<style id="fc-admin-font">:root{--bs-font-sans-serif:' . $stack . ';--fc-login-font:' . $stack . '}</style>' . "\n",
+            ];
+        }
+
+        $links = [];
+        $imports = [];
+        $vars = [];
+
+        $slug = self::fontSlug(self::FONTS, $branding, 'fontFrontend');
+        if ($slug === $defaults['fontFrontend']) {
+            foreach (self::FRONTEND_PAIRING as [$family, $weights]) {
+                $links[] = self::googleFontsUrl($family, $weights);
+            }
+        } else {
+            $font = self::FONTS[$slug];
+            if ($font['family'] !== '') {
+                $links[] = self::googleFontsUrl($font['family'], $font['weights']);
+            }
+            $stack = self::fontStack($font['family'], false);
+            $vars[] = '--fc-font-text:' . $stack;
+            $vars[] = '--fc-font-ui:' . $stack;
+        }
+
+        $slug = self::fontSlug(self::HEADING_FONTS, $branding, 'fontHeading');
+        $font = self::HEADING_FONTS[$slug];
+        if (!empty($font['import'])) {
+            $imports[] = self::googleFontsUrl($font['family'], $font['weights']);
+        } else {
+            $links[] = self::googleFontsUrl($font['family'], $font['weights']);
+        }
+        if ($slug !== $defaults['fontHeading']) {
+            $vars[] = '--fc-font-heading:' . self::fontStack($font['family'], true);
+        }
+
+        return [
+            'links' => $links,
+            'imports' => $imports,
+            // html:root outranks style.css's :root defaults, which load after the webfonts partial.
+            'css' => $vars === [] ? '' : '<style id="fc-font-vars">html:root{' . implode(';', $vars) . '}</style>' . "\n",
+        ];
+    }
+
+    /**
+     * The saved slug for one font key, or that key's default when the slug is not in its list.
+     *
+     * @param array<string, array<string, mixed>> $fonts
+     * @param array<string, string> $branding
+     */
+    private static function fontSlug(array $fonts, array $branding, string $key): string
+    {
+        $slug = (string) ($branding[$key] ?? '');
+
+        return isset($fonts[$slug]) ? $slug : self::defaults()[$key];
+    }
+
+    /** The family first, then a fallback while it loads: the device's own font for text, any sans-serif for headings. */
+    private static function fontStack(string $family, bool $heading): string
+    {
+        if ($family === '') {
+            return self::SYSTEM_STACK;
+        }
+
+        return '"' . $family . '", ' . ($heading ? 'sans-serif' : self::SYSTEM_STACK);
+    }
+
+    private static function googleFontsUrl(string $family, string $weights): string
+    {
+        return 'https://fonts.googleapis.com/css2?family=' . str_replace(' ', '+', $family)
+            . ($weights === '' ? '' : ':wght@' . $weights) . '&display=swap';
+    }
+
+    /**
      * @param array<string, mixed> $branding
      * @return array{ok:bool,branding?:array<string,string>,error?:string}
      */
@@ -239,7 +436,7 @@ final class BrandingSettings
     }
 
     /**
-     * @return array{ok:bool,branding:array<string,string>,defaults:array<string,string>,schema:array<string,array{label:string,type:string,placeholder?:string,help?:string}>,updatedAt?:string}
+     * @return array{ok:bool,branding:array<string,string>,defaults:array<string,string>,schema:array<string,array{label:string,type:string,placeholder?:string,help?:string,choices?:array<string,array{label:string,stack:string,href:string}>}>,updatedAt?:string}
      */
     public static function apiPayload(): array
     {

@@ -93,7 +93,7 @@ final class SiteHealthService
     private const DEVELOPER_PATHS = ['CLAUDE.md', 'build/minify/README.md'];
 
     /** A real, harmless file: proves the server can reach its own site, and carries its headers. */
-    private const CONTROL_PATHS = ['public/assets/css/fonts.css', 'public/assets/css/admin/theme.css'];
+    private const CONTROL_PATHS = ['public/assets/css/admin/theme.css'];
 
     private const SUPPORT_WARN_DAYS = 183;
     private const SESSION_FILES_WARN = 20000;

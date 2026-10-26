@@ -26,6 +26,8 @@ const SOLVER = 'public/assets/js/frontend/fences/calc/glass_pool.js';
 // commit exists, so the baseline is pinned - re-pin only after an intentional solver change
 // (README.md).
 const BASELINE_REV = '37dc446';
+// The last commit whose dynamic-end rescue counted a fixed end as a gap (N2) - block 11's reference.
+const N2_BASE_REV = '45e18f7';
 
 // --------------------------------------------------------------------------------------------
 // Loading
@@ -39,15 +41,17 @@ function loadContext(src, label) {
 
 let live;
 let base;
+let prevN2;
 try {
     live = loadContext(fs.readFileSync(path.join(ROOT, SOLVER), 'utf8'), 'live:' + SOLVER);
-    const baseSrc = execSync(`git show ${BASELINE_REV}:${SOLVER}`, {
+    const gitShow = (rev) => execSync(`git show ${rev}:${SOLVER}`, {
         cwd: ROOT,
         encoding: 'utf8',
         maxBuffer: 1 << 24,
         stdio: ['ignore', 'pipe', 'pipe']
     });
-    base = loadContext(baseSrc, 'baseline:' + SOLVER);
+    base = loadContext(gitShow(BASELINE_REV), 'baseline:' + SOLVER);
+    prevN2 = loadContext(gitShow(N2_BASE_REV), 'n2-baseline:' + SOLVER);
 } catch (e) {
     console.error('Could not load the solver contexts: ' + (e && e.message ? e.message : e));
     process.exit(2);
@@ -239,6 +243,33 @@ function geometry(cfg, results) {
         + (cfg.gate.active ? results.gateSize + results.hingeSize + results.gateGaps.left + results.gateGaps.right : 0);
     const ends = (leftDyn ? 0 : results.leftSideGap) + (rightDyn ? 0 : results.rightSideGap);
     return panels + gaps + fixed + ends;
+}
+
+// Gaps the planner draws: one per junction between glass elements plus one per dynamic end. A fixed
+// end is its own width and the gate's hinge/latch gaps are part of its assembly (main-loop count).
+function realGapCount(cfg, results) {
+    const count = results.longPanels.count + results.shortPanel.count;
+    const numFixed = (cfg.leftRakedPanel.active ? 1 : 0) + (cfg.rightRakedPanel.active ? 1 : 0) + (cfg.gate.active ? 1 : 0);
+    const hinge = cfg.gate.active && cfg.gate.hingePanelActive && cfg.gate.hingePanelSize > 0 ? 1 : 0;
+    const dyn = (cfg.leftEndAttachment.size === '' ? 1 : 0) + (cfg.rightEndAttachment.size === '' ? 1 : 0);
+    return count + numFixed + hinge - 1 + dyn - (cfg.gate.active ? 2 : 0);
+}
+
+// The baseline's dynamic-end rescue also counted a fixed end as a gap (N2), so its panel layouts were
+// drawn one share short. Cached per sweep row: only rows whose live output differs can be one.
+function baselineN2Short(c) {
+    const cfg = buildConfig(c);
+    const plan = base.calculateGlassFencing(cfg);
+    const r = plan && plan.results;
+    if (!r || !plan.calculationDetails.dynamicEndRescue || r.longPanels.count + r.shortPanel.count === 0) return false;
+    return r.numberOfPanelGaps > realGapCount(cfg, r);
+}
+function rowN2(row) {
+    if (row.n2 === undefined) {
+        row.n2 = row.base.msg === '' && JSON.stringify(stripClamp(row.base)) !== JSON.stringify(stripClamp(row.live))
+            && baselineN2Short(row.c);
+    }
+    return row.n2;
 }
 
 // Shared sweep results, computed once and read by blocks 4-6.
@@ -477,6 +508,7 @@ block('4 non-enforced regression vs ' + BASELINE_REV, (t) => {
     let solved = 0;
     let identical = 0;
     let fewer = 0;
+    let n2 = 0;
     let panelsSaved = 0;
     for (const row of s.rows) {
         const label = caseLabel(row.c);
@@ -510,6 +542,22 @@ block('4 non-enforced regression vs ' + BASELINE_REV, (t) => {
         }
         if (row.base.msg !== '' || row.live.msg !== '') continue;
 
+        // N2: the baseline drew this rescue layout one gap short. The checks below are for the
+        // fewest-panel search; the corrected rescue closes on real gaps under its own 80mm ceiling.
+        if (rowN2(row)) {
+            n2++;
+            const cfg = buildConfig(row.c);
+            const plan = live.calculateGlassFencing(cfg);
+            t.check(!!(plan && plan.results) && plan.results.numberOfPanelGaps === realGapCount(cfg, plan.results)
+                && Math.abs(geometry(cfg, plan.results) - row.c.overall) <= 0.5,
+                `N2 correction must close the run on real gaps only: ${label} -> ${fmt(toRealm(plan && plan.results))}`);
+            t.check(row.live.spacing_width > 0 && row.live.spacing_width <= ENFORCED_MAX_GAP + 1e-9,
+                `N2 correction stays inside the ${ENFORCED_MAX_GAP}mm ceiling: ${label} -> gap ${row.live.spacing_width}`);
+            t.check(row.live.long_panel_length >= 200 && row.live.long_panel_length <= row.c.dps,
+                `N2 correction keeps a buildable panel width: ${label} -> ${row.live.long_panel_length}mm`);
+            continue;
+        }
+
         fewer++;
         panelsSaved += basePanels - livePanels;
         // A layout may change for exactly two reasons: it dropped a panel, or it kept the same
@@ -526,7 +574,7 @@ block('4 non-enforced regression vs ' + BASELINE_REV, (t) => {
             `changed layout keeps a buildable panel width: ${label} -> ${row.live.long_panel_length}mm`);
     }
     t.note(`${solved} of ${s.cases.length} cases solve at baseline`);
-    t.note(`${identical} identical to baseline, ${fewer} improved (${panelsSaved} panels removed in total)`);
+    t.note(`${identical} identical to baseline, ${fewer} improved (${panelsSaved} panels removed in total), ${n2} N2 corrections`);
 });
 
 // --------------------------------------------------------------------------------------------
@@ -598,18 +646,20 @@ block('6 enforcement leaves good layouts alone', (t) => {
     for (const row of s.rows) {
         if (row.base.msg !== '') continue;
         const label = caseLabel(row.c);
-        const rounded = Math.round(row.base.spacing_width);
+        // An N2-short baseline drew less than the run, so hold enforcement to the corrected live layout.
+        const ref = rowN2(row) ? row.live : row.base;
+        const rounded = Math.round(ref.spacing_width);
         if (rounded >= 20) {
             good++;
             // The baseline was already clamp-legal, so enforcement must not make it worse. It
             // may still improve it: the fewest-panel rule applies to every solve now, so an
             // enforced run can drop a panel here exactly as an unenforced one would. What is
             // pinned is that it never GAINS panels and never leaves the clamp range.
-            const basePanels = row.base.long_panel_count + row.base.short_panel_count;
+            const basePanels = ref.long_panel_count + ref.short_panel_count;
             const enfPanels = row.enforced.long_panel_count + row.enforced.short_panel_count;
             t.check(row.enforced.msg === '', `enforced must still solve: ${label} -> ${row.enforced.msg}`);
             t.check(enfPanels <= basePanels,
-                `enforced gained panels over a clamp-legal baseline: ${label} -> base ${fmt(stripClamp(row.base))} vs enforced ${fmt(stripClamp(row.enforced))}`);
+                `enforced gained panels over a clamp-legal baseline: ${label} -> base ${fmt(stripClamp(ref))} vs enforced ${fmt(stripClamp(row.enforced))}`);
             if (row.enforced.msg === '' && hasJunction(row.enforced)) {
                 const enfGap = Math.round(row.enforced.spacing_width);
                 t.check(enfGap >= 20 && enfGap <= ENFORCED_MAX_GAP,
@@ -618,7 +668,7 @@ block('6 enforcement leaves good layouts alone', (t) => {
             continue;
         }
         low++;
-        if (!hasJunction(row.base)) lowNoJunction++;
+        if (!hasJunction(ref)) lowNoJunction++;
         if (row.enforced.msg !== '') {
             c++;
             t.check(/minimum gap for panel-to-panel clamps|No solution found that satisfies|Closest working lengths|No initial panel solutions/.test(row.enforced.msg),
@@ -806,6 +856,238 @@ block('10 no-junction ignores the minimum (1237mm)', (t) => {
     t.check(e1200.msg === '' && hasJunction(e1200) && Math.round(e1200.spacing_width) >= 20 && Math.round(e1200.spacing_width) <= ENFORCED_MAX_GAP,
         `dps 1200 enforced re-solves inside the clamp range: ${fmt(stripClamp(e1200))}`);
     t.note(`dps 1200: baseline 2 x 600 @ 6 -> enforced ${e1200.long_panel_count} x ${e1200.long_panel_length} @ ${e1200.spacing_width}mm`);
+});
+
+// --------------------------------------------------------------------------------------------
+// Block 11 - the dynamic-end rescue shares the slack with dynamic ends only (N2)
+// --------------------------------------------------------------------------------------------
+
+// buildConfig() plus step-up panels, which the main sweep never has.
+function rescueConfig(c) {
+    const cfg = buildConfig(c, c.clamp ? { minPanelGap: 20, clampMaxGapMm: 95 } : null);
+    if (c.rakedLeft) cfg.leftRakedPanel = { active: true, size: c.rakedLeft };
+    if (c.rakedRight) cfg.rightRakedPanel = { active: true, size: c.rakedRight };
+    return cfg;
+}
+function layout(r) {
+    return r ? `${r.longPanels.count}x${r.longPanels.size} @${Math.round(r.panelGapsValue * 100) / 100}` : 'none';
+}
+
+block('11 N2 rescue real gaps vs ' + N2_BASE_REV, (t) => {
+    // The planner's reports, each drawn one gap short at N2_BASE_REV (288 for 300, 1,729 for 1,745,
+    // 2,985 for 3,059). The 2,436 run has no layout inside its 30mm spacing at all, so it now fails
+    // cleanly - no length hints - and the planner's auto-fit finds a verified length instead.
+    const EXAMPLES = [
+        { c: { overall: 300, dps: 1400, pg: 50, left: -1, right: 25, gate: false }, panels: 1, size: 250, gap: 25 },
+        { c: { overall: 300, dps: 1400, pg: 50, left: 25, right: -1, gate: false }, panels: 1, size: 250, gap: 25 },
+        { c: { overall: 1745, dps: 1000, pg: 30, left: -1, right: 25, gate: false, rakedLeft: 1220 }, panels: 1, size: 450, gap: 25 },
+        { c: { overall: 3059, dps: 1600, pg: 40, left: -1, right: 25, gate: false, rakedLeft: 1210 }, panels: 2, size: 900, gap: 8 },
+        { c: { overall: 2436, dps: 1000, pg: 30, left: -1, right: 25, gate: false, rakedLeft: 1220 }, fails: true },
+    ];
+    for (const ex of EXAMPLES) {
+        const cfg = rescueConfig(ex.c);
+        const label = caseLabel(ex.c) + (ex.c.rakedLeft ? ` step-up=${ex.c.rakedLeft}` : '');
+        const b = prevN2.calculateGlassFencing(rescueConfig(ex.c));
+        const p = live.calculateGlassFencing(cfg);
+        const r = p && p.results;
+        t.check(!!(b && b.results) && b.results.numberOfPanelGaps > realGapCount(cfg, b.results),
+            `${N2_BASE_REV} drew it short (a fixed end counted as a gap): ${label} -> ${layout(b && b.results)}`);
+        if (ex.fails) {
+            t.check(!r && !p.calculationDetails.closestLengths, `fails with no length hints: ${label} -> ${layout(r)} ${fmt(toRealm(p.calculationDetails))}`);
+            const fit = live.GlassPoolCalc.findClosestBuildableLengths(cfg, p.calculationDetails.closestLengths);
+            t.check(!!fit && (fit.shortenTo > 0 || fit.extendTo > 0), `auto-fit finds a verified length: ${label} -> ${fmt(toRealm(fit))}`);
+            t.note(`${label}: ${N2_BASE_REV} ${layout(b && b.results)} -> no layout within spacing; auto-fit ${fmt(toRealm(fit))}`);
+            continue;
+        }
+        t.check(!!r && r.longPanels.count === ex.panels && r.longPanels.size === ex.size && Math.abs(r.panelGapsValue - ex.gap) < 1e-6,
+            `live ${ex.panels}x${ex.size} @${Math.round(ex.gap * 100) / 100}: ${label} -> ${layout(r)}`);
+        t.check(!!r && r.numberOfPanelGaps === realGapCount(cfg, r) && Math.abs(geometry(cfg, r) - ex.c.overall) <= 0.5,
+            `closes on real gaps: ${label} -> ${layout(r)}`);
+        t.note(`${label}: ${N2_BASE_REV} ${layout(b && b.results)} -> ${layout(r)}`);
+    }
+
+    // Every live layout closes on real gaps inside the limits (a multi-panel rescue inside Max Panel
+    // Spacing unless clamps are enforced), a correct earlier solve never becomes a failure, and a
+    // failure's length hints bracket the entered length (a long run once got 1,315 / 1,437 for 2,416).
+    let cases = 0;
+    let rescued = 0;
+    let corrected = 0;
+    let newlySolved = 0;
+    let noLayoutNow = 0;
+    let failures = 0;
+    for (let overall = 300; overall <= 4000; overall += 7) {
+        for (const ends of [[-1, 25], [25, -1], [-1, 0], [-1, -1]]) {
+            for (const step of ['none', 'left', 'right']) {
+                for (const gate of [false, true]) {
+                    for (const pg of [30, 50, 80]) {
+                        for (const dps of [1000, 1400]) {
+                            for (const clamp of [false, true]) {
+                                const c = { overall, dps, pg, left: ends[0], right: ends[1], gate, clamp,
+                                    rakedLeft: step === 'left' ? 1250 - pg : 0, rakedRight: step === 'right' ? 1250 - pg : 0 };
+                                const label = caseLabel(c) + ` step-up=${step} clamp=${clamp}`;
+                                const cfg = rescueConfig(c);
+                                const b = prevN2.calculateGlassFencing(rescueConfig(c));
+                                const p = live.calculateGlassFencing(cfg);
+                                const r = p && p.results;
+                                cases++;
+                                const br = b && b.results;
+                                const prevShort = !!br && b.calculationDetails.dynamicEndRescue && br.longPanels.count > 0
+                                    && br.numberOfPanelGaps > realGapCount(cfg, br);
+                                if (prevShort) corrected++;
+                                if (br && !r) {
+                                    // Only a layout that was never right may become a failure, and the auto-fit must have somewhere to go.
+                                    noLayoutNow++;
+                                    t.check(prevShort, `${N2_BASE_REV} solved correctly but live failed: ${label} -> ${p && p.calculationDetails.error}`);
+                                    const fit = live.GlassPoolCalc.findClosestBuildableLengths(cfg, p.calculationDetails.closestLengths);
+                                    t.check(!!fit && (fit.shortenTo > 0 || fit.extendTo > 0), `auto-fit finds a verified length: ${label}`);
+                                } else if (!br && r) {
+                                    newlySolved++;
+                                }
+                                if (!r) {
+                                    failures++;
+                                    const h = p && p.calculationDetails.closestLengths;
+                                    if (h) t.check(h.shortenTo < overall && h.extendTo > overall, `length hints bracket ${overall}: ${label} -> ${fmt(toRealm(h))}`);
+                                    continue;
+                                }
+                                if (p.calculationDetails.dynamicEndRescue) rescued++;
+                                const panels = r.longPanels.count + r.shortPanel.count;
+                                if (panels === 0) continue;
+                                t.check(r.numberOfPanelGaps === realGapCount(cfg, r) && Math.abs(geometry(cfg, r) - overall) <= 0.5,
+                                    `closes on real gaps: ${label} -> ${layout(r)} (gaps ${r.numberOfPanelGaps})`);
+                                t.check(r.panelGapsValue > 0 && r.panelGapsValue <= ENFORCED_MAX_GAP + 1e-9, `gap inside (0, ${ENFORCED_MAX_GAP}]: ${label} -> ${layout(r)}`);
+                                if (p.calculationDetails.dynamicEndRescue && panels > 1 && !clamp) {
+                                    t.check(r.panelGapsValue <= pg + 1e-9, `multi-panel rescue stays inside Max Panel Spacing ${pg}: ${label} -> ${layout(r)}`);
+                                }
+                                t.check(r.longPanels.size % 50 === 0 && r.longPanels.size >= 200 && r.longPanels.size <= dps,
+                                    `buildable panel width: ${label} -> ${layout(r)}`);
+                                const glass = panels + (gate ? 1 : 0) + (c.rakedLeft ? 1 : 0) + (c.rakedRight ? 1 : 0);
+                                if (clamp && glass > 1) t.check(Math.round(r.panelGapsValue) >= 20, `clamp minimum kept: ${label} -> ${layout(r)}`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    t.note(`${cases} cases: ${corrected} ${N2_BASE_REV} layouts drawn short (now closed, or ${noLayoutNow} with no layout inside the spacing -> auto-fit), ${newlySolved} newly solved, ${rescued} live layouts from the rescue, ${failures} still fail`);
+});
+
+// --------------------------------------------------------------------------------------------
+// Block 12 - a gate leaf latching against a fixed end pays the joint beside its hinge panel (N4)
+// --------------------------------------------------------------------------------------------
+
+// rescueConfig() plus the gate's hand and placement, which calculatePanels() reads from the gate row.
+function latchConfig(c) {
+    const cfg = rescueConfig(c);
+    cfg.gate.gateSize = c.gw || cfg.gate.gateSize;
+    cfg.gate.hingePanelSize = c.hw || cfg.gate.hingePanelSize;
+    if (c.hingeGap) cfg.gate.hingeType = { left: c.hingeGap, right: 9 };
+    if (c.hand) {
+        cfg.gate.hand = c.hand;
+        cfg.gate.placement = c.p;
+    }
+    return cfg;
+}
+
+// Whether the leaf's latch meets a fixed end, worked out here from how update_gate draws the gate (placement 1..n after
+// that panel, past n after the last, anything else first; left-hand puts the hinge panel left of the leaf) for the count
+// n0 the run takes without a placement - decided once, so the placement cannot move the count.
+function latchFixedEnd(cfg, n0, looseFailed) {
+    const g = cfg.gate;
+    const first = !(g.placement >= 1);
+    if (!g.active || !g.hand || !(n0 >= 1 || (looseFailed && g.hand === 'right' && first))) return false;
+    const end = g.hand === 'right' ? (first ? 'left' : '') : (!first && g.placement >= n0 ? 'right' : '');
+    if (end === 'left') return cfg.leftEndAttachment.size !== '' && !cfg.leftRakedPanel.active;
+    if (end === 'right') return cfg.rightEndAttachment.size !== '' && !cfg.rightRakedPanel.active;
+    return false;
+}
+
+// realGapCount() plus the joint a latch against a fixed end no longer stands in for, when the solve paid it.
+function latchGapCount(cfg, r, paid) {
+    return realGapCount(cfg, r) + (paid && panelCount(r) >= 1 ? 1 : 0);
+}
+const panelCount = (r) => (r ? r.longPanels.count + r.shortPanel.count : 0);
+
+block('12 N4 latch against a fixed end', (t) => {
+    // GX-008 on 19 Oct (right PTP90, 750 gate + 800 hinge panel, left-hand, after panel 1) drew 3,397 for 3,333: one gap
+    // of 64 for two joints. With the hand and placement known the joint is paid; latch facing glass or a side-gap end,
+    // a step-up beside the latch, or the hinge panel at the end keep the position-less layout.
+    const gx = { overall: 3333, gw: 750, hw: 800, dps: 2000, pg: 70, gate: true };
+    const EXAMPLES = [
+        { c: { ...gx, left: -1, right: 0, hand: 'left', p: 1 }, panels: 1, size: 1650, gap: 57, gaps: 2 },
+        { c: { ...gx, left: -1, right: 25, hand: 'left', p: 1 }, panels: 1, size: 1600, gap: 69.5, gaps: 2 },
+        { c: { ...gx, left: 0, right: -1, hand: 'right', p: -1 }, panels: 1, size: 1650, gap: 57, gaps: 2 },
+        { c: { ...gx, left: -1, right: -1, hand: 'left', p: 1 }, same: true },
+        { c: { ...gx, overall: 4555, left: -1, right: 0, rakedRight: 1200, hand: 'left', p: 1 }, same: true },
+        { c: { ...gx, gw: 1000, hw: 1300, dps: 1600, pg: 80, left: -1, right: 0, hand: 'right', p: 1 }, same: true },
+    ];
+    for (const ex of EXAMPLES) {
+        const cfg = latchConfig(ex.c);
+        const label = caseLabel(ex.c) + ` ${ex.c.hand}-hand p=${ex.c.p}` + (ex.c.rakedRight ? ` step-up=${ex.c.rakedRight}` : '');
+        const r = live.calculateGlassFencing(cfg).results;
+        const was = live.calculateGlassFencing(latchConfig({ ...ex.c, hand: undefined })).results;
+        if (ex.same) {
+            t.eq(toRealm(r), toRealm(was), `unchanged by hand/placement: ${label}`);
+        } else {
+            t.check(!!r && r.longPanels.count === ex.panels && r.longPanels.size === ex.size && Math.abs(r.panelGapsValue - ex.gap) < 1e-6
+                && r.numberOfPanelGaps === ex.gaps, `live ${ex.panels}x${ex.size} @${ex.gap} (${ex.gaps} gaps): ${label} -> ${layout(r)}`);
+        }
+        t.check(!!r && Math.abs(geometry(cfg, r) - ex.c.overall) <= 0.5 && r.numberOfPanelGaps === latchGapCount(cfg, r, latchFixedEnd(cfg, panelCount(was), !was) && JSON.stringify(toRealm(r)) !== JSON.stringify(toRealm(was))), `closes: ${label} -> ${layout(r)}`);
+        t.note(`${label}: position-less ${layout(was)} (${was ? was.numberOfPanelGaps : 0} gaps) -> ${layout(r)} (${r ? r.numberOfPanelGaps : 0} gaps)`);
+    }
+
+    // Every layout with panels closes on the latch-aware count inside the limits; a position-less solve may only fail
+    // when it was a latch-at-fixed-end layout (drawn one gap over) and the auto-fit then has a length to go to.
+    let cases = 0, latchAtFixed = 0, changed = 0, newlySolved = 0, nowFails = 0;
+    for (let overall = 1500; overall <= 7000; overall += 53) {
+        for (const ends of [[-1, -1], [-1, 0], [-1, 25], [0, -1], [25, -1], [0, 0], [0, 25], [25, 0], [25, 25]]) {
+            for (const step of ['none', 'left', 'right']) {
+                for (const [hand, p] of [['left', -1], ['left', 1], ['left', 2], ['left', 3], ['right', -1], ['right', 1], ['right', 2], ['right', 5]]) {
+                    for (const [pg, dps] of [[30, 1200], [80, 2000]]) {
+                        for (const clamp of [false, true]) {
+                            const c = { overall, dps, pg, left: ends[0], right: ends[1], gate: true, clamp, gw: 750, hw: 800, hand, p,
+                                rakedLeft: step === 'left' ? 1250 - pg : 0, rakedRight: step === 'right' ? 1250 - pg : 0 };
+                            const label = caseLabel(c) + ` step-up=${step} ${hand}-hand p=${p} clamp=${clamp}`;
+                            const cfg = latchConfig(c);
+                            const r = live.calculateGlassFencing(cfg).results;
+                            const wasCfg = latchConfig({ ...c, hand: undefined });
+                            const wasPlan = live.calculateGlassFencing(wasCfg);
+                            const was = wasPlan.results;
+                            cases++;
+                            // Only a latch meeting a fixed end at the position-less count may change the solve: decided per
+                            // candidate count, a placement moved the count and the gate (Move right reached the far end).
+                            const atFixed = latchFixedEnd(cfg, panelCount(was), !was);
+                            if (!atFixed) t.eq(toRealm(r), toRealm(was), `placement cannot move the count: ${label}`);
+                            // ...and when it does, update_gate draws the left-hand gate at the end the joint was paid for, or the
+                            // solve keeps the position-less layout (the clamp minimum can add a panel that moves the gate mid-run).
+                            const paid = atFixed && JSON.stringify(toRealm(r)) !== JSON.stringify(toRealm(was));
+                            if (paid && r && hand === 'left') t.check(p >= panelCount(r), `gate drawn at the end it was solved for: ${label} -> ${layout(r)}`);
+                            if (JSON.stringify(toRealm(r)) !== JSON.stringify(toRealm(was))) changed++;
+                            if (!was && r) newlySolved++;
+                            if (was && !r) {
+                                nowFails++;
+                                t.check(atFixed,
+                                    `only a latch-at-fixed-end layout may stop solving: ${label} (was ${layout(was)})`);
+                                const p2 = live.calculateGlassFencing(cfg);
+                                const fit = live.GlassPoolCalc.findClosestBuildableLengths(cfg, p2.calculationDetails.closestLengths);
+                                t.check(!!fit && (fit.shortenTo > 0 || fit.extendTo > 0), `auto-fit finds a verified length: ${label}`);
+                            }
+                            if (!r) continue;
+                            const n = r.longPanels.count + r.shortPanel.count;
+                            if (n === 0) continue;
+                            if (paid) latchAtFixed++;
+                            t.check(r.numberOfPanelGaps === latchGapCount(cfg, r, paid) && Math.abs(geometry(cfg, r) - overall) <= 0.5,
+                                `closes on the latch-aware count: ${label} -> ${layout(r)} (gaps ${r.numberOfPanelGaps})`);
+                            t.check(r.panelGapsValue > 0 && r.panelGapsValue <= ENFORCED_MAX_GAP + 1e-9, `gap inside (0, ${ENFORCED_MAX_GAP}]: ${label} -> ${layout(r)}`);
+                            t.check(r.longPanels.size % 50 === 0 && r.longPanels.size >= 200 && r.longPanels.size <= dps, `buildable panel width: ${label} -> ${layout(r)}`);
+                            if (clamp) t.check(Math.round(r.panelGapsValue) >= 20, `clamp minimum kept: ${label} -> ${layout(r)}`);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    t.note(`${cases} cases: ${latchAtFixed} solved layouts with the latch against a fixed end, ${changed} differ from the position-less solve, ${newlySolved} newly solved, ${nowFails} now fail (auto-fit)`);
 });
 
 // --------------------------------------------------------------------------------------------

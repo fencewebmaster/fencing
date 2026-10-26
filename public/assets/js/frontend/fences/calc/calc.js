@@ -316,7 +316,10 @@ class FenceCalculator {
             offcut_panel_count, offcut_panel_length
         } = this._repairFullPanelPlan({
             style, panel_options_data, post_panel, default_panel_width: max_panel_width_mm,
-            leftover_span, removed_posts_mm, _short_panel_length,
+            leftover_span, _short_panel_length,
+            // Main Slat's C14 already carries the width a No Post end frees, so handing the repair the
+            // same width again counted it twice: 2,200 with one No Post end came out 2,250.
+            removed_posts_mm: style.isMainSlat ? 0 : removed_posts_mm,
             long_panel_count, long_panel_length,
             short_panel_count, short_panel_length,
             offcut_panel_count, offcut_panel_length
@@ -427,6 +430,11 @@ class FenceCalculator {
             long_panel_count = 0;
             offcut_panel_count = 0;
             offcut_panel_length = 0;
+        }
+        // The mirror, main Slat only: a Full run shorter than one bay lays no full panel, and the Fence
+        // Summary read the unused stock width as the panel size (2,450W beside the 2,100 bay drawn).
+        if (style.isMainSlat && long_panel_length > 0 && !(long_panel_count > 0)) {
+            long_panel_length = 0;
         }
         // A zero-width off-cut is no off-cut: the tile already needed both, but the Fence Summary printed the
         // bare count ("Offcut Panels: 1") for an uncut stock panel - a 2,500 Even run, or where the No Post fit lands.
@@ -699,7 +707,14 @@ class FenceCalculator {
         const default_panel_width = panel_options_data?.size?.default;
 
         // --- Handle width-based height for panels ---
-        if (panel_options_data?.size?.width_based_height) {
+        // Main Slat's panel_options block was copied from 2-BARR.php and still carries Barr's height
+        // table, which drew the Full bay 1,944 wide at 1800H; Slat's pitch is its own panel span.
+        if (style.isMainSlat) {
+            const slatPanelPitch = SlatFence.getMaxPanelSpanMmFromInfo(info);
+            if (Number.isFinite(slatPanelPitch) && slatPanelPitch > 0) {
+                C5 = slatPanelPitch;
+            }
+        } else if (panel_options_data?.size?.width_based_height) {
             const panel_opts = panel_options_data?.size?.width_based_height;
             C5 = panel_opts?.[panel_width_height_key || fence_height];
         }
@@ -911,7 +926,9 @@ class FenceCalculator {
 
         const slug = panel_options_data?.slug;
         const isFullOption = typeof slug === 'string' && slug.includes('full');
-        if (!isFullOption || !style.isPanelGroupB || style.isMainSlat || style.isGlass) {
+        // Main Slat is in now that its Full plan is the generic one: it was excluded while that plan's
+        // count came from the Even span rule, so the repair could only conserve the wrong length.
+        if (!isFullOption || !style.isPanelGroupB || style.isGlass) {
             return unchanged;
         }
 
@@ -927,6 +944,17 @@ class FenceCalculator {
         const widths = [];
         for (let n = 0; n < long_panel_count; n++) widths.push(Math.round(long_panel_length));
         for (let n = 0; n < short_panel_count; n++) widths.push(Math.round(short_panel_length));
+        // No bay at all beside a step-up or gate: with both ends No Post the dropped leftover (0 < D19 <= post) and the
+        // freed posts still make one panel (Full, two step-ups: 2,586-2,600 drew the 2,450 step-ups alone).
+        const lost = Math.round(leftover_span);
+        const lone = lost - post + Math.round(removed_posts_mm);
+        if (!widths.length && lost > 0 && lost <= post && lone >= minPanel && lone <= cap) {
+            return {
+                long_panel_count: 1, long_panel_length: lone,
+                short_panel_count: 0, short_panel_length: 0,
+                offcut_panel_count: lone < stock ? 1 : 0, offcut_panel_length: lone < stock ? stock - lone : 0
+            };
+        }
         if (!widths.length || widths.some(w => !Number.isFinite(w) || w <= 0)) {
             return unchanged;
         }
@@ -1102,29 +1130,42 @@ class FenceCalculator {
                     C18 = 0;
                     C14 = 0;
                 } else if (Number.isFinite(slatSpan) && slatSpan > 0) {
-                    const slatMaxSpan = SlatFence.getMaxPanelSpanMmFromInfo(info);
-                    // Count before the Width Dimension From offset, as the old planner does: after it, 2,500mm got 1 panel, not 2.
-                    const slatTypedSpan =
-                        slatSpan - SlatFence.getCalcWidthDimensionOffset(i, custom_fence, custom_fence_tab);
-                    const slatPanelQty = SlatFence.countEvenPanelsFromOverallSpan(slatTypedSpan, slatMaxSpan, info);
-                    C16 = slatPanelQty;
-                    C17 = slatPanelQty;
-                    C18 = slatPanelQty;
-                    // slatSpan already excludes both end posts (Width Dimension From offset).
-                    C14 = SlatFence.computeSlatPanelSpanMm(
-                        slatSpan,
-                        slatPanelQty,
-                        post_panel,
-                        slatRemovedPosts
-                    );
+                    if (panel_options_data?.slug?.includes('full')) {
+                        // Full lays stock-pitch bays plus one cut remainder, so handing it Even's bay count
+                        // left C18 and the remainder D19 describing different runs (300mm drew a 1,944 bay).
+                        // slatSpan has both end posts removed by the Width Dimension From offset, so add one
+                        // back to restore this family's C14 = run - post contract (true for any C5).
+                        C14 = slatSpan + slatRemovedPosts + post_panel;
+                        C16 = Math.ceil(C14 / C5);
+                        C17 = C16;
+                        C18 = Math.floor(C14 / C5);
+                    } else {
+                        const slatMaxSpan = SlatFence.getMaxPanelSpanMmFromInfo(info);
+                        // Count before the Width Dimension From offset, as the old planner does: after it, 2,500mm got 1 panel, not 2.
+                        const slatTypedSpan =
+                            slatSpan - SlatFence.getCalcWidthDimensionOffset(i, custom_fence, custom_fence_tab);
+                        const slatPanelQty = SlatFence.countEvenPanelsFromOverallSpan(slatTypedSpan, slatMaxSpan, info);
+                        C16 = slatPanelQty;
+                        C17 = slatPanelQty;
+                        C18 = slatPanelQty;
+                        // slatSpan already excludes both end posts (Width Dimension From offset).
+                        C14 = SlatFence.computeSlatPanelSpanMm(
+                            slatSpan,
+                            slatPanelQty,
+                            post_panel,
+                            slatRemovedPosts
+                        );
+                    }
                 }
             }
 
             let C21 = C8 > 0 ? 1 : 0;
-            let D16 = C14 / C5;
             let D17 = Math.round(C14 / C17);
             let D18 = C5;
-            let D19 = (D16 - C18) * D18; // E19
+            // The leftover beyond the whole bays, as a subtraction rather than a divide-and-multiply-back:
+            // a true 51 arrived as 50.999999999999936, and E19 < 1 below then dropped a genuine 1mm bay
+            // together with the post beside it (a 12,301 Full Top run drew 12,250).
+            let D19 = C14 - C18 * D18; // E19
             let D21 = C8;
             let D22 = C9 > 0 ? 1 : 0;
             let D23 = C10 > 0 ? 1 : 0;
@@ -1140,7 +1181,8 @@ class FenceCalculator {
             let C20 = (panel_options_data?.slug?.includes('even') || panel_options_data?.slug === undefined) ? C17 : C19;
 
             // D20 = D19 < post_panel ? 0 : E18 - E19;
-            let D20 = panel_options_data?.slug?.includes('even') ? (E17 ? E18 - E17 : 0) : (D19 < post_panel ? 0 : E18 - E19);
+            // A 0mm bay before the No Post share is still a bay: `E17 ?` read it as none and dropped the off-cut (1,350, both ends No Post).
+            let D20 = panel_options_data?.slug?.includes('even') ? (Number.isFinite(E17) ? E18 - E17 : 0) : (D19 < post_panel ? 0 : E18 - E19);
 
 
             // Outputs

@@ -7,7 +7,8 @@
     overflow: hidden;
     background: var(--fc-admin-main-bg, #f0f0f1);
     color: var(--fc-admin-text, #1d2327);
-    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    /* Settings → Branding → Frontend font; this page loads no style.css, so the fallback is its default. */
+    font-family: var(--fc-font-ui, Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif);
 }
 
 .fc-lookup-page .visually-hidden {

@@ -1414,6 +1414,10 @@ function fcEnsureGlassPoolHingeAdjacentToGate($fc) {
 
     $hinge.removeClass('hinge-panel-alt').addClass('hinge-panel');
 
+    var $runBefore = $fc.find('.fencing-panel-spacing-number, .fencing-panel-item');
+    var headStrip = $runBefore.first().is('.fencing-panel-spacing-number') ? $runBefore.first()[0] : null;
+    var tailStrip = $runBefore.last().is('.fencing-panel-spacing-number') ? $runBefore.last()[0] : null;
+
     function hingeBundleNodes() {
         var $hingeLeadSp = $hinge.prev('.fencing-panel-spacing-number');
         var $hingePost = $hinge.next('.panel-post');
@@ -1460,7 +1464,14 @@ function fcEnsureGlassPoolHingeAdjacentToGate($fc) {
             $insertBefore = $gate;
         }
         keepEndStripAtHead();
-        hingeBundleNodes().insertBefore($insertBefore);
+        // A hinge panel with no strip of its own goes after the leaf's strip, which stays on its far side as the joint
+        // (a right-to-left hand change beside a step-up lost that joint).
+        var $leftBundle = hingeBundleNodes();
+        if ($leftBundle.first().is('.fencing-panel-spacing-number') || !$insertBefore.is('.fencing-panel-spacing-number')) {
+            $leftBundle.insertBefore($insertBefore);
+        } else {
+            $leftBundle.insertAfter($insertBefore);
+        }
     } else if ($gate.hasClass('panel-gate-right') && ($hinge.index() < $gate.index() || hasForeignPanelBetween($gate, $hinge))) {
         var $insertAfter = $gate.nextAll('.panel-post').first();
         if (!$insertAfter.length) {
@@ -1470,6 +1481,43 @@ function fcEnsureGlassPoolHingeAdjacentToGate($fc) {
             $insertAfter = $gate;
         }
         hingeBundleNodes().insertAfter($insertAfter);
+    }
+
+    // Whichever branch moved it, the run's first and last strip stay there: a right-hand gate carried the left end
+    // (its PTP90 corner and tag) in beside the hinge panel and left a plain gap at the head (5,555 drew 5,567).
+    [[headStrip, true], [tailStrip, false]].forEach(function(end) {
+        if (!end[0] || !$.contains($fc[0], end[0])) {
+            return;
+        }
+        var $run = $fc.find('.fencing-panel-spacing-number, .fencing-panel-item');
+        var $edge = end[1] ? $run.first() : $run.last();
+        if ($edge[0] === end[0]) {
+            return;
+        }
+        if ($edge.is('.fencing-panel-spacing-number')) {
+            var $slot = $('<span></span>');
+            $(end[0]).replaceWith($slot);
+            $edge.replaceWith(end[0]);
+            $slot.replaceWith($edge);
+        } else if (end[1]) {
+            $(end[0]).insertBefore($edge);
+        } else {
+            $(end[0]).insertAfter($edge);
+        }
+    });
+
+    // Leaf to hinge panel takes one strip; a joint carried in beside it goes back to the latch side it left bare
+    // (right-hand gate after a step-up with no panels drew 8-9mm short).
+    var run = $fc.find('.fencing-panel-spacing-number, .fencing-panel-item').toArray();
+    var gi = run.indexOf($gate[0]);
+    var dir = run.indexOf($hinge[0]) < gi ? -1 : 1;
+    var between = [];
+    for (var i = gi + dir; run[i] && run[i] !== $hinge[0]; i += dir) {
+        between.push(run[i]);
+    }
+    var latchBare = run[gi - dir] && !$(run[gi - dir]).hasClass('fencing-panel-spacing-number');
+    if (latchBare && between.length > 1 && run[i] === $hinge[0] && $(between).filter('.fencing-panel-spacing-number').length === between.length) {
+        $gate[dir < 0 ? 'after' : 'before']($(between.slice(1)));
     }
 }
 
@@ -1620,6 +1668,116 @@ function fcApplyGlassPoolUniformGapLabels($fc, exactSpacingMm) {
     });
 }
 
+/** Glass pool: hinge, latch and end figures by role on the settled run. The near-gate writers label before the hinge
+ *  panel moves, so an end beside it read 10 (PTP90) or 5 (PTW) instead of 0 or 25. */
+function fcApplyGlassPoolRoleGapLabels($fc, tab, spacingMm) {
+    if (!$fc || !$fc.length || String($fc.attr('data-type') || '') !== 'glass_pool') {
+        return;
+    }
+    var $gate = $fc.find('.fencing-panel-gate').first();
+    var $hinge = $fc.find('.extra-panel-item.hinge-panel').first();
+    var info = typeof fc_data !== 'undefined' && fc_data ? fc_data.glass_pool : null;
+    if (!$gate.length || !$hinge.length || !info) {
+        return;
+    }
+
+    // The project plan passes its tab; the planner's late pass passes none but stamps the section on the container.
+    var section = tab != null ? tab : $fc.attr('data-fc-section');
+    if (section == null || section === '') {
+        var pp = /pp-(\d+)/.exec($fc.closest('[id^="pp-"]').attr('id') || '');
+        section = pp ? pp[1] : 0;
+    }
+    var cf = typeof readCustomFenceSegment === 'function' ? readCustomFenceSegment(section, 'glass_pool') : [];
+    var gaps = FENCE.resolveGlassPoolHingeGapsMm({ data: info }, cf.filter(function(r) {
+        return r && r.control_key === 'gate';
+    }));
+    var setText = function(strip, text) {
+        var $value = $(strip).children('span').not('.cg-top, .sw, .fs-clamp').first();
+        if ($value.length) {
+            $value.text(text);
+        } else {
+            $(strip).prepend($('<span></span>').text(text));
+        }
+    };
+    // Inserted strips wear the run's post-option classes, which set the figure's offset (Core-Drilled sits 5px lower).
+    var postClasses = ($fc.find('.fencing-panel-spacing-number').not('.fc-glass-latch-gap-label').first().attr('class') || '')
+        .split(/\s+/).filter(function(c) { return /^(fpsn-|opt-)/.test(c); }).join(' ');
+    var gapStrip = function(cls, mm) {
+        return $('<div class="fencing-panel-spacing-number near-gate ' + cls + ' ' + postClasses + '"></div>').append($('<span></span>').text(mm))[0];
+    };
+    var endText = function(side) {
+        var w = HELPER.sideOptionValue(side, cf, info);
+        return '(' + (w === false || w == null || w < 0 ? spacingMm : w) + ')';
+    };
+    var isDynamicEnd = function(side) {
+        var w = HELPER.sideOptionValue(side, cf, info);
+        return w === false || w == null || w < 0;
+    };
+
+    var run = $fc.find('.fencing-panel-spacing-number, .fencing-panel-item').toArray();
+    var isStrip = function(el) {
+        return !!el && $(el).hasClass('fencing-panel-spacing-number');
+    };
+    // Strips from an item outward to the next item (or the run end), nearest first.
+    var stripsFrom = function(el, dir) {
+        var out = [];
+        for (var i = run.indexOf(el) + dir; isStrip(run[i]); i += dir) {
+            out.push(run[i]);
+        }
+        return { strips: out, atEnd: !run[i] };
+    };
+    var regularCount = $fc.find('.fencing-panel-item').not('.fencing-panel-gate, .extra-panel-item, .fencing-raked-panel').length;
+    var hingeDir = run.indexOf($hinge[0]) < run.indexOf($gate[0]) ? -1 : 1;
+    var latchSide = hingeDir < 0 ? 'right' : 'left';
+
+    // Hinge panel to leaf: the hinge gap, in a strip of its own.
+    var toHinge = stripsFrom($gate[0], hingeDir);
+    if (gaps.hinge > 0) {
+        if (toHinge.strips.length) {
+            setText(toHinge.strips[0], gaps.hinge);
+        } else if (run[run.indexOf($gate[0]) + hingeDir] === $hinge[0]) {
+            $gate[hingeDir < 0 ? 'before' : 'after'](gapStrip('fc-glass-hinge-gap-label', gaps.hinge));
+        }
+    }
+    // Hinge panel's far side: a run end shows its own width (or the side gap).
+    var beyondHinge = stripsFrom($hinge[0], hingeDir);
+    if (beyondHinge.atEnd && beyondHinge.strips.length) {
+        setText(beyondHinge.strips[beyondHinge.strips.length - 1], endText(hingeDir < 0 ? 'left' : 'right'));
+    } else if (beyondHinge.strips.length) {
+        setText(beyondHinge.strips[0], spacingMm);
+    }
+
+    // Latch side, as the solver counts it: one strip against glass or (with panels) a side-gap end; a latch strip of
+    // its own beside a fixed end or on a zero-panel run. Inserted strips are near-gate, so they never bill a clamp.
+    var toLatch = stripsFrom($gate[0], -hingeDir);
+    var twoStrips = toLatch.atEnd ? regularCount === 0 || !isDynamicEnd(latchSide) : regularCount === 0;
+    if (gaps.latch > 0 && toLatch.strips.length) {
+        var far = toLatch.strips[toLatch.strips.length - 1];
+        if (twoStrips && toLatch.strips.length === 1) {
+            var latchStrip = gapStrip('fc-glass-latch-gap-label', gaps.latch);
+            $gate[hingeDir < 0 ? 'after' : 'before'](latchStrip);
+        } else {
+            setText(toLatch.strips[0], toLatch.atEnd && !twoStrips ? '(' + gaps.latch + ')' : gaps.latch);
+        }
+        if (twoStrips && toLatch.atEnd) {
+            setText(far, endText(latchSide));
+            $(far).removeClass('near-gate');
+        } else if (twoStrips) {
+            // The step-up joint beside the latch is no glass-to-glass junction: never billed or barred as a clamp.
+            setText(far, spacingMm);
+            $(far).addClass('fc-glass-gate-joint');
+        }
+    }
+
+    // Corner tags read their option, never a gap the writers above put in the strip's first span.
+    $fc.find('span.cg-top').each(function() {
+        var v = $(this).attr('data-cart-value');
+        if (v) {
+            $(this).text(v);
+        }
+    });
+}
+
 /**
  * Near-gate classes are applied during the render, BEFORE this finalize moves the hinge bundle -
  * on a right-hand gate they stayed on the pre-move neighbours, so the hinge-gap strip kept a
@@ -1650,6 +1808,10 @@ function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab, exactSpacingMm) {
         return;
     }
 
+    // The writers below re-derive these: a stale latch strip shifted the near-gate marks on a second pass, and a hinge-gap
+    // strip added while a stale old-hand pass ran stayed as a 5th strip after a hand change (G10b drew 2,369 for 2,319).
+    $fc.find('.fc-glass-latch-gap-label, .fc-glass-hinge-gap-label').remove();
+    $fc.find('.fc-glass-gate-joint').removeClass('fc-glass-gate-joint');
     fcEnsureGlassPoolHingeAdjacentToGate($fc);
     fcReapplyGlassPoolNearGateClasses($fc);
     fcEnsureGlassPoolHingeGateGapLabel($fc, tab);
@@ -1657,6 +1819,7 @@ function fcFinalizeGlassPoolPanelLayout($fc, spacingMm, tab, exactSpacingMm) {
     fcNormalizeGlassPoolGateAdjacentPosts($fc);
     // After the gate/hinge labels are settled, so their fixed gaps keep their own figures.
     fcApplyGlassPoolUniformGapLabels($fc, exactSpacingMm != null ? exactSpacingMm : spacingMm);
+    fcApplyGlassPoolRoleGapLabels($fc, tab, spacingMm);
     fcApplyGlassPoolGateGapWidths($fc);
     fcStaggerGlassPoolAdjacentGapLabels($fc);
     // The hinge move above carries the hinge panel's strip with it, so the clamp bars placed
@@ -9328,7 +9491,8 @@ function updateOverAllLength(data) {
     }
 
     // With raked and gate
-    if( hasRaked == 1 ) {
+    // Post fences take one step-up as two: footprint + their own post. The fixed 50 + 1,200 + 50 put Barr (25mm posts) 25mm over.
+    if( hasRaked == 1 && info.panel_group == 'a' ) {
         raked = hasRaked * FENCE.get('item', 'raked');       
     } else {
         raked = (hasRaked * FENCE.get('item', 'raked_post')) + post_panel;                  
@@ -9564,14 +9728,15 @@ function updateOverAllLength(data) {
         var minPanelOnGate = parseInt(FENCE.get(slug, 'minPanelWidthOnGate'), 10) || 86;
         gateBandNext = gateBandMin + post_panel + minPanelOnGate;
         // Slat types its length to a reference line (Outside: outside of posts, the default;
-        // Centre-line: post centres, one post less), while both minimums above are outside to
+        // Centre-line: post centres, half a post less per end post), while both minimums above are outside to
         // outside (computeDisplayOverallFromGateLeafMm says so despite its name): move the minimum
         // onto the typed line. Its first length with a panel is its own gate-only test
-        // (SlatFence.isWithinGateOnlyOverallRange: typed + offset - gate span >= 86), which gives a
+        // (SlatFence.isWithinGateOnlyOverallRange: typed + offset - gate span - step-ups >= 86), which gives a
         // No Post end no credit: quote that rather than promise a panel it will not lay.
         if (isSlatBand && Number.isFinite(width_dimension_offset)) {
             gateBandMin = SlatFence.outsideToTypedLineMm(fd, gateBandMin);
-            gateBandNext = SlatFence.getSlatGateCalcC8Mm(slug, gate_data, post_panel) + minPanelOnGate - width_dimension_offset;
+            // raked - post_panel: the step-ups' footprints (calc.js C9 + C10). Left out, next fell under min and 2,465-2,500 drew 2,365.
+            gateBandNext = SlatFence.getSlatGateCalcC8Mm(slug, gate_data, post_panel) + (raked - post_panel) + minPanelOnGate - width_dimension_offset;
         }
     }
     var inGateBand =
@@ -9588,6 +9753,14 @@ function updateOverAllLength(data) {
             .replace(/{{overall}}/gi, fcFormatMm(gateBandMin));
     };
 
+    // Beside a step-up both gate rules write the gate + step-up minimum: word it as RAKED + GATE does, not "for a GATE".
+    var gateRakedWording = hasRaked && gateBandMin != null && !inGateBand;
+    var gateRakedMsg = function(overall) {
+        return FENCE.settings.message.min_gate_raked
+            .replace(/{{overall}}/gi, overall)
+            .replace(/{{hasRaked}}/gi, hasRaked);
+    };
+
     // STD GATE + PANEL ITEM | ON POST CHANGED
     var stdGateMinCompare =
         stdGateMinOverallMm != null
@@ -9601,9 +9774,9 @@ function updateOverAllLength(data) {
             (panel_item == 0 && data?.removePost))
     ) {
 
-        // Slat: the minimum on its typed line (gateBandMin), not the outside-to-outside figure, which
-        // a Centre-line entry would read as 50mm more than the run.
-        var overall = gateBandMin != null && isSlatBand
+        // Slat: the minimum on its typed line (gateBandMin), not the outside figure (Centre-line read 50mm over). Beside
+        // a step-up too: the gate alone (1,060) left a No Post toggle to the step-up rule, which wrote 1,250 for 2,310.
+        var overall = gateBandMin != null && (isSlatBand || hasRaked)
             ? gateBandMin
             : stdGateMinOverallMm != null
                 ? stdGateMinOverallMm
@@ -9612,13 +9785,15 @@ function updateOverAllLength(data) {
         // Slat arrives here from above its physical minimum: that is the gate band, not a short run.
         var msg = inGateBand
             ? gateBandMsg()
-            : (offersCustomGate ? FENCE.settings.message.min_gate_custom : FENCE.settings.message.min_gate)
-                .replace(/{{overall}}/gi, overall);
+            : gateRakedWording
+                ? gateRakedMsg(overall)
+                : (offersCustomGate ? FENCE.settings.message.min_gate_custom : FENCE.settings.message.min_gate)
+                    .replace(/{{overall}}/gi, overall);
 
         // Not when the box already shows the minimum: Slat's offset makes mbn read under it even
         // then, and the repeat toast overwrote the band wording from the pass that moved the length.
         if(overall != mbn && overall != mbnRawDisplay && !isNaN(overall))
-            popupToast(inGateBand ? FENCE.settings.message.oal_changed : "Important", msg, 'STD+P');
+            popupToast(inGateBand || gateRakedWording ? FENCE.settings.message.oal_changed : "Important", msg, 'STD+P');
 
     } 
 
@@ -9635,8 +9810,8 @@ function updateOverAllLength(data) {
             (panel_item == 0 && data?.removePost))
     ) {
 
-        // Slat: on its typed line and with the band wording, as the standard-gate block above.
-        var overall = gateBandMin != null && isSlatBand
+        // Slat: on its typed line and with the band wording, as the standard-gate block above (and beside a step-up).
+        var overall = gateBandMin != null && (isSlatBand || hasRaked)
             ? gateBandMin
             : customGateMinOverallMm != null
                 ? customGateMinOverallMm
@@ -9644,11 +9819,13 @@ function updateOverAllLength(data) {
 
         var msg = inGateBand
             ? gateBandMsg()
-            : FENCE.settings.message.min_gate_custom
-                .replace(/{{overall}}/gi, overall);
+            : gateRakedWording
+                ? gateRakedMsg(overall)
+                : FENCE.settings.message.min_gate_custom
+                    .replace(/{{overall}}/gi, overall);
 
         if(overall != mbn && overall != mbnRawDisplay && !isNaN(overall))
-            popupToast(inGateBand ? FENCE.settings.message.oal_changed : "Important", msg, 'CG+P');
+            popupToast(inGateBand || gateRakedWording ? FENCE.settings.message.oal_changed : "Important", msg, 'CG+P');
 
     } 
 
@@ -9660,28 +9837,64 @@ function updateOverAllLength(data) {
         popupToast(FENCE.settings.message.oal_changed, gateBandMsg(), 'GB');
     }
 
-    // RAKED + PANEL ITEM
-    if(hasRaked && panel_item > 0 && mbn < (raked - minusPosts) || 
-        hasRaked && panel_item == 0 && mbn < (raked - minusPosts) || 
-        hasRaked && panel_item == 0 && data?.removePost) {
-        
-        var overall = raked - minusPosts + left_side_width_post + right_side_width_post;
+    // STEP-UP BAND: as GATE BAND, but beside a step-up with no gate (1,301-1,435 drew 1,300 short or a 1-85mm sliver).
+    // A gate run is GATE BAND's; Glass has its own step-up model and is left out.
+    var stepUpBandMin = raked - minusPosts;
+    // Slat: on mbn's line (its typed line + the Width Dimension offset). Against the outside 1,300, 1,300 Outside wrote 1,400 and laid a 50mm sliver.
+    if (isSlatBand && Number.isFinite(width_dimension_offset)) {
+        stepUpBandMin = SlatFence.outsideToTypedLineMm(fd, stepUpBandMin) + width_dimension_offset;
+    }
+    var stepUpBandNext = stepUpBandMin + post_panel + (parseInt(FENCE.get('item', 'min_panel_width'), 10) || 86);
+    // Slat lays no panel until mbn passes the step-ups' footprints (calc.js slatSpan > 0): both ends No Post drew 1,200 at 1,336-1,350.
+    if (isSlatBand && Number.isFinite(width_dimension_offset)) {
+        stepUpBandNext = Math.max(stepUpBandNext, raked - post_panel + 1);
+    }
+    var inStepUpBand =
+        hasRaked && !hasGate && !gateOnly && info?.panel_group == 'b' &&
+        mbn > stepUpBandMin && mbn < stepUpBandNext;
+    // The toasts quote the typed line (width_dimension_offset is 0 off Slat).
+    var stepUpBandMsg = function() {
+        return FENCE.settings.message.step_up_band
+            .replace(/{{next}}/gi, fcFormatMm(stepUpBandNext - width_dimension_offset))
+            .replace(/{{overall}}/gi, fcFormatMm(stepUpBandMin - width_dimension_offset));
+    };
 
-        var msg = FENCE.settings.message.min_raked
-            .replace(/{{overall}}/gi, overall)
-            .replace(/{{hasRaked}}/gi, hasRaked);
+    // RAKED + PANEL ITEM (a No Post toggle on a gate run is the gate rules': this wrote the step-up alone, 1,250 for 2,310)
+    if(hasRaked && panel_item > 0 && mbn < stepUpBandMin ||
+        hasRaked && panel_item == 0 && mbn < stepUpBandMin ||
+        hasRaked && panel_item == 0 && data?.removePost && !hasGate) {
+        
+        // Post fences: the side terms put a No Post end's post back, raising a 1,250 run to 1,300. Glass keeps
+        // them: there they carry its spacing and clamp ends, and its auto-fit settles on what they give.
+        var overall = stepUpBandMin + (info.panel_group == 'a' ? left_side_width_post + right_side_width_post : 0);
+
+        // Turning on No Post lowers a run at the old minimum into the band (1,300 -> 1,250): its wording, not "Minimum".
+        var msg = inStepUpBand
+            ? stepUpBandMsg()
+            : FENCE.settings.message.min_raked
+                .replace(/{{overall}}/gi, overall - width_dimension_offset)
+                .replace(/{{hasRaked}}/gi, hasRaked);
 
         if(overall != mbn && !isNaN(overall)) 
             popupToast(FENCE.settings.message.oal_changed, msg, 'SU');
 
     } 
 
+    // STEP-UP BAND (see stepUpBandMin above): nothing else moved the length, so the step-up run it is.
+    if (inStepUpBand && !overall) {
+        var overall = stepUpBandMin;
+
+        popupToast(FENCE.settings.message.oal_changed, stepUpBandMsg(), 'SUB');
+    }
+
     // RAKED + GATE (rakedGateMinMm: the gate counted with one post, see GATE BAND above)
-    if(hasGate && hasRaked && panel_item > 0 && mbn < rakedGateMinMm ||
-        hasGate && hasRaked && panel_item == 0 && mbn < rakedGateMinMm ||
+    // Slat: its typed-line minimum (gateBandMin), compared on mbn's line. Centre-line wrote the outside 2,365.
+    var rakedGateMinTyped = isSlatBand && gateBandMin != null ? gateBandMin : rakedGateMinMm;
+    if(hasGate && hasRaked && panel_item > 0 && mbn < rakedGateMinTyped + width_dimension_offset ||
+        hasGate && hasRaked && panel_item == 0 && mbn < rakedGateMinTyped + width_dimension_offset ||
         data?.removePost && hasRaked && gateOnly ) {
 
-        var overall = rakedGateMinMm;
+        var overall = rakedGateMinTyped;
 
         var msg = FENCE.settings.message.min_gate_raked
             .replace(/{{overall}}/gi, overall)

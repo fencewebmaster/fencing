@@ -372,6 +372,12 @@ HELPER = {
             if (!$inp.length) {
                 return;
             }
+            // Glass gate defaults are stored as inputs but their drawer fields are divs: .val() left a value property
+            // there that both saves read before the clicked attribute, so first-open gate picks were lost.
+            if (!$inp.is('input, select, textarea')) {
+                HELPER.get_field_value('div', key, val);
+                return;
+            }
             var typ = ($inp.attr('type') || '').toLowerCase();
             if (typ === 'checkbox') {
                 if (val === undefined || val === null) {
