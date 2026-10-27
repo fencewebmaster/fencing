@@ -9,16 +9,16 @@ use Fc\Admin\Presenters\VersionPresenter;
 use Fc\Admin\Services\AdminContext;
 
 /**
- * Releases (route releases; the page was called Version Manager, and its internal names still
- * are): the version history in writable/versions.csv. The page is server-rendered; every write
- * goes through api.php?module=versions.
+ * Changelogs (route changelogs; the page was called Version Manager, then Releases, and its
+ * internal names still say Version Manager): the version history in writable/versions.csv.
+ * Server-rendered and read-only, because that file ships with the code.
  */
 final class VersionManagerPageController extends BaseController
 {
     public function index(AdminContext $context): void
     {
-        $context->pageTitle        = 'Releases';
-        $context->route            = 'releases';
+        $context->pageTitle        = 'Changelogs';
+        $context->route            = 'changelogs';
         $context->isVersionManager = true;
 
         $page = VersionPresenter::listViewData(

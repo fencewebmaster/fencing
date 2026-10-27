@@ -33,6 +33,8 @@ final class ThemeSettings
             '--fc-bright-gray' => '#eeeeee',
             '--fc-white' => '#ffffff',
             '--fc-black' => '#000000',
+            '--fc-admin-sidebar-bg' => '#1e293b',
+            '--fc-admin-sidebar-accent' => '#f67925',
         ];
     }
 
@@ -75,6 +77,8 @@ final class ThemeSettings
                     '--fc-pumpkin' => '#ad0101',
                     '--fc-jaffa' => '#eb2424',
                     '--fc-fiery-orange' => '#8f0e26',
+                    '--fc-admin-sidebar-bg' => '#3c1017',
+                    '--fc-admin-sidebar-accent' => '#e57082',
                 ]),
             ],
             // Yardu: sage replaces orange, deep green replaces red; the shades step like Brand red's.
@@ -89,6 +93,8 @@ final class ThemeSettings
                     '--fc-pumpkin' => '#425343',
                     '--fc-jaffa' => '#6e886f',
                     '--fc-fiery-orange' => '#2f4a35',
+                    '--fc-admin-sidebar-bg' => '#2f4a35',
+                    '--fc-admin-sidebar-accent' => '#a8c7aa',
                 ]),
             ],
         ];
@@ -151,6 +157,13 @@ final class ThemeSettings
                     '--fc-black' => 'Black',
                 ],
             ],
+            'admin' => [
+                'label' => 'Admin sidebar',
+                'vars' => [
+                    '--fc-admin-sidebar-bg' => 'Sidebar background',
+                    '--fc-admin-sidebar-accent' => 'Sidebar highlight (current page)',
+                ],
+            ],
         ];
     }
 
@@ -206,6 +219,11 @@ final class ThemeSettings
             if ($normalized !== null) {
                 $merged[$var] = $normalized;
             }
+        }
+
+        // Saved before the sidebar colours existed: keep the highlight on the brand accent, as it always was.
+        if (!isset($saved['--fc-admin-sidebar-accent'])) {
+            $merged['--fc-admin-sidebar-accent'] = $merged['--fc-princeton-orange'];
         }
 
         return $merged;

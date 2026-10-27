@@ -185,9 +185,9 @@ final class Application
             Response::redirect($destination, 301);
         }
 
-        // Version Manager became Releases.
-        if ($tail === 'version-manager') {
-            $destination = $context->adminBase . '/releases';
+        // Version Manager became Releases, then Changelogs.
+        if ($tail === 'version-manager' || $tail === 'releases') {
+            $destination = $context->adminBase . '/changelogs';
             $query = $_SERVER['QUERY_STRING'] ?? '';
             if ($query !== '') {
                 $destination .= '?' . $query;

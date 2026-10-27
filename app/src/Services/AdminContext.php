@@ -99,11 +99,11 @@ final class AdminContext
     public ?array $authSwitchFrom = null;
 
     /**
-     * Settings → Branding → Admin font: links and CSS for the layout head, both empty at the default.
+     * Settings → Branding → Admin font: links, @imports and CSS for the layout head, all empty at the default.
      *
-     * @var array{links:list<string>,css:string}
+     * @var array{links:list<string>,imports:list<string>,css:string}
      */
-    public array $adminFonts = ['links' => [], 'css' => ''];
+    public array $adminFonts = ['links' => [], 'imports' => [], 'css' => ''];
 
     public string $dateFormat = 'M. j, Y h:i A';
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Settings;
 
 /**
- * FC branding — logo, favicon, app name, tagline and the frontend and admin fonts (saved to
+ * FC branding — logo, favicon, app name, tagline and the frontend, heading and admin fonts (saved to
  * writable/theme.json). The app version is not a setting: it is the newest published release in
  * Releases (AppVersionService::label()).
  */
@@ -15,50 +15,41 @@ final class BrandingSettings
     private const SYSTEM_STACK = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
     /**
-     * Both font dropdowns offer these. 'family' is the Google Fonts name ('' = the device's own font,
-     * nothing to load) and 'weights' only those the family has: Google drops a missing weight from a
-     * list, but answers 400 when none of them exist.
+     * Every font dropdown offers this one list, alphabetically after System UI. 'family' is the Google
+     * Fonts name ('' = the device's own font, nothing to load) and 'weights' only those the family has:
+     * Google drops a missing weight from a list, but answers 400 when none of them exist. 'import' loads
+     * the family through an inline @import, which Cloudflare Fonts leaves alone: its rewrite of League
+     * Gothic's link points that width-axis font at a /wght/ file that returns 502.
      *
-     * @var array<string, array{label:string,family:string,weights:string}>
+     * @var array<string, array{label:string,family:string,weights:string,import?:bool}>
      */
     private const FONTS = [
         'system' => ['label' => 'System UI', 'family' => '', 'weights' => ''],
-        'poppins' => ['label' => 'Poppins', 'family' => 'Poppins', 'weights' => '400;500;600;700;800'],
+        'anton' => ['label' => 'Anton', 'family' => 'Anton', 'weights' => '400'],
+        'antonio' => ['label' => 'Antonio', 'family' => 'Antonio', 'weights' => '400;500;600;700'],
+        'barlow' => ['label' => 'Barlow', 'family' => 'Barlow', 'weights' => '400;500;600;700;800'],
+        'barlow-condensed' => ['label' => 'Barlow Condensed', 'family' => 'Barlow Condensed', 'weights' => '400;500;600;700;800'],
+        'bebas-neue' => ['label' => 'Bebas Neue', 'family' => 'Bebas Neue', 'weights' => '400'],
+        'big-shoulders-display' => ['label' => 'Big Shoulders Display', 'family' => 'Big Shoulders Display', 'weights' => '400;500;600;700;800'],
+        'dm-sans' => ['label' => 'DM Sans', 'family' => 'DM Sans', 'weights' => '400;500;600;700;800'],
+        'figtree' => ['label' => 'Figtree', 'family' => 'Figtree', 'weights' => '400;500;600;700;800'],
+        'fjalla-one' => ['label' => 'Fjalla One', 'family' => 'Fjalla One', 'weights' => '400'],
         'inter' => ['label' => 'Inter', 'family' => 'Inter', 'weights' => '400;500;600;700;800'],
-        'roboto' => ['label' => 'Roboto', 'family' => 'Roboto', 'weights' => '400;500;600;700;800'],
-        'open-sans' => ['label' => 'Open Sans', 'family' => 'Open Sans', 'weights' => '400;500;600;700;800'],
         'lato' => ['label' => 'Lato', 'family' => 'Lato', 'weights' => '400;700'],
+        'league-gothic' => ['label' => 'League Gothic', 'family' => 'League Gothic', 'weights' => '', 'import' => true],
+        'manrope' => ['label' => 'Manrope', 'family' => 'Manrope', 'weights' => '400;500;600;700;800'],
         'montserrat' => ['label' => 'Montserrat', 'family' => 'Montserrat', 'weights' => '400;500;600;700;800'],
         'nunito-sans' => ['label' => 'Nunito Sans', 'family' => 'Nunito Sans', 'weights' => '400;500;600;700;800'],
+        'open-sans' => ['label' => 'Open Sans', 'family' => 'Open Sans', 'weights' => '400;500;600;700;800'],
+        'oswald' => ['label' => 'Oswald', 'family' => 'Oswald', 'weights' => '400;500;600;700'],
+        'pathway-gothic-one' => ['label' => 'Pathway Gothic One', 'family' => 'Pathway Gothic One', 'weights' => '400'],
+        'poppins' => ['label' => 'Poppins', 'family' => 'Poppins', 'weights' => '400;500;600;700;800'],
+        'roboto' => ['label' => 'Roboto', 'family' => 'Roboto', 'weights' => '400;500;600;700;800'],
         'source-sans-3' => ['label' => 'Source Sans 3', 'family' => 'Source Sans 3', 'weights' => '400;500;600;700;800'],
-        'dm-sans' => ['label' => 'DM Sans', 'family' => 'DM Sans', 'weights' => '400;500;600;700;800'],
-        'manrope' => ['label' => 'Manrope', 'family' => 'Manrope', 'weights' => '400;500;600;700;800'],
-        'figtree' => ['label' => 'Figtree', 'family' => 'Figtree', 'weights' => '400;500;600;700;800'],
-        'barlow' => ['label' => 'Barlow', 'family' => 'Barlow', 'weights' => '400;500;600;700;800'],
     ];
 
     /** The planner's own pairing while Frontend font stays at its default: Inter for UI, Poppins for text. */
     private const FRONTEND_PAIRING = [['Inter', '400;500;600;700'], ['Poppins', '400;500;600;700;800']];
-
-    /**
-     * The Heading font dropdown: condensed display faces only, because the frontend's headings sit in boxes
-     * sized for League Gothic (Oswald, the widest here, runs about 140% of its width). 'import' loads the
-     * family through an inline @import, which Cloudflare Fonts leaves alone: its rewrite of League Gothic's
-     * link points that width-axis font at a /wght/ file that returns 502.
-     *
-     * @var array<string, array{label:string,family:string,weights:string,import?:bool}>
-     */
-    private const HEADING_FONTS = [
-        'league-gothic' => ['label' => 'League Gothic', 'family' => 'League Gothic', 'weights' => '', 'import' => true],
-        'bebas-neue' => ['label' => 'Bebas Neue', 'family' => 'Bebas Neue', 'weights' => '400'],
-        'oswald' => ['label' => 'Oswald', 'family' => 'Oswald', 'weights' => '400;700'],
-        'anton' => ['label' => 'Anton', 'family' => 'Anton', 'weights' => '400'],
-        'barlow-condensed' => ['label' => 'Barlow Condensed', 'family' => 'Barlow Condensed', 'weights' => '400;700'],
-        'pathway-gothic-one' => ['label' => 'Pathway Gothic One', 'family' => 'Pathway Gothic One', 'weights' => '400'],
-        'big-shoulders-display' => ['label' => 'Big Shoulders Display', 'family' => 'Big Shoulders Display', 'weights' => '400;700'],
-        'fjalla-one' => ['label' => 'Fjalla One', 'family' => 'Fjalla One', 'weights' => '400'],
-        'antonio' => ['label' => 'Antonio', 'family' => 'Antonio', 'weights' => '400;700'],
-    ];
 
     /**
      * @return array<string, string>
@@ -115,7 +106,7 @@ final class BrandingSettings
             'fontHeading' => [
                 'label' => 'Heading font',
                 'type' => 'font',
-                'help' => 'Step titles, section tabs, popup titles and the loading screen on the planner and project plan. Only condensed faces are offered, because these headings are sized for League Gothic.',
+                'help' => 'Step titles, section tabs, popup titles and the loading screen on the planner and project plan. These headings are sized for League Gothic, a narrow face, so a wide font can wrap the longer titles.',
                 'choices' => self::fontChoices('heading'),
             ],
             'fontAdmin' => [
@@ -184,11 +175,8 @@ final class BrandingSettings
             return str_replace('\\', '/', $value);
         }
 
-        if ($key === 'fontFrontend' || $key === 'fontAdmin') {
+        if ($key === 'fontFrontend' || $key === 'fontHeading' || $key === 'fontAdmin') {
             return isset(self::FONTS[$value]) ? $value : null;
-        }
-        if ($key === 'fontHeading') {
-            return isset(self::HEADING_FONTS[$value]) ? $value : null;
         }
 
         if ($value === '') {
@@ -283,19 +271,18 @@ final class BrandingSettings
     }
 
     /**
-     * A font dropdown's options ('text' for the frontend and admin fonts, 'heading' for the heading font):
-     * label, CSS font stack, and the Google Fonts stylesheet ('' for System UI).
+     * The font dropdowns' options, the same list for every dropdown: label, CSS font stack ('heading' gives
+     * the heading fallback), and the Google Fonts stylesheet ('' for System UI).
      *
      * @return array<string, array{label:string,stack:string,href:string}>
      */
-    public static function fontChoices(string $set = 'text'): array
+    public static function fontChoices(string $role = 'text'): array
     {
-        $heading = $set === 'heading';
         $choices = [];
-        foreach ($heading ? self::HEADING_FONTS : self::FONTS as $slug => $font) {
+        foreach (self::FONTS as $slug => $font) {
             $choices[$slug] = [
                 'label' => $font['label'],
-                'stack' => self::fontStack($font['family'], $heading),
+                'stack' => self::fontStack($font['family'], $role === 'heading'),
                 'href' => $font['family'] === '' ? '' : self::googleFontsUrl($font['family'], $font['weights']),
             ];
         }
@@ -305,12 +292,13 @@ final class BrandingSettings
 
     /**
      * What a page head prints for one side's fonts ('frontend' or 'admin'): Google Fonts links, one family
-     * each (Cloudflare Fonts keeps only a link's first family), the frontend's @imports for a family that
-     * must stay out of Cloudflare's reach, and the CSS that points the page at the chosen faces. At the
-     * defaults the frontend keeps its Inter and Poppins links and League Gothic import, and neither side prints CSS.
+     * each (Cloudflare Fonts keeps only a link's first family), @imports for a family that must stay out of
+     * Cloudflare's reach, and the CSS that points the page at the chosen faces. A family loads once however
+     * many roles use it. At the defaults the frontend keeps its Inter and Poppins links and League Gothic
+     * import, and neither side prints CSS.
      *
      * @param array<string, string>|null $branding
-     * @return array{links:list<string>,imports?:list<string>,css:string}
+     * @return array{links:list<string>,imports:list<string>,css:string}
      */
     public static function webFonts(string $side, ?array $branding = null): array
     {
@@ -318,71 +306,76 @@ final class BrandingSettings
             $branding = self::get();
         }
         $defaults = self::defaults();
+        $fonts = ['links' => [], 'imports' => [], 'css' => ''];
+        $loaded = [];
 
         if ($side === 'admin') {
-            $slug = self::fontSlug(self::FONTS, $branding, 'fontAdmin');
-            if ($slug === $defaults['fontAdmin']) {
-                return ['links' => [], 'css' => ''];
+            $slug = self::fontSlug($branding, 'fontAdmin');
+            if ($slug !== $defaults['fontAdmin']) {
+                self::addFontStylesheet($fonts, $loaded, self::FONTS[$slug]);
+                $stack = self::fontStack(self::FONTS[$slug]['family'], false);
+                // Bootstrap's stack, which the admin's body, controls and tooltips all read.
+                $fonts['css'] = '<style id="fc-admin-font">:root{--bs-font-sans-serif:' . $stack . ';--fc-login-font:' . $stack . '}</style>' . "\n";
             }
-            $font = self::FONTS[$slug];
-            $stack = self::fontStack($font['family'], false);
 
-            // Bootstrap's stack, which the admin's body, controls and tooltips all read.
-            return [
-                'links' => $font['family'] === '' ? [] : [self::googleFontsUrl($font['family'], $font['weights'])],
-                'css' => '<style id="fc-admin-font">:root{--bs-font-sans-serif:' . $stack . ';--fc-login-font:' . $stack . '}</style>' . "\n",
-            ];
+            return $fonts;
         }
 
-        $links = [];
-        $imports = [];
         $vars = [];
-
-        $slug = self::fontSlug(self::FONTS, $branding, 'fontFrontend');
+        $slug = self::fontSlug($branding, 'fontFrontend');
         if ($slug === $defaults['fontFrontend']) {
             foreach (self::FRONTEND_PAIRING as [$family, $weights]) {
-                $links[] = self::googleFontsUrl($family, $weights);
+                self::addFontStylesheet($fonts, $loaded, ['family' => $family, 'weights' => $weights]);
             }
         } else {
-            $font = self::FONTS[$slug];
-            if ($font['family'] !== '') {
-                $links[] = self::googleFontsUrl($font['family'], $font['weights']);
-            }
-            $stack = self::fontStack($font['family'], false);
+            self::addFontStylesheet($fonts, $loaded, self::FONTS[$slug]);
+            $stack = self::fontStack(self::FONTS[$slug]['family'], false);
             $vars[] = '--fc-font-text:' . $stack;
             $vars[] = '--fc-font-ui:' . $stack;
         }
 
-        $slug = self::fontSlug(self::HEADING_FONTS, $branding, 'fontHeading');
-        $font = self::HEADING_FONTS[$slug];
-        if (!empty($font['import'])) {
-            $imports[] = self::googleFontsUrl($font['family'], $font['weights']);
-        } else {
-            $links[] = self::googleFontsUrl($font['family'], $font['weights']);
-        }
+        $slug = self::fontSlug($branding, 'fontHeading');
+        self::addFontStylesheet($fonts, $loaded, self::FONTS[$slug]);
         if ($slug !== $defaults['fontHeading']) {
-            $vars[] = '--fc-font-heading:' . self::fontStack($font['family'], true);
+            $vars[] = '--fc-font-heading:' . self::fontStack(self::FONTS[$slug]['family'], true);
         }
 
-        return [
-            'links' => $links,
-            'imports' => $imports,
-            // html:root outranks style.css's :root defaults, which load after the webfonts partial.
-            'css' => $vars === [] ? '' : '<style id="fc-font-vars">html:root{' . implode(';', $vars) . '}</style>' . "\n",
-        ];
+        // html:root outranks style.css's :root defaults, which load after the webfonts partial.
+        if ($vars !== []) {
+            $fonts['css'] = '<style id="fc-font-vars">html:root{' . implode(';', $vars) . '}</style>' . "\n";
+        }
+
+        return $fonts;
     }
 
     /**
-     * The saved slug for one font key, or that key's default when the slug is not in its list.
+     * Queues one family's stylesheet: a link, or an @import for a family that must stay out of Cloudflare's
+     * reach. A family already queued, and System UI (nothing to load), are skipped.
      *
-     * @param array<string, array<string, mixed>> $fonts
+     * @param array{links:list<string>,imports:list<string>,css:string} $fonts
+     * @param array<string, bool> $loaded
+     * @param array{family:string,weights:string,import?:bool} $font
+     */
+    private static function addFontStylesheet(array &$fonts, array &$loaded, array $font): void
+    {
+        $family = $font['family'];
+        if ($family === '' || isset($loaded[$family])) {
+            return;
+        }
+        $loaded[$family] = true;
+        $fonts[empty($font['import']) ? 'links' : 'imports'][] = self::googleFontsUrl($family, $font['weights']);
+    }
+
+    /**
+     * The saved slug for one font key, or that key's default when the slug is not in the list.
+     *
      * @param array<string, string> $branding
      */
-    private static function fontSlug(array $fonts, array $branding, string $key): string
+    private static function fontSlug(array $branding, string $key): string
     {
         $slug = (string) ($branding[$key] ?? '');
 
-        return isset($fonts[$slug]) ? $slug : self::defaults()[$key];
+        return isset(self::FONTS[$slug]) ? $slug : self::defaults()[$key];
     }
 
     /** The family first, then a fallback while it loads: the device's own font for text, any sans-serif for headings. */

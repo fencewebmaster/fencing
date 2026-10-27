@@ -428,7 +428,7 @@
             marker: '.fc-settings-page',
             viewport: 'fill'
         },
-        releases: {
+        changelogs: {
             serverAttr: 'data-fc-version-manager-server',
             marker: '[data-fc-version-manager]',
             viewport: 'fill'

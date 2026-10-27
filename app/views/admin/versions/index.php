@@ -1,7 +1,8 @@
 <?php
 /**
- * FC Admin — Releases (server-rendered list with a row Actions menu, plus the editor and
- * viewer dialogs versions.js opens).
+ * FC Admin — Changelogs (server-rendered list, plus the View dialog versions.js opens). No
+ * write actions: writable/versions.csv ships with the code, and a site that edited its copy
+ * could no longer git pull.
  *
  * Read-only template: VersionPresenter::listViewData() shapes every value and the JS
  * bootstrap. Escaping via the global e()/cell() helpers; the layout's is_array() check
@@ -85,12 +86,6 @@ $cols = $page['columns'];
                         <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                         <span>Public Page</span>
                     </a>
-                    <?php if ($page['can_edit']) : ?>
-                    <button type="button" class="btn btn-sm btn-orange fw-semibold" data-fc-versions-add>
-                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                        <span>Add Release</span>
-                    </button>
-                    <?php endif; ?>
                 </div>
             </div>
         </form>
@@ -145,12 +140,7 @@ $cols = $page['columns'];
                                 <span class="fc-versions-empty__icon" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
                                 <p class="fc-versions-empty__title"><?php echo e((string) $page['empty_state']['title']); ?></p>
                                 <p class="fc-versions-empty__text"><?php echo e((string) $page['empty_state']['text']); ?></p>
-                                <?php if ($page['empty_state']['show_add']) : ?>
-                                <button type="button" class="btn btn-sm btn-orange fw-semibold" data-fc-versions-add>
-                                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                                    <span>Add Release</span>
-                                </button>
-                                <?php elseif ($page['empty_state']['show_clear']) : ?>
+                                <?php if ($page['empty_state']['show_clear']) : ?>
                                 <a class="btn btn-sm btn-light" href="<?php echo e((string) $page['clear_filters_url']); ?>">Clear Filters</a>
                                 <?php endif; ?>
                             </div>
@@ -185,64 +175,16 @@ $cols = $page['columns'];
                             <span class="fc-versions-status<?php echo $row['is_published'] ? ' fc-versions-status--published' : ' fc-versions-status--draft'; ?>"><?php echo e((string) $row['status_label']); ?></span>
                         </td>
                         <td class="fc-versions-table__actions-col">
-                            <div class="fc-versions-row-menu" data-fc-versions-menu>
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-light fc-versions-row-menu__toggle"
-                                    data-fc-versions-menu-toggle
-                                    aria-haspopup="menu"
-                                    aria-expanded="false"
-                                    aria-label="<?php echo e($row['row_label'] . ' actions'); ?>"
-                                >
-                                    <span>Actions</span>
-                                    <span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span>
-                                </button>
-                                <div class="fc-products-download-dropdown__panel fc-admin-menu__panel" role="menu" aria-label="<?php echo e($row['row_label'] . ' actions'); ?>" hidden>
-                                    <div class="fc-admin-menu__head">
-                                        <span class="fc-admin-menu__head-title"><?php echo e((string) $row['row_label']); ?></span>
-                                        <span class="fc-admin-menu__head-hint"><?php echo e((string) $row['menu_hint']); ?></span>
-                                    </div>
-                                    <div class="fc-admin-menu__group">
-                                        <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-versions-action="view" data-id="<?php echo (int) $row['id']; ?>">
-                                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-regular fa-eye"></i></span>
-                                            <span class="fc-admin-menu__option-text">
-                                                <span class="fc-admin-menu__option-label">View</span>
-                                                <span class="fc-admin-menu__option-meta">Read the release notes</span>
-                                            </span>
-                                        </button>
-                                        <?php if ($page['can_edit']) : ?>
-                                        <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-versions-action="edit" data-id="<?php echo (int) $row['id']; ?>">
-                                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid fa-pen"></i></span>
-                                            <span class="fc-admin-menu__option-text">
-                                                <span class="fc-admin-menu__option-label">Edit</span>
-                                                <span class="fc-admin-menu__option-meta">Change the number, date or release notes</span>
-                                            </span>
-                                        </button>
-                                        <?php endif; ?>
-                                        <?php if ($page['can_publish']) : ?>
-                                        <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option" role="menuitem" data-fc-versions-action="<?php echo e((string) $row['publish_action']); ?>" data-id="<?php echo (int) $row['id']; ?>">
-                                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="<?php echo e((string) $row['publish_icon']); ?>"></i></span>
-                                            <span class="fc-admin-menu__option-text">
-                                                <span class="fc-admin-menu__option-label"><?php echo e((string) $row['publish_label']); ?></span>
-                                                <span class="fc-admin-menu__option-meta"><?php echo e((string) $row['publish_meta']); ?></span>
-                                            </span>
-                                        </button>
-                                        <?php endif; ?>
-                                    </div>
-                                    <?php if ($page['can_delete']) : ?>
-                                    <div class="fc-admin-menu__divider" role="separator"></div>
-                                    <div class="fc-admin-menu__group">
-                                        <button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option fc-admin-menu__option--danger" role="menuitem" data-fc-versions-action="delete" data-id="<?php echo (int) $row['id']; ?>">
-                                            <span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-regular fa-trash-can"></i></span>
-                                            <span class="fc-admin-menu__option-text">
-                                                <span class="fc-admin-menu__option-label">Delete</span>
-                                                <span class="fc-admin-menu__option-meta">Remove it from the history for good</span>
-                                            </span>
-                                        </button>
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-light"
+                                data-fc-versions-action="view"
+                                data-id="<?php echo (int) $row['id']; ?>"
+                                aria-label="<?php echo e('View ' . $row['row_label']); ?>"
+                            >
+                                <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                                <span>View</span>
+                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -292,136 +234,7 @@ $cols = $page['columns'];
             </div>
             <footer class="fc-versions-dialog__footer">
                 <button type="button" class="btn btn-sm btn-light" data-fc-versions-close>Close</button>
-                <?php if ($page['can_edit']) : ?>
-                <button type="button" class="btn btn-sm btn-dark fw-semibold" data-fc-versions-viewer-edit>
-                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                    <span>Edit</span>
-                </button>
-                <?php endif; ?>
             </footer>
         </section>
     </div>
-
-    <?php if ($page['can_edit']) : ?>
-    <div class="fc-versions-dialog" data-fc-versions-editor hidden>
-        <div class="fc-versions-dialog__backdrop" data-fc-versions-close aria-hidden="true"></div>
-        <section class="fc-versions-dialog__panel fc-versions-dialog__panel--wide" role="dialog" aria-modal="true" aria-labelledby="fc-versions-editor-title" tabindex="-1">
-            <button type="button" class="fencing-modal-close" data-fc-versions-close aria-label="Close"></button>
-            <header class="fc-versions-dialog__header">
-                <h2 id="fc-versions-editor-title" class="fc-versions-dialog__title" data-fc-versions-editor-title>Add Release</h2>
-                <p class="fc-versions-dialog__subtitle">Saved to the version history (writable/versions.csv).</p>
-            </header>
-            <form class="fc-versions-form" data-fc-versions-form novalidate>
-                <div class="fc-versions-dialog__body">
-                    <div class="fc-versions-form__alert" data-fc-versions-form-alert role="alert" hidden></div>
-
-                    <div class="fc-versions-form__grid">
-                        <div class="fc-versions-field">
-                            <label class="fc-versions-field__label" for="fc-versions-type">Version type</label>
-                            <select id="fc-versions-type" class="fc-versions-input" name="type" data-fc-versions-input="type">
-                                <?php foreach ($page['type_options'] as $option) : ?>
-                                <option value="<?php echo e($option['value']); ?>"<?php echo $option['is_selected'] ? ' selected' : ''; ?>><?php echo e($option['label']); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <p class="fc-versions-field__error" data-fc-versions-error="type" hidden></p>
-                        </div>
-                        <div class="fc-versions-field">
-                            <label class="fc-versions-field__label" for="fc-versions-level">Version level</label>
-                            <select id="fc-versions-level" class="fc-versions-input" name="version_level" data-fc-versions-input="version_level">
-                                <?php foreach ($page['editor_level_options'] as $option) : ?>
-                                <option value="<?php echo e($option['value']); ?>"<?php echo $option['is_selected'] ? ' selected' : ''; ?>><?php echo e($option['label']); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <p class="fc-versions-field__error" data-fc-versions-error="version_level" hidden></p>
-                        </div>
-                        <div class="fc-versions-field">
-                            <label class="fc-versions-field__label" for="fc-versions-date">Release date &amp; time</label>
-                            <input id="fc-versions-date" class="fc-versions-input" type="datetime-local" step="60" name="date_time" data-fc-versions-input="date_time" required>
-                            <p class="fc-versions-field__error" data-fc-versions-error="date_time" hidden></p>
-                        </div>
-                    </div>
-
-                    <fieldset class="fc-versions-number">
-                        <legend class="fc-versions-field__label">Version number</legend>
-                        <div class="fc-versions-number__row">
-                            <div class="btn-group fc-versions-number__modes" role="group" aria-label="How the version number is set">
-                                <button type="button" class="btn btn-sm btn-light" data-fc-versions-mode="automatic" aria-pressed="true">
-                                    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                                    <span>Automatic</span>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-light" data-fc-versions-mode="manual" aria-pressed="false">
-                                    <i class="fa-solid fa-keyboard" aria-hidden="true"></i>
-                                    <span>Manual</span>
-                                </button>
-                            </div>
-                            <div class="fc-versions-number__auto" data-fc-versions-auto>
-                                <span class="fc-versions-number__value" data-fc-versions-auto-value>…</span>
-                                <span class="fc-versions-number__hint" data-fc-versions-auto-hint></span>
-                            </div>
-                            <div class="fc-versions-number__manual" data-fc-versions-manual hidden>
-                                <label class="sr-only" for="fc-versions-version">Version number (MAJOR.MINOR.PATCH)</label>
-                                <input
-                                    id="fc-versions-version"
-                                    class="fc-versions-input fc-versions-input--mono"
-                                    type="text"
-                                    name="version"
-                                    data-fc-versions-input="version"
-                                    placeholder="1.4.0"
-                                    maxlength="32"
-                                    inputmode="decimal"
-                                    autocomplete="off"
-                                    spellcheck="false"
-                                >
-                                <span class="fc-versions-number__hint" data-fc-versions-manual-hint>MAJOR.MINOR.PATCH, for example 1.4.0</span>
-                            </div>
-                        </div>
-                        <p class="fc-versions-field__error" data-fc-versions-error="version" hidden></p>
-                        <p class="fc-versions-field__error" data-fc-versions-error="version_mode" hidden></p>
-                    </fieldset>
-
-                    <div class="fc-versions-field fc-versions-field--notes">
-                        <label class="fc-versions-field__label" for="fc-versions-description">Release notes</label>
-                        <textarea
-                            id="fc-versions-description"
-                            class="fc-versions-input fc-versions-input--notes"
-                            name="description"
-                            rows="12"
-                            data-fc-wysiwyg="release-notes"
-                            data-fc-versions-input="description"
-                        ></textarea>
-                        <p class="fc-versions-field__error" data-fc-versions-error="description" hidden></p>
-                    </div>
-
-                    <?php if ($page['can_publish']) : ?>
-                    <div class="fc-versions-publish">
-                        <span class="fc-versions-field__label" id="fc-versions-published-label">Published</span>
-                        <div class="fc-mode-switch" role="group" aria-labelledby="fc-versions-published-label">
-                            <button type="button" class="fc-mode-switch__side" data-fc-versions-published="0" aria-pressed="true">No</button>
-                            <button
-                                type="button"
-                                class="fc-mode-switch__track"
-                                role="switch"
-                                aria-checked="false"
-                                aria-labelledby="fc-versions-published-label"
-                                data-fc-versions-input="published"
-                            ><span class="fc-mode-switch__thumb"></span></button>
-                            <button type="button" class="fc-mode-switch__side" data-fc-versions-published="1" aria-pressed="false">Yes</button>
-                        </div>
-                        <p class="fc-versions-publish__hint">Only published versions appear on the public version history page.</p>
-                    </div>
-                    <?php else : ?>
-                    <p class="fc-versions-publish__hint">You can save this version, but publishing it needs the Publish/Unpublish permission.</p>
-                    <?php endif; ?>
-                </div>
-                <footer class="fc-versions-dialog__footer">
-                    <button type="button" class="btn btn-sm btn-light" data-fc-versions-close>Cancel</button>
-                    <button type="submit" class="btn btn-sm btn-orange fw-semibold" data-fc-versions-save>
-                        <i class="fa-solid fa-check" aria-hidden="true"></i>
-                        <span>Save Version</span>
-                    </button>
-                </footer>
-            </form>
-        </section>
-    </div>
-    <?php endif; ?>
 </div>

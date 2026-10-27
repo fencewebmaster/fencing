@@ -3,66 +3,75 @@
 html[data-fc-admin-theme='light'],
 html:not([data-fc-admin-theme]) {
     --fc-sidebar-width: 16.5rem;
-    --fc-sidebar-bg: #1e293b;
-    --fc-sidebar-bg-elevated: #273549;
-    --fc-sidebar-border: #334155;
+    /* Settings → Theme → Admin Sidebar. Each mix partner is solved so the default
+       #1e293b still gives the exact slate shades these tokens always had. */
+    --fc-sidebar-bg: var(--fc-admin-sidebar-bg, #1e293b);
+    --fc-sidebar-bg-elevated: color-mix(in srgb, var(--fc-sidebar-bg) 90%, #78a1c7);
+    --fc-sidebar-border: color-mix(in srgb, var(--fc-sidebar-bg) 85%, #aac9e8);
     --fc-sidebar-text: #cbd5e1;
     --fc-sidebar-text-muted: #94a3b8;
     --fc-sidebar-text-heading: #f8fafc;
-    --fc-sidebar-hover-bg: rgba(51, 65, 85, 0.7);
+    --fc-sidebar-hover-bg: color-mix(in srgb, var(--fc-sidebar-border) 70%, transparent);
     --fc-sidebar-active-bg: color-mix(
         in srgb,
         var(--fc-princeton-orange, #f67925) 8%,
         transparent
     );
-    --fc-sidebar-active-text: var(--fc-princeton-orange, #f67925);
-    --fc-sidebar-active-icon-bg: rgba(246, 121, 37, 0.22);
-    --fc-sidebar-active-icon: var(--fc-princeton-orange, #f67925);
-    --fc-sidebar-icon-bg: rgba(51, 65, 85, 0.85);
+    --fc-sidebar-active-text: var(--fc-sidebar-accent);
+    --fc-sidebar-active-icon-bg: color-mix(in srgb, var(--fc-sidebar-accent) 22%, transparent);
+    --fc-sidebar-active-icon: var(--fc-sidebar-accent);
+    --fc-sidebar-icon-bg: color-mix(in srgb, var(--fc-sidebar-border) 85%, transparent);
     --fc-sidebar-icon: #94a3b8;
-    --fc-sidebar-accent: var(--fc-princeton-orange, #f67925);
+    --fc-sidebar-accent: var(--fc-admin-sidebar-accent, var(--fc-princeton-orange, #f67925));
     --fc-sidebar-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(15, 23, 42, 0.18);
-    --fc-sidebar-footer-bg: #172033;
-    --fc-sidebar-scrollbar-thumb: #475569;
+    --fc-sidebar-footer-bg: color-mix(in srgb, var(--fc-sidebar-bg) 70%, #070b20);
+    --fc-sidebar-scrollbar-thumb: color-mix(in srgb, var(--fc-sidebar-bg) 75%, #c2d9f3);
     --fc-sidebar-scrollbar-track: transparent;
     --fc-sidebar-backdrop: rgba(15, 23, 42, 0.45);
 }
 
 html[data-fc-admin-theme='dark'] {
     --fc-sidebar-width: 16.5rem;
-    --fc-sidebar-bg: #0f172a;
-    --fc-sidebar-bg-elevated: #1e293b;
-    --fc-sidebar-border: #1e293b;
+    /* The light sidebar colour darkened; the partners keep the default on today's slate-900 shades. */
+    --fc-sidebar-bg: color-mix(in srgb, var(--fc-admin-sidebar-bg, #1e293b) 50%, #000519);
+    --fc-sidebar-bg-elevated: var(--fc-admin-sidebar-bg, #1e293b);
+    --fc-sidebar-border: var(--fc-admin-sidebar-bg, #1e293b);
     --fc-sidebar-text: #94a3b8;
     --fc-sidebar-text-muted: #64748b;
     --fc-sidebar-text-heading: #f8fafc;
-    --fc-sidebar-hover-bg: rgba(51, 65, 85, 0.55);
+    --fc-sidebar-hover-bg: color-mix(in srgb, color-mix(in srgb, var(--fc-admin-sidebar-bg, #1e293b) 85%, #aac9e8) 55%, transparent);
     --fc-sidebar-active-bg: color-mix(
         in srgb,
         var(--fc-princeton-orange, #f67925) 12%,
         transparent
     );
-    --fc-sidebar-active-text: var(--fc-princeton-orange, #f67925);
-    --fc-sidebar-active-icon-bg: rgba(246, 121, 37, 0.2);
-    --fc-sidebar-active-icon: var(--fc-princeton-orange, #f67925);
-    --fc-sidebar-icon-bg: rgba(51, 65, 85, 0.65);
+    --fc-sidebar-active-text: var(--fc-sidebar-accent);
+    --fc-sidebar-active-icon-bg: color-mix(in srgb, var(--fc-sidebar-accent) 20%, transparent);
+    --fc-sidebar-active-icon: var(--fc-sidebar-accent);
+    --fc-sidebar-icon-bg: color-mix(in srgb, color-mix(in srgb, var(--fc-admin-sidebar-bg, #1e293b) 85%, #aac9e8) 65%, transparent);
     --fc-sidebar-icon: #94a3b8;
-    --fc-sidebar-accent: var(--fc-princeton-orange, #f67925);
+    --fc-sidebar-accent: var(--fc-admin-sidebar-accent, var(--fc-princeton-orange, #f67925));
     --fc-sidebar-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 12px 32px rgba(0, 0, 0, 0.35);
-    --fc-sidebar-footer-bg: #0b1220;
-    --fc-sidebar-scrollbar-thumb: #475569;
+    --fc-sidebar-footer-bg: color-mix(in srgb, var(--fc-sidebar-bg) 70%, #020609);
+    --fc-sidebar-scrollbar-thumb: color-mix(in srgb, var(--fc-admin-sidebar-bg, #1e293b) 75%, #c2d9f3);
     --fc-sidebar-scrollbar-track: transparent;
     --fc-sidebar-backdrop: rgba(2, 6, 23, 0.72);
 }
 
 /* Shell */
 #fc-admin-sidebar {
+    /* The nav's active row follows the sidebar highlight; entries.css keeps the html-level brand tint. */
+    --fc-sidebar-active-bg: color-mix(in srgb, var(--fc-sidebar-accent) 8%, transparent);
     width: min(100%, var(--fc-sidebar-width));
     background: var(--fc-sidebar-bg);
     border-color: var(--fc-sidebar-border);
     color: var(--fc-sidebar-text);
     box-shadow: var(--fc-sidebar-shadow);
     overflow: visible;
+}
+
+html[data-fc-admin-theme='dark'] #fc-admin-sidebar {
+    --fc-sidebar-active-bg: color-mix(in srgb, var(--fc-sidebar-accent) 12%, transparent);
 }
 
 @media (min-width: 1024px) {
@@ -202,8 +211,8 @@ html[data-fc-admin-theme='dark'] {
 
 .fc-sidebar-site__toggle:hover .fc-sidebar-site__caret-wrap,
 .fc-sidebar-brand.is-open .fc-sidebar-site__caret-wrap {
-    background: rgba(246, 121, 37, 0.18);
-    color: #fdba74;
+    background: color-mix(in srgb, var(--fc-sidebar-accent) 18%, transparent);
+    color: color-mix(in srgb, var(--fc-sidebar-accent) 50%, #fff);
 }
 
 .fc-sidebar-site__caret {
@@ -984,7 +993,7 @@ html:not(.fc-admin-nav-ready) .fc-sidebar-nav__submenu {
     width: 2rem;
     height: 2rem;
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--fc-sidebar-accent) 0%, #ea580c 100%);
+    background: linear-gradient(135deg, var(--fc-sidebar-accent) 0%, color-mix(in srgb, var(--fc-pumpkin, #ff6b08) 75%, var(--fc-brand-primary, #d4112f)) 100%);
     color: #fff;
     font-size: 0.6875rem;
     font-weight: 700;

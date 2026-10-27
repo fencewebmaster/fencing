@@ -20,8 +20,9 @@ writable/theme.json.tmp.*
 writable/groups-permissions/*.json.tmp.*
 writable/.products-import-*.csv
 writable/.wc-products-*-import-*.csv
-# Version Manager data is per site, like theme.json: a tracked copy would block the Dev Console's git pull.
-writable/versions.csv*
+# Changelogs data (writable/versions.csv) ships with the code; only its lock and leftover temp files stay local.
+writable/versions.csv.lock
+writable/versions.csv.tmp.*
 tests/*
 
 # Generated storage (keep directory placeholders)

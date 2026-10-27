@@ -125,8 +125,8 @@ return [
             (new GalleryPageController(new Request()))->index($context);
         });
 
-        // Releases (writable/versions.csv; was version-manager, which 301s here); its public face is the frontend 'versions' route.
-        $router->get('releases', static function (AdminContext $context): void {
+        // Changelogs (writable/versions.csv; was releases and version-manager, which 301 here); its public face is the frontend 'versions' route.
+        $router->get('changelogs', static function (AdminContext $context): void {
             (new VersionManagerPageController(new Request()))->index($context);
         });
 

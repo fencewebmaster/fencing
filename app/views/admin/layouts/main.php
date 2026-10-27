@@ -1037,15 +1037,15 @@ use Fc\Admin\Settings\ThemeSettings;
                     <?php if ($fcShowVersionManager) : ?>
                     <li>
                         <a
-                            href="<?php echo e($fcAdminBase . '/releases'); ?>"
+                            href="<?php echo e($fcAdminBase . '/changelogs'); ?>"
                             data-nav
                             data-nav-full="1"
-                            data-route="releases"
-                            data-title="Releases"
-                            class="fc-sidebar-nav__link<?php echo $fcAdminRoute === 'releases' ? ' is-active' : ''; ?>"
+                            data-route="changelogs"
+                            data-title="Changelogs"
+                            class="fc-sidebar-nav__link<?php echo $fcAdminRoute === 'changelogs' ? ' is-active' : ''; ?>"
                         >
                             <span class="fc-sidebar-nav__icon" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
-                            <span class="fc-sidebar-nav__label">Releases</span>
+                            <span class="fc-sidebar-nav__label">Changelogs</span>
                         </a>
                     </li>
                     <?php endif; ?>
@@ -1341,7 +1341,7 @@ use Fc\Admin\Settings\ThemeSettings;
                     data-route="gallery"
                     data-fc-gallery-server="1"
                     <?php elseif (!empty($fcAdminIsVersionManager)) : ?>
-                    data-route="releases"
+                    data-route="changelogs"
                     data-fc-version-manager-server="1"
                     <?php elseif ($fcAdminRoute === 'products/store-products' && is_array($fcSystemProductsPage)) : ?>
                     data-route="products/store-products"
@@ -1472,8 +1472,6 @@ use Fc\Admin\Settings\ThemeSettings;
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif (!empty($fcAdminIsVersionManager)) : ?>
     <script src="<?php echo asset('assets/js/admin/core/modal.js'); ?>"></script>
-    <?php /* The release notes editor is the TinyMCE loader the fence-style fields use (its release-notes profile). */ ?>
-    <script src="<?php echo asset('assets/js/admin/fence-styles/wysiwyg.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/versions.js'); ?>"></script>
     <script src="<?php echo asset('assets/js/admin/core/app.js'); ?>"></script>
     <?php elseif ($fcAdminRoute === 'products/store-products') : ?>

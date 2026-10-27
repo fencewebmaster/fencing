@@ -8,7 +8,7 @@ use Fc\Admin\Helpers\FileHelper;
 
 /**
  * The app's version label ("v13.12.0") printed in the planner footer, the admin sidebar and the
- * login page: the newest published release in Releases (admin; the one /versions marks Latest),
+ * login page: the newest published release in Changelogs (admin; the one /versions marks Latest),
  * or '' while nothing is published. Branding no longer holds a version.
  *
  * Every page view asks for it, so this class stays small and answers from
@@ -53,7 +53,7 @@ final class AppVersionService
     }
 
     /**
-     * Drop the cached label after a Releases write: a Publish/Unpublish toggle keeps the
+     * Drop the cached label after a VersionService write: a Publish/Unpublish toggle keeps the
      * file's size and can land in the same second as the cache key's mtime.
      */
     public static function forget(): void

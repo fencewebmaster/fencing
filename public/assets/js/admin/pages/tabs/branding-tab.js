@@ -90,7 +90,7 @@
 
             var appName = state.branding.appName || 'Fencing Calculator';
             var tagline = state.branding.tagline || '';
-            // Not a branding field: the newest published release in Releases.
+            // Not a branding field: the newest published release in Changelogs.
             var version = state.appVersion || '';
 
             if (titleEl) {

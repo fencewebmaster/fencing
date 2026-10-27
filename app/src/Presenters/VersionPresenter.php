@@ -8,17 +8,15 @@ use DateTimeImmutable;
 use Fc\Admin\Helpers\HtmlSanitizer;
 use Fc\Admin\Helpers\SemverHelper;
 use Fc\Admin\Helpers\ViewHelper;
-use Fc\Admin\Services\AuthService;
-use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Services\VersionService;
 
 /**
- * Releases view-models: the admin list page (releases) and the record payloads its editor,
- * View dialog and the versions API share.
+ * Changelogs view-models: the admin list page (changelogs) and the record payloads its View
+ * dialog and the versions API share.
  */
 final class VersionPresenter
 {
-    private const ROUTE = 'releases';
+    private const ROUTE = 'changelogs';
 
     private const PER_PAGE_OPTIONS = [20, 50, 100];
 
@@ -86,10 +84,6 @@ final class VersionPresenter
         $offset = $request['is_all'] ? 0 : ($request['page'] - 1) * $perPage;
         $pageItems = $request['is_all'] ? $filtered : array_slice($filtered, $offset, $perPage);
 
-        $canEdit = PermissionService::can('version_manager.edit');
-        $canDelete = PermissionService::can('version_manager.delete');
-        $canPublish = PermissionService::can('version_manager.publish');
-
         $rows = [];
         $records = [];
         foreach ($pageItems as $version) {
@@ -126,16 +120,12 @@ final class VersionPresenter
             'empty_state' => $all === []
                 ? [
                     'title' => 'No versions yet',
-                    'text' => $canEdit
-                        ? 'Add the first release to start the version history.'
-                        : 'Releases appear here once an editor adds them.',
-                    'show_add' => $canEdit,
+                    'text' => 'The changelog comes from writable/versions.csv, which ships with the code.',
                     'show_clear' => false,
                 ]
                 : [
                     'title' => 'No versions match',
                     'text' => 'Try another search or clear the filters.',
-                    'show_add' => false,
                     'show_clear' => true,
                 ],
             'count_label' => self::countLabel($total, $offset, count($pageItems)),
@@ -147,28 +137,17 @@ final class VersionPresenter
                 $currentPage,
                 static fn (int $num): string => $url(['page' => $num])
             ),
-            'can_edit' => $canEdit,
-            'can_delete' => $canDelete,
-            'can_publish' => $canPublish,
             'public_url' => $publicUrl,
             'error' => $loaded['ok'] ? '' : (string) ($loaded['error'] ?? ''),
-            'type_options' => self::options(VersionService::TYPES, 'full', ''),
-            'editor_level_options' => self::options(VersionService::LEVELS, 'patch', ''),
             'bootstrap_json' => ViewHelper::bootstrapJson([
-                'csrf' => AuthService::csrfToken(),
-                'canEdit' => $canEdit,
-                'canDelete' => $canDelete,
-                'canPublish' => $canPublish,
                 'records' => $records,
-                'types' => VersionService::TYPES,
-                'levels' => VersionService::LEVELS,
                 'publicUrl' => $publicUrl,
             ]),
         ];
     }
 
     /**
-     * One version as the editor, the View dialog and the API read it.
+     * One version as the View dialog and the API read it.
      *
      * @param array<string, mixed> $version VersionService record
      * @return array<string, mixed>
@@ -223,12 +202,7 @@ final class VersionPresenter
             'excerpt' => $excerpt,
             'is_published' => $record['published'],
             'status_label' => $record['published'] ? 'Published' : 'Unpublished',
-            'publish_action' => $record['published'] ? 'unpublish' : 'publish',
-            'publish_label' => $record['published'] ? 'Unpublish' : 'Publish',
-            'publish_icon' => $record['published'] ? 'fa-solid fa-eye-slash' : 'fa-solid fa-globe',
-            'publish_meta' => $record['published'] ? 'Hide it from the public Version History page' : 'Show it on the public Version History page',
             'row_label' => $record['type_label'] . ' ' . $record['version_label'],
-            'menu_hint' => $record['published'] ? 'Published on the public Version History page' : 'Unpublished, so only admins can see it',
         ];
     }
 

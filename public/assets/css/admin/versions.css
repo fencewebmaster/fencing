@@ -1,4 +1,4 @@
-/* ===== Version Manager (admin/versions/index.php, versions.js) ===== */
+/* ===== Changelogs (admin/versions/index.php, versions.js) ===== */
 
 /* ----- Toolbar ----- */
 .fc-versions-toolbar {
@@ -93,12 +93,6 @@
     width: 1%;
     text-align: right;
     white-space: nowrap;
-}
-
-/* The row menu sits in that right-aligned, nowrap cell; its panel reads like every other admin menu. */
-.fc-versions-row-menu .fc-admin-menu__panel {
-    text-align: left;
-    white-space: normal;
 }
 
 /* ----- Badges: type, level, status ----- */
@@ -210,7 +204,7 @@
     color: var(--fc-admin-text-muted, #64748b);
 }
 
-/* ----- Dialogs (moved to <body> by versions.js; under TinyMCE's popups at 1300 and the confirm root) ----- */
+/* ----- Dialog (moved to <body> by versions.js, so it sits above the sidebar and topbar) ----- */
 .fc-versions-dialog {
     position: fixed;
     inset: 0;
@@ -249,10 +243,6 @@
     transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.fc-versions-dialog__panel--wide {
-    width: min(58rem, calc(100vw - 2rem));
-}
-
 .fc-versions-dialog.is-open .fc-versions-dialog__backdrop,
 .fc-versions-dialog.is-open .fc-versions-dialog__panel {
     opacity: 1;
@@ -289,13 +279,6 @@
     overflow-y: auto;
 }
 
-.fc-versions-form {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-height: 0;
-}
-
 .fc-versions-dialog__footer {
     display: flex;
     flex: 0 0 auto;
@@ -319,167 +302,11 @@
         place-items: stretch;
     }
 
-    .fc-versions-dialog__panel,
-    .fc-versions-dialog__panel--wide {
+    .fc-versions-dialog__panel {
         width: 100%;
         max-height: 100%;
         border: 0;
         border-radius: 0;
-    }
-}
-
-/* ----- Form ----- */
-.fc-versions-form__alert {
-    margin-bottom: 1rem;
-    padding: 0.625rem 0.75rem;
-    border: 1px solid rgba(220, 38, 38, 0.35);
-    border-left-width: 3px;
-    border-radius: 3px;
-    background: rgba(220, 38, 38, 0.06);
-    font-size: 0.8125rem;
-    color: #b91c1c;
-}
-
-.fc-versions-form__grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-}
-
-.fc-versions-field__label {
-    display: block;
-    margin: 0 0 0.35rem;
-    padding: 0;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--fc-admin-text, #1e293b);
-}
-
-.fc-versions-input {
-    display: block;
-    width: 100%;
-    min-height: 2.25rem;
-    padding: 0.4rem 0.65rem;
-    border: 1px solid var(--fc-admin-control-line, #c3c4c7);
-    border-radius: 3px;
-    background: var(--fc-admin-input-bg, #fff);
-    font-size: 0.875rem;
-    color: var(--fc-admin-text, #1e293b);
-}
-
-.fc-versions-input:focus {
-    outline: none;
-    border-color: var(--fc-princeton-orange, #f67925);
-    box-shadow: 0 0 0 3px rgba(246, 121, 37, 0.18);
-}
-
-.fc-versions-input[aria-invalid="true"] {
-    border-color: #dc2626;
-}
-
-.fc-versions-input--mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-
-.fc-versions-input--notes {
-    min-height: 16rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.8125rem;
-}
-
-.fc-versions-field__error {
-    margin: 0.35rem 0 0;
-    font-size: 0.75rem;
-    color: #dc2626;
-}
-
-.fc-versions-number {
-    min-width: 0;
-    margin: 1.25rem 0 0;
-    padding: 0.875rem 1rem 1rem;
-    border: 1px solid var(--fc-admin-border, #e2e8f0);
-    border-radius: 3px;
-    background: var(--fc-admin-surface-muted, #f8fafc);
-}
-
-.fc-versions-number > legend {
-    float: left;
-    width: 100%;
-    margin-bottom: 0.5rem;
-}
-
-.fc-versions-number__row {
-    display: flex;
-    clear: both;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem 1.25rem;
-}
-
-.fc-versions-number__auto,
-.fc-versions-number__manual {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem 0.75rem;
-    min-width: 0;
-}
-
-.fc-versions-number__auto[hidden],
-.fc-versions-number__manual[hidden] {
-    display: none;
-}
-
-.fc-versions-number__value {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--fc-admin-text-heading, #0f172a);
-}
-
-.fc-versions-number__manual .fc-versions-input {
-    width: 9.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.fc-versions-number__hint {
-    font-size: 0.75rem;
-    color: var(--fc-admin-text-muted, #64748b);
-}
-
-.fc-versions-field--notes {
-    margin-top: 1.25rem;
-}
-
-.fc-versions-field--notes .tox-tinymce {
-    border-color: var(--fc-admin-control-line, #c3c4c7);
-    border-radius: 3px;
-}
-
-.fc-versions-publish {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1rem;
-    margin-top: 1.25rem;
-}
-
-.fc-versions-publish .fc-versions-field__label {
-    margin: 0;
-}
-
-.fc-versions-publish__hint {
-    flex: 1 1 16rem;
-    margin: 0;
-    font-size: 0.75rem;
-    color: var(--fc-admin-text-muted, #64748b);
-}
-
-@media (max-width: 767px) {
-    .fc-versions-form__grid {
-        grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -690,14 +517,6 @@ html[data-fc-admin-theme='dark'] .fc-versions-status--draft {
 html[data-fc-admin-theme='dark'] .fc-versions-status--published {
     background: rgba(74, 222, 128, 0.14);
     color: #86efac;
-}
-
-html[data-fc-admin-theme='dark'] .fc-versions-form__alert {
-    color: #fca5a5;
-}
-
-html[data-fc-admin-theme='dark'] .fc-versions-field__error {
-    color: #f87171;
 }
 
 html[data-fc-admin-theme='dark'] .fc-release-notes a {
