@@ -25,6 +25,9 @@ use Fc\Admin\Settings\FenceColorSettings;
  */
 final class StoreProductPresenter
 {
+    /** Regex class body for the icons descriptions carry as decoration (✔️ 🧰 ⊕ and arrows) and the emoji joiners. */
+    private const DESCRIPTION_ICONS = '\x{2190}-\x{2BFF}\x{1F000}-\x{1FAFF}\x{FE0F}\x{200D}';
+
     /**
      * Columns shown on the system-products list table (products.csv).
      *
@@ -960,11 +963,7 @@ final class StoreProductPresenter
         $text = (string) preg_replace('#<br\s*/?>#i', ' ', $value);
         $text = strip_tags($text);
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $text = (string) preg_replace(
-            '/[\x{2190}-\x{2BFF}\x{1F000}-\x{1FAFF}\x{FE0F}\x{200D}]/u',
-            ' ',
-            $text
-        );
+        $text = (string) preg_replace('/[' . self::DESCRIPTION_ICONS . ']/u', ' ', $text);
 
         return trim((string) preg_replace('/\s+/u', ' ', $text));
     }
@@ -1223,14 +1222,21 @@ final class StoreProductPresenter
     }
 
     /**
-     * A stored description as plain text for the Product SKUs download: the markup goes, but each <br>,
-     * paragraph and list item keeps a line of its own and the tick and toolbox icons stay, so the file
-     * reads like the storefront rather than descriptionToText()'s one-line cell text.
+     * A stored description as plain text for the Product SKUs download: the markup goes, and so do the icons,
+     * bullets (✔️ 🧰 ⊕ •) and ** emphasis; dashes and curly quotes turn plain. Unlike descriptionToText()'s
+     * one-line cell text, each <br>, paragraph and list item keeps a line of its own.
      */
     private static function descriptionToLines(string $value): string
     {
         $text = (string) preg_replace('#<br\s*/?>|</?(?:p|div|li|ul|ol|h[1-6]|tr|table|blockquote)\b[^>]*>#i', "\n", $value);
         $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Before the icon strip, which would otherwise take the U+2212 minus sign with the maths symbols.
+        $text = strtr($text, [
+            "\u{2010}" => '-', "\u{2011}" => '-', "\u{2012}" => '-', "\u{2013}" => '-', "\u{2014}" => '-', "\u{2015}" => '-',
+            "\u{2212}" => '-', "\u{2018}" => "'", "\u{2019}" => "'", "\u{201C}" => '"', "\u{201D}" => '"', "\u{2026}" => '...',
+            "\u{200B}" => '', "\u{200C}" => '', "\u{2060}" => '', "\u{FEFF}" => '',
+        ]);
+        $text = (string) preg_replace('/[' . self::DESCRIPTION_ICONS . '\x{2022}\x{2023}\x{2043}*]/u', ' ', $text);
 
         $lines = [];
         foreach (preg_split('/\R/u', $text) ?: [] as $line) {
