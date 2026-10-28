@@ -1188,8 +1188,8 @@ final class StoreProductPresenter
 
     /**
      * The Product SKUs download in WooCommerce's product CSV columns: every SKU the page lists under the
-     * same filters, once, with the first listing row's name and description. Type is the store's own; a
-     * SKU the store lacks gets none, which WooCommerce's importer reads as simple.
+     * same filters, once, with the first listing row's name and description (as plain text). Type is the
+     * store's own; a SKU the store lacks gets none, which WooCommerce's importer reads as simple.
      *
      * @param array<string, string> $query
      * @return array{ok:bool,status?:int,error?:string,header?:list<string>,rows?:list<list<string>>}
@@ -1216,10 +1216,31 @@ final class StoreProductPresenter
 
         $rows = [];
         foreach ($entries as $key => $entry) {
-            $rows[] = [$types[$key] ?? '', $entry['sku'], $entry['name'], $entry['description']];
+            $rows[] = [$types[$key] ?? '', $entry['sku'], $entry['name'], self::descriptionToLines($entry['description'])];
         }
 
         return ['ok' => true, 'header' => ['Type', 'SKU', 'Name', 'Description'], 'rows' => $rows];
+    }
+
+    /**
+     * A stored description as plain text for the Product SKUs download: the markup goes, but each <br>,
+     * paragraph and list item keeps a line of its own and the tick and toolbox icons stay, so the file
+     * reads like the storefront rather than descriptionToText()'s one-line cell text.
+     */
+    private static function descriptionToLines(string $value): string
+    {
+        $text = (string) preg_replace('#<br\s*/?>|</?(?:p|div|li|ul|ol|h[1-6]|tr|table|blockquote)\b[^>]*>#i', "\n", $value);
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        $lines = [];
+        foreach (preg_split('/\R/u', $text) ?: [] as $line) {
+            $line = trim((string) preg_replace('/[\s\x{00A0}]+/u', ' ', $line));
+            if ($line !== '') {
+                $lines[] = $line;
+            }
+        }
+
+        return implode("\n", $lines);
     }
 
     /**
