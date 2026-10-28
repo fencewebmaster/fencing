@@ -488,8 +488,22 @@
                     body: JSON.stringify(body)
                 })
                     .then(function (res) {
-                        return res.json().then(function (payload) {
-                            return { res: res, body: payload || {} };
+                        return res.text().then(function (raw) {
+                            var payload = null;
+                            try {
+                                payload = raw ? JSON.parse(raw) : null;
+                            } catch (e) {
+                                payload = null;
+                            }
+                            // A PHP fatal arrives as a blank 500 (api.php hides errors), which res.json() showed as "Unexpected end of JSON input".
+                            if (!payload || typeof payload !== 'object') {
+                                throw new Error(
+                                    raw
+                                        ? 'The server sent an unexpected reply (HTTP ' + res.status + '), probably a host or firewall error page.'
+                                        : 'The server stopped without replying (HTTP ' + res.status + '). The PHP error log under Settings → Site Health shows why.'
+                                );
+                            }
+                            return { res: res, body: payload };
                         });
                     })
                     .then(function (result) {

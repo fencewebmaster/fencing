@@ -174,6 +174,7 @@ final class SiteHealthService
             self::attempt('extensions', 'PHP extensions', static fn (): array => self::phpExtensions()),
             self::attempt('opcache', 'OPcache', static fn (): array => self::opcache($local)),
             self::attempt('limits', 'PHP limits', static fn (): array => self::phpLimits()),
+            self::attempt('programs', 'Starting programs', static fn (): array => self::startingPrograms()),
             self::attempt('disk', 'Disk space', static fn (): array => self::diskSpace()),
             self::attempt('writable', 'Writable files and folders', static fn (): array => self::writablePaths()),
             self::attempt('config', 'config.php', static fn (): array => self::appConfig()),
@@ -286,6 +287,17 @@ final class SiteHealthService
             . ' · Time ' . ($time > 0 ? $time . 's' : 'unlimited');
 
         return $issues === [] ? ['good', $value, ''] : ['warn', $value, ucfirst(implode('. ', $issues)) . '.'];
+    }
+
+    private static function startingPrograms(): array
+    {
+        // Yardu's host disables proc_open, which left every Console git command a blank reply until the console checked.
+        $disabled = DevConsoleService::disabledProcessFunction();
+        if ($disabled !== '') {
+            return ['warn', 'Blocked', 'PHP\'s ' . $disabled . ' is disabled on this server, so Settings → Console can\'t run git (no git pull from the admin) and Minify can\'t rebuild its copies. Pull in the server\'s own terminal (cPanel → Terminal), or ask the host to allow ' . $disabled . '.'];
+        }
+
+        return ['good', 'Allowed', 'Settings → Console can run git.'];
     }
 
     private static function diskSpace(): array

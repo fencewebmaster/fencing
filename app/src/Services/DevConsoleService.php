@@ -375,11 +375,42 @@ final class DevConsoleService
     }
 
     /**
+     * The first of proc_open/proc_close that php.ini disables here, or '' when git can start. PHP 8 treats a
+     * disabled function as undefined, so @proc_open() threw instead of returning false and the console only
+     * got a blank 500 ("Unexpected end of JSON input" on Yardu, Oct 2026). Site Health reports the same.
+     */
+    public static function disabledProcessFunction(): string
+    {
+        foreach (['proc_open', 'proc_close'] as $function) {
+            if (!function_exists($function)) {
+                return $function;
+            }
+        }
+
+        return '';
+    }
+
+    private static function processBlockedOutput(string $function): string
+    {
+        return 'PHP cannot start programs on this server (' . $function . ' is disabled), so git can\'t run from this console. '
+            . 'Run it in the server\'s own terminal instead (cPanel → Terminal), or ask the host to allow ' . $function . '.';
+    }
+
+    /**
      * @param list<string> $argv
      * @return array{ok:bool,output:string,error?:string,exitCode?:int}
      */
     private static function runAllowlistedProcess(array $argv, string $root): array
     {
+        $disabled = self::disabledProcessFunction();
+        if ($disabled !== '') {
+            return [
+                'ok' => false,
+                'error' => 'Could not start command.',
+                'output' => self::processBlockedOutput($disabled),
+            ];
+        }
+
         $descriptor = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
@@ -440,6 +471,15 @@ final class DevConsoleService
      */
     public static function pull(string $root): array
     {
+        $disabled = self::disabledProcessFunction();
+        if ($disabled !== '') {
+            return [
+                'ok' => false,
+                'error' => 'Could not start git pull.',
+                'output' => self::processBlockedOutput($disabled),
+            ];
+        }
+
         $descriptor = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
