@@ -209,6 +209,8 @@ final class GroupPermissionsPresenter
                 'download-products-status',
                 'download-products-csv',
                 'import-products-csv' => ['products.store_products.download'],
+                // Product SKUs' download lists only what that page shows, so it takes the page's own key.
+                'download-product-skus-csv' => ['products.system_products.view'],
                 default => ['products.system_products.view', 'products.store_products.view'],
             },
             'fenceStyles', 'fenceStylesController' => match ($action) {

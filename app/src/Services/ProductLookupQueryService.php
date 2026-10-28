@@ -759,6 +759,62 @@ final class ProductLookupQueryService
     }
 
     /**
+     * WooCommerce's product type for each SKU the store holds (simple, variable, variation, ...), keyed
+     * by the SKU uppercased; a SKU the store lacks is left out. Private, draft and pending products count,
+     * as in the catalogue export, because WooCommerce's CSV importer matches those SKUs too.
+     *
+     * @param list<string> $skus
+     * @return array<string, string>
+     */
+    public static function productTypesBySku(array $skus): array
+    {
+        $skus = array_values(array_unique(array_filter(
+            array_map(static fn ($sku): string => trim((string) $sku), $skus),
+            static fn (string $sku): bool => $sku !== ''
+        )));
+        if ($skus === []) {
+            return [];
+        }
+
+        $pdo = self::pdo();
+        $p = self::table('posts');
+        // Same indexed lookup table as productIdBySku(), with postmeta as the fallback.
+        $lookup = ProductLookupService::metaLookupTable();
+        $skuColumn = $lookup !== null ? 'l.sku' : 'pm.meta_value';
+        $source = $lookup !== null
+            ? "`{$lookup}` l INNER JOIN `{$p}` p ON p.ID = l.product_id"
+            : '`' . self::table('postmeta') . "` pm INNER JOIN `{$p}` p ON p.ID = pm.post_id AND pm.meta_key = '_sku'";
+        // A product's type is its product_type term; a variation carries none of its own.
+        $typeTerm = 'SELECT t.slug FROM `' . self::table('term_relationships') . '` tr
+            INNER JOIN `' . self::table('term_taxonomy') . "` tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'product_type'
+            INNER JOIN `" . self::table('terms') . '` t ON t.term_id = tt.term_id
+            WHERE tr.object_id = p.ID LIMIT 1';
+
+        $types = [];
+        foreach (array_chunk($skus, 200) as $chunk) {
+            $marks = implode(',', array_fill(0, count($chunk), '?'));
+            $stmt = $pdo->prepare(
+                "SELECT {$skuColumn} AS sku, p.post_type, ({$typeTerm}) AS product_type FROM {$source}
+                 WHERE {$skuColumn} IN ({$marks})
+                   AND p.post_type IN ('product', 'product_variation')
+                   AND p.post_status IN ('publish', 'private', 'draft', 'pending')
+                 ORDER BY p.post_type = 'product' DESC, p.ID DESC"
+            );
+            $stmt->execute($chunk);
+            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $key = strtoupper(trim((string) $row['sku']));
+                if (isset($types[$key])) {
+                    continue;
+                }
+                $term = trim((string) ($row['product_type'] ?? ''));
+                $types[$key] = $row['post_type'] === 'product_variation' ? 'variation' : ($term !== '' ? $term : 'simple');
+            }
+        }
+
+        return $types;
+    }
+
+    /**
      * @param array<string, string> $meta
      */
     public static function priceHtml(array $meta): string

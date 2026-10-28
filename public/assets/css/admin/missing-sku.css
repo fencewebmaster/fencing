@@ -136,7 +136,8 @@
     background: var(--fc-admin-border, #e2e4e7);
 }
 
-.fc-ms-actions__footer {
+.fc-ms-actions__footer,
+.fc-ms-actions__export {
     padding: 0.35rem 0.4rem 0.45rem;
 }
 

@@ -9,6 +9,7 @@ namespace Fc\Admin\Controllers\Api;
 
 use Fc\Admin\Models\StoreProductModel;
 use Fc\Admin\Models\SystemProductModel;
+use Fc\Admin\Presenters\StoreProductPresenter;
 use Fc\Admin\Services\AdminSiteRegistry;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\MissingSkuDeepScan;
@@ -270,6 +271,9 @@ final class ProductsController extends BaseApiController
             case 'download-store-products-csv':
                 self::downloadStoreProductsCsv();
                 break;
+            case 'download-product-skus-csv':
+                self::downloadProductSkusCsv($this->request->allQuery());
+                break;
             case 'wc-sku-index':
                 echo json_encode(
                     WcProductSkuIndex::indexPayload(),
@@ -339,6 +343,41 @@ final class ProductsController extends BaseApiController
     {
         $downloadFilename = AdminSiteRegistry::currentSiteFilenameSlug() . '-system-products.csv';
         self::streamCsvAttachment(StoreProductModel::csvPath(), $downloadFilename, 'products.csv');
+    }
+
+    /**
+     * Product SKUs → Actions → Download CSV: the page's SKUs under its filters, each once, built in
+     * memory rather than streamed from a file like the two downloads above.
+     *
+     * @param array<string, mixed> $query
+     */
+    private static function downloadProductSkusCsv(array $query): void
+    {
+        $result = StoreProductPresenter::productSkusCsv($query);
+        if (empty($result['ok'])) {
+            http_response_code((int) ($result['status'] ?? 500));
+            echo json_encode([
+                'ok' => false,
+                'error' => (string) ($result['error'] ?? 'Could not build the CSV.'),
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . StoreProductPresenter::productSkusCsvFilename() . '"');
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+
+        $out = fopen('php://output', 'wb');
+        // A BOM, as WooCommerce's own export writes, so Excel reads the descriptions as UTF-8.
+        fwrite($out, "\xEF\xBB\xBF");
+        // No escape character: PHP's default backslash one corrupts \" inside the HTML descriptions.
+        fputcsv($out, $result['header'], ',', '"', '');
+        foreach ($result['rows'] as $row) {
+            fputcsv($out, $row, ',', '"', '');
+        }
+        fclose($out);
+        exit;
     }
 
     private function importStoreProductsCsv(): void

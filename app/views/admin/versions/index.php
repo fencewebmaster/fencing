@@ -1,8 +1,8 @@
 <?php
 /**
- * FC Admin — Changelogs (server-rendered list, plus the View dialog versions.js opens). No
- * write actions: writable/versions.csv ships with the code, and a site that edited its copy
- * could no longer git pull.
+ * FC Admin — Changelogs (server-rendered list, plus the View dialog versions.js opens when a
+ * row is clicked). No write actions: writable/versions.csv ships with the code, and a site
+ * that edited its copy could no longer git pull.
  *
  * Read-only template: VersionPresenter::listViewData() shapes every value and the JS
  * bootstrap. Escaping via the global e()/cell() helpers; the layout's is_array() check
@@ -129,13 +129,12 @@ $cols = $page['columns'];
                                 <span>Status</span><i class="<?php echo e($cols['status']['icon']); ?>" aria-hidden="true"></i>
                             </a>
                         </th>
-                        <th scope="col" class="fc-versions-table__actions-col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!$page['has_table_rows']) : ?>
                     <tr>
-                        <td colspan="7" class="fc-versions-empty">
+                        <td colspan="6" class="fc-versions-empty">
                             <div class="fc-versions-empty__inner">
                                 <span class="fc-versions-empty__icon" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
                                 <p class="fc-versions-empty__title"><?php echo e((string) $page['empty_state']['title']); ?></p>
@@ -154,7 +153,6 @@ $cols = $page['columns'];
                                 type="button"
                                 class="fc-versions-version"
                                 data-fc-versions-action="view"
-                                data-id="<?php echo (int) $row['id']; ?>"
                                 aria-label="<?php echo e('View ' . $row['row_label']); ?>"
                             ><?php echo e((string) $row['version_label']); ?></button>
                             <span class="fc-versions-mode"><?php echo cell($row['mode_label']); ?></span>
@@ -173,18 +171,6 @@ $cols = $page['columns'];
                         </td>
                         <td>
                             <span class="fc-versions-status<?php echo $row['is_published'] ? ' fc-versions-status--published' : ' fc-versions-status--draft'; ?>"><?php echo e((string) $row['status_label']); ?></span>
-                        </td>
-                        <td class="fc-versions-table__actions-col">
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-light"
-                                data-fc-versions-action="view"
-                                data-id="<?php echo (int) $row['id']; ?>"
-                                aria-label="<?php echo e('View ' . $row['row_label']); ?>"
-                            >
-                                <i class="fa-regular fa-eye" aria-hidden="true"></i>
-                                <span>View</span>
-                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>

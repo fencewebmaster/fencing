@@ -89,12 +89,6 @@
     white-space: normal;
 }
 
-.fc-versions-table__actions-col {
-    width: 1%;
-    text-align: right;
-    white-space: nowrap;
-}
-
 /* ----- Badges: type, level, status ----- */
 .fc-versions-type,
 .fc-versions-level,

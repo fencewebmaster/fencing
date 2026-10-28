@@ -13,6 +13,7 @@ use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\MissingSkuScanService;
 use Fc\Admin\Services\PermissionService;
+use Fc\Admin\Services\ProductLookupQueryService;
 use Fc\Admin\Settings\FenceColorSettings;
 
 /**
@@ -1109,6 +1110,12 @@ final class StoreProductPresenter
         $supplierValues = is_array($filterMeta['suppliers'] ?? null) ? $filterMeta['suppliers'] : [];
         $styleValues = is_array($filterMeta['styles'] ?? null) ? $filterMeta['styles'] : [];
 
+        // Scan, Deep Scan, Fill and Clear Scan change the list, so they stay with editors; the download only reads it.
+        $scanGroupAvailable = PermissionService::can('products.system_products.edit');
+        $downloadAvailable = PermissionService::can('products.system_products.view');
+        // Counted from the same rows productSkusCsv() writes, so the menu's number is the file's.
+        $downloadCount = count(self::productSkusExportEntries($rows));
+
         return [
             'error'            => $error,
             'rows'             => $rows,
@@ -1136,7 +1143,21 @@ final class StoreProductPresenter
                 ? 'Deletes missing-products.csv'
                 : 'No saved scan to clear',
             // The gear only earns its place once something can go in it.
-            'menu_available'   => PermissionService::can('products.system_products.edit'),
+            'menu_available'   => $scanGroupAvailable || $downloadAvailable,
+            'scan_group_available' => $scanGroupAvailable,
+            'download_available' => $downloadAvailable,
+            'download_enabled' => $downloadCount > 0,
+            'download_meta'    => $downloadCount === 0
+                ? 'No SKUs to download'
+                : 'Type, SKU, Name, Description · ' . $downloadCount . ' SKU' . ($downloadCount === 1 ? '' : 's'),
+            // The page's own filters, handed back to the download so the file follows what is listed.
+            'download_query'   => http_build_query(array_filter([
+                'supplier'   => $filters['supplier'],
+                'style'      => $filters['style'],
+                'q'          => $filters['q'],
+                'incomplete' => $incompleteOnly ? '1' : '',
+            ], static fn (string $value): bool => $value !== '')),
+            'download_name'    => self::productSkusCsvFilename(),
             'scan_meta'        => 'Match every gap against the store catalogue',
             'deep_scan_meta'   => 'Rank the catalogue by name and description',
             'fill_available'   => MissingSkuScanService::isAvailable() && $scanFillable > 0,
@@ -1157,5 +1178,75 @@ final class StoreProductPresenter
                 'csrf'    => AuthService::csrfToken(),
             ]),
         ];
+    }
+
+    /** The Product SKUs download's file name, shared by the menu item and the response header. */
+    public static function productSkusCsvFilename(): string
+    {
+        return AdminSiteRegistry::currentSiteFilenameSlug() . '-product-skus.csv';
+    }
+
+    /**
+     * The Product SKUs download in WooCommerce's product CSV columns: every SKU the page lists under the
+     * same filters, once, with the first listing row's name and description. Type is the store's own; a
+     * SKU the store lacks gets none, which WooCommerce's importer reads as simple.
+     *
+     * @param array<string, string> $query
+     * @return array{ok:bool,status?:int,error?:string,header?:list<string>,rows?:list<list<string>>}
+     */
+    public static function productSkusCsv(array $query): array
+    {
+        // The page's own rows, so the file can never list a SKU the page would not.
+        $page = self::missingSkuViewData('', $query);
+        if ((string) $page['error'] !== '') {
+            return ['ok' => false, 'status' => 500, 'error' => (string) $page['error']];
+        }
+
+        $entries = self::productSkusExportEntries($page['rows']);
+        $boot = ProductLookupQueryService::boot();
+        if (empty($boot['ok'])) {
+            return ['ok' => false, 'status' => 503, 'error' => (string) ($boot['error'] ?? 'Store database unavailable.')];
+        }
+        try {
+            $types = ProductLookupQueryService::productTypesBySku(array_column($entries, 'sku'));
+        } catch (\Throwable $e) {
+            error_log('FC productSkusCsv: ' . $e->getMessage());
+            return ['ok' => false, 'status' => 500, 'error' => 'Could not read the product types from the store.'];
+        }
+
+        $rows = [];
+        foreach ($entries as $key => $entry) {
+            $rows[] = [$types[$key] ?? '', $entry['sku'], $entry['name'], $entry['description']];
+        }
+
+        return ['ok' => true, 'header' => ['Type', 'SKU', 'Name', 'Description'], 'rows' => $rows];
+    }
+
+    /**
+     * Each SKU the given page rows list, once, keyed by the SKU uppercased (WooCommerce matches SKUs
+     * case-blind) and in page order, so a SKU on several rows keeps the first row's name and description.
+     *
+     * @param list<array<string, mixed>> $rows missingSkuViewData() rows
+     * @return array<string, array{sku:string,name:string,description:string}>
+     */
+    private static function productSkusExportEntries(array $rows): array
+    {
+        $entries = [];
+        foreach ($rows as $row) {
+            foreach ($row['fields'] as $field) {
+                $sku = (string) $field['value'];
+                $key = strtoupper($sku);
+                if ($sku === '' || !empty($field['is_off']) || isset($entries[$key])) {
+                    continue;
+                }
+                $entries[$key] = [
+                    'sku'         => $sku,
+                    'name'        => (string) $row['product'],
+                    'description' => (string) $row['description'],
+                ];
+            }
+        }
+
+        return $entries;
     }
 }

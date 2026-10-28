@@ -128,6 +128,7 @@ $canEdit         = $page['can_edit'];
                         aria-labelledby="fc-ms-actions-toggle"
                         hidden
                     >
+                        <?php if (!empty($page['scan_group_available'])) : ?>
                         <div class="fc-ms-actions__head">
                             <span class="fc-ms-actions__head-title">Scan actions</span>
                             <span class="fc-ms-actions__head-hint">Nothing is saved until you press Save on a row</span>
@@ -161,6 +162,21 @@ $canEdit         = $page['can_edit'];
                             </button>
                             <?php endif; ?>
                         </div>
+                        <?php endif; ?>
+                        <?php if (!empty($page['download_available'])) : ?>
+                        <?php if (!empty($page['scan_group_available'])) : ?>
+                        <div class="fc-ms-actions__divider" role="separator"></div>
+                        <?php endif; ?>
+                        <div class="fc-ms-actions__export">
+                            <button type="button" class="fc-entries-date-dropdown__option fc-ms-actions__option" role="menuitem" data-fc-ms-download data-fc-ms-download-query="<?php echo e((string) $page['download_query']); ?>" data-fc-ms-download-name="<?php echo e((string) $page['download_name']); ?>"<?php echo empty($page['download_enabled']) ? ' disabled aria-disabled="true"' : ''; ?>>
+                                <span class="fc-ms-actions__option-icon" aria-hidden="true"><i class="fa-solid fa-download"></i></span>
+                                <span class="fc-ms-actions__option-text">
+                                    <span class="fc-ms-actions__option-label" data-fc-ms-label>Download CSV</span>
+                                    <span class="fc-ms-actions__option-meta"><?php echo e((string) $page['download_meta']); ?></span>
+                                </span>
+                            </button>
+                        </div>
+                        <?php endif; ?>
                         <?php if (!empty($page['clear_available'])) : ?>
                         <div class="fc-ms-actions__divider" role="separator"></div>
                         <div class="fc-ms-actions__footer">

@@ -1238,6 +1238,65 @@
             });
     }
 
+    /* The server builds the file from the page's own filters. Fetched rather than linked, so a failure
+       shows as a toast instead of being saved as the CSV. */
+    function runDownload(btn) {
+        if (btn.disabled) {
+            return;
+        }
+        var label = labelOf(btn);
+        var was = label ? label.textContent : '';
+        var name = btn.getAttribute('data-fc-ms-download-name') || 'product-skus.csv';
+        var query = btn.getAttribute('data-fc-ms-download-query') || '';
+        btn.disabled = true;
+        if (label) {
+            label.textContent = 'Preparing CSV…';
+        }
+
+        fetch(fcApiUrl('products', 'action=download-product-skus-csv' + (query ? '&' + query : '')), {
+            headers: { Accept: 'text/csv' },
+            credentials: 'same-origin'
+        })
+            .then(function (res) {
+                if (!res.ok) {
+                    return res.json().catch(function () {
+                        return {};
+                    }).then(function (body) {
+                        throw new Error((body && body.error) || 'Download failed');
+                    });
+                }
+                return res.blob();
+            })
+            .then(function (blob) {
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = name;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                global.setTimeout(function () {
+                    URL.revokeObjectURL(url);
+                }, 1000);
+                var T = global.FcAdminToast;
+                if (T) {
+                    T.success('Downloaded ' + name);
+                }
+            })
+            .catch(function (err) {
+                var T = global.FcAdminToast;
+                if (T) {
+                    T.error(err.message || 'Download failed');
+                }
+            })
+            .finally(function () {
+                btn.disabled = false;
+                if (label) {
+                    label.textContent = was;
+                }
+            });
+    }
+
     /* Resolves true only when the row reached disk, so a bulk run can tally what landed.
        `quiet` keeps the per-row toast out of the way when the toolbar is saving many. */
     /* The toolbar's "N products". Retired rows have left the list for good, so they leave the
@@ -1826,6 +1885,14 @@
                 e.preventDefault();
                 closeActionsMenu();
                 runClear(clearBtn);
+                return;
+            }
+
+            var downloadBtn = target.closest('[data-fc-ms-download]');
+            if (downloadBtn) {
+                e.preventDefault();
+                closeActionsMenu();
+                runDownload(downloadBtn);
                 return;
             }
 

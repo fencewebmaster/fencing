@@ -1,6 +1,6 @@
 /**
- * FC Admin — Changelogs: the View dialog. The list is server-rendered (VersionPresenter) and has no
- * write actions: writable/versions.csv ships with the code.
+ * FC Admin — Changelogs: the View dialog a row click opens. The list is server-rendered (VersionPresenter)
+ * and has no write actions: writable/versions.csv ships with the code.
  */
 (function (global) {
     'use strict';
@@ -72,11 +72,15 @@
     /* ---------- List ---------- */
 
     function onListClick(e) {
-        var btn = e.target.closest('[data-fc-versions-action="view"]');
-        if (!btn || !root.contains(btn)) {
+        var row = e.target.closest('[data-fc-versions-row]');
+        if (!row || !root.contains(row)) {
             return;
         }
-        var record = recordFor(btn.getAttribute('data-id'));
+        // The version button is the keyboard path; a drag-select across the row is someone copying.
+        if (!e.target.closest('[data-fc-versions-action="view"]') && String(global.getSelection() || '').trim() !== '') {
+            return;
+        }
+        var record = recordFor(row.getAttribute('data-fc-versions-row'));
         if (record) {
             openViewer(record);
         }
@@ -123,6 +127,10 @@
     }
 
     function onDialogClick(e) {
+        // The second click of a row double-click lands here; it must not close what the first one opened.
+        if (e.detail > 1) {
+            return;
+        }
         if (e.target.closest('[data-fc-versions-close]')) {
             e.preventDefault();
             closeDialog();
