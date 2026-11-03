@@ -2158,6 +2158,15 @@ function fcSyncGateMoveControlsState() {
     if (!$moveBtns.length) {
         return;
     }
+
+    // Centre is main Slat only; in every other style Your Gate Details keeps the full width.
+    var fdCentre = null;
+    try {
+        fdCentre = getSelectedFenceData();
+    } catch (eCentre) {}
+    var offersCentre = !!fdCentre && typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(fdCentre.slug);
+    $moveBtns.filter('[data-move="centre"]').closest('.fc-gate-modal-centre').toggleClass('fc-d-none', !offersCentre);
+
     if (panelBayCount < 1) {
         $moveBtns.addClass('disabled');
         return;
@@ -2198,6 +2207,7 @@ function fcSyncGateMoveControlsState() {
 
     $moveBtns.filter('[data-move="first"], [data-move="left"]').toggleClass('disabled', !!boundary.gateAtFirst);
     $moveBtns.filter('[data-move="last"], [data-move="right"]').toggleClass('disabled', !!boundary.gateAtLast);
+    $moveBtns.filter('[data-move="centre"]').toggleClass('disabled', !offersCentre || !SlatFence.canCentreGate(fdCentre));
 }
 
 /** Selectors that receive the shared button press animation. */

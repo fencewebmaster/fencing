@@ -534,6 +534,16 @@ SlatFenceCalc = {
         return Math.max(1, midPosts + 1);
     },
 
+    /** Centre gate: an even count, half each side. One panel stays one when two would be under the narrowest gate-side panel. */
+    centredGatePanelQty: function(slug, panelQty, spanMm, postWidthMm, removedPostsMm) {
+        if (panelQty % 2 === 0) {
+            return panelQty;
+        }
+        var next = panelQty + 1;
+        var minPanelMm = parseInt(FENCE.get(slug, 'minPanelWidthOnGate'), 10) || 86;
+        return this.computeSlatPanelSpanMm(spanMm, next, postWidthMm, removedPostsMm) >= next * minPanelMm ? next : panelQty;
+    },
+
     /**
      * End posts removed via left/right "no-post", in SPAN terms (mm).
      *

@@ -2106,18 +2106,18 @@ a div {
         }
 
         #fc-control-modal .fencing-modal-area--gate .fc-move-post[data-move="delete"]:not(.disabled):hover {
-            border-color: var(--fc-brand-primary);
-            color: var(--fc-brand-primary);
-            background-color: rgba(212, 17, 47, 0.08);
-            background-color: color-mix(in srgb, var(--fc-brand-primary) 8%, transparent);
+            border-color: var(--fc-bootstrap-danger);
+            color: var(--fc-bootstrap-danger);
+            background-color: rgba(220, 53, 69, 0.08);
+            background-color: color-mix(in srgb, var(--fc-bootstrap-danger) 8%, transparent);
         }
     }
 
     #fc-control-modal .fencing-modal-area--gate .fc-move-post[data-move="delete"]:not(.disabled):active,
     #fc-control-modal .fencing-modal-area--gate .fc-move-post[data-move="delete"].is-pressed:not(.disabled) {
-        border-color: var(--fc-brand-primary);
-        background-color: rgba(212, 17, 47, 0.14);
-        background-color: color-mix(in srgb, var(--fc-brand-primary) 14%, transparent);
+        border-color: var(--fc-bootstrap-danger);
+        background-color: rgba(220, 53, 69, 0.14);
+        background-color: color-mix(in srgb, var(--fc-bootstrap-danger) 14%, transparent);
     }
 
     /* Note and info type follows Step 02's Measurement Guide: a 12px uppercase name over
@@ -5626,8 +5626,20 @@ thead.fc-border th:last-child {
     text-transform: uppercase;
 }
 
+/* Red on every site: --fc-brand-primary is green on some of them. */
 .fc-move-post[data-move=delete] p span {
-    color: var(--fc-brand-primary);
+    color: var(--fc-bootstrap-danger);
+}
+
+/* Under 768px: the drawer's red hover and press rules above sit in a min-width block. */
+.fc-move-post[data-move=delete]:hover {
+    border-color: var(--fc-bootstrap-danger);
+}
+
+.fc-move-post[data-move=delete]:not(.disabled):active,
+.fc-move-post[data-move=delete].is-pressed:not(.disabled) {
+    border-color: var(--fc-bootstrap-danger);
+    background-color: rgba(220, 53, 69, 0.1);
 }
 
 .fencing-btn-modal {
@@ -6410,6 +6422,16 @@ thead.fc-border th:last-child {
     .fencing-modal--v2 .fencing-modal-area--gate .fc-move-post p {
         font-size: 12px;
     }
+}
+
+/* Slat's Equal Panels box: the Centre button stands at its foot, level with the foot of Your Gate Details beside it. */
+.fc-gate-modal-centre .alert {
+    display: flex;
+    flex-direction: column;
+}
+
+.fc-gate-modal-centre .fc-move-post {
+    margin-top: auto;
 }
 
 /* Gate Width pair: CUSTOM runs to two lines, so pass the row's height down to both tiles and
@@ -21245,11 +21267,6 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
     display: none;
 }
 
-/* That latch is on the centre line at hand height, where the centred gate label sat; the label drops to the foot. */
-.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) .fencing-panel-gate:has(> .double-gate) > .fencing-panel-item-size {
-    align-self: flex-end;
-}
-
 /* ===== Slat gate leaves ===== */
 
 /* SlatFence.renderGateLeaves draws the gate to scale and its leaves carry the slats and frames, so the gate box goes bare. */
@@ -21260,6 +21277,58 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 
 .fencing-panel-gate.fc-slat-gate-drawn > .double-gate {
     display: none;
+}
+
+/* A double labels each leaf, so the shared label box goes bare; the opening it holds is only there for panel-dimensions.js. */
+.fencing-panel-gate.fc-slat-gate--double > .fencing-panel-item-size {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    background: none;
+    border: 0;
+}
+
+.fencing-panel-gate.fc-slat-gate--double .fc-gate-width {
+    display: none;
+}
+
+/* 3px off each leaf's centre, away from the latch where they meet; a STD 975 leaf has no more room than that. */
+.fc-slat-gate--double .fc-slat-gate-label {
+    position: absolute;
+    top: 50%;
+    left: calc(25% - 3px);
+    transform: translate(-50%, -50%);
+    width: max-content;
+    max-width: calc(50% - 2px);
+    padding: 2px 4px;
+    font-size: 10px;
+    line-height: 13px;
+    text-align: center;
+    color: var(--fc-white);
+    background: var(--fc-princeton-orange);
+    border: 1px solid var(--fc-princeton-orange);
+    border-radius: 3px;
+}
+
+.fc-slat-gate--double .fc-slat-gate-label--right {
+    left: calc(75% + 3px);
+}
+
+/* Narrower leaves wrap the label to the leaf's width, so it drops below the latch in smaller type. */
+.fc-slat-gate--double.fc-slat-gate--narrow .fc-slat-gate-label {
+    top: auto;
+    bottom: 6px;
+    left: 25%;
+    transform: translateX(-50%);
+    padding: 1px;
+    font-size: 9px;
+    line-height: 11px;
+}
+
+.fc-slat-gate--double.fc-slat-gate--narrow .fc-slat-gate-label--right {
+    left: 75%;
 }
 
 /* A double's leaves stand the latch gap apart; the ground shows through it as it does between the slats. */

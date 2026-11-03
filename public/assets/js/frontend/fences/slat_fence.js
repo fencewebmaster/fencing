@@ -3890,6 +3890,79 @@ SlatFence = {
         return this.getCalcGateSpanMm(slug, gateSize, gate_data, post_panel) + gatePostGaps;
     },
 
+    /** The customer pressed Centre on this gate. Main Slat only. */
+    isGateCentred: function(slug, gate_data) {
+        return this.isMainSlatSlug(slug) && gate_data?.[0]?.settings?.centred === true;
+    },
+
+    /** Panel a centred gate follows, from the panels actually laid; null when it isn't centred. */
+    getCentredGatePlacement: function(slug, gate_data, panelCount) {
+        if (!this.isGateCentred(slug, gate_data) || !(panelCount > 0)) {
+            return null;
+        }
+        return Math.ceil(panelCount / 2) - 1;
+    },
+
+    /** Centre button: Even panels only (Full lays stock bays), not already centred, room for a panel each side. */
+    canCentreGate: function(fd) {
+        var gate_data = (fd?.info || []).filter(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        if (!gate_data.length || !this.isMainSlatSlug(fd.slug) || this.isGateCentred(fd.slug, gate_data)) {
+            return false;
+        }
+        var calc = calculate_fences();
+        if (String(calc?.selected_values?.panel_option || '').includes('full')) {
+            return false;
+        }
+        var count = this.slatPanelCountFromCalc(calc);
+        if (count !== 1) {
+            return count > 1;
+        }
+        return this.centredGatePanelQty(fd.slug, 1, calc.long_panel.length, FENCE.get(fd.slug, 'post'), 0) === 2;
+    },
+
+    /** Moves that change a centred run's panel count: pressing Centre, or any move off it. */
+    isCentreGateMove: function(slug, gate_data, move) {
+        if (!this.isMainSlatSlug(slug)) {
+            return false;
+        }
+        return move === 'centre' ||
+            (this.isGateCentred(slug, gate_data) && ['first', 'left', 'right', 'last'].includes(move));
+    },
+
+    /** Stored, not moved in the drawing: the count changes too, and a bay from the old count may not exist on the new run. */
+    persistCentreGateMove: function(fd, move, panelCount) {
+        var cf = readCustomFenceSegment(fd.tab, fd.slug);
+        var row = (Array.isArray(cf) ? cf : []).find(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        if (!row) {
+            return;
+        }
+        var key = 'custom_fence-' + fd.tab + '-' + fd.slug;
+        row.settings = row.settings || {};
+        if (move === 'centre') {
+            row.settings.centred = true;
+        } else {
+            delete row.settings.centred;
+        }
+        localStorage.setItem(key, JSON.stringify(cf));
+
+        var from = Math.ceil(panelCount / 2) - 1;
+        var count = this.slatPanelCountFromCalc(calculate_fences());
+        var placement = {
+            centre: Math.ceil(count / 2) - 1,
+            first: -1,
+            left: from - 1,
+            right: Math.min(from + 1, count - 1),
+            last: count - 1
+        }[move];
+        row.settings.placement = placement;
+        row.settings.position = placement < 0 ? 'first' : placement >= count - 1 ? 'last' : 'middle';
+        localStorage.setItem(key, JSON.stringify(cf));
+    },
+
     /** Remaining infill span (mm) after gate + raked — uses effective overall (display + width-dimension offset). */
     getSlatInfillSpanMm: function(slug, rawDisplayMm, gateSpanC8, rakedLeft, rakedRight, custom_fence, custom_fence_tab) {
         if (!this.isMainSlatSlug(slug)) {
@@ -4562,7 +4635,6 @@ SlatFence = {
             return item.key === 'gate_type';
         })?.val || 'single';
 
-        var gateTypeLabel = (gateTypeSlug === 'double') ? 'Double' : 'Single';
         var displayGateWidthMm = this.getGateOpeningWidthMm(slug, gate_data, calc);
         if (!Number.isFinite(displayGateWidthMm) || displayGateWidthMm <= 0) {
             displayGateWidthMm = 0;
@@ -4574,16 +4646,25 @@ SlatFence = {
                 ? String(Math.round(gateHeightMm)) + 'H<br>'
                 : '';
 
-        // The opening stays first: panel-dimensions.js reads the first "…mm" for the width line over the gate.
-        // A double's label sits at its foot under the latch, so its type and height share a line.
-        var leafMm = this.getGateLeafWidthMm(slug, gate_data, calc);
-        var isDouble = gateTypeSlug === 'double';
-        var leavesLine = isDouble && leafMm > 0 ? '2 × ' + leafMm + panel_unit + '<br>' : '';
+        // The opening stays first: panel-dimensions.js reads the first "…W", then "…mm", for the width line over the gate.
         var hdLine = this.isSlatHeavyDutyRailGate(gate_data) ? '<br>HD RAILS' : '';
+        var labelHtml = 'Single<br>' + gateHeightLine + '<span class="fc-gate-width">' + displayGateWidthMm + panel_unit + '<br></span> ' + panel_name + hdLine;
 
-        $gate
-            .find('.fencing-panel-item-size')
-            .html(gateTypeLabel + (isDouble && gateHeightLine ? ' ' : '<br>') + gateHeightLine + '<span class="fc-gate-width">' + displayGateWidthMm + panel_unit + '<br></span> ' + leavesLine + panel_name + hdLine);
+        // A double labels each leaf. Its opening is written in W, or the leaves' own "…W" would win that read.
+        if (gateTypeSlug === 'double') {
+            var leafMm = this.getGateLeafWidthMm(slug, gate_data, calc);
+            var leafSize = [
+                gateHeightMm > 0 ? Math.round(gateHeightMm) + 'H' : '',
+                leafMm > 0 ? leafMm + 'W' : ''
+            ].filter(Boolean).join(' × ');
+            labelHtml = '<span class="fc-gate-width">' + displayGateWidthMm + 'W </span>' + ['Left', 'Right'].map(function(side) {
+                return '<span class="fc-slat-gate-label fc-slat-gate-label--' + side.toLowerCase() + '">' +
+                    side + ' Gate<br>' + leafSize + '<br>' + panel_name + hdLine +
+                '</span>';
+            }).join('');
+        }
+
+        $gate.find('.fencing-panel-item-size').html(labelHtml);
 
         $gate.find('.double-gate').remove();
         if (gateTypeSlug === 'double') {
@@ -4606,7 +4687,7 @@ SlatFence = {
     renderGateLeaves: function($gate, slug, gate_data, calc) {
         $gate = $($gate);
         $gate.children('.fc-slat-gate').remove();
-        $gate.removeClass('fc-slat-gate-drawn fc-slat-gate--double fc-slat-gate--hd fc-slat-gate--centre-line');
+        $gate.removeClass('fc-slat-gate-drawn fc-slat-gate--double fc-slat-gate--narrow fc-slat-gate--hd fc-slat-gate--centre-line');
         if (!$gate.length || !this.isMainSlatSlug(slug)) {
             return;
         }
@@ -4645,6 +4726,8 @@ SlatFence = {
             .css({ width: spanMm * scale + 'px', maxWidth: spanMm * scale + 'px' })
             .addClass('fc-slat-gate-drawn')
             .toggleClass('fc-slat-gate--double', isDouble)
+            // Under a STD 975 leaf, its label can't clear the latch at mid height (style.css).
+            .toggleClass('fc-slat-gate--narrow', isDouble && (spanMm * scale - meetPx) / 2 < 97)
             .toggleClass('fc-slat-gate--hd', hd)
             .toggleClass('fc-slat-gate--centre-line', centreLine)
             .prepend(

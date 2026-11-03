@@ -84,9 +84,25 @@ use Fc\Admin\Services\AppConfigService;
     </div>
 </div>
 
-<div class="alert alert-gray mb-2 mb-0">
-    <div class="text-uppercase fw-bold text-dark mb-2">
-        <i class="fa-solid fa-circle-exclamation me-1"></i> {{gateDetailsTitle}}
+<div class="row g-2 mb-2">
+    <div class="col-md col-12 px-1">
+        <div class="alert alert-gray mb-0 h-100">
+            <div class="text-uppercase fw-bold text-dark mb-2">
+                <i class="fa-solid fa-circle-exclamation me-1"></i> {{gateDetailsTitle}}
+            </div>
+            <p class="text-secondary small mb-0">{{gateDetailsDescription}}</p>
+        </div>
     </div>
-    <p class="text-secondary small mb-0">{{gateDetailsDescription}}</p>
+    <div class="col-md-5 col-12 px-1 fc-gate-modal-centre fc-d-none">
+        <div class="alert alert-gray mb-0 h-100">
+            <div class="text-uppercase fw-bold text-dark mb-2">
+                <i class="fa-solid fa-circle-info me-1"></i> Equal Panels
+            </div>
+            <p class="text-secondary small mb-2">Equal panels on both sides of the gate. May add 1 panel and 1 post.</p>
+            <div class="fc-move-post fc-text-center" data-move="centre">
+                <p><span><i class="fa-solid fa-arrows-left-right-to-line"></i></span>
+                Centre</p>
+            </div>
+        </div>
+    </div>
 </div>

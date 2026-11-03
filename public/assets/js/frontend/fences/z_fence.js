@@ -1198,6 +1198,11 @@ FENCE = {
             'unit': FENCES.defaultValues.unit
         }
 
+        // This rewrites the whole row, so Slat's Centre choice has to be carried across.
+        if (gateRowPrev?.settings?.centred) {
+            settings.centred = true;
+        }
+
         if( $('[data-key="gate"] .fc-form-field:visible').length ) {
 
             settings.fields = $('.fc-form-field:visible').map(function() {
@@ -1343,6 +1348,11 @@ FENCE = {
 
         if(find_gate.length) {
             placement = find_gate[0]?.settings?.placement;
+            // Slat Centre: the middle of the panels this render laid, not a bay stored at an older length.
+            var centredPlacement = SlatFence.getCentredGatePlacement(i, find_gate, panel_count);
+            if (centredPlacement !== null) {
+                placement = centredPlacement;
+            }
         } else {
             placement = 0;
         }
@@ -1907,7 +1917,12 @@ FENCE = {
             return;
         }
 
-        if (glassPoolPlacementDrive && (move === 'left' || move === 'right')) {
+        // Slat Centre changes the panel count too, so it is stored below and the render lays both.
+        var slatCentreMove = !!fdMoveGate && SlatFence.isCentreGateMove(fdMoveGate.slug, gate_data, move);
+
+        if (slatCentreMove) {
+            // Nothing to move in the drawing.
+        } else if (glassPoolPlacementDrive && (move === 'left' || move === 'right')) {
             var nextGlassPl =
                 typeof fcGlassPoolGatePlacementStep === 'function'
                     ? fcGlassPoolGatePlacementStep(curGlassPl, move, panel_count)
@@ -2162,6 +2177,10 @@ FENCE = {
         }
 
         FENCE.call('update_custom_fence_gate');
+
+        if (slatCentreMove) {
+            SlatFence.persistCentreGateMove(fdMoveGate, move, panel_count);
+        }
 
         FENCE.call('near_gate_spacing');
 

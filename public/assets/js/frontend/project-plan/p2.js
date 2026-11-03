@@ -1059,6 +1059,15 @@ let ProjectPlan = {
 
         if (find_gate.length) {
             placement = find_gate[0]?.settings?.placement;
+            // Slat Centre, as update_gate: the middle of the panels this plan laid.
+            var centredPlacement = SlatFence.getCentredGatePlacement(
+                i,
+                find_gate,
+                $('#pp-' + tab + ' .panel-item:not(.fencing-panel-gate,.fencing-raked-panel,.extra-panel-item)').length
+            );
+            if (centredPlacement !== null) {
+                placement = centredPlacement;
+            }
         } else {
 
             placement = 0;
