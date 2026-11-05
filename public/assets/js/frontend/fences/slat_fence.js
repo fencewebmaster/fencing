@@ -1303,14 +1303,15 @@ SlatFence = {
      *
      * Besides the slat count it also carries the section's FSQ metre quantities so
      * pooledSlatMetreQtyForSection() can round them once per job: `slatM` (cut slat metres —
-     * fence and raked panels only; gate blades are a piece-count SKU) and `sfsM` (side-frame
-     * metres over the SFS-framed panels, cut at panel height − sfs_length_deduction_mm).
+     * fence and raked panels only) and `sfsM` (side-frame metres over the SFS-framed panels, cut
+     * at panel height − sfs_length_deduction_mm). `spacerSlats` leaves the gate out and `gate`
+     * holds its own quantities (computeSlatGateBom), as the old form keeps them apart.
      *
      * @return {{style: string, gapKey: (number|null), sizeKey: (number|null), slats: number,
-     *           slatM: number, sfsM: number}}
+     *           slatM: number, sfsM: number, spacerSlats: number, gate: (Object|null)}}
      */
     slatSectionSlatCountFromStorage: function(sectionIndex) {
-        var out = { style: '', gapKey: null, sizeKey: null, slats: 0, slatM: 0, sfsM: 0 };
+        var out = { style: '', gapKey: null, sizeKey: null, slats: 0, slatM: 0, sfsM: 0, spacerSlats: 0, gate: null };
 
         var tabRow0 = null;
         try {
@@ -1378,16 +1379,18 @@ SlatFence = {
                 }
                 addCutM(panels, openW);
                 out.sfsM = (2 * panels * sfsLenMm) / 1000;
+                out.spacerSlats = rows * panels;
             }
         } else {
-            // calculate_fences() is pure and storage-first for widths; gate leaves are counted at the
-            // fence row count (per-section gate height lives in the modal DOM, not storage).
+            // Held to the section's saved length: see readSlatRawOverallMm().
             var calc = null;
+            this.slatReadingSavedSection = true;
             try {
                 if (typeof calculate_fences === 'function') {
                     calc = calculate_fences({ tab: sectionIndex, item: style });
                 }
             } catch (e2) {}
+            this.slatReadingSavedSection = false;
             var framedPanels = this.slatPanelCountFromCalc(calc);
             panels = framedPanels;
             addCutM(calc?.long_panel?.count, calc?.long_panel?.length);
@@ -1399,6 +1402,10 @@ SlatFence = {
             if (calc?.right_raked?.width) {
                 panels += 1;
                 addCutM(1, calc.right_raked.width);
+            }
+            out.spacerSlats = rows * panels;
+            if (typeof readCustomFenceSegment === 'function') {
+                out.gate = this.slatGateBomFromControls(style, readCustomFenceSegment(sectionIndex, style), tabRow0, calc);
             }
             if (calc?.gate?.count && calc?.gate?.width) {
                 panels += Math.max(1, parseInt(calc.gate.count, 10) || 1);
@@ -4285,6 +4292,10 @@ SlatFence = {
                               panelPitch.gapPitch
                           )
                         : null;
+                if (rows !== null && panelEl.closest && panelEl.closest('.fencing-panel-gate')) {
+                    var gateRows = SlatFence.slatGateRowsForDisplay(info?.slug, custom_fence, extraCtx.tabInfo?.[0], calc, labelHeightMm, panelPitch.sizePitch, mm);
+                    rows = gateRows === null ? rows : gateRows;
+                }
 
                 label.innerHTML = rows !== null
                     ? 'Gap: ' + gapDisp + 'mm<br>Size: ' + slatSizeMm + 'mm<br>Rows: ' + rows
@@ -5037,9 +5048,17 @@ SlatFence = {
      * Raw Step 2 overall (measurement box) before width-dimension offset — used for Slat panel layout.
      */
     readSlatRawOverallMm: function(custom_fence_tab, slug) {
+        var stored = NaN;
+        if (typeof fcReadCalculateValueForStyle === 'function' && custom_fence_tab && custom_fence_tab[0]) {
+            stored = parseInt(fcReadCalculateValueForStyle(custom_fence_tab[0], slug), 10);
+        }
+        // Pooling asks about other sections, and the box only holds the one on screen: a job billed every section at its length.
+        if (this.slatReadingSavedSection && Number.isFinite(stored)) {
+            return stored;
+        }
         var rawOv = parseInt(String($('.measurement-box-number').val() || '').replace(/,/g, ''), 10);
-        if (!Number.isFinite(rawOv) && typeof fcReadCalculateValueForStyle === 'function' && custom_fence_tab && custom_fence_tab[0]) {
-            rawOv = parseInt(fcReadCalculateValueForStyle(custom_fence_tab[0], slug), 10);
+        if (!Number.isFinite(rawOv)) {
+            rawOv = stored;
         }
         return Number.isFinite(rawOv) ? rawOv : NaN;
     },
@@ -5084,7 +5103,7 @@ SlatFence = {
 
     /**
      * Gate posts that are "Base Plated" for glue F421 (gate side). Uses Gate Options First/Second post
-     * when set; otherwise assumes two base-plated hinge posts (legacy).
+     * when set; otherwise the options of the posts the gate hangs off.
      */
     countGateBasePlatedPostsForGlue: function(calc, context) {
         var n = calc?.gate?.count;
@@ -5107,8 +5126,12 @@ SlatFence = {
                 if (gs === 'opt-1') c++;
                 return c;
             }
+            // Was a flat 2, so a Cement In gate got suggested glue and its posts lost their rods.
+            return this.slatGatePostOptions(fenceInfo, gateItem, context?.tabInfo?.[0]).filter(function(opt) {
+                return opt === 'opt-1';
+            }).length;
         } catch (e) {}
-        return 2;
+        return 0;
     },
 
     /**
@@ -5146,7 +5169,9 @@ SlatFence = {
         var postAgg = this.aggregatePostOptQtyFromCart(array, context);
         var byOpt = postAgg.byOpt;
         // FSQ M63 num 1 = Base Plated, 2 = Cement In, 3 = Wall Fix (see form MCQ 63 export).
-        var baseFencePosts = byOpt[1] || 0;
+        var gateBasePosts = this.countGateBasePlatedPostsForGlue(calc, context);
+        // A gate's base-plated posts bill their plates but no rods (F763 = F422 + F240 + F342), so they count apart.
+        var baseFencePosts = Math.max(0, (byOpt[1] || 0) - gateBasePosts);
         var wallFixFencePosts = byOpt[3] || 0;
         var cementPosts = byOpt[2] || 0;
         var coreDrilledPosts = byOpt[4] || 0;
@@ -5158,7 +5183,6 @@ SlatFence = {
                 addOptional('slat_fixings+thread_rods', threadRodPosts);
             }
 
-            var gateBasePosts = this.countGateBasePlatedPostsForGlue(calc, context);
             // FSQ: F241 = ceil(F240/4), F421 = F420/4, SOUD qty = round(F421+F241) (integerQty uses Math.round).
             var f240 = baseFencePosts;
             var f241 = f240 === 0 ? 0 : Math.ceil(f240 / 4);
@@ -5198,31 +5222,17 @@ SlatFence = {
             addOrInc('slat_post+135_adapter', postOptionLines.adapters);
         }
 
-        var gateHm = this.isSlatLike(fenceKind) && this.isMainSlatSlug(fenceKind)
-            ? this.resolveGateSlatHeightMm(context, calc)
-            : fenceHm;
-        if (!Number.isFinite(gateHm) || gateHm <= 0) {
-            gateHm = fenceHm;
-        }
-
         var panelCountFence = this.slatPanelCountFromCalc(calc);
         if (isSlatInfill) {
             var infillPanels = this.slatInfillEffectivePanelCount(context, calc);
             if (infillPanels > 0) panelCountFence = infillPanels;
         }
-        var panelCountGate = 0;
-        if (!isSlatInfill && calc?.gate?.count && calc?.gate?.width) {
-            panelCountGate = Math.max(1, parseInt(calc.gate.count, 10) || 1);
-        }
-        if (!isSlatInfill && panelCountFence < 1 && this.isSlatGateOnly(context) && panelCountGate > 0) {
-            panelCountFence = 0;
-        }
-        var panelCount = panelCountFence + panelCountGate;
+        // Fence panels only: the old form never frames a gate in SFS (F238, F239).
+        var panelCount = panelCountFence;
         if (panelCount > 0) {
             // FSQ F238/F524 cut side frames at (panel height − 6), not the entered fence height,
             // and round the metres ONCE on the job total — so fence rails pool across sections
-            // (same largest-remainder split as spacer packs). Gate frames keep the per-section
-            // ceil: the old form never framed gates in SFS, so there is no legacy total to match.
+            // (same largest-remainder split as spacer packs).
             var pitchForSfs = this.resolveSlatPanelPitchInputs(context, fenceKind);
             var sfsLenMm = Math.max(
                 0,
@@ -5251,9 +5261,7 @@ SlatFence = {
                 );
                 railFenceQty = pooledRailQty === null ? Math.round(railFenceM) : pooledRailQty;
             }
-            var railGateQty =
-                panelCountGate > 0 ? Math.ceil((2 * panelCountGate * gateHm) / 1000) : 0;
-            var railQty = railFenceQty + railGateQty;
+            var railQty = railFenceQty;
 
             // End caps close both ends of the two side frames on every panel — 4 pieces per panel —
             // ordered in packs (XPL-EP-*-2PK = 2 pieces). Same rule for Slat and Slat Infill; the old
@@ -5406,7 +5414,6 @@ SlatFence = {
         }
 
         var panelCountFence = 0;
-        var panelCountGate = 0;
 
         if (isSlatInfillOpenings) {
             panelCountFence = this.slatInfillEffectivePanelCount(context, calc);
@@ -5418,12 +5425,7 @@ SlatFence = {
             if (calc.right_raked?.width) {
                 panelCountFence += 1;
             }
-            if (calc.gate?.count && calc.gate?.width) {
-                panelCountGate = Math.max(1, parseInt(calc.gate.count, 10) || 1);
-            }
         }
-
-        var panelCount = panelCountFence + panelCountGate;
 
         var sizeKey = slatSize >= 80 ? 90 : 65;
         var gapKey = this.gapMmToSpacerCatalogKey(slatGap);
@@ -5473,11 +5475,12 @@ SlatFence = {
                 ? normalizeFenceStyleSlug(fenceSlug)
                 : fenceSlug;
 
-        // Fence infill slats vs gate leaf: only 65mm has a distinct gate-blade SKU in catalog (slat_gate+blade_65).
         var slatPiecesFence =
             rowCountFence > 0 && panelCountFence > 0 ? rowCountFence * panelCountFence : 0;
-        var slatQtyGateLeaf =
-            rowCountGate > 0 && panelCountGate > 0 ? rowCountGate * panelCountGate : 0;
+        var gate = isSlatInfillOpenings
+            ? null
+            : this.slatGateBomFromControls(styleNorm, context?.fenceInfo, context?.tabInfo?.[0], calc);
+        var gateLines = gate ? this.slatGateLinesForSection(context?.tabIndex, gate) : null;
 
         // FSQ sells fence slats by the METRE of cut slat, not by piece: F214/F5 sum
         // (panel width − slat_length_deduction_mm) × rows over the panels, and the colour line
@@ -5485,7 +5488,7 @@ SlatFence = {
         // The subtotal is rounded to the old form's display precision first (see
         // slat_metre_rounding_dp): F575 re-reads F214's already-rounded text, so 18.472 m is
         // 18.5 by the time the cart line rounds it, and ships 19 rather than 18.
-        // Gate leaves stay a piece count; their blades are a separate SKU below.
+        // Gate slats join the same line (F404). Was rows x gates, which overwrote the fence's metres on 90mm.
         var slatDeduct = this.getSlatLengthDeductionMm(fenceSlug);
         var slatMetreDp = this.getSlatMetreRoundingDp(fenceSlug);
         var slatMSection = 0;
@@ -5506,35 +5509,33 @@ SlatFence = {
                 if (calc?.right_raked?.width) addCutM(1, calc.right_raked.width);
             }
         }
-        var slatQtyFence = 0;
-        if (slatMSection > 0) {
-            var pooledSlatQty = this.pooledSlatMetreQtyForSection(
+        var slatQty = 0;
+        var gateSlatMm = gate ? gate.slatMm : 0;
+        if (slatMSection > 0 || gateSlatMm > 0) {
+            var pooledSlatQty = this.pooledSlatCutQtyForSection(
                 context?.tabIndex,
                 styleNorm,
-                'slatM',
                 sizeKey,
                 slatMetreDp
             );
-            slatQtyFence =
+            slatQty =
                 pooledSlatQty === null
-                    ? Math.round(this.applySlatMetreRoundingDp(slatMSection, slatMetreDp))
+                    ? Math.round(
+                          this.applySlatMetreRoundingDp(gateSlatMm / 1000, 1) +
+                              this.applySlatMetreRoundingDp(slatMSection, slatMetreDp)
+                      )
                     : pooledSlatQty;
         }
-        if (slatQtyFence > 0) {
-            setQty('slat+' + sizeKey, slatQtyFence);
+        if (slatQty > 0) {
+            setQty('slat+' + sizeKey, slatQty);
         }
-        if (slatQtyGateLeaf > 0) {
-            if (sizeKey === 65) {
-                setQty('slat_gate+blade_65', slatQtyGateLeaf);
-            } else {
-                setQty('slat+' + sizeKey, slatQtyGateLeaf);
-            }
+        if (gateLines) {
+            setQty('slat_gate+blade_65', gateLines.blades);
         }
 
-        // FSQ consumes spacers_per_slat (2) spacers per slat (F235/F522; gate-leaf blades
-        // included), ordered in packs: packs = ceil(slats × per-slat / spacers per pack).
+        // FSQ consumes spacers_per_slat (2) spacers per fence slat (F235/F522), ordered in packs.
         // Pooled across sections — see pooledSlatSpacerPacksForSection() — so the CEILING is
-        // taken once for the whole job.
+        // taken once for the whole job, and slatSpacerPacksFromTotals() adds the gate term.
         var spacerSlug = 'slat_spacer+' + gapKey;
         var fenceSlugForPack = context?.tabInfo?.[0]?.fence || 'slat';
         var itemsPerPack = this.getPackItemsForSlug(fenceSlugForPack, spacerSlug);
@@ -5546,10 +5547,19 @@ SlatFence = {
                 gapKey,
                 itemsPerPack
             );
+            var perSlat = this.getSpacersPerSlat(fenceSlug);
             spacerPacks =
                 pooledPacks === null
-                    ? this.ceilPackQuantity(
-                          (slatPiecesFence + slatQtyGateLeaf) * this.getSpacersPerSlat(fenceSlug),
+                    ? this.slatSpacerPacksFromTotals(
+                          {
+                              fence: isSlatInfillOpenings ? 0 : slatPiecesFence * perSlat,
+                              infill: isSlatInfillOpenings ? slatPiecesFence * perSlat : 0,
+                              gateRows: gate && gate.is90 ? gate.spacerRows : 0,
+                              gates: gate ? 1 : 0,
+                              is90: sizeKey === 90,
+                              gapMm: gapKey,
+                              perSlat: perSlat
+                          },
                           itemsPerPack
                       )
                     : pooledPacks;
@@ -5558,16 +5568,8 @@ SlatFence = {
             setQty(spacerSlug, spacerPacks);
         }
 
-        // XPS gate frame kits: required for any slat gate opening (fence+gate or gate-only; was gate-only only).
-        if (calc.gate && calc.gate.count > 0) {
-            this.applySlatGateFrameHardware(array, context, calc, addOrInc, gapKey);
-        }
-
-        this.ensureSlatGateTrucloseHinge(array, context, calc, addOrInc);
-
-        var hdRailQty = this.getSlatHeavyDutyRailCartQty(context, calc);
-        if (hdRailQty > 0) {
-            addOrInc('slat_gate+hd_rail', hdRailQty);
+        if (gateLines) {
+            this.applySlatGateLines(addOrInc, gateLines, gapKey);
         }
 
         this.applySlatFormulaFixings(array, context, calc, addOrInc);
@@ -5590,91 +5592,25 @@ SlatFence = {
         }
     },
 
-    /**
-     * Any slat configuration with a gate: XPS side frames, covers, caps, frame screws (products-slat-gate.csv).
-     * Previously only ran for "Gate ONLY"; fence+gate was missing these lines.
-     */
-    applySlatGateFrameHardware: function(array, context, calc, addOrInc, gapKey) {
-        if (!calc || !(calc.gate?.count > 0)) {
-            return;
-        }
-
-        var gc = Math.max(1, parseInt(calc.gate.count, 10) || 1);
-        var gItem = (context?.fenceInfo || []).find(function(it) {
-            return it?.control_key === 'gate';
-        });
-        var fields = gItem?.settings?.fields || [];
-        var field = function(key) {
-            var f = fields.find(function(x) {
-                return x.key === key;
-            });
-            return f?.val;
-        };
-
-        var doubleGate = field('gate_type') === 'double';
-        var leafMult = doubleGate ? 2 : 1;
-
+    // A gate's lines, by the old form's TOTAL fields. Side frame and cover are metres; a double has 1 latch + 1 drop bolt.
+    applySlatGateLines: function(addOrInc, lines, gapKey) {
         // No side-frame SKU exists in the catalog for a 0mm gap — skip it entirely.
         if (gapKey > 0) {
-            addOrInc('slat_gate+side_frame_' + gapKey + 'mm', 2 * leafMult * gc);
+            addOrInc('slat_gate+side_frame_' + gapKey + 'mm', lines.sideFrames);
         }
-        addOrInc('slat_gate+frame_cover', 2 * leafMult * gc);
-        addOrInc('slat_gate+frame_cap', 2 * leafMult * gc);
-        addOrInc('slat_gate+screws_frame', gc);
-    },
-
-    /**
-     * Heavy-duty gate rails: single gate = 2, double = 4 (per gate leaf pair), scaled by gate count.
-     */
-    getSlatHeavyDutyRailCartQty: function(context, calc) {
-        if (!this.isSlatLike(context?.tabInfo?.[0]?.fence)) {
-            return 0;
-        }
-        if (!calc || !(calc.gate?.count > 0)) {
-            return 0;
-        }
-        var gItem = (context?.fenceInfo || []).find(function(it) {
-            return it?.control_key === 'gate';
-        });
-        var fields = gItem?.settings?.fields || [];
-        var heavy = fields.find(function(x) {
-            return x.key === 'heavy_duty_rails';
-        });
-        if (heavy?.val !== 'yes') {
-            return 0;
-        }
-        var gt = fields.find(function(x) {
-            return x.key === 'gate_type';
-        });
-        var leafMult = gt?.val === 'double' ? 2 : 1;
-        var gc = Math.max(1, parseInt(calc.gate.count, 10) || 1);
-        return 2 * leafMult * gc;
-    },
-
-    /**
-     * Slat / Slat Infill: default gate hardware whenever a gate is present (hinge type removed from modal).
-     * Tru-Close hinge set plus Lokk latch + handle — same scale as double/single leaves.
-     */
-    ensureSlatGateTrucloseHinge: function(array, context, calc, addOrInc) {
-        if (!this.isSlatLike(context?.tabInfo?.[0]?.fence)) {
-            return;
-        }
-        if (!calc || !(calc.gate?.count > 0)) {
-            return;
-        }
-        var gc = Math.max(1, parseInt(calc.gate.count, 10) || 1);
-        var gItem = (context?.fenceInfo || []).find(function(it) {
-            return it?.control_key === 'gate';
-        });
-        var fields = gItem?.settings?.fields || [];
-        var gt = fields.find(function(x) {
-            return x.key === 'gate_type';
-        });
-        var leafMult = gt?.val === 'double' ? 2 : 1;
-        var kitQty = gc * leafMult;
-        addOrInc('slat_gate+hinge_truclose', kitQty);
-        addOrInc('slat_gate+latch_deluxe', kitQty);
-        addOrInc('slat_gate+handle', kitQty);
+        addOrInc('slat_gate+frame_cover', lines.frameCovers);
+        addOrInc('slat_gate+frame_cap', lines.frameCaps);
+        addOrInc('slat_gate+screws_frame', lines.frameScrews);
+        addOrInc('slat_gate+hd_rail', lines.hdRails);
+        addOrInc('slat_gate+hinge_truclose', lines.hinges);
+        addOrInc('slat_gate+latch_deluxe', lines.latches);
+        addOrInc('slat_gate+handle', lines.handles);
+        addOrInc('slat_gate+drop_bolt', lines.dropBolts);
+        // 90mm gates only: QS side frame, its cover and the gate infill all run the same metres (F408, F409).
+        addOrInc('slat_qes+side_frame', lines.qesFrames);
+        addOrInc('slat_qes+side_frame_cover', lines.qesFrames);
+        addOrInc('slat_qes+gate_infill', lines.qesFrames);
+        addOrInc('slat_qes+side_frame_cap', lines.qesCaps);
     },
 
     //----------------------------------------------------------------------------------
@@ -5695,6 +5631,9 @@ SlatFence = {
             'getSlatGapPitchConfigMm', 'getSlatLengthDeductionMm', 'getSfsLengthDeductionMm',
             'getSpacersPerSlat', 'getSlatMetreRoundingDp', 'applySlatMetreRoundingDp',
             'allocatePooledPacks', 'pooledSlatSpacerPacksForSection', 'pooledSlatMetreQtyForSection',
+            'pooledSlatCutQtyForSection', 'slatSpacerPacksFromTotals', 'computeSlatGateBom',
+            'slatGatePostOptions', 'slatGateRunCountAdjustMm', 'slatGateBomFromControls', 'slatGateBomFromValues',
+            'slatGateRowsForDisplay', 'slatGateLinesForSection',
             'getSlatPanelEndAllowanceMm', 'gapSlugToPitchMm', 'countSlatPanelRowsFromMaxHeightMm',
             'computeSlatPanelHeightMmFromMaxHeight', 'computeSlatBottomGapMm',
             'countEvenPanelsFromOverallSpan', 'getRemovedEndPostsMm', 'computeSlatTotalPostsMm',

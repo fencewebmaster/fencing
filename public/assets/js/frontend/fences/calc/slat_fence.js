@@ -226,24 +226,246 @@ SlatFenceCalc = {
         var spacerSlug = 'slat_spacer+' + gapKey;
         var indexes = [];
         var weights = [];
+        var totals = { fence: 0, infill: 0, gateRows: 0, gates: 0, is90: false, gapMm: gapKey, perSlat: 2 };
         for (var i = 0; i < count; i++) {
             var s = this.slatSectionSlatCountFromStorage(i);
-            if (!this.isSlatLike(s.style) || s.gapKey !== gapKey || s.slats <= 0) continue;
+            if (!this.isSlatLike(s.style) || s.gapKey !== gapKey) continue;
             if (this.getPackItemsForSlug(s.style, spacerSlug) !== itemsPerPack) continue;
-            indexes.push(i);
             // Weigh by spacers, not slats, so a style with a different spacers_per_slat still
             // takes its true share. Identical allocation while both styles consume 2.
-            weights.push(s.slats * this.getSpacersPerSlat(s.style));
+            var perSlat = this.getSpacersPerSlat(s.style);
+            var spacers = s.spacerSlats * perSlat;
+            var gateSpacers = 0;
+            totals.perSlat = perSlat;
+            totals[s.style === 'slat_fence_infill' ? 'infill' : 'fence'] += spacers;
+            totals.is90 = totals.is90 || s.sizeKey === 90;
+            if (s.gate) {
+                totals.gates++;
+                if (s.gate.is90) {
+                    totals.gateRows += s.gate.spacerRows;
+                    gateSpacers = Math.max(0, s.gate.spacerRows * perSlat);
+                }
+            }
+            if (spacers + gateSpacers <= 0) continue;
+            indexes.push(i);
+            weights.push(spacers + gateSpacers);
         }
 
         var pos = indexes.indexOf(sectionIndex);
         if (pos < 0) return null;
 
-        var totalSpacers = 0;
-        for (var w = 0; w < weights.length; w++) totalSpacers += weights[w];
+        return this.allocatePooledPacks(weights, this.slatSpacerPacksFromTotals(totals, itemsPerPack))[pos];
+    },
 
-        var totalPacks = this.ceilPackQuantity(totalSpacers, itemsPerPack);
-        return this.allocatePooledPacks(weights, totalPacks)[pos];
+    // Packs as the old form works them out: ceil(F417 + F235 + F522). A 90mm gate orders every row of every leaf (owner, Nov 2026),
+    // where F417 counts one leaf and reads -2 rows per unused gate slot. Without one, 90mm jobs keep that sum, to match.
+    slatSpacerPacksFromTotals: function(totals, itemsPerPack) {
+        var pack = itemsPerPack > 0 ? itemsPerPack : 50;
+        var f235 = parseFloat((totals.fence / pack).toFixed(2));
+        var f522 = parseFloat((Math.ceil(totals.infill) / pack).toFixed(2));
+        var f417 = 0;
+        if (totals.gateRows > 0) {
+            return Math.ceil(parseFloat(((totals.gateRows * totals.perSlat) / pack + f235 + f522).toFixed(2)));
+        }
+        if (totals.is90) {
+            var unusedSlots = Math.max(0, this.slatFormGateSlots - totals.gates);
+            var unusedRows = this.computeSlatGateBom({ heightMm: 0, leafMm: 0, sizePitch: 90.3, gapMm: totals.gapMm, openingMm: 0 }).rows;
+            f417 = parseFloat((((totals.gateRows + unusedSlots * unusedRows) * totals.perSlat) / pack).toFixed(1));
+        }
+        return Math.max(0, Math.ceil(f417 + f235 + f522));
+    },
+
+    // Gate lines the old form has room for: G1 to G8.
+    slatFormGateSlots: 8,
+
+    // Gate blades by opening (F348), 65mm only. Above 2100 its formula has no answer, which reads 0.
+    slatGateBladeQty: function(openingMm) {
+        if (openingMm <= 1000) return 4;
+        if (openingMm <= 1200) return 5;
+        if (openingMm <= 1500) return 6;
+        return openingMm <= 2100 ? 3 : 0;
+    },
+
+    // One gate by the old form's G1 fields: rows F246, frame F247/F346, slat cut F249. Blades and HD rails count one leaf, as there.
+    computeSlatGateBom: function(g) {
+        var is90 = g.sizePitch >= 80;
+        var leaves = g.isDouble ? 2 : 1;
+        var gap = g.gapMm;
+        var face = is90 ? 90.3 : 66.5;
+        var endGap = gap === 9 ? 8 : gap;
+        var hd = g.isHd ? 2 : 0;
+        var blades = is90 ? 0 : this.slatGateBladeQty(g.openingMm);
+        var rows = is90
+            ? Math.floor((g.heightMm - 133 - gap) / (face + gap) - hd)
+            : Math.floor((g.heightMm - (3 + face + endGap + endGap)) / (face + gap)) + 1 - (blades + hd);
+        var courses = rows + blades + hd;
+        var panelMm = is90
+            ? Math.floor(133 + gap + courses * (face + gap))
+            : Math.floor(2 * endGap + (courses - 1) * gap + courses * face + 3);
+        var frameMm = Math.max(0, panelMm - 3);
+        var cutMm = Math.max(0, g.leafMm - (is90 ? 86 : 36));
+        return {
+            is90: is90,
+            gapMm: gap,
+            rows: rows,
+            slatMm: cutMm * rows * leaves,
+            bladeMm: cutMm * blades,
+            frameMm: g.heightMm > 200 ? frameMm * leaves * 2 : 0,
+            hdMm: hd * Math.max(0, g.leafMm - 80),
+            qesMm: is90 ? frameMm * leaves : 0,
+            screwUnits: hd + blades,
+            latches: 1,
+            hinges: leaves,
+            handles: leaves,
+            dropBolts: g.isDouble ? 1 : 0,
+            frameCaps: leaves * 2,
+            qesCaps: is90 ? leaves * 2 : 0,
+            spacerRows: is90 ? rows * leaves : 0
+        };
+    },
+
+    // Option of each post a gate hangs off. A section end set to No Post leaves the gate a post short.
+    slatGatePostOptions: function(controls, gateRow, tabRow) {
+        var setting = function(controlKey, key) {
+            var row = (controls || []).find(function(item) {
+                return item && item.control_key === controlKey;
+            });
+            return (Array.isArray(row?.settings) ? row.settings : []).find(function(item) {
+                return item && item.key === key;
+            })?.val;
+        };
+        var midOption = setting('post_options', 'post_option') || 'opt-1';
+        var gateOnly = !!gateRow?.settings?.gateOnly || !!tabRow?.gateOnly;
+        var position = gateRow?.settings?.position;
+        var flank = function(side, isEnd) {
+            if (!isEnd) return midOption;
+            if (setting(side + '_side', side + '_option') === 'no-post') return null;
+            return setting(side + '_side', 'post_option') || midOption;
+        };
+        return [flank('left', gateOnly || position === 'first'), flank('right', gateOnly || position === 'last')].filter(Boolean);
+    },
+
+    // The old form counts a gate run's panels on the fence's width alone (F78), which stops short of the gate's first post.
+    // Typed minus C8 still held half the offset per post past the first, so a run just past a step got one panel too many.
+    slatGateRunCountAdjustMm: function(slug, gate_data, custom_fence, custom_fence_tab) {
+        if (!gate_data || !gate_data.length || this.isGateCentred(slug, gate_data)) return 0;
+        var posts = this.slatGatePostOptions(custom_fence, gate_data[0], custom_fence_tab?.[0]).length;
+        return (this.getCalcWidthDimensionOffset(slug, custom_fence, custom_fence_tab) / 2) * Math.max(0, posts - 1);
+    },
+
+    // The gate saved in a section's controls, worked out from storage only; null when there is none.
+    slatGateBomFromControls: function(style, controls, tabRow, calc) {
+        if (!this.isMainSlatSlug(style) || !tabRow || typeof fcReadTabRowStep2Field !== 'function') return null;
+        if (!(parseInt(calc?.gate?.count, 10) > 0)) return null;
+        var gateRow = (controls || []).find(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        if (!gateRow) return null;
+
+        var field = function(key) {
+            return (gateRow.settings?.fields || []).find(function(item) {
+                return item && item.key === key;
+            })?.val;
+        };
+        var read = function(name) {
+            return fcReadTabRowStep2Field(tabRow, style, name);
+        };
+        var toMm = function(val) {
+            return parseInt(String(val === undefined || val === null ? '' : val).replace(/,/g, ''), 10);
+        };
+        var heightMm = toMm(field('gate_max_fence_height'));
+        if (!(heightMm > 0)) heightMm = toMm(read('max_fence_height'));
+        var gapMm = parseFloat(read('slat_gap'));
+        var leafMm = this.getGateLeafWidthMm(style, [gateRow], calc);
+        if (!(heightMm > 0) || !Number.isFinite(gapMm) || !(leafMm > 0)) return null;
+
+        var sizePitch = parseFloat(read('slat_size'));
+        return this.slatGateBomFromValues(style, controls, gateRow, tabRow, calc, {
+            heightMm: Math.min(heightMm, this.getGateModalFenceHeightBoundsMm().max),
+            sizePitch: Number.isFinite(sizePitch) && sizePitch > 0 ? sizePitch : 65.3,
+            gapMm: gapMm
+        });
+    },
+
+    slatGateBomFromValues: function(style, controls, gateRow, tabRow, calc, values) {
+        var fields = gateRow.settings?.fields || [];
+        var field = function(key) {
+            return fields.find(function(item) {
+                return item && item.key === key;
+            })?.val;
+        };
+        // Opening as the old form takes it (F243): over the posts' outer faces, or their centres on Center-line.
+        var reachMm = parseInt(field('width_dimension_from'), 10) === -1 ? 25 : 50;
+        var posts = this.slatGatePostOptions(controls, gateRow, tabRow);
+        var gapsMm = (this.getSetting('slat', 'gate_space_left') || 0) + (this.getSetting('slat', 'gate_space_right') || 0);
+        return this.computeSlatGateBom({
+            heightMm: values.heightMm,
+            leafMm: this.getGateLeafWidthMm(style, [gateRow], calc),
+            isDouble: this.isSlatDoubleGate([gateRow]),
+            isHd: field('heavy_duty_rails') === 'yes',
+            sizePitch: values.sizePitch,
+            gapMm: values.gapMm,
+            openingMm: this.getGateOpeningWidthMm(style, [gateRow], calc) + gapsMm + posts.length * reachMm
+        });
+    },
+
+    // Slat rows a gate's label shows (F246), from the values that drawing already resolved.
+    slatGateRowsForDisplay: function(style, controls, tabRow, calc, heightMm, sizePitch, gapMm) {
+        var gateRow = (controls || []).find(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        if (!gateRow || !this.isMainSlatSlug(style)) return null;
+        var bom = this.slatGateBomFromValues(style, controls, gateRow, tabRow, calc, {
+            heightMm: heightMm,
+            sizePitch: sizePitch,
+            gapMm: gapMm
+        });
+        return Number.isFinite(bom.rows) ? Math.max(0, bom.rows) : null;
+    },
+
+    // This section's share of each gate line: every line totals once per job, as the old form's TOTAL fields do.
+    slatGateLinesForSection: function(sectionIndex, gate) {
+        var gates = [];
+        if (Number.isFinite(sectionIndex) && typeof fcGetPersistedFenceSectionCount === 'function') {
+            var count = fcGetPersistedFenceSectionCount();
+            for (var i = 0; i < count; i++) {
+                var saved = this.slatSectionSlatCountFromStorage(i).gate;
+                if (saved) gates.push({ index: i, bom: saved });
+            }
+        }
+        if (!gates.some(function(item) { return item.index === sectionIndex; })) {
+            gates = [{ index: sectionIndex, bom: gate }];
+        }
+
+        var self = this;
+        var line = function(field, finish, pool) {
+            var list = pool || gates;
+            var weights = list.map(function(item) { return item.bom[field]; });
+            var pos = list.findIndex(function(item) { return item.index === sectionIndex; });
+            var sum = weights.reduce(function(a, b) { return a + b; }, 0);
+            return pos < 0 ? 0 : self.allocatePooledPacks(weights, finish(sum))[pos];
+        };
+        var metres = function(mm) {
+            return Math.round(self.applySlatMetreRoundingDp(mm / 1000, 1));
+        };
+        var each = function(n) {
+            return n;
+        };
+        var sameGap = gates.filter(function(item) { return item.bom.gapMm === gate.gapMm; });
+        return {
+            blades: line('bladeMm', function(mm) { return Math.ceil(mm / 1000); }),
+            sideFrames: line('frameMm', metres, sameGap),
+            frameCovers: line('frameMm', metres),
+            frameCaps: line('frameCaps', each),
+            frameScrews: line('screwUnits', function(n) { return Math.ceil((n * 2) / 10); }),
+            hdRails: line('hdMm', metres),
+            latches: line('latches', each),
+            hinges: line('hinges', each),
+            handles: line('handles', each),
+            dropBolts: line('dropBolts', each),
+            qesFrames: line('qesMm', metres),
+            qesCaps: line('qesCaps', each)
+        };
     },
 
     /**
@@ -289,6 +511,40 @@ SlatFenceCalc = {
             dp === undefined ? totalM : this.applySlatMetreRoundingDp(totalM, dp)
         );
         return this.allocatePooledPacks(weights, total)[pos];
+    },
+
+    // Cut slat line for one slat size: gate metres (F404, 1 dp) + fence metres (F214), rounded once per job.
+    pooledSlatCutQtyForSection: function(sectionIndex, styleNorm, sizeKey, dp) {
+        if (!Number.isFinite(sectionIndex) || typeof fcGetPersistedFenceSectionCount !== 'function') {
+            return null;
+        }
+        var count = fcGetPersistedFenceSectionCount();
+        if (!Number.isFinite(count) || count < 1) return null;
+
+        var indexes = [];
+        var weights = [];
+        var fenceMm = 0;
+        var gateMm = 0;
+        for (var i = 0; i < count; i++) {
+            var s = this.slatSectionSlatCountFromStorage(i);
+            if (s.style !== styleNorm || s.sizeKey !== sizeKey) continue;
+            // Whole mm, so the total rounds as the form's does. A very low gate's rows go negative and take off the total there too.
+            var sectionMm = Math.round((Number.isFinite(s.slatM) ? s.slatM : 0) * 1000);
+            var sectionGateMm = s.gate ? s.gate.slatMm : 0;
+            fenceMm += sectionMm;
+            gateMm += sectionGateMm;
+            if (sectionMm + sectionGateMm <= 0) continue;
+            indexes.push(i);
+            weights.push(sectionMm + sectionGateMm);
+        }
+
+        var pos = indexes.indexOf(sectionIndex);
+        if (pos < 0) return null;
+
+        var total = Math.round(
+            this.applySlatMetreRoundingDp(gateMm / 1000, 1) + this.applySlatMetreRoundingDp(fenceMm / 1000, dp)
+        );
+        return this.allocatePooledPacks(weights, Math.max(0, total))[pos];
     },
 
     /**

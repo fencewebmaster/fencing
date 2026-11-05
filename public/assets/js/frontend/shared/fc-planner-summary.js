@@ -681,6 +681,16 @@
                 pitch.sizePitch,
                 pitch.gapPitch
             );
+            var gateFormRows = SlatFence.slatGateRowsForDisplay(
+                slug,
+                custom_fence,
+                tabRow && tabRow[0],
+                calc,
+                gateHm,
+                pitch.sizePitch,
+                SlatFence.getGapMm(custom_fence, typeof fc_data !== 'undefined' ? fc_data[slug] : null)
+            );
+            gateSlatRows = gateFormRows === null ? gateSlatRows : gateFormRows;
             if (gateSlatRows > 0) {
                 lines.push('Slat Rows: ' + gateSlatRows);
             }

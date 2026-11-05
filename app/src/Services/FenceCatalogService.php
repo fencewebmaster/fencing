@@ -543,13 +543,39 @@ final class FenceCatalogService
             if ($rowStyle !== 'slat') {
                 continue;
             }
-            $h = self::readMaxFenceHeightMmFromFormRow($row);
+            $h = max(self::readMaxFenceHeightMmFromFormRow($row), self::readGateHeightMmFromSection($section));
             if ($h > $max) {
                 $max = $h;
             }
         }
 
         return $max;
+    }
+
+    /**
+     * Gate Height from a planner section's gate row; 0 when it has no gate. A gate taller than its fence needs the taller post.
+     *
+     * @param array<string, mixed> $section
+     */
+    private static function readGateHeightMmFromSection(array $section): int
+    {
+        $settings = $section['settings'] ?? [];
+        if (!is_array($settings)) {
+            return 0;
+        }
+        foreach ($settings as $row) {
+            if (!is_array($row) || ($row['control_key'] ?? '') !== 'gate') {
+                continue;
+            }
+            $fields = $row['settings']['fields'] ?? [];
+            foreach (is_array($fields) ? $fields : [] as $field) {
+                if (is_array($field) && ($field['key'] ?? '') === 'gate_max_fence_height') {
+                    return (int) str_replace(',', '', (string) ($field['val'] ?? ''));
+                }
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -577,11 +603,14 @@ final class FenceCatalogService
         if ($height <= 0) {
             $height = self::plannerMaxFenceHeightMmForFenceSlug($fenceSlug);
         }
-        $postCat = self::slatPostCatalogSlugFromFenceHeightMm($height);
-        if (preg_match('/^panel_post\+opt-(\d+(?:-\d+)?)(?:\+(\d+))?$/', $itemSlug)) {
-            return $postCat;
-        }
-        if (preg_match('/^raked_post\+opt-(\d+(?:-\d+)?)(?:\+(\d+))?$/', $itemSlug)) {
+        if (preg_match('/^(?:panel_post|raked_post)\+opt-(\d+)(?:-\d+)?(?:\+\d+)?$/', $itemSlug, $m)) {
+            // The old form sizes a post by what goes in the ground (F143, F145), so a Cement In 1800H needs more than an 1800 post.
+            $inGround = ['2' => 500, '4' => 250];
+            $postCat = self::slatPostCatalogSlugFromFenceHeightMm($height);
+            if (self::slatPostHeightTierMm($height) === 1800 && $height + ($inGround[$m[1]] ?? 0) > 1800) {
+                return self::slatPostCatalogSlugFromFenceHeightMm(2400);
+            }
+
             return $postCat;
         }
 

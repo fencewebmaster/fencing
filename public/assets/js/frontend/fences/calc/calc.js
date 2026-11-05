@@ -1143,7 +1143,9 @@ class FenceCalculator {
                         const slatMaxSpan = SlatFence.getMaxPanelSpanMmFromInfo(info);
                         // Count before the Width Dimension From offset, as the old planner does: after it, 2,500mm got 1 panel, not 2.
                         const slatTypedSpan =
-                            slatSpan - SlatFence.getCalcWidthDimensionOffset(i, custom_fence, custom_fence_tab);
+                            slatSpan -
+                            SlatFence.getCalcWidthDimensionOffset(i, custom_fence, custom_fence_tab) +
+                            SlatFence.slatGateRunCountAdjustMm(i, gate_data, custom_fence, custom_fence_tab);
                         const slatRunQty = SlatFence.countEvenPanelsFromOverallSpan(slatTypedSpan, slatMaxSpan, info);
                         const slatPanelQty = SlatFence.isGateCentred(i, gate_data)
                             ? SlatFence.centredGatePanelQty(i, slatRunQty, slatSpan, post_panel, slatRemovedPosts)
