@@ -11,6 +11,15 @@ SlatFence = {
             'slat_spacer+15': 50,
             'slat_spacer+20': 50,
             'slat_spacer+30': 50,
+            /** QuickScreen gate kit: QS-SPACER-*-50PK, QS-SCREWS-50PK and AR-SCR-BR-50PK. */
+            'slat_gate+qsg_spacer_5': 50,
+            'slat_gate+qsg_spacer_9': 50,
+            'slat_gate+qsg_spacer_12': 50,
+            'slat_gate+qsg_spacer_15': 50,
+            'slat_gate+qsg_spacer_20': 50,
+            'slat_gate+qsg_spacer_30': 50,
+            'slat_gate+qsg_screws': 50,
+            'slat_gate+qsg_rail_screws': 50,
             /** XPL-EP-*-2PK — pieces per retail pack (used for slat infill end-cap packs vs rail qty). */
             'sfs+end_caps': 2,
         },
@@ -4300,6 +4309,10 @@ SlatFence = {
                 label.innerHTML = rows !== null
                     ? 'Gap: ' + gapDisp + 'mm<br>Size: ' + slatSizeMm + 'mm<br>Rows: ' + rows
                     : 'Gap: ' + gapDisp + 'mm<br>Size: ' + slatSizeMm + 'mm';
+
+                if (!panelEl.classList.contains('fencing-panel-gate')) {
+                    self.syncPanelCentreRail(panelEl);
+                }
             });
 
             var hidePostValue = SlatFence.shouldHidePostValue(info);
@@ -4658,8 +4671,7 @@ SlatFence = {
                 : '';
 
         // The opening stays first: panel-dimensions.js reads the first "…W", then "…mm", for the width line over the gate.
-        var hdLine = this.isSlatHeavyDutyRailGate(gate_data) ? '<br>HD RAILS' : '';
-        var labelHtml = 'Single<br>' + gateHeightLine + '<span class="fc-gate-width">' + displayGateWidthMm + panel_unit + '<br></span> ' + panel_name + hdLine;
+        var labelHtml = 'Single<br>' + gateHeightLine + '<span class="fc-gate-width">' + displayGateWidthMm + panel_unit + '<br></span> ' + panel_name;
 
         // A double labels each leaf. Its opening is written in W, or the leaves' own "…W" would win that read.
         if (gateTypeSlug === 'double') {
@@ -4670,7 +4682,7 @@ SlatFence = {
             ].filter(Boolean).join(' × ');
             labelHtml = '<span class="fc-gate-width">' + displayGateWidthMm + 'W </span>' + ['Left', 'Right'].map(function(side) {
                 return '<span class="fc-slat-gate-label fc-slat-gate-label--' + side.toLowerCase() + '">' +
-                    side + ' Gate<br>' + leafSize + '<br>' + panel_name + hdLine +
+                    side + ' Gate<br>' + leafSize + '<br>' + panel_name +
                 '</span>';
             }).join('');
         }
@@ -4685,20 +4697,14 @@ SlatFence = {
         this.renderGateLeaves($gate, slug, gate_data, calc);
     },
 
-    isSlatHeavyDutyRailGate: function(gate_data) {
-        return (gate_data?.[0]?.settings?.fields || []).some(function(item) {
-            return item && item.key === 'heavy_duty_rails' && item.val === 'yes';
-        });
-    },
-
     /**
-     * Gate drawn to scale as the XPRESS gate is built: slats between the side frames of each leaf, a double's leaves
-     * the latch gap apart, and the 65 x 45 Heavy Duty Rails as the top and bottom members when picked.
+     * Gate drawn to scale as the QuickScreen gate is built: slats between the side frames of each leaf, a 65 or 90 rail
+     * as the top and bottom member of every leaf, and a double's leaves the latch gap apart.
      */
     renderGateLeaves: function($gate, slug, gate_data, calc) {
         $gate = $($gate);
         $gate.children('.fc-slat-gate').remove();
-        $gate.removeClass('fc-slat-gate-drawn fc-slat-gate--double fc-slat-gate--narrow fc-slat-gate--hd fc-slat-gate--centre-line');
+        $gate.removeClass('fc-slat-gate-drawn fc-slat-gate--double fc-slat-gate--narrow fc-slat-gate--centre-line');
         if (!$gate.length || !this.isMainSlatSlug(slug)) {
             return;
         }
@@ -4708,12 +4714,13 @@ SlatFence = {
             return;
         }
         var isDouble = this.isSlatDoubleGate(gate_data);
-        var hd = this.isSlatHeavyDutyRailGate(gate_data);
         var scale = parseFloat(FENCE.get('item', 'base_margin')) || 0.1;
         var meetPx = this.getDoubleGateMeetingGapMm(slug, gate_data) * scale;
-        var rails = hd
-            ? '<span class="fc-slat-gate__rail fc-slat-gate__rail--top"></span><span class="fc-slat-gate__rail fc-slat-gate__rail--bot"></span>'
-            : '';
+        var rails = '<span class="fc-slat-gate__rail fc-slat-gate__rail--top"></span><span class="fc-slat-gate__rail fc-slat-gate__rail--bot"></span>';
+        // A leaf the cart bills a centre support rail for (getCentreSupportRailCartQty) shows it down its middle.
+        if (this.getGateLeafWidthMm(slug, gate_data, calc) >= this.centreRailMinLeafMm) {
+            rails += '<span class="fc-slat-gate__csr"></span>';
+        }
         var leaf = '<span class="fc-slat-gate__leaf">' + rails + '</span>';
 
         // Width Dimension From, as the drawer card draws it: the opening measured over the gate posts' outer faces or centres.
@@ -4739,13 +4746,43 @@ SlatFence = {
             .toggleClass('fc-slat-gate--double', isDouble)
             // Under a STD 975 leaf, its label can't clear the latch at mid height (style.css).
             .toggleClass('fc-slat-gate--narrow', isDouble && (spanMm * scale - meetPx) / 2 < 97)
-            .toggleClass('fc-slat-gate--hd', hd)
             .toggleClass('fc-slat-gate--centre-line', centreLine)
             .prepend(
                 '<span class="fc-slat-gate" aria-hidden="true" style="--fc-slat-gate-meet-px: ' + meetPx + 'px">' +
                     leaf + (isDouble ? leaf : '') + measure +
                 '</span>'
             );
+    },
+
+    /** A panel or Infill opening the cart bills a centre support rail for gets it down its middle and "+ CENTRE RAIL" in its label. */
+    syncPanelCentreRail: function(panelEl) {
+        var scale = parseFloat(FENCE.get('item', 'base_margin')) || 0.1;
+        var widthMm = Math.round((parseFloat(panelEl.getAttribute('data-width')) || 0) / scale);
+        if (!widthMm) {
+            widthMm = parseInt(String(panelEl.querySelector('.fc-panel-size')?.textContent || '').replace(/[^0-9]/g, ''), 10) || 0;
+        }
+        var wants = panelEl.classList.contains('panel-item') && widthMm >= this.centreRailMinPanelMm;
+
+        var rail = panelEl.querySelector(':scope > .fc-slat-csr');
+        if (wants && !rail) {
+            rail = document.createElement('span');
+            rail.className = 'fc-slat-csr';
+            rail.setAttribute('aria-hidden', 'true');
+            panelEl.appendChild(rail);
+        } else if (!wants && rail) {
+            rail.remove();
+        }
+
+        var size = panelEl.querySelector(':scope > .fencing-panel-item-size');
+        var tag = size ? size.querySelector('.fc-slat-csr-unit') : null;
+        if (wants && size && !tag) {
+            tag = document.createElement('span');
+            tag.className = 'fc-panel-unit fc-slat-csr-unit';
+            tag.textContent = '+ CENTRE RAIL';
+            size.appendChild(tag);
+        } else if (!wants && tag) {
+            tag.remove();
+        }
     },
 
     //----------------------------------------------------------------------------------
@@ -4965,7 +5002,8 @@ SlatFence = {
             if (!m) return;
             var n = parseInt(m[1], 10);
             if (!n || n < 1 || n > 5) return;
-            var q = parseInt(item.qty, 10) || 0;
+            // A Slat Gate ONLY post is optional but still planned: grout, adapters and the summary count it.
+            var q = parseInt(item.optional ? item.suggested_qty : item.qty, 10) || 0;
             if (q <= 0) return;
             byOpt[n] += q;
             total += q;
@@ -5279,11 +5317,8 @@ SlatFence = {
             }
         }
 
-        var hasFenceBody =
-            panelCount > 0 ||
-            threadRodPosts > 0 ||
-            cementPosts > 0 ||
-            (calc?.gate?.count > 0);
+        // Fence panels only (Nov 2026): a gate's slats take the QuickScreen kit's wafer screws, so a gate alone gets no bag.
+        var hasFenceBody = panelCount > 0;
         // Slat tek screws: one bag per JOB, Slat Infill included. Infill used to be skipped here as
         // "gate/post hardware", but the product is slat self-drilling tek screws and the old eForm
         // adds one bag to every order whatever the style. pooledSlatScrewBagsForSection() puts the
@@ -5302,6 +5337,10 @@ SlatFence = {
 
     //----------------------------------------------------------------------------------
 
+    // Widths that take a centre support rail; the cart and the Step 3 drawing both read these.
+    centreRailMinPanelMm: 2000,
+    centreRailMinLeafMm: 1500,
+
     /**
      * Centre support rail (products.csv `centre_support_rail`): one per infill/opening ≥ 2000 mm,
      * and one per gate leaf whose panel width is ≥ 1500 mm (Slat + Slat Infill only).
@@ -5312,8 +5351,8 @@ SlatFence = {
             return 0;
         }
 
-        var panelMinMm = 2000;
-        var gateMinMm = 1500;
+        var panelMinMm = this.centreRailMinPanelMm;
+        var gateMinMm = this.centreRailMinLeafMm;
         var qty = 0;
 
         var addWidePanels = function(widthMm, count) {
@@ -5436,7 +5475,7 @@ SlatFence = {
         /** Row × panel lines — replace on each recalc (never accumulate). */
         var isRowPanelDerivedSlug = function(slug) {
             var s = String(slug || '');
-            return /^slat\+(65|90)$/.test(s) || s === 'slat_gate+blade_65' || /^slat_spacer\+/.test(s);
+            return /^slat\+(65|90)$/.test(s) || /^slat_spacer\+/.test(s);
         };
         array = (array || []).filter(function(item) {
             return !isRowPanelDerivedSlug(item?.slug);
@@ -5480,7 +5519,7 @@ SlatFence = {
         var gate = isSlatInfillOpenings
             ? null
             : this.slatGateBomFromControls(styleNorm, context?.fenceInfo, context?.tabInfo?.[0], calc);
-        var gateLines = gate ? this.slatGateLinesForSection(context?.tabIndex, gate) : null;
+        var gateLines = gate ? this.slatQsgGateLinesForSection(context?.tabIndex, gate, fenceSlug) : null;
 
         // FSQ sells fence slats by the METRE of cut slat, not by piece: F214/F5 sum
         // (panel width − slat_length_deduction_mm) × rows over the panels, and the colour line
@@ -5529,13 +5568,10 @@ SlatFence = {
         if (slatQty > 0) {
             setQty('slat+' + sizeKey, slatQty);
         }
-        if (gateLines) {
-            setQty('slat_gate+blade_65', gateLines.blades);
-        }
 
         // FSQ consumes spacers_per_slat (2) spacers per fence slat (F235/F522), ordered in packs.
         // Pooled across sections — see pooledSlatSpacerPacksForSection() — so the CEILING is
-        // taken once for the whole job, and slatSpacerPacksFromTotals() adds the gate term.
+        // taken once for the whole job. A gate's spacers are the QuickScreen kit's own line below.
         var spacerSlug = 'slat_spacer+' + gapKey;
         var fenceSlugForPack = context?.tabInfo?.[0]?.fence || 'slat';
         var itemsPerPack = this.getPackItemsForSlug(fenceSlugForPack, spacerSlug);
@@ -5554,7 +5590,6 @@ SlatFence = {
                           {
                               fence: isSlatInfillOpenings ? 0 : slatPiecesFence * perSlat,
                               infill: isSlatInfillOpenings ? slatPiecesFence * perSlat : 0,
-                              gateRows: gate && gate.is90 ? gate.spacerRows : 0,
                               gates: gate ? 1 : 0,
                               is90: sizeKey === 90,
                               gapMm: gapKey,
@@ -5569,7 +5604,7 @@ SlatFence = {
         }
 
         if (gateLines) {
-            this.applySlatGateLines(addOrInc, gateLines, gapKey);
+            this.applySlatQsgGateLines(addOrInc, gateLines, gate);
         }
 
         this.applySlatFormulaFixings(array, context, calc, addOrInc);
@@ -5582,6 +5617,19 @@ SlatFence = {
             setQty('centre_support_rail', centreRailQty);
         }
 
+        // Slat Gate ONLY posts, with their base plate sets and covers, are optional (requested Nov 2026).
+        // Last, so glue and grout still count the posts.
+        if (this.isSlatGateOnlyPlanner(context, calc)) {
+            array.forEach(function(item) {
+                var lineQty = parseInt(item?.qty, 10) || 0;
+                if (/^(panel_post\+|slat_post\+base_plate_(kit|cover)$)/.test(String(item?.slug || '')) && lineQty > 0) {
+                    item.optional = true;
+                    item.suggested_qty = lineQty;
+                    item.qty = 0;
+                }
+            });
+        }
+
         return array;
     },
 
@@ -5592,25 +5640,25 @@ SlatFence = {
         }
     },
 
-    // A gate's lines, by the old form's TOTAL fields. Side frame and cover are metres; a double has 1 latch + 1 drop bolt.
-    applySlatGateLines: function(addOrInc, lines, gapKey) {
-        // No side-frame SKU exists in the catalog for a 0mm gap — skip it entirely.
-        if (gapKey > 0) {
-            addOrInc('slat_gate+side_frame_' + gapKey + 'mm', lines.sideFrames);
+    // A QuickScreen gate's lines (computeSlatQsgGateBom): the kit by the metre and the pack, the rail and joiner in the slat's
+    // size, plus the hardware kept from before; a double has 1 latch + 1 drop bolt. A 0mm gap has no spacer line.
+    applySlatQsgGateLines: function(addOrInc, lines, gate) {
+        var size = gate.is90 ? '90' : '65';
+        addOrInc('slat_gate+qsg_side_frame', lines.sideFrames);
+        addOrInc('slat_gate+qsg_rail_' + size, gate.is90 ? lines.rails90 : lines.rails65);
+        addOrInc('slat_gate+qsg_infill', lines.infill);
+        addOrInc('slat_gate+qsg_cover', lines.covers);
+        addOrInc('slat_gate+qsg_joiner_' + size, gate.is90 ? lines.joiners90 : lines.joiners65);
+        if (gate.gapKey > 0) {
+            addOrInc('slat_gate+qsg_spacer_' + gate.gapKey, lines.spacers);
         }
-        addOrInc('slat_gate+frame_cover', lines.frameCovers);
-        addOrInc('slat_gate+frame_cap', lines.frameCaps);
-        addOrInc('slat_gate+screws_frame', lines.frameScrews);
-        addOrInc('slat_gate+hd_rail', lines.hdRails);
+        addOrInc('slat_gate+qsg_screws', lines.screws);
+        addOrInc('slat_gate+qsg_rail_screws', lines.railScrews);
+        addOrInc('slat_gate+qsg_cap', lines.caps);
         addOrInc('slat_gate+hinge_truclose', lines.hinges);
         addOrInc('slat_gate+latch_deluxe', lines.latches);
         addOrInc('slat_gate+handle', lines.handles);
         addOrInc('slat_gate+drop_bolt', lines.dropBolts);
-        // 90mm gates only: QS side frame, its cover and the gate infill all run the same metres (F408, F409).
-        addOrInc('slat_qes+side_frame', lines.qesFrames);
-        addOrInc('slat_qes+side_frame_cover', lines.qesFrames);
-        addOrInc('slat_qes+gate_infill', lines.qesFrames);
-        addOrInc('slat_qes+side_frame_cap', lines.qesCaps);
     },
 
     //----------------------------------------------------------------------------------
@@ -5633,7 +5681,7 @@ SlatFence = {
             'allocatePooledPacks', 'pooledSlatSpacerPacksForSection', 'pooledSlatMetreQtyForSection',
             'pooledSlatCutQtyForSection', 'slatSpacerPacksFromTotals', 'computeSlatGateBom',
             'slatGatePostOptions', 'slatGateRunCountAdjustMm', 'slatGateBomFromControls', 'slatGateBomFromValues',
-            'slatGateRowsForDisplay', 'slatGateLinesForSection',
+            'slatGateRowsForDisplay', 'computeSlatQsgGateBom', 'slatQsgGateLinesForSection',
             'getSlatPanelEndAllowanceMm', 'gapSlugToPitchMm', 'countSlatPanelRowsFromMaxHeightMm',
             'computeSlatPanelHeightMmFromMaxHeight', 'computeSlatBottomGapMm',
             'countEvenPanelsFromOverallSpan', 'getRemovedEndPostsMm', 'computeSlatTotalPostsMm',

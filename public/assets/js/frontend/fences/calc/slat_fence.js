@@ -226,7 +226,7 @@ SlatFenceCalc = {
         var spacerSlug = 'slat_spacer+' + gapKey;
         var indexes = [];
         var weights = [];
-        var totals = { fence: 0, infill: 0, gateRows: 0, gates: 0, is90: false, gapMm: gapKey, perSlat: 2 };
+        var totals = { fence: 0, infill: 0, gates: 0, is90: false, gapMm: gapKey, perSlat: 2 };
         for (var i = 0; i < count; i++) {
             var s = this.slatSectionSlatCountFromStorage(i);
             if (!this.isSlatLike(s.style) || s.gapKey !== gapKey) continue;
@@ -235,20 +235,14 @@ SlatFenceCalc = {
             // takes its true share. Identical allocation while both styles consume 2.
             var perSlat = this.getSpacersPerSlat(s.style);
             var spacers = s.spacerSlats * perSlat;
-            var gateSpacers = 0;
             totals.perSlat = perSlat;
             totals[s.style === 'slat_fence_infill' ? 'infill' : 'fence'] += spacers;
             totals.is90 = totals.is90 || s.sizeKey === 90;
-            if (s.gate) {
-                totals.gates++;
-                if (s.gate.is90) {
-                    totals.gateRows += s.gate.spacerRows;
-                    gateSpacers = Math.max(0, s.gate.spacerRows * perSlat);
-                }
-            }
-            if (spacers + gateSpacers <= 0) continue;
+            // A gate's spacers are the QuickScreen kit's own line (slatQsgGateLinesForSection); only its presence counts here.
+            if (s.gate) totals.gates++;
+            if (spacers <= 0) continue;
             indexes.push(i);
-            weights.push(spacers + gateSpacers);
+            weights.push(spacers);
         }
 
         var pos = indexes.indexOf(sectionIndex);
@@ -257,20 +251,21 @@ SlatFenceCalc = {
         return this.allocatePooledPacks(weights, this.slatSpacerPacksFromTotals(totals, itemsPerPack))[pos];
     },
 
-    // Packs as the old form works them out: ceil(F417 + F235 + F522). A 90mm gate orders every row of every leaf (owner, Nov 2026),
-    // where F417 counts one leaf and reads -2 rows per unused gate slot. Without one, 90mm jobs keep that sum, to match.
+    // Packs as the old form works them out: ceil(F417 + F235 + F522). A gate's spacers are the QuickScreen kit's own line
+    // (Nov 2026), so with a gate a 90mm job takes the fence and infill terms alone; without one it keeps the form's F417,
+    // which reads -2 rows per unused gate slot, to match.
     slatSpacerPacksFromTotals: function(totals, itemsPerPack) {
         var pack = itemsPerPack > 0 ? itemsPerPack : 50;
         var f235 = parseFloat((totals.fence / pack).toFixed(2));
         var f522 = parseFloat((Math.ceil(totals.infill) / pack).toFixed(2));
         var f417 = 0;
-        if (totals.gateRows > 0) {
-            return Math.ceil(parseFloat(((totals.gateRows * totals.perSlat) / pack + f235 + f522).toFixed(2)));
+        if (totals.is90 && totals.gates > 0) {
+            return Math.ceil(parseFloat((f235 + f522).toFixed(2)));
         }
         if (totals.is90) {
             var unusedSlots = Math.max(0, this.slatFormGateSlots - totals.gates);
             var unusedRows = this.computeSlatGateBom({ heightMm: 0, leafMm: 0, sizePitch: 90.3, gapMm: totals.gapMm, openingMm: 0 }).rows;
-            f417 = parseFloat((((totals.gateRows + unusedSlots * unusedRows) * totals.perSlat) / pack).toFixed(1));
+            f417 = parseFloat(((unusedSlots * unusedRows * totals.perSlat) / pack).toFixed(1));
         }
         return Math.max(0, Math.ceil(f417 + f235 + f522));
     },
@@ -287,6 +282,7 @@ SlatFenceCalc = {
     },
 
     // One gate by the old form's G1 fields: rows F246, frame F247/F346, slat cut F249. Blades and HD rails count one leaf, as there.
+    // Kept for slatSpacerPacksFromTotals' unused-slot rows only; the gate's own lines come from computeSlatQsgGateBom.
     computeSlatGateBom: function(g) {
         var is90 = g.sizePitch >= 80;
         var leaves = g.isDouble ? 2 : 1;
@@ -321,6 +317,50 @@ SlatFenceCalc = {
             frameCaps: leaves * 2,
             qesCaps: is90 ? leaves * 2 : 0,
             spacerRows: is90 ? rows * leaves : 0
+        };
+    },
+
+    /**
+     * One gate as the QuickScreen kit is built (supplier catalogue, Nov 2026): two 50 x 50 side frames the gate's height, a 65
+     * or 90 rail top and bottom, the slats between them, infill and screw cover by the metre, one joiner pack and two caps per
+     * leaf, snap-in spacers and a wafer screw at each slat end. Rows are what fits between the rails, rounded down - a slat
+     * that can't go in is never ordered, and what's left over becomes the two end gaps. Lengths are mm; the job-wide metre
+     * and pack ceilings are taken in slatQsgGateLinesForSection.
+     */
+    computeSlatQsgGateBom: function(g) {
+        var is90 = g.sizePitch >= 80;
+        var leaves = g.isDouble ? 2 : 1;
+        var railMm = is90 ? 90 : 65;
+        var heightMm = g.heightMm > 0 ? g.heightMm : 0;
+        var leafMm = g.leafMm > 0 ? g.leafMm : 0;
+        var pitch = g.sizePitch + g.gapPitch;
+        var space = heightMm - 2 * railMm;
+        var rows = space > 0 && pitch > 0 ? Math.floor(space / pitch + 1e-9) : 0;
+        var perSlat = g.spacersPerSlat > 0 ? g.spacersPerSlat : 2;
+        var live = heightMm > 0 && leafMm > 0;
+        var sideFrameMm = live ? 2 * heightMm * leaves : 0;
+        var railsMm = live ? 2 * leafMm * leaves : 0;
+        return {
+            is90: is90,
+            gapMm: g.gapMm,
+            gapKey: g.gapKey,
+            rows: rows,
+            leaves: leaves,
+            slatMm: rows * leafMm * leaves,
+            sideFrameMm: sideFrameMm,
+            railMm: railsMm,
+            infillMm: railsMm,
+            coverMm: sideFrameMm + railsMm,
+            joiners: live ? leaves : 0,
+            spacers: g.gapKey > 0 ? rows * perSlat * leaves : 0,
+            screws: rows * 2 * leaves,
+            // Rail screws fix a leaf's 4 joiner blocks to its side frames, 2 a block (assumed; added on request Nov 2026).
+            railScrews: live ? 8 * leaves : 0,
+            caps: live ? leaves * 2 : 0,
+            latches: 1,
+            hinges: leaves,
+            handles: leaves,
+            dropBolts: g.isDouble ? 1 : 0
         };
     },
 
@@ -388,24 +428,17 @@ SlatFenceCalc = {
     },
 
     slatGateBomFromValues: function(style, controls, gateRow, tabRow, calc, values) {
-        var fields = gateRow.settings?.fields || [];
-        var field = function(key) {
-            return fields.find(function(item) {
-                return item && item.key === key;
-            })?.val;
-        };
-        // Opening as the old form takes it (F243): over the posts' outer faces, or their centres on Center-line.
-        var reachMm = parseInt(field('width_dimension_from'), 10) === -1 ? 25 : 50;
-        var posts = this.slatGatePostOptions(controls, gateRow, tabRow);
-        var gapsMm = (this.getSetting('slat', 'gate_space_left') || 0) + (this.getSetting('slat', 'gate_space_right') || 0);
-        return this.computeSlatGateBom({
+        // The row pitch is the fence's (slat_gap_pitch_mm: a 20mm spacer sits at 21.1), so a gate beside a panel spaces alike.
+        var gapPitch = this.gapSlugToPitchMm(String(values.gapMm), style);
+        return this.computeSlatQsgGateBom({
             heightMm: values.heightMm,
             leafMm: this.getGateLeafWidthMm(style, [gateRow], calc),
             isDouble: this.isSlatDoubleGate([gateRow]),
-            isHd: field('heavy_duty_rails') === 'yes',
             sizePitch: values.sizePitch,
             gapMm: values.gapMm,
-            openingMm: this.getGateOpeningWidthMm(style, [gateRow], calc) + gapsMm + posts.length * reachMm
+            gapKey: this.gapMmToSpacerCatalogKey(values.gapMm),
+            gapPitch: Number.isFinite(gapPitch) ? gapPitch : values.gapMm,
+            spacersPerSlat: this.getSpacersPerSlat(style)
         });
     },
 
@@ -423,8 +456,9 @@ SlatFenceCalc = {
         return Number.isFinite(bom.rows) ? Math.max(0, bom.rows) : null;
     },
 
-    // This section's share of each gate line: every line totals once per job, as the old form's TOTAL fields do.
-    slatGateLinesForSection: function(sectionIndex, gate) {
+    // This section's share of each QuickScreen gate line: metres and packs total once over the job's gates, as the fence's
+    // own lines do, and each section gets its largest-remainder share so the lines still add up to the job total.
+    slatQsgGateLinesForSection: function(sectionIndex, gate, fenceSlug) {
         var gates = [];
         if (Number.isFinite(sectionIndex) && typeof fcGetPersistedFenceSectionCount === 'function') {
             var count = fcGetPersistedFenceSectionCount();
@@ -445,26 +479,41 @@ SlatFenceCalc = {
             var sum = weights.reduce(function(a, b) { return a + b; }, 0);
             return pos < 0 ? 0 : self.allocatePooledPacks(weights, finish(sum))[pos];
         };
+        // Whole metres, rounded up once: the store's CTS products sell by the metre.
         var metres = function(mm) {
-            return Math.round(self.applySlatMetreRoundingDp(mm / 1000, 1));
+            return Math.ceil(mm / 1000 - 1e-9);
+        };
+        var packs = function(slug) {
+            var per = self.getPackItemsForSlug(fenceSlug, slug);
+            return function(n) {
+                return Math.ceil(n / per - 1e-9);
+            };
         };
         var each = function(n) {
             return n;
         };
-        var sameGap = gates.filter(function(item) { return item.bom.gapMm === gate.gapMm; });
+        var where = function(test) {
+            return gates.filter(function(item) { return test(item.bom); });
+        };
+        var size65 = where(function(b) { return !b.is90; });
+        var size90 = where(function(b) { return b.is90; });
+        var sameGap = where(function(b) { return b.gapKey === gate.gapKey; });
         return {
-            blades: line('bladeMm', function(mm) { return Math.ceil(mm / 1000); }),
-            sideFrames: line('frameMm', metres, sameGap),
-            frameCovers: line('frameMm', metres),
-            frameCaps: line('frameCaps', each),
-            frameScrews: line('screwUnits', function(n) { return Math.ceil((n * 2) / 10); }),
-            hdRails: line('hdMm', metres),
+            sideFrames: line('sideFrameMm', metres),
+            rails65: line('railMm', metres, size65),
+            rails90: line('railMm', metres, size90),
+            infill: line('infillMm', metres),
+            covers: line('coverMm', metres),
+            joiners65: line('joiners', each, size65),
+            joiners90: line('joiners', each, size90),
+            spacers: line('spacers', packs('slat_gate+qsg_spacer_' + gate.gapKey), sameGap),
+            screws: line('screws', packs('slat_gate+qsg_screws')),
+            railScrews: line('railScrews', packs('slat_gate+qsg_rail_screws')),
+            caps: line('caps', each),
             latches: line('latches', each),
             hinges: line('hinges', each),
             handles: line('handles', each),
-            dropBolts: line('dropBolts', each),
-            qesFrames: line('qesMm', metres),
-            qesCaps: line('qesCaps', each)
+            dropBolts: line('dropBolts', each)
         };
     },
 
@@ -550,8 +599,8 @@ SlatFenceCalc = {
     /**
      * Slat tek screws (slat_gate+screws_flat, bag of 100) are ONE bag per job: the old eForm adds a
      * single bag to every order, whereas one bag per section ordered 3 bags for a 3-section job. The
-     * bag goes on the first Slat / Slat Infill section with slats, so the per-section lines still
-     * add up to 1.
+     * bag goes on the first Slat / Slat Infill section with fence panels, so the per-section lines still
+     * add up to 1. A gate's slats take the QuickScreen kit's wafer screws, so a gate alone gets no bag (Nov 2026).
      *
      * Returns this section's bags (1 or 0), or null when no section resolves from storage (storage
      * not written yet) so the caller can fall back to one bag on this section.
@@ -565,7 +614,7 @@ SlatFenceCalc = {
 
         for (var i = 0; i < count; i++) {
             var s = this.slatSectionSlatCountFromStorage(i);
-            if (!this.isSlatLike(s.style) || s.slats <= 0) continue;
+            if (!this.isSlatLike(s.style) || s.spacerSlats <= 0) continue;
             return i === sectionIndex ? 1 : 0;
         }
         return null;

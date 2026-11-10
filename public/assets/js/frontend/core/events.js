@@ -1370,11 +1370,6 @@ function fcSelectPostItem() {
         if (getFormField.attr('name') === 'width_dimension_from') {
             try { widthDimensionFrom_change?.(); } catch (err) {}
         }
-
-        // Slat Heavy Duty Rails are drawn on the gate, so redraw the run like Type Of Gate does.
-        if (getFormField.attr('name') === 'heavy_duty_rails') {
-            try { btnCalculate(); } catch (errHd) {}
-        }
     }
 
     // Slat Fence: Width Dimension From now lives in Panel Options modal (text_option).

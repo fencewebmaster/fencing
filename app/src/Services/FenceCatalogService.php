@@ -227,18 +227,18 @@ final class FenceCatalogService
                             continue;
                         }
                         $slug = (string) $ciV['slug'];
-                        if (
-                            !isset($regrouped[$bucketId][$slug])
-                            || !is_array($regrouped[$bucketId][$slug])
-                            || empty($regrouped[$bucketId][$slug]['optional'])
-                        ) {
-                            $regrouped[$bucketId][$slug] = [
+                        // Keyed apart from a billed line on the same slug: a Slat Gate ONLY section's optional posts
+                        // used to replace a fence section's billed ones, or be swallowed by them.
+                        $optionalKey = $slug . '|optional';
+                        if (!isset($regrouped[$bucketId][$optionalKey])) {
+                            $regrouped[$bucketId][$optionalKey] = [
+                                'slug' => $slug,
                                 'optional' => true,
                                 'qty' => 0,
                                 'suggested_qty' => 0,
                             ];
                         }
-                        $regrouped[$bucketId][$slug]['suggested_qty'] += $suggested;
+                        $regrouped[$bucketId][$optionalKey]['suggested_qty'] += $suggested;
                         continue;
                     }
 
@@ -273,7 +273,7 @@ final class FenceCatalogService
             foreach ($cirItems as $ciriK => $ciriV) {
                 if (is_array($ciriV) && !empty($ciriV['optional'])) {
                     $cartItemsFormatted[] = [
-                        'slug' => $ciriK,
+                        'slug' => (string) ($ciriV['slug'] ?? $ciriK),
                         'qty' => 0,
                         'optional' => true,
                         'suggested_qty' => (int) ($ciriV['suggested_qty'] ?? 0),

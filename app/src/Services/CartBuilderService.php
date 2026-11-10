@@ -281,6 +281,8 @@ final class CartBuilderService
                             (string) $sku,
                             FenceCatalogService::normalizePlannerFenceSlug((string) ($customFenceProduct['fence'] ?? '')),
                             (string) ($customFenceProduct['color'] ?? ''),
+                            // Optional rows stay apart from billed ones on the same SKU (Slat Gate ONLY posts beside fence posts).
+                            $isOptional ? 'optional' : '',
                         ]
                     ),
                     'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
