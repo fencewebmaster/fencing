@@ -1314,13 +1314,14 @@ SlatFence = {
      * pooledSlatMetreQtyForSection() can round them once per job: `slatM` (cut slat metres —
      * fence and raked panels only) and `sfsM` (side-frame metres over the SFS-framed panels, cut
      * at panel height − sfs_length_deduction_mm). `spacerSlats` leaves the gate out and `gate`
-     * holds its own quantities (computeSlatGateBom), as the old form keeps them apart.
+     * holds its own quantities (computeSlatGateBom), as the old form keeps them apart. `csrMm` is the
+     * centre support rail cut for the section: the panel height per rail.
      *
      * @return {{style: string, gapKey: (number|null), sizeKey: (number|null), slats: number,
-     *           slatM: number, sfsM: number, spacerSlats: number, gate: (Object|null)}}
+     *           slatM: number, sfsM: number, spacerSlats: number, csrMm: number, gate: (Object|null)}}
      */
     slatSectionSlatCountFromStorage: function(sectionIndex) {
-        var out = { style: '', gapKey: null, sizeKey: null, slats: 0, slatM: 0, sfsM: 0, spacerSlats: 0, gate: null };
+        var out = { style: '', gapKey: null, sizeKey: null, slats: 0, slatM: 0, sfsM: 0, spacerSlats: 0, csrMm: 0, gate: null };
 
         var tabRow0 = null;
         try {
@@ -1366,6 +1367,7 @@ SlatFence = {
             this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch) -
                 this.getSfsLengthDeductionMm(style)
         );
+        var csrLenMm = Math.max(0, this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch) || 0);
         var cutM = 0;
         var addCutM = function(count, len) {
             count = parseInt(count, 10) || 0;
@@ -1389,6 +1391,7 @@ SlatFence = {
                 addCutM(panels, openW);
                 out.sfsM = (2 * panels * sfsLenMm) / 1000;
                 out.spacerSlats = rows * panels;
+                out.csrMm = this.slatCentreRailPanelCount(style, null, panels, openW) * csrLenMm;
             }
         } else {
             // Held to the section's saved length: see readSlatRawOverallMm().
@@ -1416,6 +1419,7 @@ SlatFence = {
             if (typeof readCustomFenceSegment === 'function') {
                 out.gate = this.slatGateBomFromControls(style, readCustomFenceSegment(sectionIndex, style), tabRow0, calc);
             }
+            out.csrMm = this.slatCentreRailPanelCount(style, calc, 0) * csrLenMm;
             if (calc?.gate?.count && calc?.gate?.width) {
                 panels += Math.max(1, parseInt(calc.gate.count, 10) || 1);
             }
@@ -4717,10 +4721,6 @@ SlatFence = {
         var scale = parseFloat(FENCE.get('item', 'base_margin')) || 0.1;
         var meetPx = this.getDoubleGateMeetingGapMm(slug, gate_data) * scale;
         var rails = '<span class="fc-slat-gate__rail fc-slat-gate__rail--top"></span><span class="fc-slat-gate__rail fc-slat-gate__rail--bot"></span>';
-        // A leaf the cart bills a centre support rail for (getCentreSupportRailCartQty) shows it down its middle.
-        if (this.getGateLeafWidthMm(slug, gate_data, calc) >= this.centreRailMinLeafMm) {
-            rails += '<span class="fc-slat-gate__csr"></span>';
-        }
         var leaf = '<span class="fc-slat-gate__leaf">' + rails + '</span>';
 
         // Width Dimension From, as the drawer card draws it: the opening measured over the gate posts' outer faces or centres.
@@ -4754,7 +4754,7 @@ SlatFence = {
             );
     },
 
-    /** A panel or Infill opening the cart bills a centre support rail for gets it down its middle and "+ CENTRE RAIL" in its label. */
+    /** A panel or Infill opening the cart bills a centre support rail for gets it drawn down its middle. */
     syncPanelCentreRail: function(panelEl) {
         var scale = parseFloat(FENCE.get('item', 'base_margin')) || 0.1;
         var widthMm = Math.round((parseFloat(panelEl.getAttribute('data-width')) || 0) / scale);
@@ -4771,17 +4771,6 @@ SlatFence = {
             panelEl.appendChild(rail);
         } else if (!wants && rail) {
             rail.remove();
-        }
-
-        var size = panelEl.querySelector(':scope > .fencing-panel-item-size');
-        var tag = size ? size.querySelector('.fc-slat-csr-unit') : null;
-        if (wants && size && !tag) {
-            tag = document.createElement('span');
-            tag.className = 'fc-panel-unit fc-slat-csr-unit';
-            tag.textContent = '+ CENTRE RAIL';
-            size.appendChild(tag);
-        } else if (!wants && tag) {
-            tag.remove();
         }
     },
 
@@ -5337,13 +5326,12 @@ SlatFence = {
 
     //----------------------------------------------------------------------------------
 
-    // Widths that take a centre support rail; the cart and the Step 3 drawing both read these.
+    // Width that takes a centre support rail; the cart and the Step 3 drawing both read it.
     centreRailMinPanelMm: 2000,
-    centreRailMinLeafMm: 1500,
 
     /**
-     * Centre support rail (products.csv `centre_support_rail`): one per infill/opening ≥ 2000 mm,
-     * and one per gate leaf whose panel width is ≥ 1500 mm (Slat + Slat Infill only).
+     * Centre support rail (products.csv `centre_support_rail`), CTS by the metre since Nov 2026: a rail the panel's height per
+     * panel or opening ≥ 2000 mm, metres rounded up once per job. Slat gates take none (requested Nov 2026).
      */
     getCentreSupportRailCartQty: function(context, calc) {
         var fenceSlug = context?.tabInfo?.[0]?.fence || '';
@@ -5351,8 +5339,35 @@ SlatFence = {
             return 0;
         }
 
+        var pitch = this.resolveSlatPanelPitchInputs(context, fenceSlug);
+        var panelHm = this.computeSlatPanelHeightMmFromMaxHeight(
+            this.resolveSlatFenceHeightMm(context, calc),
+            pitch.sizePitch,
+            pitch.gapPitch
+        );
+        var panels = this.slatCentreRailPanelCount(
+            fenceSlug,
+            calc,
+            fenceSlug === 'slat_fence_infill' ? this.slatCentreRailInfillCount(context, calc) : 0
+        );
+        var mm = panels * Math.max(0, panelHm || 0);
+        if (!(mm > 0)) {
+            return 0;
+        }
+
+        var styleNorm = typeof normalizeFenceStyleSlug === 'function' ? normalizeFenceStyleSlug(fenceSlug) : fenceSlug;
+        var pooled = this.pooledSlatCentreRailMetresForSection(context?.tabIndex, styleNorm);
+        return pooled === null ? Math.ceil(mm / 1000 - 1e-9) : pooled;
+    },
+
+    // Openings a Slat Infill section bills rails for: the effective count, else the calc's.
+    slatCentreRailInfillCount: function(context, calc) {
+        return this.slatInfillEffectivePanelCount(context, calc) || parseInt(calc?.long_panel?.count, 10) || 0;
+    },
+
+    // Panels or Infill openings 2000mm+ wide that take a centre support rail. Storage passes Infill's count and width, no calc.
+    slatCentreRailPanelCount: function(fenceSlug, calc, infillCount, infillWidthMm) {
         var panelMinMm = this.centreRailMinPanelMm;
-        var gateMinMm = this.centreRailMinLeafMm;
         var qty = 0;
 
         var addWidePanels = function(widthMm, count) {
@@ -5364,12 +5379,7 @@ SlatFence = {
         };
 
         if (fenceSlug === 'slat_fence_infill') {
-            var openingW = parseInt(calc?.long_panel?.length || calc?.even_panel?.length, 10);
-            var panelN = this.slatInfillEffectivePanelCount(context, calc);
-            if (!panelN) {
-                panelN = parseInt(calc?.long_panel?.count, 10) || 0;
-            }
-            addWidePanels(openingW, panelN);
+            addWidePanels(infillWidthMm || calc?.long_panel?.length || calc?.even_panel?.length, infillCount);
         } else {
             // Main Slat publishes even_panel on both options, so Full billed rails off a layout it never
             // drew; and in the else full_panel IS long_panel (calc.js), so it counted those bays twice.
@@ -5385,23 +5395,6 @@ SlatFence = {
             }
             if ((parseInt(calc?.right_raked?.width, 10) || 0) >= panelMinMm) {
                 qty += 1;
-            }
-        }
-
-        if (calc?.gate?.count > 0) {
-            var gItem = (context?.fenceInfo || []).find(function(it) {
-                return it?.control_key === 'gate';
-            });
-            var gateData = gItem ? [gItem] : [];
-            var gatePanelW = this.getGateLeafWidthMm(fenceSlug, gateData, calc);
-            var fields = gItem?.settings?.fields || [];
-            var isDouble = fields.find(function(x) {
-                return x.key === 'gate_type';
-            })?.val === 'double';
-            if (Number.isFinite(gatePanelW) && gatePanelW >= gateMinMm) {
-                var gc = Math.max(1, parseInt(calc.gate.count, 10) || 1);
-                var leaves = isDouble ? 2 : 1;
-                qty += gc * leaves;
             }
         }
 

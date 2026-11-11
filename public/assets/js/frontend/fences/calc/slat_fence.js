@@ -562,6 +562,32 @@ SlatFenceCalc = {
         return this.allocatePooledPacks(weights, total)[pos];
     },
 
+    // Centre support rail by the metre (CTS): every rail is cut to length, so the job's metres for this style are rounded up
+    // once and each section gets its largest-remainder share. null = the pool can't place this section yet.
+    pooledSlatCentreRailMetresForSection: function(sectionIndex, styleNorm) {
+        if (!Number.isFinite(sectionIndex) || typeof fcGetPersistedFenceSectionCount !== 'function') {
+            return null;
+        }
+        var count = fcGetPersistedFenceSectionCount();
+        if (!Number.isFinite(count) || count < 1) return null;
+
+        var indexes = [];
+        var weights = [];
+        for (var i = 0; i < count; i++) {
+            var s = this.slatSectionSlatCountFromStorage(i);
+            if (s.style !== styleNorm || !(s.csrMm > 0)) continue;
+            indexes.push(i);
+            weights.push(s.csrMm);
+        }
+
+        var pos = indexes.indexOf(sectionIndex);
+        if (pos < 0) return null;
+
+        var totalMm = 0;
+        for (var w = 0; w < weights.length; w++) totalMm += weights[w];
+        return this.allocatePooledPacks(weights, Math.ceil(totalMm / 1000 - 1e-9))[pos];
+    },
+
     // Cut slat line for one slat size: gate metres (F404, 1 dp) + fence metres (F214), rounded once per job.
     pooledSlatCutQtyForSection: function(sectionIndex, styleNorm, sizeKey, dp) {
         if (!Number.isFinite(sectionIndex) || typeof fcGetPersistedFenceSectionCount !== 'function') {
