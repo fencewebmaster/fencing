@@ -354,11 +354,15 @@ final class PlannerOptionSettings
 
     /**
      * `tel:` target for a display number — the href can't carry the spaces and brackets the
-     * button shows, and a leading + has to survive.
+     * button shows, and a leading + has to survive. A national number's leading 0 becomes +61
+     * (international format, requested Nov 2026): 0480 016 687 links to +61480016687.
      */
     public static function stockPhoneHref(string $phone): string
     {
         $href = preg_replace('/(?!^\+)[^0-9]/', '', trim($phone)) ?? '';
+        if (preg_match('/^0[1-9]/', $href)) {
+            $href = '+61' . substr($href, 1);
+        }
 
         return $href;
     }

@@ -5337,17 +5337,15 @@ function fcValidateOverallLengthMm(opts) {
     var val = parseInt(raw, 10);
     var fcGateOnlyPlaceholderMm = 9999;
     var fdVal = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
-    var slatStdLocked =
+    // Slat Gate ONLY + STD: only an empty box takes the gate's length; a typed one is checked like any style's.
+    var slatGoEmpty =
+        !raw &&
         fdVal &&
         typeof SlatFence !== 'undefined' &&
         SlatFence.shouldLockStep2OverallForStdGateOnly(fdVal);
-    var skipMinMaxForGateOnlyPlaceholder =
-        val === fcGateOnlyPlaceholderMm ||
-        (slatStdLocked &&
-            typeof SlatFence.isGateOnlyPlaceholderMm === 'function' &&
-            SlatFence.isGateOnlyPlaceholderMm(val));
+    var skipMinMaxForGateOnlyPlaceholder = val === fcGateOnlyPlaceholderMm;
 
-    if (slatStdLocked) {
+    if (slatGoEmpty) {
         var disp =
             typeof SlatFence.computeSlatGateOnlyStdOverallDisplayMm === 'function'
                 ? SlatFence.computeSlatGateOnlyStdOverallDisplayMm(fdVal)
@@ -9603,23 +9601,14 @@ function updateOverAllLength(data) {
         }
     }
 
-    var slatStdGoLock =
-        typeof SlatFence !== 'undefined' &&
-        SlatFence.isMainSlatSlug(slug) &&
-        gateOnly &&
-        !isCustomGate &&
-        SlatFence.shouldLockStep2OverallForStdGateOnly(fd);
-
-    if (slatStdGoLock) {
-        overall =
-            stdGateMinOverallMm != null
-                ? stdGateMinOverallMm
-                : gate_posts_gaps - minusPosts - adjustGap;
-    }
-
     // GATE ONLY + STD | ON POST CHANGED
     if(gateOnly && !isCustomGate ||
         gateOnly && !isCustomGate && data?.removePost) {
+
+        // Slat: a longer typed length becomes a custom gate up to the widest gate + its spacing; rerun on that gate.
+        if (!data?.removePost && typeof SlatFence !== 'undefined' && SlatFence.promoteStep2GateOnlyStdFromOverall(fd)) {
+            return updateOverAllLength(data);
+        }
 
         // Compare to full gate-only min overall (posts/spacing), not gate opening alone — otherwise
         // after the 9999 placeholder is replaced with computed min OAL (e.g. Glass Pool), the next
@@ -9629,7 +9618,6 @@ function updateOverAllLength(data) {
                 ? stdGateMinOverallMm
                 : gate_posts_gaps - minusPosts - adjustGap;
         var shouldClearGateOnlyOal =
-            !slatStdGoLock &&
             !data?.removePost &&
             !Number.isNaN(mbnRawDisplay) &&
             mbnRawDisplay !== fcGateOnlyPlaceholderMm &&
@@ -9991,12 +9979,6 @@ function updateOverAllLength(data) {
             _mbn.val(overall);
             _mbn.attr('data-last', String(overall));
        }
-    }
-
-    if (slatStdGoLock) {
-        try {
-            SlatFence.syncStep2GateOnlyOverallField(fd);
-        } catch (eLockGo) {}
     }
 
     if (data?.removePost && FENCE.isGateMinOalStyle(slug) && hasGate) {
@@ -10612,6 +10594,10 @@ function fcSyncGateOnlyInSegmentStorage(cf, val) {
 }
 
 function updateGateOnly(val) {
+    // Slat: the No Post ends a Gate ONLY tick set go back when it turns off.
+    if (!val && typeof SlatFence !== 'undefined') {
+        SlatFence.healGateOnlyNoPost();
+    }
     var fd = getSelectedFenceData(),
         tab = fd.tab,
         slug = fd.slug,

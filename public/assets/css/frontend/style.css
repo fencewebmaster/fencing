@@ -4606,6 +4606,12 @@ html.fc-plan-filmstrip-on .fc-project-plan-page #fc-fence-list .fc-project-plan-
     right: 0;
 }
 
+/* A Slat double gate's meeting gap, centred between its leaves (SlatFence.applyGateLabel). */
+.fc-gate-middle-spacing {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .near-gate .fs-clamp {
     visibility: hidden;
 }

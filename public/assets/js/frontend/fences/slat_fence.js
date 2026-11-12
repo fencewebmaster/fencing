@@ -11,7 +11,7 @@ SlatFence = {
             'slat_spacer+15': 50,
             'slat_spacer+20': 50,
             'slat_spacer+30': 50,
-            /** QuickScreen gate kit: QS-SPACER-*-50PK, QS-SCREWS-50PK and AR-SCR-BR-50PK. */
+            /** QuickScreen spacers and screws, every Slat and Slat Infill job: QS-SPACER-*-50PK and QS-SCREWS-50PK. */
             'slat_gate+qsg_spacer_5': 50,
             'slat_gate+qsg_spacer_9': 50,
             'slat_gate+qsg_spacer_12': 50,
@@ -19,7 +19,8 @@ SlatFence = {
             'slat_gate+qsg_spacer_20': 50,
             'slat_gate+qsg_spacer_30': 50,
             'slat_gate+qsg_screws': 50,
-            'slat_gate+qsg_rail_screws': 50,
+            /** The old tek screw bag; the QuickScreen screws count its 100 once per job. */
+            'slat_gate+screws_flat': 100,
             /** XPL-EP-*-2PK — pieces per retail pack (used for slat infill end-cap packs vs rail qty). */
             'sfs+end_caps': 2,
         },
@@ -352,6 +353,92 @@ SlatFence = {
                     'TURN'
                 );
             }
+        } catch (e) {}
+    },
+
+    /** Ticking Gate ONLY sets both ends to No Post; the side drawers put a post back (requested Nov 2026). */
+    seedGateOnlyNoPost: function() {
+        try {
+            var fd = getSelectedFenceData();
+            if (!this.isMainSlatSlug(fd.slug)) {
+                return;
+            }
+            var key = 'custom_fence-' + fd.tab + '-' + fd.slug;
+            var segment = JSON.parse(localStorage.getItem(key) || '[]');
+            if (!Array.isArray(segment)) {
+                return;
+            }
+            var postOpt = segment.find(function(row) {
+                return row?.control_key === 'post_options';
+            })?.settings?.find(function(item) {
+                return item?.key === 'post_option';
+            })?.val || 'opt-1';
+
+            ['left', 'right'].forEach(function(side) {
+                var row = segment.find(function(r) {
+                    return r?.control_key === side + '_side';
+                });
+                // gateOnlyNoPost marks the end as ours and holds what unticking restores ('' drops the row); a drawer save clears it.
+                if (!row) {
+                    segment.push({
+                        id: fd.slug,
+                        control_key: side + '_side',
+                        gateOnlyNoPost: '',
+                        settings: [
+                            { key: side + '_option', val: 'no-post', tag: 'div', type: 'range_option' },
+                            { key: 'post_option', val: postOpt, tag: 'div', type: 'image_option' },
+                            { key: 'post_angle', val: 'straight', tag: 'div', type: 'image_option' }
+                        ]
+                    });
+                    return;
+                }
+                var opt = (row.settings || []).find(function(item) {
+                    return item?.key === side + '_option';
+                });
+                if (!opt) {
+                    opt = { key: side + '_option', val: 'yes-post', tag: 'div', type: 'range_option' };
+                    row.settings = (row.settings || []).concat([opt]);
+                }
+                if (!String(opt.val || '').includes('no-post')) {
+                    row.gateOnlyNoPost = opt.val;
+                    opt.val = 'no-post';
+                }
+            });
+            localStorage.setItem(key, JSON.stringify(segment));
+        } catch (e) {}
+    },
+
+    /** Gate ONLY is off again: give back the ends its tick set to No Post. */
+    healGateOnlyNoPost: function() {
+        try {
+            var fd = getSelectedFenceData();
+            if (!this.isMainSlatSlug(fd.slug)) {
+                return;
+            }
+            var key = 'custom_fence-' + fd.tab + '-' + fd.slug;
+            var segment = JSON.parse(localStorage.getItem(key) || '[]');
+            var ours = function(row) {
+                return !!row && typeof row.gateOnlyNoPost === 'string';
+            };
+            if (!Array.isArray(segment) || !segment.some(ours)) {
+                return;
+            }
+            segment = segment.filter(function(row) {
+                return !(ours(row) && row.gateOnlyNoPost === '');
+            });
+            segment.forEach(function(row) {
+                if (!ours(row)) {
+                    return;
+                }
+                var optKey = row.control_key === 'right_side' ? 'right_option' : 'left_option';
+                (row.settings || []).forEach(function(item) {
+                    if (item?.key === optKey) {
+                        item.val = row.gateOnlyNoPost;
+                    }
+                });
+                delete row.gateOnlyNoPost;
+            });
+            localStorage.setItem(key, JSON.stringify(segment));
         } catch (e) {}
     },
 
@@ -867,6 +954,14 @@ SlatFence = {
             if (dispOv != null && Number.isFinite(dispOv)) {
                 $box.val(dispOv);
                 $box.attr('data-last', String(dispOv));
+                // Past the widest gate: say so, or a typed 3,000 silently became 2,140.
+                if (leaf < leafRaw && typeof popupToast === 'function') {
+                    popupToast(
+                        FENCE.settings.message.oal_changed,
+                        FENCE.settings.message.max_gate_only.replace(/{{overall}}/gi, dispOv),
+                        'GO-MAX'
+                    );
+                }
             }
         } else if (dispCommit) {
             $box.attr('data-last', dispCommit);
@@ -884,6 +979,36 @@ SlatFence = {
             }
         } catch (eChk) {}
 
+        return true;
+    },
+
+    /** Gate ONLY + STD: a length typed past the standard gate's sizes a custom gate, up to the widest gate + its spacing (Nov 2026). */
+    promoteStep2GateOnlyStdFromOverall: function(fd) {
+        if (!fd || !this.shouldLockStep2OverallForStdGateOnly(fd)) {
+            return false;
+        }
+        var $box =
+            typeof FENCES !== 'undefined' && FENCES.el
+                ? $(FENCES.el.measurementBoxNumber)
+                : $('.measurement-box-number');
+        var typed = parseInt(String($box.val() || '').replace(/,/g, ''), 10);
+        var last = parseInt(String($box.attr('data-last') || '').replace(/,/g, ''), 10);
+        var stdRun = this.computeSlatGateOnlyStdOverallDisplayMm(fd);
+        // Typed since the last write only: a box a post change left behind equals data-last and goes back to the gate run.
+        if (
+            !Number.isFinite(typed) || this.isGateOnlyPlaceholderMm(typed) ||
+            !Number.isFinite(stdRun) || typed <= stdRun ||
+            !Number.isFinite(last) || typed <= last
+        ) {
+            return false;
+        }
+        var gate_data = (fd.info || []).filter(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        this.persistCustomGateLeafWidth(fd, this.resolveStdGateLeafWidthNominalMm(fd.slug, gate_data));
+        this.commitStep2GateOnlyCustomFromOverall(
+            typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : fd
+        );
         return true;
     },
 
@@ -1010,7 +1135,7 @@ SlatFence = {
         return true;
     },
 
-    /** Step 2 Gate ONLY + STD gate: overall length is derived from gate width, not user-typed. */
+    /** Step 2 Gate ONLY + STD gate. No longer a lock (Nov 2026): an empty or 9999 length resolves to the gate's. */
     shouldLockStep2OverallForStdGateOnly: function(fd) {
         if (!fd || !this.isMainSlatSlug(fd.slug)) {
             return false;
@@ -1118,7 +1243,8 @@ SlatFence = {
     },
 
     /**
-     * Gate ONLY + STD: show computed overall, lock field (readonly), strip legacy 9999 placeholder.
+     * Gate ONLY + STD: fill an empty or legacy 9999 box with the gate's length.
+     * Never locks it (Nov 2026): a typed length goes through updateOverAllLength like any style's.
      */
     syncStep2GateOnlyOverallField: function(fd, opts) {
         opts = opts || {};
@@ -1133,14 +1259,17 @@ SlatFence = {
             return;
         }
 
-        var lock = fd && this.shouldLockStep2OverallForStdGateOnly(fd);
+        var stdGateOnly = fd && this.shouldLockStep2OverallForStdGateOnly(fd);
         var $ic = $box.closest('.fc-input-container');
 
-        if (lock) {
+        $box.prop('readonly', false).removeAttr('aria-disabled');
+        $ic.removeClass('fc-measurement-locked-gate-only');
+
+        if (stdGateOnly) {
             var disp = this.computeSlatGateOnlyStdOverallDisplayMm(fd);
             var cur = parseInt(String($box.val() || '').replace(/,/g, ''), 10);
             if (Number.isFinite(disp) && disp > 0) {
-                if (!Number.isFinite(cur) || cur <= 0 || this.isGateOnlyPlaceholderMm(cur) || cur !== disp) {
+                if (!Number.isFinite(cur) || cur <= 0 || this.isGateOnlyPlaceholderMm(cur)) {
                     $box.val(disp);
                     $box.attr('data-last', String(disp));
                 }
@@ -1152,12 +1281,7 @@ SlatFence = {
                     $box.attr('data-last', String(prevN));
                 }
             }
-
-            $box.prop('readonly', true).attr('aria-disabled', 'true');
-            $ic.addClass('fc-measurement-locked-gate-only');
         } else {
-            $box.prop('readonly', false).removeAttr('aria-disabled');
-            $ic.removeClass('fc-measurement-locked-gate-only');
             var cur2 = parseInt(String($box.val() || '').replace(/,/g, ''), 10);
             if (this.isGateOnlyPlaceholderMm(cur2)) {
                 var prev2 = $box.attr('data-prev-gate-only-mbn');
@@ -4698,6 +4822,13 @@ SlatFence = {
             $gate.append('<div class="double-gate"></div>');
         }
 
+        // A double's meeting gap gets a figure like the hinge-side ones: 20 | 20 | 20 (requested Nov 2026).
+        $gate.children('.fc-gate-middle-spacing').remove();
+        var meetMm = this.getDoubleGateMeetingGapMm(slug, gate_data);
+        if (meetMm > 0) {
+            $gate.append('<span class="fc-gate-spacing fc-gate-middle-spacing">' + meetMm + '</span>');
+        }
+
         this.renderGateLeaves($gate, slug, gate_data, calc);
     },
 
@@ -5306,21 +5437,6 @@ SlatFence = {
             }
         }
 
-        // Fence panels only (Nov 2026): a gate's slats take the QuickScreen kit's wafer screws, so a gate alone gets no bag.
-        var hasFenceBody = panelCount > 0;
-        // Slat tek screws: one bag per JOB, Slat Infill included. Infill used to be skipped here as
-        // "gate/post hardware", but the product is slat self-drilling tek screws and the old eForm
-        // adds one bag to every order whatever the style. pooledSlatScrewBagsForSection() puts the
-        // bag on a single section; null means storage could not resolve the job yet, so this
-        // section carries it.
-        if (hasFenceBody) {
-            var screwBags = this.pooledSlatScrewBagsForSection(context?.tabIndex);
-            if (screwBags === null) screwBags = 1;
-            if (screwBags > 0) {
-                addOrInc('slat_gate+screws_flat', screwBags);
-            }
-        }
-
         return array;
     },
 
@@ -5468,7 +5584,7 @@ SlatFence = {
         /** Row × panel lines — replace on each recalc (never accumulate). */
         var isRowPanelDerivedSlug = function(slug) {
             var s = String(slug || '');
-            return /^slat\+(65|90)$/.test(s) || /^slat_spacer\+/.test(s);
+            return /^slat\+(65|90)$/.test(s) || /^slat_spacer\+/.test(s) || /^slat_gate\+qsg_spacer_/.test(s);
         };
         array = (array || []).filter(function(item) {
             return !isRowPanelDerivedSlug(item?.slug);
@@ -5512,7 +5628,7 @@ SlatFence = {
         var gate = isSlatInfillOpenings
             ? null
             : this.slatGateBomFromControls(styleNorm, context?.fenceInfo, context?.tabInfo?.[0], calc);
-        var gateLines = gate ? this.slatQsgGateLinesForSection(context?.tabIndex, gate, fenceSlug) : null;
+        var gateLines = gate ? this.slatQsgGateLinesForSection(context?.tabIndex, gate) : null;
 
         // FSQ sells fence slats by the METRE of cut slat, not by piece: F214/F5 sum
         // (panel width − slat_length_deduction_mm) × rows over the panels, and the colour line
@@ -5564,8 +5680,8 @@ SlatFence = {
 
         // FSQ consumes spacers_per_slat (2) spacers per fence slat (F235/F522), ordered in packs.
         // Pooled across sections — see pooledSlatSpacerPacksForSection() — so the CEILING is
-        // taken once for the whole job. A gate's spacers are the QuickScreen kit's own line below.
-        var spacerSlug = 'slat_spacer+' + gapKey;
+        // taken once for the whole job. Slat, Slat Infill and the gates share the QuickScreen spacer (Nov 2026).
+        var spacerSlug = 'slat_gate+qsg_spacer_' + gapKey;
         var fenceSlugForPack = context?.tabInfo?.[0]?.fence || 'slat';
         var itemsPerPack = this.getPackItemsForSlug(fenceSlugForPack, spacerSlug);
         var spacerPacks = 0;
@@ -5584,6 +5700,7 @@ SlatFence = {
                               fence: isSlatInfillOpenings ? 0 : slatPiecesFence * perSlat,
                               infill: isSlatInfillOpenings ? slatPiecesFence * perSlat : 0,
                               gates: gate ? 1 : 0,
+                              gateSpacers: gate ? gate.spacers : 0,
                               is90: sizeKey === 90,
                               gapMm: gapKey,
                               perSlat: perSlat
@@ -5595,6 +5712,17 @@ SlatFence = {
         if (spacerPacks > 0) {
             setQty(spacerSlug, spacerPacks);
         }
+
+        // QuickScreen 16mm screws for the job's Slat and Slat Infill panels and gates (Nov 2026).
+        var screwPacks = this.pooledSlatQsScrewPacksForSection(context?.tabIndex, fenceSlug);
+        if (screwPacks === null) {
+            screwPacks = this.ceilPackQuantity(
+                (slatPiecesFence > 0 ? this.getPackItemsForSlug(fenceSlug, 'slat_gate+screws_flat') : 0) +
+                    (gate ? gate.screws : 0),
+                this.getPackItemsForSlug(fenceSlug, 'slat_gate+qsg_screws')
+            );
+        }
+        setQty('slat_gate+qsg_screws', screwPacks);
 
         if (gateLines) {
             this.applySlatQsgGateLines(addOrInc, gateLines, gate);
@@ -5634,7 +5762,7 @@ SlatFence = {
     },
 
     // A QuickScreen gate's lines (computeSlatQsgGateBom): the kit by the metre and the pack, the rail and joiner in the slat's
-    // size, plus the hardware kept from before; a double has 1 latch + 1 drop bolt. A 0mm gap has no spacer line.
+    // size, plus the hardware kept from before; a double has 1 latch + 1 drop bolt. Spacers and screws go on the fence's lines.
     applySlatQsgGateLines: function(addOrInc, lines, gate) {
         var size = gate.is90 ? '90' : '65';
         addOrInc('slat_gate+qsg_side_frame', lines.sideFrames);
@@ -5642,11 +5770,6 @@ SlatFence = {
         addOrInc('slat_gate+qsg_infill', lines.infill);
         addOrInc('slat_gate+qsg_cover', lines.covers);
         addOrInc('slat_gate+qsg_joiner_' + size, gate.is90 ? lines.joiners90 : lines.joiners65);
-        if (gate.gapKey > 0) {
-            addOrInc('slat_gate+qsg_spacer_' + gate.gapKey, lines.spacers);
-        }
-        addOrInc('slat_gate+qsg_screws', lines.screws);
-        addOrInc('slat_gate+qsg_rail_screws', lines.railScrews);
         addOrInc('slat_gate+qsg_cap', lines.caps);
         addOrInc('slat_gate+hinge_truclose', lines.hinges);
         addOrInc('slat_gate+latch_deluxe', lines.latches);
@@ -5674,7 +5797,7 @@ SlatFence = {
             'allocatePooledPacks', 'pooledSlatSpacerPacksForSection', 'pooledSlatMetreQtyForSection',
             'pooledSlatCutQtyForSection', 'slatSpacerPacksFromTotals', 'computeSlatGateBom',
             'slatGatePostOptions', 'slatGateRunCountAdjustMm', 'slatGateBomFromControls', 'slatGateBomFromValues',
-            'slatGateRowsForDisplay', 'computeSlatQsgGateBom', 'slatQsgGateLinesForSection',
+            'slatGateRowsForDisplay', 'computeSlatQsgGateBom', 'slatQsgGateLinesForSection', 'pooledSlatQsScrewPacksForSection',
             'getSlatPanelEndAllowanceMm', 'gapSlugToPitchMm', 'countSlatPanelRowsFromMaxHeightMm',
             'computeSlatPanelHeightMmFromMaxHeight', 'computeSlatBottomGapMm',
             'countEvenPanelsFromOverallSpan', 'getRemovedEndPostsMm', 'computeSlatTotalPostsMm',

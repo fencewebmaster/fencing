@@ -10,6 +10,7 @@ FENCE = {
             min_gate_custom: "Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b>",
             min_gate_only: "<b>GATE ONLY:</b> Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm <b>or</b> change to custom gate in <b>Gate Options</b>",
             min_gate_only_no_custom: "<b>GATE ONLY:</b> Minimum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm",
+            max_gate_only: "<b>GATE ONLY:</b> Maximum <b>Overall Length</b> for a <b>GATE</b> is <b class='text-underline'>{{overall}}</b>mm, the widest gate plus its spacing",
             min_gate_raked: "Minimum <b>Overall Length</b> for a <b>GATE & {{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_raked: "Minimum <b>Overall Length</b> for <b>{{hasRaked}} RAKED</b> is <b>{{overall}}</b>mm",
             min_gate_hinge: "Minimum <b>Overall Length</b> for a <b>GATE & HINGE PANEL</b> is <b>{{overall}}</b>mm",
@@ -3398,16 +3399,6 @@ FENCE = {
             (typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null);
         if (!fd || !this.isStdGateFd(fd)) {
             return false;
-        }
-
-        if (
-            typeof SlatFence !== 'undefined' &&
-            SlatFence.isMainSlatSlug(fd.slug) &&
-            typeof SlatFence.shouldLockStep2OverallForStdGateOnly === 'function' &&
-            SlatFence.shouldLockStep2OverallForStdGateOnly(fd)
-        ) {
-            SlatFence.syncStep2GateOnlyOverallField(fd, opts);
-            return true;
         }
 
         var disp = this.getStdGateMinOverallPhysicalMm(fd);

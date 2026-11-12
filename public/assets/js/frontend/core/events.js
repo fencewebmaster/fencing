@@ -530,6 +530,10 @@ function fcGateOnlyStep2Enable() {
     }
 
     updateGateOnly(true);
+    // Slat: before the length is filled, so it counts the No Post ends.
+    if (slatStdGo) {
+        SlatFence.seedGateOnlyNoPost();
+    }
     removeStepPanels();
     if (!slatStdGo) {
         updateOverAllLength();
@@ -1660,6 +1664,9 @@ function gateOnly(e) {
         }
 
         updateGateOnly(true);
+        if (typeof SlatFence !== 'undefined') {
+            SlatFence.seedGateOnlyNoPost();
+        }
         removeStepPanels();
         updateOverAllLength();
 
@@ -2682,11 +2689,13 @@ function updateCalculateButtonByStep2Completeness() {
         var max = parseInt(box.getAttribute('data-max') || '', 10);
         var val = parseInt(raw || '', 10);
         var fdOk = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
-        var slatStdLocked =
+        // Slat Gate ONLY + STD: only an empty box takes the gate's length; a typed one is checked like any style's.
+        var slatGoEmpty =
+            !raw &&
             fdOk &&
             typeof SlatFence !== 'undefined' &&
             SlatFence.shouldLockStep2OverallForStdGateOnly(fdOk);
-        if (slatStdLocked) {
+        if (slatGoEmpty) {
             var dispOk = SlatFence.computeSlatGateOnlyStdOverallDisplayMm(fdOk);
             if (Number.isFinite(dispOk) && dispOk > 0) {
                 val = dispOk;
@@ -2695,14 +2704,14 @@ function updateCalculateButtonByStep2Completeness() {
         }
         if (!raw || !Number.isFinite(val)) ok = false;
         if (
-            !(slatStdLocked && Number.isFinite(val) && val > 0) &&
+            !(slatGoEmpty && Number.isFinite(val) && val > 0) &&
             Number.isFinite(min) &&
             val < min
         ) {
             ok = false;
         }
         if (
-            !(slatStdLocked && Number.isFinite(val) && val > 0) &&
+            !(slatGoEmpty && Number.isFinite(val) && val > 0) &&
             Number.isFinite(max) &&
             val > max
         ) {

@@ -210,7 +210,8 @@ SlatFenceCalc = {
      * ceiling in FSQ too: F580/F581 = ceil(F417 + F235 + F522), where F235 is the fence term
      * and F522 the infill term. Pooling per style instead ceils twice and orders a pack too
      * many whenever both parts have a fractional remainder — measured on 46% of mixed
-     * fence+infill jobs. Sections only share a pool when they also order the same pack size,
+     * fence+infill jobs. Since Nov 2026 the line is the QuickScreen spacer and takes the gates'
+     * spacers too. Sections only share a pool when they also order the same pack size,
      * since one ceiling across different pack sizes would be meaningless.
      *
      * Returns this section's share of the pooled packs, or null when the pool cannot be resolved
@@ -223,10 +224,10 @@ SlatFenceCalc = {
         var count = fcGetPersistedFenceSectionCount();
         if (!Number.isFinite(count) || count < 1) return null;
 
-        var spacerSlug = 'slat_spacer+' + gapKey;
+        var spacerSlug = 'slat_gate+qsg_spacer_' + gapKey;
         var indexes = [];
         var weights = [];
-        var totals = { fence: 0, infill: 0, gates: 0, is90: false, gapMm: gapKey, perSlat: 2 };
+        var totals = { fence: 0, infill: 0, gates: 0, gateSpacers: 0, is90: false, gapMm: gapKey, perSlat: 2 };
         for (var i = 0; i < count; i++) {
             var s = this.slatSectionSlatCountFromStorage(i);
             if (!this.isSlatLike(s.style) || s.gapKey !== gapKey) continue;
@@ -235,14 +236,15 @@ SlatFenceCalc = {
             // takes its true share. Identical allocation while both styles consume 2.
             var perSlat = this.getSpacersPerSlat(s.style);
             var spacers = s.spacerSlats * perSlat;
+            var gateSpacers = s.gate && s.gate.spacers > 0 ? s.gate.spacers : 0;
             totals.perSlat = perSlat;
             totals[s.style === 'slat_fence_infill' ? 'infill' : 'fence'] += spacers;
+            totals.gateSpacers += gateSpacers;
             totals.is90 = totals.is90 || s.sizeKey === 90;
-            // A gate's spacers are the QuickScreen kit's own line (slatQsgGateLinesForSection); only its presence counts here.
             if (s.gate) totals.gates++;
-            if (spacers <= 0) continue;
+            if (spacers + gateSpacers <= 0) continue;
             indexes.push(i);
-            weights.push(spacers);
+            weights.push(spacers + gateSpacers);
         }
 
         var pos = indexes.indexOf(sectionIndex);
@@ -251,14 +253,16 @@ SlatFenceCalc = {
         return this.allocatePooledPacks(weights, this.slatSpacerPacksFromTotals(totals, itemsPerPack))[pos];
     },
 
-    // Packs as the old form works them out: ceil(F417 + F235 + F522). A gate's spacers are the QuickScreen kit's own line
-    // (Nov 2026), so with a gate a 90mm job takes the fence and infill terms alone; without one it keeps the form's F417,
-    // which reads -2 rows per unused gate slot, to match.
+    // Packs as the old form works them out: ceil(F417 + F235 + F522), plus the gates' spacers on the same line (Nov 2026).
+    // With no gate a 90mm job keeps the form's F417, which reads -2 rows per unused gate slot, to match.
     slatSpacerPacksFromTotals: function(totals, itemsPerPack) {
         var pack = itemsPerPack > 0 ? itemsPerPack : 50;
         var f235 = parseFloat((totals.fence / pack).toFixed(2));
         var f522 = parseFloat((Math.ceil(totals.infill) / pack).toFixed(2));
         var f417 = 0;
+        if (totals.gateSpacers > 0) {
+            return Math.ceil(parseFloat((f235 + f522 + totals.gateSpacers / pack).toFixed(2)));
+        }
         if (totals.is90 && totals.gates > 0) {
             return Math.ceil(parseFloat((f235 + f522).toFixed(2)));
         }
@@ -325,7 +329,7 @@ SlatFenceCalc = {
      * or 90 rail top and bottom, the slats between them, infill and screw cover by the metre, one joiner pack and two caps per
      * leaf, snap-in spacers and a wafer screw at each slat end. Rows are what fits between the rails, rounded down - a slat
      * that can't go in is never ordered, and what's left over becomes the two end gaps. Lengths are mm; the job-wide metre
-     * and pack ceilings are taken in slatQsgGateLinesForSection.
+     * and pack ceilings are taken in slatQsgGateLinesForSection, the spacers and screws with the fence's on one line each.
      */
     computeSlatQsgGateBom: function(g) {
         var is90 = g.sizePitch >= 80;
@@ -354,8 +358,6 @@ SlatFenceCalc = {
             joiners: live ? leaves : 0,
             spacers: g.gapKey > 0 ? rows * perSlat * leaves : 0,
             screws: rows * 2 * leaves,
-            // Rail screws fix a leaf's 4 joiner blocks to its side frames, 2 a block (assumed; added on request Nov 2026).
-            railScrews: live ? 8 * leaves : 0,
             caps: live ? leaves * 2 : 0,
             latches: 1,
             hinges: leaves,
@@ -456,9 +458,9 @@ SlatFenceCalc = {
         return Number.isFinite(bom.rows) ? Math.max(0, bom.rows) : null;
     },
 
-    // This section's share of each QuickScreen gate line: metres and packs total once over the job's gates, as the fence's
-    // own lines do, and each section gets its largest-remainder share so the lines still add up to the job total.
-    slatQsgGateLinesForSection: function(sectionIndex, gate, fenceSlug) {
+    // This section's share of each QuickScreen gate line: metres total once over the job's gates, as the fence's own lines
+    // do, and each section gets its largest-remainder share so the lines still add up to the job total.
+    slatQsgGateLinesForSection: function(sectionIndex, gate) {
         var gates = [];
         if (Number.isFinite(sectionIndex) && typeof fcGetPersistedFenceSectionCount === 'function') {
             var count = fcGetPersistedFenceSectionCount();
@@ -483,12 +485,6 @@ SlatFenceCalc = {
         var metres = function(mm) {
             return Math.ceil(mm / 1000 - 1e-9);
         };
-        var packs = function(slug) {
-            var per = self.getPackItemsForSlug(fenceSlug, slug);
-            return function(n) {
-                return Math.ceil(n / per - 1e-9);
-            };
-        };
         var each = function(n) {
             return n;
         };
@@ -497,7 +493,6 @@ SlatFenceCalc = {
         };
         var size65 = where(function(b) { return !b.is90; });
         var size90 = where(function(b) { return b.is90; });
-        var sameGap = where(function(b) { return b.gapKey === gate.gapKey; });
         return {
             sideFrames: line('sideFrameMm', metres),
             rails65: line('railMm', metres, size65),
@@ -506,9 +501,6 @@ SlatFenceCalc = {
             covers: line('coverMm', metres),
             joiners65: line('joiners', each, size65),
             joiners90: line('joiners', each, size90),
-            spacers: line('spacers', packs('slat_gate+qsg_spacer_' + gate.gapKey), sameGap),
-            screws: line('screws', packs('slat_gate+qsg_screws')),
-            railScrews: line('railScrews', packs('slat_gate+qsg_rail_screws')),
             caps: line('caps', each),
             latches: line('latches', each),
             hinges: line('hinges', each),
@@ -622,28 +614,43 @@ SlatFenceCalc = {
         return this.allocatePooledPacks(weights, Math.max(0, total))[pos];
     },
 
-    /**
-     * Slat tek screws (slat_gate+screws_flat, bag of 100) are ONE bag per job: the old eForm adds a
-     * single bag to every order, whereas one bag per section ordered 3 bags for a 3-section job. The
-     * bag goes on the first Slat / Slat Infill section with fence panels, so the per-section lines still
-     * add up to 1. A gate's slats take the QuickScreen kit's wafer screws, so a gate alone gets no bag (Nov 2026).
-     *
-     * Returns this section's bags (1 or 0), or null when no section resolves from storage (storage
-     * not written yet) so the caller can fall back to one bag on this section.
-     */
-    pooledSlatScrewBagsForSection: function(sectionIndex) {
+    // QuickScreen 16mm screws, Nov 2026: the old tek bag's 100 once per job, as the old eForm adds, on the first Slat or Slat
+    // Infill section with panels, plus each gate's (2 per slat row a leaf), in packs rounded up once. null = can't place yet.
+    pooledSlatQsScrewPacksForSection: function(sectionIndex, fenceSlug) {
         if (!Number.isFinite(sectionIndex) || typeof fcGetPersistedFenceSectionCount !== 'function') {
             return null;
         }
         var count = fcGetPersistedFenceSectionCount();
         if (!Number.isFinite(count) || count < 1) return null;
 
+        var bag = this.getPackItemsForSlug(fenceSlug, 'slat_gate+screws_flat');
+        var indexes = [];
+        var weights = [];
+        var seen = false;
+        var bagPlaced = false;
         for (var i = 0; i < count; i++) {
             var s = this.slatSectionSlatCountFromStorage(i);
-            if (!this.isSlatLike(s.style) || s.spacerSlats <= 0) continue;
-            return i === sectionIndex ? 1 : 0;
+            if (!this.isSlatLike(s.style)) continue;
+            if (i === sectionIndex) seen = true;
+            var screws = s.gate && s.gate.screws > 0 ? s.gate.screws : 0;
+            if (!bagPlaced && s.spacerSlats > 0) {
+                screws += bag;
+                bagPlaced = true;
+            }
+            if (screws <= 0) continue;
+            indexes.push(i);
+            weights.push(screws);
         }
-        return null;
+
+        var pos = indexes.indexOf(sectionIndex);
+        if (pos < 0) return seen ? 0 : null;
+
+        var total = 0;
+        for (var w = 0; w < weights.length; w++) total += weights[w];
+        return this.allocatePooledPacks(
+            weights,
+            this.ceilPackQuantity(total, this.getPackItemsForSlug(fenceSlug, 'slat_gate+qsg_screws'))
+        )[pos];
     },
 
     // One 20kg bag of grout fills about 11 core-drilled holes (100mm cores, 15% waste).
