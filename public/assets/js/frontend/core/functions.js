@@ -10593,10 +10593,107 @@ function fcSyncGateOnlyInSegmentStorage(cf, val) {
     }
 }
 
+/** Ticking Gate ONLY sets both ends to No Post on every style whose ends offer it; the side drawers put a post back (Nov 2026). */
+function fcSeedGateOnlyNoPost() {
+    try {
+        var fd = getSelectedFenceData();
+        var sideFields = function(side) {
+            return fd?.data?.settings?.[side + '_side']?.fields || [];
+        };
+        var offersNoPost = ['left', 'right'].every(function(side) {
+            return sideFields(side).some(function(field) {
+                return field?.slug === side + '_option' && (field.options || []).some(function(o) {
+                    return o?.slug === 'no-post';
+                });
+            });
+        });
+        if (!offersNoPost) {
+            return;
+        }
+        var key = 'custom_fence-' + fd.tab + '-' + fd.slug;
+        var segment = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!Array.isArray(segment)) {
+            return;
+        }
+        var postOpt = segment.find(function(row) {
+            return row?.control_key === 'post_options';
+        })?.settings?.find(function(item) {
+            return item?.key === 'post_option';
+        })?.val;
+
+        ['left', 'right'].forEach(function(side) {
+            var row = segment.find(function(r) {
+                return r?.control_key === side + '_side';
+            });
+            // gateOnlyNoPost marks the end as ours and holds what unticking restores ('' drops the row); a drawer save clears it.
+            if (!row) {
+                var defaultOf = function(slug) {
+                    var field = sideFields(side).find(function(f) {
+                        return f?.slug === slug;
+                    });
+                    return field ? (field.options || []).find(function(o) { return o?.default; })?.slug || field.options?.[0]?.slug : null;
+                };
+                var settings = [
+                    { key: side + '_option', val: 'no-post', tag: 'div', type: 'range_option' },
+                    { key: 'post_option', val: postOpt || defaultOf('post_option') || 'opt-1', tag: 'div', type: 'image_option' }
+                ];
+                if (defaultOf('post_angle')) {
+                    settings.push({ key: 'post_angle', val: defaultOf('post_angle'), tag: 'div', type: 'image_option' });
+                }
+                segment.push({ id: fd.slug, control_key: side + '_side', gateOnlyNoPost: '', settings: settings });
+                return;
+            }
+            var opt = (row.settings || []).find(function(item) {
+                return item?.key === side + '_option';
+            });
+            if (!opt) {
+                opt = { key: side + '_option', val: 'yes-post', tag: 'div', type: 'range_option' };
+                row.settings = (row.settings || []).concat([opt]);
+            }
+            if (!String(opt.val || '').includes('no-post')) {
+                row.gateOnlyNoPost = opt.val;
+                opt.val = 'no-post';
+            }
+        });
+        localStorage.setItem(key, JSON.stringify(segment));
+    } catch (e) {}
+}
+
+/** Gate ONLY is off again: give back the ends its tick set to No Post. */
+function fcHealGateOnlyNoPost() {
+    try {
+        var fd = getSelectedFenceData();
+        var key = 'custom_fence-' + fd.tab + '-' + fd.slug;
+        var segment = JSON.parse(localStorage.getItem(key) || '[]');
+        var ours = function(row) {
+            return !!row && typeof row.gateOnlyNoPost === 'string';
+        };
+        if (!Array.isArray(segment) || !segment.some(ours)) {
+            return;
+        }
+        segment = segment.filter(function(row) {
+            return !(ours(row) && row.gateOnlyNoPost === '');
+        });
+        segment.forEach(function(row) {
+            if (!ours(row)) {
+                return;
+            }
+            var optKey = row.control_key === 'right_side' ? 'right_option' : 'left_option';
+            (row.settings || []).forEach(function(item) {
+                if (item?.key === optKey) {
+                    item.val = row.gateOnlyNoPost;
+                }
+            });
+            delete row.gateOnlyNoPost;
+        });
+        localStorage.setItem(key, JSON.stringify(segment));
+    } catch (e) {}
+}
+
 function updateGateOnly(val) {
-    // Slat: the No Post ends a Gate ONLY tick set go back when it turns off.
-    if (!val && typeof SlatFence !== 'undefined') {
-        SlatFence.healGateOnlyNoPost();
+    // The No Post ends a Gate ONLY tick set go back when it turns off.
+    if (!val) {
+        fcHealGateOnlyNoPost();
     }
     var fd = getSelectedFenceData(),
         tab = fd.tab,

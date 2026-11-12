@@ -503,6 +503,11 @@ FENCES.cartItems = {
 
         array = array || [];
         var required = FENCES.cartItems.getBarrRequiredCornerPostQty(context);
+        // No more corner posts than posts on the run: a Gate ONLY with No Post ends has none.
+        var postsOnRun = array.reduce(function(sum, item) {
+            return /^panel_post(?:_corner)?\+/.test(String(item?.slug || '')) ? sum + (parseInt(item.qty, 10) || 0) : sum;
+        }, 0);
+        required = Math.min(required, postsOnRun);
 
         if (!required) {
             array.forEach(function(item) {

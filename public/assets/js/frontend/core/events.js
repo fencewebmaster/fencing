@@ -530,10 +530,8 @@ function fcGateOnlyStep2Enable() {
     }
 
     updateGateOnly(true);
-    // Slat: before the length is filled, so it counts the No Post ends.
-    if (slatStdGo) {
-        SlatFence.seedGateOnlyNoPost();
-    }
+    // Before the length is filled, so it counts the No Post ends.
+    fcSeedGateOnlyNoPost();
     removeStepPanels();
     if (!slatStdGo) {
         updateOverAllLength();
@@ -1664,9 +1662,7 @@ function gateOnly(e) {
         }
 
         updateGateOnly(true);
-        if (typeof SlatFence !== 'undefined') {
-            SlatFence.seedGateOnlyNoPost();
-        }
+        fcSeedGateOnlyNoPost();
         removeStepPanels();
         updateOverAllLength();
 
