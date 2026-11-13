@@ -168,6 +168,15 @@ SlatFenceCalc = {
         return parseFloat(m.toFixed(dp));
     },
 
+    // Whole metres billed for a style's cut line. Slat Infill rounds up (Nov 2026): to the nearest, a low single opening
+    // billed no side frame at all. Main Slat keeps the old form's rounding, `formMetres` being its figure.
+    slatBilledMetres: function(styleNorm, exactMm, formMetres) {
+        if (styleNorm === 'slat_fence_infill') {
+            return exactMm > 0 ? Math.ceil(exactMm / 1000 - 1e-9) : 0;
+        }
+        return Math.round(formMetres);
+    },
+
     /**
      * Split `total` packs across sections in proportion to their slat counts (largest remainder), so
      * the per-section lines still add up to exactly `total`. Ties go to the lower section index, so a
@@ -227,7 +236,7 @@ SlatFenceCalc = {
         var spacerSlug = 'slat_gate+qsg_spacer_' + gapKey;
         var indexes = [];
         var weights = [];
-        var totals = { fence: 0, infill: 0, gates: 0, gateSpacers: 0, is90: false, gapMm: gapKey, perSlat: 2 };
+        var totals = { fence: 0, infill: 0, gateSpacers: 0 };
         for (var i = 0; i < count; i++) {
             var s = this.slatSectionSlatCountFromStorage(i);
             if (!this.isSlatLike(s.style) || s.gapKey !== gapKey) continue;
@@ -237,11 +246,8 @@ SlatFenceCalc = {
             var perSlat = this.getSpacersPerSlat(s.style);
             var spacers = s.spacerSlats * perSlat;
             var gateSpacers = s.gate && s.gate.spacers > 0 ? s.gate.spacers : 0;
-            totals.perSlat = perSlat;
             totals[s.style === 'slat_fence_infill' ? 'infill' : 'fence'] += spacers;
             totals.gateSpacers += gateSpacers;
-            totals.is90 = totals.is90 || s.sizeKey === 90;
-            if (s.gate) totals.gates++;
             if (spacers + gateSpacers <= 0) continue;
             indexes.push(i);
             weights.push(spacers + gateSpacers);
@@ -253,75 +259,12 @@ SlatFenceCalc = {
         return this.allocatePooledPacks(weights, this.slatSpacerPacksFromTotals(totals, itemsPerPack))[pos];
     },
 
-    // Packs as the old form works them out: ceil(F417 + F235 + F522), plus the gates' spacers on the same line (Nov 2026).
-    // With no gate a 90mm job keeps the form's F417, which reads -2 rows per unused gate slot, to match.
+    // Packs for the job's spacers at one gap: fence, Infill and gate spacers on one line, rounded up once. The old form's
+    // 90mm rule took 0.6 of a pack off any job with no gate, so one needing 30 spacers or fewer got none (dropped Nov 2026).
     slatSpacerPacksFromTotals: function(totals, itemsPerPack) {
         var pack = itemsPerPack > 0 ? itemsPerPack : 50;
-        var f235 = parseFloat((totals.fence / pack).toFixed(2));
-        var f522 = parseFloat((Math.ceil(totals.infill) / pack).toFixed(2));
-        var f417 = 0;
-        if (totals.gateSpacers > 0) {
-            return Math.ceil(parseFloat((f235 + f522 + totals.gateSpacers / pack).toFixed(2)));
-        }
-        if (totals.is90 && totals.gates > 0) {
-            return Math.ceil(parseFloat((f235 + f522).toFixed(2)));
-        }
-        if (totals.is90) {
-            var unusedSlots = Math.max(0, this.slatFormGateSlots - totals.gates);
-            var unusedRows = this.computeSlatGateBom({ heightMm: 0, leafMm: 0, sizePitch: 90.3, gapMm: totals.gapMm, openingMm: 0 }).rows;
-            f417 = parseFloat(((unusedSlots * unusedRows * totals.perSlat) / pack).toFixed(1));
-        }
-        return Math.max(0, Math.ceil(f417 + f235 + f522));
-    },
-
-    // Gate lines the old form has room for: G1 to G8.
-    slatFormGateSlots: 8,
-
-    // Gate blades by opening (F348), 65mm only. Above 2100 its formula has no answer, which reads 0.
-    slatGateBladeQty: function(openingMm) {
-        if (openingMm <= 1000) return 4;
-        if (openingMm <= 1200) return 5;
-        if (openingMm <= 1500) return 6;
-        return openingMm <= 2100 ? 3 : 0;
-    },
-
-    // One gate by the old form's G1 fields: rows F246, frame F247/F346, slat cut F249. Blades and HD rails count one leaf, as there.
-    // Kept for slatSpacerPacksFromTotals' unused-slot rows only; the gate's own lines come from computeSlatQsgGateBom.
-    computeSlatGateBom: function(g) {
-        var is90 = g.sizePitch >= 80;
-        var leaves = g.isDouble ? 2 : 1;
-        var gap = g.gapMm;
-        var face = is90 ? 90.3 : 66.5;
-        var endGap = gap === 9 ? 8 : gap;
-        var hd = g.isHd ? 2 : 0;
-        var blades = is90 ? 0 : this.slatGateBladeQty(g.openingMm);
-        var rows = is90
-            ? Math.floor((g.heightMm - 133 - gap) / (face + gap) - hd)
-            : Math.floor((g.heightMm - (3 + face + endGap + endGap)) / (face + gap)) + 1 - (blades + hd);
-        var courses = rows + blades + hd;
-        var panelMm = is90
-            ? Math.floor(133 + gap + courses * (face + gap))
-            : Math.floor(2 * endGap + (courses - 1) * gap + courses * face + 3);
-        var frameMm = Math.max(0, panelMm - 3);
-        var cutMm = Math.max(0, g.leafMm - (is90 ? 86 : 36));
-        return {
-            is90: is90,
-            gapMm: gap,
-            rows: rows,
-            slatMm: cutMm * rows * leaves,
-            bladeMm: cutMm * blades,
-            frameMm: g.heightMm > 200 ? frameMm * leaves * 2 : 0,
-            hdMm: hd * Math.max(0, g.leafMm - 80),
-            qesMm: is90 ? frameMm * leaves : 0,
-            screwUnits: hd + blades,
-            latches: 1,
-            hinges: leaves,
-            handles: leaves,
-            dropBolts: g.isDouble ? 1 : 0,
-            frameCaps: leaves * 2,
-            qesCaps: is90 ? leaves * 2 : 0,
-            spacerRows: is90 ? rows * leaves : 0
-        };
+        var spacers = totals.fence + totals.infill + (totals.gateSpacers > 0 ? totals.gateSpacers : 0);
+        return spacers > 0 ? Math.ceil(spacers / pack) : 0;
     },
 
     /**
@@ -548,7 +491,9 @@ SlatFenceCalc = {
         var totalM = 0;
         for (var w = 0; w < weights.length; w++) totalM += weights[w];
 
-        var total = Math.round(
+        var total = this.slatBilledMetres(
+            styleNorm,
+            Math.round(totalM * 1000),
             dp === undefined ? totalM : this.applySlatMetreRoundingDp(totalM, dp)
         );
         return this.allocatePooledPacks(weights, total)[pos];
@@ -608,7 +553,9 @@ SlatFenceCalc = {
         var pos = indexes.indexOf(sectionIndex);
         if (pos < 0) return null;
 
-        var total = Math.round(
+        var total = this.slatBilledMetres(
+            styleNorm,
+            gateMm + fenceMm,
             this.applySlatMetreRoundingDp(gateMm / 1000, 1) + this.applySlatMetreRoundingDp(fenceMm / 1000, dp)
         );
         return this.allocatePooledPacks(weights, Math.max(0, total))[pos];

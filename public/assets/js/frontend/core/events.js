@@ -1112,6 +1112,14 @@ function fencingQtyPlus() {
         max = parseInt(input.attr('data-max')),
         val = input.val();
 
+    // Step 2's box stops at the style's own maximum (one Slat Infill opening's 3,000), not the planner-wide one.
+    if (input.hasClass('measurement-box-number') && typeof fcValidateOverallLengthMm === 'function') {
+        var styleMax = fcValidateOverallLengthMm({ el: input[0] }).max;
+        if (Number.isFinite(styleMax)) {
+            max = styleMax;
+        }
+    }
+
     if (!val) {
         input.val(max);
         measurementBoxNumber();
@@ -5160,7 +5168,8 @@ function gateMaxFenceHeightValidation(e) {
 
 //----------------------------------------------------------------------------------
 
-_doc.on('input blur', '[name="panel_count"]', panelCountValidation);
+// 'change' was never bound, so the auto-calculate below did not run and NEXT sent the previous count.
+_doc.on('input blur change', '[name="panel_count"]', panelCountValidation);
 
 function panelCountValidation(e) {
     var fd = getSelectedFenceData();
@@ -5191,15 +5200,14 @@ function panelCountValidation(e) {
 
     SlatFence.syncCalculateButtonState({ canCalculate: canCalculate });
 
+    // In the same tick, as Fence Height does: a tap on NEXT fires its click before a timer would run.
     if (e && e.type === 'change' && panelResult.valid && canCalculate) {
-        setTimeout(function() {
-            try {
-                step2TryAutoCalculateAfterDropdownChange({
-                    scrollToStep3: false,
-                    showNativeTooltip: false
-                });
-            } catch (eAc) {}
-        }, 0);
+        try {
+            step2TryAutoCalculateAfterDropdownChange({
+                scrollToStep3: false,
+                showNativeTooltip: false
+            });
+        } catch (eAc) {}
     }
 
     return panelResult.valid;

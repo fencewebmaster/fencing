@@ -12,6 +12,8 @@ SlatFenceInfill = {
             gate_post_gaps: 50 + 20 + 20,
             gate_posts_gaps: 50 + 20 + 20 + 50,
             panel_preview_limit: 7,
+            // Widest opening one panel spans, the old form's Opening Width limit. The box took the planner-wide maximum.
+            maxOverall: 3000,
         }
     },
 

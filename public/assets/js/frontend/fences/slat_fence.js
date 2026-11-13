@@ -36,6 +36,8 @@ SlatFence = {
             gate_posts_gaps: 50 + 20 + 20 + 50,
             // A double gate's latch gap moves to where its two leaves meet.
             gate_meeting_gap: 20,
+            // Longest section: the 90 m the Step 2 guide states, which the box never enforced.
+            maxOverall: 90000,
         }
     },
 
@@ -70,6 +72,17 @@ SlatFence = {
     getSetting: function(fence, key) {
         var f = fence === 'slat_fence' ? 'slat' : fence;
         return this.settings?.[f]?.[key];
+    },
+
+    //----------------------------------------------------------------------------------
+
+    // A style's own Overall Length maximum (settings maxOverall), which outranks the planner-wide one. NaN = it has none.
+    getOverallMaxMm: function(slug) {
+        var own = this.getSetting(slug, 'maxOverall');
+        if (own === undefined && typeof SlatFenceInfill !== 'undefined') {
+            own = SlatFenceInfill.getSetting(slug, 'maxOverall');
+        }
+        return parseInt(own, 10);
     },
 
     //----------------------------------------------------------------------------------
@@ -1352,7 +1365,7 @@ SlatFence = {
      * pooledSlatMetreQtyForSection() can round them once per job: `slatM` (cut slat metres —
      * fence and raked panels only) and `sfsM` (side-frame metres over the SFS-framed panels, cut
      * at panel height − sfs_length_deduction_mm). `spacerSlats` leaves the gate out and `gate`
-     * holds its own quantities (computeSlatGateBom), as the old form keeps them apart. `csrMm` is the
+     * holds its own quantities (computeSlatQsgGateBom), as the old form keeps them apart. `csrMm` is the
      * centre support rail cut for the section: the panel height per rail.
      *
      * @return {{style: string, gapKey: (number|null), sizeKey: (number|null), slats: number,
@@ -5331,7 +5344,10 @@ SlatFence = {
                     null,
                     0
                 );
-                railFenceQty = pooledRailQty === null ? Math.round(railFenceM) : pooledRailQty;
+                railFenceQty =
+                    pooledRailQty === null
+                        ? this.slatBilledMetres(styleNormForRail, Math.round(railFenceM * 1000), railFenceM)
+                        : pooledRailQty;
             }
             var railQty = railFenceQty;
 
@@ -5582,7 +5598,9 @@ SlatFence = {
             );
             slatQty =
                 pooledSlatQty === null
-                    ? Math.round(
+                    ? this.slatBilledMetres(
+                          styleNorm,
+                          gateSlatMm + Math.round(slatMSection * 1000),
                           this.applySlatMetreRoundingDp(gateSlatMm / 1000, 1) +
                               this.applySlatMetreRoundingDp(slatMSection, slatMetreDp)
                       )
@@ -5613,11 +5631,7 @@ SlatFence = {
                           {
                               fence: isSlatInfillOpenings ? 0 : slatPiecesFence * perSlat,
                               infill: isSlatInfillOpenings ? slatPiecesFence * perSlat : 0,
-                              gates: gate ? 1 : 0,
-                              gateSpacers: gate ? gate.spacers : 0,
-                              is90: sizeKey === 90,
-                              gapMm: gapKey,
-                              perSlat: perSlat
+                              gateSpacers: gate ? gate.spacers : 0
                           },
                           itemsPerPack
                       )
@@ -5709,7 +5723,7 @@ SlatFence = {
             'getSlatGapPitchConfigMm', 'getSlatLengthDeductionMm', 'getSfsLengthDeductionMm',
             'getSpacersPerSlat', 'getSlatMetreRoundingDp', 'applySlatMetreRoundingDp',
             'allocatePooledPacks', 'pooledSlatSpacerPacksForSection', 'pooledSlatMetreQtyForSection',
-            'pooledSlatCutQtyForSection', 'slatSpacerPacksFromTotals', 'computeSlatGateBom',
+            'pooledSlatCutQtyForSection', 'slatSpacerPacksFromTotals', 'slatBilledMetres',
             'slatGatePostOptions', 'slatGateRunCountAdjustMm', 'slatGateBomFromControls', 'slatGateBomFromValues',
             'slatGateRowsForDisplay', 'computeSlatQsgGateBom', 'slatQsgGateLinesForSection', 'pooledSlatQsScrewPacksForSection',
             'getSlatPanelEndAllowanceMm', 'gapSlugToPitchMm', 'countSlatPanelRowsFromMaxHeightMm',

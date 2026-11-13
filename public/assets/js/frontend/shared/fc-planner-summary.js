@@ -907,7 +907,12 @@
 
         var rows = [];
         pushRowIf(rows, 'Fence Style', styleTitle);
-        pushRowIf(rows, 'Overall Length', formatMm(overall, ''));
+        // Slat Infill's measurement is one opening's width; it read as the section's Overall Length here.
+        pushRowIf(
+            rows,
+            typeof SlatFence !== 'undefined' ? SlatFence.getStep2MeasurementCopy(slug).measurementLabel : 'Overall Length',
+            formatMm(overall, '')
+        );
         pushRowIf(
             rows,
             'Fence Height',

@@ -5337,6 +5337,14 @@ function fcValidateOverallLengthMm(opts) {
     var val = parseInt(raw, 10);
     var fcGateOnlyPlaceholderMm = 9999;
     var fdVal = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+    // A style's own maximum comes first: main Slat's stated 90 m, and 3 m for one Slat Infill opening.
+    var styleMax =
+        fdVal && typeof SlatFence !== 'undefined' && typeof SlatFence.getOverallMaxMm === 'function'
+            ? SlatFence.getOverallMaxMm(fdVal.slug)
+            : NaN;
+    if (Number.isFinite(styleMax) && (!Number.isFinite(max) || styleMax < max)) {
+        max = styleMax;
+    }
     // Slat Gate ONLY + STD: only an empty box takes the gate's length; a typed one is checked like any style's.
     var slatGoEmpty =
         !raw &&
