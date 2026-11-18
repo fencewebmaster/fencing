@@ -1,6 +1,7 @@
 <?php
 
 use Fc\Admin\Services\CartBuilderService;
+use Fc\Admin\Services\CartDebugPriceService;
 use Fc\Admin\Settings\ConsoleSettings;
 use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\WcProductCsvService;
@@ -32,6 +33,12 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
     }
     sort( $fc_cart_fence_styles );
 }
+
+// Debug Mode only: the store's prices, for each row's sub total and total and the totals under the
+// table. FC has none of its own; null keeps every price line out of the customer's page.
+$fc_cart_debug_prices = ConsoleSettings::debugMode()
+    ? CartDebugPriceService::forCart( isset( $cart['items'] ) && is_array( $cart['items'] ) ? $cart['items'] : array() )
+    : null;
 ?>
 
 <div class="fc-cart-list-toolbar d-flex align-items-center justify-content-between gap-2 mb-2">
@@ -66,7 +73,7 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
 
                 <input name="cart[original_qty][<?php echo $ci; ?>]" type="hidden" value="<?php echo @$cart_item['original_qty']; ?>" class="fc-form-control" min="1" required>
 
-                <tr class="fc-position-relative<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' fc-cart-item--optional-pending' : ''; ?>" data-original="<?php echo $cart_item['original_qty']; ?>" data-cart-slug="<?php echo e((string) (@$cart_item['slug'] ?? '')); ?>" data-fc-fence-style="<?php echo e( (string) FenceCatalogService::cartItemFenceStyleLabel( $cart_item, isset( $fences ) ? $fences : array() ) ); ?>"<?php echo ! empty( $cart_item['optional'] ) ? ' data-fc-cart-optional="1"' : ''; ?>>
+                <tr class="fc-position-relative<?php echo ! empty( $cart_item['optional'] ) && empty( $cart_item['optional_included'] ) ? ' fc-cart-item--optional-pending' : ''; ?>" data-original="<?php echo $cart_item['original_qty']; ?>" data-saved="<?php echo (int) ( $cart_item['qty'] ?? 0 ); ?>" data-cart-slug="<?php echo e((string) (@$cart_item['slug'] ?? '')); ?>" data-fc-fence-style="<?php echo e( (string) FenceCatalogService::cartItemFenceStyleLabel( $cart_item, isset( $fences ) ? $fences : array() ) ); ?>"<?php echo ! empty( $cart_item['optional'] ) ? ' data-fc-cart-optional="1"' : ''; ?>>
 
                     <td class="d-none d-md-table-cell align-middle text-center">
 
@@ -132,6 +139,20 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
                         if ( ! empty( $cart_item['slug'] ) && ConsoleSettings::debugMode() ) :
                         ?>
                         <div class="small text-muted mb-1 fc-cart-item-slug"><?php echo e((string) $cart_item['slug']); ?></div>
+                        <?php endif; ?>
+                        <?php
+                        $fc_debug_price = $fc_cart_debug_prices['rows'][ $ci ] ?? null;
+                        if ( $fc_debug_price !== null ) :
+                        ?>
+                        <?php /* Kept below the SKU: the Copy button reads the first muted line of the cell as the SKU. */ ?>
+                        <div class="small text-muted mb-1 fc-cart-item-debug-price">
+                            <?php if ( $fc_debug_price['price'] === null ) : ?>
+                            No store price for this SKU
+                            <?php else : ?>
+                            <span class="d-block text-nowrap"><?php echo $fc_debug_price['pending'] ? 'If added: ' : ''; ?><?php echo (int) $fc_debug_price['qty']; ?> &times; $<?php echo number_format( $fc_debug_price['price'], 2 ); ?></span>
+                            <span class="d-block text-nowrap fw-bold">$<?php echo number_format( $fc_debug_price['subtotal'], 2 ); ?></span>
+                            <?php endif; ?>
+                        </div>
                         <?php endif; ?>
                         <?php
                         $fence_style_label = FenceCatalogService::cartItemFenceStyleLabel( $cart_item, isset( $fences ) ? $fences : array() );
@@ -243,6 +264,38 @@ if ( isset( $cart['items'] ) && is_array( $cart['items'] ) ) {
         </table>
 
     </div>
+
+    <?php if ( $fc_cart_debug_prices !== null ) : ?>
+    <?php /* Debug Mode only. Inside the fragment, so a quantity change or an optional Add to cart re-totals it.
+         Rows and lines follow the store's cart page: GST sits inside its figures when the store shows it that way,
+         and then only the Total is listed (the Sub Total would repeat it); Sub Total and GST show where they differ. */ ?>
+    <div class="fc-cart-debug-totals d-flex flex-column align-items-end mt-3 px-3 pb-3">
+        <div class="small text-muted text-end mb-1">Debug Mode: the store cart's prices, delivery not included</div>
+        <?php if ( $fc_cart_debug_prices['error'] !== '' ) : ?>
+        <div class="small text-danger"><?php echo e( $fc_cart_debug_prices['error'] ); ?></div>
+        <?php else : ?>
+        <table class="table table-sm table-borderless w-auto mb-0">
+            <?php if ( ! $fc_cart_debug_prices['taxIncluded'] ) : ?>
+            <tr>
+                <td class="text-end fw-bold py-0">Sub Total:</td>
+                <td class="text-end py-0">$<?php echo number_format( $fc_cart_debug_prices['subtotal'], 2 ); ?></td>
+            </tr>
+            <tr>
+                <td class="text-end fw-bold py-0">GST:</td>
+                <td class="text-end py-0">$<?php echo number_format( $fc_cart_debug_prices['tax'], 2 ); ?></td>
+            </tr>
+            <?php endif; ?>
+            <tr>
+                <td class="text-end fw-bold py-0">Total:</td>
+                <td class="text-end fw-bold py-0">$<?php echo number_format( $fc_cart_debug_prices['total'], 2 ); ?></td>
+            </tr>
+        </table>
+        <?php if ( $fc_cart_debug_prices['missing'] > 0 ) : ?>
+        <div class="small text-danger mt-1"><?php echo (int) $fc_cart_debug_prices['missing']; ?> item(s) have no store price and are not in this total</div>
+        <?php endif; ?>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <div class="fc-float-r fc-mb-2 fc-d-none">
         

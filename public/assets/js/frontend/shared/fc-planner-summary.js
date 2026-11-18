@@ -161,7 +161,8 @@
         if (canon === 'slat_fence') {
             canon = 'slat';
         }
-        var key = 'cart_items-' + (tabIdx + 1) + '-' + canon;
+        // cartItems.init() saves under the 0-based section index: + 1 read the next section's cart, and its post count.
+        var key = 'cart_items-' + tabIdx + '-' + canon;
         try {
             var raw = localStorage.getItem(key);
             return raw ? JSON.parse(raw) : null;
@@ -232,13 +233,16 @@
                 return null;
             }
             var total = 0;
+            var seen = 0;
             root.querySelectorAll('[data-cart-key="panel_post"], [data-cart-key="panel_post_corner"], [data-cart-key="raked_post"]').forEach(function(el) {
+                seen += 1;
                 if (el.classList.contains('panel-no-post')) {
                     return;
                 }
                 total += 1;
             });
-            return total > 0 ? total : null;
+            // Every end set to No Post is an answer of none, not a failed count: a Gate ONLY section read "2 posts".
+            return seen > 0 ? total : null;
         } catch (e) {
             return null;
         }
@@ -407,8 +411,10 @@
 
         var longCount = parseInt(calc.long_panel?.count, 10) || 0;
         var shortCount = parseInt(calc.short_panel?.count, 10) || 0;
+        // A glass gate's hinge panel is drawn as a panel: off screen the section read one panel short.
+        var hingeCount = parseInt(calc.gate_hinge_panel?.count, 10) || 0;
         if (longCount > 0 || shortCount > 0) {
-            return longCount + shortCount + barrGateExtraPanelCount(slug, custom_fence, tabRow, calc, tabIdx);
+            return longCount + shortCount + hingeCount + barrGateExtraPanelCount(slug, custom_fence, tabRow, calc, tabIdx);
         }
 
         var evenCount = parseInt(calc.even_panel?.count, 10) || 0;
@@ -430,9 +436,37 @@
         return gatePosts;
     }
 
+    // The drawing's own rule for an end post (update_raked_panels): any saved end option but Yes Post marks it No Post.
+    function endHidesPost(custom_fence, side) {
+        var row = (custom_fence || []).filter(function(item) {
+            return item && item.control_key === side + '_side';
+        })[0];
+        var val = ((row && row.settings) || [])
+            .filter(function(item) {
+                return item && item.key === side + '_option';
+            })
+            .map(function(item) {
+                return item.val;
+            })
+            .join('');
+        return val !== '' && val !== 'yes-post';
+    }
+
+    // A glass gate drawn ahead of the first panel (update_gate): placed first, unless a left-hand gate's hinge panel leads.
+    function glassGateLeadsRun(custom_fence, calc) {
+        var gateRow = (custom_fence || []).filter(function(item) {
+            return item && item.control_key === 'gate';
+        })[0];
+        if (!gateRow || !gateRow.settings || parseInt(gateRow.settings.placement, 10) !== -1) {
+            return false;
+        }
+        var leftSwing =
+            typeof fcGlassPoolIsLeftHandSwingFromGateData === 'function' && fcGlassPoolIsLeftHandSwingFromGateData([gateRow]);
+        return !(leftSwing && parseInt(calc?.gate_hinge_panel?.count, 10) > 0);
+    }
+
     function countPostsForSection(calc, custom_fence, info, slug, panelCount, tabIdx, tabRow) {
         var context = { fenceInfo: custom_fence, tabInfo: tabRow, calc: calc };
-        var cart = readSectionCart(tabIdx, slug);
 
         if (isProjectPlanPage() || tabIdx === getActivePlannerTabIndex()) {
             var fromDom = countPostsFromLiveDom(tabIdx);
@@ -441,24 +475,26 @@
             }
         }
 
-        var fromCart = countPostsFromCart(cart, context);
-        if (fromCart != null) {
-            return fromCart;
-        }
-
         var n = parseInt(panelCount, 10);
         var gateCount = parseInt(calc?.gate?.count, 10) || 0;
 
-        if (!Number.isFinite(n) || n <= 0) {
-            if (gateCount > 0 && typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(slug)) {
-                var gateOnlyPosts = countSlatGatePosts(context);
-                return gateOnlyPosts > 0 ? gateOnlyPosts : 2;
-            }
-            return 0;
+        // A saved cart counts drawn posts for Slat only (Barr bills fewer than it draws, glass bills spigots), so another
+        // style is counted as drawn: one a panel, one closing the run (not glass), one a gate and a raked panel, less marked ends.
+        if (typeof SlatFence === 'undefined' || !SlatFence.isSlatLike(slug)) {
+            var isGlass = info?.panel_group === 'a';
+            var leftRaked = parseInt(calc?.left_raked?.height, 10) > 0;
+            var rightRaked = parseInt(calc?.right_raked?.height, 10) > 0;
+            // Glass draws a panel's spigots ahead of its post, so its left end marks a post only when a raked panel or the gate leads.
+            var leftHides =
+                endHidesPost(custom_fence, 'left') && (!isGlass || leftRaked || glassGateLeadsRun(custom_fence, calc));
+            var drawn =
+                (Number.isFinite(n) && n > 0 ? n : 0) + (isGlass ? 0 : 1) + gateCount + (leftRaked ? 1 : 0) + (rightRaked ? 1 : 0);
+            return Math.max(0, drawn - (leftHides ? 1 : 0) - (endHidesPost(custom_fence, 'right') ? 1 : 0));
         }
 
-        if (slug === 'slat_fence_infill') {
-            return n + 1;
+        var fromCart = countPostsFromCart(readSectionCart(tabIdx, slug), context);
+        if (fromCart != null) {
+            return fromCart;
         }
 
         var postW =
@@ -471,6 +507,19 @@
                 : 0;
         var removedCount =
             postW > 0 && removedMm > 0 ? Math.round(removedMm / postW) : 0;
+
+        if (!Number.isFinite(n) || n <= 0) {
+            if (gateCount > 0 && typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(slug)) {
+                var gateOnlyPosts = countSlatGatePosts(context);
+                // A gate's two posts, less the ends set to No Post (both, on a Gate ONLY section).
+                return gateOnlyPosts > 0 ? gateOnlyPosts : Math.max(0, 2 - removedCount);
+            }
+            return 0;
+        }
+
+        if (slug === 'slat_fence_infill') {
+            return n + 1;
+        }
 
         if (typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(slug)) {
             var totalPostsMm = SlatFence.computeSlatTotalPostsMm(n, postW, removedMm);
@@ -572,10 +621,17 @@
             }
         }
 
+        // A slat panel is made shorter than the Fence Height asked for: the drawing said 1784H where this row said 1800H.
+        var slatPanelHm =
+            typeof SlatFence !== 'undefined' && SlatFence.isSlatLike(slug) && SlatFence.resolveSlatPanelHeightMm
+                ? SlatFence.resolveSlatPanelHeightMm({ fenceInfo: custom_fence, tabInfo: tabRow, calc: calc }, calc)
+                : 0;
         var h =
             slug === 'glass_pool'
                 ? resolveGlassPoolPanelHeightMm(calc)
-                : parseInt(String(calc.fence_size?.height || '').replace(/,/g, ''), 10);
+                : slatPanelHm > 0
+                  ? slatPanelHm
+                  : parseInt(String(calc.fence_size?.height || '').replace(/,/g, ''), 10);
         var w =
             parseInt(calc.long_panel?.length, 10) ||
             parseInt(calc.even_panel?.length, 10) ||
@@ -777,6 +833,10 @@
 
         var rows = [];
         var context = { fenceInfo: custom_fence, tabInfo: tabRow, calc: calc };
+        var gateRow = (custom_fence || []).filter(function(item) {
+            return item && item.control_key === 'gate';
+        })[0];
+        var gateOnly = !!(gateRow && gateRow.settings && gateRow.settings.gateOnly);
 
         var gap = SlatFence.getGapDisplayLabelMm
             ? SlatFence.getGapDisplayLabelMm(custom_fence, info)
@@ -797,7 +857,9 @@
             ? SlatFence.resolveSlatFenceHeightMm(context, calc)
             : 0;
 
+        // Gate ONLY has no fence panels: these were a fence's rows (21) beside the gate's own (19) in its Gate block.
         if (
+            !gateOnly &&
             pitch &&
             Number.isFinite(fenceHm) &&
             fenceHm > 0 &&
@@ -814,7 +876,9 @@
         }
 
         if (Number.isFinite(fenceHm) && fenceHm > 0) {
-            rows.push({ label: 'Fence Height', value: formatMm(fenceHm, '') });
+            // Step 2 names this box Gate Height on a Gate ONLY section, so it does here too.
+            var heightLabel = SlatFence.getStep2HeightFieldLabel ? SlatFence.getStep2HeightFieldLabel(gateOnly) : 'Fence Height';
+            rows.push({ label: heightLabel, value: formatMm(fenceHm, '') });
         }
 
         return rows;
@@ -854,6 +918,18 @@
     }
 
     function buildSectionSummary(tabIdx) {
+        // Step 2 on the planner is the on-screen section's form: any other section is read from its saved values, or a
+        // Slat section showed the height, gap, slat size and length of the one on screen.
+        var onScreen = isProjectPlanPage() || tabIdx === getActivePlannerTabIndex();
+        if (onScreen || typeof SlatFence === 'undefined' || typeof SlatFence.withSavedSection !== 'function') {
+            return buildSectionSummaryRows(tabIdx);
+        }
+        return SlatFence.withSavedSection(readTabRow(tabIdx)[0], function() {
+            return buildSectionSummaryRows(tabIdx);
+        });
+    }
+
+    function buildSectionSummaryRows(tabIdx) {
         var tabRow = readTabRow(tabIdx);
         var slug = sectionStyleSlug(tabRow);
         if (!slug) {
@@ -926,14 +1002,22 @@
         if (!isSlatInfill && postCount > 0) {
             pushRowIf(rows, 'Number of Posts', String(postCount));
         }
-        if (!isSlatInfill) {
+        // Post rows only where the section has posts: a Gate ONLY with No Post ends listed a post type and size.
+        var hasPosts = !isSlatInfill && postCount > 0;
+        if (hasPosts) {
             pushRowIf(rows, 'Post Type', postType !== '—' ? postType : '');
         }
 
-        var panelOpt = panelOptionLabel(custom_fence, info);
-        pushRowIf(rows, 'Panel Option', panelOpt);
+        // Slat Infill has no Panel Option of its own (the row repeated its slat size); Gate ONLY has no panels.
+        var gateRowSummary = (custom_fence || []).filter(function(item) {
+            return item && item.control_key === 'gate';
+        })[0];
+        var gateOnlySection = !!(gateRowSummary && gateRowSummary.settings && gateRowSummary.settings.gateOnly);
+        if (!isSlatInfill && !gateOnlySection) {
+            pushRowIf(rows, 'Panel Option', panelOptionLabel(custom_fence, info));
+        }
 
-        if (calc?.selected_values?.spacing) {
+        if (calc?.selected_values?.spacing && (info?.panel_group === 'a' || hasPosts)) {
             pushRowIf(
                 rows,
                 info?.panel_group === 'a' ? 'Panel Gap' : 'Post Size',

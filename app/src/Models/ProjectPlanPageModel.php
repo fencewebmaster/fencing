@@ -72,7 +72,8 @@ final class ProjectPlanPageModel
         );
 
         if (!empty($cart_items_data)) {
-            CartBuilderService::postProductSkus($cart_items_data);
+            // Same plan, rebuilt on every page load: quantities saved through Change QTY have to survive it.
+            CartBuilderService::postProductSkus($cart_items_data, true);
             $cart = isset($_SESSION['fc_cart']) ? $_SESSION['fc_cart'] : $cart;
         }
 

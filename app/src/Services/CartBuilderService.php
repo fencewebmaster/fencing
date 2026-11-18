@@ -176,7 +176,14 @@ final class CartBuilderService
         }
     }
 
-    public static function postProductSkus(array $cartItems = []): void
+    /**
+     * Rebuild the session cart from the plan's BOM.
+     *
+     * @param bool $keepEditedQty True where the same plan is being rebuilt (page load, quote restore, a
+     *        details save): a quantity the customer saved through Change QTY is put back, as long as the
+     *        line's planned figure has not moved. A submit builds a new plan and starts clean.
+     */
+    public static function postProductSkus(array $cartItems = [], bool $keepEditedQty = false): void
     {
         global $fences;
         $supplier = self::supplier();
@@ -221,6 +228,7 @@ final class CartBuilderService
 
         $customFenceProducts = $_SESSION['custom_fence_products'];
         $optionalIncluded = self::cartOptionalIncludedSnapshot();
+        $editedQty = $keepEditedQty ? self::cartEditedQtySnapshot() : [];
 
         $i = 1;
         foreach ($customFenceProducts as $customFenceProduct) {
@@ -275,16 +283,12 @@ final class CartBuilderService
                         $customFenceProduct['fence'],
                         isset($fences) ? $fences : []
                     ),
-                    '_dedupe_key' => implode(
-                        '|',
-                        [
-                            (string) $sku,
-                            FenceCatalogService::normalizePlannerFenceSlug((string) ($customFenceProduct['fence'] ?? '')),
-                            (string) ($customFenceProduct['color'] ?? ''),
-                            // Optional rows stay apart from billed ones on the same SKU (Slat Gate ONLY posts beside fence posts).
-                            $isOptional ? 'optional' : '',
-                        ]
-                    ),
+                    '_dedupe_key' => self::cartLineKey([
+                        'sku' => $sku,
+                        'fence' => $customFenceProduct['fence'] ?? '',
+                        'color' => $customFenceProduct['color'] ?? '',
+                        'optional' => $isOptional,
+                    ]),
                     'stock' => $i == 1 || $i == $rand ? 'low' : 'yes',
                     'qty' => $lineQty,
                     'original_qty' => $lineQty,
@@ -313,6 +317,18 @@ final class CartBuilderService
                 $cart[$ck]['qty'] = $included ? $suggested : 0;
                 $cart[$ck]['original_qty'] = $cart[$ck]['qty'];
             }
+
+            // Change QTY: the rebuild above knows only the plan, so a saved quantity came back as the planned
+            // one on every page load. Put back while the line's planned figure is the one it was changed from.
+            $edit = $editedQty[(string) ($crow['_dedupe_key'] ?? '')] ?? null;
+            if ($edit !== null && $edit['planned'] === self::cartLinePlannedQty($cart[$ck])
+                && (empty($crow['optional']) || !empty($cart[$ck]['optional_included']))) {
+                $cart[$ck]['qty'] = $edit['qty'];
+                if (!empty($crow['optional'])) {
+                    $cart[$ck]['original_qty'] = $edit['original'];
+                }
+            }
+
             if (array_key_exists('_dedupe_key', $crow)) {
                 unset($cart[$ck]['_dedupe_key']);
             }
@@ -361,6 +377,70 @@ final class CartBuilderService
             if ($key !== '') {
                 $snapshot[$key] = !empty($row['optional_included']);
             }
+        }
+
+        return $snapshot;
+    }
+
+    /**
+     * One cart line's identity across rebuilds: SKU, fence and colour, with an optional row kept apart from
+     * a billed one on the same SKU (Slat Gate ONLY posts beside fence posts).
+     *
+     * @param array<string, mixed> $row
+     */
+    private static function cartLineKey(array $row): string
+    {
+        return implode(
+            '|',
+            [
+                (string) ($row['sku'] ?? ''),
+                FenceCatalogService::normalizePlannerFenceSlug((string) ($row['fence'] ?? '')),
+                (string) ($row['color'] ?? ''),
+                !empty($row['optional']) ? 'optional' : '',
+            ]
+        );
+    }
+
+    /**
+     * The quantity the plan itself gives a line: what a billed row loads with, and what an optional row suggests.
+     *
+     * @param array<string, mixed> $row
+     */
+    private static function cartLinePlannedQty(array $row): int
+    {
+        return (int) (!empty($row['optional']) ? ($row['suggested_qty'] ?? 0) : ($row['original_qty'] ?? 0));
+    }
+
+    /**
+     * Remember quantities the customer changed across cart rebuilds, keyed by cartLineKey().
+     * A billed row counts once it differs from the planned figure; an optional row once it is in the cart at
+     * something other than its suggested quantity.
+     *
+     * @return array<string, array{planned:int,qty:int,original:int}>
+     */
+    public static function cartEditedQtySnapshot(): array
+    {
+        $snapshot = [];
+        if (empty($_SESSION['fc_cart']['items']) || !is_array($_SESSION['fc_cart']['items'])) {
+            return $snapshot;
+        }
+        foreach ($_SESSION['fc_cart']['items'] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            if (!empty($row['optional']) && empty($row['optional_included'])) {
+                continue;
+            }
+            $qty = (int) ($row['qty'] ?? 0);
+            $planned = self::cartLinePlannedQty($row);
+            if ($qty === $planned) {
+                continue;
+            }
+            $snapshot[self::cartLineKey($row)] = [
+                'planned' => $planned,
+                'qty' => $qty,
+                'original' => (int) ($row['original_qty'] ?? 0),
+            ];
         }
 
         return $snapshot;

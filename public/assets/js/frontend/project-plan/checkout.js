@@ -155,7 +155,8 @@ function fcBuildCartItemsCopyText($root) {
             return;
         }
 
-        var name = $.trim($desc.children('.fw-bold.text-dark.mb-2').first().text());
+        // By its own class: the title lost mb-2, the old selector matched nothing and every copied line lacked its name.
+        var name = $.trim($desc.children('.fc-cart-item-title').first().text()).replace(/\s+/g, ' ');
         var sku = $.trim($desc.children('.text-muted.mb-1').first().text());
 
         var qty = '';
@@ -1840,11 +1841,14 @@ $(fcMountCartHeadingActions);
  * copying the list mid-edit would copy half-typed values.
  */
 /**
- * Reset and Save Changes are dead until a quantity actually differs from the one the row loaded
- * with — there is nothing to undo or commit before that. They are anchors, so `disabled` does not
- * apply: the .disabled class is what Bootstrap paints and what the two click handlers check.
+ * Reset is dead until a quantity differs from the planned one (data-original, what it restores) and
+ * Save Changes until one differs from what the cart holds (data-saved). One test against data-original
+ * served both, so a row saved at another quantity could not be saved back to the planned one.
+ * They are anchors, so `disabled` does not apply: the .disabled class is what Bootstrap paints and
+ * what the two click handlers check.
  */
-function fcCartHasChanges() {
+function fcCartHasChanges(against) {
+    var attr = against === 'saved' ? 'data-saved' : 'data-original';
     var changed = false;
 
     $('.fc-table-items td').each(function() {
@@ -1852,8 +1856,10 @@ function fcCartHasChanges() {
         if (!$field.length) {
             return;
         }
-        // Same source fcResetItem restores from, so the two always agree on what "unchanged" means.
-        if (String($field.val()) !== String($(this).closest('tr').data('original'))) {
+        var $tr = $(this).closest('tr');
+        // A row rendered before data-saved existed has only the planned figure to go by.
+        var base = $tr.attr(attr) === undefined ? $tr.attr('data-original') : $tr.attr(attr);
+        if (String($field.val()) !== String(base)) {
             changed = true;
             return false;
         }
@@ -1863,24 +1869,27 @@ function fcCartHasChanges() {
 }
 
 function fcSyncCartEditActions() {
-    var enable = $('.js-fc-cart-edit-bar').hasClass('is-editing') && fcCartHasChanges();
+    var editing = $('.js-fc-cart-edit-bar').hasClass('is-editing');
 
     // tabindex with it: the button still takes pointer events so the not-allowed cursor shows, and
     // a control nothing will act on should not be a tab stop either.
-    $('.fc-reset-item, .js-fc-edit-item')
-        .toggleClass('disabled', !enable)
-        .attr('aria-disabled', enable ? null : 'true')
-        .attr('tabindex', enable ? null : '-1');
+    var setEnabled = function($btn, enable) {
+        $btn.toggleClass('disabled', !enable)
+            .attr('aria-disabled', enable ? null : 'true')
+            .attr('tabindex', enable ? null : '-1');
+    };
+
+    setEnabled($('.fc-reset-item'), editing && fcCartHasChanges('original'));
+    setEnabled($('.js-fc-edit-item'), editing && fcCartHasChanges('saved'));
 }
 
 /**
  * Save Changes on, whatever fcSyncCartEditActions just decided.
  *
- * That function gates Save and Reset together on "does any quantity differ from the one its row
- * loaded with", which is the right question for Reset and the wrong one for Save once an action
- * has already been taken: a reset is itself something the user may want to commit, and a cart
- * toggle changes the cart without touching a single quantity field. Reset is left alone — after
- * either of those there is genuinely nothing left to undo.
+ * That function turns Save on only while a quantity differs from what the cart holds, which is the
+ * wrong question once an action has already been taken: a reset is itself something the user may
+ * want to commit, and a cart toggle changes the cart without touching a single quantity field.
+ * Reset is left alone — after either of those there is genuinely nothing left to undo.
  */
 function fcEnableCartSaveButton() {
     if (!$('.js-fc-cart-edit-bar').hasClass('is-editing')) {

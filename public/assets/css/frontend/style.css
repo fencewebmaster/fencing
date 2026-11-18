@@ -12646,6 +12646,13 @@ body.fc-restoring-selection .fencing-tab-name {
     letter-spacing: 0.48px;
 }
 
+/* Debug Mode's row sub total = the value's size and colour, but bold: it is the one figure the row is read for. */
+#update_cart-list .table-cart .fc-cart-item-debug-price .fw-bold {
+    font-size: 14px;
+    font-weight: 700 !important;
+    color: var(--fc-cod-gray) !important;
+}
+
 /* The stock label stays at the compact size but joins the same weight and colour. */
 #update_cart-list .table-cart .fw-boldx {
     font-weight: 500;
@@ -21397,7 +21404,7 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 }
 
 /* Width Dimension From: the gate opening over its posts' outer faces or centre lines, under the labels, drawn like the width
-   line over the run. The project plan's Centers row carries the same figure, so it shows on the planner only. */
+   line over the run. Planner only: the project plan has its Centers row there, which always reads post centres. */
 .fc-slat-gate-measure {
     position: absolute;
     top: calc(100% + 54px + var(--fc-foot-room, 0px));

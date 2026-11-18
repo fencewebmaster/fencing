@@ -1343,9 +1343,12 @@ function fcSelectPostItem() {
 
     HELPER.getSelectedColorDetails(_this, getFormField);
 
+    // The marker outlives the drawer and a Step 4 colour swatch is a .fc-select-item too, so the tile must be in the drawer.
+    var inGateDrawer = $('.fencing-container').attr('data-key') === 'gate' && _this.closest('#fc-control-modal').length > 0;
+
     // Gate modal: persist selections immediately so they reload on open.
     // (Gate selections were previously saved after closing the modal, which can miss values.)
-    if ($('.fencing-container').attr('data-key') === 'gate') {
+    if (inGateDrawer) {
         try { FENCE.call('update_custom_fence_gate'); } catch (err) {}
 
         if (getFormField.attr('name') === 'gate_hinge_type') {

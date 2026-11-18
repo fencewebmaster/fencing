@@ -75,7 +75,8 @@ final class CheckoutCartModel
                 $_SESSION['fc_data']['fences'] ?? '[]'
             );
             if (!empty($cart_items_data)) {
-                CartBuilderService::postProductSkus($cart_items_data);
+                // A details save is not a new plan: a line whose colour did not change keeps its saved quantity.
+                CartBuilderService::postProductSkus($cart_items_data, true);
             }
         }
     }
@@ -119,7 +120,8 @@ final class CheckoutCartModel
             $_SESSION['fc_data']['color'] = CartBuilderService::convertInputs($color_override);
         }
 
-        CartBuilderService::postProductSkus($cart_items_data);
+        // The page's own re-sync of the plan it already shows, so saved quantities stay (see postProductSkus()).
+        CartBuilderService::postProductSkus($cart_items_data, true);
     }
 
     /**

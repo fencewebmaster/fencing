@@ -449,7 +449,8 @@ final class FenceCatalogService
 
     /**
      * Main Slat: stock post length tier (mm) from Step 2 Fence Height.
-     * <=1800 → 1800, <=2400 → 2400, <=2700 → 2700, else 6000.
+     * <=1800 → 1800, <=2400 → 2400, else 6000. No 50x50 post is made in 2700 (the store's are 65x65 steel),
+     * and the 2700 row only ever sold the 6000 post, so it was removed (Nov 2026).
      */
     public static function slatPostHeightTierMm(int $fenceHeightMm): int
     {
@@ -462,9 +463,6 @@ final class FenceCatalogService
         }
         if ($h <= 2400) {
             return 2400;
-        }
-        if ($h <= 2700) {
-            return 2700;
         }
 
         return 6000;
@@ -580,7 +578,7 @@ final class FenceCatalogService
 
     /**
      * Maps planner/cart line slugs (e.g. panel_post+opt-1) to products.csv SLUG for main Slat.
-     * Post row follows Fence Height tiers (1800 / 2400 / 2700 / 6000 mm stock lengths).
+     * Post row follows Fence Height tiers (1800 / 2400 / 6000 mm stock lengths).
      *
      * Slat Infill: FSQ infill mode uses no fence posts — do not map to slat_post+*.
      *

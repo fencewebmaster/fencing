@@ -121,8 +121,11 @@ SlatFenceCalc = {
         return this.getSlatConfigNumber(fenceSlug, 'slat_length_deduction_mm', 16);
     },
 
-    /** SFS side-frame cut length = panel height − this (FSQ F86/F238 = 6 mm). */
-    getSfsLengthDeductionMm: function(fenceSlug) {
+    /** SFS side-frame cut length = panel height − this (FSQ F86/F238 = 6 mm; the one 3 mm cap at a Quickscreen gap). */
+    getSfsLengthDeductionMm: function(fenceSlug, gapPitch) {
+        if (this.isSlatQuickscreenGapPitch(gapPitch)) {
+            return this.slatQuickscreenCapMm;
+        }
         return this.getSlatConfigNumber(fenceSlug, 'sfs_length_deduction_mm', 6);
     },
 
@@ -561,43 +564,26 @@ SlatFenceCalc = {
         return this.allocatePooledPacks(weights, Math.max(0, total))[pos];
     },
 
-    // QuickScreen 16mm screws, Nov 2026: the old tek bag's 100 once per job, as the old eForm adds, on the first Slat or Slat
-    // Infill section with panels, plus each gate's (2 per slat row a leaf), in packs rounded up once. null = can't place yet.
-    pooledSlatQsScrewPacksForSection: function(sectionIndex, fenceSlug) {
+    // QuickScreen 16mm screws: one pack per job, whatever its size (owner, Nov 2026), on the first Slat or Slat Infill section
+    // with slats in a panel or a gate. Was the old tek bag's 100 plus 2 per gate slat row, so 2 packs or more. null = can't place yet.
+    pooledSlatQsScrewPacksForSection: function(sectionIndex) {
         if (!Number.isFinite(sectionIndex) || typeof fcGetPersistedFenceSectionCount !== 'function') {
             return null;
         }
         var count = fcGetPersistedFenceSectionCount();
         if (!Number.isFinite(count) || count < 1) return null;
 
-        var bag = this.getPackItemsForSlug(fenceSlug, 'slat_gate+screws_flat');
-        var indexes = [];
-        var weights = [];
         var seen = false;
-        var bagPlaced = false;
+        var first = -1;
         for (var i = 0; i < count; i++) {
             var s = this.slatSectionSlatCountFromStorage(i);
             if (!this.isSlatLike(s.style)) continue;
             if (i === sectionIndex) seen = true;
-            var screws = s.gate && s.gate.screws > 0 ? s.gate.screws : 0;
-            if (!bagPlaced && s.spacerSlats > 0) {
-                screws += bag;
-                bagPlaced = true;
-            }
-            if (screws <= 0) continue;
-            indexes.push(i);
-            weights.push(screws);
+            if (first < 0 && (s.spacerSlats > 0 || (s.gate && s.gate.screws > 0))) first = i;
         }
 
-        var pos = indexes.indexOf(sectionIndex);
-        if (pos < 0) return seen ? 0 : null;
-
-        var total = 0;
-        for (var w = 0; w < weights.length; w++) total += weights[w];
-        return this.allocatePooledPacks(
-            weights,
-            this.ceilPackQuantity(total, this.getPackItemsForSlug(fenceSlug, 'slat_gate+qsg_screws'))
-        )[pos];
+        if (!seen) return null;
+        return first === sectionIndex ? 1 : 0;
     },
 
     // One 20kg bag of grout fills about 11 core-drilled holes (100mm cores, 15% waste).
@@ -713,8 +699,21 @@ SlatFenceCalc = {
         };
     },
 
-    /** Panel / bottom-gap math (Slat Planner V6): 3 mm top + 3 mm bottom in panel height. */
-    getSlatPanelEndAllowanceMm: function(fenceSlug) {
+    // GO's Xpress order sheet takes 0, 5, 9 and 20mm gaps only (fitted 9.3 and 21.1). It makes any other gap as a
+    // Quickscreen screen: one 3mm cap, not two end plates, and a height listed to the nearest mm (matched Nov 2026).
+    slatXpressGapPitchesMm: [0, 5, 9, 9.3, 20, 21.1],
+    slatQuickscreenCapMm: 3,
+
+    isSlatQuickscreenGapPitch: function(gapPitch) {
+        var g = parseFloat(gapPitch);
+        return Number.isFinite(g) && g >= 0 && this.slatXpressGapPitchesMm.indexOf(g) < 0;
+    },
+
+    /** Panel / bottom-gap math (Slat Planner V6): 3 mm top + 3 mm bottom in panel height; one 3 mm cap at a Quickscreen gap. */
+    getSlatPanelEndAllowanceMm: function(fenceSlug, gapPitch) {
+        if (this.isSlatQuickscreenGapPitch(gapPitch)) {
+            return this.slatQuickscreenCapMm;
+        }
         return this.getSlatConfigNumber(fenceSlug, 'panel_end_allowance_mm', 6);
     },
 
@@ -745,14 +744,15 @@ SlatFenceCalc = {
 
     /**
      * Slat row count for panel height (F81).
-     * floor((MaxHeight − (6 + sizePitch)) / (sizePitch + gapPitch)) + 1
+     * floor((MaxHeight − (end allowance + sizePitch)) / (sizePitch + gapPitch)) + 1
      */
     countSlatPanelRowsFromMaxHeightMm: function(maxHMm, sizePitch, gapPitch) {
         var h = Number(maxHMm);
         var s = Number(sizePitch);
         var g = Number(gapPitch);
         var pitch = s + g;
-        var clearance = this.getSlatPanelEndAllowanceMm() + s;
+        var allowance = this.getSlatPanelEndAllowanceMm(undefined, g);
+        var clearance = allowance + s;
         if (
             !Number.isFinite(h) ||
             h <= 0 ||
@@ -765,12 +765,16 @@ SlatFenceCalc = {
             return 0;
         }
         var rows = Math.floor((h - clearance) / pitch) + 1;
+        // GO lists a Quickscreen height to the nearest mm, so a row is in when its rounded height fits: 1688 at 30mm is 18 rows.
+        if (this.isSlatQuickscreenGapPitch(g) && Math.round((rows + 1) * pitch - g + allowance) <= h) {
+            rows += 1;
+        }
         return rows < 1 ? 0 : rows;
     },
 
     /**
      * Panel height (mm) from max fence height (F80).
-     * (rows × (sizePitch + gapPitch)) − gapPitch + 6
+     * (rows × (sizePitch + gapPitch)) − gapPitch + end allowance (6, or the 3 mm cap at a Quickscreen gap)
      */
     computeSlatPanelHeightMmFromMaxHeight: function(maxHMm, sizePitch, gapPitch) {
         var rows = this.countSlatPanelRowsFromMaxHeightMm(maxHMm, sizePitch, gapPitch);
@@ -783,7 +787,7 @@ SlatFenceCalc = {
         if (!Number.isFinite(pitch) || pitch <= 0) {
             return 0;
         }
-        return Math.round(rows * pitch - g + this.getSlatPanelEndAllowanceMm());
+        return Math.round(rows * pitch - g + this.getSlatPanelEndAllowanceMm(undefined, g));
     },
 
     /** Bottom gap (mm) = Max Height − Panel Height (F77 − F80). */

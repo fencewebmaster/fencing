@@ -1095,7 +1095,7 @@ let ProjectPlan = {
         var panel_size_center = (gate_size + 20 + 20 + center_point)  + 'W';
 
 
-        // Slat Fence: Gate Options "Width Dimension From" affects the gate panel centers display (planner's rule).
+        // Slat: the same post-centre figure, from the helper the planner uses for its own (hidden) Centers row.
         if (i === 'slat' || i === 'slat_fence') {
             panel_size_center = SlatFence.getGatePanelSizeCenter(i, gate_size, center_point, gate_data);
         }

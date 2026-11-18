@@ -19,8 +19,6 @@ SlatFence = {
             'slat_gate+qsg_spacer_20': 50,
             'slat_gate+qsg_spacer_30': 50,
             'slat_gate+qsg_screws': 50,
-            /** The old tek screw bag; the QuickScreen screws count its 100 once per job. */
-            'slat_gate+screws_flat': 100,
             /** XPL-EP-*-2PK — pieces per retail pack (used for slat infill end-cap packs vs rail qty). */
             'sfs+end_caps': 2,
         },
@@ -1416,7 +1414,7 @@ SlatFence = {
         var sfsLenMm = Math.max(
             0,
             this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch) -
-                this.getSfsLengthDeductionMm(style)
+                this.getSfsLengthDeductionMm(style, gapPitch)
         );
         var csrLenMm = Math.max(0, this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch) || 0);
         var cutM = 0;
@@ -1554,8 +1552,26 @@ SlatFence = {
         return g;
     },
 
+    // Runs fn with the Step 2 readers held to a saved section (its tab row), not the form on screen, which is one section's
+    // only: the Fence Summary showed every other Slat section at the on-screen section's height, gap, slat size and length.
+    withSavedSection: function(tabRow0, fn) {
+        var wasReading = this.slatReadingSavedSection;
+        var wasRow = this.slatSavedTabRow0;
+        this.slatReadingSavedSection = true;
+        this.slatSavedTabRow0 = tabRow0 || null;
+        try {
+            return fn();
+        } finally {
+            this.slatReadingSavedSection = wasReading;
+            this.slatSavedTabRow0 = wasRow;
+        }
+    },
+
     /** Live Step 2 `[name="slat_gap"]` → gap mm (used when refreshing fence height options). */
     getStep2SlatGapMm: function(info) {
+        if (this.slatReadingSavedSection) {
+            return null;
+        }
         var el = document.querySelector('[data-section="2"] [name="slat_gap"]');
         if (!el || !this.validateSlatGapField(el).valid) {
             return null;
@@ -1565,6 +1581,9 @@ SlatFence = {
 
     /** Live Step 2 `[name="slat_size"]` → 65 or 90 mm face size. */
     getStep2SlatSizeMm: function() {
+        if (this.slatReadingSavedSection) {
+            return null;
+        }
         var el = document.querySelector('[data-section="2"] [name="slat_size"]');
         if (!el || !this.validateSlatSizeField(el).valid) {
             return null;
@@ -1629,7 +1648,7 @@ SlatFence = {
 
     /** Raw slat gap slug from Step 2 or segment storage (for pitch math). */
     getSlatGapSlugRaw: function(custom_fence, info) {
-        var el = document.querySelector('[data-section="2"] [name="slat_gap"]');
+        var el = this.slatReadingSavedSection ? null : document.querySelector('[data-section="2"] [name="slat_gap"]');
         if (el && el.value !== undefined && el.value !== null && String(el.value).trim() !== '') {
             return String(el.value).trim();
         }
@@ -2311,10 +2330,15 @@ SlatFence = {
     scheduleStep2SlatSelect2AfterVisible: function(slug, tabRow0, opts) {
         opts = opts || {};
         var self = this;
+        var fdThen = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
 
         function run() {
             self.reinitStep2SlatSelect2();
-            if (!opts.skipRestore) {
+            // The delayed run can land on another section: restoring this one's height there had the next save
+            // write it over that section's own, so plans with mixed heights swapped them.
+            var fdNow = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+            var moved = !!(fdThen && fdNow && (fdNow.tab !== fdThen.tab || fdNow.slug !== fdThen.slug));
+            if (!opts.skipRestore && !moved) {
                 self.restoreStep2MaxFenceHeightAfterStep2Init(slug, tabRow0);
             }
         }
@@ -3069,6 +3093,10 @@ SlatFence = {
      */
     readStep2MaxFenceHeightMm: function(opts) {
         opts = opts || {};
+        // A saved section is being read (withSavedSection): the box on screen holds another section's height.
+        if (this.slatReadingSavedSection) {
+            return null;
+        }
         var el = this.getStep2MaxFenceHeightEl();
         if (!el) {
             return null;
@@ -3408,8 +3436,9 @@ SlatFence = {
                 : String(slug || 'slat');
 
         try {
-            var fd = typeof getSelectedFenceData === 'function' ? getSelectedFenceData(slugNorm) : null;
-            var tabRow0 = fd?.tabInfo?.[0];
+            // The selected tab is the one on screen, so a saved section brings its own row (withSavedSection).
+            var fd = !this.slatReadingSavedSection && typeof getSelectedFenceData === 'function' ? getSelectedFenceData(slugNorm) : null;
+            var tabRow0 = this.slatReadingSavedSection ? this.slatSavedTabRow0 : fd?.tabInfo?.[0];
             var step2Val = this.getSlatSizeValForStep2(custom_fence || fd?.info || [], tabRow0, slugNorm);
             if (step2Val) {
                 var fromStep2 = parseFloat(step2Val);
@@ -3518,7 +3547,7 @@ SlatFence = {
 
     /**
      * Main Slat only: stock post length tier (mm) from Step 2 Fence Height.
-     * Tiers: <=1800, <=2400, <=2700, else 6000 (products.csv slat_post+50x50_* rows).
+     * Tiers: <=1800, <=2400, else 6000 (products.csv slat_post+50x50_* rows; no 50x50 post is made in 2700).
      */
     getSlatPostHeightTierMm: function(fenceHeightMm) {
         var h = parseInt(fenceHeightMm, 10);
@@ -3530,9 +3559,6 @@ SlatFence = {
         }
         if (h <= 2400) {
             return 2400;
-        }
-        if (h <= 2700) {
-            return 2700;
         }
         return 6000;
     },
@@ -4691,16 +4717,9 @@ SlatFence = {
     //----------------------------------------------------------------------------------
 
     getGatePanelSizeCenter: function(slug, gate_size, center_point, gate_data) {
-        var panelSizeCenter = (gate_size + 20 + 20 + center_point) + 'W';
-        if (!this.isMainSlatSlug(slug)) return panelSizeCenter;
-
-        var gateWdf = parseInt(gate_data?.[0]?.settings?.fields?.find(function(item) {
-            return item.key === 'width_dimension_from';
-        })?.val, 10);
-
-        // Keep in sync with the "Width Dimension From" field default (Outside Width = -2).
-        var mult = (Number.isFinite(gateWdf) && (gateWdf === -1 || gateWdf === -2)) ? Math.abs(gateWdf) : 2;
-        return (gate_size + 20 + 20 + (mult * center_point)) + 'W';
+        // Post centres whichever way the gate is dimensioned. This figure used to follow Width Dimension From, so the
+        // plan's Centres line read the gate's outside-of-posts width (1,115 for 1,065) beside the panels' centres.
+        return (gate_size + 20 + 20 + center_point) + 'W';
     },
 
     //----------------------------------------------------------------------------------
@@ -5315,9 +5334,9 @@ SlatFence = {
         // Fence panels only: the old form never frames a gate in SFS (F238, F239).
         var panelCount = panelCountFence;
         if (panelCount > 0) {
-            // FSQ F238/F524 cut side frames at (panel height − 6), not the entered fence height,
-            // and round the metres ONCE on the job total — so fence rails pool across sections
-            // (same largest-remainder split as spacer packs).
+            // FSQ F238/F524 cut side frames at (panel height − 6, or − the 3mm cap at a Quickscreen gap), not the
+            // entered fence height, and round the metres ONCE on the job total — so fence rails pool across
+            // sections (same largest-remainder split as spacer packs).
             var pitchForSfs = this.resolveSlatPanelPitchInputs(context, fenceKind);
             var sfsLenMm = Math.max(
                 0,
@@ -5325,7 +5344,7 @@ SlatFence = {
                     fenceHm,
                     pitchForSfs.sizePitch,
                     pitchForSfs.gapPitch
-                ) - this.getSfsLengthDeductionMm(fenceKind)
+                ) - this.getSfsLengthDeductionMm(fenceKind, pitchForSfs.gapPitch)
             );
             var railFenceQty = 0;
             if (panelCountFence > 0 && sfsLenMm > 0) {
@@ -5641,14 +5660,10 @@ SlatFence = {
             setQty(spacerSlug, spacerPacks);
         }
 
-        // QuickScreen 16mm screws for the job's Slat and Slat Infill panels and gates (Nov 2026).
-        var screwPacks = this.pooledSlatQsScrewPacksForSection(context?.tabIndex, fenceSlug);
+        // QuickScreen 16mm screws: one pack per job for its Slat and Slat Infill panels and gates (Nov 2026).
+        var screwPacks = this.pooledSlatQsScrewPacksForSection(context?.tabIndex);
         if (screwPacks === null) {
-            screwPacks = this.ceilPackQuantity(
-                (slatPiecesFence > 0 ? this.getPackItemsForSlug(fenceSlug, 'slat_gate+screws_flat') : 0) +
-                    (gate ? gate.screws : 0),
-                this.getPackItemsForSlug(fenceSlug, 'slat_gate+qsg_screws')
-            );
+            screwPacks = slatPiecesFence > 0 || (gate && gate.screws > 0) ? 1 : 0;
         }
         setQty('slat_gate+qsg_screws', screwPacks);
 
@@ -5726,7 +5741,7 @@ SlatFence = {
             'pooledSlatCutQtyForSection', 'slatSpacerPacksFromTotals', 'slatBilledMetres',
             'slatGatePostOptions', 'slatGateRunCountAdjustMm', 'slatGateBomFromControls', 'slatGateBomFromValues',
             'slatGateRowsForDisplay', 'computeSlatQsgGateBom', 'slatQsgGateLinesForSection', 'pooledSlatQsScrewPacksForSection',
-            'getSlatPanelEndAllowanceMm', 'gapSlugToPitchMm', 'countSlatPanelRowsFromMaxHeightMm',
+            'getSlatPanelEndAllowanceMm', 'isSlatQuickscreenGapPitch', 'gapSlugToPitchMm', 'countSlatPanelRowsFromMaxHeightMm',
             'computeSlatPanelHeightMmFromMaxHeight', 'computeSlatBottomGapMm',
             'countEvenPanelsFromOverallSpan', 'getRemovedEndPostsMm', 'computeSlatTotalPostsMm',
             'computeSlatPanelSpanMm', 'computeSlatEvenPanelWidthMm'

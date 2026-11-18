@@ -1204,9 +1204,13 @@ FENCE = {
             settings.centred = true;
         }
 
-        if( $('[data-key="gate"] .fc-form-field:visible').length ) {
+        // The open gate drawer's own fields only. Its marker outlives the drawer, so a Step 4 colour click saved the
+        // page's colour slider here: Type Of Gate was lost and a double gate was submitted as a single.
+        var $gateFields = $('.fencing-container[data-key="gate"] #fc-control-modal .fc-form-field:visible');
 
-            settings.fields = $('.fc-form-field:visible').map(function() {
+        if( $gateFields.length ) {
+
+            settings.fields = $gateFields.map(function() {
                 var el = $(this),
                     key = el.attr('name'),
                     type = (el.attr('type') || '').toLowerCase(),
