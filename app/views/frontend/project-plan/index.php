@@ -5,6 +5,7 @@
  * Rendered by Controllers\Frontend\ProjectPlanController.
  *
  * @var array      $fences        Fence catalog (FenceSettingsService).
+ * @var array      $fences_script $fences as JS `fc_data`, Slat carrying its post rule (FenceCatalogService::fencesWithSlatPostStock()).
  * @var array      $info          Session fc_data.
  * @var array      $cart          Session fc_cart.
  * @var array|null $site_info     Site registry row for the session's site.
@@ -91,7 +92,7 @@ include view_path('frontend.partials.fields.index');
 
 		<?php /* Config */ ?>
 		<script type="text/javascript">
-		var fc_data  = <?php echo json_encode($fences); ?>;
+		var fc_data  = <?php echo json_encode($fences_script); ?>;
 		var base_url = '<?php echo url(); ?>';
 		var fc_fence_info = <?php echo json_encode( $fc_fence_info, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>;
 		var planner_id = <?php echo json_encode((string) (@$_SESSION['planner_id'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP); ?>;

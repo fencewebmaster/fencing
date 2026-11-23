@@ -349,6 +349,9 @@ $item = $page['item'];
                                     <?php elseif (($cartRow['fence_label'] ?? '') !== '') : ?>
                                     <span class="fc-entries-cart-table__fence"><?php echo e((string) ($cartRow['fence_label'] ?? '')); ?></span>
                                     <?php endif; ?>
+                                    <?php if (($cartRow['note'] ?? '') !== '') : ?>
+                                    <div class="fc-entries-cart-table__note"><?php echo e((string) ($cartRow['note'] ?? '')); ?></div>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

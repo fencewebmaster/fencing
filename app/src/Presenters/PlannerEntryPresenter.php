@@ -421,6 +421,8 @@ final class PlannerEntryPresenter
                 'optional' => $optional,
                 'optional_included' => $included,
                 'suggested_qty' => $suggestedQty,
+                // Slat posts are saved as stock posts to buy; the note says how they are cut (CartBuilderService::cartLineNote()).
+                'note' => trim((string) ($item['note'] ?? '')),
             ];
         }
 
@@ -2202,6 +2204,7 @@ final class PlannerEntryPresenter
                 'sku' => (string) ($cartItem['sku'] ?? ''),
                 'fence_label' => $fenceLabel,
                 'fence_slug' => $fenceSlug,
+                'note' => trim((string) ($cartItem['note'] ?? '')),
                 'search_haystack' => $searchHaystack,
                 'row_class' => $isOptional ? ' fc-entries-cart-table__row--optional' : '',
             ];

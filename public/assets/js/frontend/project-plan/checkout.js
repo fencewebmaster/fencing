@@ -136,7 +136,7 @@ _doc.on('click', '.js-fc-copy-cart-items', fcCopyCartItems);
 
 /**
  * Build plain-text lines from the project-plan Item List & Cart table.
- * Format: "{qty} {name}, {sku}" (one line per row).
+ * Format: "{qty} {name}, {sku}" (one line per row), then " ({note})" on a row that has one.
  *
  * @param {jQuery} [$root] Optional tbody scope.
  * @return {string}
@@ -158,6 +158,8 @@ function fcBuildCartItemsCopyText($root) {
         // By its own class: the title lost mb-2, the old selector matched nothing and every copied line lacked its name.
         var name = $.trim($desc.children('.fc-cart-item-title').first().text()).replace(/\s+/g, ' ');
         var sku = $.trim($desc.children('.text-muted.mb-1').first().text());
+        // A row of Slat posts counts stock posts: without its cutting note the copied line reads as too few posts.
+        var note = $.trim($desc.children('.fc-cart-item-note').first().text()).replace(/\s+/g, ' ');
 
         var qty = '';
         var $visibleEditQty = $tr.find('.md-qty:visible input, .fencing-mb-input.md-qty:visible input').first();
@@ -178,7 +180,7 @@ function fcBuildCartItemsCopyText($root) {
             return;
         }
 
-        lines.push((qty || '0') + ' ' + name + (sku ? ', ' + sku : ''));
+        lines.push((qty || '0') + ' ' + name + (sku ? ', ' + sku : '') + (note ? ' (' + note + ')' : ''));
     });
 
     return lines.join('\n');

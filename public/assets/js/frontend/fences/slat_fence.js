@@ -48,9 +48,10 @@ SlatFence = {
         minRows: 5,
         maxRows: 40,
         endAllowanceMm: 3,
-        /** Step 2 Fence Height input bounds (mm). */
+        /** Step 2 Fence Height bounds (mm), the dropdown's included. */
         minHeightMm: 199,
-        maxHeightMm: 5800
+        // The owner's cap (Nov 2026): taller fences need posts over 6,000mm and engineering, so they are a call.
+        maxHeightMm: 2400
     },
 
     //----------------------------------------------------------------------------------
@@ -499,10 +500,11 @@ SlatFence = {
             if ($label.length) {
                 $label.text(this.getStep2HeightFieldLabel(true));
             }
-            this.refreshStep2MaxFenceHeightBounds({ resetHeightIfInvalid: true });
+            // The number box clears a height out of the gate's range; the dropdown drops only one over the gate's max.
+            this.refreshMaxFenceHeightSelect({ resetHeightIfInvalid: !!el && el.tagName === 'INPUT' });
             var committed = this.getCommittedGateMaxFenceHeightMm(fd);
             if (el && committed && !(el.value || '').toString().trim()) {
-                el.value = String(committed);
+                this.applyMaxFenceHeightValue(el, committed);
             }
             if (el && (el.value || '').toString().trim()) {
                 this.syncStep2HeightToGateFields(fd);
@@ -513,7 +515,7 @@ SlatFence = {
             if ($label.length) {
                 $label.text(this.getStep2HeightFieldLabel(false));
             }
-            this.refreshStep2MaxFenceHeightBounds({ resetHeightIfInvalid: false });
+            this.refreshMaxFenceHeightSelect({ resetHeightIfInvalid: false });
         }
     },
 
@@ -531,6 +533,533 @@ SlatFence = {
             }
         }
         return null;
+    },
+
+    //----------------------------------------------------------------------------------
+    // Post Length (Post Options drawer): the stock post a section's posts come from, and whether one is cut into several.
+
+    /** The post rule the cart bills by (FenceCatalogService::slatPostStockRule()); null on a page without it. */
+    slatPostStockRule: function() {
+        var rule = typeof fc_data !== 'undefined' && fc_data ? fc_data.slat?.post_stock : null;
+        return rule && Array.isArray(rule.stocks) && rule.stocks.length && Array.isArray(rule.cuts) ? rule : null;
+    },
+
+    /** Whether this site offers the Cut posts on site switch (Fence Styles, Post Length); unset, every post is whole. */
+    slatPostCutOffered: function() {
+        return this.slatPostStockRule()?.cut_offered === true;
+    },
+
+    /** What a footing puts in the ground at a post height (mm): nothing for Base Plated and Wall Fix. */
+    slatPostInGroundMm: function(postOption, heightMm) {
+        var footing = (String(postOption || '').match(/^opt-\d+/) || [''])[0],
+            rows = this.slatPostStockRule()?.in_ground?.[footing] || [];
+        for (var i = 0; i < rows.length; i++) {
+            if (rows[i][0] === null || heightMm <= rows[i][0]) {
+                return rows[i][1];
+            }
+        }
+        return 0;
+    },
+
+    /** One pick saved by a section's Post Options drawer (`post_option`, `post_cut`, `post_length`). */
+    slatPostOptionsPick: function(fd, key) {
+        var row = (fd?.info || []).find(function(item) {
+            return item && item.control_key === 'post_options';
+        });
+        return (Array.isArray(row?.settings) ? row.settings : []).find(function(item) {
+            return item && item.key === key;
+        })?.val;
+    },
+
+    // A stored Post Length pick, "6000x4@1787": the stock post, the cuts chosen for it (0 = what it gets unasked) and
+    // the fence height it was picked at (null on an older pick, which has none).
+    slatPostLengthPick: function(val) {
+        var parts = String(val === undefined || val === null ? '' : val).replace(/,/g, '').split('@'),
+            post = parts[0].split('x');
+        return {
+            stock: parseInt(post[0], 10) || 0,
+            pieces: parseInt(post[1], 10) || 0,
+            height: parts.length > 1 ? parseInt(parts[1], 10) || 0 : null
+        };
+    },
+
+    // The length a post needs, the post the rule gives it and what each stock post offers (pieces 0 = not on offer: too
+    // short, or a capless length while cutting is off). As slatPostRulePick() and slatPostPiecesFromStock() bill it.
+    slatPostLengthPlan: function(heightMm, postOption, picked, cutOn) {
+        var rule = this.slatPostStockRule(),
+            pick = picked && typeof picked === 'object' ? picked : { stock: parseInt(picked, 10) || 0, pieces: 0 };
+        heightMm = parseInt(heightMm, 10);
+        if (!rule || !Number.isFinite(heightMm) || heightMm <= 0) {
+            return null;
+        }
+        var inGround = this.slatPostInGroundMm(postOption, heightMm),
+            need = heightMm + inGround,
+            cut = !!cutOn,
+            // The cutting table; past it a whole post of the longest stock, also where even that is too short.
+            cutBest = { stock: Math.max.apply(null, rule.stocks.map(function(row) { return row[0]; })), pieces: 1 };
+        for (var i = 0; i < rule.cuts.length; i++) {
+            if (need <= rule.cuts[i][0]) {
+                cutBest = { stock: rule.cuts[i][1], pieces: rule.cuts[i][2] };
+                break;
+            }
+        }
+        // Cutting off: one whole post sold with its cap, the shortest that covers the need. Past the longest of them no
+        // such post exists, so the table stands whichever way the switch is.
+        var capped = rule.stocks.filter(function(row) {
+                return row[2];
+            }).map(function(row) {
+                return row[0];
+            }).sort(function(a, b) {
+                return a - b;
+            }),
+            whole = capped.find(function(stock) {
+                return need <= stock;
+            }),
+            best = cut || !whole ? cutBest : { stock: whole, pieces: 1 };
+        var options = rule.stocks.map(function(row) {
+            var fits = Math.floor(row[0] / need),
+                option = { stock: row[0], pieces: 0, recommended: row[0] === best.stock, why: '', cuts: [] };
+            if (option.recommended) {
+                option.pieces = best.pieces;
+            } else if (fits < 1) {
+                option.why = 'short';
+            } else if (cut) {
+                option.pieces = Math.min(row[1], fits);
+            } else if (row[2]) {
+                option.pieces = 1;
+            } else {
+                option.why = 'cut';
+            }
+            // With cutting on the customer may choose any number of cuts that fits; `pieces` is what the post gets unasked.
+            for (var cuts = 2; cut && option.pieces > 0 && cuts <= fits; cuts++) {
+                option.cuts.push(cuts);
+            }
+            return option;
+        });
+        var own = options.find(function(option) {
+                return option.stock === pick.stock && option.pieces > 0;
+            }),
+            // The number of cuts chosen for that post, where it is one on offer and not what the post gets anyway.
+            ownPieces = own && own.cuts.indexOf(pick.pieces) !== -1 && pick.pieces !== own.pieces ? pick.pieces : 0,
+            used = own || options.find(function(option) {
+                return option.recommended;
+            }) || best;
+        if (ownPieces) {
+            own.pieces = ownPieces;
+        }
+
+        return {
+            height: heightMm,
+            inGround: inGround,
+            need: need,
+            options: options,
+            recommended: best.stock,
+            picked: own ? own.stock : 0,
+            pickedPieces: ownPieces,
+            stock: used.stock,
+            pieces: used.pieces,
+            cut: cut,
+            // No capped post covers the need: the switch has no say, and shows what the 6000 gets (cut in 2 if 2 fit).
+            cutLocked: !whole,
+            cutInEffect: whole ? cut : cutBest.pieces > 1,
+            // What turning the switch on would give the rule's post, where that is a cut one.
+            cutGain: !cut && whole && cutBest.pieces > 1 ? cutBest : null,
+            wholeMax: capped.length ? capped[capped.length - 1] : 0
+        };
+    },
+
+    // A saved section's plan: posts stand at its Fence Height, or its gate's where taller, on its Post Options footing.
+    // The last three stand in for the saved picks while the drawer holds ones it has not saved yet.
+    slatPostLengthPlanForSection: function(fd, postOption, pickedMm, cutOn) {
+        if (!fd || !this.isMainSlatSlug(fd.slug)) {
+            return null;
+        }
+        var footings = fd.data?.settings?.post_options?.fields?.[0]?.options || [],
+            footing = postOption || this.slatPostOptionsPick(fd, 'post_option') || footings.find(function(option) {
+                return option?.default;
+            })?.slug || 'opt-1',
+            fenceMm = parseInt(
+                String(
+                    (typeof fcReadTabRowStep2Field === 'function'
+                        ? fcReadTabRowStep2Field(fd.tabInfo?.[0], fd.slug, 'max_fence_height')
+                        : this.getMaxFenceHeightValForStep2(fd.tabInfo?.[0], fd.slug)) || ''
+                ).replace(/,/g, ''),
+                10
+            ) || 0,
+            gateMm = this.getCommittedGateMaxFenceHeightMm(fd) || 0,
+            // A pick is for the fence height it was made at: at any other height the recommended post stands.
+            pick = this.slatPostLengthPick(pickedMm !== undefined ? pickedMm : this.slatPostOptionsPick(fd, 'post_length')),
+            // A choice saved while the switch was offered is not read once the site stops offering it, as the cart bills.
+            plan = this.slatPostLengthPlan(
+                Math.max(fenceMm, gateMm),
+                footing,
+                pick.height === null || pick.height === fenceMm ? pick : 0,
+                this.slatPostCutOffered() && (cutOn !== undefined ? cutOn : this.slatPostOptionsPick(fd, 'post_cut') === '1')
+            );
+
+        if (plan) {
+            plan.fenceHeight = fenceMm;
+            plan.footing = footing;
+            plan.footingTitle = footings.find(function(option) {
+                return option?.slug === footing;
+            })?.title || 'this post option';
+            // On Gate ONLY the Step 2 height is the gate's own.
+            plan.gateSetsHeight = gateMm > fenceMm || !!fd.tabInfo?.[0]?.gateOnly || !!(fd.info || []).find(function(item) {
+                return item && item.control_key === 'gate';
+            })?.settings?.gateOnly;
+        }
+        return plan;
+    },
+
+    /** A Post Length tile's status lines: recommended or why it is off, then what a longer or cut post means. */
+    postLengthTileStatusHtml: function(plan, option) {
+        if (option.pieces < 1) {
+            return '<span class="fc-option-tag fc-option-tag--off">' + (option.why === 'cut' ? 'Needs cutting' : 'Too short') + '</span>';
+        }
+        var spare = Math.floor(option.stock / option.pieces) - plan.need,
+            line = option.pieces > 1
+                ? 'Cut in ' + option.pieces + ' on site'
+                : (!option.recommended && spare > 0 ? this.formatPostMm(spare) + ' extra' : '');
+
+        // More than one cut on offer: a dropdown of them all, each with the length of its pieces, in place of the line.
+        if (option.cuts.length > 1) {
+            var mm = this.formatPostMm,
+                shown = option.cuts.indexOf(option.pieces) < 0 ? option.cuts[0] : option.pieces;
+            // Shut, it shows data-short (initPostCutsSelect2): the whole line did not fit a phone's 119px tile.
+            line = '<span class="fc-post-cuts-wrap">' +
+                '<select class="fc-post-cuts" data-stock="' + option.stock + '" aria-label="Pieces cut from each ' + option.stock + 'mm post">' +
+                option.cuts.map(function(cuts) {
+                    return '<option value="' + cuts + '" data-short="Cut in ' + cuts + '"' + (cuts === shown ? ' selected' : '') + '>Cut in ' +
+                        cuts + ' · ' + mm(Math.floor(option.stock / cuts)) + '</option>';
+                }).join('') + '</select></span>';
+        } else if (line) {
+            line = '<span class="fc-option-note' + (option.pieces > 1 ? '' : ' fc-option-note--extra') + '">' + line + '</span>';
+        }
+        return (option.recommended
+            ? '<span class="fc-option-tag fc-option-tag--on"><span class="fc-option-tag__icon" aria-hidden="true">' +
+                '<i class="fa-solid fa-thumbs-up"></i></span><span class="fc-option-tag__text">Recommended</span></span>'
+            : '') + line;
+    },
+
+    formatPostMm: function(mm) {
+        return Number(mm).toLocaleString('en-AU') + 'mm';
+    },
+
+    /** The Post Length card's note: the length the section's posts need, and the trim a longer whole post leaves. */
+    postLengthNote: function(plan) {
+        var mm = this.formatPostMm,
+            spare = Math.floor(plan.stock / plan.pieces) - plan.need,
+            why = mm(plan.height) + (plan.gateSetsHeight ? ' gate height' : ' fence height') + (plan.inGround
+                ? ' plus ' + mm(plan.inGround) + ' in the ground for ' + plan.footingTitle + '.'
+                : ', with nothing in the ground for ' + plan.footingTitle + '.');
+
+        // A few mm over is the post simply fitting, not a job for the saw. A cut post is the switch's own line.
+        return {
+            title: 'Your posts need ' + mm(plan.need),
+            why: why,
+            body: why + (plan.pieces === 1 && spare >= 50 ? ' The ' + plan.stock + 'mm post leaves ' + mm(spare) + ' to trim on site.' : '')
+        };
+    },
+
+    /** The Cut posts on site switch at the top of the Post Length card: a drawer field, so it is saved with the tiles. */
+    postCutSwitchHtml: function() {
+        return '<div class="fc-post-cut fc-form-field" name="post_cut" type="switch_option" value="">' +
+            '<label class="fc-post-cut__row">' +
+            '<span class="fc-post-cut__text">' +
+            '<span class="fc-post-cut__title">Cut posts on site</span>' +
+            '<span class="fc-post-cut__line" id="fc-post-cut-line"></span>' +
+            '</span>' +
+            '<input type="checkbox" class="fc-post-cut__input" role="switch" aria-describedby="fc-post-cut-line">' +
+            '<span class="fc-post-cut__track" aria-hidden="true"></span>' +
+            '</label>' +
+            '</div>';
+    },
+
+    /** The line under the switch: what its state means for the post in effect on this section. */
+    postCutLine: function(plan) {
+        if (plan.cutLocked) {
+            return plan.cutInEffect
+                ? 'Posts over ' + this.formatPostMm(plan.wholeMax) + ' are cut from ' + plan.stock + 'mm lengths, ' + plan.pieces + ' from each.'
+                : 'A post this long takes a whole ' + plan.stock + 'mm length, so there is nothing to cut.';
+        }
+        if (!plan.cut) {
+            return 'Each post is supplied as one whole post.' + (plan.cutGain
+                ? ' Turn this on to make ' + plan.cutGain.pieces + ' posts from each ' + plan.cutGain.stock + 'mm post.'
+                : '');
+        }
+        if (plan.pieces > 1) {
+            return 'One ' + plan.stock + 'mm post makes ' + plan.pieces + ' posts for this fence, so you buy fewer. You will need a saw.';
+        }
+        var longer = plan.options.find(function(option) {
+            return option.pieces > 1;
+        });
+        return 'The ' + plan.stock + 'mm post is used whole.' +
+            (longer ? ' A ' + longer.stock + 'mm post would make ' + longer.pieces + ' posts.' : '');
+    },
+
+    // Stores the Post Options drawer's fields as update_custom_fence('post_options') does, footing first, without its redraw.
+    savePostLengthPick: function() {
+        var $fields = $('#fc-control-modal .fc-form-field'),
+            fd = $fields.filter('[name="post_length"]').length && typeof getSelectedFenceData === 'function'
+                ? getSelectedFenceData()
+                : null;
+        if (!fd || !this.isMainSlatSlug(fd.slug) || $fields.first().attr('name') !== 'post_option') {
+            return;
+        }
+        var rows = (fd.info || []).filter(function(item) {
+            return item && item.control_key !== 'post_options';
+        });
+        rows.push({
+            id: fd.slug,
+            control_key: 'post_options',
+            settings: $fields.map(function() {
+                var $field = $(this);
+                return { key: $field.attr('name'), val: $field.attr('value'), tag: this.tagName.toLowerCase(), type: $field.attr('type') };
+            }).get()
+        });
+        try {
+            localStorage.setItem('custom_fence-' + fd.tab + '-' + fd.slug, JSON.stringify(rows));
+        } catch (e) {}
+    },
+
+    /** A number of cuts was chosen under a tile: that post becomes the pick, cut that way, stored with no redraw. */
+    pickPostCuts: function($select) {
+        var self = this,
+            $field = $select.closest('.fc-form-field[name="post_length"]'),
+            stock = parseInt($select.attr('data-stock'), 10) || 0,
+            cuts = parseInt($select.val(), 10) || 0;
+        if (!$field.length || !stock || !cuts) {
+            return;
+        }
+        $field.attr('value', stock + 'x' + cuts);
+        // Select2 is still closing its list: the redraw waits for it, then the keyboard goes to the new dropdown.
+        setTimeout(function() {
+            self.syncPostLengthTiles($select);
+            self.savePostLengthPick();
+            var $new = $field.find('.fc-post-cuts[data-stock="' + stock + '"]'),
+                select2 = $new.data('select2');
+            (select2 ? select2.$selection : $new).trigger('focus');
+        }, 0);
+    },
+
+    /** The cuts dropdowns as Step 2's Fence Height is drawn (fcInitStep2Select2), less the search box a list this short needs. */
+    initPostCutsSelect2: function($field) {
+        if (typeof $.fn.select2 !== 'function') {
+            return;
+        }
+        var self = this,
+            $parent = $field.closest('.fencing-modal-content');
+        $field.find('select.fc-post-cuts').each(function() {
+            var $s = $(this);
+            // Out of the card, whose overflow would clip the list, and above the drawer's scroller, so Select2 places it right.
+            $s.select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                minimumResultsForSearch: Infinity,
+                dropdownAutoWidth: true,
+                dropdownParent: $parent.length ? $parent : $(document.body),
+                templateSelection: function(item) {
+                    return $(item.element).attr('data-short') || item.text;
+                }
+            }).on('select2:open', function() {
+                // Select2 opens the list empty and fills it next: measured after that, before the page paints.
+                Promise.resolve().then(function() {
+                    self.fitPostCutsList($s);
+                });
+            });
+            // Read with its post: Select2 labels the box by its shown text alone, the same "Cut in 2" under every tile.
+            $s.data('select2').$selection.removeAttr('aria-labelledby')
+                .attr('aria-label', $s.attr('aria-label') + ': ' + ($s.find('option:selected').attr('data-short') || ''));
+            // An Escape that shut the open list stops there: the planner's own Escape (events.js) closes the drawer.
+            $s.data('select2').$container.on('keydown', function(event) {
+                if ((event.key === 'Escape' || event.key === 'Esc') && event.isDefaultPrevented()) {
+                    event.stopPropagation();
+                }
+            });
+        });
+    },
+
+    destroyPostCutsSelect2: function($field) {
+        $field.find('select.fc-post-cuts').each(function() {
+            if ($(this).data('select2')) {
+                $(this).select2('destroy');
+            }
+        });
+    },
+
+    // The list, wider than the compact box, is centred under it and kept in the row: a phone's right-hand tile ran it off screen.
+    // A margin, since Select2 rewrites the list's left on every scroll.
+    fitPostCutsList: function($select) {
+        var select2 = $select.data('select2'),
+            list = select2 && select2.$dropdown && select2.$dropdown.find('.select2-dropdown')[0],
+            box = select2 && select2.$selection && select2.$selection[0],
+            row = $select.closest('.fc-form-field')[0];
+        if (!list || !box || !row) {
+            return;
+        }
+        list.style.marginLeft = '';
+        var l = list.getBoundingClientRect(),
+            b = box.getBoundingClientRect(),
+            r = row.getBoundingClientRect(),
+            shift = Math.max(Math.min((b.left + b.right - l.left - l.right) / 2, r.right - l.right), r.left - l.left);
+        if (Math.round(shift)) {
+            list.style.marginLeft = Math.round(shift) + 'px';
+        }
+    },
+
+    // The switch is not offered: a choice saved while it was leaves the section's row. Kept, mergeSettings() would put it
+    // ahead of the footing on the next footing pick, and the row's first setting is read as the footing.
+    dropStoredPostCut: function(fd) {
+        var isCut = function(item) {
+                return item && item.key === 'post_cut';
+            },
+            rows = Array.isArray(fd?.info) ? fd.info : [],
+            row = rows.find(function(item) {
+                return item && item.control_key === 'post_options';
+            });
+        if (!Array.isArray(row?.settings) || !row.settings.some(isCut)) {
+            return;
+        }
+        row.settings = row.settings.filter(function(item) {
+            return !isCut(item);
+        });
+        try {
+            localStorage.setItem('custom_fence-' + fd.tab + '-' + fd.slug, JSON.stringify(rows));
+        } catch (e) {}
+    },
+
+    /** The switch was flipped: the tiles follow it, and both are stored with no redraw (nothing on the drawing moves). */
+    togglePostCut: function($input) {
+        $input.closest('.fc-form-field').attr('value', $input.prop('checked') ? '1' : '');
+        this.syncPostLengthTiles($input);
+        this.savePostLengthPick();
+    },
+
+    // Post Options drawer: marks every Post Length tile for the section on screen, shows the post in effect as the pick
+    // and sets the switch. `$clicked` is the tile or switch just used; the save follows, so the fields hold what is stored.
+    syncPostLengthTiles: function($clicked) {
+        var $field = $('#fc-control-modal .fc-form-field[name="post_length"]'),
+            fd = $field.length && typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+        if (!fd || !this.isMainSlatSlug(fd.slug) || !this.slatPostStockRule()) {
+            return null;
+        }
+        // The drawer is rebuilt on every open, after its saved picks are put back: the switch joins it here with its own,
+        // where the site offers it.
+        var offered = this.slatPostCutOffered(),
+            $cut = $('#fc-control-modal .fc-form-field[name="post_cut"]');
+        if (!offered) {
+            this.dropStoredPostCut(fd);
+        } else if (!$cut.length) {
+            $cut = $(this.postCutSwitchHtml()).attr('value', this.slatPostOptionsPick(fd, 'post_cut') === '1' ? '1' : '');
+            $field.closest('.fencing-form-group').before($cut);
+        }
+        var self = this,
+            tappedLength = !!$clicked && $clicked.closest('.fc-form-field').is($field),
+            shownCuts = tappedLength && $clicked.hasClass('fc-select')
+                ? parseInt($clicked.nextAll('p').find('.fc-post-cuts').val(), 10) || 0
+                : 0;
+        // A tap on a tile wrote only the post: it is picked cut the way its own dropdown shows.
+        if (shownCuts) {
+            $field.attr('value', $clicked.attr('data-slug') + 'x' + shownCuts);
+        }
+        var held = this.slatPostLengthPick($field.attr('value')).stock,
+            plan = this.slatPostLengthPlanForSection(
+                fd,
+                $('#fc-control-modal .fc-form-field[name="post_option"]').attr('value'),
+                $field.attr('value') || '',
+                $cut.attr('value') === '1'
+            );
+        if (!plan) {
+            return null;
+        }
+        // A tap on the recommended post, left on its usual number of cuts, follows the rule again: no pick is stored.
+        var keep = tappedLength && held === plan.recommended && !plan.pickedPieces ? 0 : plan.picked,
+            inEffect = keep || plan.recommended,
+            mm = this.formatPostMm,
+            tooShort = 'This section needs posts of ' + mm(plan.need) + ': ' + this.postLengthNote(plan).why;
+
+        // Stored with the fence height it was picked at: resetPostLengthForNewHeight() drops it when that changes.
+        $field.attr('value', keep
+            ? keep + (plan.pickedPieces ? 'x' + plan.pickedPieces : '') + (plan.fenceHeight ? '@' + plan.fenceHeight : '')
+            : '');
+        this.destroyPostCutsSelect2($field);
+        $field.find('.fc-select[data-slug]').each(function() {
+            var $tile = $(this),
+                option = plan.options.find(function(item) {
+                    return String(item.stock) === String($tile.attr('data-slug'));
+                });
+            if (!option) {
+                return;
+            }
+            var off = option.pieces < 1,
+                needsCut = off && option.why === 'cut';
+            $tile.toggleClass('fc-select--unavailable', off)
+                .toggleClass('fc-selected', option.stock === inEffect)
+                .attr('aria-disabled', off ? 'true' : null)
+                .attr('data-unavailable-title', off ? option.stock + (needsCut ? 'mm posts need cutting' : 'mm posts are too short') : null)
+                .attr('data-unavailable-note', off
+                    ? (needsCut
+                        ? (offered
+                            ? 'Turn on Cut posts on site to use a ' + option.stock + 'mm length for this section.'
+                            : 'A ' + option.stock + 'mm length would have to be cut for this section, and its posts are supplied whole.')
+                        : tooShort)
+                    : null);
+            $tile.nextAll('p').eq(1).html(self.postLengthTileStatusHtml(plan, option));
+        });
+        this.initPostCutsSelect2($field);
+
+        var used = plan.options.find(function(option) {
+                return option.stock === inEffect;
+            }),
+            shown = $.extend({}, plan, used ? { stock: used.stock, pieces: used.pieces } : {}),
+            note = this.postLengthNote(shown),
+            $note = $field.closest('.fencing-modal-area').find('.fencing-modal-notes .field-note').first();
+        $note.children('label').html('<i class="fa-solid fa-circle-exclamation me-1"></i> ' + note.title);
+        $note.find('.fc-modal-note-body').text(note.body);
+
+        // The stored choice stays as it is where the switch is locked: it applies again once the fence allows it.
+        $cut.toggleClass('fc-post-cut--locked', plan.cutLocked)
+            .find('.fc-post-cut__input').prop('checked', plan.cutInEffect).prop('disabled', plan.cutLocked);
+        $cut.find('.fc-post-cut__line').text(this.postCutLine(shown));
+
+        // A footing or switch change took the customer's own post off offer: say so, since the pick moved without a tap on it.
+        if ($clicked && !tappedLength && held && !plan.picked && typeof popupToast === 'function') {
+            var lost = plan.options.find(function(option) {
+                return option.stock === held;
+            });
+            popupToast(
+                held + (lost?.why === 'cut' ? 'mm posts need cutting' : 'mm posts are too short now'),
+                $('<i>').text(
+                    (lost?.why === 'cut'
+                        ? (offered ? 'Cut posts on site is off' : 'Posts are supplied whole')
+                        : 'With ' + plan.footingTitle + ' this section needs posts of ' + mm(plan.need)) +
+                    ', so Post Length is back on the recommended ' + plan.recommended + 'mm post.'
+                ).html(),
+                'POST-LEN'
+            );
+        }
+        return plan;
+    },
+
+    // Calculate with a new slat size or gap: a saved gate height their list lacks goes back to the gate's default, the
+    // fence height, as Fence Height went back to "Select height". Sites on number boxes are left alone.
+    resetGateHeightForNewSlatSizeOrGap: function(fd) {
+        if (!fd || !this.isMainSlatSlug(fd.slug) || !this.slatListedHeightsMap(fd.slug)) {
+            return;
+        }
+        var saved = this.getCommittedGateMaxFenceHeightMm(fd);
+        if (!saved || this.isStep2SlatSizeAndGapAsSaved(fd.tabInfo && fd.tabInfo[0], fd.slug)) {
+            return;
+        }
+        var heights = this.getMaxFenceHeightOptions(
+            this.resolveStep2SlatMmForHeight({}, fd.info || [], fd.data, fd.slug),
+            this.resolveStep2GapMmForHeight({}, fd.info || [], fd.data),
+            this.getGateModalFenceHeightBoundsMm().max,
+            fd.slug
+        );
+        if (heights.indexOf(saved) === -1) {
+            this.persistGateMaxFenceHeightToGateFields(fd.tab, fd.slug, '');
+        }
     },
 
     syncStep2HeightToGateFields: function(fd) {
@@ -558,7 +1087,7 @@ SlatFence = {
         if (!v || !this.validateMaxFenceHeightField(stepEl).valid) {
             return;
         }
-        gateEl.value = v;
+        this.applyMaxFenceHeightValue(gateEl, v);
     },
 
     mirrorGateModalHeightToStep2: function(fd) {
@@ -574,7 +1103,7 @@ SlatFence = {
         if (!v || !this.validateMaxFenceHeightField(gateEl).valid) {
             return;
         }
-        stepEl.value = v;
+        this.applyMaxFenceHeightValue(stepEl, v);
         try {
             this.persistMaxFenceHeightFromStep2(fd.tab, fd.slug, v);
         } catch (ePs) {}
@@ -1348,6 +1877,16 @@ SlatFence = {
             !holdsPanel(postEl.nextElementSibling, 'nextElementSibling');
     },
 
+    /** Step 3 draws the gate at an end of the run with a post there (not a No Post end), the post holding the gate alone. */
+    slatGateHasEndPost: function() {
+        var self = this;
+        return Array.prototype.some.call(document.querySelectorAll('.fencing-panel-container[data-type="slat"]'), function(el) {
+            return Array.prototype.some.call(el.querySelectorAll('.panel-post:not(.no-post)'), function(postEl) {
+                return self.isSlatGateOnlyPost(postEl, el);
+            });
+        });
+    },
+
     //----------------------------------------------------------------------------------
 
 
@@ -1407,16 +1946,16 @@ SlatFence = {
         var heightMm = parseInt(String(read('max_fence_height')).replace(/,/g, ''), 10);
         if (!Number.isFinite(heightMm) || heightMm <= 0) return out;
 
-        var rows = this.countSlatPanelRowsFromMaxHeightMm(heightMm, sizePitch, gapPitch);
+        var rows = this.countSlatPanelRowsFromMaxHeightMm(heightMm, sizePitch, gapPitch, style);
         if (rows < 1) return out;
 
         var slatDeduct = this.getSlatLengthDeductionMm(style);
         var sfsLenMm = Math.max(
             0,
-            this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch) -
+            this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch, style) -
                 this.getSfsLengthDeductionMm(style, gapPitch)
         );
-        var csrLenMm = Math.max(0, this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch) || 0);
+        var csrLenMm = Math.max(0, this.computeSlatPanelHeightMmFromMaxHeight(heightMm, sizePitch, gapPitch, style) || 0);
         var cutM = 0;
         var addCutM = function(count, len) {
             count = parseInt(count, 10) || 0;
@@ -1754,7 +2293,7 @@ SlatFence = {
             return 0;
         }
         var pitch = this.resolveSlatPanelPitchInputs(context, slug);
-        return this.computeSlatPanelHeightMmFromMaxHeight(maxH, pitch.sizePitch, pitch.gapPitch);
+        return this.computeSlatPanelHeightMmFromMaxHeight(maxH, pitch.sizePitch, pitch.gapPitch, slug);
     },
 
     /** Gate Options modal — Gate Height min/max (mm); fixed range, not Step 2 matrix. */
@@ -1866,9 +2405,16 @@ SlatFence = {
             min = 199;
         }
         if (!Number.isFinite(max) || max < min) {
-            max = 5800;
+            max = 2400;
         }
         return { min: min, max: max };
+    },
+
+    // Top of the Step 2 height list: the fence cap, or the gate's max on Gate ONLY, where the box is the gate's height.
+    getStep2HeightListMaxMm: function(fd) {
+        fd = fd || (typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null);
+        var gateOnly = !!fd && this.isMainSlatSlug(fd.slug) && this.isStep2GateOnlyActive(fd);
+        return (gateOnly ? this.getGateModalFenceHeightBoundsMm() : this.getStep2FenceHeightBoundsMm()).max;
     },
 
     /**
@@ -2309,7 +2855,7 @@ SlatFence = {
         var $targets =
             $selects && $selects.length
                 ? $selects
-                : $section.find('[name="slat_gap"], [name="slat_size"]');
+                : $section.find('[name="slat_gap"], [name="slat_size"], select[name="max_fence_height"]');
 
         if (typeof fcDestroyStep2Select2 === 'function') {
             fcDestroyStep2Select2($targets);
@@ -2522,7 +3068,7 @@ SlatFence = {
         return document.querySelector('[data-section="2"] [name="max_fence_height"]');
     },
 
-    /** Apply saved height (mm) to Step 2 Fence Height control (input or legacy select). */
+    /** Apply a height (mm) to a Fence Height or Gate Height control (number box or dropdown). */
     applyMaxFenceHeightValue: function(el, preservedMm) {
         if (!el) {
             return false;
@@ -2559,14 +3105,24 @@ SlatFence = {
             }
         }
         if (!found) {
-            $(el).append(
-                $('<option>', {
-                    value: String(preserved),
-                    text: preserved + ' mm'
+            // A height typed before the list (an older quote) goes in among the listed ones, in order.
+            var $opt = $('<option>', { value: String(preserved), text: preserved + 'mm' });
+            var $taller = $(el)
+                .children('option')
+                .filter(function() {
+                    return parseInt(this.value, 10) > preserved;
                 })
-            );
+                .first();
+            if ($taller.length) {
+                $opt.insertBefore($taller);
+            } else {
+                $(el).append($opt);
+            }
         }
         el.value = String(preserved);
+        if ($(el).data('select2')) {
+            $(el).trigger('change.select2');
+        }
         return true;
     },
 
@@ -2602,12 +3158,13 @@ SlatFence = {
             return;
         }
 
-        if (!this.isStep2SlatGapAndSizeReady()) {
+        if (!this.isStep2SlatGapAndSizeReady() || !this.isStep2SlatSizeAndGapAsSaved(tabRow0, slug)) {
             return;
         }
 
         if (el.options.length <= 1) {
-            this.refreshMaxFenceHeightSelect();
+            // Never the default reset here: it cleared a saved height that is not on the list.
+            this.refreshMaxFenceHeightSelect({ resetHeightIfInvalid: false });
             el = this.getStep2MaxFenceHeightEl();
             if (!el || el.disabled) {
                 return;
@@ -2615,7 +3172,8 @@ SlatFence = {
         }
 
         var preserved = parseInt(saved, 10);
-        if (!this.applyMaxFenceHeightSelectValue(el, preserved)) {
+        // Over the list's top (a quote saved before the cap): left on "Select height", as the list itself leaves it.
+        if (preserved > this.getStep2HeightListMaxMm() || !this.applyMaxFenceHeightSelectValue(el, preserved)) {
             return;
         }
 
@@ -2670,6 +3228,46 @@ SlatFence = {
         try {
             localStorage.setItem('custom_fence-' + tab, JSON.stringify(tabInfo));
         } catch (e2) {}
+
+        this.resetPostLengthForNewHeight(tab, slugNorm, rawVal);
+    },
+
+    // A Post Length pick belongs to the fence height it was made at: a new height puts the section back on the recommended
+    // post (asked for Nov 2026). Every saved height passes persistMaxFenceHeightFromStep2(), so the pick is dropped here.
+    resetPostLengthForNewHeight: function(tab, slug, heightVal) {
+        var heightMm = parseInt(String(heightVal || '').replace(/,/g, ''), 10);
+        if (!this.isMainSlatSlug(slug) || !Number.isFinite(heightMm) || heightMm <= 0) {
+            return;
+        }
+        var key = 'custom_fence-' + tab + '-' + slug,
+            rows = [];
+        try {
+            rows = JSON.parse(localStorage.getItem(key) || '[]');
+        } catch (e) {}
+        var row = (Array.isArray(rows) ? rows : []).find(function(item) {
+                return item && item.control_key === 'post_options';
+            }),
+            saved = (Array.isArray(row?.settings) ? row.settings : []).find(function(item) {
+                return item && item.key === 'post_length';
+            }),
+            pick = this.slatPostLengthPick(saved?.val);
+        if (!pick.stock || pick.height === heightMm) {
+            return;
+        }
+        saved.val = '';
+        try {
+            localStorage.setItem(key, JSON.stringify(rows));
+        } catch (e2) {
+            return;
+        }
+        // A pick from before picks carried their height cannot be told from a changed one: it goes without a word.
+        if (pick.height !== null && typeof popupToast === 'function') {
+            popupToast(
+                'Post Length reset',
+                'The fence height changed, so this section is back on the recommended post. You can pick another in Post Options.',
+                'POST-LEN'
+            );
+        }
     },
 
     hydrateStep2SlatSizeSelect: function(slug, tabRow0, custom_fence, info, opts) {
@@ -2697,6 +3295,19 @@ SlatFence = {
         this.ensureStep2SlatHeightPairRow(slug);
         this.syncStep2MaxFenceHeightDisabledState(slug);
         this.reinitStep2SlatSelect2();
+    },
+
+    // True while Step 2 shows the section's saved slat size and gap. The saved height is one of that pair's heights:
+    // put back under a size or gap changed since, it came up as a height their list does not have.
+    isStep2SlatSizeAndGapAsSaved: function(tabRow0, slug) {
+        if (!tabRow0 || typeof fcReadTabRowStep2Field !== 'function') {
+            return true;
+        }
+        return ['slat_size', 'slat_gap'].every(function(name) {
+            var el = document.querySelector('[data-section="2"] [name="' + name + '"]');
+            var saved = fcReadTabRowStep2Field(tabRow0, slug, name);
+            return !el || !saved || String(el.value) === String(saved);
+        });
     },
 
     /** True when Step 2 slat gap and slat size both have a selection (not placeholder). */
@@ -2791,8 +3402,11 @@ SlatFence = {
                     fcDestroyStep2Select2($(el));
                 }
                 $(el).empty();
+                el.removeAttribute('data-fc-heights');
                 this.seedMaxFenceHeightPlaceholder(el, { force: true });
                 $wrap.find('.fc-input-msg').removeClass('fcim-show').html('');
+                // Drawn as its neighbours are while it waits for a slat size and gap.
+                this.reinitStep2SlatSelect2($(el));
             } else {
                 el.disabled = false;
                 el.removeAttribute('aria-disabled');
@@ -3049,6 +3663,7 @@ SlatFence = {
         if (!el) {
             return;
         }
+        el = this.ensureGateModalHeightSelect(fd, el);
         this.refreshGateModalMaxFenceHeightBounds({});
 
         var saved = '';
@@ -3080,12 +3695,149 @@ SlatFence = {
                 } else if (n > bounds.max) {
                     n = bounds.max;
                 }
-                el.value = String(n);
+                this.applyMaxFenceHeightValue(el, n);
             }
         }
 
         this.enableGateModalHeightQtyButtons();
         this.syncGateModalCalculateButtonState();
+        this.syncGateAlignField();
+    },
+
+    /** Gate Alignment (asked for Nov 2026): Bottom keeps a gate of another height on the fence's ground line, Top lines it up at the top. */
+    resolveGateAlign: function(context) {
+        var gateRow = ((context && context.fenceInfo) || []).find(function(item) {
+            return item && item.control_key === 'gate';
+        });
+        var row = (gateRow?.settings?.fields || []).find(function(field) {
+            return field && field.key === 'gate_align';
+        });
+        return row && row.val === 'top' ? 'top' : 'bottom';
+    },
+
+    gateAlignFieldHtml: function() {
+        var pick = function(val, word, rest) {
+            return '<div class="col-md-4 col-12 px-1">' +
+                '<div class="fc-select-2 fc-select-left fc-gate-modal-field fc-gate-align__pick w-100" data-val="' + val +
+                '" role="radio" aria-checked="false" tabindex="0"><p class="mb-0"><strong>' + word + '</strong> ' + rest + '</p></div></div>';
+        };
+        return '<div class="fc-form-field fc-gate-align mb-2" name="gate_align" type="choice_option" value="bottom" role="radiogroup" ' +
+            'aria-label="Gate alignment"><div class="fw-bold small mb-1">Gate Alignment</div>' +
+            '<div class="row g-2">' + pick('bottom', 'BOTTOM', 'Aligned') + pick('top', 'TOP', 'Aligned') + pick('same', 'SAME', 'Height') +
+            '</div><p class="fc-gate-align__note mb-0"></p></div>';
+    },
+
+    // Under Gate Height while the gate's height differs from the fence's; hidden, both gate writers carry its value. SAME Height
+    // (asked for Nov 2026) is no value: it gives the gate the fence's height and stays picked until the gate's height moves off it.
+    syncGateAlignField: function() {
+        var fd = typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null,
+            $row = $('#fc-control-modal .fc-gate-modal-gate-only-height-row');
+        if (!fd || !this.isMainSlatSlug(fd.slug) || !$row.length) {
+            return;
+        }
+        var $field = $('#fc-control-modal .fc-form-field[name="gate_align"]');
+        if (!$field.length) {
+            $field = $(this.gateAlignFieldHtml()).attr('value', this.resolveGateAlign({ fenceInfo: fd.info || [] }));
+            $row.after($field);
+        }
+        var gateMm = parseInt(String($('#fc-control-modal [name="gate_max_fence_height"]').val() || '').replace(/,/g, ''), 10),
+            fenceMm = this.readStep2MaxFenceHeightMm({ lenient: true }),
+            gateOnly = this.isStep2GateOnlyActive(fd) || $('#fc-control-modal [name="gate_only"]').prop('checked'),
+            diff = Number.isFinite(gateMm) && Number.isFinite(fenceMm) ? gateMm - fenceMm : 0,
+            align = $field.attr('value') === 'top' ? 'top' : 'bottom',
+            maxMm = this.getGateModalFenceHeightBoundsMm().max,
+            mm = this.formatPostMm(Math.abs(diff));
+        if (diff !== 0) {
+            $field.attr('data-same', null).attr('data-gate-was', gateMm);
+        }
+        var on = $field.attr('data-same') === '1' ? 'same' : align,
+            tooTall = Number.isFinite(fenceMm) && fenceMm > maxMm;
+        $field.toggle(!gateOnly && (diff !== 0 || on === 'same'));
+        $field.find('.fc-gate-align__pick').each(function() {
+            var picked = $(this).attr('data-val') === on;
+            $(this).toggleClass('fc-selected', picked).attr('aria-checked', picked ? 'true' : 'false');
+        });
+        // Gates are made up to 2,240mm, so a taller fence has no SAME Height: fcSelectUnavailable() says why on a tap.
+        $field.find('.fc-gate-align__pick[data-val="same"]').toggleClass('fc-select--unavailable', tooTall)
+            .attr('aria-disabled', tooTall ? 'true' : null)
+            .attr('data-unavailable-title', tooTall ? 'Gates stop at ' + this.formatPostMm(maxMm) : null)
+            .attr('data-unavailable-note', tooTall
+                ? 'A gate is made up to ' + this.formatPostMm(maxMm) + ', so it cannot match this ' + this.formatPostMm(fenceMm) + ' fence.'
+                : null);
+        $field.find('.fc-gate-align__note').text(on === 'same'
+            ? 'The gate now takes the fence\'s height, ' + this.formatPostMm(fenceMm) + ', and follows it. Bottom or Top puts it back to ' +
+                this.formatPostMm(parseInt($field.attr('data-gate-was'), 10)) + '.'
+            : diff > 0
+            ? (align === 'top'
+                ? 'The gate lines up with the fence top and reaches ' + mm + ' lower, for ground that drops at the gate.'
+                : 'Gate and fence stand on one ground line, and the gate rises ' + mm + ' above the fence.')
+            : (align === 'top'
+                ? (this.slatGateHasEndPost()
+                    ? 'The gate lines up with the fence top, and its end post stands ' + mm + ' higher, for ground that rises at the gate.'
+                    : 'The gate lines up with the fence top, which leaves ' + mm + ' more gap under it.')
+                : 'Gate and fence stand on one ground line, and the gate\'s top sits ' + mm + ' below the fence.'));
+    },
+
+    /** A Gate Alignment tile was picked: stored with the gate's fields and the fence redrawn, as a Gate Height pick is. */
+    pickGateAlign: function($pick) {
+        var $field = $pick.closest('.fc-form-field[name="gate_align"]'),
+            val = $pick.attr('data-val'),
+            el = this.getGateMaxFenceHeightEl();
+        if (!$field.length) {
+            return;
+        }
+        // SAME Height puts the fence's height in Gate Height; Bottom or Top straight after it put back the height it replaced.
+        var heightMm = val === 'same'
+            ? this.readStep2MaxFenceHeightMm({ lenient: true })
+            : ($field.attr('data-same') === '1' ? parseInt($field.attr('data-gate-was'), 10) : NaN);
+        $field.attr('data-same', val === 'same' ? '1' : null);
+        if (val !== 'same') {
+            $field.attr('value', val === 'top' ? 'top' : 'bottom');
+        }
+        if (el && heightMm > 0 && this.applyMaxFenceHeightValue(el, heightMm)) {
+            $(el).closest('.fc-input-container').find('.fc-input-msg').first().removeClass('fcim-show').html('');
+            this.syncGateModalCalculateButtonState();
+        }
+        this.syncGateAlignField();
+        FENCE.call('update_custom_fence', 'gate');
+        // That save stored the fence's height as the gate's own: cleared, the gate follows the fence as an untouched gate does.
+        var fd = val === 'same' && typeof getSelectedFenceData === 'function' ? getSelectedFenceData() : null;
+        if (fd) {
+            this.persistGateMaxFenceHeightToGateFields(fd.tab, fd.slug, '');
+        }
+    },
+
+    // The Summary's gate line for the choice: only where the gate's height differs from the fence's, as on the drawing.
+    gateAlignSummaryLine: function(context, calc) {
+        var fenceMm = this.resolveSlatFenceHeightMm(context, calc),
+            gateMm = this.resolveGateSlatHeightMm(context, calc);
+        if (!(fenceMm > 0) || !(gateMm > 0) || fenceMm === gateMm) {
+            return '';
+        }
+        return 'Alignment: ' + (this.resolveGateAlign(context) === 'top' ? 'Top' : 'Bottom');
+    },
+
+    // Gate Height as a dropdown where the Slat settings list GO's heights: the fence's own list, up to the gate's max.
+    ensureGateModalHeightSelect: function(fd, el) {
+        if (!this.slatListedHeightsMap(fd && fd.slug)) {
+            return el;
+        }
+        if (el.tagName !== 'SELECT') {
+            var $select = $('<select>', {
+                name: 'gate_max_fence_height',
+                class: 'form-select fc-gate-max-fence-height-select fc-form-field'
+            });
+            $(el).closest('.fencing-measurement-box').replaceWith($select);
+            el = $select[0];
+        }
+        var gapMm = this.resolveStep2GapMmForHeight({}, fd.info || [], fd.data);
+        var slatMm = this.resolveStep2SlatMmForHeight({}, fd.info || [], fd.data, fd.slug);
+        var heights = this.getMaxFenceHeightOptions(slatMm, gapMm, this.getGateModalFenceHeightBoundsMm().max, fd.slug);
+        $(el).empty().append($('<option>', { value: '', text: 'Select height' }));
+        heights.forEach(function(h) {
+            $(el).append($('<option>', { value: String(h), text: h + 'mm' }));
+        });
+        return el;
     },
 
     /**
@@ -3180,23 +3932,21 @@ SlatFence = {
     },
 
     /**
-     * Allowed fence heights (mm) for slat size + gap: one height per row (minRows…maxRows).
+     * Heights (mm) on offer for a slat size + gap, shortest first: the style's listed heights (slatHeightOptionsMm), which
+     * for Slat Infill are its own list before Slat's. `maxMm` stops the list at the gate's max.
      */
-    getMaxFenceHeightOptions: function(slatMm, gapMm) {
-        var s = Math.round(Number(slatMm)) >= 80 ? 90 : 65;
+    getMaxFenceHeightOptions: function(slatMm, gapMm, maxMm, fenceSlug) {
         var g = Number(gapMm);
         if (!Number.isFinite(g) || g < 0) {
             return [];
         }
-        var limits = this.getSlatHeightRowLimits();
-        var heights = [];
-        for (var r = limits.minRows; r <= limits.maxRows; r++) {
-            var h = this.computeFenceHeightMmFromRowCount(r, s, g);
-            if (Number.isFinite(h) && h > 0) {
-                heights.push(h);
-            }
-        }
-        return heights;
+        var gapPitch = this.gapSlugToPitchMm(String(g));
+        return this.slatHeightOptionsMm(
+            Math.round(Number(slatMm)) >= 80 ? 90.3 : 65.3,
+            Number.isFinite(gapPitch) ? gapPitch : g,
+            maxMm,
+            fenceSlug
+        );
     },
 
     /**
@@ -3284,8 +4034,8 @@ SlatFence = {
     },
 
     /**
-     * Legacy: fill Max Fence Height select from Step 2 slat gap + slat size.
-     * @param {object} [opts] — optional `gapSlug`, `sizeSlug` (from change handler); `resetHeightIfInvalid` clears height when no longer in matrix.
+     * Fill the Fence Height dropdown from Step 2 slat gap + slat size (the number box only gets its bounds).
+     * @param {object} [opts] — optional `gapSlug`, `sizeSlug` (from change handler); `resetHeightIfInvalid` clears a height the new list lacks.
      */
     refreshMaxFenceHeightSelect: function(opts) {
         opts = opts || {};
@@ -3313,39 +4063,48 @@ SlatFence = {
 
         var gapMm = this.resolveStep2GapMmForHeight(opts, custom_fence, info);
         var slatMm = this.resolveStep2SlatMmForHeight(opts, custom_fence, info, fd.slug);
+        var maxMm = this.getStep2HeightListMaxMm(fd);
 
-        var heights = this.getMaxFenceHeightOptions(slatMm, gapMm);
+        var heights = this.getMaxFenceHeightOptions(slatMm, gapMm, maxMm, fd.slug);
 
         var preserved = parseInt(el.value, 10);
+        var savedMm = this.isStep2SlatSizeAndGapAsSaved(fd.tabInfo && fd.tabInfo[0], fd.slug)
+            ? parseInt(this.getMaxFenceHeightValForStep2(fd.tabInfo && fd.tabInfo[0], fd.slug), 10)
+            : NaN;
         if (!Number.isFinite(preserved)) {
-            var savedRaw = this.getMaxFenceHeightValForStep2(fd.tabInfo && fd.tabInfo[0], fd.slug);
-            preserved = parseInt(savedRaw, 10);
+            preserved = savedMm;
         }
 
-        $(el).empty();
-        $(el).append($('<option>', { value: '', text: 'Select height' }));
-        heights.forEach(function(h) {
-            $(el).append($('<option>', { value: String(h), text: h + ' mm' }));
-        });
+        // Same list and a listed height already picked: left alone, a rebuild takes the keyboard focus off the dropdown.
+        var listKey = [slatMm, gapMm, maxMm].join('|');
+        var rebuild = el.getAttribute('data-fc-heights') !== listKey || heights.indexOf(parseInt(el.value, 10)) === -1;
 
-        var resetInvalid = opts.resetHeightIfInvalid !== false;
-        if (Number.isFinite(preserved) && preserved > 0 && heights.length) {
-            if (heights.indexOf(preserved) !== -1) {
-            el.value = String(preserved);
-            } else if (resetInvalid) {
-                this.seedMaxFenceHeightPlaceholder(el, { force: true });
-                try {
-                    this.persistMaxFenceHeightFromStep2(fd.tab, fd.slug, '');
-                } catch (eClr) {}
-        } else {
+        if (rebuild) {
+            $(el).empty();
+            $(el).append($('<option>', { value: '', text: 'Select height' }));
+            heights.forEach(function(h) {
+                $(el).append($('<option>', { value: String(h), text: h + 'mm' }));
+            });
+            el.setAttribute('data-fc-heights', listKey);
+
+            // The section's saved height under its saved size and gap stays, listed or not: picking the same gap
+            // again dropped an older quote's typed height.
+            var resetInvalid = opts.resetHeightIfInvalid !== false && preserved !== savedMm;
+            var hasHeight = Number.isFinite(preserved) && preserved > 0;
+            if (hasHeight && heights.indexOf(preserved) !== -1) {
+                el.value = String(preserved);
+            } else if (hasHeight && !resetInvalid && !(maxMm > 0 && preserved > maxMm)) {
+                // A height that is not on the list (typed on an older quote) is its own item until another is picked.
                 this.applyMaxFenceHeightSelectValue(el, preserved);
-            }
-        } else {
-            this.seedMaxFenceHeightPlaceholder(el, { force: true });
-            if (resetInvalid && Number.isFinite(preserved) && preserved > 0 && heights.indexOf(preserved) === -1) {
-                try {
-                    this.persistMaxFenceHeightFromStep2(fd.tab, fd.slug, '');
-                } catch (eClr2) {}
+            } else {
+                this.seedMaxFenceHeightPlaceholder(el, { force: true });
+                // A new slat size or gap leaves the saved height with its saved size and gap until Calculate. Only a
+                // height over the list's top is dropped, as the number box drops one out of its range.
+                if (hasHeight && maxMm > 0 && preserved > maxMm) {
+                    try {
+                        this.persistMaxFenceHeightFromStep2(fd.tab, fd.slug, '');
+                    } catch (eClr) {}
+                }
             }
         }
 
@@ -3356,7 +4115,9 @@ SlatFence = {
             }
         } catch (ePersistRefresh) {}
 
-        this.reinitStep2SlatSelect2($(el));
+        if (rebuild) {
+            this.reinitStep2SlatSelect2($(el));
+        }
     },
 
     /** Step 2: Slat Gap changed — refresh Fence Height option list for the new gap. */
@@ -4141,6 +4902,85 @@ SlatFence = {
 
     //----------------------------------------------------------------------------------
 
+    // Device pixels per CSS px where `el` is drawn: the screen's scaling times the zoom set on the drawing.
+    slatDeviceScale: function(el) {
+        var scale = window.devicePixelRatio || 1;
+        for (var node = el; node && node.nodeType === 1; node = node.parentElement) {
+            var zoom = parseFloat(window.getComputedStyle(node).zoom);
+            if (Number.isFinite(zoom) && zoom > 0) {
+                scale *= zoom;
+            }
+        }
+        return scale;
+    },
+
+    // Slat height (px) at which `rows` slats and their gaps fill a panel, a gate's rows between its two rails: slats rounded
+    // up to 7px drew 21 rows in a panel labelled Rows: 24 (Nov 2026). `devicePx` is one device pixel in CSS px.
+    slatFitPx: function(rows, heightPx, framePx, gapPx, betweenRails, devicePx) {
+        var inner = heightPx - framePx;
+        // Odd fractions on purpose: an edge landing exactly on a pixel's centre is drawn either side of it, so a 1px gap came
+        // out 2px or none. A panel runs just under half a pixel over, as its box snaps to whole pixels.
+        var px = betweenRails
+            ? (inner - gapPx - 0.0129 * devicePx) / (rows + 2) - gapPx
+            : (inner + 0.4871 * devicePx - (rows - 1) * gapPx) / rows;
+        return rows > 0 && Number.isFinite(px) && px > 0 ? px : null;
+    },
+
+    // Top and bottom frame lines (px) of the element the slats are painted on; they are not part of the slat stack.
+    slatFramePx: function(el) {
+        var style = el ? window.getComputedStyle(el) : null;
+        var px = style ? parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth) : NaN;
+        return Number.isFinite(px) ? px : 4;
+    },
+
+    // Sizes a run's gaps and slats for the pixels it is drawn on now: gaps of whole device pixels, each Rows count filling
+    // its panel. applyGapPattern() leaves the counts on `fcSlatFit`; a zoom or another screen scaling runs this again.
+    fitSlatRows: function(el) {
+        var fit = el && el.fcSlatFit;
+        if (!fit || !this.isSlatLike(el.getAttribute('data-type'))) {
+            return;
+        }
+
+        var self = this;
+        var scale = this.slatDeviceScale(el);
+        var gapPx = Math.max(1, Math.round(fit.gapPx * scale)) / scale;
+        var size = function(item, paintedEl, betweenRails) {
+            return item
+                ? self.slatFitPx(item.rows, item.heightPx, self.slatFramePx(paintedEl), gapPx, betweenRails, 1 / scale)
+                : null;
+        };
+
+        var fencePx = size(fit.fence, fit.fence && fit.fence.el, false);
+        // Zoomed far out, whole-pixel gaps leave the slats under two pixels or no room at all: the plain gap then, and the
+        // panel reads as one face.
+        if (fit.fence && !(fencePx * scale >= 2)) {
+            gapPx = fit.gapPx;
+            fencePx = size(fit.fence, fit.fence.el, false);
+        }
+
+        el.style.setProperty('--fc-slat-gap-px', gapPx + 'px');
+        el.style.setProperty('--fc-slat-size-px', (fencePx || fit.slatPx) + 'px');
+        el.style.setProperty('--fc-slat-device-px', (1 / scale) + 'px');
+        el.querySelectorAll('.fencing-panel-gate').forEach(function(gateEl) {
+            var gatePx = size(gateEl.fcSlatFit, gateEl.querySelector('.fc-slat-gate__leaf') || gateEl, true);
+            if (gatePx) {
+                gateEl.style.setProperty('--fc-slat-size-px', gatePx + 'px');
+            } else {
+                gateEl.style.removeProperty('--fc-slat-size-px');
+            }
+        });
+    },
+
+    // Every slat run on the page, after a zoom or a change of screen scaling left its fit made for other pixels.
+    refitSlatRows: function() {
+        var self = this;
+        document.querySelectorAll('.fencing-panel-container').forEach(function(el) {
+            self.fitSlatRows(el);
+        });
+    },
+
+    //----------------------------------------------------------------------------------
+
     applyGapPattern: function(custom_fence, info, container, calc, extraCtx) {
         if (!this.isSlatLike(info?.slug)) return;
 
@@ -4200,7 +5040,8 @@ SlatFence = {
                 ? this.computeSlatPanelHeightMmFromMaxHeight(
                       fenceHeightMm,
                       panelPitch.sizePitch,
-                      panelPitch.gapPitch
+                      panelPitch.gapPitch,
+                      info?.slug
                   )
                 : fenceHeightMm;
         var gatePanelHeightMm =
@@ -4208,7 +5049,8 @@ SlatFence = {
                 ? this.computeSlatPanelHeightMmFromMaxHeight(
                       gateHeightMm,
                       panelPitch.sizePitch,
-                      panelPitch.gapPitch
+                      panelPitch.gapPitch,
+                      info?.slug
                   )
                 : fencePanelHeightMm;
         var postBuryMm = slatNoBuryPost ? 0 : 300;
@@ -4222,6 +5064,8 @@ SlatFence = {
             }
             targetEl.style.setProperty('--fc-slat-gap-px', gapPx + 'px');
             targetEl.style.setProperty('--fc-slat-size-px', slatPx + 'px');
+            // What fitSlatRows() starts from: the plain gap and slat; the labels below add the fence's row count.
+            targetEl.fcSlatFit = { gapPx: gapPx, slatPx: slatPx, fence: null };
         };
 
         var clearHeightVars = function(targetEl) {
@@ -4255,7 +5099,7 @@ SlatFence = {
             return heightPx;
         };
 
-        var syncDisplayWrapper = function(rootEl, fenceMm, gateMm) {
+        var syncDisplayWrapper = function(rootEl, fenceMm, gateMm, alignTop) {
             var panelItemsEl = self.resolveSlatScaleWrapper(rootEl, null);
             var displayEl =
                 rootEl?.closest?.('.fencing-display-result') ||
@@ -4329,8 +5173,8 @@ SlatFence = {
             }
 
             panelItemsEl.classList.add('fc-slat-scale');
-            panelItemsEl.classList.toggle('fc-slat-align-top', gateTallerThanFence);
-            panelItemsEl.classList.toggle('fc-slat-align-bottom', !gateTallerThanFence);
+            panelItemsEl.classList.toggle('fc-slat-align-top', gateTallerThanFence && alignTop);
+            panelItemsEl.classList.toggle('fc-slat-align-bottom', !(gateTallerThanFence && alignTop));
             if (isPlannerStep3) {
                 panelItemsEl.style.removeProperty('--fc-slat-display-height-px');
             } else {
@@ -4353,6 +5197,8 @@ SlatFence = {
 
         var applyLabelToEl = function(el) {
             if (!el || !el.querySelectorAll) return;
+
+            var scale = FENCE.get('item', 'base_margin') || 0.1;
 
             el.querySelectorAll('.fencing-panel-item').forEach(function(panelEl) {
                 var label = panelEl.querySelector(':scope > .fc-slat-gap-label');
@@ -4379,7 +5225,8 @@ SlatFence = {
                         ? SlatFence.countSlatPanelRowsFromMaxHeightMm(
                               labelHeightMm,
                               panelPitch.sizePitch,
-                              panelPitch.gapPitch
+                              panelPitch.gapPitch,
+                              info?.slug
                           )
                         : null;
                 if (rows !== null && panelEl.closest && panelEl.closest('.fencing-panel-gate')) {
@@ -4391,10 +5238,20 @@ SlatFence = {
                     ? 'Gap: ' + gapDisp + 'mm<br>Size: ' + slatSizeMm + 'mm<br>Rows: ' + rows
                     : 'Gap: ' + gapDisp + 'mm<br>Size: ' + slatSizeMm + 'mm';
 
-                if (!panelEl.classList.contains('fencing-panel-gate')) {
+                // The picture draws the label's own count: fitSlatRows() sizes the fence's slats on the run, a gate's on the gate.
+                var isGate = panelEl.classList.contains('fencing-panel-gate');
+                if (isGate) {
+                    panelEl.fcSlatFit = { rows: rows, heightPx: gatePanelHeightMm * scale };
+                } else if (el.fcSlatFit && !el.fcSlatFit.fence) {
+                    el.fcSlatFit.fence = { rows: rows, heightPx: fencePanelHeightMm * scale, el: panelEl };
+                }
+
+                if (!isGate) {
                     self.syncPanelCentreRail(panelEl);
                 }
             });
+
+            self.fitSlatRows(el);
 
             var hidePostValue = SlatFence.shouldHidePostValue(info);
             if (hidePostValue) {
@@ -4459,6 +5316,7 @@ SlatFence = {
                 gateHeightMm < fenceHeightMm;
             var syncFenceMm = gateOnlyPlanner ? defaultPostHeightMm : fenceHeightMm;
             var syncGateMm = gateHeightMm;
+            var alignTop = self.resolveGateAlign(ctx) === 'top';
 
             if (el.querySelectorAll) {
                 el.querySelectorAll('.fencing-panel-item:not(.fencing-panel-gate)').forEach(function(panelEl) {
@@ -4468,13 +5326,19 @@ SlatFence = {
                     var postMm = defaultPostHeightMm;
                     var dropPx = 0;
                     if (gateTallerThanFence) {
-                        postMm = self.isSlatGateAdjacentPost(postEl, el)
-                            ? gatePanelHeightMm
-                            : fencePanelHeightMm;
+                        var nearGate = self.isSlatGateAdjacentPost(postEl, el);
+                        postMm = nearGate ? gatePanelHeightMm : fencePanelHeightMm;
+                        // Bottom Aligned: the fence's own posts drop with its panels, so the run keeps one ground line.
+                        if (!nearGate && !alignTop) {
+                            dropPx = Math.max(0, self.mmToPx(gatePanelHeightMm) - self.mmToPx(fencePanelHeightMm));
+                        }
                     } else if (gateShorterThanFence && self.isSlatGateOnlyPost(postEl, el)) {
-                        // Holds the gate alone, so it stops at Gate Height on the same ground line (beside a 2,240 gate it stood 5,000 tall).
+                        // Holds the gate alone, so it stops at Gate Height (beside a 2,240 gate it stood 5,000 tall): on the same ground
+                        // line, or Top Aligned from the fence top, standing higher for ground that rises at the gate (asked for Nov 2026).
                         postMm = gateHeightMm;
-                        dropPx = Math.max(0, self.mmToPx(defaultPostHeightMm) - self.mmToPx(gateHeightMm));
+                        if (!alignTop) {
+                            dropPx = Math.max(0, self.mmToPx(defaultPostHeightMm) - self.mmToPx(gateHeightMm));
+                        }
                     }
                     applyHeightVars(postEl, postMm);
                     postEl.style.marginTop = dropPx > 0 ? dropPx + 'px' : '';
@@ -4484,7 +5348,7 @@ SlatFence = {
                 });
             }
 
-            syncDisplayWrapper(el, syncFenceMm, syncGateMm);
+            syncDisplayWrapper(el, syncFenceMm, syncGateMm, alignTop && !gateOnlyPlanner);
         };
 
         if (!container) {
@@ -4583,20 +5447,23 @@ SlatFence = {
             $scope.find('.fencing-panel-container[data-type="slat"]').get(0) || null
         );
         var gateTallerThanFence = gateMaxMm > maxFenceMm;
+        var alignTop = !gateOnlyPlanner && this.isMainSlatSlug(slug) && this.resolveGateAlign(context) === 'top';
         var $panelItems = this.$slatScaleWrappersInScope($scope);
         if ($panelItems.length) {
-            $panelItems.toggleClass('fc-slat-align-top', gateTallerThanFence);
-            $panelItems.toggleClass('fc-slat-align-bottom', !gateTallerThanFence);
+            $panelItems.toggleClass('fc-slat-align-top', gateTallerThanFence && alignTop);
+            $panelItems.toggleClass('fc-slat-align-bottom', !(gateTallerThanFence && alignTop));
         }
         var gateMarginTop =
-            gateOnlyPlanner || gateTallerThanFence ? 0 : Math.max(0, Math.round(fencePx - gatePx));
+            gateOnlyPlanner || gateTallerThanFence || alignTop ? 0 : Math.max(0, Math.round(fencePx - gatePx));
         $scope.find('.fencing-panel-item.fencing-panel-gate').css({
             height: gatePx,
             marginTop: gateMarginTop > 0 ? gateMarginTop + 'px' : ''
         });
         if (gateTallerThanFence) {
+            // Bottom Aligned: the fence's panels drop by the difference and stand on the gate's ground line.
+            var panelDrop = alignTop || gateOnlyPlanner ? 0 : Math.max(0, Math.round(gatePx - fencePx));
             $scope.find('.fencing-panel-item:not(.fencing-panel-gate), .short-panel-item').css({
-                marginTop: ''
+                marginTop: panelDrop > 0 ? panelDrop + 'px' : ''
             });
         }
         $scope.find('.fencing-offcut.gate-offcut .offcut-body').css({ height: gatePx });
@@ -5343,7 +6210,8 @@ SlatFence = {
                 this.computeSlatPanelHeightMmFromMaxHeight(
                     fenceHm,
                     pitchForSfs.sizePitch,
-                    pitchForSfs.gapPitch
+                    pitchForSfs.gapPitch,
+                    fenceKind
                 ) - this.getSfsLengthDeductionMm(fenceKind, pitchForSfs.gapPitch)
             );
             var railFenceQty = 0;
@@ -5408,7 +6276,8 @@ SlatFence = {
         var panelHm = this.computeSlatPanelHeightMmFromMaxHeight(
             this.resolveSlatFenceHeightMm(context, calc),
             pitch.sizePitch,
-            pitch.gapPitch
+            pitch.gapPitch,
+            fenceSlug
         );
         var panels = this.slatCentreRailPanelCount(
             fenceSlug,
@@ -5496,14 +6365,16 @@ SlatFence = {
         var rowCountFence = this.countSlatPanelRowsFromMaxHeightMm(
             fenceHm,
             panelPitch.sizePitch,
-            panelPitch.gapPitch
+            panelPitch.gapPitch,
+            fenceSlug
         );
         var rowCountGate =
             gateHm !== fenceHm
                 ? this.countSlatPanelRowsFromMaxHeightMm(
                       gateHm,
                       panelPitch.sizePitch,
-                      panelPitch.gapPitch
+                      panelPitch.gapPitch,
+                      fenceSlug
                   )
                 : rowCountFence;
         if (rowCountFence < 1 && rowCountGate < 1) {
@@ -5723,6 +6594,12 @@ SlatFence = {
     //----------------------------------------------------------------------------------
 
 };
+
+// A browser zoom or another screen changes the pixels the slat rows were fitted to. The planner's own zoom refits by
+// itself (HELPER.zooming); the project plan's full-screen zoom fires this resize.
+window.addEventListener('resize', function() {
+    SlatFence.refitSlatRows();
+});
 
 // The calculation half of this module lives in fences/calc/slat_fence.js and is attached onto
 // SlatFence after all fences/*.js load. If that file goes missing the planner would fail

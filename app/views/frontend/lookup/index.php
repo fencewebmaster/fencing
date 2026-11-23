@@ -29,6 +29,8 @@ $adminCssBase = 'public/assets/css/admin/';
     <title><?php echo $h($fcLookupPageTitle); ?></title>
     <meta name="robots" content="<?php echo $h($fcLookupRobots); ?>">
     <?php echo ThemeSettings::cssBlock(); ?>
+    <?php /* The lookup is set in the UI font throughout (lookup.css). */ ?>
+    <?php $fcWebFontPreload = ['ui']; ?>
     <?php include view_path('frontend.partials.webfonts'); ?>
     <link href="<?php echo $h($asset('public/assets/css/vendor/bootstrap/bootstrap.min.css')); ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $h($asset('public/assets/css/vendor/fontawesome/css/all.min.css')); ?>">

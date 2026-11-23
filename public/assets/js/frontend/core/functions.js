@@ -2013,6 +2013,17 @@ function fcGetLastRegularPanel$() {
     return $(sel).filter(':not(.fencing-raked-panel,.fencing-panel-gate,.extra-panel-item)').last();
 }
 
+/** Group b: a gate saved at the end of the run stays after its last panel, and a bay the run no longer has is the last one.
+ *  The stored bay is from an older Overall Length: it left the gate mid-run, or a post short with two at the end (Nov 2026). */
+function fcGateBayForThisRun($scope, gateRow, placement) {
+    var bay = parseInt(placement, 10),
+        lastId = parseInt($scope.find('.panel-item:not(.fencing-raked-panel,.fencing-panel-gate,.extra-panel-item)').last().attr('data-id'), 10);
+    if (!(bay >= 0) || !Number.isFinite(lastId)) {
+        return placement;
+    }
+    return gateRow?.settings?.position === 'last' || !$scope.find('#panel-item-' + bay).length ? lastId : placement;
+}
+
 /** Gate is at the first bay (after left raked when present). */
 function fcGateIsAtFirstPosition($gate) {
     $gate = $gate && $gate.length ? $gate : $(typeof FENCES !== 'undefined' ? FENCES.el.fencingPanelGate : '.fencing-panel-gate');
@@ -7607,7 +7618,18 @@ function extra_fields() {
 
     $.each(info.form, function(k, v) {
 
-        var tpl = $('script[data-type="' + v.type + '"]').text()
+        // A style that reads listed heights (fence_heights_mm: its own, or Slat's for Slat Infill) gets Fence Height as a dropdown.
+        var fieldType = v.type;
+        if (
+            fieldType === 'slat-max-height-input' &&
+            typeof SlatFence !== 'undefined' &&
+            typeof SlatFence.slatListedHeightsMap === 'function' &&
+            SlatFence.slatListedHeightsMap(info.slug)
+        ) {
+            fieldType = 'slat-max-height-select';
+        }
+
+        var tpl = $('script[data-type="' + fieldType + '"]').text()
             .replace(/{{title}}/gi, v.title)
             .replace(/{{slug}}/gi, v.slug)
             .replace(/{{description}}/gi, v.description)
@@ -7619,11 +7641,11 @@ function extra_fields() {
         $(v.target).append(tpl);
 
         if (
-            (v.type === 'slat-max-height-input' || v.type === 'slat-max-height-select') &&
+            (fieldType === 'slat-max-height-input' || fieldType === 'slat-max-height-select') &&
             typeof SlatFence !== 'undefined'
         ) {
             var mhInit = document.querySelector('[data-section="2"] [name="max_fence_height"]');
-            if (v.type === 'slat-max-height-input' && typeof SlatFence.refreshStep2MaxFenceHeightBounds === 'function') {
+            if (fieldType === 'slat-max-height-input' && typeof SlatFence.refreshStep2MaxFenceHeightBounds === 'function') {
                 SlatFence.refreshStep2MaxFenceHeightBounds({});
             } else if (mhInit && typeof SlatFence.seedMaxFenceHeightPlaceholder === 'function') {
                 SlatFence.seedMaxFenceHeightPlaceholder(mhInit, { force: true });

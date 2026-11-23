@@ -65,7 +65,11 @@ final class ProjectPlanPageModel
         }
 
         $colors               = PlannerSessionService::colorRowsFromSession();
-        $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus($cart_items_grouped, $colors);
+        $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus(
+            $cart_items_grouped,
+            $colors,
+            isset($info['fences']) ? $info['fences'] : '[]'
+        );
         $cart_items_data      = FenceCatalogService::formatRegroupedCartItemsForProductSkus(
             $cart_items_regrouped,
             isset($info['fences']) ? $info['fences'] : '[]'

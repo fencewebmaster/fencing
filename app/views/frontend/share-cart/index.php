@@ -28,6 +28,8 @@ $error = $fcShareCartError;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Loading Your Quote</title>
+    <?php /* The loader lines are the heading font, which stays unseen until its file is in. */ ?>
+    <?php $fcWebFontPreload = ['heading']; ?>
     <?php include view_path('frontend.partials.webfonts'); ?>
     <link rel="stylesheet" href="<?php echo e($asset('public/assets/css/frontend/style.css')); ?>">
     <?php echo ThemeSettings::cssBlock(); ?>

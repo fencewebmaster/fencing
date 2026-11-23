@@ -69,7 +69,11 @@ final class CheckoutCartModel
             : json_decode((string) $cart_items_raw, true);
 
         if (is_array($cart_items_grouped) && count($cart_items_grouped) && is_array($colors) && count($colors)) {
-            $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus($cart_items_grouped, $colors);
+            $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus(
+                $cart_items_grouped,
+                $colors,
+                $_SESSION['fc_data']['fences'] ?? '[]'
+            );
             $cart_items_data      = FenceCatalogService::formatRegroupedCartItemsForProductSkus(
                 $cart_items_regrouped,
                 $_SESSION['fc_data']['fences'] ?? '[]'
@@ -101,7 +105,11 @@ final class CheckoutCartModel
 
         $cart_items_raw       = isset($post['cart_items']) ? (string) $post['cart_items'] : '[]';
         $cart_items_grouped   = json_decode($cart_items_raw, true);
-        $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus($cart_items_grouped, $colors);
+        $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus(
+            $cart_items_grouped,
+            $colors,
+            $_SESSION['fc_data']['fences'] ?? '[]'
+        );
         $cart_items_data      = FenceCatalogService::formatRegroupedCartItemsForProductSkus(
             $cart_items_regrouped,
             $_SESSION['fc_data']['fences'] ?? '[]'

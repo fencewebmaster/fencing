@@ -73,7 +73,13 @@ if ($fcFavicon !== '') {
 
 <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
+<?php /* The planner and the project plan first paint League Gothic headings over Poppins text. */ ?>
+<?php $fcWebFontPreload = ['heading', 'text']; ?>
 <?php include view_path('frontend.partials.webfonts'); ?>
+<?php /* The icon subset's two fonts: found only through subset.min.css, they landed after first paint and the icons popped in.
+     url(), not asset(): that stylesheet names them with no ?v=, and a preload under another URL is fetched twice. */ ?>
+<link rel="preload" as="font" type="font/woff" href="<?php echo e(url('public/assets/fonts/fa/webfonts/fa-solid-900.subset.woff')); ?>" crossorigin>
+<link rel="preload" as="font" type="font/woff" href="<?php echo e(url('public/assets/fonts/fa/webfonts/fa-regular-400.subset.woff')); ?>" crossorigin>
 
 <link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/frontend/style.css'); ?>">
 <link rel="stylesheet" type="text/css" href="<?php echo asset('public/assets/css/frontend/style-v2.css'); ?>">

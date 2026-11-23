@@ -160,6 +160,11 @@ $fc_cart_debug_prices = ConsoleSettings::debugMode()
                         ?>
                         <div class="small text-muted fc-cart-fence-style"><?php echo e($fence_style_label); ?></div>
                         <?php endif; ?>
+                        <?php if ( ! empty( $cart_item['note'] ) ) : ?>
+                        <?php /* Slat posts cut on site, and their top plates (CartBuilderService::cartLineNote()): the row counts
+                             stock posts, so the note says how many posts they make. */ ?>
+                        <div class="small text-dark mt-1 fc-cart-item-note"><?php echo e( (string) $cart_item['note'] ); ?></div>
+                        <?php endif; ?>
 
                         <?php /* Quantity and stock read as one line on a phone: whichever of the two
                              quantity states is showing sits on the left, stock to its right.

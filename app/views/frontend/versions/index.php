@@ -40,6 +40,8 @@ use Fc\Admin\Settings\ThemeSettings;
     <link rel="icon" href="<?php echo e($fcVersionsFaviconUrl); ?>">
     <?php endif; ?>
     <?php echo ThemeSettings::cssBlock(); ?>
+    <?php /* The page is set in the UI font throughout (versions.css). */ ?>
+    <?php $fcWebFontPreload = ['ui']; ?>
     <?php include view_path('frontend.partials.webfonts'); ?>
     <link rel="stylesheet" href="<?php echo e(asset('public/assets/css/frontend/versions.css')); ?>">
 </head>

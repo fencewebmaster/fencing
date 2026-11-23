@@ -6440,6 +6440,35 @@ thead.fc-border th:last-child {
     margin-top: auto;
 }
 
+/* Slat's Gate Alignment (SlatFence.gateAlignFieldHtml): the Gate Width pair's tiles, with what the pick does under them. */
+#fc-control-modal .fc-gate-align__note {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--fc-dove-gray);
+}
+
+#fc-control-modal .fc-gate-align__pick:focus-visible {
+    outline: 2px solid var(--fc-drawer-option-hover-line);
+    outline-offset: 1px;
+}
+
+/* BOTTOM Aligned runs to two lines on a tablet (768-991px): the row's height passes down to all three tiles. */
+#fc-control-modal .fc-gate-align .row > [class*="col-"] {
+    display: flex;
+}
+
+/* SAME Height in a fence taller than a gate is made (.fc-select--unavailable): greyed like a ruled-out post, no hover or press. */
+#fc-control-modal .fc-select-2.fc-gate-align__pick.fc-select--unavailable,
+#fc-control-modal .fc-select-2.fc-gate-align__pick.fc-select--unavailable:hover {
+    border-color: var(--fc-dark-gray) !important;
+    background-color: transparent;
+    cursor: not-allowed;
+    opacity: 0.4;
+    filter: grayscale(1);
+    transform: none;
+}
+
 /* Gate Width pair: CUSTOM runs to two lines, so pass the row's height down to both tiles and
    centre the copy (partials/fields/custom-gate.php). */
 .fc-gate-modal-std-custom-section .row > [class*="col-"] {
@@ -6450,6 +6479,74 @@ thead.fc-border th:last-child {
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+/* ===== Gate Options: a line between its functions ===== */
+/* Asked for Nov 2026. As the ruled grids below, the body bleeds over the card's side padding (16px, 10px from 768px),
+   since it clips overflow, so each line meets the card's edges; it pads itself back, so nothing inside moves. */
+#fc-control-modal .fencing-modal-area--gate > .fencing-modal-body:has(.custom-gate > *) {
+    width: auto;
+    margin-right: -16px;
+    margin-left: -16px;
+    padding-right: 16px;
+    padding-left: 16px;
+}
+
+/* Every function after the first, and the move buttons under them: 12px, the line, 12px. */
+#fc-control-modal .fencing-modal-area--gate .custom-gate > * + *,
+#fc-control-modal .fencing-modal-area--gate .custom-gate:not(:empty) + .fc-row {
+    position: relative;
+    margin-top: 12px;
+    padding-top: 12px;
+}
+
+/* The notes row's columns bring 8px of their own (g-2); the move row already stands 8px under it. */
+#fc-control-modal .fencing-modal-area--gate .custom-gate > * + .row {
+    padding-top: 4px;
+}
+
+#fc-control-modal .fencing-modal-area--gate .custom-gate:not(:empty) + .fc-row {
+    margin-top: 4px;
+}
+
+/* Drawn past both sides: the body clips it at the card's frame, whatever the function's own side margins (a row's are -4px). */
+#fc-control-modal .fencing-modal-area--gate .custom-gate > * + *::before,
+#fc-control-modal .fencing-modal-area--gate .custom-gate:not(:empty) + .fc-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -24px;
+    left: -24px;
+    height: 1px;
+    background: var(--fc-gainsboro);
+}
+
+@media (min-width: 768px) {
+    #fc-control-modal .fencing-modal-area--gate > .fencing-modal-body:has(.custom-gate > *) {
+        margin-right: -10px;
+        margin-left: -10px;
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+}
+
+/* Below 768px Gate and Gate Height stack as two functions, so Gate Height takes the same line. */
+@media (max-width: 767.98px) {
+    #fc-control-modal .fencing-modal-area--gate .custom-gate .fc-gate-modal-max-height {
+        position: relative;
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+
+    #fc-control-modal .fencing-modal-area--gate .custom-gate .fc-gate-modal-max-height::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: -24px;
+        left: -24px;
+        height: 1px;
+        background: var(--fc-gainsboro);
+    }
 }
 
 @media (max-width: 992px) {
@@ -7156,6 +7253,290 @@ thead.fc-border th:last-child {
     #fc-control-modal .fc-select-2:active,
     #fc-control-modal [type=text_option] .fc-select:active {
         transform: none;
+    }
+}
+
+/* A tile ruled out for the section (.fc-select--unavailable, a Slat post too short): greyed, no ring, no hover or press. */
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"]:has(> .fc-select--unavailable) {
+    background-color: transparent;
+    cursor: not-allowed;
+}
+
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"]:has(> .fc-select--unavailable) > .fc-select.fc-select--unavailable {
+    border-color: transparent;
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"] > .fc-select.fc-select--unavailable::after {
+    display: none;
+}
+
+#fc-control-modal .fc-modal-options--ruled > [class*="col-"]:has(> .fc-select--unavailable) > .fc-select.fc-select--unavailable + p {
+    color: var(--fc-dove-gray);
+}
+
+/* Tile status under the caption (SlatFence.postLengthTileStatusHtml): a tag over a quiet line. */
+#fc-control-modal .fc-option-tag,
+#fc-control-modal .fc-option-note {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+#fc-control-modal .fc-option-tag {
+    padding: 1px 9px;
+    border: 1px solid var(--fc-drawer-option-hover-line);
+    border-radius: 999px;
+    background-color: var(--fc-white);
+    font-weight: 600;
+    color: var(--fc-drawer-option-accent);
+}
+
+/* Recommended: a filled thumbs-up beside an outlined label (Option C, chosen Nov 2026). */
+#fc-control-modal .fc-option-tag--on {
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    border: 2px solid var(--fc-drawer-option-accent);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+#fc-control-modal .fc-option-tag__icon {
+    display: flex;
+    align-items: center;
+    padding: 0 7px;
+    border-radius: 0;
+    background-color: var(--fc-drawer-option-accent);
+    color: var(--fc-white);
+}
+
+#fc-control-modal .fc-option-tag__text {
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Under 360px a tile is 119px wide and the badge (138px) ran past it. */
+@media (max-width: 359.98px) {
+    #fc-control-modal .fc-option-tag__icon {
+        padding: 0 5px;
+    }
+
+    #fc-control-modal .fc-option-tag__text {
+        padding: 1px 5px;
+        font-size: 10px;
+        letter-spacing: 0;
+    }
+}
+
+#fc-control-modal .fc-option-tag--off {
+    border-color: var(--fc-gainsboro);
+    background-color: var(--fc-cultured);
+    color: var(--fc-dove-gray);
+}
+
+#fc-control-modal .fc-option-note {
+    margin-top: 3px;
+    font-weight: 500;
+    color: var(--fc-dove-gray);
+}
+
+/* A longer whole post's spare length belongs to its caption, in the accent Recommended has (asked for Nov 2026). */
+#fc-control-modal .fc-option-note--extra {
+    color: var(--fc-drawer-option-accent);
+}
+
+/* Post Length: tags and the spare length stay under the caption, the cut line goes to the foot, so a row's lines up. */
+#fc-control-modal .fc-form-field[name="post_length"] > [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Row 1 takes the spare height: a lone line sits at its foot, a line after a tag gets row 2. Margins stay the least gap. */
+#fc-control-modal .fc-form-field[name="post_length"] > [class*="col-"] > .fc-select + p + p {
+    display: grid;
+    flex: 1 0 auto;
+    grid-template-rows: 1fr auto;
+}
+
+#fc-control-modal .fc-form-field[name="post_length"] .fc-option-tag,
+#fc-control-modal .fc-form-field[name="post_length"] .fc-option-note--extra {
+    align-self: start;
+}
+
+#fc-control-modal .fc-form-field[name="post_length"] .fc-option-note:not(.fc-option-note--extra),
+#fc-control-modal .fc-form-field[name="post_length"] .fc-post-cuts-wrap {
+    align-self: end;
+}
+
+/* Beside a dropdown, a one-way cut line takes its height, so the row's "Cut in" texts share a line. */
+#fc-control-modal .fc-form-field[name="post_length"]:has(.fc-post-cuts-wrap) .fc-option-note:not(.fc-option-note--extra) {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+}
+
+/* Cuts dropdown under a Post Length tile (postLengthTileStatusHtml): only where a post can be cut more than one way. */
+#fc-control-modal .fc-post-cuts-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 6px auto 0;
+}
+
+/* Drawn as Step 2's Fence Height by Select2 (initPostCutsSelect2). The select matches it until Select2 takes it over. */
+#fc-control-modal select.fc-post-cuts {
+    display: block;
+    width: 100%;
+    height: 32px;
+    padding: 4px 28px 4px 10px;
+    border: 1px solid var(--fc-dark-gray);
+    border-radius: 3px;
+    background: var(--fc-white) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") no-repeat right 9px center / 12px 9px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--fc-dark-charcoal);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* Step 2's 3px corners (--fc-step2-radius), open or shut; the cell's centring stays out of the box. */
+#fc-control-modal .fc-post-cuts-wrap .select2-container--bootstrap-5 .select2-selection {
+    border-radius: 3px !important;
+    text-align: left;
+}
+
+/* Compact (asked for Nov 2026): Step 2's look at 14px and 32px tall, across the full tile. */
+#fc-control-modal .fc-post-cuts-wrap .select2-container--bootstrap-5 .select2-selection--single {
+    min-height: 32px;
+    padding: 4px 28px 4px 10px;
+    font-size: 14px;
+    background-position: right 9px center;
+    background-size: 12px 9px;
+}
+
+/* One line an option: by the screen edge the list's absolute box was squeezed and wrapped them. fitPostCutsList() moves it. */
+#fc-control-modal .fencing-modal-content > .select2-container--bootstrap-5 .select2-dropdown {
+    width: max-content !important;
+    border-radius: 3px !important;
+    overflow: hidden;
+}
+
+#fc-control-modal .fencing-modal-content > .select2-container--bootstrap-5 .select2-results__option {
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+/* Cut posts on site (SlatFence.postCutSwitchHtml): a switch row over the Post Length tiles, ruled off like the grid. */
+#fc-control-modal .fc-post-cut {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--fc-gainsboro);
+}
+
+/* Relative, so the hidden checkbox stays inside the row and cannot stretch the drawer's scroller. */
+#fc-control-modal .fc-post-cut__row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0;
+    cursor: pointer;
+}
+
+#fc-control-modal .fc-post-cut__text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#fc-control-modal .fc-post-cut__title,
+#fc-control-modal .fc-post-cut__line {
+    display: block;
+}
+
+#fc-control-modal .fc-post-cut__title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--fc-dark-charcoal);
+}
+
+#fc-control-modal .fc-post-cut__line {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--fc-granite-gray);
+}
+
+#fc-control-modal .fc-post-cut__input {
+    position: absolute;
+    right: 0;
+    width: 46px;
+    height: 26px;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+}
+
+#fc-control-modal .fc-post-cut__track {
+    position: relative;
+    flex: 0 0 46px;
+    height: 26px;
+    border-radius: 999px;
+    background-color: var(--fc-silver-chalice);
+    transition: background-color 0.18s ease;
+}
+
+#fc-control-modal .fc-post-cut__track::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--fc-white);
+    box-shadow: 0 1px 3px var(--fc-a-black-8);
+    transition: transform 0.18s ease;
+}
+
+#fc-control-modal .fc-post-cut__input:checked + .fc-post-cut__track {
+    background-color: var(--fc-drawer-option-accent);
+}
+
+#fc-control-modal .fc-post-cut__input:checked + .fc-post-cut__track::after {
+    transform: translateX(20px);
+}
+
+#fc-control-modal .fc-post-cut__input:focus-visible + .fc-post-cut__track {
+    outline: 2px solid var(--fc-drawer-option-accent);
+    outline-offset: 2px;
+}
+
+/* Locked: the fence leaves no choice, so the switch only shows which way its posts go. */
+#fc-control-modal .fc-post-cut--locked .fc-post-cut__row {
+    cursor: not-allowed;
+}
+
+#fc-control-modal .fc-post-cut--locked .fc-post-cut__track {
+    opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #fc-control-modal .fc-post-cut__track,
+    #fc-control-modal .fc-post-cut__track::after {
+        transition: none;
     }
 }
 
@@ -14428,6 +14809,23 @@ body.fc-restoring-selection .fencing-tab-name {
     ) !important;
 }
 
+/* Under 2x a slat's edge is one whole device pixel (--fc-slat-device-px, SlatFence.applyGapPattern): slats are no longer
+   whole pixels tall, and a half-pixel edge came and went from slat to slat. */
+@media (max-resolution: 1.99dppx) {
+    [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"],
+    [data-fc-slat-infill-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] {
+        --fc-coat-line: var(--fc-slat-device-px, 1px);
+    }
+}
+
+/* A dark coat keeps no edge at 1x, where its half pixel never showed. */
+@media (max-resolution: 1.19dppx) {
+    [data-fc-slat-color]:not([data-fc-slat-tone="light"]) :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"],
+    [data-fc-slat-infill-color]:not([data-fc-slat-infill-tone="light"]) :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat_fence_infill"] {
+        --fc-coat-line: 0px;
+    }
+}
+
 /* Side frames on both slat styles. Slat Infill's wall posts are coloured beside the wall rules,
    so no post rule below lists them. */
 [data-fc-slat-color] :is(.fc-planner-page, .fc-project-plan-page) .fencing-panel-container[data-type="slat"] .fencing-panel-item:not(.fencing-panel-gate)::before,
@@ -14559,6 +14957,13 @@ body.fc-restoring-selection .fencing-tab-name {
     ) !important;
     background-repeat: repeat !important;
     background-size: auto !important;
+}
+
+/* A panel opens at its top frame line with a slat, not a gap, so the Rows count SlatFence.slatFitPx() sizes fills it:
+   the pattern sits one gap up, and one gap taller so no repeat cuts the last slat. */
+.fencing-panel-container:is([data-type="slat"], [data-type="slat_fence_infill"]) :is(.ally, .offcut-body) {
+    background-position: 0 calc(-1 * var(--fc-slat-gap-px, 1px)) !important;
+    background-size: 100% calc(100% + var(--fc-slat-gap-px, 1px)) !important;
 }
 
 /* Slat Fence: scale post height from Max Fence Height (mm) */
@@ -21374,7 +21779,8 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
     position: absolute;
     left: 0;
     right: 0;
-    height: calc(var(--fc-slat-gap-px, 1px) + var(--fc-slat-size-px, 7px));
+    /* A device pixel short of its row: its edge snaps to whole pixels by itself, and a full row could cover the gap beside it. */
+    height: calc(var(--fc-slat-gap-px, 1px) + var(--fc-slat-size-px, 7px) - var(--fc-slat-device-px, 1px));
     background: var(--fc-coat, var(--fc-nickel));
 }
 

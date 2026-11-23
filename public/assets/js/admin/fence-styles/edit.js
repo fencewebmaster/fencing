@@ -709,7 +709,11 @@
         var initialTab = normalizeGuiTab(urlState.tab || FS_GUI_DEFAULT_TAB);
         var guiHtml =
             Gui && typeof Gui.render === 'function'
-                ? Gui.render(config, appBase, { fenceColorCatalog: options.fenceColorCatalog || [] })
+                ? Gui.render(config, appBase, {
+                      fenceColorCatalog: options.fenceColorCatalog || [],
+                      slatHeightDefaults: options.slatHeightDefaults,
+                      slatHeightParent: options.slatHeightParent
+                  })
                 : '<p class="text-sm text-red-600">GUI editor failed to load.</p>';
         if (initialTab === 'advanced') {
             guiHtml = guiHtml.replace('class="fc-fs-gui-mode"', 'class="fc-fs-gui-mode hidden"');
@@ -1171,6 +1175,9 @@
         state.csrf = (handlers && typeof handlers.csrf === 'string') ? handlers.csrf : '';
         state.fenceColorCatalog =
             handlers && Array.isArray(handlers.fenceColorCatalog) ? handlers.fenceColorCatalog : [];
+        // Step 2's Height choices: GO's heights, and for Slat Infill the Slat lists it follows. The GUI redraws from state.
+        state.slatHeightDefaults = handlers ? handlers.slatHeightDefaults : null;
+        state.slatHeightParent = handlers ? handlers.slatHeightParent : null;
         var urlState = readFenceStyleEditUrlState();
         state.guiTab = normalizeGuiTab(urlState.tab || FS_GUI_DEFAULT_TAB);
         state.activeSection = urlState.section || '';

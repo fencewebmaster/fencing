@@ -1370,7 +1370,660 @@
         );
     }
 
-    function renderFormFieldCard(field, index) {
+    // —— Height choices (Step 2, Fence Height) ——
+    // Slat lists the heights its sections and gate offer. Slat Infill offers the same, unless it lists its own for a slat
+    // size and gap: the planner reads them in that order (SlatFence.slatHeightListSlugs in fences/calc/slat_fence.js).
+    var SLAT_HEIGHTS_KEY = 'fence_heights_mm';
+    var SLAT_HEIGHTS_OWNER = 'slat';
+    var SLAT_HEIGHTS_STYLES = { slat: true, slat_fence_infill: true };
+    // Mirrors SlatFence.slatHeightRowConfig.maxHeightMm in frontend fences/slat_fence.js: edit in pairs.
+    var SLAT_HEIGHT_CAP_MM = 2400;
+    var SLAT_HEIGHT_MAX_SLATS = 999;
+    var SLAT_HEIGHT_MAX_MM = 99999;
+    // What the block shows, kept across re-renders: one style is open at a time.
+    var slatHeightsView = { size: '', gap: '', showOver: false, undo: null };
+
+    function formFieldIsSlatHeight(field) {
+        return !!field && (field.type === 'slat-max-height-input' || field.type === 'slat-max-height-select');
+    }
+
+    function formatMm(mm) {
+        return Number(mm).toLocaleString('en-AU');
+    }
+
+    function plural(count, one, many) {
+        return formatMm(count) + ' ' + (count === 1 ? one : many);
+    }
+
+    // GO's list and, for Slat Infill, Slat's lists: read off the page's options or its state, which name them alike.
+    function slatHeightSources(holder) {
+        holder = holder || {};
+        return { defaults: holder.slatHeightDefaults, parent: holder.slatHeightParent };
+    }
+
+    // [slat size][gap][slats] => mm as plain objects of whole numbers; PHP sends a 0-based run of keys as a list.
+    function readSlatHeights(raw) {
+        var out = {};
+        Object.keys(raw && typeof raw === 'object' ? raw : {}).forEach(function (size) {
+            var byGap = raw[size];
+            Object.keys(byGap && typeof byGap === 'object' ? byGap : {}).forEach(function (gap) {
+                var list = byGap[gap];
+                Object.keys(list && typeof list === 'object' ? list : {}).forEach(function (key) {
+                    var slats = parseInt(key, 10);
+                    var mm = parseInt(list[key], 10);
+                    if (slats > 0 && mm > 0) {
+                        out[size] = out[size] || {};
+                        out[size][gap] = out[size][gap] || {};
+                        out[size][gap][slats] = mm;
+                    }
+                });
+            });
+        });
+        return out;
+    }
+
+    // What a style offers: its own lists, and the parent style's for any slat size and gap it does not list.
+    function offeredSlatHeights(own, parent) {
+        var out = {};
+        [parent, own].forEach(function (map) {
+            Object.keys(map).forEach(function (size) {
+                Object.keys(map[size]).forEach(function (gap) {
+                    out[size] = out[size] || {};
+                    out[size][gap] = map[size][gap];
+                });
+            });
+        });
+        return out;
+    }
+
+    function slatHeightRows(list) {
+        return Object.keys(list || {})
+            .map(function (key) {
+                return { slats: parseInt(key, 10), mm: list[key] };
+            })
+            .sort(function (a, b) {
+                return a.slats - b.slats;
+            });
+    }
+
+    function countSlatHeights(map) {
+        var lists = 0;
+        var heights = 0;
+        Object.keys(map).forEach(function (size) {
+            Object.keys(map[size]).forEach(function (gap) {
+                lists += 1;
+                heights += Object.keys(map[size][gap]).length;
+            });
+        });
+        return { lists: lists, heights: heights };
+    }
+
+    function sameSlatHeightList(a, b) {
+        var keys = Object.keys(a || {});
+        return (
+            keys.length === Object.keys(b || {}).length &&
+            keys.every(function (key) {
+                return (b || {})[key] === a[key];
+            })
+        );
+    }
+
+    // Slat sizes as the planner keys them (a slat of 80mm or more reads the 90 list), named by the Slat Size choices.
+    function slatHeightSizes(config, map) {
+        var out = [];
+        var seen = {};
+        (Array.isArray(config.form) ? config.form : []).forEach(function (field) {
+            (field && Array.isArray(field.slat_size_rows) ? field.slat_size_rows : []).forEach(function (row) {
+                var value = parseFloat(row && row.value);
+                var key = value >= 80 ? '90' : '65';
+                if (value > 0 && !seen[key]) {
+                    seen[key] = true;
+                    out.push({ key: key, label: String(row.label || '').trim() || key + 'mm' });
+                }
+            });
+        });
+        Object.keys(map).forEach(function (key) {
+            if (!seen[key]) {
+                seen[key] = true;
+                out.push({ key: key, label: key + 'mm' });
+            }
+        });
+        return out.length ? out : [{ key: '65', label: '65mm' }, { key: '90', label: '90mm' }];
+    }
+
+    // Gaps from the Slat Gap choices, then any list a gap no longer among them still holds (marked unlisted).
+    function slatHeightGaps(config, map, sizeKey) {
+        var out = [];
+        var seen = {};
+        (Array.isArray(config.form) ? config.form : []).forEach(function (field) {
+            if (!field || field.type !== 'slat-gap-select' || !field.option || typeof field.option !== 'object') {
+                return;
+            }
+            Object.keys(field.option).forEach(function (key) {
+                if (/^\d+(\.\d+)?$/.test(key) && !seen[key]) {
+                    seen[key] = true;
+                    out.push({ key: key, label: String(field.option[key] || '').trim() || key + 'mm' });
+                }
+            });
+        });
+        Object.keys(map[sizeKey] || {}).forEach(function (key) {
+            if (!seen[key]) {
+                seen[key] = true;
+                out.push({ key: key, label: key + 'mm', unlisted: true });
+            }
+        });
+        return out.sort(function (a, b) {
+            return parseFloat(a.key) - parseFloat(b.key);
+        });
+    }
+
+    // Keeps the picked slat size and gap while they exist; otherwise the first with a list.
+    function resolveSlatHeightsView(config, map) {
+        var view = slatHeightsView;
+        var sizes = slatHeightSizes(config, map);
+        if (
+            !sizes.some(function (size) {
+                return size.key === view.size;
+            })
+        ) {
+            view.size = (
+                sizes.filter(function (size) {
+                    return !!map[size.key];
+                })[0] || sizes[0]
+            ).key;
+        }
+        var gaps = slatHeightGaps(config, map, view.size);
+        if (
+            !gaps.some(function (gap) {
+                return gap.key === view.gap;
+            })
+        ) {
+            view.gap = (
+                gaps.filter(function (gap) {
+                    return !!(map[view.size] || {})[gap.key];
+                })[0] ||
+                gaps[0] || { key: '' }
+            ).key;
+        }
+        return {
+            sizes: sizes,
+            gaps: gaps,
+            size: sizes.filter(function (size) {
+                return size.key === view.size;
+            })[0],
+            gap: gaps.filter(function (gap) {
+                return gap.key === view.gap;
+            })[0] || { key: view.gap, label: view.gap + 'mm' }
+        };
+    }
+
+    // Everything the block draws and edits from: the style's own lists, the Slat lists Slat Infill falls back on, what it
+    // offers as a result, GO's lists, and the list on screen with where it comes from ('own', 'parent' or 'none').
+    function slatHeightsModel(config, sources) {
+        sources = sources || {};
+        var own = readSlatHeights(config[SLAT_HEIGHTS_KEY]);
+        var parent = String(config.slug || '') === SLAT_HEIGHTS_OWNER ? {} : readSlatHeights(sources.parent);
+        var offered = offeredSlatHeights(own, parent);
+        var picked = resolveSlatHeightsView(config, offered);
+        var ownList = (own[picked.size.key] || {})[picked.gap.key] || null;
+        var parentList = (parent[picked.size.key] || {})[picked.gap.key] || null;
+        return {
+            own: own,
+            parent: parent,
+            offered: offered,
+            defaults: readSlatHeights(sources.defaults),
+            picked: picked,
+            size: picked.size.key,
+            gap: picked.gap.key,
+            ownList: ownList,
+            parentList: parentList,
+            list: ownList || parentList || {},
+            source: ownList ? 'own' : parentList ? 'parent' : 'none',
+            follows: countSlatHeights(parent).lists > 0,
+            styleName: String(config.title || '').trim() || 'This style'
+        };
+    }
+
+    function slatHeightsListName(picked) {
+        return picked.size.label + ' slats, ' + picked.gap.label + ' gap';
+    }
+
+    function splitSlatHeightRows(rows) {
+        return {
+            offered: rows.filter(function (row) {
+                return row.mm <= SLAT_HEIGHT_CAP_MM;
+            }),
+            over: rows.filter(function (row) {
+                return row.mm > SLAT_HEIGHT_CAP_MM;
+            })
+        };
+    }
+
+    function renderSlatHeightsSegment(label, attr, items, current, badgeFor) {
+        var name = uid('fc-heights');
+        var options = items
+            .map(function (item, idx) {
+                var id = name + '-' + idx;
+                var badge = badgeFor ? badgeFor(item) : '';
+                return (
+                    '<input type="radio" class="btn-check" name="' +
+                    name +
+                    '" id="' +
+                    id +
+                    '" value="' +
+                    escapeHtml(item.key) +
+                    '" ' +
+                    attr +
+                    ' autocomplete="off"' +
+                    (item.key === current ? ' checked' : '') +
+                    '><label class="btn btn-sm btn-light fc-fs-heights__seg-option" for="' +
+                    id +
+                    '"' +
+                    (item.unlisted ? ' title="Not one of the Slat Gap choices, so the planner never reads this list"' : '') +
+                    '><span>' +
+                    escapeHtml(item.label) +
+                    '</span>' +
+                    (item.unlisted
+                        ? '<i class="fa-solid fa-triangle-exclamation fc-fs-heights__seg-warn" aria-hidden="true"></i>'
+                        : '') +
+                    badge +
+                    '</label>'
+                );
+            })
+            .join('');
+        return (
+            '<div class="fc-fs-heights__picker">' +
+            '<span class="fc-fs-gui-field__label" id="' +
+            name +
+            '-label">' +
+            escapeHtml(label) +
+            '</span>' +
+            '<div class="btn-group fc-fs-heights__seg" role="radiogroup" aria-labelledby="' +
+            name +
+            '-label">' +
+            options +
+            '</div></div>'
+        );
+    }
+
+    // A gap's count: the heights it offers. Where the style follows Slat, a list of its own is tinted to stand out.
+    function slatHeightsGapBadgeHtml(model, gapKey) {
+        var list = (model.offered[model.size] || {})[gapKey];
+        var offered = splitSlatHeightRows(slatHeightRows(list)).offered.length;
+        var isOwn = !!(model.own[model.size] || {})[gapKey];
+        if (!Object.keys(list || {}).length) {
+            return '';
+        }
+        return (
+            '<span class="fc-btn-count' +
+            (model.follows && isOwn ? ' fc-fs-heights__count--own' : '') +
+            '" data-gui-heights-count title="' +
+            escapeHtml(
+                plural(offered, 'height', 'heights') +
+                    ' offered' +
+                    (model.follows ? (isOwn ? ', ' + model.styleName + "'s own list" : ", Slat's list") : '')
+            ) +
+            '">' +
+            offered +
+            '</span>'
+        );
+    }
+
+    // The line beside the list's name: what the planner offers, what it holds back, and whose list it is.
+    function slatHeightsBarMetaHtml(model) {
+        var split = splitSlatHeightRows(slatHeightRows(model.list));
+        var defList = (model.defaults[model.size] || {})[model.gap] || null;
+        if (!split.offered.length && !split.over.length) {
+            return '<span>No heights listed</span>';
+        }
+        var html = '<span>' + escapeHtml(plural(split.offered.length, 'height', 'heights') + ' offered') + '</span>';
+        if (split.over.length) {
+            html +=
+                '<span>' +
+                escapeHtml(formatMm(split.over.length) + ' over ' + formatMm(SLAT_HEIGHT_CAP_MM) + 'mm') +
+                '</span>';
+        }
+        if (model.follows) {
+            html +=
+                model.source === 'own'
+                    ? '<span><em class="fc-fs-heights__tag fc-fs-heights__tag--edited" title="' +
+                      escapeHtml(model.styleName + ' keeps its own version of this list') +
+                      '">Own list</em></span>'
+                    : '<span><em class="fc-fs-heights__tag" title="Offered from the Slat style">Slat\'s list</em></span>';
+        } else if (defList) {
+            html += sameSlatHeightList(model.list, defList)
+                ? '<span><em class="fc-fs-heights__tag">GO\'s list</em></span>'
+                : '<span><em class="fc-fs-heights__tag fc-fs-heights__tag--edited" title="Differs from GO\'s list">Edited</em></span>';
+        }
+        return html;
+    }
+
+    function slatHeightsOverLabelHtml(count) {
+        return (
+            '<b>' +
+            escapeHtml(plural(count, 'taller height', 'taller heights')) +
+            '</b> kept but not offered: the planner stops at ' +
+            formatMm(SLAT_HEIGHT_CAP_MM) +
+            'mm'
+        );
+    }
+
+    function renderSlatHeightRow(row, prevMm, over) {
+        var warn = prevMm != null && row.mm <= prevMm;
+        return (
+            '<div class="fc-fs-heights__row' +
+            (over ? ' fc-fs-heights__row--over' : '') +
+            (warn ? ' fc-fs-heights__row--warn' : '') +
+            '" role="listitem" data-gui-heights-row="' +
+            row.slats +
+            '">' +
+            '<span class="fc-fs-heights__slats"><b>' +
+            row.slats +
+            '</b> ' +
+            (row.slats === 1 ? 'slat' : 'slats') +
+            '</span>' +
+            '<input type="text" inputmode="numeric" autocomplete="off" class="fc-fs-input fc-fs-heights__mm" data-gui-heights-mm value="' +
+            row.mm +
+            '" aria-label="Height in mm for ' +
+            row.slats +
+            (row.slats === 1 ? ' slat' : ' slats') +
+            '">' +
+            '<span class="fc-fs-heights__unit"><span aria-hidden="true">mm</span>' +
+            '<span class="fc-fs-heights__flag" title="Not taller than the height before it"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span></span>' +
+            '<button type="button" class="fc-fs-heights__remove" data-gui-heights-remove aria-label="Remove ' +
+            formatMm(row.mm) +
+            'mm, ' +
+            row.slats +
+            (row.slats === 1 ? ' slat' : ' slats') +
+            '" title="Remove"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></div>'
+        );
+    }
+
+    function renderSlatHeightsMenuOption(action, icon, label, meta, opts) {
+        opts = opts || {};
+        return (
+            '<button type="button" class="fc-products-download-dropdown__option fc-admin-menu__option' +
+            (opts.danger ? ' fc-admin-menu__option--danger' : '') +
+            '" role="menuitem" data-gui-heights-action="' +
+            action +
+            '"' +
+            (opts.disabled ? ' disabled' : '') +
+            '>' +
+            '<span class="fc-admin-menu__option-icon" aria-hidden="true"><i class="fa-solid ' +
+            icon +
+            '"></i></span>' +
+            '<span class="fc-admin-menu__option-text">' +
+            '<span class="fc-admin-menu__option-label">' +
+            escapeHtml(label) +
+            '</span>' +
+            '<span class="fc-admin-menu__option-meta">' +
+            escapeHtml(meta) +
+            '</span></span></button>'
+        );
+    }
+
+    // Drawn fresh each time the menu opens, so its counts follow the heights typed since the list was drawn.
+    function renderSlatHeightsMenuPanel(config, sources) {
+        var model = slatHeightsModel(config, sources);
+        var defList = (model.defaults[model.size] || {})[model.gap] || null;
+        var listed = Object.keys(model.list).length;
+        var ownTotals = countSlatHeights(model.own);
+        var defTotals = countSlatHeights(model.defaults);
+        var allSame =
+            defTotals.lists > 0 &&
+            Object.keys(model.defaults).every(function (size) {
+                return Object.keys(model.defaults[size]).every(function (gap) {
+                    return sameSlatHeightList((model.offered[size] || {})[gap], model.defaults[size][gap]);
+                });
+            });
+
+        var html =
+            '<div class="fc-admin-menu__head">' +
+            '<span class="fc-admin-menu__head-title">' +
+            escapeHtml(slatHeightsListName(model.picked)) +
+            '</span>' +
+            '<span class="fc-admin-menu__head-hint">Nothing is saved until you press Save</span></div>' +
+            '<div class="fc-admin-menu__group">';
+        if (defTotals.lists) {
+            html += renderSlatHeightsMenuOption(
+                'load-list',
+                'fa-rotate-left',
+                "Load GO's heights for this list",
+                !defList
+                    ? 'GO has no list for this slat size and gap'
+                    : sameSlatHeightList(model.list, defList)
+                      ? "Already GO's list"
+                      : plural(Object.keys(defList).length, 'height', 'heights') +
+                        (listed ? ', in place of the ' + formatMm(listed) + ' here' : ''),
+                { disabled: !defList || sameSlatHeightList(model.list, defList) }
+            );
+        }
+        // A list of the style's own goes back to Slat's where Slat has one; otherwise it is cleared.
+        if (model.ownList && model.parentList) {
+            html += renderSlatHeightsMenuOption(
+                'clear-list',
+                'fa-link',
+                "Go back to Slat's list",
+                'Drops ' + model.styleName + "'s own " + plural(Object.keys(model.ownList).length, 'height', 'heights') + ' here',
+                { danger: true }
+            );
+        } else {
+            html += renderSlatHeightsMenuOption(
+                'clear-list',
+                'fa-eraser',
+                'Clear this list',
+                model.ownList
+                    ? 'The planner then works heights out from the slat count'
+                    : model.parentList
+                      ? "Slat's list: " + model.styleName + ' has none of its own here'
+                      : 'Nothing is listed here',
+                { disabled: !model.ownList, danger: true }
+            );
+        }
+        html +=
+            '</div><div class="fc-admin-menu__divider"></div>' +
+            '<div class="fc-admin-menu__head"><span class="fc-admin-menu__head-title">Every slat size and gap</span></div>' +
+            '<div class="fc-admin-menu__group">';
+        if (defTotals.lists) {
+            html += renderSlatHeightsMenuOption(
+                'load-all',
+                'fa-download',
+                "Load GO's heights for every list",
+                allSame
+                    ? "Every list is already GO's"
+                    : plural(defTotals.heights, 'height', 'heights') + ' in ' + plural(defTotals.lists, 'list', 'lists'),
+                { disabled: allSame }
+            );
+        }
+        if (model.follows) {
+            html += renderSlatHeightsMenuOption(
+                'clear-all',
+                'fa-link',
+                "Go back to Slat's lists",
+                ownTotals.lists
+                    ? 'Drops ' + model.styleName + "'s own " + plural(ownTotals.lists, 'list', 'lists')
+                    : model.styleName + ' has no lists of its own',
+                { disabled: !ownTotals.lists, danger: true }
+            );
+        } else {
+            html += renderSlatHeightsMenuOption(
+                'clear-all',
+                'fa-trash-can',
+                'Remove every list',
+                ownTotals.heights ? 'Fence Height goes back to a number box' : 'No heights are listed',
+                { disabled: !ownTotals.heights, danger: true }
+            );
+        }
+        return html + '</div>';
+    }
+
+    function renderSlatHeightsBody(config, sources) {
+        var model = slatHeightsModel(config, sources);
+        var view = slatHeightsView;
+        var isOwner = String(config.slug || '') === SLAT_HEIGHTS_OWNER;
+        var defList = (model.defaults[model.size] || {})[model.gap] || null;
+        var rows = slatHeightRows(model.list);
+        var split = splitSlatHeightRows(rows);
+        var capText = formatMm(SLAT_HEIGHT_CAP_MM) + 'mm';
+        var name = escapeHtml(model.styleName);
+        var html = '';
+
+        if (model.follows) {
+            html +=
+                '<p class="fc-fs-gui-field__hint fc-fs-heights__intro">' +
+                name +
+                ' offers the Slat style\'s heights, up to ' +
+                capText +
+                '. Change a list here and ' +
+                name +
+                ' keeps its own version of that list. ' +
+                '<a class="fc-fs-heights__link" href="products/fence-styles/edit/' +
+                SLAT_HEIGHTS_OWNER +
+                '?tab=form">Open Slat\'s lists</a></p>';
+        } else if (countSlatHeights(model.offered).heights) {
+            html +=
+                '<p class="fc-fs-gui-field__hint fc-fs-heights__intro">Customers pick Fence Height from these lists, one for each slat size and gap, up to ' +
+                capText +
+                '.' +
+                (isOwner ? ' The Slat gate uses them too, and so does Slat Infill wherever it has no list of its own.' : '') +
+                '</p>';
+        } else {
+            html +=
+                '<div class="fc-fs-heights__empty">' +
+                '<span class="fc-fs-heights__empty-icon" aria-hidden="true"><i class="fa-solid fa-ruler-vertical"></i></span>' +
+                '<div class="fc-fs-heights__empty-copy">' +
+                '<strong>Fence Height is a number box</strong>' +
+                '<span>' +
+                (isOwner
+                    ? 'List heights to make it a dropdown for Slat, Slat Infill and the Slat gate.'
+                    : 'List heights here to make it a dropdown for ' + name + ', or in the Slat style for both.') +
+                '</span></div>' +
+                (countSlatHeights(model.defaults).heights
+                    ? '<button type="button" class="btn btn-sm btn-dark fw-semibold" data-gui-heights-action="load-all">' +
+                      '<i class="fa-solid fa-download" aria-hidden="true"></i><span>Load GO\'s heights</span></button>'
+                    : '') +
+                '</div>';
+        }
+
+        html +=
+            '<div class="fc-fs-heights__pickers">' +
+            renderSlatHeightsSegment('Slat size', 'data-gui-heights-size', model.picked.sizes, model.size, null) +
+            renderSlatHeightsSegment('Slat gap', 'data-gui-heights-gap', model.picked.gaps, model.gap, function (gap) {
+                return slatHeightsGapBadgeHtml(model, gap.key);
+            }) +
+            '</div>';
+
+        html +=
+            '<div class="fc-fs-heights__box">' +
+            '<div class="fc-fs-heights__bar">' +
+            '<span class="fc-fs-heights__bar-title">' +
+            escapeHtml(slatHeightsListName(model.picked)) +
+            '</span>' +
+            '<span class="fc-fs-heights__bar-meta" data-gui-heights-meta>' +
+            slatHeightsBarMetaHtml(model) +
+            '</span>' +
+            '<div class="fc-fs-heights__menu" data-gui-heights-menu>' +
+            '<button type="button" class="btn btn-sm btn-light fw-semibold" data-gui-heights-menu-toggle aria-haspopup="menu" aria-expanded="false">' +
+            '<span>Actions</span><span class="btn-caret" aria-hidden="true"><i class="fa-solid fa-chevron-down fc-products-download-dropdown__caret"></i></span></button>' +
+            '<div class="fc-products-download-dropdown__panel fc-admin-menu__panel" role="menu" aria-label="Height list actions" hidden></div>' +
+            '</div></div>';
+
+        if (rows.length) {
+            html += '<div class="fc-fs-heights__list" role="list">';
+            var prev = null;
+            split.offered.forEach(function (row) {
+                html += renderSlatHeightRow(row, prev, false);
+                prev = row.mm;
+            });
+            if (split.over.length) {
+                html +=
+                    '<button type="button" class="fc-fs-heights__over" data-gui-heights-over aria-expanded="' +
+                    (view.showOver ? 'true' : 'false') +
+                    '"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span data-gui-heights-over-label>' +
+                    slatHeightsOverLabelHtml(split.over.length) +
+                    '</span></button>';
+                if (view.showOver) {
+                    split.over.forEach(function (row) {
+                        html += renderSlatHeightRow(row, prev, true);
+                        prev = row.mm;
+                    });
+                }
+            }
+            html += '</div>';
+        } else if (countSlatHeights(model.offered).heights) {
+            html +=
+                '<div class="fc-fs-heights__none">' +
+                '<strong>No heights listed for ' +
+                escapeHtml(model.picked.size.label + ' slats at a ' + model.picked.gap.label + ' gap') +
+                '</strong>' +
+                '<span>The planner offers one height for each number of slats, worked out from the slat size and gap.</span>' +
+                (defList
+                    ? '<button type="button" class="btn btn-sm btn-light fw-semibold" data-gui-heights-action="load-list">' +
+                      '<i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Load GO\'s heights for this list</span></button>'
+                    : '') +
+                '</div>';
+        }
+
+        var last = rows[rows.length - 1];
+        var beforeLast = rows[rows.length - 2];
+        var addName = uid('fc-heights-add');
+        html +=
+            '<div class="fc-fs-heights__add">' +
+            '<label class="fc-fs-heights__add-field" for="' +
+            addName +
+            '-slats"><span class="fc-fs-gui-field__label">Slats</span>' +
+            '<input type="text" inputmode="numeric" autocomplete="off" class="fc-fs-input fc-fs-heights__add-slats" id="' +
+            addName +
+            '-slats" data-gui-heights-new-slats value="' +
+            (last ? last.slats + 1 : 3) +
+            '"></label>' +
+            '<label class="fc-fs-heights__add-field" for="' +
+            addName +
+            '-mm"><span class="fc-fs-gui-field__label">Height (mm)</span>' +
+            '<input type="text" inputmode="numeric" autocomplete="off" class="fc-fs-input fc-fs-heights__add-mm" id="' +
+            addName +
+            '-mm" data-gui-heights-new-mm placeholder="' +
+            (last && beforeLast && last.mm > beforeLast.mm ? 'e.g. ' + (2 * last.mm - beforeLast.mm) : 'e.g. 1800') +
+            '"></label>' +
+            '<button type="button" class="btn btn-sm btn-dark fw-semibold fc-fs-heights__add-btn" data-gui-heights-add>' +
+            '<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add height</span></button>' +
+            '<span class="fc-fs-heights__add-hint">Or paste a column of heights from a spreadsheet to add many at once.</span>' +
+            '</div></div>';
+
+        return html;
+    }
+
+    function renderSlatHeightsNote(note) {
+        if (!note || !note.text) {
+            return '';
+        }
+        return (
+            '<span>' +
+            escapeHtml(note.text) +
+            '</span>' +
+            (slatHeightsView.undo && note.undo !== false
+                ? ' <button type="button" class="fc-fs-heights__undo" data-gui-heights-undo>Undo</button>'
+                : '')
+        );
+    }
+
+    function renderSlatHeightsBlock(config, sources) {
+        if (!SLAT_HEIGHTS_STYLES[String(config.slug || '')]) {
+            return '';
+        }
+        return renderFieldGroup(
+            'Height choices',
+            '<div class="fc-fs-heights fc-fs-gui-field--span" data-gui-heights>' +
+                '<div class="fc-fs-heights__body" data-gui-heights-body>' +
+                renderSlatHeightsBody(config, sources) +
+                '</div>' +
+                '<p class="fc-fs-heights__note" data-gui-heights-note role="status" aria-live="polite"></p></div>',
+            { nested: true }
+        );
+    }
+
+    function renderFormFieldCard(field, index, context) {
+        context = context || {};
         var base = 'form.' + index;
         var slug = field.slug || 'field-' + index;
         var typeSelect =
@@ -1442,6 +2095,10 @@
             });
         }
 
+        if (formFieldIsSlatHeight(field) && context.config) {
+            html += renderSlatHeightsBlock(context.config, context.slatHeights);
+        }
+
         html += '</div></article>';
         return html;
     }
@@ -1497,6 +2154,16 @@
                     '</div>',
                 { nested: true }
             );
+
+        // Slat's Post Length card: the planner puts its Cut posts on site switch there only where this is on.
+        if (sectionKey === 'post_options' && field.slug === 'post_length') {
+            html += renderFieldGroup(
+                'Cutting',
+                renderGuiField('Cut posts on site', base + '.cut_on_site', !!field.cut_on_site, { type: 'checkbox', span: true }) +
+                    '<p class="fc-fs-gui-field__hint fc-fs-gui-field--span">Shows the Cut posts on site switch above the Post Length tiles, off until the customer turns it on. Left off here, customers are not offered it: a post is only cut where no whole post is long enough.</p>',
+                { nested: true }
+            );
+        }
 
         if (field.notes && isPlainObject(field.notes)) {
             html += renderFieldGroup(
@@ -1669,7 +2336,7 @@
             html += '<p class="text-sm text-slate-500 fc-fs-form-empty">No step 2 fields defined for this style.</p>';
         } else {
             form.forEach(function (field, idx) {
-                html += renderFormFieldCard(field, idx);
+                html += renderFormFieldCard(field, idx, { config: config, slatHeights: slatHeightSources(options) });
             });
         }
         html += '</div></div>';
@@ -2164,7 +2831,10 @@
             return;
         }
         var tmp = document.createElement('div');
-        tmp.innerHTML = renderFormFieldCard(field, index);
+        tmp.innerHTML = renderFormFieldCard(field, index, {
+            config: state.config,
+            slatHeights: slatHeightSources(state)
+        });
         if (tmp.firstElementChild) {
             card.replaceWith(tmp.firstElementChild);
         }
@@ -2182,7 +2852,10 @@
         } else {
             stack.innerHTML = form
                 .map(function (field, idx) {
-                    return renderFormFieldCard(field, idx);
+                    return renderFormFieldCard(field, idx, {
+                        config: state.config,
+                        slatHeights: slatHeightSources(state)
+                    });
                 })
                 .join('');
         }
@@ -2280,6 +2953,10 @@
             }
         });
 
+        guiRoot.querySelectorAll('[data-gui-heights-body]').forEach(function (body) {
+            body.innerHTML = renderSlatHeightsBody(state.config, slatHeightSources(state));
+        });
+
         if (typeof helpers.syncPreview === 'function') {
             helpers.syncPreview(state);
         }
@@ -2350,7 +3027,9 @@
 
         var wrap = document.createElement('div');
         wrap.innerHTML = renderGuiMode(state.config, state.appBase, {
-            fenceColorCatalog: state.fenceColorCatalog || []
+            fenceColorCatalog: state.fenceColorCatalog || [],
+            slatHeightDefaults: state.slatHeightDefaults,
+            slatHeightParent: state.slatHeightParent
         });
         var newRoot = wrap.firstElementChild;
         if (!newRoot) {
@@ -2414,6 +3093,673 @@
         });
     }
 
+    function closeSlatHeightsMenus() {
+        document.querySelectorAll('[data-gui-heights-menu].is-open').forEach(function (menu) {
+            var panel = menu.querySelector('[role="menu"]');
+            var toggle = menu.querySelector('[data-gui-heights-menu-toggle]');
+            if (panel) {
+                panel.hidden = true;
+                panel.innerHTML = '';
+            }
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            menu.classList.remove('is-open');
+        });
+    }
+
+    var slatHeightsMenuGlobalsBound = false;
+
+    // Once a page: the menu's panel is fixed to the viewport, so a click elsewhere, a scroll or a resize shuts it.
+    function bindSlatHeightsMenuGlobals() {
+        if (slatHeightsMenuGlobalsBound) {
+            return;
+        }
+        slatHeightsMenuGlobalsBound = true;
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest || !e.target.closest('[data-gui-heights-menu]')) {
+                closeSlatHeightsMenus();
+            }
+        });
+        global.addEventListener('resize', closeSlatHeightsMenus);
+        global.addEventListener(
+            'scroll',
+            function (e) {
+                if (!e.target.closest || !e.target.closest('[data-gui-heights-menu]')) {
+                    closeSlatHeightsMenus();
+                }
+            },
+            true
+        );
+    }
+
+    function bindSlatHeights(guiRoot, state, helpers) {
+        var view = slatHeightsView;
+        var capText = formatMm(SLAT_HEIGHT_CAP_MM) + 'mm';
+        bindSlatHeightsMenuGlobals();
+
+        function block() {
+            return guiRoot.querySelector('[data-gui-heights]');
+        }
+
+        function model() {
+            return slatHeightsModel(state.config, slatHeightSources(state));
+        }
+
+        function clone(value) {
+            return JSON.parse(JSON.stringify(value));
+        }
+
+        function slatsText(slats) {
+            return slats + (Number(slats) === 1 ? ' slat' : ' slats');
+        }
+
+        function setNote(text, opts) {
+            var el = block();
+            var note = el ? el.querySelector('[data-gui-heights-note]') : null;
+            if (note) {
+                note.innerHTML = renderSlatHeightsNote(text ? { text: text, undo: !(opts && opts.undo === false) } : null);
+            }
+        }
+
+        // The style's own copy of the list on screen: on Slat Infill, made from Slat's the first time it is changed.
+        function ownListOf(m) {
+            m.own[m.size] = m.own[m.size] || {};
+            if (!m.own[m.size][m.gap]) {
+                m.own[m.size][m.gap] = clone(m.parentList || {});
+            }
+            return m.own[m.size][m.gap];
+        }
+
+        // The one write path. An emptied list goes, and so does one that matches Slat's again (Slat Infill then follows
+        // it); with no list left the setting itself goes.
+        function commit(own, parent) {
+            Object.keys(own).forEach(function (size) {
+                Object.keys(own[size]).forEach(function (gap) {
+                    var parentList = (parent[size] || {})[gap];
+                    if (
+                        !Object.keys(own[size][gap]).length ||
+                        (parentList && sameSlatHeightList(own[size][gap], parentList))
+                    ) {
+                        delete own[size][gap];
+                    }
+                });
+                if (!Object.keys(own[size]).length) {
+                    delete own[size];
+                }
+            });
+            var config = state.config;
+            if (!Object.keys(own).length) {
+                delete config[SLAT_HEIGHTS_KEY];
+            } else if (SLAT_HEIGHTS_KEY in config) {
+                config[SLAT_HEIGHTS_KEY] = own;
+            } else {
+                // A new setting goes beside the gap pitches it is read with, where the rollout script puts it.
+                var entries = Object.keys(config).map(function (key) {
+                    return [key, config[key]];
+                });
+                entries.forEach(function (entry) {
+                    delete config[entry[0]];
+                });
+                entries.forEach(function (entry) {
+                    config[entry[0]] = entry[1];
+                    if (entry[0] === 'slat_gap_pitch_mm') {
+                        config[SLAT_HEIGHTS_KEY] = own;
+                    }
+                });
+                if (!(SLAT_HEIGHTS_KEY in config)) {
+                    config[SLAT_HEIGHTS_KEY] = own;
+                }
+            }
+            helpers.markDirty(state, true);
+            if (typeof helpers.syncDevFromConfig === 'function') {
+                helpers.syncDevFromConfig();
+            }
+        }
+
+        // For the status line: whether the last change gave Slat Infill its own list here, or sent it back to Slat's.
+        function sourceNote(sourceBefore) {
+            var after = model();
+            if (!after.follows || sourceBefore === after.source) {
+                return '';
+            }
+            if (after.source === 'own') {
+                return ' ' + after.styleName + ' now keeps its own list here.';
+            }
+            return after.source === 'parent' ? ' ' + after.styleName + " offers Slat's list here again." : '';
+        }
+
+        function rerender(focusSelector, flashSlats) {
+            var el = block();
+            var body = el ? el.querySelector('[data-gui-heights-body]') : null;
+            if (!body) {
+                return;
+            }
+            closeSlatHeightsMenus();
+            body.innerHTML = renderSlatHeightsBody(state.config, slatHeightSources(state));
+            if (flashSlats != null) {
+                var flashRow = body.querySelector('[data-gui-heights-row="' + flashSlats + '"]');
+                if (flashRow) {
+                    flashRow.classList.add('fc-fs-heights__row--new');
+                }
+            }
+            var target = focusSelector ? body.querySelector(focusSelector) : null;
+            if (target) {
+                target.focus();
+            }
+        }
+
+        // After a typed height: the row marks, counts and list tag in place. A redraw mid-click would lose the click.
+        function refreshMarks() {
+            var el = block();
+            if (!el) {
+                return;
+            }
+            var m = model();
+            var marks = {};
+            var prev = null;
+            slatHeightRows(m.list).forEach(function (row) {
+                marks[row.slats] = { over: row.mm > SLAT_HEIGHT_CAP_MM, warn: prev != null && row.mm <= prev };
+                prev = row.mm;
+            });
+            el.querySelectorAll('[data-gui-heights-row]').forEach(function (rowEl) {
+                var mark = marks[rowEl.getAttribute('data-gui-heights-row')] || {};
+                rowEl.classList.toggle('fc-fs-heights__row--over', !!mark.over);
+                rowEl.classList.toggle('fc-fs-heights__row--warn', !!mark.warn);
+            });
+            var split = splitSlatHeightRows(slatHeightRows(m.list));
+            var meta = el.querySelector('[data-gui-heights-meta]');
+            if (meta) {
+                meta.innerHTML = slatHeightsBarMetaHtml(m);
+            }
+            var overLabel = el.querySelector('[data-gui-heights-over-label]');
+            if (overLabel && split.over.length) {
+                overLabel.innerHTML = slatHeightsOverLabelHtml(split.over.length);
+            }
+            var gapInput = el.querySelector('[data-gui-heights-gap]:checked');
+            var badge = gapInput ? el.querySelector('label[for="' + gapInput.id + '"] [data-gui-heights-count]') : null;
+            if (badge) {
+                badge.outerHTML = slatHeightsGapBadgeHtml(m, m.gap);
+            }
+        }
+
+        function toggleMenu(menu) {
+            var wasOpen = menu.classList.contains('is-open');
+            closeSlatHeightsMenus();
+            var panel = menu.querySelector('[role="menu"]');
+            var toggle = menu.querySelector('[data-gui-heights-menu-toggle]');
+            if (wasOpen || !panel || !toggle) {
+                return;
+            }
+            panel.innerHTML = renderSlatHeightsMenuPanel(state.config, slatHeightSources(state));
+            panel.hidden = false;
+            menu.classList.add('is-open');
+            toggle.setAttribute('aria-expanded', 'true');
+            // Fixed to the viewport, as the card clips anything absolute: under the button, right edges level.
+            var rect = toggle.getBoundingClientRect();
+            var box = panel.getBoundingClientRect();
+            var left = Math.max(8, Math.min(rect.right - box.width, global.innerWidth - box.width - 8));
+            var top = rect.bottom + 6;
+            if (top + box.height > global.innerHeight - 8 && rect.top - 6 - box.height >= 8) {
+                top = rect.top - 6 - box.height;
+            }
+            panel.style.left = Math.round(left) + 'px';
+            panel.style.top = Math.round(top) + 'px';
+        }
+
+        function confirmHeights(title, message, confirmLabel) {
+            var Modal = global.FcAdminModal;
+            if (Modal && typeof Modal.confirm === 'function') {
+                return Modal.confirm({
+                    title: title,
+                    message: message,
+                    confirmLabel: confirmLabel,
+                    cancelLabel: 'Cancel',
+                    variant: 'warning'
+                });
+            }
+            return Promise.resolve(global.confirm(message));
+        }
+
+        function runAction(action) {
+            closeSlatHeightsMenus();
+            var m = model();
+            var name = slatHeightsListName(m.picked);
+            var ownTotals = countSlatHeights(m.own);
+            var defTotals = countSlatHeights(m.defaults);
+            var undoBefore = JSON.stringify(m.own);
+            var sourceBefore = m.source;
+
+            function apply(note, plain) {
+                view.undo = undoBefore;
+                commit(m.own, m.parent);
+                rerender('[data-gui-heights-menu-toggle]');
+                setNote(note + (plain ? '' : sourceNote(sourceBefore)));
+            }
+
+            if (action === 'load-list') {
+                var defList = (m.defaults[m.size] || {})[m.gap];
+                if (!defList) {
+                    return;
+                }
+                m.own[m.size] = m.own[m.size] || {};
+                m.own[m.size][m.gap] = clone(defList);
+                apply("Loaded GO's " + plural(Object.keys(defList).length, 'height', 'heights') + ' for ' + name + '.');
+                return;
+            }
+
+            if (action === 'clear-list') {
+                if (!m.ownList) {
+                    return;
+                }
+                var listed = Object.keys(m.ownList).length;
+                delete m.own[m.size][m.gap];
+                apply(
+                    m.parentList
+                        ? m.styleName + " offers Slat's list for " + name + ' again.'
+                        : 'Cleared ' + plural(listed, 'height', 'heights') + ' for ' + name + '.',
+                    true
+                );
+                return;
+            }
+
+            if (action === 'load-all') {
+                if (!defTotals.heights) {
+                    return;
+                }
+                var loadAll = function () {
+                    Object.keys(m.defaults).forEach(function (size) {
+                        m.own[size] = m.own[size] || {};
+                        Object.keys(m.defaults[size]).forEach(function (gap) {
+                            m.own[size][gap] = clone(m.defaults[size][gap]);
+                        });
+                    });
+                    apply(
+                        "Loaded GO's " +
+                            plural(defTotals.heights, 'height', 'heights') +
+                            ' in ' +
+                            plural(defTotals.lists, 'list', 'lists') +
+                            '.'
+                    );
+                };
+                if (!ownTotals.heights) {
+                    loadAll();
+                    return;
+                }
+                confirmHeights(
+                    "Load GO's heights",
+                    "Replace every list with GO's " +
+                        formatMm(defTotals.heights) +
+                        " heights? Lists you have edited go back to GO's.",
+                    'Load heights'
+                ).then(function (ok) {
+                    if (ok) {
+                        loadAll();
+                    }
+                });
+                return;
+            }
+
+            if (action === 'clear-all' && ownTotals.heights) {
+                var clearAll = function (note) {
+                    Object.keys(m.own).forEach(function (size) {
+                        delete m.own[size];
+                    });
+                    apply(note, true);
+                };
+                if (m.follows) {
+                    confirmHeights(
+                        "Go back to Slat's lists",
+                        'Drop ' +
+                            m.styleName +
+                            "'s own " +
+                            plural(ownTotals.lists, 'list', 'lists') +
+                            "? It will offer the Slat style's heights again.",
+                        'Drop lists'
+                    ).then(function (ok) {
+                        if (ok) {
+                            clearAll(m.styleName + " offers Slat's heights again.");
+                        }
+                    });
+                    return;
+                }
+                confirmHeights(
+                    'Remove every list',
+                    'Remove all ' +
+                        formatMm(ownTotals.heights) +
+                        ' heights? Fence Height' +
+                        (String(state.config.slug || '') === SLAT_HEIGHTS_OWNER ? " and the Slat gate's Gate Height go" : ' goes') +
+                        ' back to ' +
+                        (String(state.config.slug || '') === SLAT_HEIGHTS_OWNER ? 'number boxes.' : 'a number box.'),
+                    'Remove heights'
+                ).then(function (ok) {
+                    if (ok) {
+                        clearAll('Removed ' + plural(ownTotals.heights, 'height', 'heights') + '. Fence Height is a number box again.');
+                    }
+                });
+            }
+        }
+
+        function addOne() {
+            var el = block();
+            if (!el) {
+                return;
+            }
+            var slatsInput = el.querySelector('[data-gui-heights-new-slats]');
+            var mmInput = el.querySelector('[data-gui-heights-new-mm]');
+            var slats = parseInt(slatsInput.value, 10);
+            var mm = parseInt(mmInput.value, 10);
+            if (!(slats >= 1 && slats <= SLAT_HEIGHT_MAX_SLATS)) {
+                slatsInput.classList.add('fc-fs-heights__bad');
+                slatsInput.focus();
+                setNote('Enter the number of slats, 1 to ' + SLAT_HEIGHT_MAX_SLATS + '.', { undo: false });
+                return;
+            }
+            if (!(mm >= 1 && mm <= SLAT_HEIGHT_MAX_MM)) {
+                mmInput.classList.add('fc-fs-heights__bad');
+                mmInput.focus();
+                setNote('Enter the height in mm.', { undo: false });
+                return;
+            }
+            var m = model();
+            var undoBefore = JSON.stringify(m.own);
+            var was = m.list[slats];
+            if (was === mm) {
+                setNote(slatsText(slats) + ' is already listed at ' + formatMm(mm) + 'mm.', { undo: false });
+                mmInput.focus();
+                mmInput.select();
+                return;
+            }
+            ownListOf(m)[slats] = mm;
+            view.undo = undoBefore;
+            if (mm > SLAT_HEIGHT_CAP_MM) {
+                view.showOver = true;
+            }
+            commit(m.own, m.parent);
+            rerender('[data-gui-heights-new-mm]', slats);
+            setNote(
+                (was == null
+                    ? 'Added ' + formatMm(mm) + 'mm at ' + slatsText(slats)
+                    : 'Changed ' + slatsText(slats) + ' from ' + formatMm(was) + 'mm to ' + formatMm(mm) + 'mm') +
+                    (mm > SLAT_HEIGHT_CAP_MM ? '. It is over ' + capText + ', so the planner will not offer it.' : '.') +
+                    sourceNote(m.source)
+            );
+        }
+
+        // A pasted column: one number a line is a height for the next slat count, two are a slat count and its height.
+        function addMany(lines) {
+            var el = block();
+            if (!el) {
+                return;
+            }
+            var m = model();
+            var undoBefore = JSON.stringify(m.own);
+            var list = ownListOf(m);
+            var next = parseInt(el.querySelector('[data-gui-heights-new-slats]').value, 10);
+            if (!(next >= 1)) {
+                var rows = slatHeightRows(list);
+                next = rows.length ? rows[rows.length - 1].slats + 1 : 3;
+            }
+            var added = 0;
+            var changed = 0;
+            var skipped = 0;
+            var over = 0;
+            lines.forEach(function (line) {
+                var cells = line.split(/[\t;]+/);
+                if (cells.length < 2) {
+                    cells = line.split(/\s+/);
+                }
+                var nums = [];
+                cells.forEach(function (cell) {
+                    var text = cell.replace(/mm$/i, '').replace(/,/g, '').trim();
+                    if (/^\d+(\.\d+)?$/.test(text)) {
+                        nums.push(Math.round(parseFloat(text)));
+                    }
+                });
+                var slats = nums.length === 2 ? nums[0] : next;
+                var mm = nums.length === 2 ? nums[1] : nums[0];
+                if (
+                    nums.length < 1 ||
+                    nums.length > 2 ||
+                    !(slats >= 1 && slats <= SLAT_HEIGHT_MAX_SLATS) ||
+                    !(mm >= 1 && mm <= SLAT_HEIGHT_MAX_MM)
+                ) {
+                    skipped += 1;
+                    return;
+                }
+                if (list[slats] == null) {
+                    added += 1;
+                } else if (list[slats] !== mm) {
+                    changed += 1;
+                }
+                list[slats] = mm;
+                over += mm > SLAT_HEIGHT_CAP_MM ? 1 : 0;
+                next = slats + 1;
+            });
+            var skippedText = skipped
+                ? ' Skipped ' + plural(skipped, 'line that was', 'lines that were') + ' not a height.'
+                : '';
+            if (!added && !changed) {
+                setNote((skipped ? 'Nothing added.' : 'Those heights are already listed.') + skippedText, { undo: false });
+                return;
+            }
+            view.undo = undoBefore;
+            if (over) {
+                view.showOver = true;
+            }
+            commit(m.own, m.parent);
+            rerender('[data-gui-heights-new-mm]');
+            setNote(
+                (added ? 'Added ' + plural(added, 'height', 'heights') : 'Changed ' + plural(changed, 'height', 'heights')) +
+                    (added && changed ? ' and changed ' + formatMm(changed) : '') +
+                    '.' +
+                    skippedText +
+                    (over ? ' ' + plural(over, 'is', 'are') + ' over ' + capText + ', so the planner will not offer ' + (over === 1 ? 'it' : 'them') + '.' : '') +
+                    sourceNote(m.source)
+            );
+        }
+
+        function removeRow(rowEl) {
+            var el = block();
+            if (!el || !rowEl) {
+                return;
+            }
+            var slats = rowEl.getAttribute('data-gui-heights-row');
+            var m = model();
+            if (m.list[slats] == null) {
+                return;
+            }
+            var undoBefore = JSON.stringify(m.own);
+            var mm = m.list[slats];
+            // Focus moves to the next row's bin, so a run of heights can be removed from the keyboard.
+            var rowEls = Array.prototype.slice.call(el.querySelectorAll('[data-gui-heights-row]'));
+            var neighbour = rowEls[rowEls.indexOf(rowEl) + 1] || rowEls[rowEls.indexOf(rowEl) - 1];
+            delete ownListOf(m)[slats];
+            view.undo = undoBefore;
+            commit(m.own, m.parent);
+            var neighbourSelector = neighbour
+                ? '[data-gui-heights-row="' + neighbour.getAttribute('data-gui-heights-row') + '"] [data-gui-heights-remove]'
+                : '';
+            rerender(neighbourSelector);
+            if (!neighbourSelector || !el.querySelector(neighbourSelector)) {
+                var fallback = el.querySelector('[data-gui-heights-new-mm]');
+                if (fallback) {
+                    fallback.focus();
+                }
+            }
+            setNote('Removed ' + formatMm(mm) + 'mm, ' + slatsText(slats) + '.' + sourceNote(m.source));
+        }
+
+        guiRoot.addEventListener('input', function (e) {
+            var input = e.target.closest
+                ? e.target.closest('[data-gui-heights-mm], [data-gui-heights-new-slats], [data-gui-heights-new-mm]')
+                : null;
+            if (!input || !guiRoot.contains(input)) {
+                return;
+            }
+            var digits = input.value.replace(/\D+/g, '');
+            if (digits !== input.value) {
+                input.value = digits;
+            }
+            input.classList.remove('fc-fs-heights__bad');
+            if (!input.hasAttribute('data-gui-heights-mm')) {
+                return;
+            }
+            var rowEl = input.closest('[data-gui-heights-row]');
+            var slats = rowEl ? rowEl.getAttribute('data-gui-heights-row') : '';
+            var mm = parseInt(digits, 10);
+            if (!(mm >= 1 && mm <= SLAT_HEIGHT_MAX_MM)) {
+                input.classList.add('fc-fs-heights__bad');
+                return;
+            }
+            var m = model();
+            if (m.list[slats] == null || m.list[slats] === mm) {
+                return;
+            }
+            ownListOf(m)[slats] = mm;
+            // A typed height is its own undo: the last action's Undo would take it back too.
+            view.undo = null;
+            commit(m.own, m.parent);
+            setNote(sourceNote(m.source).trim(), { undo: false });
+            refreshMarks();
+        });
+
+        guiRoot.addEventListener('change', function (e) {
+            var target = e.target;
+            if (!target.hasAttribute || !guiRoot.contains(target)) {
+                return;
+            }
+            if (target.hasAttribute('data-gui-heights-size')) {
+                view.size = target.value;
+                setNote('');
+                rerender('[data-gui-heights-size]:checked');
+                return;
+            }
+            if (target.hasAttribute('data-gui-heights-gap')) {
+                view.gap = target.value;
+                setNote('');
+                rerender('[data-gui-heights-gap]:checked');
+                return;
+            }
+            // A height left empty or out of range goes back to the one the list holds.
+            if (target.hasAttribute('data-gui-heights-mm') && target.classList.contains('fc-fs-heights__bad')) {
+                var rowEl = target.closest('[data-gui-heights-row]');
+                var saved = rowEl ? model().list[rowEl.getAttribute('data-gui-heights-row')] : null;
+                target.value = saved != null ? String(saved) : '';
+                target.classList.remove('fc-fs-heights__bad');
+            }
+        });
+
+        guiRoot.addEventListener('keydown', function (e) {
+            var target = e.target;
+            var el = block();
+            if (!el || !target.hasAttribute || !el.contains(target)) {
+                return;
+            }
+            if (e.key === 'Enter') {
+                if (target.hasAttribute('data-gui-heights-new-slats') || target.hasAttribute('data-gui-heights-new-mm')) {
+                    e.preventDefault();
+                    addOne();
+                    return;
+                }
+                if (target.hasAttribute('data-gui-heights-mm')) {
+                    // Enter steps down the list like a spreadsheet, and must not submit the form, which saves.
+                    e.preventDefault();
+                    var inputs = Array.prototype.slice.call(el.querySelectorAll('[data-gui-heights-mm]'));
+                    var nextInput = inputs[inputs.indexOf(target) + 1] || el.querySelector('[data-gui-heights-new-mm]');
+                    if (nextInput) {
+                        nextInput.focus();
+                        nextInput.select();
+                    }
+                    return;
+                }
+            }
+            var menu = target.closest('[data-gui-heights-menu]');
+            if (!menu || !menu.classList.contains('is-open')) {
+                return;
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeSlatHeightsMenus();
+                menu.querySelector('[data-gui-heights-menu-toggle]').focus();
+                return;
+            }
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                var items = Array.prototype.slice.call(menu.querySelectorAll('[role="menuitem"]:not(:disabled)'));
+                var at = items.indexOf(document.activeElement);
+                var to = e.key === 'ArrowDown' ? at + 1 : at - 1;
+                if (items.length) {
+                    items[(to + items.length) % items.length].focus();
+                }
+            }
+        });
+
+        guiRoot.addEventListener('paste', function (e) {
+            var target = e.target;
+            if (
+                !target.hasAttribute ||
+                !(target.hasAttribute('data-gui-heights-new-slats') || target.hasAttribute('data-gui-heights-new-mm'))
+            ) {
+                return;
+            }
+            var text = e.clipboardData ? e.clipboardData.getData('text') : '';
+            var lines = String(text || '')
+                .split(/\r?\n/)
+                .map(function (line) {
+                    return line.trim();
+                })
+                .filter(Boolean);
+            // One number pastes as typed; a column, or a slat count beside its height, is read as rows.
+            if (lines.length < 2 && !/\d[\t ;]+\d/.test(lines[0] || '')) {
+                return;
+            }
+            e.preventDefault();
+            addMany(lines);
+        });
+
+        guiRoot.addEventListener('click', function (e) {
+            var target = e.target;
+            var el = block();
+            if (!el || !target.closest || !el.contains(target)) {
+                return;
+            }
+            var toggle = target.closest('[data-gui-heights-menu-toggle]');
+            if (toggle) {
+                toggleMenu(toggle.closest('[data-gui-heights-menu]'));
+                return;
+            }
+            var actionBtn = target.closest('[data-gui-heights-action]');
+            if (actionBtn) {
+                if (!actionBtn.disabled) {
+                    runAction(actionBtn.getAttribute('data-gui-heights-action'));
+                }
+                return;
+            }
+            if (target.closest('[data-gui-heights-add]')) {
+                addOne();
+                return;
+            }
+            var removeBtn = target.closest('[data-gui-heights-remove]');
+            if (removeBtn) {
+                removeRow(removeBtn.closest('[data-gui-heights-row]'));
+                return;
+            }
+            if (target.closest('[data-gui-heights-over]')) {
+                view.showOver = !view.showOver;
+                rerender('[data-gui-heights-over]');
+                return;
+            }
+            if (target.closest('[data-gui-heights-undo]') && view.undo) {
+                var restored = readSlatHeights(JSON.parse(view.undo));
+                view.undo = null;
+                commit(restored, model().parent);
+                rerender('[data-gui-heights-menu-toggle]');
+                setNote('Undone.', { undo: false });
+            }
+        });
+    }
+
     function bindGuiMode(state, helpers) {
         var container = state.container;
         var guiRoot = container.querySelector('.fc-fs-gui-mode');
@@ -2438,6 +3784,12 @@
             helpers.markDirty(state, true);
             if (path === 'title' || path === 'image' || path === 'live') {
                 helpers.syncPreview(state);
+            }
+            // Height choices names its lists by the Slat Size and Slat Gap choices: a change to either redraws it.
+            if (/^form\.\d+\.(option|slat_size_rows)(\.|$)/.test(path)) {
+                guiRoot.querySelectorAll('[data-gui-heights-body]').forEach(function (body) {
+                    body.innerHTML = renderSlatHeightsBody(state.config, slatHeightSources(state));
+                });
             }
             if (typeof helpers.syncDevFromConfig === 'function') {
                 helpers.syncDevFromConfig();
@@ -2777,6 +4129,7 @@
 
         bindColorSelectedDragDrop(guiRoot, state, helpers, applyPath);
         bindKvRowDragDrop(guiRoot, state, helpers, applyPath);
+        bindSlatHeights(guiRoot, state, helpers);
     }
 
     function reindexOptions(wrap, path, state) {

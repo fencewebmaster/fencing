@@ -820,10 +820,14 @@
                 var canEdit = data.canEdit !== false;
                 container.innerHTML = Edit.renderEditPage(data.style, config, data.fileMeta || {}, {
                     fenceColorCatalog: fenceColorCatalog,
+                    slatHeightDefaults: data.slatHeightDefaults,
+                    slatHeightParent: data.slatHeightParent,
                     canEdit: canEdit
                 });
                 Edit.bindEditForm(container, data.style.slug, data.style, config, data.fileMeta || {}, {
                     fenceColorCatalog: fenceColorCatalog,
+                    slatHeightDefaults: data.slatHeightDefaults,
+                    slatHeightParent: data.slatHeightParent,
                     canEdit: canEdit,
                     csrf: data.csrf,
                     onBack: function () {

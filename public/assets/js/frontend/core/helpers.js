@@ -859,6 +859,11 @@ HELPER = {
 
         HELPER.toggleZoomResetButton(step);
 
+        // Slat gaps are whole device pixels at the zoom they were drawn at; one step out and some of them dropped away.
+        if (typeof SlatFence !== 'undefined' && typeof SlatFence.refitSlatRows === 'function') {
+            SlatFence.refitSlatRows();
+        }
+
         window.setTimeout(function() {
             HELPER.centerFencingDisplayHorizontally();
         }, 0);

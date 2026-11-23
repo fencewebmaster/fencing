@@ -1067,6 +1067,9 @@ let ProjectPlan = {
             );
             if (centredPlacement !== null) {
                 placement = centredPlacement;
+            } else if (info.panel_group != 'a') {
+                // As update_gate: an end gate keeps to its end, and a bay the plan no longer has is its last one.
+                placement = fcGateBayForThisRun($('#pp-' + tab), find_gate[0], placement);
             }
         } else {
 

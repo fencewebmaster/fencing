@@ -12,7 +12,7 @@
                     class="fc-max-fence-height-input numeric text-center py-1"
                     value=""
                     data-min="199"
-                    data-max="5800"
+                    data-max="2400"
                     autocomplete="off"
                 >
                 <span>mm</span>

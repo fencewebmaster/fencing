@@ -735,7 +735,8 @@
             var gateSlatRows = SlatFence.countSlatPanelRowsFromMaxHeightMm(
                 gateHm,
                 pitch.sizePitch,
-                pitch.gapPitch
+                pitch.gapPitch,
+                slug
             );
             var gateFormRows = SlatFence.slatGateRowsForDisplay(
                 slug,
@@ -799,6 +800,10 @@
 
         if (typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(slug)) {
             appendSlatGateHeightAndRows(lines, custom_fence, calc, slug, tabRow);
+            var alignLine = SlatFence.gateAlignSummaryLine({ fenceInfo: custom_fence, tabInfo: tabRow, calc: calc }, calc);
+            if (alignLine) {
+                lines.push(alignLine);
+            }
         } else if (calc?.fence_size?.height) {
             lines.push('Height: ' + formatMm(calc.fence_size.height));
         }
@@ -868,7 +873,8 @@
             var slatRows = SlatFence.countSlatPanelRowsFromMaxHeightMm(
                 fenceHm,
                 pitch.sizePitch,
-                pitch.gapPitch
+                pitch.gapPitch,
+                slug
             );
             if (slatRows > 0) {
                 rows.push({ label: 'Slat Rows', value: String(slatRows) });
@@ -896,6 +902,18 @@
             return String(opt.slug).replace(/_/g, ' ');
         }
         return '';
+    }
+
+    // Main Slat where Post Options offers Post Length: the stock post the section's posts are cut from, pick or rule.
+    function slatPostLengthSummaryValue(custom_fence, info, slug, tabRow) {
+        var offered = (info?.settings?.post_options?.fields || []).some(function(field) {
+            return field?.slug === 'post_length';
+        });
+        if (!offered || typeof SlatFence === 'undefined' || typeof SlatFence.slatPostLengthPlanForSection !== 'function') {
+            return '';
+        }
+        var plan = SlatFence.slatPostLengthPlanForSection({ slug: slug, info: custom_fence, data: info, tabInfo: tabRow });
+        return plan ? plan.stock + 'mm' + (plan.pieces > 1 ? ', cut in ' + plan.pieces : '') : '';
     }
 
     function sectionHeaderMeta(tabIdx, fenceName) {
@@ -1006,6 +1024,7 @@
         var hasPosts = !isSlatInfill && postCount > 0;
         if (hasPosts) {
             pushRowIf(rows, 'Post Type', postType !== '—' ? postType : '');
+            pushRowIf(rows, 'Post Length', slatPostLengthSummaryValue(custom_fence, info, slug, tabRow));
         }
 
         // Slat Infill has no Panel Option of its own (the row repeated its slat size); Gate ONLY has no panels.

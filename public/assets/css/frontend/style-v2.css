@@ -219,6 +219,15 @@
     border-left: 1px solid var(--fc-dark-gray);
 }
 
+/* Gate Height as a dropdown (sites with listed heights): the frame and height of the fields beside it. */
+.fencing-modal-area--gate .custom-gate .fc-gate-max-fence-height-select {
+    border: 1px solid var(--fc-dark-gray);
+    border-radius: var(--fc-gate-field-radius);
+    min-height: calc(2.25rem + 2px);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
 .fencing-modal-area--gate .custom-gate .fc-select-2.fc-gate-modal-field,
 .fencing-modal-area--gate .custom-gate .fc-gate-modal-gate-only-col .fc-select-2 {
     border: 1px solid var(--fc-dark-gray) !important;

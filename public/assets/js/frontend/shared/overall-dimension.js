@@ -92,12 +92,33 @@
        off-cut box is drawn beside the run. */
     var NOT_RUN = '.fencing-panel-spacing-number, .fencing-offcut';
 
+    /* Slat Infill's figure is one opening's width, so its line covers the openings alone: not the
+       end piers, but the "N more panels" tile that stands for the openings not drawn. */
+    var OPENINGS = '.fencing-panel-item, .infill-hidden-panels';
+
+    /* A Slat Infill run's openings, the folded ones counted from the last panel's cart quantity;
+       0 for any other style. */
+    function openingCount() {
+        if (run.getAttribute('data-type') !== 'slat_fence_infill') {
+            return 0;
+        }
+
+        var count = 0;
+
+        Array.prototype.forEach.call(run.querySelectorAll('.fencing-panel-item'), function(el) {
+            count += parseInt(el.getAttribute('data-cart-qty'), 10) || 1;
+        });
+
+        return count;
+    }
+
     function sync() {
         var left = Infinity;
         var right = -Infinity;
+        var openings = openingCount();
 
         Array.prototype.forEach.call(run.children, function(el) {
-            if (el.matches(NOT_RUN)) {
+            if (openings ? !el.matches(OPENINGS) : el.matches(NOT_RUN)) {
                 return;
             }
             var box = el.getBoundingClientRect();
@@ -135,7 +156,9 @@
         /* Figure and word go into their own spans so the number can carry the weight; a label
            without them just takes the whole string. */
         if (num && word) {
-            setText(num, textOf(overall.querySelector('.d-oaw')));
+            /* "4 × 1,200 OPENING WIDTH": the line over four openings read 1,200, as if the run were
+               that wide. */
+            setText(num, (openings > 1 ? openings + ' × ' : '') + textOf(overall.querySelector('.d-oaw')));
             setText(word, textOf(overall.querySelector('.js-overall-label')));
         } else {
             setText(label, text);

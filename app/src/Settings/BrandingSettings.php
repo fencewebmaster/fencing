@@ -49,7 +49,31 @@ final class BrandingSettings
     ];
 
     /** The planner's own pairing while Frontend font stays at its default: Inter for UI, Poppins for text. */
-    private const FRONTEND_PAIRING = [['Inter', '400;500;600;700'], ['Poppins', '400;500;600;700;800']];
+    private const FRONTEND_PAIRING = [['Inter', '400;500;600;700', 'ui'], ['Poppins', '400;500;600;700;800', 'text']];
+
+    /**
+     * Families the frontend serves itself from LOCAL_FONT_DIR instead of Google (latin woff2, the files Google
+     * ships, all SIL Open Font License): the default trio. From Google a file only began downloading once every
+     * stylesheet was in, so each page painted in a fallback face and then changed shape (Nov 2026). 'files' is
+     * weight => file, 'variable' one file for every weight asked for. 'fallback' gives Arial the family's own width
+     * and line, as [size-adjust, ascent, descent, line-gap] in % for regular then bold text, so words painted early
+     * keep their place.
+     *
+     * @var array<string, array{files?:array<int,string>,variable?:string,fallback?:list<list<float|int>>}>
+     */
+    private const LOCAL_FONTS = [
+        'Inter' => ['variable' => 'inter.woff2', 'fallback' => [[106, 91.39, 22.75, 0], [102, 94.98, 23.65, 0]]],
+        'League Gothic' => ['files' => ['400' => 'league-gothic.woff2']],
+        'Poppins' => [
+            'files' => ['400' => 'poppins-400.woff2', '500' => 'poppins-500.woff2', '600' => 'poppins-600.woff2', '700' => 'poppins-700.woff2', '800' => 'poppins-800.woff2'],
+            'fallback' => [[110, 95.45, 31.82, 9.09], [100, 105, 35, 10]],
+        ],
+    ];
+
+    private const LOCAL_FONT_DIR = 'public/assets/fonts/webfonts/';
+
+    /** The weights each role's first screen is painted in: only those files are worth a preload. */
+    private const FIRST_PAINT_WEIGHTS = ['heading' => ['400'], 'text' => ['400', '600', '700'], 'ui' => ['400', '600', '700']];
 
     /**
      * @return array<string, string>
@@ -294,11 +318,12 @@ final class BrandingSettings
      * What a page head prints for one side's fonts ('frontend' or 'admin'): Google Fonts links, one family
      * each (Cloudflare Fonts keeps only a link's first family), @imports for a family that must stay out of
      * Cloudflare's reach, and the CSS that points the page at the chosen faces. A family loads once however
-     * many roles use it. At the defaults the frontend keeps its Inter and Poppins links and League Gothic
-     * import, and neither side prints CSS.
+     * many roles use it. The frontend serves a LOCAL_FONTS family itself: 'faces' and 'fallbacks' are the rows
+     * fontFaceCss() and fontPreloads() print, and no Google request is left at the defaults. The admin always
+     * links Google, and prints nothing at its default.
      *
      * @param array<string, string>|null $branding
-     * @return array{links:list<string>,imports:list<string>,css:string}
+     * @return array{links:list<string>,imports:list<string>,faces:list<array<string,mixed>>,fallbacks:list<array<string,mixed>>,css:string}
      */
     public static function webFonts(string $side, ?array $branding = null): array
     {
@@ -306,7 +331,7 @@ final class BrandingSettings
             $branding = self::get();
         }
         $defaults = self::defaults();
-        $fonts = ['links' => [], 'imports' => [], 'css' => ''];
+        $fonts = ['links' => [], 'imports' => [], 'faces' => [], 'fallbacks' => [], 'css' => ''];
         $loaded = [];
 
         if ($side === 'admin') {
@@ -321,26 +346,40 @@ final class BrandingSettings
             return $fonts;
         }
 
-        $vars = [];
+        // Each of style.css's three font tokens: the family it reads, and whether that is the stylesheet's own default.
+        $roles = [];
         $slug = self::fontSlug($branding, 'fontFrontend');
         if ($slug === $defaults['fontFrontend']) {
-            foreach (self::FRONTEND_PAIRING as [$family, $weights]) {
-                self::addFontStylesheet($fonts, $loaded, ['family' => $family, 'weights' => $weights]);
+            foreach (self::FRONTEND_PAIRING as [$family, $weights, $role]) {
+                self::addFontStylesheet($fonts, $loaded, ['family' => $family, 'weights' => $weights], true);
+                $roles[$role] = [$family, true];
             }
         } else {
-            self::addFontStylesheet($fonts, $loaded, self::FONTS[$slug]);
-            $stack = self::fontStack(self::FONTS[$slug]['family'], false);
-            $vars[] = '--fc-font-text:' . $stack;
-            $vars[] = '--fc-font-ui:' . $stack;
+            self::addFontStylesheet($fonts, $loaded, self::FONTS[$slug], true);
+            $roles['text'] = $roles['ui'] = [self::FONTS[$slug]['family'], false];
         }
 
         $slug = self::fontSlug($branding, 'fontHeading');
-        self::addFontStylesheet($fonts, $loaded, self::FONTS[$slug]);
-        if ($slug !== $defaults['fontHeading']) {
-            $vars[] = '--fc-font-heading:' . self::fontStack(self::FONTS[$slug]['family'], true);
+        self::addFontStylesheet($fonts, $loaded, self::FONTS[$slug], true);
+        $roles['heading'] = [self::FONTS[$slug]['family'], $slug === $defaults['fontHeading']];
+
+        foreach ($loaded as $family => $weights) {
+            if (is_string($weights)) {
+                $familyRoles = array_keys(array_filter($roles, static fn (array $role): bool => $role[0] === $family));
+                self::addLocalFaces($fonts, (string) $family, explode(';', $weights), $familyRoles);
+            }
         }
 
-        // html:root outranks style.css's :root defaults, which load after the webfonts partial.
+        // html:root outranks style.css's :root defaults, which load after the webfonts partial. A default family
+        // is named again only to add its fallback face to the token.
+        $vars = [];
+        foreach (['text', 'ui', 'heading'] as $role) {
+            [$family, $isDefault] = $roles[$role];
+            $hasFallback = in_array($family . ' Fallback', array_column($fonts['fallbacks'], 'family'), true);
+            if (!$isDefault || $hasFallback) {
+                $vars[] = '--fc-font-' . $role . ':' . self::fontStack($family, $isDefault || $role === 'heading', $hasFallback);
+            }
+        }
         if ($vars !== []) {
             $fonts['css'] = '<style id="fc-font-vars">html:root{' . implode(';', $vars) . '}</style>' . "\n";
         }
@@ -349,21 +388,138 @@ final class BrandingSettings
     }
 
     /**
-     * Queues one family's stylesheet: a link, or an @import for a family that must stay out of Cloudflare's
-     * reach. A family already queued, and System UI (nothing to load), are skipped.
+     * The <style> block for webFonts()'s local families: their @font-face rules and the Arial fallback faces.
+     * $base is the app's web path (FrontendApplication::basePath()), so a nested route resolves the files too.
+     *
+     * @param array{faces?:list<array<string,mixed>>,fallbacks?:list<array<string,mixed>>} $fonts
+     */
+    public static function fontFaceCss(array $fonts, string $base): string
+    {
+        $css = '';
+        foreach ($fonts['faces'] ?? [] as $face) {
+            $css .= '@font-face{font-family:"' . $face['family'] . '";font-style:normal;font-weight:' . $face['weight']
+                . ';font-display:' . $face['display'] . ';src:url("' . self::fontFileUrl($face, $base) . '") format("woff2")}';
+        }
+        foreach ($fonts['fallbacks'] ?? [] as $fallback) {
+            [$size, $ascent, $descent, $lineGap] = $fallback['metrics'];
+            $css .= '@font-face{font-family:"' . $fallback['family'] . '";font-weight:' . $fallback['weight'] . ';src:' . $fallback['src']
+                . ';size-adjust:' . $size . '%;ascent-override:' . $ascent . '%;descent-override:' . $descent . '%;line-gap-override:' . $lineGap . '%}';
+        }
+
+        return $css === '' ? '' : '<style id="fc-font-faces">' . $css . '</style>' . "\n";
+    }
+
+    /**
+     * The local font files worth a preload on a page whose first screen is set in $roles ('heading', 'text',
+     * 'ui'). Each is the @font-face rule's own URL, version included: any other spelling is fetched twice.
+     *
+     * @param array{faces?:list<array<string,mixed>>} $fonts
+     * @param list<string> $roles
+     * @return list<string>
+     */
+    public static function fontPreloads(array $fonts, array $roles, string $base): array
+    {
+        $hrefs = [];
+        foreach ($fonts['faces'] ?? [] as $face) {
+            if (array_intersect($face['preload'], $roles) !== []) {
+                $hrefs[] = self::fontFileUrl($face, $base);
+            }
+        }
+
+        return $hrefs;
+    }
+
+    /**
+     * Queues one family: its own files where the frontend has them all ($local), else a Google stylesheet - a link,
+     * or an @import for a family that must stay out of Cloudflare's reach. A family already queued, and System
+     * UI (nothing to load), are skipped. A local family is held as its weights until its roles are known.
      *
      * @param array{links:list<string>,imports:list<string>,css:string} $fonts
-     * @param array<string, bool> $loaded
+     * @param array<string, bool|string> $loaded
      * @param array{family:string,weights:string,import?:bool} $font
      */
-    private static function addFontStylesheet(array &$fonts, array &$loaded, array $font): void
+    private static function addFontStylesheet(array &$fonts, array &$loaded, array $font, bool $local = false): void
     {
         $family = $font['family'];
         if ($family === '' || isset($loaded[$family])) {
             return;
         }
+        if ($local && self::hasLocalFiles($family)) {
+            $loaded[$family] = $font['weights'] === '' ? '400' : $font['weights'];
+
+            return;
+        }
         $loaded[$family] = true;
         $fonts[empty($font['import']) ? 'links' : 'imports'][] = self::googleFontsUrl($family, $font['weights']);
+    }
+
+    /**
+     * One local family's @font-face rows and, where it sets text, its Arial fallback faces. A family that only
+     * sets headings hides its words until the file is in (block): no system face is near League Gothic's width.
+     *
+     * @param array{faces:list<array<string,mixed>>,fallbacks:list<array<string,mixed>>} $fonts
+     * @param list<string> $weights
+     * @param list<string> $roles
+     */
+    private static function addLocalFaces(array &$fonts, string $family, array $weights, array $roles): void
+    {
+        $spec = self::LOCAL_FONTS[$family];
+        $setsText = array_intersect($roles, ['text', 'ui']) !== [];
+        $face = ['family' => $family, 'display' => $setsText ? 'swap' : 'block'];
+
+        if (isset($spec['variable'])) {
+            $range = count($weights) > 1 ? min($weights) . ' ' . max($weights) : $weights[0];
+            $fonts['faces'][] = $face + self::localFontFile($spec['variable']) + ['weight' => $range, 'preload' => $roles];
+        }
+        foreach ($spec['files'] ?? [] as $weight => $file) {
+            if (in_array((string) $weight, $weights, true)) {
+                $firstPaint = array_values(array_filter($roles, static fn (string $role): bool => in_array((string) $weight, self::FIRST_PAINT_WEIGHTS[$role], true)));
+                $fonts['faces'][] = $face + self::localFontFile($file) + ['weight' => (string) $weight, 'preload' => $firstPaint];
+            }
+        }
+
+        if ($setsText && isset($spec['fallback'])) {
+            [$regular, $bold] = $spec['fallback'];
+            $fonts['fallbacks'][] = ['family' => $family . ' Fallback', 'weight' => '100 500', 'src' => 'local("Arial"),local("ArialMT")', 'metrics' => $regular];
+            $fonts['fallbacks'][] = ['family' => $family . ' Fallback', 'weight' => '600 900', 'src' => 'local("Arial Bold"),local("Arial-BoldMT")', 'metrics' => $bold];
+        }
+    }
+
+    /**
+     * Whether every file a LOCAL_FONTS family lists is on disk. A deploy that missed one (a new file left out of
+     * the commit) would set that family's words in Arial for good, so the family loads from Google until it is in.
+     */
+    private static function hasLocalFiles(string $family): bool
+    {
+        $spec = self::LOCAL_FONTS[$family] ?? null;
+        if ($spec === null) {
+            return false;
+        }
+        foreach (array_merge(array_values($spec['files'] ?? []), isset($spec['variable']) ? [$spec['variable']] : []) as $file) {
+            if (!is_file(FC_ROOT . '/' . self::LOCAL_FONT_DIR . $file)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * A local font file's app-relative path and its cache-busting version.
+     *
+     * @return array{src:string,v:int}
+     */
+    private static function localFontFile(string $file): array
+    {
+        $src = self::LOCAL_FONT_DIR . $file;
+
+        return ['src' => $src, 'v' => (int) @filemtime(FC_ROOT . '/' . $src)];
+    }
+
+    /** @param array<string,mixed> $face */
+    private static function fontFileUrl(array $face, string $base): string
+    {
+        return $base . '/' . $face['src'] . '?v=' . $face['v'];
     }
 
     /**
@@ -378,14 +534,17 @@ final class BrandingSettings
         return isset(self::FONTS[$slug]) ? $slug : self::defaults()[$key];
     }
 
-    /** The family first, then a fallback while it loads: the device's own font for text, any sans-serif for headings. */
-    private static function fontStack(string $family, bool $heading): string
+    /**
+     * The family first, then a fallback while it loads: the device's own font for text, any sans-serif for headings
+     * and for style.css's own defaults. $fallback names the family's size-matched Arial face ahead of that.
+     */
+    private static function fontStack(string $family, bool $heading, bool $fallback = false): string
     {
         if ($family === '') {
             return self::SYSTEM_STACK;
         }
 
-        return '"' . $family . '", ' . ($heading ? 'sans-serif' : self::SYSTEM_STACK);
+        return '"' . $family . '", ' . ($fallback ? '"' . $family . ' Fallback", ' : '') . ($heading ? 'sans-serif' : self::SYSTEM_STACK);
     }
 
     private static function googleFontsUrl(string $family, string $weights): string

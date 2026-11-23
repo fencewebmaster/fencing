@@ -742,11 +742,99 @@ SlatFenceCalc = {
         return Number.isFinite(n) && n >= 0 ? n : null;
     },
 
+    // Styles whose listed heights a section reads, in order: Slat Infill's own list for a slat size and gap comes before
+    // Slat's. The Slat style, and so its gate, reads its own only.
+    slatHeightListSlugs: function(fenceSlug) {
+        var raw = String(fenceSlug || '');
+        var canon = typeof normalizeFenceStyleSlug === 'function' ? normalizeFenceStyleSlug(raw) : raw;
+        return canon === 'slat_fence_infill' ? ['slat_fence_infill', 'slat'] : ['slat'];
+    },
+
+    // One style's own listed heights, [slat size][gap][slats] => mm (its fence_heights_mm setting), or null.
+    slatOwnListedHeightsMap: function(slug) {
+        var map = typeof fc_data !== 'undefined' && fc_data && fc_data[slug] ? fc_data[slug].fence_heights_mm : null;
+        return map && typeof map === 'object' && Object.keys(map).length ? map : null;
+    },
+
+    // The first listed heights a style reads: GO's, from the Slat settings, unless Slat Infill lists its own. null on a
+    // site without the setting, where the height stays a number box.
+    slatListedHeightsMap: function(fenceSlug) {
+        var slugs = this.slatHeightListSlugs(fenceSlug);
+        for (var i = 0; i < slugs.length; i++) {
+            var map = this.slatOwnListedHeightsMap(slugs[i]);
+            if (map) return map;
+        }
+        return null;
+    },
+
+    // The gap a row pitch belongs to, as the listed heights are keyed (slat_gap_pitch_mm: 9.3 is the 9 gap, 21.1 the 20).
+    slatGapKeyFromPitchMm: function(gapPitch) {
+        var g = parseFloat(gapPitch);
+        if (!Number.isFinite(g) || g < 0) return null;
+        var pitches = typeof fc_data !== 'undefined' && fc_data && fc_data.slat ? fc_data.slat.slat_gap_pitch_mm : null;
+        for (var key in pitches || {}) {
+            if (parseFloat(pitches[key]) === g) return String(key);
+        }
+        if (g === 9.3) return '9';
+        if (g === 21.1) return '20';
+        return String(g);
+    },
+
+    // The list for one slat size and gap, { slats: mm }: the style's own, else the next in its reading order. null when
+    // none has one.
+    slatListedHeightsFor: function(sizePitch, gapPitch, fenceSlug) {
+        var gapKey = this.slatGapKeyFromPitchMm(gapPitch);
+        var slugs = gapKey !== null ? this.slatHeightListSlugs(fenceSlug) : [];
+        for (var i = 0; i < slugs.length; i++) {
+            var map = this.slatOwnListedHeightsMap(slugs[i]);
+            var list = map ? (map[Number(sizePitch) >= 80 ? 90 : 65] || {})[gapKey] : null;
+            if (list && typeof list === 'object' && Object.keys(list).length) return list;
+        }
+        return null;
+    },
+
+    // Slats in the screen GO makes at a listed height; 0 when the height is not on its list for this slat size and gap.
+    slatListedSlatsAtHeight: function(heightMm, sizePitch, gapPitch, fenceSlug) {
+        var list = this.slatListedHeightsFor(sizePitch, gapPitch, fenceSlug);
+        var h = Math.round(Number(heightMm));
+        for (var slats in list || {}) {
+            if (parseInt(list[slats], 10) === h) return parseInt(slats, 10) || 0;
+        }
+        return 0;
+    },
+
+    // Heights on offer for a slat size and gap, shortest first: GO's list, or one per slat count by the row rule for a
+    // gap the list lacks (rounded up at an Xpress gap, so the rule gives that count back).
+    slatHeightOptionsMm: function(sizePitch, gapPitch, maxMm, fenceSlug) {
+        var list = this.slatListedHeightsFor(sizePitch, gapPitch, fenceSlug);
+        var out = [];
+        if (list) {
+            for (var slats in list) out.push(parseInt(list[slats], 10));
+        } else {
+            var s = Number(sizePitch);
+            var g = Number(gapPitch);
+            var tallest = this.getStep2FenceHeightBoundsMm().max;
+            for (var n = 3; n < 200 && s > 0 && g >= 0; n++) {
+                var exact = n * (s + g) - g + this.getSlatPanelEndAllowanceMm(undefined, g);
+                var h = this.isSlatQuickscreenGapPitch(g) ? Math.round(exact) : Math.ceil(exact - 1e-9);
+                if (h > tallest) break;
+                out.push(h);
+            }
+        }
+        return out
+            .filter(function(h) {
+                return Number.isFinite(h) && h > 0 && (!(maxMm > 0) || h <= maxMm);
+            })
+            .sort(function(a, b) {
+                return a - b;
+            });
+    },
+
     /**
      * Slat row count for panel height (F81).
      * floor((MaxHeight − (end allowance + sizePitch)) / (sizePitch + gapPitch)) + 1
      */
-    countSlatPanelRowsFromMaxHeightMm: function(maxHMm, sizePitch, gapPitch) {
+    countSlatPanelRowsFromMaxHeightMm: function(maxHMm, sizePitch, gapPitch, fenceSlug) {
         var h = Number(maxHMm);
         var s = Number(sizePitch);
         var g = Number(gapPitch);
@@ -764,6 +852,12 @@ SlatFenceCalc = {
         ) {
             return 0;
         }
+        // A height on GO's list is the screen GO makes at it. It rounds 0, 5, 9 and 20mm gaps down: 1936 at 65 / 9 is
+        // 26 slats, where the rule below needs 1936.3 and gave 25.
+        var listed = this.slatListedSlatsAtHeight(h, s, g, fenceSlug);
+        if (listed > 0) {
+            return listed;
+        }
         var rows = Math.floor((h - clearance) / pitch) + 1;
         // GO lists a Quickscreen height to the nearest mm, so a row is in when its rounded height fits: 1688 at 30mm is 18 rows.
         if (this.isSlatQuickscreenGapPitch(g) && Math.round((rows + 1) * pitch - g + allowance) <= h) {
@@ -776,8 +870,8 @@ SlatFenceCalc = {
      * Panel height (mm) from max fence height (F80).
      * (rows × (sizePitch + gapPitch)) − gapPitch + end allowance (6, or the 3 mm cap at a Quickscreen gap)
      */
-    computeSlatPanelHeightMmFromMaxHeight: function(maxHMm, sizePitch, gapPitch) {
-        var rows = this.countSlatPanelRowsFromMaxHeightMm(maxHMm, sizePitch, gapPitch);
+    computeSlatPanelHeightMmFromMaxHeight: function(maxHMm, sizePitch, gapPitch, fenceSlug) {
+        var rows = this.countSlatPanelRowsFromMaxHeightMm(maxHMm, sizePitch, gapPitch, fenceSlug);
         if (rows < 1) {
             return 0;
         }
@@ -787,16 +881,20 @@ SlatFenceCalc = {
         if (!Number.isFinite(pitch) || pitch <= 0) {
             return 0;
         }
+        // GO's listed height is the panel's own: rounded to the nearest, 272 of its heights read 1mm over the one picked.
+        if (this.slatListedSlatsAtHeight(maxHMm, s, g, fenceSlug) > 0) {
+            return Math.round(Number(maxHMm));
+        }
         return Math.round(rows * pitch - g + this.getSlatPanelEndAllowanceMm(undefined, g));
     },
 
     /** Bottom gap (mm) = Max Height − Panel Height (F77 − F80). */
-    computeSlatBottomGapMm: function(maxHMm, sizePitch, gapPitch) {
+    computeSlatBottomGapMm: function(maxHMm, sizePitch, gapPitch, fenceSlug) {
         var maxH = Math.round(Number(maxHMm));
         if (!Number.isFinite(maxH) || maxH <= 0) {
             return 0;
         }
-        var panel = this.computeSlatPanelHeightMmFromMaxHeight(maxH, sizePitch, gapPitch);
+        var panel = this.computeSlatPanelHeightMmFromMaxHeight(maxH, sizePitch, gapPitch, fenceSlug);
         if (!Number.isFinite(panel) || panel <= 0) {
             return 0;
         }

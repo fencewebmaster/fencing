@@ -30,7 +30,11 @@ final class PlannerSubmissionModel
     {
         $colors               = PlannerSessionService::colorRowsFromSession();
         $cart_items_grouped   = json_decode($_SESSION['fc_data']['cart_items'] ?? '', true);
-        $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus($cart_items_grouped, $colors);
+        $cart_items_regrouped = FenceCatalogService::regroupPlannerCartItemsForSkus(
+            $cart_items_grouped,
+            $colors,
+            $_SESSION['fc_data']['fences'] ?? '[]'
+        );
         $cart_items_data      = FenceCatalogService::formatRegroupedCartItemsForProductSkus(
             $cart_items_regrouped,
             $_SESSION['fc_data']['fences'] ?? '[]'

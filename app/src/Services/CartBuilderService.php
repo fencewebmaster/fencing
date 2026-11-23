@@ -40,6 +40,8 @@ final class CartBuilderService
             $color = $d['color'];
             $supplier = self::supplier();
             $styleKey = FenceCatalogService::productsCsvStyleForFence($d['slug']);
+            // Main Slat post lines wait here: the whole bucket is pooled into stock posts once it is read (slatPostLines()).
+            $postLines = [];
 
             foreach ($items as $item) {
                 // Infill panels: no aluminium posts in BOM (see slat-fence-app.html infill matrix → No Post).
@@ -57,6 +59,7 @@ final class CartBuilderService
                     $color,
                     $fenceHeightMm
                 );
+                $postCut = FenceCatalogService::slatPostCutForPlannerLine((string) $item['slug'], (string) $d['slug'], $fenceHeightMm);
                 $trySlugs = ($lookupSlug !== $item['slug']) ? [$lookupSlug, $item['slug']] : [$item['slug']];
 
                 $filteredProduct = [];
@@ -82,7 +85,7 @@ final class CartBuilderService
                     }
 
                     if ($key !== false && strtolower($sku) != 'off') {
-                        $products[] = [
+                        $product = [
                             'sku' => $sku,
                             'qty' => (int) ($item['qty'] ?? 0),
                             'slug' => $resolvedSlug,
@@ -92,16 +95,122 @@ final class CartBuilderService
                             'optional' => !empty($item['optional']),
                             'suggested_qty' => (int) ($item['suggested_qty'] ?? ($item['qty'] ?? 0)),
                         ];
+                        // Only where the stock post's own row answered: the fallback slug is some other product.
+                        if ($postCut !== null && $resolvedSlug === $postCut['slug']) {
+                            $postLines[] = $product + ['cut' => $postCut];
+                        } else {
+                            $products[] = $product;
+                        }
                     }
 
                     $skus[] = $sku;
                 }
+            }
+
+            if ($postLines !== []) {
+                $topPlate = self::catalogueLine($theProducts, 'slat_post+top_plate', $supplier, $styleKey, (string) $color);
+                array_push($products, ...self::slatPostLines($postLines, $topPlate));
             }
         }
 
         $_SESSION['custom_fence_products'] = $products;
 
         return $products;
+    }
+
+    /**
+     * Main Slat post lines as the stock posts to buy (owner's rule, Nov 2026). Posts cut the same way from the same
+     * product share stock posts across the job, rounded up, and every piece left without a cap gets a top plate.
+     * Gate ONLY's optional posts pool apart from billed ones, as their cart rows do.
+     *
+     * @param array<int, array<string, mixed>> $lines Product lines carrying `cut` (FenceCatalogService::slatPostCutForPlannerLine()).
+     * @param array{sku:string,product_name:string}|null $topPlate
+     * @return array<int, array<string, mixed>>
+     */
+    private static function slatPostLines(array $lines, ?array $topPlate): array
+    {
+        $pools = [];
+        foreach ($lines as $line) {
+            $optional = !empty($line['optional']);
+            $poolKey = $line['sku'] . '|' . $line['cut']['pieces'] . '|' . ($optional ? 'optional' : '');
+            if (!isset($pools[$poolKey])) {
+                $pools[$poolKey] = ['line' => $line, 'posts' => 0];
+            }
+            $pools[$poolKey]['posts'] += (int) ($optional ? $line['suggested_qty'] : $line['qty']);
+        }
+
+        // One line a product: its whole posts and its cut ones are the same thing to buy.
+        $out = [];
+        $capless = ['' => 0, 'optional' => 0];
+        foreach ($pools as $pool) {
+            $posts = $pool['posts'];
+            if ($posts <= 0) {
+                continue;
+            }
+            $line = $pool['line'];
+            $cut = $line['cut'];
+            unset($line['cut']);
+            $optionalKey = !empty($line['optional']) ? 'optional' : '';
+            $stockPosts = (int) ceil($posts / $cut['pieces']);
+            // A stock post's one cap covers one piece; a 6000 has none to give.
+            $capless[$optionalKey] += $cut['capped'] ? $posts - $stockPosts : $posts;
+
+            $rowKey = $line['sku'] . '|' . $optionalKey;
+            if (!isset($out[$rowKey])) {
+                $out[$rowKey] = ['qty' => 0, 'suggested_qty' => 0, 'cut_posts' => 0] + $line;
+            }
+            $out[$rowKey]['qty'] += $optionalKey === '' ? $stockPosts : 0;
+            $out[$rowKey]['suggested_qty'] += $stockPosts;
+            // Counted per number of pieces (`cut_in_4`): a customer can pick any cut that fits, and the note names each.
+            if ($cut['pieces'] > 1) {
+                $cutKey = 'cut_in_' . $cut['pieces'];
+                $out[$rowKey]['cut_posts'] += $posts;
+                $out[$rowKey][$cutKey] = ($out[$rowKey][$cutKey] ?? 0) + $stockPosts;
+            }
+        }
+
+        if ($topPlate !== null) {
+            foreach ($capless as $optionalKey => $qty) {
+                if ($qty <= 0) {
+                    continue;
+                }
+                $out[] = [
+                    'sku' => $topPlate['sku'],
+                    'qty' => $optionalKey === '' ? $qty : 0,
+                    'slug' => 'slat_post+top_plate',
+                    'fence' => $lines[0]['fence'],
+                    'color' => $lines[0]['color'],
+                    'product_name' => $topPlate['product_name'],
+                    'optional' => $optionalKey !== '',
+                    'suggested_qty' => $qty,
+                ];
+            }
+        }
+
+        return array_values($out);
+    }
+
+    /**
+     * One products.csv line's SKU and name in a colour, or null where the site has no such row or lists it OFF.
+     *
+     * @param array<int|string, mixed> $theProducts
+     * @return array{sku:string,product_name:string}|null
+     */
+    private static function catalogueLine(array $theProducts, string $slug, string $supplier, string $styleKey, string $color): ?array
+    {
+        foreach ($theProducts as $row) {
+            if (!is_array($row) || ($row['slug'] ?? '') != $slug || ($row['supplier'] ?? '') != $supplier || ($row['style'] ?? '') != $styleKey) {
+                continue;
+            }
+            $sku = $row[$color] ?? '';
+            if (!is_string($sku) || $sku === '' || strtolower($sku) === 'off') {
+                return null;
+            }
+
+            return ['sku' => $sku, 'product_name' => (string) ($row['product'] ?? '')];
+        }
+
+        return null;
     }
 
     /**
@@ -296,12 +405,26 @@ final class CartBuilderService
                     'optional_included' => $included,
                     'optional_key' => $optKey,
                     'suggested_qty' => $suggestedQty,
-                ];
+                    // Slat posts cut on site (slatPostLines()): posts made from cut stock posts, and the stock posts cut each way.
+                    'cut_posts' => (int) ($customFenceProduct['cut_posts'] ?? 0),
+                ] + self::cutCountFields($customFenceProduct);
                 $i++;
             }
         }
 
-        $cart = ArrayHelper::dedupeSummingFields($carts, '_dedupe_key', ['qty', 'original_qty', 'suggested_qty']);
+        // Every row gets every `cut_in_N` the job uses, so rows merged by SKU can be summed on them.
+        $cutFields = [];
+        foreach ($carts as $row) {
+            $cutFields += array_fill_keys(array_keys(self::cutCountFields($row)), 0);
+        }
+        foreach ($carts as $ci => $row) {
+            $carts[$ci] = $row + $cutFields;
+        }
+        $cart = ArrayHelper::dedupeSummingFields(
+            $carts,
+            '_dedupe_key',
+            array_merge(['qty', 'original_qty', 'suggested_qty', 'cut_posts'], array_keys($cutFields))
+        );
 
         foreach ($cart as $ck => $crow) {
             if (!is_array($crow)) {
@@ -328,6 +451,8 @@ final class CartBuilderService
                     $cart[$ck]['original_qty'] = $edit['original'];
                 }
             }
+
+            $cart[$ck]['note'] = self::cartLineNote($cart[$ck]);
 
             if (array_key_exists('_dedupe_key', $crow)) {
                 unset($cart[$ck]['_dedupe_key']);
@@ -409,6 +534,77 @@ final class CartBuilderService
     private static function cartLinePlannedQty(array $row): int
     {
         return (int) (!empty($row['optional']) ? ($row['suggested_qty'] ?? 0) : ($row['original_qty'] ?? 0));
+    }
+
+    /**
+     * The line the Item List prints under a row: how a row of Slat posts is cut on site, or what its top plates are for.
+     * A post row counts stock posts, so without it a fence drawn with 4 posts lists 2 and reads as a mistake.
+     *
+     * @param array<string, mixed> $row
+     */
+    private static function cartLineNote(array $row): string
+    {
+        if (($row['slug'] ?? '') === 'slat_post+top_plate') {
+            return 'For the posts that come without a top cap.';
+        }
+
+        // [pieces => stock posts cut that way], fewest pieces first.
+        $cutCounts = [];
+        foreach (self::cutCountFields($row) as $field => $count) {
+            $cutCounts[(int) substr($field, 7)] = $count;
+        }
+        ksort($cutCounts);
+        $made = (int) ($row['cut_posts'] ?? 0);
+        if ($cutCounts === [] || $made <= 0) {
+            return '';
+        }
+
+        $stockPosts = self::cartLinePlannedQty($row);
+        $whole = max(0, $stockPosts - array_sum($cutCounts));
+        $spare = -$made;
+        foreach ($cutCounts as $pieces => $count) {
+            $spare += $pieces * $count;
+        }
+        $posts = $made . ($made === 1 ? ' post' : ' posts');
+
+        if ($whole === 0 && count($cutCounts) === 1) {
+            $note = 'Cut ' . ($stockPosts === 1 ? 'this post' : 'each post') . ' into ' . array_key_first($cutCounts)
+                . ' equal pieces to make ' . $posts . '.';
+        } else {
+            $cuts = [];
+            foreach ($cutCounts as $pieces => $count) {
+                $cuts[] = $count . ($cuts === [] ? ' of these posts' : '') . ' into ' . $pieces . ' equal pieces'
+                    . ($count > 1 ? ' each' : '');
+            }
+            $last = array_pop($cuts);
+            $note = 'Cut ' . ($cuts === [] ? '' : implode(', ', $cuts) . ' and ') . $last . ' to make ' . $posts . '.';
+            if ($whole > 0) {
+                $note .= ' The other ' . $whole . ($whole === 1 ? ' stays' : ' stay') . ' whole.';
+            }
+        }
+        if ($spare > 0) {
+            $note .= ' ' . $spare . ($spare === 1 ? ' piece' : ' pieces') . ' will be spare.';
+        }
+
+        return $note;
+    }
+
+    /**
+     * A row's `cut_in_N` counts: how many of its stock posts are cut into N pieces, for each N it has any of.
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, int>
+     */
+    private static function cutCountFields(array $row): array
+    {
+        $fields = [];
+        foreach ($row as $field => $count) {
+            if (is_string($field) && preg_match('/^cut_in_\d+$/', $field) && (int) $count > 0) {
+                $fields[$field] = (int) $count;
+            }
+        }
+
+        return $fields;
     }
 
     /**

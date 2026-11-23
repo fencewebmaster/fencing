@@ -947,6 +947,17 @@ FENCE = {
             checkGateOnly();
         }
 
+        // Step 2 holds an edit not yet calculated (a new Overall Length), so load_fencing_items() would skip this redraw: the
+        // pick was saved and never drawn (Nov 2026). Calculate commits the edit and draws both, as the drawer's tiles do.
+        if (
+            typeof fcIsStep2DomDirty === 'function' &&
+            fcIsStep2DomDirty() &&
+            $('.js-fc-form-step[data-section="3"]').is(':visible')
+        ) {
+            btnCalculate();
+            return;
+        }
+
         FENCE.call('update_custom_fence_tab');
     },
 
@@ -1264,6 +1275,15 @@ FENCE = {
                         type: prevGateHeight.type || 'input'
                     });
                 }
+                // Gate Alignment hides while the heights match: carried, so it is still the customer's if they differ again.
+                var prevGateAlign = fieldsPrev.find(function(row) {
+                    return row && row.key === 'gate_align';
+                });
+                if (prevGateAlign && !settings.fields.some(function(row) {
+                    return row && row.key === 'gate_align';
+                })) {
+                    settings.fields.push(prevGateAlign);
+                }
             }
 
         } else {
@@ -1357,6 +1377,9 @@ FENCE = {
             var centredPlacement = SlatFence.getCentredGatePlacement(i, find_gate, panel_count);
             if (centredPlacement !== null) {
                 placement = centredPlacement;
+            } else if (info.panel_group != 'a') {
+                // The run was laid at a new Overall Length: an end gate keeps to its end (re_update_gate pairs this).
+                placement = fcGateBayForThisRun($(FENCES.el.fencingPanelContainer), find_gate[0], placement);
             }
         } else {
             placement = 0;

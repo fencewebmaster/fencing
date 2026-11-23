@@ -6,6 +6,7 @@ namespace Fc\Admin\Models;
 
 use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Services\Database;
+use Fc\Admin\Services\FenceCatalogService;
 use Fc\Admin\Services\PlannerRecordService;
 use Fc\Admin\Services\PlannerSessionService;
 use Fc\Admin\Services\SiteRegistryService;
@@ -223,6 +224,7 @@ final class PlannerPageModel
      * The catalog for the planner's `fc_data`, with ?v=<mtime> on every local option image under `settings`:
      * replacing a post option tile under the same filename (Oct 2026) kept showing the browser's cached copy
      * for days. Top-level Step 1 images stay bare - styleImageSizes() and the Step 1 view read them as paths.
+     * Main Slat also carries its post cutting rule, which the Post Length tiles in Post Options read.
      *
      * @param array<string, array<string, mixed>> $fences
      * @return array<string, array<string, mixed>>
@@ -235,7 +237,7 @@ final class PlannerPageModel
             }
         }
 
-        return $fences;
+        return FenceCatalogService::fencesWithSlatPostStock($fences);
     }
 
     /**

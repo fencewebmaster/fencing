@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fc\Admin\Controllers\Frontend;
 
 use Fc\Admin\Models\ProjectPlanPageModel;
+use Fc\Admin\Services\FenceCatalogService;
 
 /**
  * Public project plan / quote summary page (/project-plan).
@@ -36,6 +37,7 @@ final class ProjectPlanController extends BaseFrontendController
 
         view('frontend.project-plan.index', [
             'fences'        => $fences,
+            'fences_script' => FenceCatalogService::fencesWithSlatPostStock($fences),
             'info'          => $info,
             'cart'          => $cart,
             'site_info'     => ProjectPlanPageModel::sessionSiteInfo(),

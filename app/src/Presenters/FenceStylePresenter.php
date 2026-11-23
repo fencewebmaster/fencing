@@ -8,6 +8,7 @@ use Fc\Admin\Helpers\ViewHelper;
 use Fc\Admin\Models\FenceStyleModel;
 use Fc\Admin\Services\AuthService;
 use Fc\Admin\Services\PermissionService;
+use Fc\Admin\Services\SlatHeightListService;
 use Fc\Admin\Settings\FenceColorSettings;
 
 /**
@@ -128,7 +129,7 @@ final class FenceStylePresenter
     }
 
     /**
-     * @return array{ok:bool,style?:array<string,mixed>,config?:array<string,mixed>,fileMeta?:array<string,mixed>,canEdit?:bool,canView?:bool,csrf?:string,error?:string}
+     * @return array{ok:bool,style?:array<string,mixed>,config?:array<string,mixed>,fileMeta?:array<string,mixed>,canEdit?:bool,canView?:bool,csrf?:string,slatHeightDefaults?:array<int,array<int,array<int,int>>>,slatHeightParent?:array<int|string,mixed>,error?:string}
      */
     public static function getStylePayload(string $slug, string $appBase): array
     {
@@ -142,7 +143,7 @@ final class FenceStylePresenter
         $style = self::stylePayload($slug, $catalog['fences'][$slug], $sourceFile, $appBase);
         $fileMeta = $filePath !== '' ? FenceStyleModel::fileMeta($filePath, $slug) : ['fileType' => 'unknown', 'parentSlug' => ''];
 
-        return [
+        $payload = [
             'ok' => true,
             'style' => $style,
             'config' => $catalog['fences'][$slug],
@@ -152,6 +153,18 @@ final class FenceStylePresenter
                 || PermissionService::can('products.fence_styles.edit'),
             'csrf' => AuthService::csrfToken(),
         ];
+
+        // Step 2's Height choices: GO's list for "Load GO's heights", and for Slat Infill the Slat lists it offers
+        // wherever it has none of its own.
+        if (in_array($slug, SlatHeightListService::STYLE_SLUGS, true)) {
+            $payload['slatHeightDefaults'] = SlatHeightListService::goHeights();
+            if ($slug !== SlatHeightListService::OWNER_SLUG) {
+                $parent = $catalog['fences'][SlatHeightListService::OWNER_SLUG][SlatHeightListService::SETTING_KEY] ?? null;
+                $payload['slatHeightParent'] = is_array($parent) ? $parent : [];
+            }
+        }
+
+        return $payload;
     }
 
     /**

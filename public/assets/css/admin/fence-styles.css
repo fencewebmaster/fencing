@@ -464,7 +464,10 @@
     margin-left: auto;
 }
 
+/* Relative so the hidden checkboxes and radios scroll with their labels. Anchored to #fc-admin-page-content they stayed
+   put, and a click on one far down the page focused it there and dragged the whole layout up, blank below (Nov 2026). */
 .fc-fs-edit-body {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     flex: 1 1 auto;
@@ -1876,6 +1879,430 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
 
 .fc-fs-gui-panel[data-gui-panel='form'] .fc-fs-kv-block--table .fc-fs-kv-row--table {
     padding: 0;
+}
+
+/* —— Height choices (Step 2, Fence Height): renderSlatHeightsBlock in gui.js. Admin tokens, so both themes follow. —— */
+.fc-fs-heights,
+.fc-fs-heights__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    min-width: 0;
+}
+
+.fc-fs-heights__intro {
+    margin: 0;
+}
+
+.fc-fs-heights__link,
+.fc-fs-heights__undo {
+    font-weight: 600;
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.fc-fs-heights__link:hover,
+.fc-fs-heights__undo:hover {
+    text-decoration: underline;
+}
+
+.fc-fs-heights__undo {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+/* No heights at all: what that means in the planner, and the one click that changes it. */
+.fc-fs-heights__empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem 0.75rem;
+    padding: 0.75rem;
+    border: 1px dashed var(--fc-admin-control-line);
+    background: var(--fc-admin-surface-muted);
+}
+
+.fc-fs-heights__empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 3px;
+    background: var(--fc-admin-surface-subtle);
+    color: var(--fc-admin-text-muted);
+}
+
+.fc-fs-heights__empty-copy,
+.fc-fs-heights__none {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--fc-admin-text-muted);
+}
+
+.fc-fs-heights__empty-copy {
+    flex: 1 1 14rem;
+    min-width: 0;
+}
+
+.fc-fs-heights__empty-copy strong,
+.fc-fs-heights__none strong {
+    color: var(--fc-admin-text-heading);
+}
+
+.fc-fs-heights__none {
+    align-items: flex-start;
+    padding: 0.875rem 0.75rem;
+}
+
+.fc-fs-heights__none .btn {
+    margin-top: 0.5rem;
+}
+
+/* Slat size and gap: which of the lists is on screen. A count is the heights that list offers. */
+.fc-fs-heights__pickers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem 1.5rem;
+}
+
+.fc-fs-heights__picker {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.fc-fs-heights__seg {
+    flex-wrap: wrap;
+}
+
+.fc-fs-heights .btn.fc-fs-heights__seg-option {
+    gap: 0.375rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* As Choices per row: Bootstrap gives a .btn-check label no hover and the admin no focus ring. */
+.fc-fs-heights .btn-check:not(:checked) + .btn:hover {
+    color: var(--bs-btn-hover-color);
+    background-color: var(--bs-btn-hover-bg);
+}
+
+.fc-fs-heights .btn-check:focus-visible + .btn {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: 2px;
+}
+
+.fc-fs-heights__seg-warn,
+.fc-fs-heights__flag {
+    color: #b45309;
+    font-size: 0.6875rem;
+}
+
+.fc-fs-heights__box {
+    min-width: 0;
+    border: 1px solid var(--fc-admin-border);
+    background: var(--fc-admin-surface);
+}
+
+.fc-fs-heights__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    padding: 0.375rem 0.5rem 0.375rem 0.625rem;
+    border-bottom: 1px solid var(--fc-admin-border);
+    background: var(--fc-admin-surface-muted);
+}
+
+.fc-fs-heights__bar-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--fc-admin-text-heading);
+}
+
+.fc-fs-heights__bar-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-right: auto;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* The dot trails its item, so a line that wraps never starts with one. */
+.fc-fs-heights__bar-meta > span:not(:last-child)::after {
+    content: '·';
+    margin: 0 0.4rem;
+    color: var(--fc-admin-text-subtle);
+}
+
+.fc-fs-heights__tag {
+    display: inline-block;
+    padding: 0.0625rem 0.375rem;
+    border-radius: 3px;
+    background: var(--fc-admin-surface-subtle);
+    font-size: 0.6875rem;
+    font-style: normal;
+    font-weight: 600;
+}
+
+.fc-fs-heights__tag--edited,
+.fc-fs-heights .fc-btn-count.fc-fs-heights__count--own {
+    background: color-mix(in srgb, var(--fc-princeton-orange) 18%, transparent);
+    color: var(--fc-admin-text-heading);
+}
+
+.fc-fs-heights__menu [data-gui-heights-menu-toggle] i {
+    transition: transform 0.2s ease;
+}
+
+.fc-fs-heights__menu.is-open [data-gui-heights-menu-toggle] i {
+    transform: rotate(180deg);
+}
+
+/* Heights read down, then across: up to three columns, so a whole list shows without a scroll box. */
+.fc-fs-heights__list {
+    columns: 3 13.5rem;
+    column-gap: 0;
+    column-rule: 1px solid var(--fc-admin-border);
+}
+
+.fc-fs-heights__row {
+    display: grid;
+    grid-template-columns: 4.75rem minmax(0, 1fr) auto 2.25rem;
+    align-items: stretch;
+    break-inside: avoid;
+    border-bottom: 1px solid var(--fc-admin-border-subtle);
+}
+
+.fc-fs-heights__row:hover {
+    background: color-mix(in srgb, var(--fc-princeton-orange) 14%, transparent);
+    box-shadow: inset 3px 0 0 var(--fc-princeton-orange, #f67925);
+}
+
+.fc-fs-heights__slats {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.5rem 0 0.625rem;
+    border-right: 1px solid var(--fc-admin-border-subtle);
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.fc-fs-heights__slats b {
+    min-width: 1.5em;
+    font-weight: 700;
+    color: var(--fc-admin-text-heading);
+    text-align: right;
+}
+
+.fc-fs-heights .fc-fs-input.fc-fs-heights__mm {
+    width: 100%;
+    min-height: 2rem;
+    padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.fc-fs-heights .fc-fs-input.fc-fs-heights__mm:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(34, 113, 177, 0.35);
+    background: var(--fc-admin-input-bg);
+}
+
+.fc-fs-heights .fc-fs-input.fc-fs-heights__bad,
+.fc-fs-heights .fc-fs-input.fc-fs-heights__bad:focus {
+    box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.6);
+}
+
+.fc-fs-heights__unit {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0 0.5rem 0 0.125rem;
+    font-size: 0.75rem;
+    color: var(--fc-admin-text-subtle);
+}
+
+/* A height no taller than the one before it is almost always a typing slip. */
+.fc-fs-heights__flag {
+    display: none;
+}
+
+.fc-fs-heights__row--warn .fc-fs-heights__flag {
+    display: inline-flex;
+}
+
+.fc-fs-heights__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2rem;
+    padding: 0;
+    border: 0;
+    border-left: 1px solid var(--fc-admin-border-subtle);
+    background: transparent;
+    color: var(--fc-admin-text-subtle);
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.fc-fs-heights__remove:hover {
+    background: color-mix(in srgb, #dc2626 12%, transparent);
+    color: #dc2626;
+}
+
+.fc-fs-heights__remove:focus-visible,
+.fc-fs-heights__over:focus-visible {
+    outline: 2px solid var(--fc-princeton-orange);
+    outline-offset: -2px;
+}
+
+/* Over the planner's cap: kept in the file, never offered, so it reads as set aside. */
+.fc-fs-heights__row--over {
+    background: var(--fc-admin-surface-muted);
+}
+
+/* Dimmed by opacity: the dark theme pins every input's colour with !important. */
+.fc-fs-heights__row--over .fc-fs-heights__slats b,
+.fc-fs-heights__row--over .fc-fs-input.fc-fs-heights__mm {
+    opacity: 0.6;
+}
+
+.fc-fs-heights__row--over .fc-fs-input.fc-fs-heights__mm:focus {
+    opacity: 1;
+}
+
+.fc-fs-heights__over {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    column-span: all;
+    padding: 0.4375rem 0.625rem;
+    border: 0;
+    border-top: 1px solid var(--fc-admin-border);
+    border-bottom: 1px solid var(--fc-admin-border-subtle);
+    background: var(--fc-admin-surface-muted);
+    color: var(--fc-admin-text-muted);
+    font-size: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fc-fs-heights__over:hover {
+    background: var(--fc-admin-surface-subtle);
+    color: var(--fc-admin-text);
+}
+
+.fc-fs-heights__over b {
+    color: var(--fc-admin-text);
+}
+
+.fc-fs-heights__over i {
+    font-size: 0.625rem;
+    transition: transform 0.15s ease;
+}
+
+.fc-fs-heights__over[aria-expanded='true'] i {
+    transform: rotate(90deg);
+}
+
+@keyframes fc-fs-heights-new {
+    from {
+        background: color-mix(in srgb, var(--fc-princeton-orange) 34%, transparent);
+    }
+}
+
+.fc-fs-heights__row--new {
+    animation: fc-fs-heights-new 1.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-fs-heights__row--new {
+        animation: none;
+    }
+
+    .fc-fs-heights__over i,
+    .fc-fs-heights__menu [data-gui-heights-menu-toggle] i {
+        transition: none;
+    }
+}
+
+.fc-fs-heights__add {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem 0.625rem;
+    padding: 0.5rem 0.625rem 0.5625rem;
+    border-top: 1px solid var(--fc-admin-border);
+    background: var(--fc-admin-surface-muted);
+}
+
+.fc-fs-heights__list + .fc-fs-heights__add {
+    margin-top: -1px;
+}
+
+.fc-fs-heights__add-field {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.fc-fs-heights .fc-fs-input.fc-fs-heights__add-slats {
+    width: 4.5rem;
+}
+
+.fc-fs-heights .fc-fs-input.fc-fs-heights__add-mm {
+    width: 7.5rem;
+}
+
+.fc-fs-heights__add-hint {
+    flex: 1 1 12rem;
+    padding-bottom: 0.4375rem;
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    color: var(--fc-admin-text-muted);
+}
+
+/* The last action's result; its height is kept so the cards below do not jump when it fills. */
+.fc-fs-heights__note {
+    min-height: 1.125rem;
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--fc-admin-text-muted);
+}
+
+html[data-fc-admin-theme='dark'] .fc-fs-heights__link,
+html[data-fc-admin-theme='dark'] .fc-fs-heights__undo {
+    color: #a5b4fc;
+}
+
+html[data-fc-admin-theme='dark'] .fc-fs-heights__seg-warn,
+html[data-fc-admin-theme='dark'] .fc-fs-heights__flag {
+    color: #fbbf24;
+}
+
+html[data-fc-admin-theme='dark'] .fc-fs-heights__remove:hover {
+    color: #f87171;
 }
 
 /* —— Settings fence colors (kv-table variant) —— */

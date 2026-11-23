@@ -5866,6 +5866,14 @@ body.fc-entries-cart-gallery-open {
     color: #fff;
 }
 
+/* Slat posts are saved as stock posts to buy: the note says how they are cut on site. */
+.fc-entries-cart-table__note {
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: var(--fc-admin-text);
+}
+
 @media (max-width: 1023px) {
     .fc-entries-detail-page__grid {
         grid-template-columns: minmax(0, 1fr);

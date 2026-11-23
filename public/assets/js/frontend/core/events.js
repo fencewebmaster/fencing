@@ -1311,7 +1311,82 @@ function fcCopyQuoteLink(e) {
 
 //----------------------------------------------------------------------------------
 
+// A drawer tile ruled out for the section (a Slat post too short for the fence) takes no pick: bound first, so no tile
+// handler below runs, and its data-unavailable-* says why.
+_doc.on('click', '.fc-select--unavailable', fcSelectUnavailable);
+
+function fcSelectUnavailable(event) {
+    var $tile = $(this);
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if ($tile.attr('data-unavailable-note')) {
+        // The toast takes HTML; these two are plain text.
+        popupToast($('<i>').text($tile.attr('data-unavailable-title') || 'Not available').html(), $('<i>').text($tile.attr('data-unavailable-note')).html(), 'OFF');
+    }
+}
+
+//----------------------------------------------------------------------------------
+
 _doc.on('click', '.fc-select-post, .fc-select-item', fcSelectPostItem);
+
+// Slat's Post Length follows the footing and the pick just made: after the pick is marked above, before fcSelectPost saves it.
+_doc.on('click', '#fc-control-modal .fc-select-post', function() {
+    if (typeof SlatFence !== 'undefined') {
+        SlatFence.syncPostLengthTiles($(this));
+    }
+});
+
+// Slat's Cut posts on site switch, in the same card: the tiles follow it and it is stored at once.
+_doc.on('change', '#fc-control-modal .fc-post-cut__input', function() {
+    if (typeof SlatFence !== 'undefined') {
+        SlatFence.togglePostCut($(this));
+    }
+});
+
+// The cuts dropdown under a Post Length tile, Select2's box included. Its click stops here: the cell around it would pick
+// the tile, and on a phone that closes the drawer under the open list.
+_doc.on('click', '#fc-control-modal .fc-post-cuts-wrap', function(event) {
+    event.stopPropagation();
+});
+
+_doc.on('change', '#fc-control-modal .fc-post-cuts', function() {
+    if (typeof SlatFence !== 'undefined') {
+        SlatFence.pickPostCuts($(this));
+    }
+});
+
+// Slat's Gate Alignment in the gate drawer: a tile, or Enter / Space on it, stores the choice and redraws the fence.
+_doc.on('click keydown', '#fc-control-modal .fc-gate-align__pick', function(event) {
+    if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
+        return;
+    }
+    event.preventDefault();
+    // A key on SAME Height where a gate cannot match the fence: as a click, which fcSelectUnavailable() answers.
+    if ($(this).hasClass('fc-select--unavailable')) {
+        $(this).trigger('click');
+        return;
+    }
+    if (typeof SlatFence !== 'undefined') {
+        SlatFence.pickGateAlign($(this));
+    }
+});
+
+// The choice is offered only while the gate's height differs from the fence's, and never on Gate ONLY.
+_doc.on('change input', '#fc-control-modal [name="gate_max_fence_height"]', function() {
+    if (typeof SlatFence !== 'undefined') {
+        SlatFence.syncGateAlignField();
+    }
+});
+
+// A move takes the gate to an end of the run or off it: Top's note names the end post only while there is one.
+_doc.on('click', '#fc-control-modal .select-gate_only, #fc-control-modal .fc-move-post', function() {
+    setTimeout(function() {
+        if (typeof SlatFence !== 'undefined') {
+            SlatFence.syncGateAlignField();
+        }
+    }, 0);
+});
 
 function fcSelectPostItem() {
     // A tap inside a Slick carousel lands on whichever copy of the tile is on screen, and that is
@@ -2580,6 +2655,11 @@ function fencingBtnModal(event) {
 
     HELPER.set_field_value(filtered_data);
 
+    // Slat's Post Length tiles are marked for this section once its saved pick is back in the drawer.
+    if (key === 'post_options' && typeof SlatFence !== 'undefined') {
+        SlatFence.syncPostLengthTiles();
+    }
+
     if (
         key === 'gate' &&
         data &&
@@ -3302,6 +3382,8 @@ function btnCalculate() {
 
     if (typeof SlatFence !== 'undefined' && SlatFence.isSlatLike(fd.slug)) {
         try {
+            // Before the new slat size and gap are saved: it compares them with the saved ones.
+            SlatFence.resetGateHeightForNewSlatSizeOrGap(fd);
             SlatFence.persistSlatGapFromStep2(
                 tab,
                 fd.slug,
@@ -3724,6 +3806,13 @@ function fcSelectPost() {
     // Calling the generic `update_custom_fence('gate')` here can corrupt gate fields
     // (notably `use_std` checkbox) and reset custom gate width back to STD.
     if (modal_key === 'gate') {
+        return;
+    }
+
+    // Slat's Post Length moves nothing on the drawing or the planner's cart, so it is stored without the redraw below:
+    // in Post Options that redraw also puts the section's footing on end posts that chose their own.
+    if (String(fc_form_field.attr('name') || '') === 'post_length' && typeof SlatFence !== 'undefined') {
+        SlatFence.savePostLengthPick();
         return;
     }
 
@@ -5077,11 +5166,25 @@ _doc.on('blur', FC_STEP2_MEASURE_FIELDS, function() {
     fcSyncStep2MeasureFieldError(this);
 });
 
+// The Fence Height dropdown opens and closes without those two. select2:close lands before a pick's change, so defer.
+_doc.on('select2:opening', '[data-section="2"] select[name="max_fence_height"]', function() {
+    $(this).closest('.fc-input-container').find('.fc-input-msg').first().removeClass('fcim-show').html('');
+});
+
+_doc.on('select2:close', '[data-section="2"] select[name="max_fence_height"]', function() {
+    var el = this;
+    setTimeout(function() {
+        fcSyncStep2MeasureFieldError(el);
+    }, 0);
+});
+
 //----------------------------------------------------------------------------------
 
 // Slat Fence: Max Fence Height — validate on input/blur; auto-calc on change/blur except Gate ONLY Step 2 height.
 _doc.on('input blur change', '[name="max_fence_height"]', maxFenceHeightValidation);
 _doc.on('input blur', '[name="gate_max_fence_height"]', gateMaxFenceHeightValidation);
+// The Gate Height dropdown answers on its pick, which the drawer's select handler also saves at once.
+_doc.on('change', 'select[name="gate_max_fence_height"]', gateMaxFenceHeightValidation);
 
 function maxFenceHeightValidation(e) {
     var fd = getSelectedFenceData();
@@ -5122,7 +5225,8 @@ function maxFenceHeightValidation(e) {
         SlatFence.isMainSlatSlug(fd.slug) && SlatFence.isStep2GateOnlyActive(fd);
 
     // Fence Height: auto-calculate on change/blur — not while editing Gate ONLY Step 2 Gate Height.
-    if (e && (e.type === 'change' || e.type === 'blur') && canCalculate && !slatGateOnlyHeight) {
+    // A dropdown pick is calculated by the Step 2 select handler, Gate ONLY included: a pick is not half-typed.
+    if (e && (e.type === 'change' || e.type === 'blur') && canCalculate && !slatGateOnlyHeight && el.tagName !== 'SELECT') {
         try {
             step2TryAutoCalculateAfterDropdownChange({
                 scrollToStep3: false,
@@ -5410,6 +5514,10 @@ function fencingInputRange_input() {
 _doc.on('change', '.fc-form-field select', fcFormField_select);
 
 function fcFormField_select() {
+    // Slat's cuts dropdown stores itself with no redraw (SlatFence.pickPostCuts()): this one would redraw the section.
+    if ($(this).hasClass('fc-post-cuts')) {
+        return;
+    }
     var modal_key = $('.fencing-container').attr('data-key');
     FENCE.call('update_custom_fence', modal_key);
 }
