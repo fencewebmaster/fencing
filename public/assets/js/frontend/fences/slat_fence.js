@@ -11,13 +11,7 @@ SlatFence = {
             'slat_spacer+15': 50,
             'slat_spacer+20': 50,
             'slat_spacer+30': 50,
-            /** QuickScreen spacers and screws, every Slat and Slat Infill job: QS-SPACER-*-50PK and QS-SCREWS-50PK. */
-            'slat_gate+qsg_spacer_5': 50,
-            'slat_gate+qsg_spacer_9': 50,
-            'slat_gate+qsg_spacer_12': 50,
-            'slat_gate+qsg_spacer_15': 50,
-            'slat_gate+qsg_spacer_20': 50,
-            'slat_gate+qsg_spacer_30': 50,
+            /** QuickScreen screws, every Slat and Slat Infill job: QS-SCREWS-50PK. */
             'slat_gate+qsg_screws': 50,
             /** XPL-EP-*-2PK — pieces per retail pack (used for slat infill end-cap packs vs rail qty). */
             'sfs+end_caps': 2,
@@ -6404,6 +6398,7 @@ SlatFence = {
         /** Row × panel lines — replace on each recalc (never accumulate). */
         var isRowPanelDerivedSlug = function(slug) {
             var s = String(slug || '');
+            // qsg_spacer was the spacer line 12-24 Nov 2026: a cart saved then must lose it, or spacers bill twice.
             return /^slat\+(65|90)$/.test(s) || /^slat_spacer\+/.test(s) || /^slat_gate\+qsg_spacer_/.test(s);
         };
         array = (array || []).filter(function(item) {
@@ -6502,8 +6497,8 @@ SlatFence = {
 
         // FSQ consumes spacers_per_slat (2) spacers per fence slat (F235/F522), ordered in packs.
         // Pooled across sections — see pooledSlatSpacerPacksForSection() — so the CEILING is
-        // taken once for the whole job. Slat, Slat Infill and the gates share the QuickScreen spacer (Nov 2026).
-        var spacerSlug = 'slat_gate+qsg_spacer_' + gapKey;
+        // taken once for the whole job. Slat, Slat Infill and the gates share one line, slat_spacer+{gap} again (asked for Nov 2026).
+        var spacerSlug = 'slat_spacer+' + gapKey;
         var fenceSlugForPack = context?.tabInfo?.[0]?.fence || 'slat';
         var itemsPerPack = this.getPackItemsForSlug(fenceSlugForPack, spacerSlug);
         var spacerPacks = 0;

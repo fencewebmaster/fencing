@@ -852,6 +852,7 @@ final class FenceCatalogService
     /**
      * Maps planner/cart line slugs (e.g. panel_post+opt-1) to products.csv SLUG for main Slat.
      * A post line maps to the stock post it is cut from (slatPostCutForPlannerLine()).
+     * A spacer line saved as slat_gate+qsg_spacer_{gap} maps to slat_spacer+{gap}, the spacer row again since Nov 2026.
      *
      * Slat Infill: FSQ infill mode uses no fence posts — do not map to slat_post+*.
      *
@@ -863,6 +864,11 @@ final class FenceCatalogService
         mixed $colorColumnKey,
         ?int $fenceHeightMm = null
     ): string {
+        // Quotes saved 12-24 Nov 2026 name the gate kit's spacer rows, which were removed: without this their spacers drop.
+        if (preg_match('/^slat_gate\+qsg_spacer_(\d+)$/', $itemSlug, $gap) === 1) {
+            return 'slat_spacer+' . $gap[1];
+        }
+
         $cut = self::slatPostCutForPlannerLine($itemSlug, $fenceSlug, (int) $fenceHeightMm);
 
         return $cut !== null ? $cut['slug'] : $itemSlug;

@@ -222,8 +222,8 @@ SlatFenceCalc = {
      * ceiling in FSQ too: F580/F581 = ceil(F417 + F235 + F522), where F235 is the fence term
      * and F522 the infill term. Pooling per style instead ceils twice and orders a pack too
      * many whenever both parts have a fractional remainder — measured on 46% of mixed
-     * fence+infill jobs. Since Nov 2026 the line is the QuickScreen spacer and takes the gates'
-     * spacers too. Sections only share a pool when they also order the same pack size,
+     * fence+infill jobs. Since Nov 2026 the line takes the gates' spacers too, on slat_spacer+{gap}
+     * (the gate kit's own spacer row was dropped on request). Sections only share a pool when they also order the same pack size,
      * since one ceiling across different pack sizes would be meaningless.
      *
      * Returns this section's share of the pooled packs, or null when the pool cannot be resolved
@@ -236,7 +236,7 @@ SlatFenceCalc = {
         var count = fcGetPersistedFenceSectionCount();
         if (!Number.isFinite(count) || count < 1) return null;
 
-        var spacerSlug = 'slat_gate+qsg_spacer_' + gapKey;
+        var spacerSlug = 'slat_spacer+' + gapKey;
         var indexes = [];
         var weights = [];
         var totals = { fence: 0, infill: 0, gateSpacers: 0 };
