@@ -10627,6 +10627,10 @@ function fcSyncGateOnlyInSegmentStorage(cf, val) {
 function fcSeedGateOnlyNoPost() {
     try {
         var fd = getSelectedFenceData();
+        // Fence Styles → Extra → Gate ONLY: a style set to Included keeps the posts its ends have.
+        if (fd?.data?.gate_only_posts === 'include') {
+            return;
+        }
         var sideFields = function(side) {
             return fd?.data?.settings?.[side + '_side']?.fields || [];
         };

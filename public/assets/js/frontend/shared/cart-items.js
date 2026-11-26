@@ -75,6 +75,74 @@ FENCES.cartItems = {
         return s === 'flat_top';
     },
 
+    // An accessory line as the style's Fence Styles setting has it (fence file `accessories`), over `fallback`: the
+    // rule this script always used, which FenceAccessoryService lists for the editor. Edit the two in pairs.
+    accessoryRule: function(context, key, fallback) {
+        var raw = (context && context.fenceSlug) || '';
+        if (!raw && context && context.tabInfo && context.tabInfo[0]) {
+            raw = context.tabInfo[0].fence || context.tabInfo[0].style || '';
+        }
+        var slug = typeof normalizeFenceStyleSlug === 'function' ? normalizeFenceStyleSlug(String(raw)) : String(raw);
+        var saved = typeof fc_data !== 'undefined' && fc_data && fc_data[slug] && fc_data[slug].accessories
+            ? fc_data[slug].accessories[key]
+            : null;
+        var whole = function(value, otherwise) {
+            var n = parseInt(value, 10);
+            return Number.isFinite(n) && n >= 1 ? n : otherwise;
+        };
+        var rule = {
+            status: fallback.status,
+            qty: fallback.qty || 1,
+            per: fallback.per || 0,
+            round: fallback.round || 'up'
+        };
+        if (saved && typeof saved === 'object') {
+            if (['included', 'optional', 'off'].indexOf(saved.status) !== -1) {
+                rule.status = saved.status;
+            }
+            rule.qty = whole(saved.qty, rule.qty);
+            if (rule.per) {
+                rule.per = whole(saved.per, rule.per);
+            }
+        }
+        return rule;
+    },
+
+    // `qty` for every `per` posts or spigots, rounded up (Glass Pool's grout: to the nearest). A flat line is `qty`.
+    accessoryQty: function(rule, units) {
+        if (!rule.per) {
+            return rule.qty;
+        }
+        var n = ((parseInt(units, 10) || 0) * rule.qty) / rule.per;
+        return rule.round === 'nearest' ? Math.round(n) : Math.ceil(n);
+    },
+
+    // The line as its status says: billed, suggested with an "Add to cart" button, or left out. `keepZero` keeps
+    // a suggested line of none, as Glass Pool's rules always pushed one.
+    addAccessory: function(array, slug, rule, qty, keepZero) {
+        qty = parseInt(qty, 10) || 0;
+        if (rule.status === 'off' || (qty <= 0 && !(keepZero && rule.status === 'optional'))) {
+            return array;
+        }
+        var found = array.find(function(item) {
+            return item && item.slug === slug;
+        });
+        if (rule.status === 'optional') {
+            if (found) {
+                found.optional = true;
+                found.qty = found.qty || 0;
+                found.suggested_qty = (found.suggested_qty || 0) + qty;
+            } else {
+                array.push({ slug: slug, qty: 0, optional: true, suggested_qty: qty });
+            }
+        } else if (found) {
+            found.qty += qty;
+        } else {
+            array.push({ slug: slug, qty: qty });
+        }
+        return array;
+    },
+
     /**
      * Flat Top: a custom gate is a panel cut to width on the Gate Converter (the only stocked gate is
      * the 970 STD), so it needs a donor panel; the STD gate is a manufactured item and does not.
@@ -966,7 +1034,7 @@ FENCES.cartItems = {
         newCartItems = FENCES.cartItems.apply_barr_bracket_rules(newCartItems, context, processOpts);
 
         // Last, so it sees the finished list: the style hooks above can add or filter lines.
-        newCartItems = FENCES.cartItems.pair_chem_anchor_glue(newCartItems);
+        newCartItems = FENCES.cartItems.pair_chem_anchor_glue(newCartItems, context);
 
         return newCartItems;
     },
@@ -983,8 +1051,13 @@ FENCES.cartItems = {
      * front of them to add rather than billing it. The reverse is deliberately not paired: glue
      * without a gun is a normal order.
      */
-    pair_chem_anchor_glue: function(array) {
+    pair_chem_anchor_glue: function(array, context) {
         if (!Array.isArray(array)) {
+            return array;
+        }
+
+        // A style whose Accessories setting turns the glue off must not get it back from this backstop.
+        if (FENCES.cartItems.accessoryRule(context, 'glue', { status: 'optional', qty: 1 }).status === 'off') {
             return array;
         }
 
@@ -1184,33 +1257,22 @@ FENCES.cartItems = {
             // If the spigot is base plated
             if ($.inArray(tabInfo[0]?.fence, ['glass_pool']) !== -1) {
                 var spigots = $('.fencing-panel-spigot').length;
+                var acc = FENCES.cartItems;
 
                 // Fixings suit a concrete/stone base only, so they are suggested per spigot rather
                 // than billed on every base-plated job - same treatment as the consumables below.
-                array.push({
-                    "slug": "fixings_stone",
-                    "qty": 0,
-                    "optional": true,
-                    "suggested_qty": spigots,
-                });
+                var fixings = acc.accessoryRule(context, 'fixings', { status: 'optional', qty: 1, per: 1 });
+                acc.addAccessory(array, 'fixings_stone', fixings, acc.accessoryQty(fixings, spigots), true);
 
                 // Consumables, not fence: an installer usually owns a cartridge gun already and
                 // may have glue on the van. Listed with a suggested qty and an "Add to cart"
                 // button (Barr's base_plate+dynabolts pattern) rather than billed by default.
                 // Suggested at 1, not ceil(spigots/7) - owner's call; the installer adjusts a long run.
-                array.push({
-                    "slug": "chem_achor+glue",
-                    "qty": 0,
-                    "optional": true,
-                    "suggested_qty": 1,
-                });
+                var glue = acc.accessoryRule(context, 'glue', { status: 'optional', qty: 1 });
+                acc.addAccessory(array, 'chem_achor+glue', glue, glue.qty);
 
-                array.push({
-                    "slug": "chem_achor+glue_gun",
-                    "qty": 0,
-                    "optional": true,
-                    "suggested_qty": 1,
-                });
+                var gun = acc.accessoryRule(context, 'glue_gun', { status: 'optional', qty: 1 });
+                acc.addAccessory(array, 'chem_achor+glue_gun', gun, gun.qty);
             }
 
             if (FENCES.cartItems.isSlatPostStyleFence(context)) {
@@ -1226,19 +1288,13 @@ FENCES.cartItems = {
             }
 
             if (FENCES.cartItems.isBarrFence(context)) {
-                array.push({
-                    slug: 'base_plate+dynabolts',
-                    qty: 0,
-                    optional: true,
-                    suggested_qty: total
-                });
+                var barrBolts = FENCES.cartItems.accessoryRule(context, 'dynabolts', { status: 'optional', qty: 1, per: 1 });
+                FENCES.cartItems.addAccessory(array, 'base_plate+dynabolts', barrBolts, FENCES.cartItems.accessoryQty(barrBolts, total));
                 return array;
             }
 
-            array.push({
-                "slug": "base_plate+dynabolts",
-                "qty": total,
-            });
+            var bolts = FENCES.cartItems.accessoryRule(context, 'dynabolts', { status: 'included', qty: 1, per: 1 });
+            FENCES.cartItems.addAccessory(array, 'base_plate+dynabolts', bolts, FENCES.cartItems.accessoryQty(bolts, total));
             array.push({
                 "slug": "base_plate+post_cover",
                 "qty": total,
@@ -1278,12 +1334,14 @@ FENCES.cartItems = {
             if ($.inArray(tabInfo[0]?.fence, ['glass_pool']) !== -1) {
                 // Optional like the chem anchor consumables above - suggested, not billed until
                 // the customer adds it.
-                array.push({
-                    "slug": "grout",
-                    "qty": 0,
-                    "optional": true,
-                    "suggested_qty": Math.round($('.fencing-panel-spigot').length / 8),
-                });
+                var grout = FENCES.cartItems.accessoryRule(context, 'grout', { status: 'optional', qty: 1, per: 8, round: 'nearest' });
+                FENCES.cartItems.addAccessory(
+                    array,
+                    'grout',
+                    grout,
+                    FENCES.cartItems.accessoryQty(grout, $('.fencing-panel-spigot').length),
+                    true
+                );
             }
 
             return array;

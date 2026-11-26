@@ -1376,12 +1376,10 @@
     var SLAT_HEIGHTS_KEY = 'fence_heights_mm';
     var SLAT_HEIGHTS_OWNER = 'slat';
     var SLAT_HEIGHTS_STYLES = { slat: true, slat_fence_infill: true };
-    // Mirrors SlatFence.slatHeightRowConfig.maxHeightMm in frontend fences/slat_fence.js: edit in pairs.
-    var SLAT_HEIGHT_CAP_MM = 2400;
     var SLAT_HEIGHT_MAX_SLATS = 999;
     var SLAT_HEIGHT_MAX_MM = 99999;
     // What the block shows, kept across re-renders: one style is open at a time.
-    var slatHeightsView = { size: '', gap: '', showOver: false, undo: null };
+    var slatHeightsView = { size: '', gap: '', undo: null };
 
     function formFieldIsSlatHeight(field) {
         return !!field && (field.type === 'slat-max-height-input' || field.type === 'slat-max-height-select');
@@ -1588,17 +1586,6 @@
         return picked.size.label + ' slats, ' + picked.gap.label + ' gap';
     }
 
-    function splitSlatHeightRows(rows) {
-        return {
-            offered: rows.filter(function (row) {
-                return row.mm <= SLAT_HEIGHT_CAP_MM;
-            }),
-            over: rows.filter(function (row) {
-                return row.mm > SLAT_HEIGHT_CAP_MM;
-            })
-        };
-    }
-
     function renderSlatHeightsSegment(label, attr, items, current, badgeFor) {
         var name = uid('fc-heights');
         var options = items
@@ -1649,7 +1636,7 @@
     // A gap's count: the heights it offers. Where the style follows Slat, a list of its own is tinted to stand out.
     function slatHeightsGapBadgeHtml(model, gapKey) {
         var list = (model.offered[model.size] || {})[gapKey];
-        var offered = splitSlatHeightRows(slatHeightRows(list)).offered.length;
+        var offered = slatHeightRows(list).length;
         var isOwn = !!(model.own[model.size] || {})[gapKey];
         if (!Object.keys(list || {}).length) {
             return '';
@@ -1669,20 +1656,14 @@
         );
     }
 
-    // The line beside the list's name: what the planner offers, what it holds back, and whose list it is.
+    // The line beside the list's name: what the planner offers, and whose list it is.
     function slatHeightsBarMetaHtml(model) {
-        var split = splitSlatHeightRows(slatHeightRows(model.list));
+        var listed = slatHeightRows(model.list).length;
         var defList = (model.defaults[model.size] || {})[model.gap] || null;
-        if (!split.offered.length && !split.over.length) {
+        if (!listed) {
             return '<span>No heights listed</span>';
         }
-        var html = '<span>' + escapeHtml(plural(split.offered.length, 'height', 'heights') + ' offered') + '</span>';
-        if (split.over.length) {
-            html +=
-                '<span>' +
-                escapeHtml(formatMm(split.over.length) + ' over ' + formatMm(SLAT_HEIGHT_CAP_MM) + 'mm') +
-                '</span>';
-        }
+        var html = '<span>' + escapeHtml(plural(listed, 'height', 'heights') + ' offered') + '</span>';
         if (model.follows) {
             html +=
                 model.source === 'own'
@@ -1698,21 +1679,10 @@
         return html;
     }
 
-    function slatHeightsOverLabelHtml(count) {
-        return (
-            '<b>' +
-            escapeHtml(plural(count, 'taller height', 'taller heights')) +
-            '</b> kept but not offered: the planner stops at ' +
-            formatMm(SLAT_HEIGHT_CAP_MM) +
-            'mm'
-        );
-    }
-
-    function renderSlatHeightRow(row, prevMm, over) {
+    function renderSlatHeightRow(row, prevMm) {
         var warn = prevMm != null && row.mm <= prevMm;
         return (
             '<div class="fc-fs-heights__row' +
-            (over ? ' fc-fs-heights__row--over' : '') +
             (warn ? ' fc-fs-heights__row--warn' : '') +
             '" role="listitem" data-gui-heights-row="' +
             row.slats +
@@ -1859,12 +1829,9 @@
 
     function renderSlatHeightsBody(config, sources) {
         var model = slatHeightsModel(config, sources);
-        var view = slatHeightsView;
         var isOwner = String(config.slug || '') === SLAT_HEIGHTS_OWNER;
         var defList = (model.defaults[model.size] || {})[model.gap] || null;
         var rows = slatHeightRows(model.list);
-        var split = splitSlatHeightRows(rows);
-        var capText = formatMm(SLAT_HEIGHT_CAP_MM) + 'mm';
         var name = escapeHtml(model.styleName);
         var html = '';
 
@@ -1872,9 +1839,7 @@
             html +=
                 '<p class="fc-fs-gui-field__hint fc-fs-heights__intro">' +
                 name +
-                ' offers the Slat style\'s heights, up to ' +
-                capText +
-                '. Change a list here and ' +
+                ' offers the Slat style\'s heights. Change a list here and ' +
                 name +
                 ' keeps its own version of that list. ' +
                 '<a class="fc-fs-heights__link" href="products/fence-styles/edit/' +
@@ -1882,9 +1847,7 @@
                 '?tab=form">Open Slat\'s lists</a></p>';
         } else if (countSlatHeights(model.offered).heights) {
             html +=
-                '<p class="fc-fs-gui-field__hint fc-fs-heights__intro">Customers pick Fence Height from these lists, one for each slat size and gap, up to ' +
-                capText +
-                '.' +
+                '<p class="fc-fs-gui-field__hint fc-fs-heights__intro">Customers pick Fence Height from these lists, one for each slat size and gap. Every height listed is offered.' +
                 (isOwner ? ' The Slat gate uses them too, and so does Slat Infill wherever it has no list of its own.' : '') +
                 '</p>';
         } else {
@@ -1931,24 +1894,10 @@
         if (rows.length) {
             html += '<div class="fc-fs-heights__list" role="list">';
             var prev = null;
-            split.offered.forEach(function (row) {
-                html += renderSlatHeightRow(row, prev, false);
+            rows.forEach(function (row) {
+                html += renderSlatHeightRow(row, prev);
                 prev = row.mm;
             });
-            if (split.over.length) {
-                html +=
-                    '<button type="button" class="fc-fs-heights__over" data-gui-heights-over aria-expanded="' +
-                    (view.showOver ? 'true' : 'false') +
-                    '"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span data-gui-heights-over-label>' +
-                    slatHeightsOverLabelHtml(split.over.length) +
-                    '</span></button>';
-                if (view.showOver) {
-                    split.over.forEach(function (row) {
-                        html += renderSlatHeightRow(row, prev, true);
-                        prev = row.mm;
-                    });
-                }
-            }
             html += '</div>';
         } else if (countSlatHeights(model.offered).heights) {
             html +=
@@ -2019,6 +1968,320 @@
                 '</div>' +
                 '<p class="fc-fs-heights__note" data-gui-heights-note role="status" aria-live="polite"></p></div>',
             { nested: true }
+        );
+    }
+
+    // Extra → Accessories: the style's accessory lines (FenceAccessoryService), each shown as the fence file has it.
+    var ACCESSORIES_KEY = 'accessories';
+    var ACCESSORY_MAX = 999;
+    var ACCESSORY_STATUSES = [
+        { value: 'included', label: 'Included' },
+        { value: 'optional', label: 'Optional' },
+        { value: 'off', label: 'Off' }
+    ];
+
+    function accessoryWhole(value, otherwise) {
+        var text = String(value == null ? '' : value).trim();
+        var n = /^\d+$/.test(text) ? parseInt(text, 10) : NaN;
+        return n >= 1 && n <= ACCESSORY_MAX ? n : otherwise;
+    }
+
+    // A row's values: its default under whatever the file's `accessories` changed.
+    function accessoryValues(config, row) {
+        var saved = isPlainObject(config[ACCESSORIES_KEY]) ? config[ACCESSORIES_KEY][row.key] : null;
+        var values = { status: row.status, qty: row.qty, per: row.basis === 'unit' ? row.per : 0 };
+        if (isPlainObject(saved)) {
+            if (
+                ACCESSORY_STATUSES.some(function (status) {
+                    return status.value === saved.status;
+                })
+            ) {
+                values.status = saved.status;
+            }
+            values.qty = accessoryWhole(saved.qty, values.qty);
+            if (row.basis === 'unit') {
+                values.per = accessoryWhole(saved.per, values.per);
+            }
+        }
+        return values;
+    }
+
+    function accessoryIsDefault(row, values) {
+        return (
+            values.status === row.status &&
+            values.qty === row.qty &&
+            (row.basis !== 'unit' || values.per === row.per)
+        );
+    }
+
+    function accessoryRuleText(row, values) {
+        var label = '';
+        ACCESSORY_STATUSES.forEach(function (status) {
+            if (status.value === values.status) {
+                label = status.label;
+            }
+        });
+        var unit = String(row.unit || '');
+        var qty =
+            row.basis !== 'unit'
+                ? values.qty + (row.scope === 'job' ? ' per job' : ' per section')
+                : values.per === 1
+                  ? values.qty + ' per ' + unit.replace(/s$/, '')
+                  : values.qty + ' for every ' + values.per + ' ' + unit;
+        return label + ', ' + qty;
+    }
+
+    // A line under a row's title opens with an icon for what it is: the product, its slug, what the line follows.
+    function accessoryLine(icon, innerHtml) {
+        return (
+            '<span class="fc-fs-acc__line"><i class="fa-solid ' +
+            icon +
+            ' fc-fs-acc__icon" aria-hidden="true"></i>' +
+            innerHtml +
+            '</span>'
+        );
+    }
+
+    function renderAccessoryRow(config, row) {
+        var values = accessoryValues(config, row);
+        var name = uid('fc-acc');
+        var off = values.status === 'off';
+        var statusHtml = ACCESSORY_STATUSES.map(function (status, idx) {
+            var id = name + '-' + idx;
+            return (
+                '<input type="radio" class="btn-check" name="' +
+                name +
+                '" id="' +
+                id +
+                '" value="' +
+                status.value +
+                '" data-gui-acc-status autocomplete="off"' +
+                (status.value === values.status ? ' checked' : '') +
+                '><label class="btn btn-sm btn-light" for="' +
+                id +
+                '">' +
+                escapeHtml(status.label) +
+                '</label>'
+            );
+        }).join('');
+        var number = function (field, value, label) {
+            return (
+                '<input type="number" class="fc-fs-input fc-fs-acc__num" min="1" max="' +
+                ACCESSORY_MAX +
+                '" step="1" inputmode="numeric" data-gui-acc-field="' +
+                field +
+                '" value="' +
+                escapeHtml(String(value)) +
+                '" aria-label="' +
+                escapeHtml(row.title + ': ' + label) +
+                '"' +
+                (off ? ' disabled' : '') +
+                '>'
+            );
+        };
+        var qtyHtml =
+            row.basis === 'unit'
+                ? number('qty', values.qty, 'quantity') +
+                  '<span>for every</span>' +
+                  number('per', values.per, 'how many ' + row.unit) +
+                  '<span>' +
+                  escapeHtml(row.unit) +
+                  '</span>'
+                : number('qty', values.qty, 'quantity') +
+                  '<span>' +
+                  (row.scope === 'job' ? 'per job' : 'per section') +
+                  '</span>';
+        var productHtml = row.product
+            ? '<a class="fc-fs-acc__product" href="products/system-products?q=' +
+              encodeURIComponent(row.slug) +
+              '&amp;style=' +
+              encodeURIComponent(row.productStyle || '') +
+              '" target="_blank" rel="noopener" title="Open this row in System Products">' +
+              escapeHtml(row.product) +
+              '</a>'
+            : '<span class="fc-fs-acc__product fc-fs-acc__product--missing">No System Products row for ' +
+              escapeHtml(row.slug) +
+              '</span>';
+        // A slug that has to wrap breaks after its "+" before the narrow column cuts it mid-word.
+        var slugHtml = String(row.slug)
+            .split('+')
+            .map(function (part) {
+                return escapeHtml(part);
+            })
+            .join('+<wbr>');
+        return (
+            '<div class="fc-fs-acc__row' +
+            (off ? ' fc-fs-acc__row--off' : '') +
+            '" data-gui-acc-row="' +
+            escapeHtml(row.key) +
+            '">' +
+            '<div class="fc-fs-acc__what"><span class="fc-fs-acc__title">' +
+            escapeHtml(row.title) +
+            '</span>' +
+            accessoryLine(row.product ? 'fa-box' : 'fa-triangle-exclamation fc-fs-acc__icon--missing', productHtml) +
+            accessoryLine('fa-hashtag', '<span class="fc-fs-acc__slug">' + slugHtml + '</span>') +
+            accessoryLine('fa-bullseye', '<span class="fc-fs-acc__follows">' + escapeHtml(row.follows) + '</span>') +
+            '</div>' +
+            '<div class="btn-group fc-fs-acc__status" role="radiogroup" aria-label="' +
+            escapeHtml(row.title + ' in the cart') +
+            '">' +
+            statusHtml +
+            '</div>' +
+            '<div class="fc-fs-acc__qty">' +
+            qtyHtml +
+            '</div>' +
+            '<div class="fc-fs-acc__reset"><button type="button" class="btn btn-sm btn-light" data-gui-acc-reset title="Back to ' +
+            escapeHtml(accessoryRuleText(row, { status: row.status, qty: row.qty, per: row.per })) +
+            '"' +
+            (accessoryIsDefault(row, values) ? ' hidden' : '') +
+            '>Reset</button></div>' +
+            '</div>'
+        );
+    }
+
+    function renderAccessoryRows(config, rows) {
+        return (
+            '<div class="fc-fs-acc__row fc-fs-acc__row--head" aria-hidden="true">' +
+            '<span>Accessory</span><span>In the cart</span><span>Quantity</span><span></span></div>' +
+            rows
+                .map(function (row) {
+                    return renderAccessoryRow(config, row);
+                })
+                .join('')
+        );
+    }
+
+    function renderAccessoriesBlock(config, rows) {
+        if (!Array.isArray(rows) || !rows.length) {
+            return '';
+        }
+        return renderFieldGroup(
+            'Accessories',
+            '<div class="fc-fs-acc fc-fs-gui-field--span" data-gui-accessories>' +
+                '<div class="fc-fs-acc__body" data-gui-accessories-body>' +
+                renderAccessoryRows(config, rows) +
+                '</div></div>',
+            {
+                hint:
+                    'Included bills the line. Optional lists it with a suggested quantity and an "Add to cart" button. ' +
+                    'Off leaves it out. Products and SKUs are set in System Products.'
+            }
+        );
+    }
+
+    // Extra → Gate ONLY: whether a Gate ONLY tick keeps its end posts. The fence file holds the key only for Included.
+    var GATE_ONLY_POSTS_KEY = 'gate_only_posts';
+    var GATE_ONLY_POSTS = [
+        { value: 'exclude', label: 'Excluded', effect: 'Both ends start as No Post' },
+        { value: 'include', label: 'Included', effect: 'A post stands at each end' }
+    ];
+
+    // The planner's own test (fcSeedGateOnlyNoPost): a gate that is on, and No Post offered at both ends.
+    function gateOnlyPostsApplies(config) {
+        var settings = isPlainObject(config.settings) ? config.settings : {};
+        var gate = settings.gate;
+        if (
+            !isPlainObject(gate) ||
+            !Object.keys(gate).length ||
+            gate.disabled === true ||
+            gate.disabled === 1 ||
+            String(gate.disabled).toLowerCase() === 'true'
+        ) {
+            return false;
+        }
+        return ['left', 'right'].every(function (side) {
+            var drawer = settings[side + '_side'];
+            var fields = isPlainObject(drawer) && Array.isArray(drawer.fields) ? drawer.fields : [];
+            return fields.some(function (field) {
+                return (
+                    isPlainObject(field) &&
+                    field.slug === side + '_option' &&
+                    Array.isArray(field.options) &&
+                    field.options.some(function (option) {
+                        return isPlainObject(option) && option.slug === 'no-post';
+                    })
+                );
+            });
+        });
+    }
+
+    function gateOnlyPostsPicked(config) {
+        return config[GATE_ONLY_POSTS_KEY] === 'include' ? 'include' : 'exclude';
+    }
+
+    function gateOnlyPostsEffect(picked) {
+        var text = '';
+        GATE_ONLY_POSTS.forEach(function (choice) {
+            if (choice.value === picked) {
+                text = choice.effect;
+            }
+        });
+        return text;
+    }
+
+    function renderGateOnlyPostsRow(config) {
+        var picked = gateOnlyPostsPicked(config);
+        var name = uid('fc-gate-only');
+        var title = "Posts at the gate's ends";
+        var choicesHtml = GATE_ONLY_POSTS.map(function (choice, idx) {
+            var id = name + '-' + idx;
+            return (
+                '<input type="radio" class="btn-check" name="' +
+                name +
+                '" id="' +
+                id +
+                '" value="' +
+                choice.value +
+                '" data-gui-gate-only-posts autocomplete="off"' +
+                (choice.value === picked ? ' checked' : '') +
+                '><label class="btn btn-sm btn-light" for="' +
+                id +
+                '">' +
+                escapeHtml(choice.label) +
+                '</label>'
+            );
+        }).join('');
+        return (
+            '<div class="fc-fs-acc__row" data-gui-gate-only-row>' +
+            '<div class="fc-fs-acc__what"><span class="fc-fs-acc__title">' +
+            escapeHtml(title) +
+            '</span>' +
+            accessoryLine(
+                'fa-arrows-left-right',
+                '<span class="fc-fs-acc__follows">Left and right end of a Gate ONLY section</span>'
+            ) +
+            accessoryLine('fa-hashtag', '<span class="fc-fs-acc__slug">' + GATE_ONLY_POSTS_KEY + '</span>') +
+            '</div>' +
+            '<div class="btn-group fc-fs-acc__status" role="radiogroup" aria-label="' +
+            escapeHtml(title) +
+            '">' +
+            choicesHtml +
+            '</div>' +
+            '<div class="fc-fs-acc__qty"><span data-gui-gate-only-effect>' +
+            escapeHtml(gateOnlyPostsEffect(picked)) +
+            '</span></div>' +
+            '<div class="fc-fs-acc__reset"><button type="button" class="btn btn-sm btn-light" data-gui-gate-only-reset title="Back to Excluded"' +
+            (picked === 'include' ? '' : ' hidden') +
+            '>Reset</button></div>' +
+            '</div>'
+        );
+    }
+
+    function renderGateOnlyBlock(config) {
+        if (!gateOnlyPostsApplies(config)) {
+            return '';
+        }
+        return renderFieldGroup(
+            'Gate ONLY',
+            '<div class="fc-fs-acc fc-fs-gui-field--span" data-gui-gate-only>' +
+                '<div class="fc-fs-acc__body" data-gui-gate-only-body>' +
+                renderGateOnlyPostsRow(config) +
+                '</div></div>',
+            {
+                hint:
+                    'What a Gate ONLY tick starts with. Excluded sets both ends to No Post. Included keeps a post at each end. ' +
+                    'The customer can still change either end in its side drawer.'
+            }
         );
     }
 
@@ -2385,6 +2648,9 @@
         html +=
             '<div class="fc-fs-gui-panel hidden" data-gui-panel="extra">' +
             '<div class="fc-fs-gui-extra fc-fs-gui-stack fc-fs-gui-stack--compact">';
+
+        html += renderAccessoriesBlock(config, options.accessoryDefaults);
+        html += renderGateOnlyBlock(config);
 
         var limitsHtml = '';
         ['max_panel_width_mm', 'max_panel_span_mm'].forEach(function (key) {
@@ -2957,6 +3223,14 @@
             body.innerHTML = renderSlatHeightsBody(state.config, slatHeightSources(state));
         });
 
+        guiRoot.querySelectorAll('[data-gui-accessories-body]').forEach(function (body) {
+            body.innerHTML = renderAccessoryRows(state.config, state.accessoryDefaults || []);
+        });
+
+        guiRoot.querySelectorAll('[data-gui-gate-only-body]').forEach(function (body) {
+            body.innerHTML = renderGateOnlyPostsRow(state.config);
+        });
+
         if (typeof helpers.syncPreview === 'function') {
             helpers.syncPreview(state);
         }
@@ -3029,7 +3303,8 @@
         wrap.innerHTML = renderGuiMode(state.config, state.appBase, {
             fenceColorCatalog: state.fenceColorCatalog || [],
             slatHeightDefaults: state.slatHeightDefaults,
-            slatHeightParent: state.slatHeightParent
+            slatHeightParent: state.slatHeightParent,
+            accessoryDefaults: state.accessoryDefaults
         });
         var newRoot = wrap.firstElementChild;
         if (!newRoot) {
@@ -3135,7 +3410,6 @@
 
     function bindSlatHeights(guiRoot, state, helpers) {
         var view = slatHeightsView;
-        var capText = formatMm(SLAT_HEIGHT_CAP_MM) + 'mm';
         bindSlatHeightsMenuGlobals();
 
         function block() {
@@ -3259,22 +3533,16 @@
             var marks = {};
             var prev = null;
             slatHeightRows(m.list).forEach(function (row) {
-                marks[row.slats] = { over: row.mm > SLAT_HEIGHT_CAP_MM, warn: prev != null && row.mm <= prev };
+                marks[row.slats] = { warn: prev != null && row.mm <= prev };
                 prev = row.mm;
             });
             el.querySelectorAll('[data-gui-heights-row]').forEach(function (rowEl) {
                 var mark = marks[rowEl.getAttribute('data-gui-heights-row')] || {};
-                rowEl.classList.toggle('fc-fs-heights__row--over', !!mark.over);
                 rowEl.classList.toggle('fc-fs-heights__row--warn', !!mark.warn);
             });
-            var split = splitSlatHeightRows(slatHeightRows(m.list));
             var meta = el.querySelector('[data-gui-heights-meta]');
             if (meta) {
                 meta.innerHTML = slatHeightsBarMetaHtml(m);
-            }
-            var overLabel = el.querySelector('[data-gui-heights-over-label]');
-            if (overLabel && split.over.length) {
-                overLabel.innerHTML = slatHeightsOverLabelHtml(split.over.length);
             }
             var gapInput = el.querySelector('[data-gui-heights-gap]:checked');
             var badge = gapInput ? el.querySelector('label[for="' + gapInput.id + '"] [data-gui-heights-count]') : null;
@@ -3472,16 +3740,13 @@
             }
             ownListOf(m)[slats] = mm;
             view.undo = undoBefore;
-            if (mm > SLAT_HEIGHT_CAP_MM) {
-                view.showOver = true;
-            }
             commit(m.own, m.parent);
             rerender('[data-gui-heights-new-mm]', slats);
             setNote(
                 (was == null
                     ? 'Added ' + formatMm(mm) + 'mm at ' + slatsText(slats)
                     : 'Changed ' + slatsText(slats) + ' from ' + formatMm(was) + 'mm to ' + formatMm(mm) + 'mm') +
-                    (mm > SLAT_HEIGHT_CAP_MM ? '. It is over ' + capText + ', so the planner will not offer it.' : '.') +
+                    '.' +
                     sourceNote(m.source)
             );
         }
@@ -3503,7 +3768,6 @@
             var added = 0;
             var changed = 0;
             var skipped = 0;
-            var over = 0;
             lines.forEach(function (line) {
                 var cells = line.split(/[\t;]+/);
                 if (cells.length < 2) {
@@ -3533,7 +3797,6 @@
                     changed += 1;
                 }
                 list[slats] = mm;
-                over += mm > SLAT_HEIGHT_CAP_MM ? 1 : 0;
                 next = slats + 1;
             });
             var skippedText = skipped
@@ -3544,9 +3807,6 @@
                 return;
             }
             view.undo = undoBefore;
-            if (over) {
-                view.showOver = true;
-            }
             commit(m.own, m.parent);
             rerender('[data-gui-heights-new-mm]');
             setNote(
@@ -3554,7 +3814,6 @@
                     (added && changed ? ' and changed ' + formatMm(changed) : '') +
                     '.' +
                     skippedText +
-                    (over ? ' ' + plural(over, 'is', 'are') + ' over ' + capText + ', so the planner will not offer ' + (over === 1 ? 'it' : 'them') + '.' : '') +
                     sourceNote(m.source)
             );
         }
@@ -3743,11 +4002,6 @@
             var removeBtn = target.closest('[data-gui-heights-remove]');
             if (removeBtn) {
                 removeRow(removeBtn.closest('[data-gui-heights-row]'));
-                return;
-            }
-            if (target.closest('[data-gui-heights-over]')) {
-                view.showOver = !view.showOver;
-                rerender('[data-gui-heights-over]');
                 return;
             }
             if (target.closest('[data-gui-heights-undo]') && view.undo) {
@@ -4130,6 +4384,184 @@
         bindColorSelectedDragDrop(guiRoot, state, helpers, applyPath);
         bindKvRowDragDrop(guiRoot, state, helpers, applyPath);
         bindSlatHeights(guiRoot, state, helpers);
+        bindAccessories(guiRoot, state, helpers);
+        bindGateOnlyPosts(guiRoot, state, helpers);
+    }
+
+    // The key is written for Included only and removed for Excluded, so a style put back leaves its file as it was.
+    function bindGateOnlyPosts(guiRoot, state, helpers) {
+        var block = guiRoot.querySelector('[data-gui-gate-only]');
+        if (!block) {
+            return;
+        }
+
+        function commit(picked) {
+            if (picked === 'include') {
+                state.config[GATE_ONLY_POSTS_KEY] = 'include';
+            } else {
+                delete state.config[GATE_ONLY_POSTS_KEY];
+            }
+            helpers.markDirty(state, true);
+            if (typeof helpers.syncDevFromConfig === 'function') {
+                helpers.syncDevFromConfig();
+            }
+        }
+
+        // In place, never a redraw: the choice keeps the focus the click or the arrow key gave it.
+        function refresh() {
+            var picked = gateOnlyPostsPicked(state.config);
+            block.querySelectorAll('[data-gui-gate-only-posts]').forEach(function (input) {
+                input.checked = input.value === picked;
+            });
+            var effect = block.querySelector('[data-gui-gate-only-effect]');
+            if (effect) {
+                effect.textContent = gateOnlyPostsEffect(picked);
+            }
+            var reset = block.querySelector('[data-gui-gate-only-reset]');
+            if (reset) {
+                reset.hidden = picked !== 'include';
+            }
+        }
+
+        block.addEventListener('change', function (e) {
+            var target = e.target;
+            if (!target || !target.hasAttribute || !target.hasAttribute('data-gui-gate-only-posts') || !target.checked) {
+                return;
+            }
+            commit(target.value);
+            refresh();
+        });
+
+        block.addEventListener('click', function (e) {
+            if (!e.target || !e.target.closest || !e.target.closest('[data-gui-gate-only-reset]')) {
+                return;
+            }
+            commit('exclude');
+            refresh();
+            var focus = block.querySelector('[data-gui-gate-only-posts]:checked');
+            if (focus) {
+                focus.focus();
+            }
+        });
+    }
+
+    // Accessories rows keep only what differs from their default, so a row put back leaves the file as it was.
+    function bindAccessories(guiRoot, state, helpers) {
+        var block = guiRoot.querySelector('[data-gui-accessories]');
+        var rows = Array.isArray(state.accessoryDefaults) ? state.accessoryDefaults : [];
+        if (!block || !rows.length) {
+            return;
+        }
+
+        function entryFor(el) {
+            var rowEl = el && el.closest ? el.closest('[data-gui-acc-row]') : null;
+            var key = rowEl ? rowEl.getAttribute('data-gui-acc-row') : '';
+            var found = null;
+            rows.forEach(function (row) {
+                if (row.key === key) {
+                    found = { el: rowEl, row: row };
+                }
+            });
+            return found;
+        }
+
+        // The one write path: rows in the list's order, and no setting at all while every row is at its default.
+        function commit(row, values) {
+            var config = state.config;
+            var own = {};
+            rows.forEach(function (other) {
+                var next = other.key === row.key ? values : accessoryValues(config, other);
+                if (!accessoryIsDefault(other, next)) {
+                    own[other.key] =
+                        other.basis === 'unit'
+                            ? { status: next.status, qty: next.qty, per: next.per }
+                            : { status: next.status, qty: next.qty };
+                }
+            });
+            if (!Object.keys(own).length) {
+                delete config[ACCESSORIES_KEY];
+            } else {
+                config[ACCESSORIES_KEY] = own;
+            }
+            helpers.markDirty(state, true);
+            if (typeof helpers.syncDevFromConfig === 'function') {
+                helpers.syncDevFromConfig();
+            }
+        }
+
+        // In place, never a redraw: a click that follows a typed number lands on the same row.
+        function refresh(entry) {
+            var values = accessoryValues(state.config, entry.row);
+            var off = values.status === 'off';
+            entry.el.classList.toggle('fc-fs-acc__row--off', off);
+            entry.el.querySelectorAll('[data-gui-acc-field]').forEach(function (input) {
+                input.disabled = off;
+            });
+            var reset = entry.el.querySelector('[data-gui-acc-reset]');
+            if (reset) {
+                reset.hidden = accessoryIsDefault(entry.row, values);
+            }
+        }
+
+        function apply(entry) {
+            var current = accessoryValues(state.config, entry.row);
+            var checked = entry.el.querySelector('[data-gui-acc-status]:checked');
+            var values = { status: checked ? checked.value : current.status, qty: current.qty, per: current.per };
+            entry.el.querySelectorAll('[data-gui-acc-field]').forEach(function (input) {
+                var field = input.getAttribute('data-gui-acc-field');
+                var n = accessoryWhole(input.value, NaN);
+                input.classList.toggle('fc-fs-acc__num--invalid', !(n >= 1));
+                if (n >= 1 && (field === 'qty' || field === 'per')) {
+                    values[field] = n;
+                }
+            });
+            commit(entry.row, values);
+            refresh(entry);
+        }
+
+        block.addEventListener('input', function (e) {
+            if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-gui-acc-field')) {
+                var entry = entryFor(e.target);
+                if (entry) {
+                    apply(entry);
+                }
+            }
+        });
+
+        block.addEventListener('change', function (e) {
+            var target = e.target;
+            var entry = entryFor(target);
+            if (!entry || !target.hasAttribute) {
+                return;
+            }
+            if (target.hasAttribute('data-gui-acc-status')) {
+                apply(entry);
+                return;
+            }
+            // A number left empty or out of range goes back to the last one kept.
+            if (target.hasAttribute('data-gui-acc-field') && target.classList.contains('fc-fs-acc__num--invalid')) {
+                var kept = accessoryValues(state.config, entry.row);
+                target.value = kept[target.getAttribute('data-gui-acc-field')];
+                target.classList.remove('fc-fs-acc__num--invalid');
+            }
+        });
+
+        block.addEventListener('click', function (e) {
+            var reset = e.target && e.target.closest ? e.target.closest('[data-gui-acc-reset]') : null;
+            var entry = reset ? entryFor(reset) : null;
+            if (!entry) {
+                return;
+            }
+            commit(entry.row, { status: entry.row.status, qty: entry.row.qty, per: entry.row.per || 0 });
+            var holder = document.createElement('div');
+            holder.innerHTML = renderAccessoryRow(state.config, entry.row);
+            var fresh = holder.firstElementChild;
+            entry.el.parentNode.replaceChild(fresh, entry.el);
+            var focus = fresh.querySelector('[data-gui-acc-status]:checked');
+            if (focus) {
+                focus.focus();
+            }
+        });
     }
 
     function reindexOptions(wrap, path, state) {

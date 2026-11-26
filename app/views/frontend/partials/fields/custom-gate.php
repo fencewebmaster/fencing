@@ -23,7 +23,7 @@ use Fc\Admin\Services\AppConfigService;
                         class="fc-gate-max-fence-height-input numeric text-center py-1 fc-form-field"
                         value=""
                         data-min="199"
-                        data-max="2240"
+                        data-max="5800"
                         autocomplete="off"
                     >
                     <span>mm</span>

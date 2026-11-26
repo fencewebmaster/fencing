@@ -632,6 +632,13 @@ let ProjectPlan = {
             }
         }
 
+        // A Slat gate has no .fc-panel-size, so the pass above skipped it: its Centres read 4,290W between two "(0)" posts.
+        if (typeof SlatFence !== 'undefined' && typeof SlatFence.syncGateMeasure === 'function') {
+            $fc.find('.fencing-panel-gate').each(function() {
+                SlatFence.syncGateMeasure(this);
+            });
+        }
+
         // Each Centers line is absolutely positioned against its own panel at bottom: -82px, so
         // a taller element (a gate) drops its line below the panels' and the dimension line
         // reads as two. Align from the geometry we have NOW, then again next frame in case a
@@ -818,6 +825,13 @@ let ProjectPlan = {
         var renderLongPanels = infillRenderPlan.renderLongPanels;
         var hiddenLongPanels = infillRenderPlan.hiddenLongPanels;
 
+        // Main Slat only: a run its round-up would build past the allowance is spread, as load_fencing_items() draws it.
+        // The other styles' plans keep one rounded width, 1 or 2mm over, which is accepted.
+        var slatSpread =
+            renderLongPanels === totalLongPanels && typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(i)
+                ? SlatFence.slatEvenWidthSpread(calc, renderLongPanels)
+                : null;
+
         for (let pi = 0; pi < renderLongPanels; pi++) {
 
             var panel_number = pi + gate_hinge_panel_number;
@@ -825,7 +839,7 @@ let ProjectPlan = {
                 panel_number = pi + gate_hinge_panel_number + 1;
             }
 
-                panel_size = calc.long_panel.length,
+                panel_size = slatSpread ? SlatFence.slatEvenWidthAt(slatSpread, pi) : calc.long_panel.length,
                 panel_unit = FENCES.defaultValues.unit,
                 data_key = "post_options";
 
@@ -859,6 +873,10 @@ let ProjectPlan = {
 
         if (renderLongPanels > 0 && calc.long_panel.length > 0) {
             $ppFc.find('.fencing-panel-item').css({ 'width': calc.long_panel.length * 0.10 });
+            // A spread panel 1mm under the centre rail's 2,000 keeps the rail the cart bills: the rail reads this width first.
+            if (slatSpread) {
+                $ppFc.find('.fencing-panel-item').attr('data-width', calc.long_panel.length * 0.10);
+            }
         }
 
         var tpl = tplPanelSpacing

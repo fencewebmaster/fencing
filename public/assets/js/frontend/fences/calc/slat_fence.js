@@ -369,7 +369,7 @@ SlatFenceCalc = {
 
         var sizePitch = parseFloat(read('slat_size'));
         return this.slatGateBomFromValues(style, controls, gateRow, tabRow, calc, {
-            heightMm: Math.min(heightMm, this.getGateModalFenceHeightBoundsMm().max),
+            heightMm: heightMm,
             sizePitch: Number.isFinite(sizePitch) && sizePitch > 0 ? sizePitch : 65.3,
             gapMm: gapMm
         });
@@ -579,11 +579,19 @@ SlatFenceCalc = {
             var s = this.slatSectionSlatCountFromStorage(i);
             if (!this.isSlatLike(s.style)) continue;
             if (i === sectionIndex) seen = true;
-            if (first < 0 && (s.spacerSlats > 0 || (s.gate && s.gate.screws > 0))) first = i;
+            if (first < 0 && (s.spacerSlats > 0 || (s.gate && s.gate.screws > 0)) && this.slatScrewsOn(s.style)) first = i;
         }
 
         if (!seen) return null;
         return first === sectionIndex ? 1 : 0;
+    },
+
+    // A style whose Accessories setting turns the screws off leaves the job's pack to the next Slat or Slat Infill section.
+    slatScrewsOn: function(style) {
+        if (typeof FENCES === 'undefined' || !FENCES.cartItems || typeof FENCES.cartItems.accessoryRule !== 'function') {
+            return true;
+        }
+        return FENCES.cartItems.accessoryRule({ fenceSlug: style }, 'screws', { status: 'included', qty: 1 }).status !== 'off';
     },
 
     // One 20kg bag of grout fills about 11 core-drilled holes (100mm cores, 15% waste).
@@ -674,7 +682,7 @@ SlatFenceCalc = {
      * This section's grout bags and 135° adapter lengths: its rise in the job's running totals, so the sections sum to
      * one rounding per job. Adapters pool only with sections whose height cuts the same number of pieces per length.
      */
-    pooledSlatPostOptionLinesForSection: function(sectionIndex, coreDrilledPosts, turns, fallbackHeightMm) {
+    pooledSlatPostOptionLinesForSection: function(sectionIndex, coreDrilledPosts, turns, fallbackHeightMm, groutRule) {
         // Carts rebuild in section order before submit; until then a missing earlier cart counts this section alone.
         var before = Number.isFinite(sectionIndex) ? this.earlierSlatPostOptionTotals(sectionIndex) : null;
         if (!before) {
@@ -686,12 +694,17 @@ SlatFenceCalc = {
         if (!Number.isFinite(heightMm) || heightMm <= 0) {
             heightMm = fallbackHeightMm;
         }
-        var perBag = this.postsPerGroutBag;
+        // The style's Accessories setting may change the bags: `qty` for every `per` core-drilled posts.
+        var perBag = groutRule && groutRule.per ? groutRule.per : this.postsPerGroutBag;
+        var bagQty = groutRule && groutRule.qty ? groutRule.qty : 1;
+        var bags = function(posts) {
+            return Math.ceil((posts * bagQty) / perBag);
+        };
         var pieces = this.slat135AdapterPiecesPerLength(heightMm);
         var beforeTurns = before.turnsByPieces[pieces] || 0;
         return {
             grout: coreDrilledPosts > 0
-                ? Math.ceil((before.coreDrilled + coreDrilledPosts) / perBag) - Math.ceil(before.coreDrilled / perBag)
+                ? bags(before.coreDrilled + coreDrilledPosts) - bags(before.coreDrilled)
                 : 0,
             adapters: turns > 0
                 ? Math.ceil((beforeTurns + turns) / pieces) - Math.ceil(beforeTurns / pieces)
@@ -803,9 +816,9 @@ SlatFenceCalc = {
         return 0;
     },
 
-    // Heights on offer for a slat size and gap, shortest first: GO's list, or one per slat count by the row rule for a
-    // gap the list lacks (rounded up at an Xpress gap, so the rule gives that count back).
-    slatHeightOptionsMm: function(sizePitch, gapPitch, maxMm, fenceSlug) {
+    // Heights on offer for a slat size and gap, shortest first: GO's whole list, or one per slat count by the row rule for
+    // a gap the list lacks (rounded up at an Xpress gap, so the rule gives that count back), up to the number box's top.
+    slatHeightOptionsMm: function(sizePitch, gapPitch, fenceSlug) {
         var list = this.slatListedHeightsFor(sizePitch, gapPitch, fenceSlug);
         var out = [];
         if (list) {
@@ -823,7 +836,7 @@ SlatFenceCalc = {
         }
         return out
             .filter(function(h) {
-                return Number.isFinite(h) && h > 0 && (!(maxMm > 0) || h <= maxMm);
+                return Number.isFinite(h) && h > 0;
             })
             .sort(function(a, b) {
                 return a - b;
@@ -1031,6 +1044,43 @@ SlatFenceCalc = {
             return 0;
         }
         return Math.ceil(avail / n);
+    },
+
+    // The owner's allowance (Oct 2026): rounded-up panels may build a run this many mm past its Overall Length.
+    slatEvenOverAllowanceMm: 2,
+
+    // The Even width before rounding, for a run the round-up builds past the allowance, else 0: the renderers
+    // then spread whole millimetres over its panels (90,000 was 37 x 2,382, 34mm over).
+    computeSlatEvenPanelExactWidthMm: function(overallMm, panelCount, postWidthMm, removedPostsMm) {
+        var n = parseInt(panelCount, 10);
+        var width = this.computeSlatEvenPanelWidthMm(overallMm, n, postWidthMm, removedPostsMm);
+        if (!(width > 0)) {
+            return 0;
+        }
+        var avail = this.computeSlatPanelSpanMm(parseInt(overallMm, 10), n, postWidthMm, removedPostsMm);
+        return width * n - avail > this.slatEvenOverAllowanceMm ? avail / n : 0;
+    },
+
+    // How a spread run divides: `base` mm on every panel and 1mm more on `extra` of the `count`. Null when the
+    // engine handed back no unrounded width, or it divides evenly.
+    slatEvenWidthSpread: function(calc, panelCount) {
+        var n = parseInt(panelCount, 10);
+        var exact = Number(calc?.long_panel?.length_exact);
+        if (!(n > 0) || !(exact > 0) || !(Math.abs(exact - calc.long_panel.length) < 1)) {
+            return null;
+        }
+        var total = Math.round(n * exact);
+        var base = Math.floor(total / n);
+        var extra = total - base * n;
+        return base > 0 && extra > 0 ? { base: base, extra: extra, count: n } : null;
+    },
+
+    // Width of panel `idx` in a spread run: the extra millimetres sit where load_fencing_items() puts them.
+    slatEvenWidthAt: function(spread, idx) {
+        return spread.base + (
+            Math.floor(((idx + 1) * spread.extra) / spread.count) -
+            Math.floor((idx * spread.extra) / spread.count)
+        );
     },
 };
 

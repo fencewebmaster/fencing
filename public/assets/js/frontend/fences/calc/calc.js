@@ -472,7 +472,7 @@ class FenceCalculator {
                 // millimetre and the division rarely is. Printing the same rounded width on every
                 // panel pushes the run past the ordered length by up to half a millimetre a panel,
                 // so the diagram spreads the difference instead. Zero when there is nothing to
-                // spread (full-size panels, infill, slat) - deliberately not isNaNtoZero(), which
+                // spread (full-size panels, infill, a slat run inside its allowance) - deliberately not isNaNtoZero(), which
                 // would round away the very fraction this carries.
                 'length_exact': Number.isFinite(long_panel_length_exact) && long_panel_length_exact > 0
                     ? long_panel_length_exact
@@ -1197,6 +1197,10 @@ class FenceCalculator {
             even_panel_count = isNaN(C17) ? 0 : C17;
             even_panel_length = isNaN(E17) ? 0 : E17;
 
+            // Main Slat's width before rounding, set only where its round-up builds the run past the allowance.
+            let slat_even_exact = 0;
+            let slat_even_rounded = 0;
+
             // Slat Fence (main style): ceil((overall − totalPosts) / N) — includes no-post end adjustments.
             if (
                 typeof SlatFence !== 'undefined' &&
@@ -1231,6 +1235,13 @@ class FenceCalculator {
                         custom_fence_tab
                     );
                     even_panel_length = SlatFence.computeSlatEvenPanelWidthMm(
+                        slatSpan,
+                        even_panel_count,
+                        post_panel,
+                        slatRemovedPosts
+                    );
+                    slat_even_rounded = even_panel_length;
+                    slat_even_exact = SlatFence.computeSlatEvenPanelExactWidthMm(
                         slatSpan,
                         even_panel_count,
                         post_panel,
@@ -1273,6 +1284,11 @@ class FenceCalculator {
                 // cases hand back the rounded width so the spread below is a no-op.
                 long_panel_length_exact =
                     even_panel_length === E17 && extra_panel_count === 0 ? E17_exact : long_panel_length;
+                // Main Slat rounds every panel up, so a long run was built over its length (90,000 came out 34mm
+                // long): past the allowance its unrounded width goes back and the diagram spreads it like the rest.
+                if (slat_even_exact > 0 && even_panel_length === slat_even_rounded && extra_panel_count === 0) {
+                    long_panel_length_exact = slat_even_exact;
+                }
             } else {
                 long_panel_count = full_panel_count + extra_panel_count;
                 long_panel_length = Math.round(full_panel_length);

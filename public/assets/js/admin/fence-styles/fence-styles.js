@@ -822,12 +822,14 @@
                     fenceColorCatalog: fenceColorCatalog,
                     slatHeightDefaults: data.slatHeightDefaults,
                     slatHeightParent: data.slatHeightParent,
+                    accessoryDefaults: data.accessoryDefaults,
                     canEdit: canEdit
                 });
                 Edit.bindEditForm(container, data.style.slug, data.style, config, data.fileMeta || {}, {
                     fenceColorCatalog: fenceColorCatalog,
                     slatHeightDefaults: data.slatHeightDefaults,
                     slatHeightParent: data.slatHeightParent,
+                    accessoryDefaults: data.accessoryDefaults,
                     canEdit: canEdit,
                     csrf: data.csrf,
                     onBack: function () {

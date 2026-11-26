@@ -6,8 +6,7 @@ namespace Fc\Admin\Services;
 
 /**
  * GO's Slat fence heights: every height its cut-to-size order form (V9.03) offers in its Height dropdowns. The list
- * behind the Slat style's `fence_heights_mm` setting, read here by the rollout script (writable/add-slat-heights.php)
- * and by the Fence Styles editor's "Load GO's heights".
+ * behind the Slat style's `fence_heights_mm` setting, read by the Fence Styles editor's "Load GO's heights".
  */
 final class SlatHeightListService
 {

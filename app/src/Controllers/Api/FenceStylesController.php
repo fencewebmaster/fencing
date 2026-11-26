@@ -10,6 +10,7 @@ namespace Fc\Admin\Controllers\Api;
 use Fc\Admin\Helpers\UrlHelper;
 use Fc\Admin\Models\FenceStyleModel;
 use Fc\Admin\Presenters\FenceStylePresenter;
+use Fc\Admin\Services\FenceAccessoryService;
 use Fc\Admin\Services\FenceFileService;
 use Fc\Admin\Services\FenceStyleMaintenanceService;
 
@@ -116,6 +117,14 @@ final class FenceStylesController extends BaseApiController
             http_response_code(400);
             echo json_encode(['ok' => false, 'error' => 'Title is required in config.'], JSON_UNESCAPED_UNICODE);
             return;
+        }
+
+        // Only rows that differ from the planner's own rules are kept, whatever the editor or the JSON tab sent.
+        $config = FenceAccessoryService::applyToConfig($slug, $config);
+
+        // Gate ONLY's end posts: only Included is kept, since no key is the planner's own rule (both ends No Post).
+        if (($config['gate_only_posts'] ?? null) !== 'include') {
+            unset($config['gate_only_posts']);
         }
 
         $result = FenceStyleMaintenanceService::save($filePath, $slug, $config);

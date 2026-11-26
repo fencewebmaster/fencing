@@ -129,6 +129,12 @@
         });
 
         var text = (overall.textContent || '').replace(/\s+/g, ' ').trim();
+        /* A Slat gate caption with the Overall's own figure only repeats it: "1,065 Outside Of Post" over "1,065 Overall". */
+        var figure = textOf(overall.querySelector('.d-oaw')).replace(/\D/g, '');
+        Array.prototype.forEach.call(run.querySelectorAll('.fc-slat-gate-measure'), function(cap) {
+            var same = !!figure && textOf(cap.querySelector('.fc-slat-gate-measure__figure')).replace(/\D/g, '') === figure;
+            cap.classList.toggle('fc-slat-gate-measure--same', same);
+        });
         /* Before Calculate .d-oaw is empty and the text is just "Overall": no figure, no line. */
         var on = right > left && /\d/.test(text);
 

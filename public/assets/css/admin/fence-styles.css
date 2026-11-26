@@ -1989,12 +1989,14 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
 }
 
 /* As Choices per row: Bootstrap gives a .btn-check label no hover and the admin no focus ring. */
-.fc-fs-heights .btn-check:not(:checked) + .btn:hover {
+.fc-fs-heights .btn-check:not(:checked) + .btn:hover,
+.fc-fs-acc .btn-check:not(:checked) + .btn:hover {
     color: var(--bs-btn-hover-color);
     background-color: var(--bs-btn-hover-bg);
 }
 
-.fc-fs-heights .btn-check:focus-visible + .btn {
+.fc-fs-heights .btn-check:focus-visible + .btn,
+.fc-fs-acc .btn-check:focus-visible + .btn {
     outline: 2px solid var(--fc-princeton-orange);
     outline-offset: 2px;
 }
@@ -2169,60 +2171,9 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
     color: #dc2626;
 }
 
-.fc-fs-heights__remove:focus-visible,
-.fc-fs-heights__over:focus-visible {
+.fc-fs-heights__remove:focus-visible {
     outline: 2px solid var(--fc-princeton-orange);
     outline-offset: -2px;
-}
-
-/* Over the planner's cap: kept in the file, never offered, so it reads as set aside. */
-.fc-fs-heights__row--over {
-    background: var(--fc-admin-surface-muted);
-}
-
-/* Dimmed by opacity: the dark theme pins every input's colour with !important. */
-.fc-fs-heights__row--over .fc-fs-heights__slats b,
-.fc-fs-heights__row--over .fc-fs-input.fc-fs-heights__mm {
-    opacity: 0.6;
-}
-
-.fc-fs-heights__row--over .fc-fs-input.fc-fs-heights__mm:focus {
-    opacity: 1;
-}
-
-.fc-fs-heights__over {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    column-span: all;
-    padding: 0.4375rem 0.625rem;
-    border: 0;
-    border-top: 1px solid var(--fc-admin-border);
-    border-bottom: 1px solid var(--fc-admin-border-subtle);
-    background: var(--fc-admin-surface-muted);
-    color: var(--fc-admin-text-muted);
-    font-size: 0.75rem;
-    text-align: left;
-    cursor: pointer;
-}
-
-.fc-fs-heights__over:hover {
-    background: var(--fc-admin-surface-subtle);
-    color: var(--fc-admin-text);
-}
-
-.fc-fs-heights__over b {
-    color: var(--fc-admin-text);
-}
-
-.fc-fs-heights__over i {
-    font-size: 0.625rem;
-    transition: transform 0.15s ease;
-}
-
-.fc-fs-heights__over[aria-expanded='true'] i {
-    transform: rotate(90deg);
 }
 
 @keyframes fc-fs-heights-new {
@@ -2240,7 +2191,6 @@ html[data-fc-admin-theme='dark'] .fc-fs-color-picker-chip__label {
         animation: none;
     }
 
-    .fc-fs-heights__over i,
     .fc-fs-heights__menu [data-gui-heights-menu-toggle] i {
         transition: none;
     }
@@ -2303,6 +2253,147 @@ html[data-fc-admin-theme='dark'] .fc-fs-heights__flag {
 
 html[data-fc-admin-theme='dark'] .fc-fs-heights__remove:hover {
     color: #f87171;
+}
+
+/* —— Accessories (Extra): renderAccessoriesBlock in gui.js. Admin tokens, so both themes follow. —— */
+/* Laid out by its own width: the editor column is 371px in a 1,024px window, where four columns overflowed. */
+.fc-fs-acc {
+    container: fc-fs-acc / inline-size;
+}
+
+/* A fixed status track: `auto` sized the head row by its label, so on a wide screen the labels left their columns. */
+.fc-fs-acc__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(max-content, 13rem) minmax(15.5rem, 1fr) 3.75rem;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--fc-admin-border-subtle);
+}
+
+.fc-fs-acc__row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.fc-fs-acc__row--head {
+    padding-top: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--fc-admin-text-muted);
+}
+
+.fc-fs-acc__what {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--fc-admin-text-muted);
+}
+
+.fc-fs-acc__title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fc-admin-text-heading);
+}
+
+.fc-fs-acc__product {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-fs-acc__product--missing {
+    color: #dc2626;
+}
+
+/* A line under the title: its icon in a fixed column, so the texts start level and a wrapped slug hangs under itself. */
+.fc-fs-acc__line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    min-width: 0;
+}
+
+.fc-fs-acc__line > :not(.fc-fs-acc__icon) {
+    min-width: 0;
+}
+
+.fc-fs-acc__icon {
+    flex: 0 0 0.875rem;
+    font-size: 0.6875rem;
+    text-align: center;
+    opacity: 0.75;
+}
+
+.fc-fs-acc__icon--missing {
+    color: #dc2626;
+    opacity: 1;
+}
+
+/* A slug is matched by eye against System Products and the cart, so it wraps and is never cut short. */
+.fc-fs-acc__slug {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+}
+
+.fc-fs-acc__qty {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    color: var(--fc-admin-text-muted);
+}
+
+.fc-fs-acc .fc-fs-input.fc-fs-acc__num {
+    width: 3.5rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.375rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.fc-fs-acc .fc-fs-input.fc-fs-acc__num--invalid {
+    border-color: #dc2626;
+}
+
+/* Off: the row stays readable, its quantity reads as not in use. */
+.fc-fs-acc__row--off .fc-fs-acc__qty {
+    opacity: 0.5;
+}
+
+.fc-fs-acc__reset {
+    text-align: right;
+}
+
+/* Under 44rem the accessory's name takes a line of its own; under 34rem every part does. */
+@container fc-fs-acc (max-width: 44rem) {
+    .fc-fs-acc__row {
+        grid-template-columns: minmax(max-content, 13rem) minmax(0, 1fr) 3.75rem;
+    }
+
+    .fc-fs-acc__row--head {
+        display: none;
+    }
+
+    .fc-fs-acc__what {
+        grid-column: 1 / -1;
+    }
+}
+
+@container fc-fs-acc (max-width: 34rem) {
+    .fc-fs-acc__row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fc-fs-acc__reset {
+        text-align: left;
+    }
 }
 
 /* —— Settings fence colors (kv-table variant) —— */

@@ -712,7 +712,8 @@
                 ? Gui.render(config, appBase, {
                       fenceColorCatalog: options.fenceColorCatalog || [],
                       slatHeightDefaults: options.slatHeightDefaults,
-                      slatHeightParent: options.slatHeightParent
+                      slatHeightParent: options.slatHeightParent,
+                      accessoryDefaults: options.accessoryDefaults
                   })
                 : '<p class="text-sm text-red-600">GUI editor failed to load.</p>';
         if (initialTab === 'advanced') {
@@ -1178,6 +1179,8 @@
         // Step 2's Height choices: GO's heights, and for Slat Infill the Slat lists it follows. The GUI redraws from state.
         state.slatHeightDefaults = handlers ? handlers.slatHeightDefaults : null;
         state.slatHeightParent = handlers ? handlers.slatHeightParent : null;
+        // Extra's Accessories rows: the planner's own rule for each line, which the file's `accessories` changes.
+        state.accessoryDefaults = handlers ? handlers.accessoryDefaults : null;
         var urlState = readFenceStyleEditUrlState();
         state.guiTab = normalizeGuiTab(urlState.tab || FS_GUI_DEFAULT_TAB);
         state.activeSection = urlState.section || '';

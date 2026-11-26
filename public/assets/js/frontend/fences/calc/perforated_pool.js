@@ -51,16 +51,21 @@ PerforatedPoolCalc = {
      * This section's share of the per-job lines: glue is its rise in the job's running tube count, so the sections
      * sum to the job total; the gun and the screw pack ride with the first section that needs them.
      */
-    pooledPerJobLinesForSection: function(sectionIndex, cart) {
+    pooledPerJobLinesForSection: function(sectionIndex, cart, glueRule) {
         var basePosts = FENCES.cartItems.sumPostQtyByOpt(cart, 'opt-1');
-        var per = this.postsPerGlueTube;
+        // The style's Accessories setting may change the tubes: `qty` for every `per` base-plated posts.
+        var per = glueRule && glueRule.per ? glueRule.per : this.postsPerGlueTube;
+        var tubeQty = glueRule && glueRule.qty ? glueRule.qty : 1;
+        var tubes = function(posts) {
+            return Math.ceil((posts * tubeQty) / per);
+        };
         // Carts rebuild in section order before submit; until then a missing earlier cart counts this section alone.
         var before = Number.isFinite(sectionIndex) ? this.earlierSectionTotals(sectionIndex) : null;
         if (!before) {
             before = { basePosts: 0, buildsFence: false };
         }
         return {
-            glue: basePosts > 0 ? Math.ceil((before.basePosts + basePosts) / per) - Math.ceil(before.basePosts / per) : 0,
+            glue: basePosts > 0 ? tubes(before.basePosts + basePosts) - tubes(before.basePosts) : 0,
             gun: basePosts > 0 && before.basePosts === 0 ? 1 : 0,
             screws: this.cartBuildsFence(cart) && !before.buildsFence ? 1 : 0
         };

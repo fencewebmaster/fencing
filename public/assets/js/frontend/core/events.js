@@ -529,6 +529,10 @@ function fcGateOnlyStep2Enable() {
         _width.val(default_width);
     }
 
+    // The section's saved settings before the tick writes its gate row: a refused tick puts them back.
+    var segKey = fd ? 'custom_fence-' + fd.tab + '-' + fd.slug : '';
+    var segBefore = segKey ? localStorage.getItem(segKey) : null;
+
     updateGateOnly(true);
     // Before the length is filled, so it counts the No Post ends.
     fcSeedGateOnlyNoPost();
@@ -578,6 +582,15 @@ function fcGateOnlyStep2Enable() {
     }
     if (!validateStep2BeforeCalculate(false)) {
         updateGateOnly(false);
+        // The tick's gate row stayed behind: the next Calculate drew a gate nobody added, or put the section's own gate
+        // back in the first bay.
+        if (segKey) {
+            if (segBefore === null) {
+                localStorage.removeItem(segKey);
+            } else {
+                localStorage.setItem(segKey, segBefore);
+            }
+        }
         $box.val(prev);
         if (prev) {
             $box.attr('data-last', prev);
@@ -585,16 +598,16 @@ function fcGateOnlyStep2Enable() {
             $box.removeAttr('data-last');
         }
         $box.removeAttr('data-prev-gate-only-mbn');
-        // Whatever else failed, the length field carries no message on a Gate ONLY click: the
-        // length is Gate ONLY's own answer, not the customer's.
-        if (slatStdGo) {
-            $box.closest('.fc-input-container').find('.fc-input-msg').removeClass('fcim-show').html('');
-        }
         $row.removeClass('fc-selected');
         $row.find('[name="gate_only_step2"]').prop('checked', false);
         if (typeof checkGateOnly === 'function') {
             checkGateOnly();
         }
+        // A refused tick said nothing: Step 2 hides its messages until armed, and the length's was cleared here.
+        // Checked again with the tick off, so each empty or wrong field carries the message Calculate gives it.
+        fcArmStep2Errors();
+        fcStep2QuietDisabledHeight(true);
+        validateStep2BeforeCalculate(false);
         return;
     }
 
@@ -1362,11 +1375,6 @@ _doc.on('click keydown', '#fc-control-modal .fc-gate-align__pick', function(even
         return;
     }
     event.preventDefault();
-    // A key on SAME Height where a gate cannot match the fence: as a click, which fcSelectUnavailable() answers.
-    if ($(this).hasClass('fc-select--unavailable')) {
-        $(this).trigger('click');
-        return;
-    }
     if (typeof SlatFence !== 'undefined') {
         SlatFence.pickGateAlign($(this));
     }
@@ -2751,7 +2759,12 @@ function fcArmStep2Errors() {
 }
 
 function fcDisarmStep2Errors() {
-    $('.js-fc-form-step[data-section="2"]').removeClass('fc-step2-show-errors');
+    $('.js-fc-form-step[data-section="2"]').removeClass('fc-step2-show-errors fc-step2-gate-only-errors');
+}
+
+// Messages armed by a Gate ONLY click leave out a Fence Height still greyed out (asked for Nov 2026); Calculate names it.
+function fcStep2QuietDisabledHeight(on) {
+    $('.js-fc-form-step[data-section="2"]').toggleClass('fc-step2-gate-only-errors', !!on);
 }
 
 /**
@@ -3170,7 +3183,13 @@ function validateStep2BeforeCalculate(showNativeTooltip = false) {
                         ? SlatFence.validateMaxFenceHeightField(el)
                         : { valid: !!raw, message: 'Please enter fence height' };
                 if (!maxResult.valid) {
-                    markInvalid(el, maxResult.message || 'Please enter fence height');
+                    // After a Gate ONLY click a height still greyed out goes unnamed: the slat size and gap come first.
+                    if (el.disabled && $(el).closest('.js-fc-form-step').hasClass('fc-step2-gate-only-errors')) {
+                        hasError = true;
+                        if (!firstInvalidEl) firstInvalidEl = el;
+                    } else {
+                        markInvalid(el, maxResult.message || 'Please enter fence height');
+                    }
                 }
             } catch (errMaxH) {
                 if (!raw) {
@@ -3285,6 +3304,7 @@ function step2TrySubmitCalculateFromEnter() {
 
 function btnCalculate() {
     fcArmStep2Errors();
+    fcStep2QuietDisabledHeight(false);
 
     if (!validateStep2BeforeCalculate(false)) {
         return;

@@ -7,6 +7,7 @@ namespace Fc\Admin\Presenters;
 use Fc\Admin\Helpers\ViewHelper;
 use Fc\Admin\Models\FenceStyleModel;
 use Fc\Admin\Services\AuthService;
+use Fc\Admin\Services\FenceAccessoryService;
 use Fc\Admin\Services\PermissionService;
 use Fc\Admin\Services\SlatHeightListService;
 use Fc\Admin\Settings\FenceColorSettings;
@@ -129,7 +130,7 @@ final class FenceStylePresenter
     }
 
     /**
-     * @return array{ok:bool,style?:array<string,mixed>,config?:array<string,mixed>,fileMeta?:array<string,mixed>,canEdit?:bool,canView?:bool,csrf?:string,slatHeightDefaults?:array<int,array<int,array<int,int>>>,slatHeightParent?:array<int|string,mixed>,error?:string}
+     * @return array{ok:bool,style?:array<string,mixed>,config?:array<string,mixed>,fileMeta?:array<string,mixed>,canEdit?:bool,canView?:bool,csrf?:string,slatHeightDefaults?:array<int,array<int,array<int,int>>>,slatHeightParent?:array<int|string,mixed>,accessoryDefaults?:list<array<string,mixed>>,error?:string}
      */
     public static function getStylePayload(string $slug, string $appBase): array
     {
@@ -162,6 +163,12 @@ final class FenceStylePresenter
                 $parent = $catalog['fences'][SlatHeightListService::OWNER_SLUG][SlatHeightListService::SETTING_KEY] ?? null;
                 $payload['slatHeightParent'] = is_array($parent) ? $parent : [];
             }
+        }
+
+        // Extra's Accessories rows: the planner's own rule for each line, which the file's `accessories` changes.
+        $accessories = FenceAccessoryService::editorRows($slug);
+        if ($accessories !== []) {
+            $payload['accessoryDefaults'] = $accessories;
         }
 
         return $payload;

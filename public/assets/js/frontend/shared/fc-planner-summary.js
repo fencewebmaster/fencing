@@ -639,8 +639,19 @@
             parseInt(calc.full_panel?.length, 10) ||
             0;
 
+        // A main Slat run spread over its panels has two widths: one size times the count read 9mm over a 25,000 run.
+        var spread =
+            typeof SlatFence !== 'undefined' && SlatFence.isMainSlatSlug(slug) && SlatFence.slatEvenWidthSpread
+                ? SlatFence.slatEvenWidthSpread(calc, parseInt(calc.long_panel?.count, 10) || 0)
+                : null;
+        var spreadSize = function(count, widthMm) {
+            return Math.round(h) + 'H \u00d7 ' + widthMm + 'W (' + count + (count === 1 ? ' panel)' : ' panels)');
+        };
+
         var parts = [];
-        if (Number.isFinite(h) && h > 0 && Number.isFinite(w) && w > 0) {
+        if (spread && Number.isFinite(h) && h > 0) {
+            parts.push(spreadSize(spread.count - spread.extra, spread.base), spreadSize(spread.extra, spread.base + 1));
+        } else if (Number.isFinite(h) && h > 0 && Number.isFinite(w) && w > 0) {
             parts.push(Math.round(h) + 'H \u00d7 ' + Math.round(w) + 'W');
         } else if (Number.isFinite(w) && w > 0) {
             parts.push(Math.round(w) + 'W');

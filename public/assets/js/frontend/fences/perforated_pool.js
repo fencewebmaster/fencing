@@ -24,33 +24,21 @@ PerforatedPool = {
             return item?.slug !== 'panel_options+bracket';
         });
 
-        // Suggested, not billed, like Barr's base_plate+dynabolts: listed with an "Add to cart" button.
-        var addOptional = function(slug, qty) {
-            qty = parseInt(qty, 10);
-            if (!qty || qty <= 0) return;
-            var found = array.find(function(item) {
-                return item?.slug === slug;
-            });
-            if (found) {
-                found.optional = true;
-                found.qty = found.qty || 0;
-                found.suggested_qty = (found.suggested_qty || 0) + qty;
-            } else {
-                array.push({ slug: slug, qty: 0, optional: true, suggested_qty: qty });
-            }
-        };
+        // Suggested, not billed, like Barr's base_plate+dynabolts, unless the style's Accessories setting says otherwise.
+        var acc = FENCES.cartItems;
+        var cement = acc.accessoryRule(context, 'cement', { status: 'optional', qty: 1, per: 1 });
+        var glue = acc.accessoryRule(context, 'glue', { status: 'optional', qty: 1, per: this.postsPerGlueTube });
+        var gun = acc.accessoryRule(context, 'glue_gun', { status: 'optional', qty: 1 });
+        // Billed, as the old planner did; products.csv has it OFF for Black, whose panel kits already include black screws.
+        var screws = acc.accessoryRule(context, 'screws', { status: 'included', qty: 1 });
 
         // Glue, gun and screws are per job, so each section takes its share (fences/calc/perforated_pool.js).
-        var perJob = this.pooledPerJobLinesForSection(parseInt(context?.tabIndex, 10), array);
+        var perJob = this.pooledPerJobLinesForSection(parseInt(context?.tabIndex, 10), array, glue);
 
-        addOptional('cement_in+cement', FENCES.cartItems.sumPostQtyByOpt(array, 'opt-2'));
-        addOptional('chem_achor+glue', perJob.glue);
-        addOptional('chem_achor+glue_gun', perJob.gun);
-
-        // Billed, as the old planner did; products.csv has it OFF for Black, whose panel kits already include black screws.
-        if (perJob.screws > 0) {
-            array.push({ slug: 'panel_options+wafer_screws', qty: perJob.screws });
-        }
+        acc.addAccessory(array, 'cement_in+cement', cement, acc.accessoryQty(cement, acc.sumPostQtyByOpt(array, 'opt-2')));
+        acc.addAccessory(array, 'chem_achor+glue', glue, perJob.glue);
+        acc.addAccessory(array, 'chem_achor+glue_gun', gun, perJob.gun * gun.qty);
+        acc.addAccessory(array, 'panel_options+wafer_screws', screws, perJob.screws * screws.qty);
 
         return array;
     },

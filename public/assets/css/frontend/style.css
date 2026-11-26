@@ -6458,17 +6458,6 @@ thead.fc-border th:last-child {
     display: flex;
 }
 
-/* SAME Height in a fence taller than a gate is made (.fc-select--unavailable): greyed like a ruled-out post, no hover or press. */
-#fc-control-modal .fc-select-2.fc-gate-align__pick.fc-select--unavailable,
-#fc-control-modal .fc-select-2.fc-gate-align__pick.fc-select--unavailable:hover {
-    border-color: var(--fc-dark-gray) !important;
-    background-color: transparent;
-    cursor: not-allowed;
-    opacity: 0.4;
-    filter: grayscale(1);
-    transform: none;
-}
-
 /* Gate Width pair: CUSTOM runs to two lines, so pass the row's height down to both tiles and
    centre the copy (partials/fields/custom-gate.php). */
 .fc-gate-modal-std-custom-section .row > [class*="col-"] {
@@ -21822,6 +21811,11 @@ html.fc-step3-fullscreen .fc-planner-page .js-fc-form-step[data-section="3"] .fe
 }
 
 .fc-project-plan-page .fc-slat-gate-measure {
+    display: none;
+}
+
+/* Hidden while it reads the Overall's own figure (overall-dimension.js): on Gate ONLY it only repeated it. */
+.fc-slat-gate-measure.fc-slat-gate-measure--same {
     display: none;
 }
 
